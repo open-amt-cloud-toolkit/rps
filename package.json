@@ -1,0 +1,46 @@
+{
+  "name": "rps",
+  "version": "0.9.0",
+  "description": "AMT Remote Provisioning service",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc --w",
+    "compile": "tsc",
+    "start": "tsc && ts-node ./dist/Index.js",
+    "test": "jest --coverage",
+    "watch": "nodemon -e ts -w ./src -x npm run start"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@types/pg": "^7.14.1",
+    "body-parser": "^1.19.0",
+    "crypto-random-string": "^3.0.1",
+    "express": "^4.17.1",
+    "express-promise-router": "^3.0.3",
+    "express-ws": "^4.0.0",
+    "node-forge": "^0.7.6",
+    "node-vault": "^0.9.12",
+    "pg": "^7.17.1",
+    "winston": "^3.0.0",
+    "ws": "^7.1.2"
+  },
+  "devDependencies": {
+    "@types/body-parser": "^1.17.1",
+    "@types/jest": "^24.0.18",
+    "@types/node": "^11.13.20",
+    "@types/node-forge": "^0.8.4",
+    "@types/node-vault": "^0.9.0",
+    "@types/ws": "^6.0.1",
+    "jest": "^24.8.0",
+    "jest-sinon": "^1.0.1",
+    "jest-transform-stub": "^2.0.0",
+    "nodemon": "^2.0.2",
+    "request": "^2.88.0",
+    "sinon": "^7.5.0",
+    "ts-jest": "^24.0.2",
+    "ts-loader": "^6.0.4",
+    "ts-node": "^8.1.0",
+    "typescript": "^3.6.2"
+  }
+}

@@ -1,0 +1,16 @@
+version: '3'
+services:
+  dev:
+    image: node:10
+    volumes:
+      - ../../.:/usr/src/rcs_service
+      - app-volume:/config
+    working_dir: /usr/src/rcs_service
+    command: npm run watch
+    ports:
+      - 5432:5432
+      - 8200:8200
+      - 8081:8081
+      - 8080:8080
+volumes:
+    app-volume:      
