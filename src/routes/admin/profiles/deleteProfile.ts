@@ -5,22 +5,22 @@
  **********************************************************************/
 import { IProfilesDb } from "../../../repositories/interfaces/IProfilesDb";
 import { ProfilesDbFactory } from "../../../repositories/ProfilesDbFactory";
+import { PROFILE_NOT_FOUND, PROFILE_ERROR } from "../../../utils/constants";
 
 
 export async function deleteProfile (req, res) {
   let profilesDb: IProfilesDb = null;
+  const { profileName } = req.params
   try {
-   
     profilesDb = ProfilesDbFactory.getProfilesDb();
-    const { profileName } = req.params
     const results = await profilesDb.deleteProfileByName(profileName);
     if(typeof results === 'undefined'  || results === null)
-      res.status(404).end("Profile not found")
+      res.status(404).end(PROFILE_NOT_FOUND(profileName))
     else
-      res.status(200).json(results)
+      res.status(200).end(results)
   } catch (error) {
     console.log(error)
-    res.status(500).end("Error deleting profile. Check server logs.")
+    res.status(500).end(PROFILE_ERROR(profileName))
   }
 
 }

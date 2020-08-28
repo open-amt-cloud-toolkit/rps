@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  * Author : Ramu Bachala
  **********************************************************************/
-import { DbCreatorFactory } from "./PostgresDbCreator";
+import { DbCreatorFactory } from "./DbCreatorFactory";
 import { IDbCreator } from "./interfaces/IDbCreator";
 import { EnvReader } from "../utils/EnvReader";
 import { IDomainsDb } from "./interfaces/IDomainsDb";
@@ -18,13 +18,11 @@ export class DomainsDbFactory {
 
   static getDomainsDb(): IDomainsDb {
     if (DomainsDbFactory.domainsDb == null) {
-      if (EnvReader.GlobalEnvConfig.DbConfig.useDbForConfig) {
-        DomainsDbFactory.dbCreatorFactory = new DbCreatorFactory(EnvReader.GlobalEnvConfig);
-        DomainsDbFactory.dbCreator = DomainsDbFactory.dbCreatorFactory.getDbCreator();
-        DomainsDbFactory.domainsDb = new DomainsDb(DomainsDbFactory.dbCreator);
-      } else {
-        DomainsDbFactory.domainsDb = new DomainConfigDb(EnvReader.GlobalEnvConfig.AMTDomains, Logger("DomainConfigDb"));
-      }
+      DomainsDbFactory.dbCreatorFactory = new DbCreatorFactory(EnvReader.GlobalEnvConfig);
+      DomainsDbFactory.dbCreator = DomainsDbFactory.dbCreatorFactory.getDbCreator();
+      DomainsDbFactory.domainsDb = (EnvReader.GlobalEnvConfig.DbConfig.useDbForConfig === true 
+        ? new DomainsDb(DomainsDbFactory.dbCreator)
+        : new DomainConfigDb(DomainsDbFactory.dbCreator.getDb().AMTDomains, Logger('DomainConfigDb')))
     }
 
     return DomainsDbFactory.domainsDb;

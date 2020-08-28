@@ -15,5 +15,6 @@ export function mapToProfile(results): AMTConfig {
     RandomPasswordCharacters: results.randompasswordcharacters,
     ConfigurationScript: results.configurationscript,
     Activation: results.activation,
+    CIRAConfigName: results.ciraconfigname
   }
 }

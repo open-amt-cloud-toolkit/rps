@@ -1,0 +1,43 @@
+{
+  "AMTConfigurations": [
+    {
+      "ProfileName": "profile1",
+      "AMTPassword": "<StrongPassword>",
+      "GenerateRandomPassword": false,
+      "RandomPasswordLength": 8,
+      "Activation": "acmactivate",
+      "CIRAConfigName":"ciraconfig1"
+    },
+    {
+      "ProfileName": "profile2",
+      "AMTPassword": "<StrongPassword>",
+      "GenerateRandomPassword": false,
+      "RandomPasswordLength": 8,
+      "Activation": "ccmactivate",
+      "CIRAConfigName":"ciraconfig1"
+    }
+  ],
+  "CIRAConfigurations": [
+    {
+      "ConfigName": "ciraconfig1",
+      "MPSServerAddress": "localhost",
+      "MPSPort": 4433,
+      "Username": "admin",
+      "Password": "P@ssw0rd",
+      "CommonName": "localhost",
+      "ServerAddressFormat": 201,
+      "AuthMethod": 2, 
+      "MPSRootCertificate": "rootcert", 
+      "ProxyDetails": ""
+    }
+  ],
+  "AMTDomains": [
+    {
+      "Name": "domain1",
+      "DomainSuffix": "d1.com",
+      "ProvisioningCert": "private/d1.pfx",
+      "ProvisioningCertStorageFormat": "string",
+      "ProvisioningCertPassword": "<StrongPassword>"
+    }
+  ]
+}

@@ -20,20 +20,4 @@ export class PostgresDbCreator implements IDbCreator {
   }
 }
 
-export class ConfigDbCreator implements IDbCreator {
-  static instance: any;
-  getDb(): any {
-    throw new Error("not implemented yet")
-  }
-}
 
-
-export class DbCreatorFactory {
-  config: RCSConfig;
-  constructor(config: RCSConfig) {
-    this.config = config;
-  }
-  getDbCreator(): IDbCreator {
-    return new PostgresDbCreator(this.config);
-  }
-}

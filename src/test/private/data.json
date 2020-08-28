@@ -1,0 +1,38 @@
+{
+  "AMTConfigurations": [
+        {
+            "ProfileName": "profile 1",
+            "AMTPassword": "<StrongPassword>",
+            "GenerateRandomPassword": false,
+            "RandomPasswordLength": 8,
+            "RandomPasswordCharacters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()",
+            "ConfigurationScript": null,
+            "Activation": "ccmactivate"
+        },
+        {
+            "ProfileName": "profile 2",
+            "AMTPassword": "<StrongPassword>",
+            "GenerateRandomPassword": true,
+            "RandomPasswordLength": 8,
+            "RandomPasswordCharacters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()",
+            "ConfigurationScript": null,
+            "Activation": "acmactivate"
+        }
+    ],
+    "AMTDomains": [
+        {
+            "Name": "domain1",
+            "DomainSuffix": "d1.net",
+            "ProvisioningCert": "d1.pfx",
+            "ProvisioningCertStorageFormat": "string",
+            "ProvisioningCertPassword": "PROVISIONING_CERT_PASSWORD_KEY"
+        },
+        {
+            "Name": "domain2",
+            "DomainSuffix": "d2.com",
+            "ProvisioningCert": "d2.pfx",
+            "ProvisioningCertStorageFormat": "string",
+            "ProvisioningCertPassword": "PROVISIONING_CERT_PASSWORD_KEY"
+        }
+    ]
+}

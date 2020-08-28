@@ -7,7 +7,7 @@ import { v4 as uuid } from 'uuid';
 
 import { IClientManager } from "../interfaces/IClientManager";
 import { ClientManager } from "../ClientManager";
-import { ClientObject } from "../RCS.Config";
+import { ClientObject, ClientAction } from "../RCS.Config";
 import { ILogger } from '../interfaces/ILogger';
 import Logger from '../Logger';
 
@@ -16,6 +16,36 @@ let logger: ILogger = Logger('ClientManager');
 let clientManager: IClientManager = ClientManager.getInstance(logger);
 
 describe("Check Client Manager", () => {
+
+    it("should add a client object with action DEACTIVATE", () => {
+        let clientId = uuid();
+        let client: ClientObject = { ClientId: clientId, ClientSocket: null, action: ClientAction.DEACTIVATE }
+
+        clientManager.addClient(client);
+
+        let clientObj = clientManager.getClientObject(clientId);
+        expect(clientObj.action).toEqual("deactivate");
+    });
+
+    it("should add a client object with action ADMINCTLMODE", () => {
+        let clientId = uuid();
+        let client: ClientObject = { ClientId: clientId, ClientSocket: null, action: ClientAction.ADMINCTLMODE }
+
+        clientManager.addClient(client);
+
+        let clientObj = clientManager.getClientObject(clientId);
+        expect(clientObj.action).toEqual("acmactivate");
+    });
+
+    it("should add a client object with action CLIENTCTLMODE", () => {
+        let clientId = uuid();
+        let client: ClientObject = { ClientId: clientId, ClientSocket: null, action: ClientAction.CLIENTCTLMODE }
+
+        clientManager.addClient(client);
+
+        let clientObj = clientManager.getClientObject(clientId);
+        expect(clientObj.action).toEqual("ccmactivate");
+    });
 
     it("should add a client object", () => {
         let clientId = uuid();

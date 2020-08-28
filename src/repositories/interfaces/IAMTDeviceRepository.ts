@@ -6,8 +6,7 @@
  **********************************************************************/
 import { AMTDeviceDTO } from "../dto/AmtDeviceDTO";
 
-export interface IAMTDeviceWriter {
-    connect(): void;
-    disconnect(): void;
+export interface IAMTDeviceRepository {
     insert(device: AMTDeviceDTO): Promise<boolean>;
+    get(deviceId: string): Promise<AMTDeviceDTO>;
 }

@@ -1,17 +1,22 @@
-import { RCSConfig, AMTConfigurations } from "./models/Rcs";
+import { RCSConfig, AMTConfigurations, CIRAConfigurations, AMTConfiguration } from "./models/Rcs";
 import { IProfilesDb } from "./repositories/interfaces/IProfilesDb";
 import { FileHelper } from "./utils/FileHelper";
 import { EnvReader } from "./utils/EnvReader";
 import { ILogger } from "./interfaces/ILogger";
+import { CIRAConfig } from "./RCS.Config";
+import { PROFILE_SUCCESSFULLY_DELETED, PROFILE_NOT_FOUND, PROFILE_INSERTION_FAILED_DUPLICATE } from "./utils/constants";
+
 
 export class AMTConfigDb implements IProfilesDb {
     amtProfiles: AMTConfigurations;
+    ciraConfigs: CIRAConfigurations;
     private logger: ILogger;
 
-    constructor(rcsConfig: RCSConfig, logger: ILogger) {
+    constructor(profiles: AMTConfigurations, ciraConfigs: CIRAConfigurations, logger: ILogger) {
         this.logger = logger;
         this.logger.debug(`using local IProfilesDb`);
-        this.amtProfiles = rcsConfig.AMTConfigurations;
+        this.amtProfiles = profiles || new AMTConfigurations();
+        this.ciraConfigs = ciraConfigs || new CIRAConfigurations();
     }
     async getAllProfiles(): Promise<any> {
         this.logger.debug(`getAllProfiles called`);
@@ -21,6 +26,18 @@ export class AMTConfigDb implements IProfilesDb {
         this.logger.debug(`getProfileByName: ${profileName}`);
         return this.amtProfiles.find(item => item.ProfileName === profileName);
     }
+    async getCiraConfigForProfile(ciraConfigName): Promise<any> {
+        let data:any = FileHelper.readJsonObjFromFile(EnvReader.configPath);
+        this.ciraConfigs = data ? data.CIRAConfigurations : this.ciraConfigs;
+        let config = this.ciraConfigs.find((ciraConfig : CIRAConfig) => {
+            if(ciraConfig["ConfigName"] === ciraConfigName){
+                this.logger.debug(`found matching element CIRA: ${JSON.stringify(ciraConfig, null,'\t')}`)
+                return ciraConfig
+            }
+        });
+        return config;
+      }
+    
     async deleteProfileByName(profileName: any): Promise<any> {
         this.logger.debug(`deleteProfileByName ${profileName}`);
 
@@ -36,9 +53,9 @@ export class AMTConfigDb implements IProfilesDb {
         if (found) {
             this.updateConfigFile();
             this.logger.info(`profile deleted: ${profileName}`);
-            return true;
+            return PROFILE_SUCCESSFULLY_DELETED(profileName);
         } else {
-            this.logger.error(`profile not deleted: ${profileName}`);
+            this.logger.error(PROFILE_NOT_FOUND(profileName));
         }
 
     }
@@ -48,6 +65,7 @@ export class AMTConfigDb implements IProfilesDb {
 
         if (this.amtProfiles.some(item => item.ProfileName === amtConfig.ProfileName)) {
             this.logger.error(`profile already exists: ${amtConfig.ProfileName}`);
+            throw(PROFILE_INSERTION_FAILED_DUPLICATE(amtConfig.ProfileName))
         } else {
             this.amtProfiles.push(amtConfig);
             this.updateConfigFile();
@@ -55,15 +73,9 @@ export class AMTConfigDb implements IProfilesDb {
             return true;
         }
     }
-
     private updateConfigFile() {
-        let config: RCSConfig;
-        if (FileHelper.isValidPath(EnvReader.configPath)) {
-            config = FileHelper.readJsonObjFromFile<RCSConfig>(EnvReader.configPath);
-        } else {
-            config = new RCSConfig();
-        }
-        config.AMTConfigurations = this.amtProfiles;
-        FileHelper.writeObjToJsonFile(config, EnvReader.configPath);
+        let data:any = FileHelper.readJsonObjFromFile(EnvReader.configPath);
+        data.AMTConfigurations = this.amtProfiles;
+        if(EnvReader.configPath) FileHelper.writeObjToJsonFile(data, EnvReader.configPath);
     }
 }

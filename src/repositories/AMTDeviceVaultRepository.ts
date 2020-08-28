@@ -7,11 +7,12 @@
 
 import { ILogger } from '../interfaces/ILogger';
 import { AMTDeviceDTO } from './dto/AmtDeviceDTO';
-import { IAMTDeviceWriter } from './interfaces/IAMTDeviceWriter';
+import { IAMTDeviceRepository } from './interfaces/IAMTDeviceRepository';
 import { IConfigurator } from '../interfaces/IConfigurator';
 import { EnvReader } from '../utils/EnvReader';
+import { RPSError } from '../utils/RPSError';
 
-export class AMTDeviceVaultRepository implements IAMTDeviceWriter {
+export class AMTDeviceVaultRepository implements IAMTDeviceRepository {
     private logger: ILogger;
     private configurator: IConfigurator;
 
@@ -20,21 +21,49 @@ export class AMTDeviceVaultRepository implements IAMTDeviceWriter {
         this.configurator = configurator;
     }
 
-    public connect(): void {
-        this.logger.debug(`connect called`);
-    }
-
-    public disconnect(): void {
-        this.logger.debug(`disconnect called`);
-    }
-
     public async insert(device: AMTDeviceDTO): Promise<boolean> {
         try {
-            await this.configurator.secretsManager.writeSecretWithKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}devices/${device.guid}`, `${device.guid}`, device.amtpass);
-            return true;
+            if (this.configurator && this.configurator.secretsManager) {
+                await this.configurator.secretsManager.writeSecretWithKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}devices/${device.guid}`, `${device.guid}`, device.amtpass);
+                return true;
+            } else {
+                throw new Error(`secret manager missing`);
+            }
+
         } catch (error) {
             this.logger.error(`failed to insert record guid: ${device.guid}, error: ${JSON.stringify(error)}`);
-            throw new Error(`Exception writting to vault: ${error}`);
+            throw new RPSError(`Exception writting to vault`);
+        }
+    }
+
+    public async get(deviceId: string): Promise<AMTDeviceDTO> { 
+        
+        try {
+            if (this.configurator && this.configurator.secretsManager) {
+                let amtPassword = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}devices/${deviceId}`, deviceId);
+            
+                if(amtPassword){
+                    let amtDevice: AMTDeviceDTO =  new AMTDeviceDTO(
+                        deviceId,
+                        deviceId,
+                        EnvReader.GlobalEnvConfig.mpsusername,
+                        EnvReader.GlobalEnvConfig.mpspass,
+                        EnvReader.GlobalEnvConfig.amtusername,
+                        amtPassword);
+    
+                        this.logger.debug(`found vault amt device: ${deviceId}, ${JSON.stringify(amtDevice)}`)
+    
+                        return amtDevice;
+                } else{
+                    throw new RPSError(`amt password not found`);
+                } 
+            }
+            else {
+                throw new Error(`secret manager missing`);
+            }
+        } catch (error) {
+            this.logger.error(`failed to get vault record for device: ${deviceId}, error: ${JSON.stringify(error)}`);
+            throw new RPSError(`Exception reading from device: ${deviceId}`);
         }
     }
 }

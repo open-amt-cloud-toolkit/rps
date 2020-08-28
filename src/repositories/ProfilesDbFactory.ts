@@ -3,13 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  * Author : Ramu Bachala
  **********************************************************************/
-import { DbCreatorFactory } from "./PostgresDbCreator";
+import { DbCreatorFactory } from "./DbCreatorFactory";
 import { IDbCreator } from "./interfaces/IDbCreator";
 import { IProfilesDb } from "./interfaces/IProfilesDb";
 import { ProfilesDb } from "./profiles";
 import { EnvReader } from "../utils/EnvReader";
 import { AMTConfigDb } from "../AMTConfigDb";
 import Logger from "../Logger";
+import { CiraConfigDbFactory } from "./CiraConfigDbFactory";
 
 
 export class ProfilesDbFactory {
@@ -19,13 +20,13 @@ export class ProfilesDbFactory {
 
   static getProfilesDb(): IProfilesDb {
     if (ProfilesDbFactory.profilesDb == null) {
-      if (EnvReader.GlobalEnvConfig.DbConfig.useDbForConfig) {
-        ProfilesDbFactory.dbCreatorFactory = new DbCreatorFactory(EnvReader.GlobalEnvConfig);
-        ProfilesDbFactory.dbCreator = ProfilesDbFactory.dbCreatorFactory.getDbCreator();
-        ProfilesDbFactory.profilesDb = new ProfilesDb(ProfilesDbFactory.dbCreator);
-      } else {
-        ProfilesDbFactory.profilesDb = new AMTConfigDb(EnvReader.GlobalEnvConfig, Logger("AMTConfigDb"));
-      }
+      ProfilesDbFactory.dbCreatorFactory = new DbCreatorFactory(EnvReader.GlobalEnvConfig);
+      ProfilesDbFactory.dbCreator = ProfilesDbFactory.dbCreatorFactory.getDbCreator();
+      ProfilesDbFactory.profilesDb = (EnvReader.GlobalEnvConfig.DbConfig.useDbForConfig === true 
+        ? new ProfilesDb(ProfilesDbFactory.dbCreator)
+        : new AMTConfigDb(ProfilesDbFactory.dbCreator.getDb().AMTConfigurations, 
+                        ProfilesDbFactory.dbCreator.getDb().CIRAConfigurations,
+                  Logger('ProfilesConfigDb')));
     }
 
     return ProfilesDbFactory.profilesDb;

@@ -1,17 +1,19 @@
-import { IDomainsDb } from "./repositories/interfaces/IDomainsDb";
-import { AMTDomains, RCSConfig, AMTDomain } from "./models/Rcs";
-import { FileHelper } from "./utils/FileHelper";
-import { EnvReader } from "./utils/EnvReader";
 import { ILogger } from "./interfaces/ILogger";
+import { AMTDomain, AMTDomains } from "./models/Rcs";
+import { IDomainsDb } from "./repositories/interfaces/IDomainsDb";
+import { EnvReader } from "./utils/EnvReader";
+import { FileHelper } from "./utils/FileHelper";
+import { DOMAIN_INSERTION_FAILED_DUPLICATE } from "./utils/constants";
 
 
 export class DomainConfigDb implements IDomainsDb {
   private domains: AMTDomains;
   private logger: ILogger;
 
-  constructor(amtDomains: AMTDomains, logger: ILogger) {
+  constructor(domains: AMTDomains, logger: ILogger) {
     this.logger = logger;
-    this.domains = amtDomains;
+    this.domains = domains || new AMTDomains();
+    // this.logger.debug(JSON.stringify(this.domains))
     this.logger.debug(`using local domain db`);
   }
 
@@ -28,6 +30,7 @@ export class DomainConfigDb implements IDomainsDb {
 
     if (this.domains.some(item => item.Name === amtDomain.Name)) {
       this.logger.error(`domain already exists: ${amtDomain.Name}`);
+      throw (DOMAIN_INSERTION_FAILED_DUPLICATE(amtDomain.Name))
     } else {
       this.domains.push(amtDomain);
       this.updateConfigFile();
@@ -51,20 +54,19 @@ export class DomainConfigDb implements IDomainsDb {
       this.updateConfigFile();
       this.logger.debug(`domain deleted: ${domainName}`);
       return true;
-    } else{
+    } else {
       this.logger.debug(`domain not deleted: ${domainName}`);
     }
   }
 
   private updateConfigFile() {
-    let config: RCSConfig;
+    let data: any = FileHelper.readJsonObjFromFile(EnvReader.configPath);
+    data.AMTDomains = this.domains;
     if (FileHelper.isValidPath(EnvReader.configPath)) {
-        config = FileHelper.readJsonObjFromFile<RCSConfig>(EnvReader.configPath);
+      FileHelper.writeObjToJsonFile(data, EnvReader.configPath);
     } else {
-        config = new RCSConfig();
+      this.logger.error(`path not valid: ${EnvReader.configPath}`)
     }
-
-    config.AMTDomains = this.domains;
-    FileHelper.writeObjToJsonFile(config, EnvReader.configPath);
   }
 }
+

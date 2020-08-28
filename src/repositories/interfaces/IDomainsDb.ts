@@ -4,7 +4,7 @@
  * Author : Ramu Bachala
  **********************************************************************/
 export interface IDomainsDb {
-  getAllDomains(): Promise<any>;
+  getAllDomains(mapperFn?: (data) => any ): Promise<any>;
   getDomainByName(domainName): Promise<any>;
   insertDomain(amtDomain): Promise<any>;
   deleteDomainByName(domainName): Promise<any>;

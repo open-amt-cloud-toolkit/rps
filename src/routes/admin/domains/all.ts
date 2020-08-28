@@ -5,20 +5,26 @@
  **********************************************************************/
 import { IDomainsDb } from "../../../repositories/interfaces/IDomainsDb";
 import { DomainsDbFactory } from "../../../repositories/DomainsDbFactory";
+import { DOMAIN_ERROR, DOMAIN_CONFIG_EMPTY } from "../../../utils/constants";
+import { EnvReader } from "../../../utils/EnvReader";
 
 export async function getAllDomains(req, res) {
   let domainsDb: IDomainsDb = null;
 
   try {
     domainsDb = DomainsDbFactory.getDomainsDb();
-
-    const results = await domainsDb.getAllDomains();
-    if (typeof results === 'undefined')
-      res.status(404).end()
+    let mapperFn = async (provisioningCertPassword) => {
+      if (req.secretsManager)
+        return await req.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/PROVISIONING_CERT`, provisioningCertPassword);
+      return provisioningCertPassword;
+    }
+    const results = await domainsDb.getAllDomains(mapperFn);
+    if(typeof results === 'undefined' || results.length === 0)
+      res.status(404).end(DOMAIN_CONFIG_EMPTY())
     else
       res.status(200).json(results).end()
   } catch (error) {
     console.log(error)
-    res.end("Error retrieving domain. Check server logs.")
+    res.end(DOMAIN_ERROR(""))
   }
 }
