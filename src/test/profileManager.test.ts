@@ -36,7 +36,7 @@ let rcsConfig: RCSConfig = {
     "devmode": true,
     "https": false,
     "webport": 8081,
-    "credentialspath": "../../../MPS_MicroService/private/data.json",
+    "credentialspath": "../../../mps/private/data.json",
     "DbConfig": {
         "useDbForConfig": false,
         "dbhost": "",
@@ -235,7 +235,7 @@ test('validate password', () => {
         "devmode": true,
         "https": false,
         "webport": 8081,
-        "credentialspath": "../../../MPS_MicroService/private/data.json",
+        "credentialspath": "../../../mps/private/data.json",
         "DbConfig": {
             "useDbForConfig": false,
             "dbhost": "",
@@ -343,7 +343,7 @@ test('validate password with bad amt passwords', () => {
         "devmode": true,
         "https": false,
         "webport": 8081,
-        "credentialspath": "../../../MPS_MicroService/private/data.json",
+        "credentialspath": "../../../mps/private/data.json",
         "DbConfig": {
             "useDbForConfig": false,
             "dbhost": "",

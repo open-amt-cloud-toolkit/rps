@@ -31,7 +31,7 @@ let rcsConfig: RCSConfig = {
     "devmode": true,
     "https": false,
     "webport": 8081,
-    "credentialspath": "../../../MPS_MicroService/private/data.json",
+    "credentialspath": "../../../mps/private/data.json",
     "WSConfiguration": {
         "WebSocketPort": 8080,
         "WebSocketTLS": false,
