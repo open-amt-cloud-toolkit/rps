@@ -13,10 +13,13 @@ export async function allProfiles(req, res) {
   try {
     profilesDb = ProfilesDbFactory.getProfilesDb();
     let mapperFn = async (profileName, amtPassword) => {
-      if (req.secretsManager)
-        return await req.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${profileName}`, `${profileName}_DEVICE_AMT_PASSWORD`);
+      // if (req.secretsManager)
+      //   return await req.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${profileName}`, `${profileName}_DEVICE_AMT_PASSWORD`);
 
-      return amtPassword;
+      // return amtPassword;
+
+      // Return null. Check Security objectives around returning passwords.
+      return null;
     }
     const results = await profilesDb.getAllProfiles(mapperFn);
     if(typeof results === 'undefined' || results.length === 0)

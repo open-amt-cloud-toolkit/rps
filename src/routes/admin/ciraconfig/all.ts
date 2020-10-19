@@ -15,11 +15,14 @@ export async function allCiraConfigs(req, res) {
   try {
     ciraConfigDb = CiraConfigDbFactory.getCiraConfigDb();
     let mapperFn = async (configName, ciraMpsPassword) => {
-      if (req.secretsManager) {
-        log.debug("retrieve secret from vault")
-        return await req.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${configName}`,`${configName}_CIRA_PROFILE_PASSWORD`);
-      }
-      return ciraMpsPassword;
+      // if (req.secretsManager && ciraMpsPassword) {
+      //   log.debug("retrieve secret from vault")
+      //   return await req.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${configName}`,`${configName}_CIRA_PROFILE_PASSWORD`);
+      // }
+      // return ciraMpsPassword;
+      
+      // Return null. Check Security objectives around returning passwords.
+      return null;
     }
     const results = await ciraConfigDb.getAllCiraConfigs(mapperFn);
     if(typeof results === 'undefined' || results.length === 0)

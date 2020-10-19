@@ -19,16 +19,20 @@ export class DomainConfigDb implements IDomainsDb {
 
   async getAllDomains(): Promise<any> {
     this.logger.debug(`getAllDomains called`);
-    return this.domains;
+    let data: any = FileHelper.readJsonObjFromFile(EnvReader.configPath);
+    // data.AMTDomains = this.domains;
+    return data.AMTDomains;
   }
   async getDomainByName(domainName: string): Promise<any> {
     this.logger.debug(`getDomainByName: ${domainName}`);
-    return this.domains.find(item => item.Name === domainName);
+    let data: any = FileHelper.readJsonObjFromFile(EnvReader.configPath);
+    return data.AMTDomains.find(item => item.Name === domainName);
   }
   async insertDomain(amtDomain: AMTDomain): Promise<any> {
     this.logger.debug(`insertDomain: ${amtDomain.Name}`);
 
-    if (this.domains.some(item => item.Name === amtDomain.Name)) {
+    if (this.domains.some(item => item.Name === amtDomain.Name) || 
+    this.domains.some(item => item.DomainSuffix === amtDomain.DomainSuffix)) {
       this.logger.error(`domain already exists: ${amtDomain.Name}`);
       throw (DOMAIN_INSERTION_FAILED_DUPLICATE(amtDomain.Name))
     } else {
@@ -36,6 +40,24 @@ export class DomainConfigDb implements IDomainsDb {
       this.updateConfigFile();
       this.logger.info(`Domain: ${amtDomain.Name} inserted`);
       return true;
+    }
+  }
+  async updateDomain(amtDomain: AMTDomain): Promise<any> {
+    this.logger.debug(`update Domain: ${amtDomain.Name}`);
+    var isMatch = item => item.Name === amtDomain.Name;
+    var index = this.domains.findIndex(isMatch);
+
+    if (index >= 0) {
+      this.domains.splice(index, 1);
+      this.domains.push(amtDomain);
+      this.updateConfigFile();
+      this.logger.info(`Domain: ${amtDomain.Name} updated`);
+      this.logger.silly(`Domain ${JSON.stringify(amtDomain)}`)
+      return 1;
+    } else {
+      
+      this.logger.info(`Domain: ${amtDomain.Name} doesnt exist`);
+      return 0;
     }
   }
   async deleteDomainByName(domainName: string): Promise<any> {

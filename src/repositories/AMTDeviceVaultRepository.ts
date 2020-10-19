@@ -35,6 +35,21 @@ export class AMTDeviceVaultRepository implements IAMTDeviceRepository {
             throw new RPSError(`Exception writting to vault`);
         }
     }
+    
+    public async delete(device: AMTDeviceDTO): Promise<boolean> {
+        try {
+            if (this.configurator && this.configurator.secretsManager) {
+                await this.configurator.secretsManager.deleteSecretWithKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}devices/${device.guid}`, `${device.guid}`);
+                return true;
+            } else {
+                throw new Error(`secret manager missing`);
+            }
+
+        } catch (error) {
+            this.logger.error(`failed to delete record guid: ${device.guid}, error: ${JSON.stringify(error)}`);
+            throw new RPSError(`Exception deleting from vault`);
+        }
+    }
 
     public async get(deviceId: string): Promise<AMTDeviceDTO> { 
         

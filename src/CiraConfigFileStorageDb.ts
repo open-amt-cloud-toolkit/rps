@@ -70,6 +70,23 @@ export class CiraConfigFileStorageDb implements ICiraConfigDb {
             return true;
         }
     }
+
+    async updateCiraConfig(ciraConfig: CIRAConfig): Promise<any> {
+        this.logger.debug(`update CiraConfig: ${ciraConfig.ConfigName}`);
+        var isMatch = item => item.ConfigName === ciraConfig.ConfigName;
+        var index = this.ciraConfigs.findIndex(isMatch);
+        if ( index >= 0 ) {
+            this.ciraConfigs.splice(index, 1);
+            this.ciraConfigs.push(ciraConfig);
+            this.updateConfigFile();
+            this.logger.info(`Cira Config updated: ${ciraConfig.ConfigName}`);
+            return true;
+            return 1;
+        } else {            
+            this.logger.info(`Cira Config doesnt exist: ${ciraConfig.ConfigName}`);
+            return 0;
+        }
+    }
   
     private updateConfigFile() {
         let data:any = FileHelper.readJsonObjFromFile(EnvReader.configPath);

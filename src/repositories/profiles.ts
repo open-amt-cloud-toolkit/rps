@@ -21,18 +21,18 @@ export class ProfilesDb implements IProfilesDb {
   }
 
   async getAllProfiles(mapperFn?: (profileName, data) => any): Promise<AMTConfig[]> {
-    let results = await this.db.query('SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, generate_random_password as GenerateRandomPassword, configuration_script as ConfigurationScript, cira_config_name as ciraConfigName, random_password_length as RandomPasswordLength FROM profiles');
+    let results = await this.db.query('SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, generate_random_password as GenerateRandomPassword, configuration_script as ConfigurationScript, cira_config_name as ciraConfigName, random_password_length as RandomPasswordLength, network_profile_name as NetworkProfileName FROM profiles');
     
     return Promise.all(results.rows.map( async p => {
       let result = mapToProfile(p);
-      if (result.GenerateRandomPassword === false && mapperFn)
+      if (result.GenerateRandomPassword === false && mapperFn && result.AMTPassword)
         result.AMTPassword = await mapperFn(result.ProfileName, result.AMTPassword);
       return result;
     }));
   }
 
   async getProfileByName(profileName): Promise<AMTConfig> {
-    let results = await this.db.query('SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, generate_random_password as GenerateRandomPassword, configuration_script as ConfigurationScript, cira_config_name as ciraConfigName, random_password_length as RandomPasswordLength FROM profiles WHERE profile_name = $1', [profileName])
+    let results = await this.db.query('SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, generate_random_password as GenerateRandomPassword, configuration_script as ConfigurationScript, cira_config_name as ciraConfigName, random_password_length as RandomPasswordLength, network_profile_name as NetworkProfileName FROM profiles WHERE profile_name = $1', [profileName])
     return (results.rowCount > 0 ? mapToProfile(results.rows[0]) : null);
   }
 
@@ -47,8 +47,8 @@ export class ProfilesDb implements IProfilesDb {
 
   async insertProfile(amtConfig: AMTConfiguration): Promise<any> {
     try {
-      let results = await this.db.query('INSERT INTO profiles(profile_name, activation, amt_password, configuration_script, cira_config_name, generate_random_password, random_password_characters, random_password_length) ' +
-        'values($1, $2, $3, $4, $5, $6, $7, $8)',
+      let results = await this.db.query('INSERT INTO profiles(profile_name, activation, amt_password, configuration_script, cira_config_name, generate_random_password, random_password_characters, random_password_length, network_profile_name) ' +
+        'values($1, $2, $3, $4, $5, $6, $7, $8, $9)',
         [
           amtConfig.ProfileName,
           amtConfig.Activation,
@@ -57,7 +57,8 @@ export class ProfilesDb implements IProfilesDb {
           amtConfig.CIRAConfigName,
           amtConfig.GenerateRandomPassword,
           amtConfig.RandomPasswordCharacters,
-          amtConfig.RandomPasswordLength
+          amtConfig.RandomPasswordLength,
+          amtConfig.NetworkConfigName
         ]);
 
       if (results.rowCount > 0)
@@ -67,6 +68,32 @@ export class ProfilesDb implements IProfilesDb {
         console.log(error)
         if(error.code == '23505') // Unique key violation
           throw (PROFILE_INSERTION_FAILED_DUPLICATE(amtConfig.ProfileName))
+        if(error.code == '23503') // Unique key violation
+          throw (PROFILE_INSERTION_CIRA_CONSTRAINT(amtConfig.CIRAConfigName))
+        
+        throw ("Unknown Error. Check Server Logs.")
+    }
+
+  }
+
+  async updateProfile(amtConfig: AMTConfiguration): Promise<any> {
+    try {
+      let results = await this.db.query('UPDATE profiles SET activation=$2, amt_password=$3, configuration_script=$4, cira_config_name=$5, generate_random_password=$6, random_password_characters=$7, random_password_length=$8, network_profile_name=$9 WHERE profile_name=$1',
+        [
+          amtConfig.ProfileName,
+          amtConfig.Activation,
+          amtConfig.AMTPassword,
+          amtConfig.ConfigurationScript,
+          amtConfig.CIRAConfigName,
+          amtConfig.GenerateRandomPassword,
+          amtConfig.RandomPasswordCharacters,
+          amtConfig.RandomPasswordLength,
+          amtConfig.NetworkConfigName
+        ]);
+
+        return results.rowCount;
+    } catch (error) {
+        console.log(error)
         if(error.code == '23503') // Unique key violation
           throw (PROFILE_INSERTION_CIRA_CONSTRAINT(amtConfig.CIRAConfigName))
         

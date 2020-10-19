@@ -19,7 +19,7 @@ export class DomainsDb implements IDomainsDb {
 
     return Promise.all(results.rows.map( async element => {
         let d = mapToDomain(element);
-        if(mapperFn)
+        if(mapperFn && d.ProvisioningCertPassword)
           d.ProvisioningCertPassword = await mapperFn(d.ProvisioningCertPassword);
         return d;
         }
@@ -53,6 +53,25 @@ export class DomainsDb implements IDomainsDb {
       if(error.code == '23505') // Unique key violation
         throw (DOMAIN_INSERTION_FAILED_DUPLICATE(amtDomain.Name))
         
+      throw ("Unknown Error. Check Server Logs.")
+    }
+
+  }
+
+  async updateDomain(amtDomain): Promise<any> {
+    try {
+      let results = await this.db.query('UPDATE domains SET domain_suffix=$2, provisioning_cert=$3, provisioning_cert_storage_format=$4, provisioning_cert_key=$5 WHERE name=$1',
+        [
+          amtDomain.Name,
+          amtDomain.DomainSuffix,
+          amtDomain.ProvisioningCert,
+          amtDomain.ProvisioningCertStorageFormat,
+          amtDomain.ProvisioningCertPassword
+        ]);
+      return results.rowCount;
+    } catch (error) {
+      console.log(error)
+       
       throw ("Unknown Error. Check Server Logs.")
     }
 

@@ -11,4 +11,5 @@ export interface IProfilesDb {
   getCiraConfigForProfile(ciraConfigName): Promise<CIRAConfig>
   deleteProfileByName(profileName): Promise<any>;
   insertProfile(amtConfig): Promise<any>;
+  updateProfile(amtConfig): Promise<any>;
 }

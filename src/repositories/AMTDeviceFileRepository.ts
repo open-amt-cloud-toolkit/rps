@@ -50,6 +50,30 @@ export class AMTDeviceFileRepository implements IAMTDeviceRepository {
         }
     }
 
+    public async delete(device: AMTDeviceDTO): Promise<boolean> {
+
+        try {
+            let credentialsFilePath = path.join(__dirname, EnvReader.GlobalEnvConfig.credentialspath);
+
+            let credentialsFile = FileHelper.readJsonObjFromFile(credentialsFilePath);
+
+            if (!credentialsFile.credentials) {
+                return false;
+            }
+
+            delete credentialsFile.credentials[device.guid]
+
+            this.logger.debug(`deleted entry from credential file: ${JSON.stringify(credentialsFile, null, 2)}}`);
+
+            FileHelper.writeObjToJsonFile(credentialsFile, credentialsFilePath);
+            return true;
+
+        } catch (error) {
+            this.logger.error(`failed to delete record guid: ${device.guid}, error: ${JSON.stringify(error)}`);
+            throw new RPSError(`Exception deleting from credentials file`);
+        }
+    }
+
     public async get(deviceId: string): Promise<AMTDeviceDTO> {
         try {
             let credentialsFilePath = path.join(__dirname, EnvReader.GlobalEnvConfig.credentialspath);

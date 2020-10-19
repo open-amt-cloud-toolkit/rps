@@ -4,9 +4,6 @@
  * Description: stores amt profiles
  * Author: Ramu Bachala
  **********************************************************************/
-
-
-
 import NodeVault = require("node-vault");
 import { ISecretManagerService } from "../interfaces/ISecretManagerService";
 import { ILogger } from "../interfaces/ILogger";
@@ -75,6 +72,17 @@ export class SecretManagerService implements ISecretManagerService {
     this.logger.info('writing data to vault:')
     await this.vaultClient.write(path, data);
     this.logger.info('Successfully written data to vault')
+  }
+
+  async deleteSecretWithKey(path: string, key:string): Promise<void> {
+    
+    //this.logger.info('writing:' + JSON.stringify(data))
+    this.logger.info('Deleting data from vault:')
+    // to permanently delete the key, we use metadata path
+    path = path.replace('/data/','/metadata/')
+    this.logger.info(`Deleting data from vault:${path}`)
+    await this.vaultClient.delete(path);
+    this.logger.info('Successfully Deleted data from vault')
   }
 
 }

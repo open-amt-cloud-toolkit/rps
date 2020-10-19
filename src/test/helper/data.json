@@ -41,6 +41,14 @@
       "CIRAConfigName": "ciraconfig1"
     }
   ],
+  "NETConfigurations": [
+    {
+      "ProfileName": "netprofile1",
+      "DHCPEnabled": true,
+      "StaticIPShared": true,
+      "IPSyncEnabled": true
+    }
+  ],
   "CIRAConfigurations": [
     {
       "ConfigName": "ciraconfig1",

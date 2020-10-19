@@ -18,9 +18,12 @@ export async function getDomain(req, res) {
     if(typeof results === 'undefined' || results === null)
       res.status(404).end(DOMAIN_NOT_FOUND(domainName))
     else{
-      if (req.secretsManager)
-        results.ProvisioningCertPassword = await req.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/PROVISIONING_CERT`, results.ProvisioningCertPassword);
+      // if (req.secretsManager && results.ProvisioningCertPassword)
+      //   results.ProvisioningCertPassword = await req.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/PROVISIONING_CERT`, results.ProvisioningCertPassword);
       
+      // Return null. Check Security objectives around returning passwords.
+      results.ProvisioningCertPassword = null
+      results.ProvisioningCert = null
       res.json(results).end();
     }
   } catch (error) {

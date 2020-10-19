@@ -10,4 +10,5 @@ export interface ICiraConfigDb {
   getCiraConfigByName(configName): Promise<CIRAConfig>;
   deleteCiraConfigByName(configName): Promise<any>;
   insertCiraConfig(ciraConfig): Promise<any>;
+  updateCiraConfig(ciraConfig): Promise<any>;
 }

@@ -7,7 +7,7 @@ import { IDbCreator } from "./interfaces/IDbCreator";
 import { ICiraConfigDb } from "./interfaces/ICiraConfigDb";
 import { CIRAConfig } from "../RCS.Config";
 import { mapToCiraConfig } from "./mapToCiraConfig";
-import { CIRA_CONFIG_DELETION_FAILED_CONSTRAINT, CIRA_CONFIG_ERROR, CIRA_CONFIG_SUCCESSFULLY_DELETED, CIRA_CONFIG_NOT_FOUND, CIRA_CONFIG_INSERTION_SUCCESS, CIRA_CONFIG_INSERTION_FAILED_DUPLICATE } from "../utils/constants";
+import { CIRA_CONFIG_DELETION_FAILED_CONSTRAINT, CIRA_CONFIG_ERROR, CIRA_CONFIG_SUCCESSFULLY_DELETED, CIRA_CONFIG_NOT_FOUND, CIRA_CONFIG_INSERTION_SUCCESS, CIRA_CONFIG_INSERTION_FAILED_DUPLICATE, CIRA_CONFIG_UPDATE_SUCCESS } from "../utils/constants";
 
 export class CiraConfigDb implements ICiraConfigDb {
   db:any;
@@ -71,6 +71,32 @@ export class CiraConfigDb implements ICiraConfigDb {
         console.log(error)
         if(error.code == '23505') // Unique key violation
           throw (CIRA_CONFIG_INSERTION_FAILED_DUPLICATE(ciraConfig.ConfigName))
+        
+        throw (CIRA_CONFIG_ERROR(ciraConfig.ConfigName))
+    }
+
+  }
+
+  async updateCiraConfig(ciraConfig: CIRAConfig): Promise<any> {
+    try {
+      let results = await this.db.query('UPDATE ciraconfigs SET mps_server_address=$2, mps_port=$3, user_name=$4, password=$5, common_name=$6, server_address_format=$7, auth_method=$8, mps_root_certificate=$9, proxydetails=$10 where cira_config_name=$1',
+        [
+          ciraConfig.ConfigName,
+          ciraConfig.MPSServerAddress,
+          ciraConfig.MPSPort,
+          ciraConfig.Username,
+          ciraConfig.Password,
+          ciraConfig.CommonName,
+          ciraConfig.ServerAddressFormat,
+          ciraConfig.AuthMethod,
+          ciraConfig.MPSRootCertificate,
+          ciraConfig.ProxyDetails
+        ]);
+
+      return results.rowCount;
+
+    } catch (error) {
+        console.log(error)
         
         throw (CIRA_CONFIG_ERROR(ciraConfig.ConfigName))
     }

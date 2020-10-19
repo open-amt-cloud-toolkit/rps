@@ -6,7 +6,7 @@
       "GenerateRandomPassword": false,
       "RandomPasswordLength": 8,
       "Activation": "acmactivate",
-      "CIRAConfigName":"ciraconfig1"
+      "CIRAConfigName": "ciraconfig1"
     },
     {
       "ProfileName": "profile2",
@@ -14,28 +14,36 @@
       "GenerateRandomPassword": false,
       "RandomPasswordLength": 8,
       "Activation": "ccmactivate",
-      "CIRAConfigName":"ciraconfig1"
+      "CIRAConfigName": "ciraconfig1"
     }
   ],
   "CIRAConfigurations": [
     {
       "ConfigName": "ciraconfig1",
       "MPSServerAddress": "localhost",
-      "MPSPort": 4433,
+      "MPSPort": "4433",
       "Username": "admin",
-      "Password": "P@ssw0rd",
+      "Password": "<StrongPassword>",
       "CommonName": "localhost",
       "ServerAddressFormat": 201,
-      "AuthMethod": 2, 
-      "MPSRootCertificate": "rootcert", 
+      "AuthMethod": 2,
+      "MPSRootCertificate": "rootcert",
       "ProxyDetails": ""
+    }
+  ],
+  "NETConfigurations": [
+    {
+      "ProfileName": "netprofile1",
+      "DHCPEnabled": true,
+      "StaticIPShared": true,
+      "IPSyncEnabled": true
     }
   ],
   "AMTDomains": [
     {
       "Name": "domain1",
       "DomainSuffix": "d1.com",
-      "ProvisioningCert": "private/d1.pfx",
+      "ProvisioningCert": "<cert>",
       "ProvisioningCertStorageFormat": "string",
       "ProvisioningCertPassword": "<StrongPassword>"
     }

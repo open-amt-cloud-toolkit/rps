@@ -20,10 +20,13 @@ export async function getCiraConfig (req, res) {
     if(typeof results === 'undefined' || results === null)
       res.status(404).end(CIRA_CONFIG_NOT_FOUND(ciraConfigName))
     else {
-      if (req.secretsManager) {
-        log.debug("Retrieve secret from vault")
-        results.Password = await req.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${results.ConfigName}`,`${results.ConfigName}_CIRA_PROFILE_PASSWORD`);
-      }
+      // if (req.secretsManager && results.Password) {
+      //   log.debug("Retrieve secret from vault")
+      //   results.Password = await req.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${results.ConfigName}`,`${results.ConfigName}_CIRA_PROFILE_PASSWORD`);
+      // }
+      
+      // Return null. Check Security objectives around returning passwords.
+      results.Password = null;
       res.status(200).json(results).end()
     }
   } catch (error) {

@@ -4,7 +4,7 @@
 * Description: Constants
 **********************************************************************/
 
-import { CIRAConfig } from "../RCS.Config";
+import { CIRAConfig, NetworkConfig } from "../RCS.Config";
 
 export class ProvisioningCertObj {
     certChain: Array<string>;
@@ -87,6 +87,15 @@ export class CIRAConfigurations extends Array<CIRAConfig> {
     };
 }
 
+export class NETConfigurations extends Array<NetworkConfig> {
+    [index: number]: {
+        ProfileName: string;
+        DHCPEnabled: boolean;
+        StaticIPShared: boolean;
+        IPSyncEnabled: boolean;
+    };
+}
+
 export class AMTConfiguration {
     ProfileName: string;
     AMTPassword: string;
@@ -96,6 +105,8 @@ export class AMTConfiguration {
     ConfigurationScript?: string;
     CIRAConfigName?: string;
     Activation: string;
+    NetworkConfigName?: string;
+    NetworkConfigObject?: NetworkConfig;
     constructor() { }
 }
 

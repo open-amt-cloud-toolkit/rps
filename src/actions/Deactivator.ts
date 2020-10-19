@@ -12,14 +12,20 @@ import { ClientResponseMsg } from "../utils/ClientResponseMsg";
 import { WSManProcessor } from "../WSManProcessor";
 import { IClientManager } from "../interfaces/IClientManager";
 import { RPSError } from "../utils/RPSError";
+import { EnvReader } from "../utils/EnvReader";
+import { ISecretManagerService } from "../interfaces/ISecretManagerService";
+import { Configurator } from "../Configurator";
+import { AMTDeviceDTO } from "../repositories/dto/AmtDeviceDTO";
+import { IConfigurator } from "../interfaces/IConfigurator";
 
 export class Deactivator implements IExecutor {
   constructor(
     private logger: ILogger,
     private responseMsg: ClientResponseMsg,
     private amtwsman: WSManProcessor,
-    private clientManager: IClientManager
-  ) { }
+    private clientManager: IClientManager,
+    private configurator?: IConfigurator
+  ) {}
 
   /**
    * @description Create configuration message to deactivate AMT from ACM or CCM 
@@ -42,8 +48,12 @@ export class Deactivator implements IExecutor {
       if (wsmanResponse["Header"]["Method"] === "Unprovision") {
         if (wsmanResponse["Body"]["ReturnValue"] !== 0) {
           throw new RPSError(`Device ${clientObj.uuid} deactivation failed`);
-        } else
+        } else{
+
+          this.logger.debug(`Deleting secret from vault for ${clientObj.uuid}`)
+          await this.configurator.amtDeviceRepository.delete(new AMTDeviceDTO(clientObj.uuid,null,null,null,null,null))
           return this.responseMsg.get(clientId,null,"success","success",`Device ${clientObj.uuid} deactivated`);
+        }
       } else {
         clientObj.ClientData.payload = wsmanResponse;
         this.clientManager.setClientObject(clientObj);

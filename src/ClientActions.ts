@@ -21,6 +21,7 @@ import { IValidator } from "./interfaces/IValidator";
 import { RPSError } from "./utils/RPSError";
 import { Deactivator } from "./actions/Deactivator";
 import { CIRAConfigurator } from "./actions/CIRAConfigurator";
+import { ISecretManagerService } from "./interfaces/ISecretManagerService";
 
 export class ClientActions {
 
@@ -34,7 +35,8 @@ export class ClientActions {
     private responseMsg: ClientResponseMsg,
     private amtwsman: WSManProcessor,
     private clientManager: IClientManager,
-    private validator: IValidator) {
+    private validator: IValidator,
+    private secretsManager?: ISecretManagerService) {
 
     this.actions = {};
 
@@ -43,7 +45,7 @@ export class ClientActions {
 
     this.actions[ClientAction.ADMINCTLMODE] = new ACMActivator(Logger(`ACMActivator`), configurator, certManager, helper, responseMsg, amtwsman, clientManager, validator, ciraConfig);
     this.actions[ClientAction.CLIENTCTLMODE] = new CCMActivator(Logger(`CCMActivator`), configurator, responseMsg, amtwsman, clientManager, validator, ciraConfig);
-    this.actions[ClientAction.DEACTIVATE] = new Deactivator(Logger(`Deactivator`), responseMsg, amtwsman, clientManager);
+    this.actions[ClientAction.DEACTIVATE] = new Deactivator(Logger(`Deactivator`), responseMsg, amtwsman, clientManager, configurator);
   }
 
   /**

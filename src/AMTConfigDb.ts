@@ -73,6 +73,23 @@ export class AMTConfigDb implements IProfilesDb {
             return true;
         }
     }
+
+    async updateProfile(amtConfig: any): Promise<any> {
+        this.logger.debug(`update Profile: ${amtConfig.ProfileName}`);
+        var isMatch = item => item.ProfileName === amtConfig.ProfileName;
+        var index = this.amtProfiles.findIndex(isMatch);
+        if (index >= 0) {
+            this.amtProfiles.splice(index, 1);
+            this.amtProfiles.push(amtConfig);
+            this.updateConfigFile();
+            this.logger.info(`profile updated: ${amtConfig.ProfileName}`);
+            return 1;
+        } else {
+            
+            this.logger.info(`profile doesnt exist: ${amtConfig.ProfileName}`);
+            return 0;
+        }
+    }
     private updateConfigFile() {
         let data:any = FileHelper.readJsonObjFromFile(EnvReader.configPath);
         data.AMTConfigurations = this.amtProfiles;

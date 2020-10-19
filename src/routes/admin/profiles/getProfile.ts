@@ -18,8 +18,11 @@ export async function getProfile (req, res) {
     if(typeof results === 'undefined' || results === null)
       res.status(404).end(PROFILE_NOT_FOUND(profileName))
     else {
-      if (results.GenerateRandomPassword === false && req.secretsManager)
-        results.AMTPassword = await req.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${results.ProfileName}`, `${results.ProfileName}_DEVICE_AMT_PASSWORD`);
+      // if (results.GenerateRandomPassword === false && req.secretsManager && results.AMTPassword)
+      //   results.AMTPassword = await req.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${results.ProfileName}`, `${results.ProfileName}_DEVICE_AMT_PASSWORD`);
+      
+      // Return null. Check Security objectives around returning passwords.
+      results.AMTPassword = null
       res.status(200).json(results).end()
     }
   } catch (error) {

@@ -11,6 +11,7 @@ import Logger from '../Logger';
 import { DomainConfigDb } from '../DomainConfigDb';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { EnvReader } from '../utils/EnvReader';
 
 let logger: ILogger = Logger('DomainCredentialManagerTests');
 
@@ -30,7 +31,7 @@ let rcsConfig: RCSConfig = {
     "devmode": true,
     "https": false,
     "webport": 8081,
-    "credentialspath": "../../../mps/private/data.json",
+    "credentialspath": "../../../MPS_MicroService/private/data.json",
     "WSConfiguration": {
         "WebSocketPort": 8080,
         "WebSocketTLS": false,
@@ -48,7 +49,7 @@ let rcsConfig: RCSConfig = {
 };
 
 let data = JSON.parse(readFileSync(join(__dirname, 'private', 'data.json'),'utf8'));
-
+EnvReader.configPath = join(__dirname, 'private', 'data.json')
 test('retrieve provisioning cert based on domain', async () => {
 
     //let domainCredentialManager: DomainCredentialManager = new DomainCredentialManager(logger, rcsConfig.AMTDomains, new SecretManagerService(logger));

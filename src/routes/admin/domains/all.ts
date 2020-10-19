@@ -14,11 +14,16 @@ export async function getAllDomains(req, res) {
   try {
     domainsDb = DomainsDbFactory.getDomainsDb();
     let mapperFn = async (provisioningCertPassword) => {
-      if (req.secretsManager)
-        return await req.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/PROVISIONING_CERT`, provisioningCertPassword);
-      return provisioningCertPassword;
+      // if (req.secretsManager)
+      //   return await req.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/${amtDomain.Name}/PROVISIONING_CERT`, provisioningCertPassword);
+      // return provisioningCertPassword;
+      
+      // Return null. Check Security objectives around returning passwords.
+      return null;
     }
-    const results = await domainsDb.getAllDomains(mapperFn);
+    var results = await domainsDb.getAllDomains(mapperFn);
+    results = results.map((result) => { result.ProvisioningCert = null; return result; } )
+
     if(typeof results === 'undefined' || results.length === 0)
       res.status(404).end(DOMAIN_CONFIG_EMPTY())
     else

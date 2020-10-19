@@ -24,6 +24,15 @@ export type AMTConfig = {
   CIRAConfigName: string;
   Activation: string;
   CIRAConfigObject?: CIRAConfig;
+  NetworkConfigName?: string;
+  NetworkConfigObject?: NetworkConfig;
+};
+
+export type NetworkConfig = {
+  ProfileName: string;
+  DHCPEnabled: boolean;
+  StaticIPShared: boolean;
+  IPSyncEnabled: boolean;
 };
 
 /*

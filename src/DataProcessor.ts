@@ -19,6 +19,7 @@ import { RPSError } from "./utils/RPSError";
 import { WSManProcessor } from "./WSManProcessor";
 import { ClientResponseMsg } from "./utils/ClientResponseMsg";
 import { IValidator } from "./interfaces/IValidator";
+import { ISecretManagerService } from "./interfaces/ISecretManagerService";
 
 export class DataProcessor implements IDataProcessor {
     private clientActions: ClientActions;
