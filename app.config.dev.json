@@ -13,13 +13,13 @@
     "dbhost": "localhost",
     "dbname": "postgresdb",
     "dbport": 5432,
-    "dbuser": "postgresadmin",
+    "dbuser": "<your_db_username>",
     "dbpassword": "<your_db_password>"
   },
   "mpsusername": "admin",
-  "mpspass": "<StrongPassword>",
+  "mpspass": "<your_mps_password>",
   "amtusername": "admin",
-  "RPSXAPIKEY": "<StrongPassword>",
+  "RPSXAPIKEY": "<your_mps_APIKEY>",
   "https": false,
   "webport": 8081,
   "credentialspath": "../../../mps/private/credentials.json",
@@ -31,27 +31,20 @@
   },
   "AMTConfigurations": [
     {
-      "ProfileName": "profile1",
-      "AMTPassword": "<StrongPassword>",
+      "ProfileName": "Sample_Profile",
+      "AMTPassword": "<your_amt_password>",
       "GenerateRandomPassword": false,
       "RandomPasswordLength": 8,
       "Activation": "acmactivate"
-    },
-    {
-      "ProfileName": "profile2",
-      "AMTPassword": "<StrongPassword>",
-      "GenerateRandomPassword": false,
-      "RandomPasswordLength": 8,
-      "Activation": "ccmactivate"
     }
   ],
   "AMTDomains": [
     {
-      "Name": "domain1",
-      "DomainSuffix": "d1.com",
-      "ProvisioningCert": "private/d1.pfx",
+      "Name": "Sample_Domain",
+      "DomainSuffix": "sample.com",
+      "ProvisioningCert": "private/sample.pfx",
       "ProvisioningCertStorageFormat": "file",
-      "ProvisioningCertPassword": "<StrongPassword>"
+      "ProvisioningCertPassword": "<your_certificate_password>"
     }
   ]
 }
