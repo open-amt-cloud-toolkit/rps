@@ -1,29 +1,21 @@
 {
   "AMTConfigurations": [
     {
-      "ProfileName": "profile1",
-      "AMTPassword": "<StrongPassword>",
+      "ProfileName": "Sample_Profile",
+      "AMTPassword": "<your_amt_password>",
       "GenerateRandomPassword": false,
       "RandomPasswordLength": 8,
       "Activation": "acmactivate",
-      "CIRAConfigName": "ciraconfig1"
-    },
-    {
-      "ProfileName": "profile2",
-      "AMTPassword": "<StrongPassword>",
-      "GenerateRandomPassword": false,
-      "RandomPasswordLength": 8,
-      "Activation": "ccmactivate",
-      "CIRAConfigName": "ciraconfig1"
+      "CIRAConfigName": "Sample_CIRA_Config"
     }
   ],
   "CIRAConfigurations": [
     {
-      "ConfigName": "ciraconfig1",
+      "ConfigName": "Sample_CIRA_Config",
       "MPSServerAddress": "localhost",
       "MPSPort": "4433",
       "Username": "admin",
-      "Password": "<StrongPassword>",
+      "Password": "<your_mps_password>",
       "CommonName": "localhost",
       "ServerAddressFormat": 201,
       "AuthMethod": 2,
@@ -33,7 +25,7 @@
   ],
   "NETConfigurations": [
     {
-      "ProfileName": "netprofile1",
+      "ProfileName": "Sample_Network_Config",
       "DHCPEnabled": true,
       "StaticIPShared": true,
       "IPSyncEnabled": true
@@ -41,11 +33,11 @@
   ],
   "AMTDomains": [
     {
-      "Name": "domain1",
-      "DomainSuffix": "d1.com",
-      "ProvisioningCert": "<cert>",
+      "Name": "Sample_Domain",
+      "DomainSuffix": "sample.com",
+      "ProvisioningCert": "<your_certificate_filename>",
       "ProvisioningCertStorageFormat": "string",
-      "ProvisioningCertPassword": "<StrongPassword>"
+      "ProvisioningCertPassword": "<your_certificate_password>"
     }
   ]
 }
