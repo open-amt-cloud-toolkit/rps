@@ -14,11 +14,11 @@ node {
         }
 
         // if we are on the master branch run static code scans
-        if(env.GIT_BRANCH =~ /.*master/) {
+        // if(env.GIT_BRANCH =~ /.*master/) {
             stage('Static Code Scan') {
                 staticCodeScan {
                     // generic
-                    scanners             = ['checkmarx', 'protex']
+                    scanners             = ['checkmarx', 'protex', 'snyk']
                     scannerType          = 'javascript'
 
                     protexProjectName    = 'Bengal Canyon'
@@ -26,32 +26,28 @@ node {
                     protexBuildName      = 'rrs-generic-protex-build'
 
                     checkmarxProjectName = "RSD-Danger-Bay-RCS-MicroService"
+
+                    //snyk details
+                    snykUrl                 = 'https://snyk.devtools.intel.com/api'
+                    snykManifestFile        = ['package-lock.json']
+                    snykProjectName         = ['bengal-canyon-rcs']
+                    snykScanApiToken        = 'snyk_apitoken_sys_rsdcodescan'
                 }
             }
-        }
+        // }
 
-        stage('Tests') {
-            docker.image('node:10.1-slim').inside {
-                sh 'npm install'
-                sh 'npm run test'
-
-                publishHTML([
-                    allowMissing: true,
-                    keepAll: true,
-                    reportDir: 'coverage/lcov-report',
-                    reportFiles: 'index.html',
-                    reportName: 'Code Coverage Report',
-                    reportTitles: 'Code Coverage Report'
-                ])
-                
-                sh 'rm -rf coverage'
+        stage('Test') {
+            docker.image('node:latest').inside('-e http_proxy -e https_proxy') {
+                    sh 'npm install'
+                    sh 'npm run test'
             }
         }
+
         stage('Build') {
-            docker.image('node:10.1-slim').inside {
+            docker.image('node:latest').inside('-e http_proxy -e https_proxy') {
                 sh 'npm install'
                 sh 'npm build'
-            }
+             }
         }
 
         // If we are building a docker image
