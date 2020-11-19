@@ -5,26 +5,26 @@
  **********************************************************************/
 
 import { EnvReader } from "../utils/EnvReader";
-import { IAMTDeviceWriter } from "./interfaces/IAMTDeviceWriter";
+import { IAMTDeviceRepository } from "./interfaces/IAMTDeviceRepository";
 import { AMTDeviceVaultRepository } from "./AMTDeviceVaultRepository";
 import { IConfigurator } from "../interfaces/IConfigurator";
 import Logger from "../Logger";
 import { AMTDeviceFileRepository } from "./AMTDeviceFileRepository";
 
 
-export class AmtDeviceWriterFactory {
+export class AmtDeviceFactory {
 
-    static amtDeviceWriter: IAMTDeviceWriter;
+    static amtDeviceRepository: IAMTDeviceRepository;
 
-    static getAmtDeviceWriter(configurator: IConfigurator): IAMTDeviceWriter {
-        if (AmtDeviceWriterFactory.amtDeviceWriter == null) {
+    static getAmtDeviceRepository(configurator: IConfigurator): IAMTDeviceRepository {
+        if (AmtDeviceFactory.amtDeviceRepository == null) {
             if (EnvReader.GlobalEnvConfig.VaultConfig.usevault) {
-                AmtDeviceWriterFactory.amtDeviceWriter = new AMTDeviceVaultRepository(Logger("AMTDeviceVaultRepository"), configurator);
+                AmtDeviceFactory.amtDeviceRepository = new AMTDeviceVaultRepository(Logger("AMTDeviceVaultRepository"), configurator);
             } else {
-                AmtDeviceWriterFactory.amtDeviceWriter = new AMTDeviceFileRepository(Logger("AMTDeviceFileRepository"));
+                AmtDeviceFactory.amtDeviceRepository = new AMTDeviceFileRepository(Logger("AMTDeviceFileRepository"));
             }
         }
 
-        return AmtDeviceWriterFactory.amtDeviceWriter;
+        return AmtDeviceFactory.amtDeviceRepository;
     }
 }

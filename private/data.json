@@ -1,0 +1,43 @@
+{
+  "AMTConfigurations": [
+    {
+      "ProfileName": "Sample_Profile",
+      "AMTPassword": "<your_amt_password>",
+      "GenerateRandomPassword": false,
+      "RandomPasswordLength": 8,
+      "Activation": "acmactivate",
+      "CIRAConfigName": "Sample_CIRA_Config"
+    }
+  ],
+  "CIRAConfigurations": [
+    {
+      "ConfigName": "Sample_CIRA_Config",
+      "MPSServerAddress": "localhost",
+      "MPSPort": "4433",
+      "Username": "admin",
+      "Password": "<your_mps_password>",
+      "CommonName": "localhost",
+      "ServerAddressFormat": 201,
+      "AuthMethod": 2,
+      "MPSRootCertificate": "rootcert",
+      "ProxyDetails": ""
+    }
+  ],
+  "NETConfigurations": [
+    {
+      "ProfileName": "Sample_Network_Config",
+      "DHCPEnabled": true,
+      "StaticIPShared": true,
+      "IPSyncEnabled": true
+    }
+  ],
+  "AMTDomains": [
+    {
+      "Name": "Sample_Domain",
+      "DomainSuffix": "sample.com",
+      "ProvisioningCert": "<your_certificate_filename>",
+      "ProvisioningCertStorageFormat": "string",
+      "ProvisioningCertPassword": "<your_certificate_password>"
+    }
+  ]
+}

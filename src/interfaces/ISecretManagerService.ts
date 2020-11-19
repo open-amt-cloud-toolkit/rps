@@ -10,4 +10,5 @@ export interface ISecretManagerService {
   listSecretsAtPath(path: string) : Promise<any>;
   readJsonFromKey(path: string, key: string) : Promise<string>;
   writeSecretWithKey(path: string, key:string, keyvalue: any) : Promise<void>;
+  deleteSecretWithKey(path: string, key:string) : Promise<void>;
 }

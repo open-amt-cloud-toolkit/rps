@@ -1,0 +1,89 @@
+{
+  "AMTConfigurations": [
+    {
+      "ProfileName": "profile1",
+      "AMTPassword": "P@ssw0rd",
+      "GenerateRandomPassword": false,
+      "RandomPasswordLength": 8,
+      "RandomPasswordCharacters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()",
+      "ConfigurationScript": null,
+      "Activation": "acmactivate",
+      "CIRAConfigName": "ciraconfig1"
+    },
+    {
+      "ProfileName": "profile2",
+      "AMTPassword": "P@ssw0rd",
+      "GenerateRandomPassword": false,
+      "RandomPasswordLength": 8,
+      "RandomPasswordCharacters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()",
+      "ConfigurationScript": null,
+      "Activation": "ccmactivate",
+      "CIRAConfigName": "ciraconfig1"
+    },
+    {
+      "ProfileName": "profile3",
+      "AMTPassword": "P@ssw0rd",
+      "GenerateRandomPassword": false,
+      "RandomPasswordLength": 8,
+      "RandomPasswordCharacters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()",
+      "ConfigurationScript": null,
+      "Activation": "invalid",
+      "CIRAConfigName": "ciraconfig1"
+    },
+    {
+      "ProfileName": "profile4",
+      "AMTPassword": "P@ssw0rd",
+      "GenerateRandomPassword": false,
+      "RandomPasswordLength": 8,
+      "RandomPasswordCharacters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()",
+      "ConfigurationScript": null,
+      "Activation": "",
+      "CIRAConfigName": "ciraconfig1"
+    }
+  ],
+  "NETConfigurations": [
+    {
+      "ProfileName": "netprofile1",
+      "DHCPEnabled": true,
+      "StaticIPShared": true,
+      "IPSyncEnabled": true
+    }
+  ],
+  "CIRAConfigurations": [
+    {
+      "ConfigName": "ciraconfig1",
+      "MPSServerAddress": "localhost",
+      "MPSPort": 4433,
+      "Username": "admin",
+      "Password": "P@ssw0rd",
+      "CommonName": "localhost",
+      "ServerAddressFormat": 201,
+      "AuthMethod": 2,
+      "MPSRootCertificate": "rootcert",
+      "ProxyDetails": ""
+    }
+  ],
+  "AMTDomains": [
+    {
+      "Name": "domain1",
+      "DomainSuffix": "vprodemo.com",
+      "ProvisioningCert": "vprodemo.pfx",
+      "ProvisioningCertStorageFormat": "string",
+      "ProvisioningCertPassword": "P@ssw0rd"
+    },
+    {
+      "Name": "domain2",
+      "DomainSuffix": "d2.com",
+      "ProvisioningCert": "d2.pfx",
+      "ProvisioningCertStorageFormat": "string",
+      "ProvisioningCertPassword": "<StrongPassword>"
+    },
+    {
+      "Name": "domain3",
+      "DomainSuffix": "d2.com",
+      "ProvisioningCert": "d2.pfx",
+      "ProvisioningCertStorageFormat": "string",
+      "ProvisioningCertPassword": "P@ssw0rd"
+    }
+  ]
+}

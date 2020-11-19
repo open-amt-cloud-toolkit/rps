@@ -1,9 +1,12 @@
 /*********************************************************************
  * Copyright (c) Intel Corporation 2019
  * SPDX-License-Identifier: Apache-2.0
- * Author : Madhavi Losetty
+ * Author : Brian Osburn
  **********************************************************************/
 
-export interface IActivator {
-    activate(message: any, clientId: string): Promise<any>;
-}
+const profileRouter = require('express').Router();
+const { getVersion } = require('./getVersion');
+
+profileRouter.get('/', getVersion)
+
+module.exports = profileRouter;

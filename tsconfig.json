@@ -5,6 +5,7 @@
         "module": "commonjs",
         "allowJs": true,
         "target":"es2015",
+        "sourceMap": true,
         "typeRoots": [
             "node_modules/@types"
         ]
