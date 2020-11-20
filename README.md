@@ -1,64 +1,49 @@
-The Default ("master") branch is our release branch that is for production use.  All other branches are pre-production and should not be used for production deployments.
+# Remote Provisioning Server
 
-# amt-rcs
+The Remote Provisioning Server (RPS) enables the configuration and activation of Intel® AMT devices based on a defined profile. RPS utilizes the [Remote Provision Client (RPC)](https://github.com/open-amt-cloud-toolkit/rps) deployed onto edge devices to connect the devices to the [Management Presence Server (MPS)](https://github.com/open-amt-cloud-toolkit/mps) and enable remote manageability features.
 
-A Remote Configuration Service for configuring Intel:registered: AMT devices into admin control mode.  Depends on node-forge and ws NPM libraries.  Before running the service, you'll need to npm install both of these packages.
-Built to work with MeshCMD which you can get here: https://www.meshcommander.com/meshcommander/meshcmd
 
-### New Features
-- Version 0.2.0 makes this into a module library for improved integration into your existing solutions
-- Support for custom websocket server, database, logging integration added in 0.2.0.
-- Support for setting up tls for secure websocket communication (for the included wsserver)
-- Supports multiple AMT profiles.  Passes designated script file to MeshCMD or receiving client application/agent
-- Supports multiple AMT domain suffix and perform DNS Suffix matching server side
-- Supports custom AMT provisioning hashes and perform provisioning hash matching server side
+**For detailed documentation** about Getting Started with RPS or other features of the Open AMT Cloud Toolkit, see the [docs](https://open-amt-cloud-toolkit.github.io/mps/).
 
-### Instructions
-Requires: 
- - Intel:registered: AMT provisioning certificate that matches the DNS suffix of your Intel:registered: AMT machine
+## Prerequisites
 
-Modify the rcs-config.json file to specify the location of the provisioning certificate and specify the Intel:registered: AMT password to be set
-```
-{
-  "Name": "RCS Configuration File",
-  "Description": "Contains settings to configure the RCS Server",
-  "WSConfiguration": {
-    "WebSocketPort": 8080,
-    "WebSocketTLS": false,
-    "WebSocketCertificate": "tlscert.pem",
-    "WebSocketCertificateKey": "tlskey.pem"
-  },
-  "AMTConfigurations": [
-    {
-      "ProfileName": "default",
-      "AMTPassword": "password",
-      "ConfigurationScript": ""
-    },
-    {
-      "ProfileName": "config2",
-      "AMTPassword": "password",
-      "ConfigurationScript": ""
-    }
-  ],
-  "AMTDomains": [
-    {
-      "Name": "domain1",
-      "DomainSuffix": "amt.net",
-      "ProvisioningCert": "d1.pfx",
-      "ProvisioningCertPassword": "password"
-    },
-    {
-      "Name": "domain2",
-      "DomainSuffix": "somethingelse.com",
-      "ProvisioningCert": "d2.pfx",
-      "ProvisioningCertPassword": "password"
-    }
-  ]
-}
-```
+To succesfully deploy RPS, the following software must be installed on your development system:
 
-Start from command line: node amt-rcs.js
+- [Node.js* LTS 12.x.x or newer](https://nodejs.org/en/)
+- [git](https://git-scm.com/downloads)
+- [Management Presense Server](https://github.com/open-amt-cloud-toolkit/mps)
 
-### Future Work
- - Adding support for listening for remote configuration messages from Intel:registered: AMT
 
+## Deploy the Remote Provisioning Server (RPS) Microservice
+
+To deploy the RPS on a local development system: 
+
+1. For a local setup, RPS requires an [installed MPS](https://github.com/open-amt-cloud-toolkit/mps) in the same parent directory. Clone the RPS repository to the same parent directory where your mps directory is located. 
+
+    ```
+    📦parent
+     ┣ 📂mps
+     ┗ 📂rps
+    ```
+
+    ```
+    git clone https://github.com/open-amt-cloud-toolkit/rps.git && cd rps
+    ```
+
+2. Run 'npm install' from the working rps directory.
+
+    ``` bash
+    npm install
+    ```
+
+3. Run 'npm run dev' start command. The npm run dev start command may take 2-3 minutes to install.
+
+    ``` bash
+    npm run dev
+    ```
+    
+    >Note: Warning messages are okay and expected for optional dependencies.
+
+4. The RPS listens on port 8081. Successful installation produces the command line message RPS Microservice Rest APIs listening on https://:8081.
+
+For detailed documentation about RPS, see the [docs](https://open-amt-cloud-toolkit.github.io/mps/)
