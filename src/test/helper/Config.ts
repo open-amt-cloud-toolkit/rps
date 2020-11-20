@@ -16,7 +16,7 @@ export let config: RCSConfig = {
   "devmode": true,
   "https": false,
   "webport": 8081,
-  "credentialspath": "../../../MPS_MicroService/private/credentials.json",
+  "credentialspath": "../../../mps/private/data.json",
   "WSConfiguration": {
     "WebSocketPort": 8080,
     "WebSocketTLS": false,
@@ -31,66 +31,5 @@ export let config: RCSConfig = {
     "dbport": 0,
     "dbuser": "",
     "dbpassword": ""
-  },
-  "AMTConfigurations": [
-    {
-      "ProfileName": "profile1",
-      "AMTPassword": "P@ssw0rd",
-      "GenerateRandomPassword": false,
-      "RandomPasswordLength": 8,
-      "RandomPasswordCharacters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()",
-      "ConfigurationScript": null,
-      "Activation": "acmactivate"
-    },
-    {
-      "ProfileName": "profile2",
-      "AMTPassword": "P@ssw0rd",
-      "GenerateRandomPassword": false,
-      "RandomPasswordLength": 8,
-      "RandomPasswordCharacters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()",
-      "ConfigurationScript": null,
-      "Activation": "ccmactivate"
-    },
-    {
-      "ProfileName": "profile3",
-      "AMTPassword": "P@ssw0rd",
-      "GenerateRandomPassword": false,
-      "RandomPasswordLength": 8,
-      "RandomPasswordCharacters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()",
-      "ConfigurationScript": null,
-      "Activation": "invalid"
-    },
-    {
-      "ProfileName": "profile4",
-      "AMTPassword": "P@ssw0rd",
-      "GenerateRandomPassword": false,
-      "RandomPasswordLength": 8,
-      "RandomPasswordCharacters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()",
-      "ConfigurationScript": null,
-      "Activation": ""
-    }
-  ],
-  "AMTDomains": [
-    {
-      "Name": "domain1",
-      "DomainSuffix": "vprodemo.com",
-      "ProvisioningCert": "vprodemo.pfx",
-      "ProvisioningCertStorageFormat": "file",
-      "ProvisioningCertPassword": "P@ssw0rd"
-    },
-    {
-      "Name": "domain2",
-      "DomainSuffix": "d2.com",
-      "ProvisioningCert": "d2.pfx",
-      "ProvisioningCertStorageFormat": "file",
-      "ProvisioningCertPassword": "<StrongPassword>"
-    },
-    {
-      "Name": "domain3",
-      "DomainSuffix": "d2.com",
-      "ProvisioningCert": "d2.pfx",
-      "ProvisioningCertStorageFormat": "file",
-      "ProvisioningCertPassword": "P@ssw0rd"
-    }
-  ]
+  }
 };

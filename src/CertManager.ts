@@ -20,7 +20,7 @@ export class CertManager implements ICertManager {
       * @description Sorts the intermediate certificates to properly order the certificate chain
       * @param {certificateObject} intermediate
       * @param {certificateObject} root
-      * @returns {Boolean} Returns true if issuer is from root.  Returns false if issuer is not from root.
+      * @returns {boolean} Returns true if issuer is from root.  Returns false if issuer is not from root.
       */
     sortCertificate(intermediate: certificateObject, root: certificateObject): boolean {
         if (intermediate.issuer == root.subject) {

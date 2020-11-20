@@ -19,6 +19,9 @@ import { WSManProcessor } from "./WSManProcessor";
 import { IClientManager } from "./interfaces/IClientManager";
 import { IValidator } from "./interfaces/IValidator";
 import { RPSError } from "./utils/RPSError";
+import { Deactivator } from "./actions/Deactivator";
+import { CIRAConfigurator } from "./actions/CIRAConfigurator";
+import { ISecretManagerService } from "./interfaces/ISecretManagerService";
 
 export class ClientActions {
 
@@ -32,12 +35,17 @@ export class ClientActions {
     private responseMsg: ClientResponseMsg,
     private amtwsman: WSManProcessor,
     private clientManager: IClientManager,
-    private validator: IValidator) {
+    private validator: IValidator,
+    private secretsManager?: ISecretManagerService) {
 
     this.actions = {};
 
-    this.actions[ClientAction.ADMINCTLMODE] = new ACMActivator(Logger(`ACMActivator`), configurator, certManager, helper, responseMsg, amtwsman, clientManager, validator);
-    this.actions[ClientAction.CLIENTCTLMODE] = new CCMActivator(Logger(`CCMActivator`), configurator, helper, responseMsg, amtwsman, clientManager, validator);
+    let ciraConfig = new CIRAConfigurator(Logger(`CIRAConfig`), configurator,responseMsg, amtwsman, clientManager);
+    this.actions[ClientAction.CIRACONFIG] = ciraConfig;
+
+    this.actions[ClientAction.ADMINCTLMODE] = new ACMActivator(Logger(`ACMActivator`), configurator, certManager, helper, responseMsg, amtwsman, clientManager, validator, ciraConfig);
+    this.actions[ClientAction.CLIENTCTLMODE] = new CCMActivator(Logger(`CCMActivator`), configurator, responseMsg, amtwsman, clientManager, validator, ciraConfig);
+    this.actions[ClientAction.DEACTIVATE] = new Deactivator(Logger(`Deactivator`), responseMsg, amtwsman, clientManager, configurator);
   }
 
   /**
@@ -49,14 +57,15 @@ export class ClientActions {
    */
   async BuildResponseMessage(message: any, clientId: string): Promise<ClientMsg> {
     let clientObj = this.clientManager.getClientObject(clientId);
-    if(clientObj.ClientData.payload.action){
-      if (this.actions[clientObj.ClientData.payload.action]) {
-        return await this.actions[clientObj.ClientData.payload.action].activate(message, clientId);
-      }else{
-        throw new RPSError(`Device ${clientObj.ClientData.payload.uuid} - Not supported action.`);
+    if(clientObj.action){
+      if (this.actions[clientObj.action]) {
+        return await this.actions[clientObj.action].execute(message, clientId);
+      } else{
+        throw new RPSError(`Device ${clientObj.uuid} - Not supported action.`);
       }
-    }else{
-      throw new RPSError(`Failed to retrieve the client activation message`);
+    }
+    else{
+      throw new RPSError(`Failed to retrieve the client message`);
     }
   }
 }

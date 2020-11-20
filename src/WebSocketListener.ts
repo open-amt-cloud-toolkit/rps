@@ -5,6 +5,7 @@
  * Description: Simple Websocket server
  **********************************************************************/
 import * as https from "https";
+import * as path from "path";
 import * as WebSocket from "ws";
 import { v4 as uuid } from "uuid";
 
@@ -39,18 +40,20 @@ export class WebSocketListener implements IWebSocketListener {
     try {
       if (this.wsConfig.WebSocketTLS == true && this.wsConfig.WebSocketCertificate !== null && this.wsConfig.WebSocketCertificateKey !== null) {
         let httpsServer;
-        if (EnvReader.GlobalEnvConfig.DbConfig.useDbForConfig) {
+        if (EnvReader.GlobalEnvConfig.DbConfig.useRawCerts) {
           // this means the certs are provided from ENV variables. read them RAW.
           this.logger.info("This means the certs are provided from ENV variables. read them RAW.");
           httpsServer = https.createServer({
             cert: this.wsConfig.WebSocketCertificate,
-            key: this.wsConfig.WebSocketCertificateKey
+            key: this.wsConfig.WebSocketCertificateKey,
+            ca: (this.wsConfig.RootCACert !== "" ? this.wsConfig.RootCACert : "")
           });
         }
         else {
           httpsServer = https.createServer({
-            cert: FileHelper.readFileSync(`${this.wsConfig.WebSocketCertificate}`),
-            key: FileHelper.readFileSync(`${this.wsConfig.WebSocketCertificateKey}`)
+            cert: FileHelper.readFileSync(`${path.join(__dirname,this.wsConfig.WebSocketCertificate)}`),
+            key: FileHelper.readFileSync(`${path.join(__dirname,this.wsConfig.WebSocketCertificateKey)}`),
+            ca: (this.wsConfig.RootCACert !== "" ? FileHelper.readFileSync(path.join(__dirname,this.wsConfig.RootCACert)) : "")
           });
         }
         httpsServer.listen(this.wsConfig.WebSocketPort);
@@ -82,7 +85,7 @@ export class WebSocketListener implements IWebSocketListener {
 
       let clientId = uuid();
 
-      let client: ClientObject = { ClientId: clientId, ClientSocket: ws };
+      let client: ClientObject = { ClientId: clientId, ClientSocket: ws, ciraconfig: {} };
       this.clientManager.addClient(client);
 
       ws.on("message", async (data: WebSocket.Data) => { await this.onMessageReceived(data, clientId); });

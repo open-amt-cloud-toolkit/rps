@@ -147,6 +147,12 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, setupCo
                 obj.kerberosDone = 1;
             }
         } else if (obj.challengeParams != null) {
+            if (obj.setupCommunication.getUsername){
+                obj.user = obj.setupCommunication.getUsername()
+            }
+            if (obj.setupCommunication.getPassword){
+                obj.pass = obj.setupCommunication.getPassword()
+            }
             var response = hex_md5(hex_md5(obj.user + ':' + obj.challengeParams["realm"] + ':' + obj.pass) + ':' + obj.challengeParams["nonce"] + ':' + obj.noncecounter + ':' + obj.cnonce + ':' + obj.challengeParams["qop"] + ':' + hex_md5(action + ':' + url));
             h += 'Authorization: ' + obj.renderDigest({ "username": obj.user, "realm": obj.challengeParams["realm"], "nonce": obj.challengeParams["nonce"], "uri": url, "qop": obj.challengeParams["qop"], "response": response, "nc": obj.noncecounter++, "cnonce": obj.cnonce }) + '\r\n';
         }

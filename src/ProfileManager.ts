@@ -9,7 +9,7 @@ import { AMTConfigurations } from "./models/Rcs";
 import { ILogger } from './interfaces/ILogger';
 import { IProfileManager } from "./interfaces/IProfileManager";
 import { PasswordHelper } from "./utils/PasswordHelper";
-import { AMTConfig } from "./RCS.Config";
+import { AMTConfig, CIRAConfig } from "./RCS.Config";
 import { IConfigurator } from "./interfaces/IConfigurator";
 import { IProfilesDb } from "./repositories/interfaces/IProfilesDb";
 import { EnvReader } from "./utils/EnvReader";
@@ -95,6 +95,32 @@ export class ProfileManager implements IProfileManager {
     }
 
     /**
+     * @description Retrieves CIRA Configuration for a given profile name
+     * @param {string} profile of cira config 
+     * @returns {string} returns the config for CIRA for a given profile 
+     */
+    public async getCiraConfiguration(profileName: string): Promise<CIRAConfig> {
+
+        let profile = await this.getAmtProfile(profileName);
+        let ciraConfig: CIRAConfig;
+
+        if (profile && profile.CIRAConfigName && profile.CIRAConfigObject) {
+            this.logger.debug(`found CIRAConfigObject for profile ${JSON.stringify(profile)}`);
+            ciraConfig = profile.CIRAConfigObject;
+
+            this.logger.debug(`retrieve CIRA MPS Password for cira config ${ciraConfig.ConfigName}`);
+            if (this.configurator && this.configurator.secretsManager) {
+                ciraConfig.Password = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfig.ConfigName}`,`${ciraConfig.ConfigName}_CIRA_PROFILE_PASSWORD`);
+            }
+        }
+        else {
+            this.logger.debug(`unable to find CIRAConfig for profile ${JSON.stringify(profile)}`);
+        }
+
+        return ciraConfig;
+    }
+
+    /**
      * @description Retrieves configuration script for a given profile
      * @param {string} profile of config script 
      * @returns {string} returns the config script for a given profile 
@@ -161,20 +187,35 @@ export class ProfileManager implements IProfileManager {
     * @param {string} profile 
     * @returns {AMTConfig} returns AMTConfig object if profile exists otherwise null. 
     */
-    private async getAmtProfile(profile: string): Promise<AMTConfig> {
+    public async getAmtProfile(profile: string): Promise<AMTConfig> {
         try {
-            if(this.envConfig && this.envConfig.useDbForConfig) {
+            if(this.envConfig && this.envConfig.DbConfig.useDbForConfig) {
                 let amtProfile = await this.amtConfigurations.getProfileByName(profile);
+                if (amtProfile.CIRAConfigName){
+                    amtProfile.CIRAConfigObject = await this.amtConfigurations.getCiraConfigForProfile(amtProfile.CIRAConfigName)
+                    if (this.configurator && this.configurator.secretsManager) {
+                        if(amtProfile.CIRAConfigObject && amtProfile.CIRAConfigObject.Password)
+                            amtProfile.CIRAConfigObject.Password = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${amtProfile.CIRAConfigName}`, amtProfile.CIRAConfigObject.Password);
+                        else
+                            this.logger.error(`The amtProfile CIRAConfigObject doesnt have a password. Check CIRA profile creation.`);
+                    }
+                }
                 this.logger.debug('AMT Profile returned from db', JSON.stringify(amtProfile));
                 return amtProfile;
             }
             else {
                 let amtProfiles = await this.amtConfigurations.getAllProfiles();
-                // console.log(amtProfiles)
+                console.log("All Profiles : ", amtProfiles)
                 for (let index = 0; index < amtProfiles.length; ++index) {
                     if (amtProfiles[index].ProfileName === profile) {
-                        // this.logger.debug(`found amt profile: ${profile}`);
-                        return amtProfiles[index];
+                        this.logger.debug(`found amt profile: ${profile}`);
+                        let amtProfile = amtProfiles[index];
+                        this.logger.debug(`found amt profile: ${JSON.stringify(amtProfile,null,'\t')}`);
+                        if (amtProfile.CIRAConfigName){
+                            amtProfile.CIRAConfigObject = await this.amtConfigurations.getCiraConfigForProfile(amtProfile.CIRAConfigName)
+                        }
+                        this.logger.debug(`found AMT CIRA Config for: ${amtProfile.CIRAConfigObject}`);
+                        return amtProfile
                     }
                 }
             }

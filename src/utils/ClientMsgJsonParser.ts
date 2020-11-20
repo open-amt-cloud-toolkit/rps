@@ -6,7 +6,7 @@
  **********************************************************************/
 
 import { IClientMessageParser } from "../interfaces/IClientMessageParser";
-import { ClientMsg, ClientAction, Payload } from "../RCS.Config";
+import { ClientMsg, ClientAction, Payload, ClientMethods } from "../RCS.Config";
 import { NodeForge } from "../NodeForge";
 import { RPSError } from "./RPSError";
 
@@ -38,7 +38,7 @@ export class ClientMsgJsonParser implements IClientMessageParser {
   convertClientMsg(message: ClientMsg, clientId: string): ClientMsg {
     let payload: any = this.nodeForge.decode64(message.payload);
     if (payload) {
-      if (message.method !== ClientAction.RESPONSE) {
+      if (message.method !== ClientMethods.RESPONSE) {
         payload = this.parsePayload(payload);
       }
       message.payload = payload;

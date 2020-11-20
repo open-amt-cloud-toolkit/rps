@@ -11,25 +11,28 @@ const myFormat = printf(info => {
   return `${info.timestamp} ${info.level}: ${info.message}`;
 });
 
+
+const logFile = __dirname + "/logs/logs.txt";
+
 const logger = winston.createLogger({
-  level: "debug",
+  level: process.env.RPS_LOG_LEVEL || "info",
   format: combine(timestamp(), myFormat),
   transports: [
     new winston.transports.Console(),
     new winston.transports.File({
-      filename: __dirname + "/debug.log"
+      filename: logFile
     })
   ],
   exceptionHandlers: [
     new winston.transports.Console(),
     new winston.transports.File({
-      filename: __dirname + "/exceptions.log"
+      filename: logFile
     })
   ],
   exitOnError: false
 });
 
-class Logger implements ILogger{
+class Logger implements ILogger {
   private name: string;
 
   constructor(name: string) {
@@ -51,8 +54,16 @@ class Logger implements ILogger{
   error(log: string, ...params: any[]) {
     logger.error([this.name + ' - ' + log].concat(params));
   }
+
+  verbose(log: string, ...params: any[]) {
+    logger.verbose([this.name + ' - ' + log].concat(params));
+  }
+
+  silly(log: string, ...params: any[]) {
+    logger.silly([this.name + ' - ' + log].concat(params));
+  }
 }
 
-export default function(name: string): ILogger{
+export default function (name: string): ILogger {
   return new Logger(name);
 }

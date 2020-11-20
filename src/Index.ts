@@ -12,41 +12,62 @@ import Logger from "./Logger";
 import { WebSocketListener } from "./WebSocketListener";
 import { Configurator } from "./Configurator";
 import { EnvReader } from "./utils/EnvReader";
-import { RCSFileImporter } from "./RCSFileImporter";
-import { RCSConfig } from "./models/Rcs";
+import { RCSConfig, mapConfig } from "./models/Rcs";
 import { IConfigurator } from "./interfaces/IConfigurator";
-
+import { parseValue } from "./utils/parseEnvValue";
+import {existsSync, readFileSync} from "fs";
+let rc = require('rc')
 let log = Logger(`Index`);
+var dot = require('dot-object');
 
-const nodeENV = process.env.NODE_ENV || 'dev';
+// To merge ENV variables. consider after lowercasing ENV since our config keys are lowercase
+process.env = Object.keys(process.env)
+  .reduce((destination, key) => {
+    destination[key.toLowerCase()] = parseValue(process.env[key]);
+    return destination;
+  }, {});
+
+// build config object
+let rcconfig = rc('rps');
+log.silly(`Before config... ${JSON.stringify(rcconfig, null, 2)}`)
+let config: RCSConfig = mapConfig(rcconfig, dot)
+log.silly(`Updated config... ${JSON.stringify(config, null, 2)}`);
+EnvReader.GlobalEnvConfig = config;
+EnvReader.configPath = path.join(__dirname, '../', config.datapath) // account for the Dist/ folder
 //const expressWs = require('express-ws');
 const routes = require('./routes');
-
-EnvReader.configPath = path.join(process.cwd(), `app.config.${nodeENV}.json`);
-
-let config: RCSConfig = new RCSFileImporter(Logger("RCSFileImporter"), EnvReader.configPath).importconfig();
-EnvReader.InitFromEnv(config);
-
-if (config.devmode === true) {
-  config.VaultConfig.usevault = false;
-  config.DbConfig.useDbForConfig = false;
-}
-
-log.info(`Updated config... ${JSON.stringify(config, null, 2)}`);
-
 let app = express();
 
+if (config.NodeEnv === 'dev') {
+  //disable Clickjacking defence
+  app.use(function (req, res, next) {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', '*');
+    if (req.method === 'OPTIONS') {
+      res.header('Access-Control-Allow-Methods', '*');
+      return res.status(200).json({});
+    }
+    next();
+  })
+}
+else {
+  //Clickjacking defence
+  app.use(function (req, res, next) {
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+    next();
+  })
+}
+
 app.use(parser.json());
-
 let configurator: IConfigurator = new Configurator();
-
+log.silly(`WebSocket Cert Info ${JSON.stringify(EnvReader.GlobalEnvConfig.WSConfiguration)}`);
 let server: WebSocketListener = new WebSocketListener(Logger(`WebSocketListener`), EnvReader.GlobalEnvConfig.WSConfiguration, configurator.clientManager, configurator.dataProcessor);
 
 let isAuthenticated = (req, res, next) => {
   if (req.header('X-RPS-API-Key') !== EnvReader.GlobalEnvConfig.RPSXAPIKEY)
     res.status(401).end("Not Authenticated.")
   else
-    next(); 
+    next();
 }
 //let ws = expressWs(this.app)
 app.use('/api/v1', isAuthenticated, (req, res, next) => {
@@ -57,25 +78,46 @@ app.use('/api/v1', isAuthenticated, (req, res, next) => {
 
 let serverHttps: any;
 if (config.https) {
-  let certs = EnvReader.getCertConfig();
+  let WebSocketCertificatePath = path.join(__dirname,EnvReader.GlobalEnvConfig.WSConfiguration.WebSocketCertificate);
+  let WebSocketCertificateKeyPath=path.join(__dirname,EnvReader.GlobalEnvConfig.WSConfiguration.WebSocketCertificateKey);
+  let RootCACertPath;
+  if(EnvReader.GlobalEnvConfig.WSConfiguration.RootCACert){
+    RootCACertPath = path.join(__dirname,EnvReader.GlobalEnvConfig.WSConfiguration.RootCACert);
+    if(!existsSync(RootCACertPath)){
+      log.error(`Root cert ${RootCACertPath} doesnt exist. Exiting..`)
+      process.exit(1)
+    }
+  }
+  if(!existsSync(WebSocketCertificatePath)){
+    log.error(`Cert File ${WebSocketCertificatePath} doesnt exist. Exiting..`)
+    process.exit(1)
+  }
+  if(!existsSync(WebSocketCertificateKeyPath)){
+    log.error(`Cert KeyFile ${WebSocketCertificateKeyPath} doesnt exist. Exiting..`)
+    process.exit(1)
+  }
+  let certs:any = {
+    webConfig: {
+      "key": readFileSync(WebSocketCertificateKeyPath),
+      "cert": readFileSync(WebSocketCertificatePath),
+      "secureOptions": ["SSL_OP_NO_SSLv2", "SSL_OP_NO_SSLv3", "SSL_OP_NO_COMPRESSION", "SSL_OP_CIPHER_SERVER_PREFERENCE", "SSL_OP_NO_TLSv1", "SSL_OP_NO_TLSv11"],
+      "ca": (EnvReader.GlobalEnvConfig.WSConfiguration.RootCACert !== "" ? readFileSync(RootCACertPath) : "")
+    }
+  }
+  log.debug(`Web Endpoint Cert Info ${JSON.stringify(certs.webConfig)}`);
   serverHttps = https.createServer(certs.webConfig, app);
   // this.expressWs = expressWs(this.app, this.serverHttps);
 }
 
-//Clickjacking defence
-app.use(function (req, res, next) {
-  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
-  next();
-})
 
 if (config.https) {
   serverHttps.listen(config.webport, () => {
-   console.log(`RPS Microservice Rest APIs listening on ${config.webport}.`);
+    log.info(`RPS Microservice Rest APIs listening on https://:${config.webport}.`);
   });
 }
 else {
   app.listen(config.webport, () => {
-    console.log(`RPS Microservice Rest APIs listening on ${config.webport}.`);
+    log.info(`RPS Microservice Rest APIs listening on http://:${config.webport}.`);
   });
 }
 server.connect();

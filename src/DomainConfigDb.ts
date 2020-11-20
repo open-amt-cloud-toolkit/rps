@@ -1,38 +1,63 @@
-import { IDomainsDb } from "./repositories/interfaces/IDomainsDb";
-import { AMTDomains, RCSConfig, AMTDomain } from "./models/Rcs";
-import { FileHelper } from "./utils/FileHelper";
-import { EnvReader } from "./utils/EnvReader";
 import { ILogger } from "./interfaces/ILogger";
+import { AMTDomain, AMTDomains } from "./models/Rcs";
+import { IDomainsDb } from "./repositories/interfaces/IDomainsDb";
+import { EnvReader } from "./utils/EnvReader";
+import { FileHelper } from "./utils/FileHelper";
+import { DOMAIN_INSERTION_FAILED_DUPLICATE } from "./utils/constants";
 
 
 export class DomainConfigDb implements IDomainsDb {
   private domains: AMTDomains;
   private logger: ILogger;
 
-  constructor(amtDomains: AMTDomains, logger: ILogger) {
+  constructor(domains: AMTDomains, logger: ILogger) {
     this.logger = logger;
-    this.domains = amtDomains;
+    this.domains = domains || new AMTDomains();
+    // this.logger.debug(JSON.stringify(this.domains))
     this.logger.debug(`using local domain db`);
   }
 
   async getAllDomains(): Promise<any> {
     this.logger.debug(`getAllDomains called`);
-    return this.domains;
+    let data: any = FileHelper.readJsonObjFromFile(EnvReader.configPath);
+    // data.AMTDomains = this.domains;
+    return data.AMTDomains;
   }
   async getDomainByName(domainName: string): Promise<any> {
     this.logger.debug(`getDomainByName: ${domainName}`);
-    return this.domains.find(item => item.Name === domainName);
+    let data: any = FileHelper.readJsonObjFromFile(EnvReader.configPath);
+    return data.AMTDomains.find(item => item.Name === domainName);
   }
   async insertDomain(amtDomain: AMTDomain): Promise<any> {
     this.logger.debug(`insertDomain: ${amtDomain.Name}`);
 
-    if (this.domains.some(item => item.Name === amtDomain.Name)) {
+    if (this.domains.some(item => item.Name === amtDomain.Name) || 
+    this.domains.some(item => item.DomainSuffix === amtDomain.DomainSuffix)) {
       this.logger.error(`domain already exists: ${amtDomain.Name}`);
+      throw (DOMAIN_INSERTION_FAILED_DUPLICATE(amtDomain.Name))
     } else {
       this.domains.push(amtDomain);
       this.updateConfigFile();
       this.logger.info(`Domain: ${amtDomain.Name} inserted`);
       return true;
+    }
+  }
+  async updateDomain(amtDomain: AMTDomain): Promise<any> {
+    this.logger.debug(`update Domain: ${amtDomain.Name}`);
+    var isMatch = item => item.Name === amtDomain.Name;
+    var index = this.domains.findIndex(isMatch);
+
+    if (index >= 0) {
+      this.domains.splice(index, 1);
+      this.domains.push(amtDomain);
+      this.updateConfigFile();
+      this.logger.info(`Domain: ${amtDomain.Name} updated`);
+      this.logger.silly(`Domain ${JSON.stringify(amtDomain)}`)
+      return 1;
+    } else {
+      
+      this.logger.info(`Domain: ${amtDomain.Name} doesnt exist`);
+      return 0;
     }
   }
   async deleteDomainByName(domainName: string): Promise<any> {
@@ -51,20 +76,19 @@ export class DomainConfigDb implements IDomainsDb {
       this.updateConfigFile();
       this.logger.debug(`domain deleted: ${domainName}`);
       return true;
-    } else{
+    } else {
       this.logger.debug(`domain not deleted: ${domainName}`);
     }
   }
 
   private updateConfigFile() {
-    let config: RCSConfig;
+    let data: any = FileHelper.readJsonObjFromFile(EnvReader.configPath);
+    data.AMTDomains = this.domains;
     if (FileHelper.isValidPath(EnvReader.configPath)) {
-        config = FileHelper.readJsonObjFromFile<RCSConfig>(EnvReader.configPath);
+      FileHelper.writeObjToJsonFile(data, EnvReader.configPath);
     } else {
-        config = new RCSConfig();
+      this.logger.error(`path not valid: ${EnvReader.configPath}`)
     }
-
-    config.AMTDomains = this.domains;
-    FileHelper.writeObjToJsonFile(config, EnvReader.configPath);
   }
 }
+

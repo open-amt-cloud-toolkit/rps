@@ -6,6 +6,7 @@
 import { IDbCreator } from "./interfaces/IDbCreator";
 import { IDomainsDb } from "./interfaces/IDomainsDb";
 import { mapToDomain } from "./mapToDomain";
+import { DOMAIN_INSERTION_FAILED_DUPLICATE } from "../utils/constants";
 
 export class DomainsDb implements IDomainsDb {
   db: any;
@@ -13,10 +14,16 @@ export class DomainsDb implements IDomainsDb {
     this.db = dbCreator.getDb();
   }
 
-  async getAllDomains(): Promise<any> {
+  async getAllDomains(mapperFn?: (data) => any): Promise<any> {
     let results = await this.db.query('SELECT name as Name, domain_suffix as DomainSuffix, provisioning_cert as ProvisioningCert, provisioning_cert_storage_format as ProvisioningCertStorageFormat, provisioning_cert_key as ProvisioningCertPassword FROM domains');
 
-    return results.rows.map(element => mapToDomain(element))
+    return Promise.all(results.rows.map( async element => {
+        let d = mapToDomain(element);
+        if(mapperFn && d.ProvisioningCertPassword)
+          d.ProvisioningCertPassword = await mapperFn(d.ProvisioningCertPassword);
+        return d;
+        }
+      ));
   }
 
   async getDomainByName(domainName): Promise<any> {
@@ -44,8 +51,27 @@ export class DomainsDb implements IDomainsDb {
     } catch (error) {
       console.log(error)
       if(error.code == '23505') // Unique key violation
-        throw ("Duplicate Domain. Domain already exists.")
+        throw (DOMAIN_INSERTION_FAILED_DUPLICATE(amtDomain.Name))
         
+      throw ("Unknown Error. Check Server Logs.")
+    }
+
+  }
+
+  async updateDomain(amtDomain): Promise<any> {
+    try {
+      let results = await this.db.query('UPDATE domains SET domain_suffix=$2, provisioning_cert=$3, provisioning_cert_storage_format=$4, provisioning_cert_key=$5 WHERE name=$1',
+        [
+          amtDomain.Name,
+          amtDomain.DomainSuffix,
+          amtDomain.ProvisioningCert,
+          amtDomain.ProvisioningCertStorageFormat,
+          amtDomain.ProvisioningCertPassword
+        ]);
+      return results.rowCount;
+    } catch (error) {
+      console.log(error)
+       
       throw ("Unknown Error. Check Server Logs.")
     }
 

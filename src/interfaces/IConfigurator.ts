@@ -8,7 +8,7 @@
 import { IDomainCredentialManager } from "./IDomainCredentialManager";
 import { IProfileManager } from "./IProfileManager";
 import { ISecretManagerService } from "./ISecretManagerService";
-import { IAMTDeviceWriter } from "../repositories/interfaces/IAMTDeviceWriter";
+import { IAMTDeviceRepository } from "../repositories/interfaces/IAMTDeviceRepository";
 import { IClientManager } from "./IClientManager";
 import { IDataProcessor } from "./IDataProcessor";
 
@@ -16,7 +16,7 @@ export interface IConfigurator {
     domainCredentialManager: IDomainCredentialManager;
     profileManager: IProfileManager;
     secretsManager: ISecretManagerService;
-    amtDeviceWriter: IAMTDeviceWriter;
+    amtDeviceRepository: IAMTDeviceRepository;
     dataProcessor: IDataProcessor;
     clientManager: IClientManager;
 }

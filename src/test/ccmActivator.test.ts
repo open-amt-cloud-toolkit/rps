@@ -16,17 +16,19 @@ import { WSManProcessor } from "../WSManProcessor";
 import { ClientManager } from "../ClientManager";
 import { Validator } from "../Validator";
 import { EnvReader } from '../utils/EnvReader';
+import { CIRAConfigurator } from "../actions/CIRAConfigurator";
 
-EnvReader.InitFromEnv(config);
-
+//EnvReader.InitFromEnv(config);
+EnvReader.GlobalEnvConfig = config;
 let nodeForge = new NodeForge();
 let helper = new SignatureHelper(nodeForge);
 let configurator = new Configurator();
 let clientManager = ClientManager.getInstance(Logger("ClientManager"));
 let responseMsg = new ClientResponseMsg(Logger("ClientResponseMsg"), nodeForge);
-let amtwsman = new WSManProcessor(Logger(`AMTWSMan`), clientManager, responseMsg);
+let amtwsman = new WSManProcessor(Logger(`WSManProcessor`), clientManager, responseMsg);
 let validator = new Validator(Logger("Validator"), configurator, clientManager, nodeForge);
-let ccmActivate = new CCMActivator(Logger(`CCMActivator`), configurator, helper, responseMsg, amtwsman, clientManager, validator);
+let ciraConfig = new CIRAConfigurator(Logger(`CIRAConfig`),configurator, responseMsg, amtwsman, clientManager);
+let ccmActivate = new CCMActivator(Logger(`CCMActivator`), configurator, responseMsg, amtwsman, clientManager, validator, ciraConfig);
 let clientId, activationmsg;
 
 beforeAll(() => {
@@ -60,8 +62,11 @@ beforeAll(() => {
 
 describe("Activate in client control mode", () => {
   test("should throw an error when the payload is null", async () => {
+    let clientObj = clientManager.getClientObject(clientId);
+    clientObj.uuid = activationmsg.payload.uuid;
+    clientManager.setClientObject(clientObj);
     let clientMsg = { payload: null };
-    let ccmactivateMsg = await ccmActivate.activate(clientMsg, clientId);
+    let ccmactivateMsg = await ccmActivate.execute(clientMsg, clientId);
     expect(ccmactivateMsg.message).toEqual(`Device ${activationmsg.payload.uuid} activation failed : Missing/invalid WSMan response payload.`);
   });
 });

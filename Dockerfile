@@ -1,10 +1,24 @@
-FROM node:10.16
+FROM node:12
+
 WORKDIR /rcs-microservice
+RUN apt-get update -y && apt-get install netcat -y
 
+# Default Ports Used
+EXPOSE 8080
+EXPOSE 8081
+
+# Copy needed files
 COPY package*.json ./
-RUN npm install
+COPY tsconfig.json ./
+COPY src ./src/
+COPY .rpsrc ./
+COPY private/data.json ./private/
 
-COPY . .
-EXPOSE 4433
-EXPOSE 3000
-CMD [ "npm", "start" ]
+# Install dependencies
+RUN npm ci
+
+# Transpile TS => JS
+#RUN npm run compile
+#RUN npm prune --production
+
+CMD ["node", "./dist/Index.js"]

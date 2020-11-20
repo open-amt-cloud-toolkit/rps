@@ -53,7 +53,7 @@ export class DomainCredentialManager implements IDomainCredentialManager {
         let domain = await this.getAMTDomain(domainSuffix);
         let cert: string = null;
         if (domain && domain.ProvisioningCert) {
-            // this.logger.debug(`found provisioning cert for domain ${domainSuffix}`);
+            this.logger.debug(`found provisioning cert for domain ${domainSuffix}`);
             cert = domain.ProvisioningCert;
         }
         else {
@@ -75,7 +75,7 @@ export class DomainCredentialManager implements IDomainCredentialManager {
             let provisionCertPwd = null;
             if (this.configurator && this.configurator.secretsManager) {
                 this.logger.info("Calling secret manager")
-                provisionCertPwd = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/PROVISIONING_CERT`, domain.ProvisioningCertPassword);
+                provisionCertPwd = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/${domain.Name}/PROVISIONING_CERT`, domain.ProvisioningCertPassword);
             }
             else {
                 provisionCertPwd = domain.ProvisioningCertPassword;
@@ -99,12 +99,13 @@ export class DomainCredentialManager implements IDomainCredentialManager {
         let amtDomainList = await this.amtDomains.getAllDomains();
         for (let index = 0; index < amtDomainList.length; ++index) {
             if (amtDomainList[index].DomainSuffix == domainSuffix) {
-                // this.logger.debug(`found amt domain: ${domainSuffix}`);
+                this.logger.debug(`found amt domain: ${domainSuffix}`);
+                this.logger.silly(`Domain Info ${domainSuffix}: ${JSON.stringify(amtDomainList[index])}`);
                 return amtDomainList[index];
             }
         }
 
-        this.logger.error(`Failed to found amt domain for ${domainSuffix}`);
+        this.logger.error(`Failed to find amt domain for ${domainSuffix}`);
         return null;
     }
 

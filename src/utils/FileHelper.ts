@@ -6,11 +6,15 @@
 **********************************************************************/
 
 import * as fs from "fs";
+import Logger from "../Logger";
+import { ILogger } from "../interfaces/ILogger";
 
 export class FileHelper {
 
+    static logger: ILogger = Logger(`FileHelper`);
+
     public static isValidPath(filePath: string): boolean {
-        if (fs.existsSync(filePath)) {
+        if (filePath && fs.existsSync(filePath)) {
             return true;
         } else {
             return false;
@@ -33,14 +37,34 @@ export class FileHelper {
         }
     }
 
-    public static readJsonObjFromFile<T>(filePath: string): T {
+    public static readJsonObjFromFile(filePath: string): any {
+        let jsonFile = {};
+
         try {
-            let importedFile = FileHelper.readFileSync(filePath);
-            let file: T = JSON.parse(importedFile);
-            return file;
+            if (FileHelper.isValidPath(filePath)) {
+                this.logger.debug(`credential file found at location: ${filePath}`);
+
+                let fileContents = FileHelper.readFileSync(filePath);
+
+                if (fileContents) {
+                    let fileContentsTrimmed = fileContents.trim();
+                    if (fileContentsTrimmed && fileContentsTrimmed.length > 0) {
+                        jsonFile = JSON.parse(fileContents);
+                        this.logger.debug(`read in file: ${JSON.stringify(jsonFile, null, 2)}}`);
+                    } else {
+                        this.logger.warn(`file only contains whitespaces ${filePath}`);
+                    }
+                } else {
+                    this.logger.warn(`file is empty ${filePath}`);
+                }
+            } else {
+                this.logger.warn(`file not found at location: ${filePath}`);
+            }
         } catch (error) {
             throw new Error(`Exception in reading file: ${error}, filePath: ${filePath}`);
         }
+
+        return jsonFile;
     }
 
     public static writeObjToJsonFile(obj: any, filePath: string): void {

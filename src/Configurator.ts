@@ -14,9 +14,9 @@ import Logger from "./Logger";
 import { ISecretManagerService } from "./interfaces/ISecretManagerService";
 import { ProfilesDbFactory } from "./repositories/ProfilesDbFactory";
 import { DomainsDbFactory } from "./repositories/DomainsDbFactory";
-import { IAMTDeviceWriter } from "./repositories/interfaces/IAMTDeviceWriter";
+import { IAMTDeviceRepository } from "./repositories/interfaces/IAMTDeviceRepository";
 import { SecretManagerService } from "./utils/SecretManagerService";
-import { AmtDeviceWriterFactory } from "./repositories/AmtDeviceFactory";
+import { AmtDeviceFactory } from "./repositories/AmtDeviceFactory";
 import { EnvReader } from "./utils/EnvReader";
 import { NodeForge } from "./NodeForge";
 import { IClientManager } from "./interfaces/IClientManager";
@@ -32,9 +32,9 @@ import { IDataProcessor } from "./interfaces/IDataProcessor";
 
 export class Configurator implements IConfigurator {
 
-    private _amtDeviceWriter: IAMTDeviceWriter;
-    get amtDeviceWriter(): IAMTDeviceWriter {
-        return this._amtDeviceWriter;
+    private _amtDeviceRepository: IAMTDeviceRepository;
+    get amtDeviceRepository(): IAMTDeviceRepository {
+        return this._amtDeviceRepository;
     }
 
     private _domainCredentialManager: IDomainCredentialManager;
@@ -78,7 +78,7 @@ export class Configurator implements IConfigurator {
 
         this._dataProcessor = new DataProcessor(Logger(`DataProcessor`), helper, this, validator, certManager, this._clientManager, responseMsg, amtwsman);
 
-        this._amtDeviceWriter = AmtDeviceWriterFactory.getAmtDeviceWriter(this);
+        this._amtDeviceRepository = AmtDeviceFactory.getAmtDeviceRepository(this);
         this._domainCredentialManager = new DomainCredentialManager(Logger(`DomainCredentialManager`), DomainsDbFactory.getDomainsDb(), this);
         this._profileManager = new ProfileManager(Logger(`ProfileManager`), this, ProfilesDbFactory.getProfilesDb(), EnvReader.GlobalEnvConfig);
     }

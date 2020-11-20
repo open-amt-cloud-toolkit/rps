@@ -4,6 +4,8 @@
 * Description: Constants
 **********************************************************************/
 
+import { CIRAConfig, NetworkConfig } from "../RCS.Config";
+
 export class ProvisioningCertObj {
     certChain: Array<string>;
     privateKey: string;
@@ -19,6 +21,7 @@ export class certificateObject {
 
 export class DbConfig {
     useDbForConfig: boolean;
+    useRawCerts?: boolean;
     dbhost: string;
     dbname: string;
     dbport: number;
@@ -44,16 +47,14 @@ export class RCSConfig {
     https: boolean;
     webport: number;
     credentialspath: string;
+    datapath?: string;
     WSConfiguration: WSConfiguration;
-    AMTConfigurations: AMTConfigurations;
-    AMTDomains: AMTDomains;
     DbConfig: DbConfig;
     RPSXAPIKEY: string;
+    NodeEnv?: string;
     constructor() {
         this.VaultConfig = new VaultConfig();
         this.WSConfiguration = new WSConfiguration();
-        this.AMTConfigurations = new AMTConfigurations();
-        this.AMTDomains = new AMTDomains();
         this.DbConfig = new DbConfig();
     }
 }
@@ -63,11 +64,36 @@ export class WSConfiguration {
     WebSocketTLS: boolean;
     WebSocketCertificate: string;
     WebSocketCertificateKey: string;
+    RootCACert?: string;
     constructor() { }
 }
 
 export class AMTConfigurations extends Array<AMTConfiguration> {
-    [index: number]: { ProfileName: string; AMTPassword: string; GenerateRandomPassword: boolean; RandomPasswordLength: number; RandomPasswordCharacters: string; ConfigurationScript: string; Activation: string; };
+    [index: number]: { ProfileName: string; AMTPassword: string; GenerateRandomPassword: boolean; RandomPasswordLength: number; RandomPasswordCharacters: string; ConfigurationScript: string; CIRAConfigName?: string; Activation: string; };
+}
+
+export class CIRAConfigurations extends Array<CIRAConfig> {
+    [index: number]: {
+        ConfigName: string;
+        MPSServerAddress: string;
+        MPSPort: number;
+        Username: string;
+        Password: string;
+        CommonName: string;
+        ServerAddressFormat: number; //IPv4 (3), IPv6 (4), FQDN (201)
+        AuthMethod: number; //Mutual Auth (1), Username/Password (2) (We only support 2)
+        MPSRootCertificate: string; // Assumption is Root Cert for MPS. Need to validate.
+        ProxyDetails: string;
+    };
+}
+
+export class NETConfigurations extends Array<NetworkConfig> {
+    [index: number]: {
+        ProfileName: string;
+        DHCPEnabled: boolean;
+        StaticIPShared: boolean;
+        IPSyncEnabled: boolean;
+    };
 }
 
 export class AMTConfiguration {
@@ -76,8 +102,11 @@ export class AMTConfiguration {
     GenerateRandomPassword: boolean;
     RandomPasswordLength?: number;
     RandomPasswordCharacters?: string;
-    ConfigurationScript: string;
+    ConfigurationScript?: string;
+    CIRAConfigName?: string;
     Activation: string;
+    NetworkConfigName?: string;
+    NetworkConfigObject?: NetworkConfig;
     constructor() { }
 }
 
@@ -201,4 +230,58 @@ export class Client {
         this.currentMode = currentMode;
         this.tag = tag;
     }
+}
+
+export class Version {
+    major: number;
+    minor: number;
+    revision: number;
+
+    constructor() {
+        this.major = 0;
+        this.minor = 0;
+        this.revision = 0;
+    }
+}
+
+let recipeRCSConfig = {
+    'name': 'Name',
+    'description': 'Description',
+    'user': 'mpsusername',
+    'password': 'mpspass',
+    'amt_user': 'amtusername',
+    'developer_mode': 'devmode',
+    'https': 'https',
+    'web_port': 'webport',
+    'credentials_path': 'credentialspath',
+    'websocketport': 'WSConfiguration.WebSocketPort',
+    'websockettls': 'WSConfiguration.WebSocketTLS',
+    'web_tls_cert': 'WSConfiguration.WebSocketCertificate',
+    'web_tls_cert_key': 'WSConfiguration.WebSocketCertificateKey',
+    'root_ca_cert': 'WSConfiguration.RootCACert',
+    'use_vault': 'VaultConfig.usevault',
+    'vault_address': 'VaultConfig.address',
+    'vault_token': 'VaultConfig.token',
+    'secrets_path': 'VaultConfig.SecretsPath',
+    'db_host': 'DbConfig.dbhost',
+    'db_name': 'DbConfig.dbname',
+    'db_port': 'DbConfig.dbport',
+    'db_user': 'DbConfig.dbuser',
+    'db_password': 'DbConfig.dbpassword',
+    'use_db_profiles': 'DbConfig.useDbForConfig',
+    'xapikey': 'RPSXAPIKEY',
+    'amt_domains': 'AMTDomains',
+    'amt_configurations': 'AMTConfigurations',
+    'cira_configurations': 'CIRAConfigurations',
+    'data_path': 'datapath',
+    'node_env': 'NodeEnv',
+    'use_raw_certs': 'DbConfig.useRawCerts'
+};
+
+export function mapConfig(src, dot) {
+    let config:RCSConfig;
+
+    config = <RCSConfig>dot.transform(recipeRCSConfig, src)
+
+    return config;
 }

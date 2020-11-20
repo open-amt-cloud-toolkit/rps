@@ -4,7 +4,7 @@
  * Author: Madhavi Losetty
  **********************************************************************/
 import { v4 as uuid } from 'uuid';
-
+import * as path from 'path'
 import { ACMActivator } from "../actions/ACMActivator";
 import Logger from "../Logger";
 import { SignatureHelper } from "../utils/SignatureHelper";
@@ -18,19 +18,23 @@ import { WSManProcessor } from "../WSManProcessor";
 import { Validator } from "../Validator";
 import { IPSHostBasedSetupService, AMTGeneralSettings, AdminSetup } from "./helper/AMTJSONResponses";
 import { EnvReader } from '../utils/EnvReader';
+import { CIRAConfigurator } from '../actions/CIRAConfigurator';
+import { ClientAction } from '../RCS.Config';
 
 
-EnvReader.InitFromEnv(config);
-
+//EnvReader.InitFromEnv(config);
+EnvReader.GlobalEnvConfig = config;
+EnvReader.configPath = path.join(__dirname, './helper/data.json')
 let nodeForge = new NodeForge();
 let certManager = new CertManager(nodeForge);
 let helper = new SignatureHelper(nodeForge);
 let configurator = new Configurator();
 let clientManager = ClientManager.getInstance(Logger("ClientManager"));
 let responseMsg = new ClientResponseMsg(Logger("ClientResponseMsg"), nodeForge);
-let amtwsman = new WSManProcessor(Logger(`AMTWSMan`), clientManager, responseMsg);
+let amtwsman = new WSManProcessor(Logger(`WSManProcessor`), clientManager, responseMsg);
 let validator = new Validator(Logger("Validator"), configurator, clientManager, nodeForge);
-let acmActivator = new ACMActivator(Logger(`ACMActivator`), configurator, certManager, helper, responseMsg, amtwsman, clientManager, validator);
+let ciraConfig = new CIRAConfigurator(Logger(`CIRAConfig`), configurator, responseMsg, amtwsman, clientManager);
+let acmActivator = new ACMActivator(Logger(`ACMActivator`), configurator, certManager, helper, responseMsg, amtwsman, clientManager, validator, ciraConfig);
 let clientId, activationmsg;
 
 beforeAll(() => {
@@ -85,16 +89,24 @@ beforeAll(() => {
 });
 
 describe("activate in admin control mode", () => {
-
   test("should throw an error when the payload is null", async () => {
+
+    let clientObj = clientManager.getClientObject(clientId);
+    clientObj.uuid = activationmsg.payload.uuid;
+    clientManager.setClientObject(clientObj);
+
     let clientMsg = { payload: null };
-    let responseMsg = await acmActivator.activate(clientMsg, clientId);
+    let responseMsg = await acmActivator.execute(clientMsg, clientId);
     expect(responseMsg.message).toEqual(`Device ${activationmsg.payload.uuid} activation failed. Missing/invalid WSMan response payload.`);
   });
 
-   test("should throw an error when the certificate does not exist on server", async () => {
+  test("should throw an error when the certificate does not exist on server", async () => {
+    let clientObj = clientManager.getClientObject(clientId);
+    clientObj.action = ClientAction.ADMINCTLMODE;
+    clientObj.uuid = activationmsg.payload.uuid;
+    clientManager.setClientObject(clientObj);
     let clientMsg = { payload: IPSHostBasedSetupService };
-    let responseMsg = await acmActivator.activate(clientMsg, clientId);
-    expect(responseMsg.message).toEqual(`Device ${activationmsg.payload.uuid} activation failed. AMT provisioning certificate not found on server`);
+    let responseMsg = await acmActivator.execute(clientMsg, clientId);
+    expect(responseMsg.message).toEqual(`Device ${activationmsg.payload.uuid} activation failed. Provisioning certificate doesn't match any trusted certificates from AMT`);
   });
 });
