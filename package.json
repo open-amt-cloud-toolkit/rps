@@ -20,7 +20,7 @@
     "express-promise-router": "^3.0.3",
     "express-ws": "^4.0.0",
     "node-forge": "^0.7.6",
-    "node-vault": "^0.9.12",
+    "node-vault": "^0.9.20",
     "pg": "^7.17.1",
     "winston": "^3.0.0",
     "ws": "^7.1.2"
