@@ -36,7 +36,7 @@ To deploy the RPS on a local development system:
     npm install
     ```
 
-3. Run 'npm run dev' start command. The npm run dev start command may take 2-3 minutes to install.
+3. Run 'npm run dev' start command. The npm run dev start command may take 1-2 minutes to install.
 
     ``` bash
     npm run dev
@@ -44,6 +44,10 @@ To deploy the RPS on a local development system:
     
     >Note: Warning messages are okay and expected for optional dependencies.
 
-4. The RPS listens on port 8081. Successful installation produces the command line message RPS Microservice Rest APIs listening on https://:8081.
+4. The RPS listens on port 8081. Successful installation produces the command line message:
 
+    ```
+    RPS Microservice Rest APIs listening on https://:8081.
+    ```
+    
 For detailed documentation about RPS, see the [docs](https://open-amt-cloud-toolkit.github.io/mps/)
