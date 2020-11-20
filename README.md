@@ -47,6 +47,7 @@ To deploy the RPS on a local development system:
 4. The RPS listens on port 8081. Successful installation produces the command line message:
 
     ```
+    WebSocketListener - RPS Microservice socket listening on port: 8080 ...!
     RPS Microservice Rest APIs listening on https://:8081.
     ```
     
