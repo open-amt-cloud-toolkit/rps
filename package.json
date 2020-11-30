@@ -28,7 +28,7 @@
     "pg": "^7.17.1",
     "rc": "^1.2.8",
     "winston": "^3.3.3",
-    "ws": "^7.1.2"
+    "ws": "^7.4.0"
   },
   "devDependencies": {
     "@types/body-parser": "^1.17.1",
