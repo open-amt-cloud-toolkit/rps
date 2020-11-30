@@ -24,7 +24,7 @@
     "express-ws": "^4.0.0",
     "minimist": "^1.2.5",
     "node-forge": "^0.10.0",
-    "node-vault": "^0.9.12",
+    "node-vault": "^0.9.20",
     "pg": "^7.17.1",
     "rc": "^1.2.8",
     "winston": "^3.3.3",
