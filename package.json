@@ -15,7 +15,7 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "@types/pg": "^7.14.1",
+    "@types/pg": "^7.14.7",
     "body-parser": "^1.19.0",
     "crypto-random-string": "^3.3.0",
     "dot-object": "^2.1.4",
