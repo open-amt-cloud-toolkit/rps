@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  * Author: Madhavi Losetty
  **********************************************************************/
-import * as WebSocket from "ws";
-import { ClientMsg } from "../RCS.Config";
+import * as WebSocket from 'ws'
+import { ClientMsg } from '../RCS.Config'
 
 export interface IValidator {
     parseClientMsg(message: WebSocket.Data, clientId: string): any;

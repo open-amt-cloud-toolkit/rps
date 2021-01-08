@@ -4,18 +4,21 @@
  * Author : Ramu Bachala
  **********************************************************************/
 
-import { AMTConfig } from "../RCS.Config";
+import { AMTConfig } from '../RCS.Config'
 
-export function mapToProfile(results): AMTConfig {
+export function mapToProfile (results): AMTConfig {
   return <AMTConfig>{
     ProfileName: results.profilename,
-    AMTPassword: results.amtpassword,   
+    AMTPassword: results.amtpassword,
     GenerateRandomPassword: results.generaterandompassword,
     RandomPasswordLength: results.randompasswordlength,
     RandomPasswordCharacters: results.randompasswordcharacters,
     ConfigurationScript: results.configurationscript,
     Activation: results.activation,
     CIRAConfigName: results.ciraconfigname,
-    NetworkConfigName: results.networkprofilename
+    NetworkConfigName: results.networkprofilename,
+    MEBxPassword: results.mebxpassword,
+    GenerateRandomMEBxPassword: results.generaterandommebxpassword,
+    RandomMEBxPasswordLength: results.randommebxpasswordlength
   }
 }

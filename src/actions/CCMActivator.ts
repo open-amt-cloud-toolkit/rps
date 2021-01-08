@@ -5,22 +5,22 @@
  * Author : Madhavi Losetty
  **********************************************************************/
 
-import { IExecutor } from "../interfaces/IExecutor";
-import { ILogger } from "../interfaces/ILogger";
-import { SignatureHelper } from "../utils/SignatureHelper";
-import { ClientMsg, ClientAction } from "../RCS.Config";
-import { IConfigurator } from "../interfaces/IConfigurator";
-import { AMTDeviceDTO } from "../repositories/dto/AmtDeviceDTO";
-import { ClientResponseMsg } from "../utils/ClientResponseMsg";
-import { WSManProcessor } from "../WSManProcessor";
-import { IClientManager } from "../interfaces/IClientManager";
-import { RPSError } from "../utils/RPSError";
-import { IValidator } from "../interfaces/IValidator";
-import { EnvReader } from "../utils/EnvReader";
-import { CIRAConfigurator } from "./CIRAConfigurator";
+import { IExecutor } from '../interfaces/IExecutor'
+import { ILogger } from '../interfaces/ILogger'
+import { SignatureHelper } from '../utils/SignatureHelper'
+import { ClientMsg, ClientAction } from '../RCS.Config'
+import { IConfigurator } from '../interfaces/IConfigurator'
+import { AMTDeviceDTO } from '../repositories/dto/AmtDeviceDTO'
+import { ClientResponseMsg } from '../utils/ClientResponseMsg'
+import { WSManProcessor } from '../WSManProcessor'
+import { IClientManager } from '../interfaces/IClientManager'
+import { RPSError } from '../utils/RPSError'
+import { IValidator } from '../interfaces/IValidator'
+import { EnvReader } from '../utils/EnvReader'
+import { CIRAConfigurator } from './CIRAConfigurator'
 
 export class CCMActivator implements IExecutor {
-  constructor(
+  constructor (
     private logger: ILogger,
     private configurator: IConfigurator,
     private responseMsg: ClientResponseMsg,
@@ -36,36 +36,36 @@ export class CCMActivator implements IExecutor {
    * @param {string} clientId Id to keep track of connections
    * @returns {ClientMsg} message to sent to client
    */
-  async execute(message: any, clientId: string): Promise<ClientMsg> {
+  async execute (message: any, clientId: string): Promise<ClientMsg> {
     try {
-      let clientObj = this.clientManager.getClientObject(clientId);
-      let wsmanResponse = message.payload;
+      const clientObj = this.clientManager.getClientObject(clientId)
+      const wsmanResponse = message.payload
 
       if (!wsmanResponse) {
-        throw new RPSError(`Device ${clientObj.uuid} activation failed : Missing/invalid WSMan response payload.`);
+        throw new RPSError(`Device ${clientObj.uuid} activation failed : Missing/invalid WSMan response payload.`)
       }
 
-      if (wsmanResponse["AMT_GeneralSettings"] !== undefined) {
-        let response = wsmanResponse["AMT_GeneralSettings"].response;
-        //Validate Digest Realm
+      if (wsmanResponse.AMT_GeneralSettings !== undefined) {
+        const response = wsmanResponse.AMT_GeneralSettings.response
+        // Validate Digest Realm
         if (!this.validator.isDigestRealmValid(response.DigestRealm)) {
-          throw new RPSError(`Device ${clientObj.uuid} activation failed : Not a valid digest realm.`);
+          throw new RPSError(`Device ${clientObj.uuid} activation failed : Not a valid digest realm.`)
         }
-        clientObj.ClientData.payload.digestRealm = response.DigestRealm;
-        this.clientManager.setClientObject(clientObj);
-      } else if (wsmanResponse["Header"]["Method"] === "Setup") {
-        if (wsmanResponse["Body"]["ReturnValue"] !== 0) {
-          throw new RPSError(`Device ${clientObj.uuid} activation failed : Error while activating the AMT device in client mode.`);
+        clientObj.ClientData.payload.digestRealm = response.DigestRealm
+        this.clientManager.setClientObject(clientObj)
+      } else if (wsmanResponse.Header.Method === 'Setup') {
+        if (wsmanResponse.Body.ReturnValue !== 0) {
+          throw new RPSError(`Device ${clientObj.uuid} activation failed : Error while activating the AMT device in client mode.`)
         } else {
-          this.logger.debug(`Device ${clientObj.uuid} activated in client mode.`);
-          clientObj.ciraconfig.status = `activated in client mode.`;
-          clientObj.action = ClientAction.CIRACONFIG;
-          this.clientManager.setClientObject(clientObj);
-          await this.CIRAConfigurator.execute(message, clientId);
+          this.logger.debug(`Device ${clientObj.uuid} activated in client mode.`)
+          clientObj.ciraconfig.status = 'activated in client mode.'
+          clientObj.action = ClientAction.CIRACONFIG
+          this.clientManager.setClientObject(clientObj)
+          await this.CIRAConfigurator.execute(message, clientId)
         }
       }
       if (clientObj.action === ClientAction.CLIENTCTLMODE) {
-        let amtPassword: string = await this.configurator.profileManager.getAmtPassword(clientObj.ClientData.payload.profile.ProfileName);
+        const amtPassword: string = await this.configurator.profileManager.getAmtPassword(clientObj.ClientData.payload.profile.ProfileName)
 
         if (this.configurator && this.configurator.amtDeviceRepository) {
           await this.configurator.amtDeviceRepository.insert(new AMTDeviceDTO(clientObj.uuid,
@@ -73,23 +73,23 @@ export class CCMActivator implements IExecutor {
             EnvReader.GlobalEnvConfig.mpsusername,
             EnvReader.GlobalEnvConfig.mpspass,
             EnvReader.GlobalEnvConfig.amtusername,
-            amtPassword));
+            amtPassword))
         } else {
-          this.logger.error(`unable to write device`);
+          this.logger.error('unable to write device')
         }
-        let data: string = "admin:" + clientObj.ClientData.payload.digestRealm + ":" + amtPassword;
-        let password = SignatureHelper.createMd5Hash(data);
+        const data: string = 'admin:' + clientObj.ClientData.payload.digestRealm + ':' + amtPassword
+        const password = SignatureHelper.createMd5Hash(data)
 
-        await this.amtwsman.setupCCM(clientId, password);
+        await this.amtwsman.setupCCM(clientId, password)
       }
     } catch (error) {
       this.logger.error(
         `${clientId} : Failed to activate in client control mode : ${error}`
-      );
+      )
       if (error instanceof RPSError) {
-        return this.responseMsg.get(clientId, null, "error", "failed", error.message);
+        return this.responseMsg.get(clientId, null, 'error', 'failed', error.message)
       } else {
-        return this.responseMsg.get(clientId, null, "error", "failed", " Failed to activate in client control mode");
+        return this.responseMsg.get(clientId, null, 'error', 'failed', ' Failed to activate in client control mode')
       }
     }
   }

@@ -3,8 +3,11 @@
     {
       "ProfileName": "profile1",
       "AMTPassword": "P@ssw0rd",
+      "MEBxPassword": "P@ssw0rd",
       "GenerateRandomPassword": false,
       "RandomPasswordLength": 8,
+      "GenerateRandomMEBxPassword": false,
+      "RandomMEBxPasswordLength": 8,
       "RandomPasswordCharacters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()",
       "ConfigurationScript": null,
       "Activation": "acmactivate",
@@ -13,8 +16,11 @@
     {
       "ProfileName": "profile2",
       "AMTPassword": "P@ssw0rd",
+      "MEBxPassword": "P@ssw0rd",
       "GenerateRandomPassword": false,
       "RandomPasswordLength": 8,
+      "GenerateRandomMEBxPassword": false,
+      "RandomMEBxPasswordLength": 8,
       "RandomPasswordCharacters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()",
       "ConfigurationScript": null,
       "Activation": "ccmactivate",

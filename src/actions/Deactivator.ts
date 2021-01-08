@@ -5,21 +5,18 @@
  * Author : Brian Osburn
  **********************************************************************/
 
-import { IExecutor } from "../interfaces/IExecutor";
-import { ILogger } from "../interfaces/ILogger";
-import { ClientMsg } from "../RCS.Config";
-import { ClientResponseMsg } from "../utils/ClientResponseMsg";
-import { WSManProcessor } from "../WSManProcessor";
-import { IClientManager } from "../interfaces/IClientManager";
-import { RPSError } from "../utils/RPSError";
-import { EnvReader } from "../utils/EnvReader";
-import { ISecretManagerService } from "../interfaces/ISecretManagerService";
-import { Configurator } from "../Configurator";
-import { AMTDeviceDTO } from "../repositories/dto/AmtDeviceDTO";
-import { IConfigurator } from "../interfaces/IConfigurator";
+import { IExecutor } from '../interfaces/IExecutor'
+import { ILogger } from '../interfaces/ILogger'
+import { ClientMsg } from '../RCS.Config'
+import { ClientResponseMsg } from '../utils/ClientResponseMsg'
+import { WSManProcessor } from '../WSManProcessor'
+import { IClientManager } from '../interfaces/IClientManager'
+import { RPSError } from '../utils/RPSError'
+import { AMTDeviceDTO } from '../repositories/dto/AmtDeviceDTO'
+import { IConfigurator } from '../interfaces/IConfigurator'
 
 export class Deactivator implements IExecutor {
-  constructor(
+  constructor (
     private logger: ILogger,
     private responseMsg: ClientResponseMsg,
     private amtwsman: WSManProcessor,
@@ -28,45 +25,44 @@ export class Deactivator implements IExecutor {
   ) {}
 
   /**
-   * @description Create configuration message to deactivate AMT from ACM or CCM 
+   * @description Create configuration message to deactivate AMT from ACM or CCM
    * @param {any} message valid client message
    * @param {string} clientId Id to keep track of connections
    * @returns {RCSMessage} message to sent to client
    */
-  async execute(message: any, clientId: string): Promise<ClientMsg> {
+  async execute (message: any, clientId: string): Promise<ClientMsg> {
     try {
-      this.logger.debug(`deactivator execute message received: ${JSON.stringify(message , null, "\t")}`);
-      
-      let clientObj = this.clientManager.getClientObject(clientId);
+      this.logger.debug(`deactivator execute message received: ${JSON.stringify(message, null, '\t')}`)
 
-      let wsmanResponse = message.payload;
+      const clientObj = this.clientManager.getClientObject(clientId)
 
-      if(!wsmanResponse){
-        throw new RPSError(`Device ${clientObj.uuid} deactivate failed : Missing/invalid WSMan response payload.`);
+      const wsmanResponse = message.payload
+
+      if (!wsmanResponse) {
+        throw new RPSError(`Device ${clientObj.uuid} deactivate failed : Missing/invalid WSMan response payload.`)
       }
-     
-      if (wsmanResponse["Header"]["Method"] === "Unprovision") {
-        if (wsmanResponse["Body"]["ReturnValue"] !== 0) {
-          throw new RPSError(`Device ${clientObj.uuid} deactivation failed`);
-        } else{
 
+      if (wsmanResponse.Header.Method === 'Unprovision') {
+        if (wsmanResponse.Body.ReturnValue !== 0) {
+          throw new RPSError(`Device ${clientObj.uuid} deactivation failed`)
+        } else {
           this.logger.debug(`Deleting secret from vault for ${clientObj.uuid}`)
-          await this.configurator.amtDeviceRepository.delete(new AMTDeviceDTO(clientObj.uuid,null,null,null,null,null))
-          return this.responseMsg.get(clientId,null,"success","success",`Device ${clientObj.uuid} deactivated`);
+          await this.configurator.amtDeviceRepository.delete(new AMTDeviceDTO(clientObj.uuid, null, null, null, null, null))
+          return this.responseMsg.get(clientId, null, 'success', 'success', `Device ${clientObj.uuid} deactivated`)
         }
       } else {
-        clientObj.ClientData.payload = wsmanResponse;
-        this.clientManager.setClientObject(clientObj);
-        await this.amtwsman.deactivateACM(clientId);
+        clientObj.ClientData.payload = wsmanResponse
+        this.clientManager.setClientObject(clientObj)
+        await this.amtwsman.deactivateACM(clientId)
       }
     } catch (error) {
       this.logger.error(
         `${clientId} : Failed to deactivate: ${error}`
-      );
+      )
       if (error instanceof RPSError) {
-        return this.responseMsg.get(clientId, null, "error", "failed", error.message);
-      }else {
-        return this.responseMsg.get(clientId, null, "error", "failed", "failed to deactivate");
+        return this.responseMsg.get(clientId, null, 'error', 'failed', error.message)
+      } else {
+        return this.responseMsg.get(clientId, null, 'error', 'failed', 'failed to deactivate')
       }
     }
   }

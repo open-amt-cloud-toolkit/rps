@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  * Author : Madhavi Losetty
  **********************************************************************/
-import * as WebSocket from "ws";
+import * as WebSocket from 'ws'
 
-export  interface IDataProcessor{
-    processData(message: WebSocket.Data,clientId: string): Promise<any>;
+export interface IDataProcessor{
+    processData(message: WebSocket.Data, clientId: string): Promise<any>;
 }

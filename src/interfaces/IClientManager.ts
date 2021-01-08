@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  * Author : Madhavi Losetty
  **********************************************************************/
-import { ClientObject } from "../RCS.Config";
+import { ClientObject } from '../RCS.Config'
 
 export interface IClientManager{
     clients: Array<ClientObject>;

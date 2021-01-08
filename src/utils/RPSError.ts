@@ -1,9 +1,8 @@
 export class RPSError extends Error {
-    constructor(m: string) {
-        super(m);
+  constructor (m: string) {
+    super(m)
 
-        // Set the prototype explicitly.
-        Object.setPrototypeOf(this, RPSError.prototype);
-    }
-
+    // Set the prototype explicitly.
+    Object.setPrototypeOf(this, RPSError.prototype)
+  }
 }

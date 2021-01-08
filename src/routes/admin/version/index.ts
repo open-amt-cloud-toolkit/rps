@@ -4,9 +4,9 @@
  * Author : Brian Osburn
  **********************************************************************/
 
-const profileRouter = require('express').Router();
-const { getVersion } = require('./getVersion');
+const profileRouter = require('express').Router()
+const { getVersion } = require('./getVersion')
 
 profileRouter.get('/', getVersion)
 
-module.exports = profileRouter;
+module.exports = profileRouter

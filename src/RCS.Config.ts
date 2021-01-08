@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  * Author: Madhavi Losetty
  **********************************************************************/
-import * as WebSocket from "ws";
-import { AMTDomain, AMTConfiguration } from "./models/Rcs";
+import * as WebSocket from 'ws'
+import { AMTDomain } from './models/Rcs'
 
 export type WebSocketConfig = {
   WebSocketPort: number;
@@ -19,6 +19,9 @@ export type AMTConfig = {
   AMTPassword: string;
   GenerateRandomPassword: boolean;
   RandomPasswordLength: number;
+  MEBxPassword: string;
+  GenerateRandomMEBxPassword: boolean;
+  RandomMEBxPasswordLength: number;
   RandomPasswordCharacters: string;
   ConfigurationScript: string;
   CIRAConfigName: string;
@@ -44,7 +47,6 @@ Username (16 alphanumeric characters)
 Password (16 characters)
 CN (common name used when AccessInfo is IP address)
 
-
 Additional information that we need to provide when configuring MPS:
 
 - AddMpServer Method:
@@ -60,8 +62,8 @@ export type CIRAConfig = {
   Username: string;
   Password: string;
   CommonName: string;
-  ServerAddressFormat: number; //IPv4 (3), IPv6 (4), FQDN (201)
-  AuthMethod: number; //Mutual Auth (1), Username/Password (2) (We only support 2)
+  ServerAddressFormat: number; // IPv4 (3), IPv6 (4), FQDN (201)
+  AuthMethod: number; // Mutual Auth (1), Username/Password (2) (We only support 2)
   MPSRootCertificate: string; // Assumption is Root Cert for MPS. Need to validate.
   ProxyDetails: string;
 };
@@ -111,10 +113,10 @@ export type CIRAConfigFlow = {
 
 export type mpsServer = {
   AccessInfo: any;
-  InfoFormat: number; 
+  InfoFormat: number;
   Port: number;
-  AuthMethod: number; 
-  Username: string; 
+  AuthMethod: number;
+  Username: string;
   Password: string;
   CN?: string;
 }
@@ -130,20 +132,20 @@ export type ClientMsg = {
 };
 
 export type Payload = {
-  ver: string; 
-  build: string; 
-  modes?: any; 
+  ver: string;
+  build: string;
+  modes?: any;
   fqdn?: string;
-  digestRealm?: string; 
-  fwNonce?: Buffer; 
-  password?: string; 
-  currentMode?: number; 
-  certHashes?: Array<string>; 
-  sku?: string; 
-  uuid?: any;  
-  username?: string;  
-  client: string;  
-  profile?: any; 
+  digestRealm?: string;
+  fwNonce?: Buffer;
+  password?: string;
+  currentMode?: number;
+  certHashes?: Array<string>;
+  sku?: string;
+  uuid?: any;
+  username?: string;
+  client: string;
+  profile?: any;
 };
 
 export type ConnectionObject = {
@@ -155,18 +157,18 @@ export type ConnectionObject = {
 };
 
 export enum ClientAction{
-  INVALID = "invalid",
-  ADMINCTLMODE = "acmactivate", 
-  CLIENTCTLMODE = "ccmactivate",
-  DEACTIVATE = "deactivate",
-  CIRACONFIG= "ciraconfig"
+  INVALID = 'invalid',
+  ADMINCTLMODE = 'acmactivate',
+  CLIENTCTLMODE = 'ccmactivate',
+  DEACTIVATE = 'deactivate',
+  CIRACONFIG= 'ciraconfig'
 }
 
 export enum ClientMethods{
-  INVALID = "invalid",
-  WSMAN = "wsman",
-  RESPONSE = "response",
-  ACTIVATION = "activate",
-  DEACTIVATION = "deactivate",
-  CIRACONFIG= "ciraconfig"
+  INVALID = 'invalid',
+  WSMAN = 'wsman',
+  RESPONSE = 'response',
+  ACTIVATION = 'activate',
+  DEACTIVATION = 'deactivate',
+  CIRACONFIG= 'ciraconfig'
 }

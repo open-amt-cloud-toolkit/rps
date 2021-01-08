@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: Apache-2.0
  * Author : Ramu Bachala
  **********************************************************************/
-const domainRouter = require('express').Router();
-const { getAllDomains } = require('./all');
-const { getDomain } = require('./getDomain');
+const domainRouter = require('express').Router()
+const { getAllDomains } = require('./all')
+const { getDomain } = require('./getDomain')
 const { createDomain } = require('./createDomain')
 const { deleteDomain } = require('./deleteDomain')
 const { editDomain } = require('./editDomain')

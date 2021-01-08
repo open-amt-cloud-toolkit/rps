@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  * Author : Ramu Bachala
  **********************************************************************/
-import { NetworkConfig } from "../../RCS.Config";
+import { NetworkConfig } from '../../RCS.Config'
 
 export interface INetProfilesDb {
   getAllProfiles(): Promise<NetworkConfig[]>;

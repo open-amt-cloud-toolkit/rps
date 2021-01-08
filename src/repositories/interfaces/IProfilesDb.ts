@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  * Author : Ramu Bachala
  **********************************************************************/
-import { AMTConfig, CIRAConfig } from "../../RCS.Config";
+import { AMTConfig, CIRAConfig } from '../../RCS.Config'
 
 export interface IProfilesDb {
-  getAllProfiles(mapperFn?: (profileName, data) => any ): Promise<AMTConfig[]>;
+  getAllProfiles(): Promise<AMTConfig[]>;
   getProfileByName(profileName): Promise<AMTConfig>;
   getCiraConfigForProfile(ciraConfigName): Promise<CIRAConfig>
   deleteProfileByName(profileName): Promise<any>;

@@ -13,12 +13,12 @@ export class AMTDeviceDTO {
     amtuser: string;
     amtpass: string;
 
-    constructor(guid: string, name: string, mpsuser: string, mpspass:string, amtuser: string, amtpassword: string) {
-        this.guid = guid;
-        this.name = name;
-        this.mpsuser = mpsuser;
-        this.mpspass =  mpspass;
-        this.amtuser = amtuser;
-        this.amtpass = amtpassword;
+    constructor (guid: string, name: string, mpsuser: string, mpspass:string, amtuser: string, amtpassword: string) {
+      this.guid = guid
+      this.name = name
+      this.mpsuser = mpsuser
+      this.mpspass = mpspass
+      this.amtuser = amtuser
+      this.amtpass = amtpassword
     }
 }

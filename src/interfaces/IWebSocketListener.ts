@@ -4,7 +4,7 @@
  * Author: Madhavi Losetty
  **********************************************************************/
 
-import * as WebSocket from "ws";
+import * as WebSocket from 'ws'
 
 export interface IWebSocketListener{
   onClientConnected(ws: WebSocket): void;
