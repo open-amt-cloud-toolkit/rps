@@ -4,19 +4,17 @@
 * Description: Constants
 **********************************************************************/
 
-import { CIRAConfig, NetworkConfig } from "../RCS.Config";
+import { NetworkConfig } from '../RCS.Config'
 
 export class ProvisioningCertObj {
     certChain: Array<string>;
     privateKey: string;
-    constructor() { }
 }
 
-export class certificateObject {
+export class CertificateObject {
     pem: string;
     issuer: string;
     subject: string;
-    constructor() { }
 }
 
 export class DbConfig {
@@ -35,7 +33,13 @@ export class VaultConfig {
     address: string;
     token: string;
 }
-
+export class WSConfiguration {
+    WebSocketPort: number;
+    WebSocketTLS: boolean;
+    WebSocketCertificate: string;
+    WebSocketCertificateKey: string;
+    RootCACert?: string;
+}
 export class RCSConfig {
     Name: string;
     Description: string;
@@ -52,50 +56,12 @@ export class RCSConfig {
     DbConfig: DbConfig;
     RPSXAPIKEY: string;
     NodeEnv?: string;
-    constructor() {
-        this.VaultConfig = new VaultConfig();
-        this.WSConfiguration = new WSConfiguration();
-        this.DbConfig = new DbConfig();
+    constructor () {
+      this.VaultConfig = new VaultConfig()
+      this.WSConfiguration = new WSConfiguration()
+      this.DbConfig = new DbConfig()
     }
 }
-
-export class WSConfiguration {
-    WebSocketPort: number;
-    WebSocketTLS: boolean;
-    WebSocketCertificate: string;
-    WebSocketCertificateKey: string;
-    RootCACert?: string;
-    constructor() { }
-}
-
-export class AMTConfigurations extends Array<AMTConfiguration> {
-    [index: number]: { ProfileName: string; AMTPassword: string; GenerateRandomPassword: boolean; RandomPasswordLength: number; RandomPasswordCharacters: string; ConfigurationScript: string; CIRAConfigName?: string; Activation: string; };
-}
-
-export class CIRAConfigurations extends Array<CIRAConfig> {
-    [index: number]: {
-        ConfigName: string;
-        MPSServerAddress: string;
-        MPSPort: number;
-        Username: string;
-        Password: string;
-        CommonName: string;
-        ServerAddressFormat: number; //IPv4 (3), IPv6 (4), FQDN (201)
-        AuthMethod: number; //Mutual Auth (1), Username/Password (2) (We only support 2)
-        MPSRootCertificate: string; // Assumption is Root Cert for MPS. Need to validate.
-        ProxyDetails: string;
-    };
-}
-
-export class NETConfigurations extends Array<NetworkConfig> {
-    [index: number]: {
-        ProfileName: string;
-        DHCPEnabled: boolean;
-        StaticIPShared: boolean;
-        IPSyncEnabled: boolean;
-    };
-}
-
 export class AMTConfiguration {
     ProfileName: string;
     AMTPassword: string;
@@ -107,11 +73,9 @@ export class AMTConfiguration {
     Activation: string;
     NetworkConfigName?: string;
     NetworkConfigObject?: NetworkConfig;
-    constructor() { }
-}
-
-export class AMTDomains extends Array<AMTDomain> {
-    [index: number]: { Name: string; DomainSuffix: string; ProvisioningCert: string; ProvisioningCertStorageFormat: string; ProvisioningCertPassword: string; }
+    MEBxPassword: string;
+    GenerateRandomMEBxPassword: boolean;
+    RandomMEBxPasswordLength?: number;
 }
 
 export class AMTDomain {
@@ -120,7 +84,6 @@ export class AMTDomain {
     ProvisioningCert: string;
     ProvisioningCertStorageFormat: string;
     ProvisioningCertPassword: string;
-    constructor() { }
 }
 
 export class WSMessage {
@@ -128,11 +91,11 @@ export class WSMessage {
     status: string;
     data?: any;
     errorText?: string;
-    constructor(version: number, status: string, data?: any, errorText?: string) {
-        this.version = version;
-        this.status = status;
-        this.data = data;
-        this.errorText = errorText;
+    constructor (version: number, status: string, data?: any, errorText?: string) {
+      this.version = version
+      this.status = status
+      this.data = data
+      this.errorText = errorText
     }
 }
 
@@ -143,14 +106,14 @@ export class RCSMessage extends WSMessage {
     signature: string;
     profileScript: string;
     password: string;
-    constructor(version: number, status: string, certs: Array<string>, action: string, nonce: string, signature: string, profileScript: string, password: string, data?: any, errorText?: string) {
-        super(version, status, data, errorText);
-        this.certs = certs;
-        this.action = action;
-        this.nonce = nonce;
-        this.signature = signature;
-        this.profileScript = profileScript;
-        this.password = password;
+    constructor (version: number, status: string, certs: Array<string>, action: string, nonce: string, signature: string, profileScript: string, password: string, data?: any, errorText?: string) {
+      super(version, status, data, errorText)
+      this.certs = certs
+      this.action = action
+      this.nonce = nonce
+      this.signature = signature
+      this.profileScript = profileScript
+      this.password = password
     }
 }
 
@@ -168,21 +131,21 @@ export class AMTActivate extends WSMessage {
     hashes: Array<string>;
     modes: Array<number>;
     currentMode: number;
-    constructor(version: number, status: string, client?: string, action?: string, name?: string, profile?: string, uuid?: string, ver?: string, data?: any, errorText?: string, tag?: string, fqdn?: string, realm?: string, nonce?: string, hashes?: Array<string>, modes?: Array<number>, currentMode?: number) {
-        super(version, status, data, errorText)
-        this.client = client;
-        this.action = action;
-        this.name = name;
-        this.profile = profile;
-        this.uuid = uuid;
-        this.ver = ver;
-        this.tag = tag;
-        this.fqdn = fqdn;
-        this.realm = realm;
-        this.nonce = nonce;
-        this.hashes = hashes;
-        this.modes = modes;
-        this.currentMode = currentMode;
+    constructor (version: number, status: string, client?: string, action?: string, name?: string, profile?: string, uuid?: string, ver?: string, data?: any, errorText?: string, tag?: string, fqdn?: string, realm?: string, nonce?: string, hashes?: Array<string>, modes?: Array<number>, currentMode?: number) {
+      super(version, status, data, errorText)
+      this.client = client
+      this.action = action
+      this.name = name
+      this.profile = profile
+      this.uuid = uuid
+      this.ver = ver
+      this.tag = tag
+      this.fqdn = fqdn
+      this.realm = realm
+      this.nonce = nonce
+      this.hashes = hashes
+      this.modes = modes
+      this.currentMode = currentMode
     }
 }
 
@@ -194,14 +157,14 @@ export class rcsObj {
     password: string;
     profileScript: string;
     errorText?: string;
-    constructor(action?: string, certs?: Array<string>, nonce?: string, signature?: string, password?: string, profileScript?: string, errorText?: string, ) {
-        this.action = action;
-        this.certs = certs;
-        this.nonce = nonce;
-        this.signature = signature;
-        this.password = password;
-        this.profileScript = profileScript;
-        this.errorText = errorText;
+    constructor (action?: string, certs?: Array<string>, nonce?: string, signature?: string, password?: string, profileScript?: string, errorText?: string) {
+      this.action = action
+      this.certs = certs
+      this.nonce = nonce
+      this.signature = signature
+      this.password = password
+      this.profileScript = profileScript
+      this.errorText = errorText
     }
 }
 
@@ -217,18 +180,18 @@ export class Client {
     availableModes: Array<number>;
     currentMode: number;
     tag: string;
-    constructor(client?: string, dnsSuffix?: string, digestRealm?: string, fwNonce?: Buffer, amtGuid?: string, profile?: string, certHashes?: Array<string>, amtVersion?: string, availableModes?: Array<number>, currentMode?: number, tag?: string) {
-        this.client = client;
-        this.dnsSuffix = dnsSuffix;
-        this.digestRealm = digestRealm;
-        this.fwNonce = fwNonce;
-        this.amtGuid = amtGuid;
-        this.profile = profile;
-        this.certHashes = certHashes;
-        this.amtVersion = amtVersion;
-        this.availableModes = availableModes;
-        this.currentMode = currentMode;
-        this.tag = tag;
+    constructor (client?: string, dnsSuffix?: string, digestRealm?: string, fwNonce?: Buffer, amtGuid?: string, profile?: string, certHashes?: Array<string>, amtVersion?: string, availableModes?: Array<number>, currentMode?: number, tag?: string) {
+      this.client = client
+      this.dnsSuffix = dnsSuffix
+      this.digestRealm = digestRealm
+      this.fwNonce = fwNonce
+      this.amtGuid = amtGuid
+      this.profile = profile
+      this.certHashes = certHashes
+      this.amtVersion = amtVersion
+      this.availableModes = availableModes
+      this.currentMode = currentMode
+      this.tag = tag
     }
 }
 
@@ -237,51 +200,51 @@ export class Version {
     minor: number;
     revision: number;
 
-    constructor() {
-        this.major = 0;
-        this.minor = 0;
-        this.revision = 0;
+    constructor () {
+      this.major = 0
+      this.minor = 0
+      this.revision = 0
     }
 }
 
-let recipeRCSConfig = {
-    'name': 'Name',
-    'description': 'Description',
-    'user': 'mpsusername',
-    'password': 'mpspass',
-    'amt_user': 'amtusername',
-    'developer_mode': 'devmode',
-    'https': 'https',
-    'web_port': 'webport',
-    'credentials_path': 'credentialspath',
-    'websocketport': 'WSConfiguration.WebSocketPort',
-    'websockettls': 'WSConfiguration.WebSocketTLS',
-    'web_tls_cert': 'WSConfiguration.WebSocketCertificate',
-    'web_tls_cert_key': 'WSConfiguration.WebSocketCertificateKey',
-    'root_ca_cert': 'WSConfiguration.RootCACert',
-    'use_vault': 'VaultConfig.usevault',
-    'vault_address': 'VaultConfig.address',
-    'vault_token': 'VaultConfig.token',
-    'secrets_path': 'VaultConfig.SecretsPath',
-    'db_host': 'DbConfig.dbhost',
-    'db_name': 'DbConfig.dbname',
-    'db_port': 'DbConfig.dbport',
-    'db_user': 'DbConfig.dbuser',
-    'db_password': 'DbConfig.dbpassword',
-    'use_db_profiles': 'DbConfig.useDbForConfig',
-    'xapikey': 'RPSXAPIKEY',
-    'amt_domains': 'AMTDomains',
-    'amt_configurations': 'AMTConfigurations',
-    'cira_configurations': 'CIRAConfigurations',
-    'data_path': 'datapath',
-    'node_env': 'NodeEnv',
-    'use_raw_certs': 'DbConfig.useRawCerts'
-};
+const recipeRCSConfig = {
+  name: 'Name',
+  description: 'Description',
+  user: 'mpsusername',
+  password: 'mpspass',
+  amt_user: 'amtusername',
+  developer_mode: 'devmode',
+  https: 'https',
+  web_port: 'webport',
+  credentials_path: 'credentialspath',
+  websocketport: 'WSConfiguration.WebSocketPort',
+  websockettls: 'WSConfiguration.WebSocketTLS',
+  web_tls_cert: 'WSConfiguration.WebSocketCertificate',
+  web_tls_cert_key: 'WSConfiguration.WebSocketCertificateKey',
+  root_ca_cert: 'WSConfiguration.RootCACert',
+  use_vault: 'VaultConfig.usevault',
+  vault_address: 'VaultConfig.address',
+  vault_token: 'VaultConfig.token',
+  secrets_path: 'VaultConfig.SecretsPath',
+  db_host: 'DbConfig.dbhost',
+  db_name: 'DbConfig.dbname',
+  db_port: 'DbConfig.dbport',
+  db_user: 'DbConfig.dbuser',
+  db_password: 'DbConfig.dbpassword',
+  use_db_profiles: 'DbConfig.useDbForConfig',
+  xapikey: 'RPSXAPIKEY',
+  amt_domains: 'AMTDomains',
+  amt_configurations: 'AMTConfigurations',
+  cira_configurations: 'CIRAConfigurations',
+  data_path: 'datapath',
+  node_env: 'NodeEnv',
+  use_raw_certs: 'DbConfig.useRawCerts'
+}
 
-export function mapConfig(src, dot) {
-    let config:RCSConfig;
+export function mapConfig (src, dot) {
+  let config: RCSConfig
 
-    config = <RCSConfig>dot.transform(recipeRCSConfig, src)
+  config = <RCSConfig>dot.transform(recipeRCSConfig, src)
 
-    return config;
+  return config
 }

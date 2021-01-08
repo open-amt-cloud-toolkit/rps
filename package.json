@@ -10,7 +10,8 @@
     "devx": "RPS_NODE_ENV=dev RPS_USE_VAULT=false RPS_USE_DB_PROFILES=false RPS_LOG_LEVEL=silly npm start",
     "dev": "set RPS_NODE_ENV=dev&&set RPS_USE_VAULT=false&&set RPS_USE_DB_PROFILES=false&&set RPS_LOG_LEVEL=silly&& npm start",
     "test": "jest --coverage",
-    "watch": "nodemon -e ts -w ./src -x npm run start"
+    "watch": "nodemon -e ts -w ./src -x npm run start",
+    "lint": "eslint . --ext .ts"
   },
   "author": "",
   "license": "Apache-2.0",
@@ -37,6 +38,13 @@
     "@types/node-forge": "^0.9.6",
     "@types/node-vault": "^0.9.0",
     "@types/ws": "^6.0.1",
+    "@typescript-eslint/eslint-plugin": "^4.9.1",
+    "@typescript-eslint/parser": "^4.9.1",
+    "eslint": "^7.15.0",
+    "eslint-config-standard": "^16.0.2",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.2.1",
     "jest": "^26.4.2",
     "jest-sinon": "^1.0.1",
     "jest-transform-stub": "^2.0.0",
@@ -46,6 +54,6 @@
     "ts-jest": "^26.4.4",
     "ts-loader": "^8.0.10",
     "ts-node": "^8.1.0",
-    "typescript": "^3.6.2"
+    "typescript": "^3.9.5"
   }
 }

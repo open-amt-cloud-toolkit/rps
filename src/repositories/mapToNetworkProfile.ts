@@ -5,10 +5,9 @@
  * Author : Ramu Bachala
  **********************************************************************/
 
-import { NetworkConfig } from "../RCS.Config";
+import { NetworkConfig } from '../RCS.Config'
 
-
-export function mapToNetworkProfile(results): NetworkConfig {
+export function mapToNetworkProfile (results): NetworkConfig {
   return <NetworkConfig>{
     ProfileName: results.network_profile_name,
     DHCPEnabled: results.dhcp_enabled,

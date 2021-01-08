@@ -5,12 +5,12 @@
  **********************************************************************/
 // ./routes/index.js
 import adminRouter = require('./admin/index')
-const router = require('express').Router();
+const router = require('express').Router()
 
-router.use('/admin', adminRouter);
+router.use('/admin', adminRouter)
 
 router.get('/', (req, res) => {
-  res.status(200).json({ message: 'Connected!' });
-});
+  res.status(200).json({ message: 'Connected!' })
+})
 
-module.exports = router;
+module.exports = router

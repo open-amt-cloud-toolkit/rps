@@ -5,12 +5,12 @@
  * Author: Brian Osburn
  **********************************************************************/
 
-import { IDomainCredentialManager } from "./IDomainCredentialManager";
-import { IProfileManager } from "./IProfileManager";
-import { ISecretManagerService } from "./ISecretManagerService";
-import { IAMTDeviceRepository } from "../repositories/interfaces/IAMTDeviceRepository";
-import { IClientManager } from "./IClientManager";
-import { IDataProcessor } from "./IDataProcessor";
+import { IDomainCredentialManager } from './IDomainCredentialManager'
+import { IProfileManager } from './IProfileManager'
+import { ISecretManagerService } from './ISecretManagerService'
+import { IAMTDeviceRepository } from '../repositories/interfaces/IAMTDeviceRepository'
+import { IClientManager } from './IClientManager'
+import { IDataProcessor } from './IDataProcessor'
 
 export interface IConfigurator {
     domainCredentialManager: IDomainCredentialManager;

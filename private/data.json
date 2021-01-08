@@ -3,8 +3,11 @@
     {
       "ProfileName": "Sample_Profile",
       "AMTPassword": "<your_amt_password>",
+      "MEBxPassword": "<StrongPassword>",
       "GenerateRandomPassword": false,
       "RandomPasswordLength": 8,
+      "GenerateRandomMEBxPassword": false,
+      "RandomMEBxPasswordLength": 8,
       "Activation": "acmactivate",
       "CIRAConfigName": "Sample_CIRA_Config"
     }
@@ -27,7 +30,7 @@
     {
       "ProfileName": "Sample_Network_Config",
       "DHCPEnabled": true,
-      "StaticIPShared": true,
+      "StaticIPShared": false,
       "IPSyncEnabled": true
     }
   ],

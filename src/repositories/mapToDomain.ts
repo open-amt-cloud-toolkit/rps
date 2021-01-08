@@ -5,14 +5,14 @@
  * Author : Ramu Bachala
  **********************************************************************/
 
-import { AMTDomain } from "../models/Rcs";
+import { AMTDomain } from '../models/Rcs'
 
-export function mapToDomain(result): AMTDomain {
+export function mapToDomain (result): AMTDomain {
   return <AMTDomain>{
     Name: result.name,
     DomainSuffix: result.domainsuffix,
-    ProvisioningCert: result.provisioningcert, 
+    ProvisioningCert: result.provisioningcert,
     ProvisioningCertStorageFormat: result.provisioningcertstorageformat,
-    ProvisioningCertPassword: result.provisioningcertpassword 
+    ProvisioningCertPassword: result.provisioningcertpassword
   }
 }

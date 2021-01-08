@@ -5,10 +5,10 @@
  * Author: Brian Osburn
  **********************************************************************/
 
-import { certificateObject } from '../models/Rcs'
+import { CertificateObject } from '../models/Rcs'
 
 export interface ICertManager {
     dumpPfx(pfxobj: any): any;
-    sortCertificate(intermediate: certificateObject, root: certificateObject): boolean;
+    sortCertificate(intermediate: CertificateObject, root: CertificateObject): boolean;
     convertPfxToObject(pfxb64: string, passphrase: string): any;
 }

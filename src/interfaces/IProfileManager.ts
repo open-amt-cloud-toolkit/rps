@@ -5,11 +5,11 @@
  * Author: Brian Osburn
  **********************************************************************/
 
-import { AMTConfigurations,AMTConfiguration } from "../models/Rcs";
-import { CIRAConfig } from "../RCS.Config";
+import { AMTConfiguration } from '../models/Rcs'
+import { CIRAConfig } from '../RCS.Config'
 
 export interface IProfileManager {
-    validateAMTPasswords(list: AMTConfigurations): AMTConfigurations;
+    validateAMTPasswords(list: AMTConfiguration[]): AMTConfiguration[];
     getActivationMode(profileName: string): Promise<string>;
     getConfigurationScript(profileName: string): Promise<string>;
     getCiraConfiguration(profileName: string): Promise<CIRAConfig>;
