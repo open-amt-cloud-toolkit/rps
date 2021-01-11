@@ -16,7 +16,7 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "@types/pg": "^7.14.1",
+    "@types/pg": "^7.14.7",
     "body-parser": "^1.19.0",
     "crypto-random-string": "^3.3.0",
     "dot-object": "^2.1.4",
@@ -48,7 +48,7 @@
     "jest": "^26.4.2",
     "jest-sinon": "^1.0.1",
     "jest-transform-stub": "^2.0.0",
-    "nodemon": "^2.0.2",
+    "nodemon": "^2.0.7",
     "request": "^2.88.2",
     "sinon": "^7.5.0",
     "ts-jest": "^26.4.4",
