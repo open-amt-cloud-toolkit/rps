@@ -100,11 +100,19 @@ const AMTConfigurations = [
     CIRAConfigName: 'ciraconfig1'
   }
 ]
+const NETConfigurations = [
+  {
+    ProfileName: 'netprofile1',
+    DHCPEnabled: true,
+    StaticIPShared: true,
+    IPSyncEnabled: true
+  }
+]
 
 EnvReader.configPath = path.join(__dirname, './helper/data.json')
 
 test('test if profile exists', () => {
-  const profileManager: ProfileManager = new ProfileManager(logger, null, new AMTConfigDb(AMTConfigurations, CIRAConfigurations, new Logger('AMTConfigDb')))
+  const profileManager: ProfileManager = new ProfileManager(logger, null, new AMTConfigDb(AMTConfigurations, CIRAConfigurations, NETConfigurations, new Logger('AMTConfigDb')))
 
   const actual = profileManager.doesProfileExist('profile 1')
   console.log('actual : ', actual)
@@ -112,14 +120,14 @@ test('test if profile exists', () => {
 })
 
 test('test if profile exists', async () => {
-  const profileManager: ProfileManager = new ProfileManager(logger, null, new AMTConfigDb(AMTConfigurations, CIRAConfigurations, new Logger('AMTConfigDb')))
+  const profileManager: ProfileManager = new ProfileManager(logger, null, new AMTConfigDb(AMTConfigurations, CIRAConfigurations, NETConfigurations, new Logger('AMTConfigDb')))
 
   const actual = await profileManager.doesProfileExist('profile 5')
   expect(actual).toBeFalsy()
 })
 
 test('retrieve activation based on profile', async () => {
-  const profileManager: ProfileManager = new ProfileManager(logger, null, new AMTConfigDb(AMTConfigurations, CIRAConfigurations, new Logger('AMTConfigDb')))
+  const profileManager: ProfileManager = new ProfileManager(logger, null, new AMTConfigDb(AMTConfigurations, CIRAConfigurations, NETConfigurations, new Logger('AMTConfigDb')))
 
   const expected = 'ccmactivate'
   const actual = await profileManager.getActivationMode('profile 1')
@@ -127,7 +135,7 @@ test('retrieve activation based on profile', async () => {
 })
 
 test('retrieve activation based on profile', async () => {
-  const profileManager: ProfileManager = new ProfileManager(logger, null, new AMTConfigDb(AMTConfigurations, CIRAConfigurations, new Logger('AMTConfigDb')), rcsConfig)
+  const profileManager: ProfileManager = new ProfileManager(logger, null, new AMTConfigDb(AMTConfigurations, CIRAConfigurations, NETConfigurations, new Logger('AMTConfigDb')), rcsConfig)
 
   const expected = 'acmactivate'
   const actual = await profileManager.getActivationMode('profile 2')
@@ -135,14 +143,14 @@ test('retrieve activation based on profile', async () => {
 })
 
 test('retrieve config script', async () => {
-  const profileManager: ProfileManager = new ProfileManager(logger, null, new AMTConfigDb(AMTConfigurations, CIRAConfigurations, new Logger('AMTConfigDb')))
+  const profileManager: ProfileManager = new ProfileManager(logger, null, new AMTConfigDb(AMTConfigurations, CIRAConfigurations, NETConfigurations, new Logger('AMTConfigDb')))
   const expected = 'sample config script 1'
   const actual = await profileManager.getConfigurationScript('profile 1')
   expect(actual).toEqual(expected)
 })
 
 test('retrieve config script', async () => {
-  const profileManager: ProfileManager = new ProfileManager(logger, null, new AMTConfigDb(AMTConfigurations, CIRAConfigurations, new Logger('AMTConfigDb')), rcsConfig)
+  const profileManager: ProfileManager = new ProfileManager(logger, null, new AMTConfigDb(AMTConfigurations, CIRAConfigurations, NETConfigurations, new Logger('AMTConfigDb')), rcsConfig)
 
   const expected = 'sample config script 2'
   const actual = await profileManager.getConfigurationScript('profile 2')
@@ -150,7 +158,7 @@ test('retrieve config script', async () => {
 })
 
 test('retrieve configuration for cira', async () => {
-  const profileManager: ProfileManager = new ProfileManager(logger, null, new AMTConfigDb(AMTConfigurations, CIRAConfigurations, new Logger('AMTConfigDb')), rcsConfig)
+  const profileManager: ProfileManager = new ProfileManager(logger, null, new AMTConfigDb(AMTConfigurations, CIRAConfigurations, NETConfigurations, new Logger('AMTConfigDb')), rcsConfig)
 
   const expected = 'ciraconfig1'
   const actual = await profileManager.getCiraConfiguration('profile 2')
@@ -173,7 +181,7 @@ test('delete configuration for cira not associated with a profile', async () => 
 })
 
 test('retrieve amt password', async () => {
-  const profileManager: ProfileManager = new ProfileManager(logger, null, new AMTConfigDb(AMTConfigurations, CIRAConfigurations, new Logger('AMTConfigDb')))
+  const profileManager: ProfileManager = new ProfileManager(logger, null, new AMTConfigDb(AMTConfigurations, CIRAConfigurations, NETConfigurations, new Logger('AMTConfigDb')))
 
   const expected = '<StrongPassword1!>'
   const profile = 'profile 1'
@@ -183,7 +191,7 @@ test('retrieve amt password', async () => {
 })
 
 test('retrieve amt password auto generated', async () => {
-  const profileManager: ProfileManager = new ProfileManager(logger, null, new AMTConfigDb(AMTConfigurations, CIRAConfigurations, new Logger('AMTConfigDb')), rcsConfig)
+  const profileManager: ProfileManager = new ProfileManager(logger, null, new AMTConfigDb(AMTConfigurations, CIRAConfigurations, NETConfigurations, new Logger('AMTConfigDb')), rcsConfig)
 
   const profile = 'profile 2'
   const expected = '<StrongPassword2!>'
@@ -247,7 +255,7 @@ test('validate password', () => {
     }
   ]
 
-  const profileManager: ProfileManager = new ProfileManager(logger, null, new AMTConfigDb(amtConfigurations, CIRAConfigurations, new Logger('AMTConfigDb')))
+  const profileManager: ProfileManager = new ProfileManager(logger, null, new AMTConfigDb(amtConfigurations, CIRAConfigurations, NETConfigurations, new Logger('AMTConfigDb')))
 
   const actual = profileManager.validateAMTPasswords(amtConfigurations)
 
@@ -299,7 +307,7 @@ test('validate password with bad amt passwords', () => {
 
   ]
 
-  const profileManager: ProfileManager = new ProfileManager(logger, null, new AMTConfigDb(AMTConfigurations, CIRAConfigurations, new Logger('AMTConfigDb')))
+  const profileManager: ProfileManager = new ProfileManager(logger, null, new AMTConfigDb(AMTConfigurations, CIRAConfigurations, NETConfigurations, new Logger('AMTConfigDb')))
 
   const activation1 = profileManager.getActivationMode('profile 1')
   const activation2 = profileManager.getActivationMode('profile 2')

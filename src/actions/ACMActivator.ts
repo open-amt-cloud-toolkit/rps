@@ -10,7 +10,7 @@ import { ICertManager } from '../interfaces/ICertManager'
 import { ILogger } from '../interfaces/ILogger'
 import { SignatureHelper } from '../utils/SignatureHelper'
 import { PasswordHelper } from '../utils/PasswordHelper'
-import { ClientMsg, ClientAction } from '../RCS.Config'
+import { ClientMsg, ClientAction, ClientObject } from '../RCS.Config'
 import { IConfigurator } from '../interfaces/IConfigurator'
 import { AMTDeviceDTO } from '../repositories/dto/AmtDeviceDTO'
 import { ClientResponseMsg } from '../utils/ClientResponseMsg'
@@ -19,7 +19,8 @@ import { IClientManager } from '../interfaces/IClientManager'
 import { IValidator } from '../interfaces/IValidator'
 import { RPSError } from '../utils/RPSError'
 import { EnvReader } from '../utils/EnvReader'
-import { CIRAConfigurator } from './CIRAConfigurator'
+import { NetworkConfigurator } from './NetworkConfigurator'
+import { AMTUserName } from './../utils/constants'
 
 export class ACMActivator implements IExecutor {
   constructor (
@@ -31,7 +32,7 @@ export class ACMActivator implements IExecutor {
     private amtwsman: WSManProcessor,
     private clientManager: IClientManager,
     private validator: IValidator,
-    private CIRAConfigurator: CIRAConfigurator
+    private networkConfigurator: NetworkConfigurator
   ) { }
 
   /**
@@ -46,10 +47,8 @@ export class ACMActivator implements IExecutor {
       if (!message.payload) {
         throw new RPSError(`Device ${clientObj.uuid} activation failed. Missing/invalid WSMan response payload.`)
       }
-      const response = await this.processWSManJsonResponse(message, clientId)
-      if (response) {
-        return response
-      }
+
+      await this.processWSManJsonResponse(message, clientId)
 
       clientObj = this.clientManager.getClientObject(clientId)
       if (clientObj.ClientData.payload.fwNonce && clientObj.action === ClientAction.ADMINCTLMODE) {
@@ -90,35 +89,24 @@ export class ACMActivator implements IExecutor {
         }
 
         if (clientObj.count > clientObj.certObj.certChain.length) {
-          {
-            // Create a one time nonce that allows AMT to verify the digital signature of the management console performing the provisioning
-            const nonce = PasswordHelper.generateNonce()
-            // Need to create a new array so we can concatinate both nonces (fwNonce first, Nonce second)
-            const arr: Array<Buffer> = [clientObj.ClientData.payload.fwNonce, nonce]
-            // Then we need to sign the concatinated nonce with the private key of the provisioning certificate and encode as base64.
-            const signature = this.signatureHelper.signString(Buffer.concat(arr), clientObj.certObj.privateKey)
-            if (signature.errorText) {
-              throw new RPSError(signature.errorText)
-            }
-
-            const amtPassword: string = await this.configurator.profileManager.getAmtPassword(clientObj.ClientData.payload.profile.ProfileName)
-
-            if (this.configurator && this.configurator.amtDeviceRepository) {
-              await this.configurator.amtDeviceRepository.insert(new AMTDeviceDTO(clientObj.uuid,
-                clientObj.uuid,
-                EnvReader.GlobalEnvConfig.mpsusername,
-                EnvReader.GlobalEnvConfig.mpspass,
-                EnvReader.GlobalEnvConfig.amtusername,
-                amtPassword))
-            } else {
-              this.logger.error('unable to write device')
-            }
-
-            const data: string = 'admin:' + clientObj.ClientData.payload.digestRealm + ':' + amtPassword
-            const password = SignatureHelper.createMd5Hash(data)
-
-            this.amtwsman.setupACM(clientId, password, nonce.toString('base64'), signature)
+          // Create a one time nonce that allows AMT to verify the digital signature of the management console performing the provisioning
+          const nonce = PasswordHelper.generateNonce()
+          // Need to create a new array so we can concatinate both nonces (fwNonce first, Nonce second)
+          const arr: Array<Buffer> = [clientObj.ClientData.payload.fwNonce, nonce]
+          // Then we need to sign the concatinated nonce with the private key of the provisioning certificate and encode as base64.
+          const signature = this.signatureHelper.signString(Buffer.concat(arr), clientObj.certObj.privateKey)
+          if (signature.errorText) {
+            throw new RPSError(signature.errorText)
           }
+
+          const amtPassword: string = await this.configurator.profileManager.getAmtPassword(clientObj.ClientData.payload.profile.ProfileName)
+          clientObj.amtPassword = amtPassword
+          this.clientManager.setClientObject(clientObj)
+
+          const data: string = `admin:${clientObj.ClientData.payload.digestRealm}:${amtPassword}`
+          const password = SignatureHelper.createMd5Hash(data)
+
+          this.amtwsman.setupACM(clientId, password, nonce.toString('base64'), signature)
         }
       }
     } catch (error) {
@@ -162,9 +150,15 @@ export class ACMActivator implements IExecutor {
     }
   }
 
-  async processWSManJsonResponse (message: any, clientId: string): Promise<any> {
+  /**
+   * @description Parse the wsman response received from AMT
+   * @param {string} clientId Id to keep track of connections
+   * @param {string} message
+   */
+  async processWSManJsonResponse (message: any, clientId: string) {
     const clientObj = this.clientManager.getClientObject(clientId)
     const wsmanResponse = message.payload
+
     if (wsmanResponse.AMT_GeneralSettings) {
       const digestRealm = wsmanResponse.AMT_GeneralSettings.response.DigestRealm
       // Validate Digest Realm
@@ -193,15 +187,49 @@ export class ACMActivator implements IExecutor {
       } else {
         this.logger.debug(`Device ${clientObj.uuid} activated in admin mode.`)
         clientObj.ciraconfig.status = 'activated in admin mode.'
-        clientObj.action = ClientAction.CIRACONFIG
         this.clientManager.setClientObject(clientObj)
-        await this.CIRAConfigurator.execute(message, clientId)
-        return
+
+        /* Set MEBx password called after the activation as the API is accessible only with admin user */
+        await this.setMEBxPassword(clientId, clientObj)
+
+        /* After the activation, control goes to Network configuration */
+        clientObj.action = ClientAction.NETWORKCONFIG
+        await this.networkConfigurator.execute(message, clientId)
       }
     } else {
       throw new RPSError(`Device ${clientObj.uuid} sent an invalid response.`)
     }
+  }
 
-    return null
+  /**
+   * @description Set MEBx password for the AMT
+   * @param {string} clientId Id to keep track of connections
+   * @param {ClientObject} clientObj
+   */
+  async setMEBxPassword (clientId: string, clientObj: ClientObject) {
+    this.logger.info('setting MEBx password')
+    /* Update the wsman stack username and password */
+    if (this.amtwsman.cache[clientId]) {
+      this.amtwsman.cache[clientId].wsman.comm.setupCommunication.getUsername = () => { return AMTUserName }
+      this.amtwsman.cache[clientId].wsman.comm.setupCommunication.getPassword = () => { return clientObj.amtPassword }
+    }
+    /* Get the MEBx password */
+    const mebxPassword: string = await this.configurator.profileManager.getMEBxPassword(clientObj.ClientData.payload.profile.ProfileName)
+
+    /* Create a device in the repository. */
+    if (this.configurator && this.configurator.amtDeviceRepository) {
+      await this.configurator.amtDeviceRepository.insert(new AMTDeviceDTO(clientObj.uuid,
+        clientObj.uuid,
+        EnvReader.GlobalEnvConfig.mpsusername,
+        EnvReader.GlobalEnvConfig.mpspass,
+        EnvReader.GlobalEnvConfig.amtusername,
+        clientObj.amtPassword,
+        mebxPassword))
+    } else {
+      this.logger.error('unable to write device')
+    }
+
+    /*  API is only for Admin control mode */
+    this.amtwsman.execute(clientId, 'AMT_SetupAndConfigurationService', 'SetMEBxPassword', { Password: mebxPassword }, null)
   }
 }

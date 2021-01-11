@@ -5,7 +5,7 @@
  **********************************************************************/
 import { IProfilesDb } from '../../../repositories/interfaces/IProfilesDb'
 import { ProfilesDbFactory } from '../../../repositories/ProfilesDbFactory'
-import { AMTConfig } from '../../../RCS.Config'
+import { AMTConfig, ClientAction } from '../../../RCS.Config'
 import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
 import {
@@ -17,9 +17,10 @@ import {
   PROFILE_INVALID_AMT_PASSWORD_SELECTION,
   PROFILE_INVALID_MEBX_PASSWORD_SELECTION,
   PROFILE_INVALID_AMT_PASSWORD_LENGTH,
-  PROFILE_INVALID_MEBX_PASSWORD_LENGTH
-} from '../../../utils/constants'
-import { passwordValidation, passwordLengthValidation } from '../../../utils/passwordValidationUtils'
+  PROFILE_INVALID_MEBX_PASSWORD_LENGTH,
+  PROFILE_MEBX_MANDATORY
+} from "../../../utils/constants";
+import { passwordValidation, passwordLengthValidation } from "../../../utils/passwordValidationUtils";
 
 export async function editProfile (req, res) {
   let profilesDb: IProfilesDb = null
@@ -138,11 +139,15 @@ function readBody (req, res): AMTConfig {
     config.GenerateRandomMEBxPassword === null ||
     config.Activation === null ||
     (config.GenerateRandomPassword === true && config.RandomPasswordLength == null) ||
-    (config.GenerateRandomPassword === false && config.AMTPassword == null) ||
-    (config.GenerateRandomMEBxPassword === true && config.RandomMEBxPasswordLength == null) ||
-    (config.GenerateRandomMEBxPassword === false && config.MEBxPassword == null)) {
+    (config.GenerateRandomPassword === false && config.AMTPassword == null)) {
     res.status(400).end(PROFILE_INVALID_INPUT)
     throw new Error(PROFILE_INVALID_INPUT)
+  }
+
+  if (config.Activation == ClientAction.ADMINCTLMODE && ((config.GenerateRandomMEBxPassword === true && config.RandomMEBxPasswordLength == null) ||
+    (config.GenerateRandomMEBxPassword === false && config.MEBxPassword == null))) {
+    res.status(400).end(PROFILE_MEBX_MANDATORY)
+    throw new Error(PROFILE_MEBX_MANDATORY)
   }
 
   if (config.AMTPassword !== null) {

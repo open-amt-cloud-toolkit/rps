@@ -5,18 +5,22 @@
  **********************************************************************/
 import { IDbCreator } from './interfaces/IDbCreator'
 import { IProfilesDb } from './interfaces/IProfilesDb'
-import { AMTConfig, CIRAConfig } from '../RCS.Config'
+import { AMTConfig, CIRAConfig, NetworkConfig } from '../RCS.Config'
 import { mapToProfile } from './mapToProfile'
 import { AMTConfiguration } from '../models/Rcs'
 import { CiraConfigDb } from './ciraConfigs'
 import { PROFILE_SUCCESSFULLY_DELETED, PROFILE_INSERTION_FAILED_DUPLICATE, PROFILE_INSERTION_CIRA_CONSTRAINT } from '../utils/constants'
+import { NetConfigDb } from './netProfiles'
 
 export class ProfilesDb implements IProfilesDb {
   db: any;
   ciraConfigs: CiraConfigDb;
+  networkConfigs: NetConfigDb;
+
   constructor (dbCreator: IDbCreator) {
     this.db = dbCreator.getDb()
     this.ciraConfigs = new CiraConfigDb(dbCreator)
+    this.networkConfigs = new NetConfigDb(dbCreator)
   }
 
   async getAllProfiles (): Promise<AMTConfig[]> {
@@ -42,6 +46,10 @@ export class ProfilesDb implements IProfilesDb {
 
   async getCiraConfigForProfile (configName): Promise<CIRAConfig> {
     return await this.ciraConfigs.getCiraConfigByName(configName)
+  }
+
+  async getNetworkConfigForProfile (NetworkConfigName: string): Promise<NetworkConfig> {
+    return await this.networkConfigs.getProfileByName(NetworkConfigName)
   }
 
   async deleteProfileByName (profileName): Promise<any> {
@@ -74,14 +82,14 @@ export class ProfilesDb implements IProfilesDb {
       return null
     } catch (error) {
       console.log(error)
-      if (error.code === '23505') { // Unique key violation
+      if (error.code == '23505') { // Unique key violation
         throw (PROFILE_INSERTION_FAILED_DUPLICATE(amtConfig.ProfileName))
       }
-      if (error.code === '23503') { // Unique key violation
+      if (error.code == '23503') { // Unique key violation
         throw (PROFILE_INSERTION_CIRA_CONSTRAINT(amtConfig.CIRAConfigName))
       }
 
-      throw new Error('Unknown Error. Check Server Logs.')
+      throw ('Unknown Error. Check Server Logs.')
     }
   }
 
@@ -106,11 +114,11 @@ export class ProfilesDb implements IProfilesDb {
       return results.rowCount
     } catch (error) {
       console.log(error)
-      if (error.code === '23503') { // Unique key violation
+      if (error.code == '23503') { // Unique key violation
         throw (PROFILE_INSERTION_CIRA_CONSTRAINT(amtConfig.CIRAConfigName))
       }
 
-      throw new Error('Unknown Error. Check Server Logs.')
+      throw ('Unknown Error. Check Server Logs.')
     }
   }
 }

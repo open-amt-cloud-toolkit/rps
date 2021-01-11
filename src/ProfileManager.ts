@@ -63,7 +63,7 @@ export class ProfileManager implements IProfileManager {
       profiles.push(config)
     }
 
-    if (profiles.length === 0) {
+    if (profiles.length == 0) {
       this.logger.error('Warning: No AMT configurations detected.')
     }
 
@@ -171,38 +171,79 @@ export class ProfileManager implements IProfileManager {
   }
 
   /**
-  * @description Checks if the AMT profile exists or not
-  * @param {string} profile
-  * @returns {AMTConfig} returns AMTConfig object if profile exists otherwise null.
-  */
+     * @description Retrieves the amt password set in the configuration or generates a password based on the flag GenerateRandomPassword
+     * @param {string} profileName profile name of amt password
+     * @returns {string} returns the amt password for a given profile
+     */
+  public async getMEBxPassword (profileName: string): Promise<string> {
+    const profile: AMTConfiguration = await this.getAmtProfile(profileName)
+    let mebxPassword: string
+
+    if (profile) {
+      if (profile.GenerateRandomMEBxPassword === true) {
+        mebxPassword = PasswordHelper.generateRandomPassword(profile.RandomMEBxPasswordLength)
+
+        if (mebxPassword) {
+          this.logger.debug('Created random MEBx password for ' + profile.ProfileName + '.')
+        } else {
+          this.logger.error('unable to create MEBx random password for ' + profile.ProfileName + '.')
+        }
+      } else {
+        this.logger.debug(`found amtPassword for profile ${profileName}`)
+        if (this.configurator && this.configurator.secretsManager) {
+          mebxPassword = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${profileName}`, `${profileName}_DEVICE_MEBX_PASSWORD`)
+        } else {
+          mebxPassword = profile.MEBxPassword
+        }
+      }
+    } else {
+      this.logger.warn(`unable to find mebxPassword for profile ${profileName}`)
+    }
+
+    if (mebxPassword) {
+      return mebxPassword
+    }
+
+    this.logger.error('password cannot be blank')
+    throw new Error('password cannot be blank')
+  }
+
+  /**
+    * @description Checks if the AMT profile exists or not
+    * @param {string} profile
+    * @returns {AMTConfig} returns AMTConfig object if profile exists otherwise null.
+    */
   public async getAmtProfile (profile: string): Promise<AMTConfig> {
     try {
       if (this.envConfig && this.envConfig.DbConfig.useDbForConfig) {
         const amtProfile = await this.amtConfigurations.getProfileByName(profile)
+        // If the Network Config associated with profile, retrieves from DB
+        if (amtProfile.NetworkConfigName) {
+          amtProfile.NetworkConfigObject = await this.amtConfigurations.getNetworkConfigForProfile(amtProfile.NetworkConfigName)
+        }
+        // If the CIRA Config associated with profile, retrieves from DB
         if (amtProfile.CIRAConfigName) {
           amtProfile.CIRAConfigObject = await this.amtConfigurations.getCiraConfigForProfile(amtProfile.CIRAConfigName)
           if (this.configurator && this.configurator.secretsManager) {
-            if (amtProfile.CIRAConfigObject && amtProfile.CIRAConfigObject.Password) {
-              amtProfile.CIRAConfigObject.Password = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${amtProfile.CIRAConfigName}`, amtProfile.CIRAConfigObject.Password)
-            } else {
-              this.logger.error('The amtProfile CIRAConfigObject doesnt have a password. Check CIRA profile creation.')
-            }
+            if (amtProfile.CIRAConfigObject && amtProfile.CIRAConfigObject.Password) { amtProfile.CIRAConfigObject.Password = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${amtProfile.CIRAConfigName}`, amtProfile.CIRAConfigObject.Password) } else { this.logger.error('The amtProfile CIRAConfigObject doesnt have a password. Check CIRA profile creation.') }
           }
         }
         this.logger.debug('AMT Profile returned from db', JSON.stringify(amtProfile))
         return amtProfile
       } else {
         const amtProfiles = await this.amtConfigurations.getAllProfiles()
-        console.log('All Profiles : ', amtProfiles)
         for (let index = 0; index < amtProfiles.length; ++index) {
           if (amtProfiles[index].ProfileName === profile) {
-            this.logger.debug(`found amt profile: ${profile}`)
             const amtProfile = amtProfiles[index]
             this.logger.debug(`found amt profile: ${JSON.stringify(amtProfile, null, '\t')}`)
+            if (amtProfile.NetworkConfigName) {
+              amtProfile.NetworkConfigObject = await this.amtConfigurations.getNetworkConfigForProfile(amtProfile.NetworkConfigName)
+              this.logger.debug(`found AMT Network Config: ${JSON.stringify(amtProfile, null, '\t')}`)
+            }
             if (amtProfile.CIRAConfigName) {
               amtProfile.CIRAConfigObject = await this.amtConfigurations.getCiraConfigForProfile(amtProfile.CIRAConfigName)
+              this.logger.debug(`found AMT CIRA Config: ${JSON.stringify(amtProfile, null, '\t')}`)
             }
-            this.logger.debug(`found AMT CIRA Config for: ${amtProfile.CIRAConfigObject}`)
             return amtProfile
           }
         }

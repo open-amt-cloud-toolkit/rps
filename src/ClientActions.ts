@@ -21,6 +21,7 @@ import { IValidator } from './interfaces/IValidator'
 import { RPSError } from './utils/RPSError'
 import { Deactivator } from './actions/Deactivator'
 import { CIRAConfigurator } from './actions/CIRAConfigurator'
+import { NetworkConfigurator } from './actions/NetworkConfigurator'
 import { ISecretManagerService } from './interfaces/ISecretManagerService'
 
 export class ClientActions {
@@ -41,8 +42,11 @@ export class ClientActions {
     const ciraConfig = new CIRAConfigurator(new Logger('CIRAConfig'), configurator, responseMsg, amtwsman, clientManager)
     this.actions[ClientAction.CIRACONFIG] = ciraConfig
 
-    this.actions[ClientAction.ADMINCTLMODE] = new ACMActivator(new Logger('ACMActivator'), configurator, certManager, helper, responseMsg, amtwsman, clientManager, validator, ciraConfig)
-    this.actions[ClientAction.CLIENTCTLMODE] = new CCMActivator(new Logger('CCMActivator'), configurator, responseMsg, amtwsman, clientManager, validator, ciraConfig)
+    const networkConfig = new NetworkConfigurator(new Logger('NetworkConfig'), configurator, responseMsg, amtwsman, clientManager, validator, ciraConfig)
+    this.actions[ClientAction.NETWORKCONFIG] = networkConfig
+
+    this.actions[ClientAction.ADMINCTLMODE] = new ACMActivator(new Logger('ACMActivator'), configurator, certManager, helper, responseMsg, amtwsman, clientManager, validator, networkConfig)
+    this.actions[ClientAction.CLIENTCTLMODE] = new CCMActivator(new Logger('CCMActivator'), configurator, responseMsg, amtwsman, clientManager, validator, networkConfig)
     this.actions[ClientAction.DEACTIVATE] = new Deactivator(new Logger('Deactivator'), responseMsg, amtwsman, clientManager, configurator)
   }
 

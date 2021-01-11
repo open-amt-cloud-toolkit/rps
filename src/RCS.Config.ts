@@ -87,6 +87,7 @@ export type ClientObject = {
   payload?:any;
   certObj?:any;
   readyState?: number;
+  amtPassword?: string;
   ciraconfig?: CIRAConfigFlow;
 };
 
@@ -96,10 +97,10 @@ export type CIRAConfigFlow = {
   policyRuleAlert?: boolean;
   policyRulePeriodic?: boolean;
   mpsRemoteSAP?: boolean;
-  mpsRemoteSAP_Enumerate?: boolean;
-  mpsRemoteSAP_Delete?: boolean;
-  mpsRemoteSAP_Get?:boolean;
-  mpsPublicCert_Delete?:boolean;
+  mpsRemoteSAPEnumerate?: boolean;
+  mpsRemoteSAPDelete?: boolean;
+  mpsRemoteSAPGet?:boolean;
+  mpsPublicCertDelete?:boolean;
   publicCerts?: any;
   addTrustedRootCert?: boolean;
   addMPSServer?: boolean;
@@ -107,8 +108,9 @@ export type CIRAConfigFlow = {
   userInitConnectionService?: boolean;
   getENVSettingData?:boolean;
   setENVSettingData?:boolean;
-  getENVSettingData_CIRA?:boolean;
-  setENVSettingData_CIRA?:boolean;
+  getENVSettingDataCIRA?:boolean;
+  setENVSettingDataCIRA?:boolean;
+  setEthernetPortSettings?:boolean;
 }
 
 export type mpsServer = {
@@ -161,7 +163,8 @@ export enum ClientAction{
   ADMINCTLMODE = 'acmactivate',
   CLIENTCTLMODE = 'ccmactivate',
   DEACTIVATE = 'deactivate',
-  CIRACONFIG= 'ciraconfig'
+  CIRACONFIG= 'ciraconfig',
+  NETWORKCONFIG = 'networkConfig'
 }
 
 export enum ClientMethods{

@@ -22,7 +22,7 @@ export class VersionChecker {
      * @returns {Version} object containing parsed version
      */
     static parseString (version: string): Version {
-      if (typeof version === 'undefined' || version === '') {
+      if (typeof version === 'undefined' || version == '') {
         throw new RPSError('version must be defined')
       }
 

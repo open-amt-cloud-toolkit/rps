@@ -40,8 +40,8 @@ function readBody (req, res): NetworkConfig {
 
   config.ProfileName = body.payload.profileName
   config.DHCPEnabled = body.payload.dhcpEnabled
-  config.StaticIPShared = body.payload.staticIPShared || true
-  config.IPSyncEnabled = body.payload.ipSyncEnabled || true
+  config.StaticIPShared = !body.payload.dhcpEnabled
+  config.IPSyncEnabled = true
 
   return config
 }

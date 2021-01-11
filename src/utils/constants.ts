@@ -7,6 +7,7 @@ export const AMTRandomPasswordChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmno
 
 export const AppVersion = '1.0.0'
 export const ProtocolVersion = '3.0.0'
+export const AMTUserName = 'admin'
 export const mpsserver = (name: string) => {
   return `<Address xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing">http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</Address><ReferenceParameters xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing"><ResourceURI xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd">http://intel.com/wbem/wscim/1/amt-schema/1/AMT_ManagementPresenceRemoteSAP</ResourceURI><SelectorSet xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"><Selector Name="Name">${name}</Selector></SelectorSet></ReferenceParameters>`
 }
@@ -29,6 +30,7 @@ export const PROFILE_INVALID_AMT_PASSWORD_SELECTION = 'Choose either to generate
 export const PROFILE_INVALID_MEBX_PASSWORD_SELECTION = 'Choose either to generate random MEBX password or static MEBX password.'
 export const PROFILE_INVALID_AMT_PASSWORD_LENGTH = 'AMT random password length should be between 8 and 32'
 export const PROFILE_INVALID_MEBX_PASSWORD_LENGTH = 'MEBx random password length should be between 8 and 32'
+export const PROFILE_MEBX_MANDATORY = 'MEBx password is manadatory for admin control mode'
 
 // CIRA REST API
 export const CIRA_CONFIG_NOT_FOUND = (ciraConfig) => `CIRA Config ${ciraConfig} not found`

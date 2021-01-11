@@ -85,7 +85,7 @@ export class NetConfigFileStorageDb implements INetProfilesDb {
     this.logger.debug(`update NetConfig: ${netConfig.ProfileName}`)
     const isMatch = item => item.ProfileName === netConfig.ProfileName
 
-    if (this.amtProfiles.some(profile => profile.NetworkConfigName === netConfig.ProfileName)) {
+    if (this.amtProfiles.some(profile => profile.NetworkConfigName == netConfig.ProfileName)) {
       throw NETWORK_UPDATE_ERROR(netConfig.ProfileName)
     }
 
