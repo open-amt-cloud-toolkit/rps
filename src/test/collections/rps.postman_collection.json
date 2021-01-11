@@ -1,0 +1,1652 @@
+{
+	"info": {
+		"_postman_id": "ca849f56-2092-4855-9694-6f87bbe13af5",
+		"name": "RPS API Tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Domains",
+			"item": [
+				{
+					"name": "Get All Domains",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"Result length should be 1\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.length).to.eql(1);\r",
+									"});\r",
+									"pm.test(\"Result 1 should be equal to example\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData[0].Name).to.eql(\"Sample_Domain\")\r",
+									"    pm.expect(jsonData[0].DomainSuffix).to.eql(\"sample.com\")\r",
+									"    pm.expect(jsonData[0].ProvisioningCert).to.equal(null)\r",
+									"    pm.expect(jsonData[0].ProvisioningCertStorageFormat).to.eql(\"string\")\r",
+									"    pm.expect(jsonData[0].ProvisioningCertPassword).to.equal(\"<your_certificate_password>\")  \r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"value": "APIKEYFORRPS123!",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://{{host}}:8081/api/v1/admin/domains",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"domains"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Domain",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"Result should be equal to example\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.Name).to.eql(\"Sample_Domain\")\r",
+									"    pm.expect(jsonData.DomainSuffix).to.eql(\"sample.com\")\r",
+									"    pm.expect(jsonData.ProvisioningCert).to.equal(null)\r",
+									"    pm.expect(jsonData.ProvisioningCertStorageFormat).to.eql(\"string\")\r",
+									"    pm.expect(jsonData.ProvisioningCertPassword).to.equal(null)  \r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!"
+							}
+						],
+						"url": {
+							"raw": "http://{{host}}:8081/api/v1/admin/domains/Sample_Domain",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"domains",
+								"Sample_Domain"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Domain that doesn't exist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {    \r",
+									"    pm.response.to.have.status(404);\r",
+									"});\r",
+									"pm.test(\"Version request should succeed\", function () {\r",
+									"    var result = pm.response.text();\r",
+									"    pm.expect(result).to.eql('Domain dontexist not found')\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!"
+							}
+						],
+						"url": {
+							"raw": "http://{{host}}:8081/api/v1/admin/domains/dontexist",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"domains",
+								"dontexist"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Domain",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    //this should be 201\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"Creation should succeed\", function () {\r",
+									"    var result = pm.response.text();\r",
+									"    pm.expect(result).to.eql(\"Domain vprodemo successfully inserted\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"value": "APIKEYFORRPS123!",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"payload\": {\r\n        \"Name\": \"vprodemo\",\r\n        \"DomainSuffix\": \"vprodemo.com\",\r\n        \"ProvisioningCert\": \"test\",\r\n        \"ProvisioningCertStorageFormat\": \"raw\",\r\n        \"ProvisioningCertPassword\": \"P@ssw0rd\"\r\n    }\r\n}"
+						},
+						"url": {
+							"raw": "http://{{host}}:8081/api/v1/admin/domains/create",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"domains",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Domain Duplicate",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 500\", function () {\r",
+									"    //this should be 400\r",
+									"    pm.response.to.have.status(500);\r",
+									"});\r",
+									"pm.test(\"Creation should fail with duplicate\", function () {\r",
+									"    var result = pm.response.text();\r",
+									"    pm.expect(result).to.eql(\"Domain insertion failed for vprodemo. Domain ID or Domain Suffix already exists.\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"value": "APIKEYFORRPS123!",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"payload\": {\r\n        \"Name\": \"vprodemo\",\r\n        \"DomainSuffix\": \"vprodemo.com\",\r\n        \"ProvisioningCert\": \"test\",\r\n        \"ProvisioningCertStorageFormat\": \"raw\",\r\n        \"ProvisioningCertPassword\": \"P@ssw0rd\"\r\n    }\r\n}"
+						},
+						"url": {
+							"raw": "http://{{host}}:8081/api/v1/admin/domains/create",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"domains",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Domain",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"Deletion should succeed\", function () {\r",
+									"    var result = pm.response.text();\r",
+									"    pm.expect(result).to.eql(\"Domain vprodemo successfully deleted\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://{{host}}:8081/api/v1/admin/domains/vprodemo",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"domains",
+								"vprodemo"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Domain when it doesn't exist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {\r",
+									"    pm.response.to.have.status(404);\r",
+									"});\r",
+									"pm.test(\"Deletion should fail with not found message\", function () {\r",
+									"    var result = pm.response.text();\r",
+									"    pm.expect(result).to.eql(\"Domain vprodemo not found\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://{{host}}:8081/api/v1/admin/domains/vprodemo",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"domains",
+								"vprodemo"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "CIRA",
+			"item": [
+				{
+					"name": "Create CIRA Config",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    //this should be 201\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"Creation should succeed\", function () {\r",
+									"    var result = pm.response.text();\r",
+									"    pm.expect(result).to.eql(\"CIRA Config ciraconfig2 successfully inserted\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"mpsServerAddress\": \"192.168.8.50\",\r\n        \"mpsPort\": 4433,\r\n        \"username\": \"admin\",\r\n        \"password\": \"Intel123!\",\r\n        \"commonName\": \"192.168.8.50\",\r\n        \"serverAddressFormat\": 201,\r\n        \"authMethod\": 2,\r\n        \"mpsRootCertificate\": \"rootcert\",\r\n        \"proxyDetails\": \"\"\r\n    }\r\n}"
+						},
+						"url": {
+							"raw": "http://{{host}}:8081/api/v1/admin/ciraconfigs/create",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"ciraconfigs",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create CIRA Config Already Exist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 500\", function () {\r",
+									"    //this should be 400\r",
+									"    pm.response.to.have.status(500);\r",
+									"});\r",
+									"pm.test(\"Creation should not succeed if exists\", function () {\r",
+									"    var result = pm.response.text();\r",
+									"    pm.expect(result).to.eql(\"CIRA Config insertion failed for ciraconfig2. CIRA Config already exists.\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"mpsServerAddress\": \"192.168.8.50\",\r\n        \"mpsPort\": 4433,\r\n        \"username\": \"admin\",\r\n        \"password\": \"Intel123!\",\r\n        \"commonName\": \"192.168.8.50\",\r\n        \"serverAddressFormat\": 201,\r\n        \"authMethod\": 2,\r\n        \"mpsRootCertificate\": \"rootcert\",\r\n        \"proxyDetails\": \"\"\r\n    }\r\n}"
+						},
+						"url": {
+							"raw": "http://{{host}}:8081/api/v1/admin/ciraconfigs/create",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"ciraconfigs",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All CIRA Configs",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"Result length should be 1\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.length).to.greaterThan(1);\r",
+									"});\r",
+									"pm.test(\"Result 1 should be equal to example\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData[0].ConfigName).to.eql(\"Sample_CIRA_Config\")\r",
+									"    pm.expect(jsonData[0].MPSServerAddress).to.eql(\"localhost\")\r",
+									"    pm.expect(jsonData[0].MPSPort).to.eql(\"4433\")\r",
+									"    pm.expect(jsonData[0].Username).to.eql(\"admin\")\r",
+									"    pm.expect(jsonData[0].Password).to.eql(\"<your_mps_password>\")\r",
+									"    pm.expect(jsonData[0].CommonName).to.eql(\"localhost\")\r",
+									"    pm.expect(jsonData[0].ServerAddressFormat).to.eql(201)\r",
+									"    pm.expect(jsonData[0].AuthMethod).to.eql(2)\r",
+									"    pm.expect(jsonData[0].MPSRootCertificate).to.eql(\"rootcert\")\r",
+									"    pm.expect(jsonData[0].ProxyDetails).to.eql(\"\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!"
+							}
+						],
+						"url": {
+							"raw": "http://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"ciraconfigs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get CIRA Config",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"Result should be equal to example\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.ConfigName).to.eql(\"Sample_CIRA_Config\")\r",
+									"    pm.expect(jsonData.MPSServerAddress).to.eql(\"localhost\")\r",
+									"    pm.expect(jsonData.MPSPort).to.eql(\"4433\")\r",
+									"    pm.expect(jsonData.Username).to.eql(\"admin\")\r",
+									"    //pm.expect(jsonData.Password).to.eql(\"<your_mps_password>\")\r",
+									"    pm.expect(jsonData.Password).to.eql(null)\r",
+									"    pm.expect(jsonData.CommonName).to.eql(\"localhost\")\r",
+									"    pm.expect(jsonData.ServerAddressFormat).to.eql(201)\r",
+									"    pm.expect(jsonData.AuthMethod).to.eql(2)\r",
+									"    pm.expect(jsonData.MPSRootCertificate).to.eql(\"rootcert\")\r",
+									"    pm.expect(jsonData.ProxyDetails).to.eql(\"\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!"
+							}
+						],
+						"url": {
+							"raw": "http://{{host}}:8081/api/v1/admin/ciraconfigs/Sample_CIRA_Config",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"ciraconfigs",
+								"Sample_CIRA_Config"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get CIRA Config that doesn't exist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {    \r",
+									"    pm.response.to.have.status(404);\r",
+									"});\r",
+									"pm.test(\"Version request should succeed\", function () {\r",
+									"    var result = pm.response.text();\r",
+									"    pm.expect(result).to.eql('CIRA Config dontexist not found')\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!"
+							}
+						],
+						"url": {
+							"raw": "http://{{host}}:8081/api/v1/admin/ciraconfigs/dontexist",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"ciraconfigs",
+								"dontexist"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove CIRA Config",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"Deletion should succeeed\", function () {\r",
+									"    var result = pm.response.text();\r",
+									"    pm.expect(result).to.eql(\"CIRA Config ciraconfig2 successfully deleted\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://{{host}}:8081/api/v1/admin/ciraconfigs/ciraconfig2",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"ciraconfigs",
+								"ciraconfig2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove CIRA Config when it doesn't exist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {\r",
+									"    pm.response.to.have.status(404);\r",
+									"});\r",
+									"pm.test(\"Deletion should fail with not found message\", function () {\r",
+									"    var result = pm.response.text();\r",
+									"    pm.expect(result).to.eql(\"CIRA Config ciraconfig2 not found\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://{{host}}:8081/api/v1/admin/ciraconfigs/ciraconfig2",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"ciraconfigs",
+								"ciraconfig2"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Profiles",
+			"item": [
+				{
+					"name": "Get All Profiles",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"Result length should be 1\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.length).to.eql(1);\r",
+									"});\r",
+									"pm.test(\"Result 1 should be equal to example\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData[0].ProfileName).to.eql(\"Sample_Profile\")\r",
+									"    pm.expect(jsonData[0].AMTPassword).to.eql(\"<your_amt_password>\")\r",
+									"    pm.expect(jsonData[0].GenerateRandomPassword).to.equal(false)\r",
+									"    pm.expect(jsonData[0].RandomPasswordLength).to.eql(8)\r",
+									"    pm.expect(jsonData[0].Activation).to.equal(\"acmactivate\")\r",
+									"    pm.expect(jsonData[0].CIRAConfigName).to.equal(\"Sample_CIRA_Config\") \r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!"
+							}
+						],
+						"url": {
+							"raw": "http://{{host}}:8081/api/v1/admin/profiles/",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"profiles",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {    \r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Result 1 should be equal to example\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.ProfileName).to.eql(\"Sample_Profile\")\r",
+									"    //pm.expect(jsonData.AMTPassword).to.eql(\"<your_amt_password>\")\r",
+									"    pm.expect(jsonData.AMTPassword).to.eql(null)\r",
+									"    pm.expect(jsonData.GenerateRandomPassword).to.equal(false)\r",
+									"    pm.expect(jsonData.RandomPasswordLength).to.eql(8)\r",
+									"    pm.expect(jsonData.Activation).to.equal(\"acmactivate\")\r",
+									"    pm.expect(jsonData.CIRAConfigName).to.equal(\"Sample_CIRA_Config\")\r",
+									"    \r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"value": "APIKEYFORRPS123!",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://{{host}}:8081/api/v1/admin/profiles/Sample_Profile",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"profiles",
+								"Sample_Profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Profile that doesn't exist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {    \r",
+									"    pm.response.to.have.status(404);\r",
+									"});\r",
+									"pm.test(\"Version request should succeed\", function () {\r",
+									"    var result = pm.response.text();\r",
+									"    pm.expect(result).to.eql('Profile profile1 not found')\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!"
+							}
+						],
+						"url": {
+							"raw": "http://{{host}}:8081/api/v1/admin/profiles/profile1",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"profiles",
+								"profile1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"pm.test(\"Creation should succeed\", function () {\r",
+									"    var result = pm.response.text();\r",
+									"    pm.expect(result).to.eql(\"Profile profile6 successfully inserted\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"value": "APIKEYFORRPS123!",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\",\r\n        \"amtPassword\": \"Intel123!\",\r\n        \"mebxPassword\": \"Intel123!\",\r\n        \"generateRandomPassword\": false,\r\n        \"passwordLength\": 8,\r\n        \"activation\": \"acmactivate\"\r\n    }\r\n}"
+						},
+						"url": {
+							"raw": "http://{{host}}:8081/api/v1/admin/profiles/create",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"profiles",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Profile Duplicate",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 500\", function () {\r",
+									"    //this should be 201\r",
+									"    pm.response.to.have.status(500);\r",
+									"});\r",
+									"pm.test(\"Creation should not succeed if exists\", function () {\r",
+									"    var result = pm.response.text();\r",
+									"    pm.expect(result).to.eql(\"Profile insertion failed for profile6. Profile already exists. \")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\",\r\n        \"amtPassword\": \"Intel123!\",\r\n        \"mebxPassword\": \"Intel123!\",\r\n        \"generateRandomPassword\": false,\r\n        \"passwordLength\": 8,\r\n        \"activation\": \"acmactivate\"\r\n    }\r\n}"
+						},
+						"url": {
+							"raw": "http://{{host}}:8081/api/v1/admin/profiles/create",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"profiles",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"Deletion should succeeed\", function () {\r",
+									"    var result = pm.response.text();\r",
+									"    pm.expect(result).to.eql(\"Profile profile6 successfully deleted\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://{{host}}:8081/api/v1/admin/profiles/profile6",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"profiles",
+								"profile6"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Profile when it doesn't exist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {\r",
+									"    pm.response.to.have.status(404);\r",
+									"});\r",
+									"pm.test(\"Deletion should fail with not found message\", function () {\r",
+									"    var result = pm.response.text();\r",
+									"    pm.expect(result).to.eql(\"Profile profile6 not found\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://{{host}}:8081/api/v1/admin/profiles/profile6",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"profiles",
+								"profile6"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Networks",
+			"item": [
+				{
+					"name": "Get All Networks",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"Result length should be 1\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.length).to.eql(1);\r",
+									"});\r",
+									"pm.test(\"Result 1 should be equal to example\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData[0].ProfileName).to.eql(\"Sample_Network_Config\")\r",
+									"    pm.expect(jsonData[0].DHCPEnabled).to.eql(true)\r",
+									"    pm.expect(jsonData[0].StaticIPShared).to.equal(false)\r",
+									"    pm.expect(jsonData[0].IPSyncEnabled).to.eql(true)\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!"
+							}
+						],
+						"url": {
+							"raw": "http://{{host}}:8081/api/v1/admin/networkconfigs/",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"networkconfigs",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Network Config",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {    \r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Result 1 should be equal to example\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.ProfileName).to.eql(\"Sample_Network_Config\")\r",
+									"    pm.expect(jsonData.DHCPEnabled).to.eql(true)\r",
+									"    pm.expect(jsonData.StaticIPShared).to.equal(false)\r",
+									"    pm.expect(jsonData.IPSyncEnabled).to.eql(true)\r",
+									"    \r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!"
+							}
+						],
+						"url": {
+							"raw": "http://{{host}}:8081/api/v1/admin/networkconfigs/Sample_Network_Config",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"networkconfigs",
+								"Sample_Network_Config"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Network Config that doesn't exist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {    \r",
+									"    pm.response.to.have.status(404);\r",
+									"});\r",
+									"pm.test(\"Version request should succeed\", function () {\r",
+									"    var result = pm.response.text();\r",
+									"    pm.expect(result).to.eql('NETWORK Config profile1 not found')\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!"
+							}
+						],
+						"url": {
+							"raw": "http://{{host}}:8081/api/v1/admin/networkconfigs/profile1",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"networkconfigs",
+								"profile1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Network Config",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    //this should be 201\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"Creation should succeed\", function () {\r",
+									"    var result = pm.response.text();\r",
+									"    pm.expect(result).to.eql(\"NETWORK Config profile6 successfully inserted\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\",\r\n        \"amtPassword\": \"Intel123!\",\r\n        \"generateRandomPassword\": \"false\",\r\n        \"passwordLength\": 8,\r\n        \"activation\": \"acmactivate\"\r\n    }\r\n}"
+						},
+						"url": {
+							"raw": "http://{{host}}:8081/api/v1/admin/networkconfigs/create",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"networkconfigs",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Network Config Duplicate",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 500\", function () {\r",
+									"    //this should be 400\r",
+									"    pm.response.to.have.status(500);\r",
+									"});\r",
+									"pm.test(\"Creation should not succeed if exists\", function () {\r",
+									"    var result = pm.response.text();\r",
+									"    pm.expect(result).to.eql(\"NETWORK Config insertion failed for profile6. NETWORK Config already exists.\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\",\r\n        \"amtPassword\": \"Intel123!\",\r\n        \"generateRandomPassword\": \"false\",\r\n        \"passwordLength\": 8,\r\n        \"activation\": \"acmactivate\"\r\n    }\r\n}"
+						},
+						"url": {
+							"raw": "http://{{host}}:8081/api/v1/admin/networkconfigs/create",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"networkconfigs",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Network Config",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"Deletion should succeeed\", function () {\r",
+									"    var result = pm.response.text();\r",
+									"    pm.expect(result).to.eql(\"NETWORK Config profile6 successfully deleted\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://{{host}}:8081/api/v1/admin/networkconfigs/profile6",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"networkconfigs",
+								"profile6"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Network Config that doesn't exist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 500\", function () {\r",
+									"    //should be 404\r",
+									"    pm.response.to.have.status(500);\r",
+									"});\r",
+									"pm.test(\"Deletion should fail with not found message\", function () {\r",
+									"    var result = pm.response.text();\r",
+									"    // should be NETWORK Config profile6 not found\r",
+									"    pm.expect(result).to.eql(\"Operation failed for NETWORK Config: profile6\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://{{host}}:8081/api/v1/admin/networkconfigs/profile6",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"networkconfigs",
+								"profile6"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Get Version",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {    \r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"pm.test(\"Version request should succeed\", function () {\r",
+							"    var result = pm.response.text();\r",
+							"    pm.expect(result).to.eql('\"protocol version: 3.0.0\"')\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "X-RPS-API-Key",
+						"type": "text",
+						"value": "APIKEYFORRPS123!"
+					}
+				],
+				"url": {
+					"raw": "http://{{host}}:8081/api/v1/admin/version/",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"v1",
+						"admin",
+						"version",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
