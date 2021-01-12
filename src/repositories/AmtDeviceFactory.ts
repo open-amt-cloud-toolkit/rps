@@ -12,17 +12,17 @@ import Logger from '../Logger'
 import { AMTDeviceFileRepository } from './AMTDeviceFileRepository'
 
 export class AmtDeviceFactory {
-    static amtDeviceRepository: IAMTDeviceRepository;
+  static amtDeviceRepository: IAMTDeviceRepository
 
-    static getAmtDeviceRepository (configurator: IConfigurator): IAMTDeviceRepository {
-      if (AmtDeviceFactory.amtDeviceRepository == null) {
-        if (EnvReader.GlobalEnvConfig.VaultConfig.usevault) {
-          AmtDeviceFactory.amtDeviceRepository = new AMTDeviceVaultRepository(new Logger('AMTDeviceVaultRepository'), configurator)
-        } else {
-          AmtDeviceFactory.amtDeviceRepository = new AMTDeviceFileRepository(new Logger('AMTDeviceFileRepository'))
-        }
+  static getAmtDeviceRepository (configurator: IConfigurator): IAMTDeviceRepository {
+    if (AmtDeviceFactory.amtDeviceRepository == null) {
+      if (EnvReader.GlobalEnvConfig.VaultConfig.usevault) {
+        AmtDeviceFactory.amtDeviceRepository = new AMTDeviceVaultRepository(new Logger('AMTDeviceVaultRepository'), configurator)
+      } else {
+        AmtDeviceFactory.amtDeviceRepository = new AMTDeviceFileRepository(new Logger('AMTDeviceFileRepository'))
       }
-
-      return AmtDeviceFactory.amtDeviceRepository
     }
+
+    return AmtDeviceFactory.amtDeviceRepository
+  }
 }

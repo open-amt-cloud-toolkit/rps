@@ -7,11 +7,12 @@
 import { ISecretManagerService } from '../interfaces/ISecretManagerService'
 import { ILogger } from '../interfaces/ILogger'
 import { EnvReader } from './EnvReader'
-import nodeVault = require('node-vault');
+import nodeVault = require('node-vault')
 
 export class SecretManagerService implements ISecretManagerService {
   vaultClient: nodeVault.client;
   logger: ILogger;
+
   constructor (logger: ILogger, vault?: any) {
     this.logger = logger
     if (vault) {

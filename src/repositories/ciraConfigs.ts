@@ -10,7 +10,7 @@ import { mapToCiraConfig } from './mapToCiraConfig'
 import { CIRA_CONFIG_DELETION_FAILED_CONSTRAINT, CIRA_CONFIG_ERROR, CIRA_CONFIG_SUCCESSFULLY_DELETED, CIRA_CONFIG_NOT_FOUND, CIRA_CONFIG_INSERTION_SUCCESS, CIRA_CONFIG_INSERTION_FAILED_DUPLICATE } from '../utils/constants'
 
 export class CiraConfigDb implements ICiraConfigDb {
-  db: any;
+  db: any
   constructor (dbCreator: IDbCreator) {
     this.db = dbCreator.getDb()
   }
@@ -18,7 +18,7 @@ export class CiraConfigDb implements ICiraConfigDb {
   async getAllCiraConfigs (mapperFn?: (configName, data) => Promise<any>): Promise<CIRAConfig[]> {
     const results = await this.db.query('SELECT cira_config_name, mps_server_address, mps_port, user_name, password, common_name, server_address_format, auth_method, mps_root_certificate, proxydetails from ciraconfigs')
 
-    return Promise.all(results.rows.map(async (p) => {
+    return await Promise.all(results.rows.map(async (p) => {
       const result = mapToCiraConfig(p)
       if (mapperFn) {
         result.Password = await mapperFn(result.ConfigName, result.Password)

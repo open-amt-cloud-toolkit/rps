@@ -3,7 +3,7 @@ import { RCSConfig } from '../models/Rcs'
 import { PostgresDbCreator } from './PostgresDbCreator'
 import { ConfigDbCreator } from './ConfigDbCreator'
 export class DbCreatorFactory {
-  config: RCSConfig;
+  config: RCSConfig
   constructor (config: RCSConfig) {
     this.config = config
   }

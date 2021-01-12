@@ -4,8 +4,8 @@ import { ILogger } from '../interfaces/ILogger'
 import { AppVersion, ProtocolVersion } from './constants'
 
 export class ClientResponseMsg {
-  logger: ILogger;
-  nodeForge: INodeForge;
+  logger: ILogger
+  nodeForge: INodeForge
 
   constructor (logger: ILogger, nodeForge: INodeForge) {
     this.logger = logger

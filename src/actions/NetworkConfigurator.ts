@@ -19,14 +19,14 @@ import { AMTGeneralSettings, AMTEthernetPortSettings } from '../models/WSManResp
 import { AMTUserName } from './../utils/constants'
 
 export class NetworkConfigurator implements IExecutor {
-  constructor(
-    private logger: ILogger,
-    private configurator: IConfigurator,
-    private responseMsg: ClientResponseMsg,
-    private amtwsman: WSManProcessor,
-    private clientManager: IClientManager,
-    private validator: IValidator,
-    private CIRAConfigurator: CIRAConfigurator
+  constructor (
+    private readonly logger: ILogger,
+    private readonly configurator: IConfigurator,
+    private readonly responseMsg: ClientResponseMsg,
+    private readonly amtwsman: WSManProcessor,
+    private readonly clientManager: IClientManager,
+    private readonly validator: IValidator,
+    private readonly CIRAConfigurator: CIRAConfigurator
   ) { }
 
   /**
@@ -35,14 +35,14 @@ export class NetworkConfigurator implements IExecutor {
    * @param {string} clientId Id to keep track of connections
    * @returns {ClientMsg} message to sent to client
    */
-  async execute(message: any, clientId: string): Promise<ClientMsg> {
+  async execute (message: any, clientId: string): Promise<ClientMsg> {
     try {
       const clientObj: ClientObject = this.clientManager.getClientObject(clientId)
       const wsmanResponse = message.payload
       if (wsmanResponse) {
         if (wsmanResponse.AMT_GeneralSettings !== undefined) {
           const response: AMTGeneralSettings = wsmanResponse.AMT_GeneralSettings.response
-          if (response.SharedFQDN !== true || response.AMTNetworkEnabled !== 1 || response.RmcpPingResponseEnabled !== true) {
+          if (!response.SharedFQDN || response.AMTNetworkEnabled !== 1 || !response.RmcpPingResponseEnabled) {
             response.SharedFQDN = true
             response.AMTNetworkEnabled = 1
             response.RmcpPingResponseEnabled = true
@@ -61,7 +61,7 @@ export class NetworkConfigurator implements IExecutor {
               response.DHCPEnabled = networkConfig.DHCPEnabled
               response.SharedStaticIp = networkConfig.StaticIPShared
               response.IpSyncEnabled = networkConfig.IPSyncEnabled
-              if (response.DHCPEnabled === true || response.IpSyncEnabled === true) {
+              if (response.DHCPEnabled || response.IpSyncEnabled) {
                 response.SubnetMask = null
                 response.DefaultGateway = null
                 response.IPAddress = null

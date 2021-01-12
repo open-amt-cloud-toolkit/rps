@@ -13,9 +13,9 @@ import Logger from '../Logger'
 import { CiraConfigFileStorageDb } from '../CiraConfigFileStorageDb'
 
 export class CiraConfigDbFactory {
-  static dbCreator: IDbCreator = null;
-  static dbCreatorFactory: DbCreatorFactory;
-  static ciraConfigsDb: ICiraConfigDb;
+  static dbCreator: IDbCreator = null
+  static dbCreatorFactory: DbCreatorFactory
+  static ciraConfigsDb: ICiraConfigDb
 
   static getCiraConfigDb (): ICiraConfigDb {
     if (CiraConfigDbFactory.ciraConfigsDb == null) {

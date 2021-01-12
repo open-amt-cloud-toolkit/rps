@@ -11,7 +11,7 @@ import { Pool, QueryResult } from 'pg'
 import { DbConfig } from '../models/Rcs'
 
 export class PostgresDb {
-  pool: Pool;
+  pool: Pool
 
   constructor (config: DbConfig) {
     this.pool = new Pool({

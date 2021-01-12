@@ -78,7 +78,7 @@ app.use('/api/v1', isAuthenticated, (req, res, next) => {
 }, routes)
 
 let serverHttps: any
-if (config.https === true) {
+if (config.https) {
   const WebSocketCertificatePath = path.join(__dirname, EnvReader.GlobalEnvConfig.WSConfiguration.WebSocketCertificate)
   const WebSocketCertificateKeyPath = path.join(__dirname, EnvReader.GlobalEnvConfig.WSConfiguration.WebSocketCertificateKey)
   let RootCACertPath

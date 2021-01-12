@@ -1,15 +1,15 @@
 import { RCSConfig } from '../models/Rcs'
 
-export type webConfigType = {
-  ca: any,
-  cert: any,
-  key: any,
-  secureOptions?: any,
+export interface webConfigType {
+  ca: any
+  cert: any
+  key: any
+  secureOptions?: any
 }
 
 export class EnvReader {
-  static GlobalEnvConfig: RCSConfig;
-  static configPath: string;
+  static GlobalEnvConfig: RCSConfig
+  static configPath: string
 
   static getCertConfig () {
     const webTlsConfig: webConfigType = {

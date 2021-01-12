@@ -10,7 +10,7 @@ import { NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT, NETWORK_CONFIG_ERROR, NETWOR
 import { mapToNetworkProfile } from './mapToNetworkProfile'
 
 export class NetConfigDb implements INetProfilesDb {
-  db: any;
+  db: any
   constructor (dbCreator: IDbCreator) {
     this.db = dbCreator.getDb()
   }

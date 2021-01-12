@@ -14,9 +14,9 @@ import { INetProfilesDb } from './repositories/interfaces/INetProfilesDb'
 import { NetworkConfig } from './RCS.Config'
 
 export class NetConfigFileStorageDb implements INetProfilesDb {
-  networkConfigs: NetworkConfig[];
-  amtProfiles: AMTConfiguration[];
-  private logger: ILogger;
+  networkConfigs: NetworkConfig[]
+  amtProfiles: AMTConfiguration[]
+  private readonly logger: ILogger
 
   constructor (amtProfiles: AMTConfiguration[], networkConfigs: NetworkConfig[], logger: ILogger) {
     this.logger = logger

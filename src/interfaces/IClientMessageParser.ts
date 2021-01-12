@@ -4,5 +4,5 @@
  * Author : Madhavi Losetty
  **********************************************************************/
 export interface IClientMessageParser{
-    parse(clientMsg: string, clientId: string) :any;
+  parse: (clientMsg: string, clientId: string) => any
 }

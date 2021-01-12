@@ -9,7 +9,7 @@ import { mapToDomain } from './mapToDomain'
 import { DOMAIN_INSERTION_FAILED_DUPLICATE } from '../utils/constants'
 
 export class DomainsDb implements IDomainsDb {
-  db: any;
+  db: any
   constructor (dbCreator: IDbCreator) {
     this.db = dbCreator.getDb()
   }
@@ -17,7 +17,7 @@ export class DomainsDb implements IDomainsDb {
   async getAllDomains (mapperFn?: (data) => any): Promise<any> {
     const results = await this.db.query('SELECT name as Name, domain_suffix as DomainSuffix, provisioning_cert as ProvisioningCert, provisioning_cert_storage_format as ProvisioningCertStorageFormat, provisioning_cert_key as ProvisioningCertPassword FROM domains')
 
-    return Promise.all(results.rows.map(async element => {
+    return await Promise.all(results.rows.map(async element => {
       const d = mapToDomain(element)
       if (mapperFn && d.ProvisioningCertPassword) {
         d.ProvisioningCertPassword = await mapperFn(d.ProvisioningCertPassword)

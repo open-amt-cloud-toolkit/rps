@@ -8,9 +8,9 @@ import { CIRA_CONFIG_DELETION_FAILED_CONSTRAINT, CIRA_CONFIG_SUCCESSFULLY_DELETE
 import { CiraConfigDbFactory } from './repositories/CiraConfigDbFactory'
 
 export class CiraConfigFileStorageDb implements ICiraConfigDb {
-  ciraConfigs: CIRAConfig[];
-  amtProfiles: AMTConfiguration[];
-  private logger: ILogger;
+  ciraConfigs: CIRAConfig[]
+  amtProfiles: AMTConfiguration[]
+  private readonly logger: ILogger
 
   constructor (amtProfiles: AMTConfiguration[], ciraConfigs: CIRAConfig[], logger: ILogger) {
     this.logger = logger

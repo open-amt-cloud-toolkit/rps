@@ -18,11 +18,11 @@ import { AMTUserName } from './../utils/constants'
 
 export class CIRAConfigurator implements IExecutor {
   constructor (
-        private logger: ILogger,
-        private configurator: IConfigurator,
-        private responseMsg: ClientResponseMsg,
-        private amtwsman: WSManProcessor,
-        private clientManager: IClientManager
+    private readonly logger: ILogger,
+    private readonly configurator: IConfigurator,
+    private readonly responseMsg: ClientResponseMsg,
+    private readonly amtwsman: WSManProcessor,
+    private readonly clientManager: IClientManager
   ) { }
 
   /**

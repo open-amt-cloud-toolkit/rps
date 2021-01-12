@@ -6,8 +6,8 @@ import { FileHelper } from './utils/FileHelper'
 import { DOMAIN_INSERTION_FAILED_DUPLICATE } from './utils/constants'
 
 export class DomainConfigDb implements IDomainsDb {
-  private domains: AMTDomain[];
-  private logger: ILogger;
+  private readonly domains: AMTDomain[]
+  private readonly logger: ILogger
 
   constructor (domains: AMTDomain[], logger: ILogger) {
     this.logger = logger

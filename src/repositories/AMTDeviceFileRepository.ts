@@ -13,7 +13,7 @@ import { EnvReader } from '../utils/EnvReader'
 import { RPSError } from '../utils/RPSError'
 
 export class AMTDeviceFileRepository implements IAMTDeviceRepository {
-  private logger: ILogger;
+  private readonly logger: ILogger
 
   constructor (logger: ILogger) {
     this.logger = logger

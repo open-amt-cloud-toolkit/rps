@@ -13,9 +13,9 @@ import { PROFILE_SUCCESSFULLY_DELETED, PROFILE_INSERTION_FAILED_DUPLICATE, PROFI
 import { NetConfigDb } from './netProfiles'
 
 export class ProfilesDb implements IProfilesDb {
-  db: any;
-  ciraConfigs: CiraConfigDb;
-  networkConfigs: NetConfigDb;
+  db: any
+  ciraConfigs: CiraConfigDb
+  networkConfigs: NetConfigDb
 
   constructor (dbCreator: IDbCreator) {
     this.db = dbCreator.getDb()
@@ -26,13 +26,13 @@ export class ProfilesDb implements IProfilesDb {
   async getAllProfiles (): Promise<AMTConfig[]> {
     const results = await this.db.query('SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, generate_random_password as GenerateRandomPassword, configuration_script as ConfigurationScript, cira_config_name as ciraConfigName, random_password_length as RandomPasswordLength, network_profile_name as NetworkProfileName,mebx_password as MEBxPassword, generate_random_mebx_password as GenerateRandomMEBxPassword, random_mebx_password_length as RandomMEBxPasswordLength FROM profiles')
 
-    return Promise.all(results.rows.map(async p => {
+    return await Promise.all(results.rows.map(async p => {
       const result = mapToProfile(p)
       // Not showing up the passwords or Password keys for security issues
-      if (result.GenerateRandomPassword === false) {
+      if (!result.GenerateRandomPassword) {
         result.AMTPassword = null
       }
-      if (result.GenerateRandomMEBxPassword === false) {
+      if (!result.GenerateRandomMEBxPassword) {
         result.MEBxPassword = null
       }
       return result
