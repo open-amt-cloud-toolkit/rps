@@ -10,10 +10,10 @@ import { ClientObject } from './RCS.Config'
 import { ILogger } from './interfaces/ILogger'
 
 export class ClientManager implements IClientManager {
-  clients: Array<ClientObject>;
-  logger: any;
+  clients: ClientObject[]
+  logger: any
 
-  private static instance: ClientManager;
+  private static instance: ClientManager
 
   private constructor (logger: ILogger) {
     this.logger = logger

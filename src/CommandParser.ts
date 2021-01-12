@@ -17,7 +17,7 @@ const options = {
 }
 
 export class CommandParser {
-  static logger: ILogger = new Logger('CommandParser');
+  static logger: ILogger = new Logger('CommandParser')
 
   static parse (msg: ClientMsg): ClientMsg {
     try {

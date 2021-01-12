@@ -7,9 +7,9 @@
 import * as WebSocket from 'ws'
 
 export interface IWebSocketListener{
-  onClientConnected(ws: WebSocket): void;
-  onClientDisconnected(clientId: string): void;
-  onMessageReceived(message: WebSocket.Data, clientId: string): void;
-  onError(error: Error, clientId: string): void;
-  onSendMessage(message: string, clientId: string):void;
+  onClientConnected: (ws: WebSocket) => void
+  onClientDisconnected: (clientId: string) => void
+  onMessageReceived: (message: WebSocket.Data, clientId: string) => void
+  onError: (error: Error, clientId: string) => void
+  onSendMessage: (message: string, clientId: string) => void
 }

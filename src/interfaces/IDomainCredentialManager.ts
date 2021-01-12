@@ -6,8 +6,8 @@
  **********************************************************************/
 
 export interface IDomainCredentialManager {
-    getProvisioningCertStorageType(domain: string): Promise<string>;
-    getProvisioningCert(domain: string): Promise<string>;
-    getProvisioningCertPassword(domain: string): Promise<string>;
-    doesDomainExist(domain: string): Promise<boolean>;
+  getProvisioningCertStorageType: (domain: string) => Promise<string>
+  getProvisioningCert: (domain: string) => Promise<string>
+  getProvisioningCertPassword: (domain: string) => Promise<string>
+  doesDomainExist: (domain: string) => Promise<boolean>
 }

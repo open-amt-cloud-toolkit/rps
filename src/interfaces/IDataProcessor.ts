@@ -6,5 +6,5 @@
 import * as WebSocket from 'ws'
 
 export interface IDataProcessor{
-    processData(message: WebSocket.Data, clientId: string): Promise<any>;
+  processData: (message: WebSocket.Data, clientId: string) => Promise<any>
 }

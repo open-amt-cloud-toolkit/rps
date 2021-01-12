@@ -17,11 +17,11 @@ import { IConfigurator } from '../interfaces/IConfigurator'
 
 export class Deactivator implements IExecutor {
   constructor (
-    private logger: ILogger,
-    private responseMsg: ClientResponseMsg,
-    private amtwsman: WSManProcessor,
-    private clientManager: IClientManager,
-    private configurator?: IConfigurator
+    private readonly logger: ILogger,
+    private readonly responseMsg: ClientResponseMsg,
+    private readonly amtwsman: WSManProcessor,
+    private readonly clientManager: IClientManager,
+    private readonly configurator?: IConfigurator
   ) {}
 
   /**

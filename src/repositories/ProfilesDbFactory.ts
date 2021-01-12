@@ -12,15 +12,15 @@ import { AMTConfigDb } from '../AMTConfigDb'
 import Logger from '../Logger'
 
 export class ProfilesDbFactory {
-  static dbCreator: IDbCreator = null;
-  static dbCreatorFactory: DbCreatorFactory;
-  static profilesDb: IProfilesDb;
+  static dbCreator: IDbCreator = null
+  static dbCreatorFactory: DbCreatorFactory
+  static profilesDb: IProfilesDb
 
   static getProfilesDb (): IProfilesDb {
     if (ProfilesDbFactory.profilesDb == null) {
       ProfilesDbFactory.dbCreatorFactory = new DbCreatorFactory(EnvReader.GlobalEnvConfig)
       ProfilesDbFactory.dbCreator = ProfilesDbFactory.dbCreatorFactory.getDbCreator()
-      ProfilesDbFactory.profilesDb = (EnvReader.GlobalEnvConfig.DbConfig.useDbForConfig === true
+      ProfilesDbFactory.profilesDb = (EnvReader.GlobalEnvConfig.DbConfig.useDbForConfig
         ? new ProfilesDb(ProfilesDbFactory.dbCreator)
         : new AMTConfigDb(ProfilesDbFactory.dbCreator.getDb().AMTConfigurations,
           ProfilesDbFactory.dbCreator.getDb().CIRAConfigurations,

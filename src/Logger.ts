@@ -32,7 +32,7 @@ const logger = winston.createLogger({
 })
 
 class Logger implements ILogger {
-  private name: string;
+  private readonly name: string
 
   constructor (name: string) {
     this.name = name

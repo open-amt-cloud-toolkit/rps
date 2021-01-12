@@ -14,12 +14,12 @@ const WSMan = require('./amt-libraries/amt-wsman')
 const AMT = require('./amt-libraries/amt')
 
 export class WSManProcessor {
-  cache: any;
+  cache: any
 
   constructor (
-    private logger: ILogger,
-    private clientManager: IClientManager,
-    private responseMsg: ResponseMessage
+    private readonly logger: ILogger,
+    private readonly clientManager: IClientManager,
+    private readonly responseMsg: ResponseMessage
   ) {
     this.cache = {}
   }

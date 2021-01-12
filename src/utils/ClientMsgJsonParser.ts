@@ -12,7 +12,7 @@ import { RPSError } from './RPSError'
 
 export class ClientMsgJsonParser implements IClientMessageParser {
   nodeForge: NodeForge
-  constructor (private _nodeForge: NodeForge) {
+  constructor (private readonly _nodeForge: NodeForge) {
     this.nodeForge = _nodeForge
   }
 

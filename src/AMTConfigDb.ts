@@ -7,10 +7,10 @@ import { CIRAConfig, NetworkConfig } from './RCS.Config'
 import { PROFILE_SUCCESSFULLY_DELETED, PROFILE_NOT_FOUND, PROFILE_INSERTION_FAILED_DUPLICATE } from './utils/constants'
 
 export class AMTConfigDb implements IProfilesDb {
-  amtProfiles: AMTConfiguration[];
-  ciraConfigs: CIRAConfig[];
-  networkConfigs: NetworkConfig[];
-  private logger: ILogger;
+  amtProfiles: AMTConfiguration[]
+  ciraConfigs: CIRAConfig[]
+  networkConfigs: NetworkConfig[]
+  private readonly logger: ILogger
 
   constructor (profiles: AMTConfiguration[], ciraConfigs: CIRAConfig[], networkConfigs: NetworkConfig[], logger: ILogger) {
     this.logger = logger

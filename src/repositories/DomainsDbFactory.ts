@@ -12,15 +12,15 @@ import { DomainConfigDb } from '../DomainConfigDb'
 import Logger from '../Logger'
 
 export class DomainsDbFactory {
-  static dbCreator: IDbCreator = null;
-  static dbCreatorFactory: DbCreatorFactory;
-  static domainsDb: IDomainsDb;
+  static dbCreator: IDbCreator = null
+  static dbCreatorFactory: DbCreatorFactory
+  static domainsDb: IDomainsDb
 
   static getDomainsDb (): IDomainsDb {
     if (DomainsDbFactory.domainsDb == null) {
       DomainsDbFactory.dbCreatorFactory = new DbCreatorFactory(EnvReader.GlobalEnvConfig)
       DomainsDbFactory.dbCreator = DomainsDbFactory.dbCreatorFactory.getDbCreator()
-      DomainsDbFactory.domainsDb = (EnvReader.GlobalEnvConfig.DbConfig.useDbForConfig === true
+      DomainsDbFactory.domainsDb = (EnvReader.GlobalEnvConfig.DbConfig.useDbForConfig
         ? new DomainsDb(DomainsDbFactory.dbCreator)
         : new DomainConfigDb(DomainsDbFactory.dbCreator.getDb().AMTDomains, new Logger('DomainConfigDb')))
     }

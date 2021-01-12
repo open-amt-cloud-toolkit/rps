@@ -25,18 +25,18 @@ import { NetworkConfigurator } from './actions/NetworkConfigurator'
 import { ISecretManagerService } from './interfaces/ISecretManagerService'
 
 export class ClientActions {
-  actions: any;
+  actions: any
 
   constructor (
-    private logger: ILogger,
-    private configurator: IConfigurator,
-    private certManager: ICertManager,
-    private helper: SignatureHelper,
-    private responseMsg: ClientResponseMsg,
-    private amtwsman: WSManProcessor,
-    private clientManager: IClientManager,
-    private validator: IValidator,
-    private secretsManager?: ISecretManagerService) {
+    private readonly logger: ILogger,
+    private readonly configurator: IConfigurator,
+    private readonly certManager: ICertManager,
+    private readonly helper: SignatureHelper,
+    private readonly responseMsg: ClientResponseMsg,
+    private readonly amtwsman: WSManProcessor,
+    private readonly clientManager: IClientManager,
+    private readonly validator: IValidator,
+    private readonly secretsManager?: ISecretManagerService) {
     this.actions = {}
 
     const ciraConfig = new CIRAConfigurator(new Logger('CIRAConfig'), configurator, responseMsg, amtwsman, clientManager)

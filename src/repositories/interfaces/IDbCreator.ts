@@ -4,5 +4,5 @@
  * Author : Ramu Bachala
  **********************************************************************/
 export interface IDbCreator {
-  getDb(): any;
+  getDb: () => any
 }

@@ -7,8 +7,8 @@ import * as WebSocket from 'ws'
 import { ClientMsg } from '../RCS.Config'
 
 export interface IValidator {
-    parseClientMsg(message: WebSocket.Data, clientId: string): any;
-    isDigestRealmValid(realm: string): boolean;
-    validateActivationMsg(message: ClientMsg, clientId: string): any;
-    validateDeactivationMsg(msg: ClientMsg, clientId: string): any;
+  parseClientMsg: (message: WebSocket.Data, clientId: string) => any
+  isDigestRealmValid: (realm: string) => boolean
+  validateActivationMsg: (message: ClientMsg, clientId: string) => any
+  validateDeactivationMsg: (msg: ClientMsg, clientId: string) => any
 }
