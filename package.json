@@ -50,7 +50,7 @@
     "jest-sinon": "^1.0.4",
     "jest-transform-stub": "^2.0.0",
     "nodemon": "^2.0.7",
-    "sinon": "^7.5.0",
+    "sinon": "^9.2.3",
     "ts-jest": "^26.4.4",
     "ts-loader": "^8.0.10",
     "ts-node": "^8.1.0",
