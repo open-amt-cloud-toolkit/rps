@@ -13,15 +13,74 @@ import { EnvReader } from '../utils/EnvReader'
 import { RPSError } from '../utils/RPSError'
 
 export class AMTDeviceFileRepository implements IAMTDeviceRepository {
-    private logger: ILogger;
+  private logger: ILogger;
 
-    constructor (logger: ILogger) {
-      this.logger = logger
+  constructor (logger: ILogger) {
+    this.logger = logger
+  }
+
+  public async insert (device: AMTDeviceDTO): Promise<boolean> {
+    try {
+      const credentialsFilePath = path.join(__dirname, EnvReader.GlobalEnvConfig.credentialspath)
+
+      const credentialsFile = FileHelper.readJsonObjFromFile(credentialsFilePath)
+
+      if (!credentialsFile.credentials) {
+        credentialsFile.credentials = {}
+      }
+
+      credentialsFile.credentials[device.guid] =
+      {
+        name: device.name,
+        mpsuser: device.mpsuser,
+        mpspass: device.mpspass,
+        amtuser: device.amtuser,
+        amtpass: device.amtpass,
+        mebxpass: device.mebxpass
+      }
+
+      this.logger.debug(`added entry to credential file: ${JSON.stringify(credentialsFile, null, 2)}}`)
+
+      this.logger.debug(`added entry to credential file: ${JSON.stringify(credentialsFile, null, 2)}}`)
+
+      FileHelper.writeObjToJsonFile(credentialsFile, credentialsFilePath)
+      return true
+    } catch (error) {
+      this.logger.error(`failed to insert record guid: ${device.guid}, error: ${JSON.stringify(error)}`)
+      throw new RPSError('Exception writting to credentials file')
     }
+  }
 
-    public async insert (device: AMTDeviceDTO): Promise<boolean> {
-      try {
-        const credentialsFilePath = path.join(__dirname, EnvReader.GlobalEnvConfig.credentialspath)
+  public async delete (device: AMTDeviceDTO): Promise<boolean> {
+    try {
+      const credentialsFilePath = path.join(__dirname, EnvReader.GlobalEnvConfig.credentialspath)
+
+      const credentialsFile = FileHelper.readJsonObjFromFile(credentialsFilePath)
+
+      if (!credentialsFile.credentials) {
+        return false
+      }
+
+      delete credentialsFile.credentials[device.guid]
+
+      this.logger.debug(`deleted entry from credential file: ${JSON.stringify(credentialsFile, null, 2)}}`)
+
+      FileHelper.writeObjToJsonFile(credentialsFile, credentialsFilePath)
+      return true
+    } catch (error) {
+      this.logger.error(`failed to delete record guid: ${device.guid}, error: ${JSON.stringify(error)}`)
+      throw new RPSError('Exception deleting from credentials file')
+    }
+  }
+
+  public async get (deviceId: string): Promise<AMTDeviceDTO> {
+    try {
+      const credentialsFilePath = path.join(__dirname, EnvReader.GlobalEnvConfig.credentialspath)
+
+      let amtDevice: AMTDeviceDTO = null
+
+      if (FileHelper.isValidPath(credentialsFilePath)) {
+        this.logger.debug(`credential file found at location: ${credentialsFilePath}`)
 
         const credentialsFile = FileHelper.readJsonObjFromFile(credentialsFilePath)
 
@@ -29,80 +88,24 @@ export class AMTDeviceFileRepository implements IAMTDeviceRepository {
           credentialsFile.credentials = {}
         }
 
-        credentialsFile.credentials[device.guid] =
-            {
-              name: device.name,
-              mpsuser: device.mpsuser,
-              mpspass: device.mpspass,
-              amtuser: device.amtuser,
-              amtpass: device.amtpass
-            }
+        const device = credentialsFile.credentials[deviceId]
 
-        this.logger.debug(`added entry to credential file: ${JSON.stringify(credentialsFile, null, 2)}}`)
-
-        FileHelper.writeObjToJsonFile(credentialsFile, credentialsFilePath)
-        return true
-      } catch (error) {
-        this.logger.error(`failed to insert record guid: ${device.guid}, error: ${JSON.stringify(error)}`)
-        throw new RPSError('Exception writting to credentials file')
-      }
-    }
-
-    public async delete (device: AMTDeviceDTO): Promise<boolean> {
-      try {
-        const credentialsFilePath = path.join(__dirname, EnvReader.GlobalEnvConfig.credentialspath)
-
-        const credentialsFile = FileHelper.readJsonObjFromFile(credentialsFilePath)
-
-        if (!credentialsFile.credentials) {
-          return false
-        }
-
-        delete credentialsFile.credentials[device.guid]
-
-        this.logger.debug(`deleted entry from credential file: ${JSON.stringify(credentialsFile, null, 2)}}`)
-
-        FileHelper.writeObjToJsonFile(credentialsFile, credentialsFilePath)
-        return true
-      } catch (error) {
-        this.logger.error(`failed to delete record guid: ${device.guid}, error: ${JSON.stringify(error)}`)
-        throw new RPSError('Exception deleting from credentials file')
-      }
-    }
-
-    public async get (deviceId: string): Promise<AMTDeviceDTO> {
-      try {
-        const credentialsFilePath = path.join(__dirname, EnvReader.GlobalEnvConfig.credentialspath)
-
-        let amtDevice: AMTDeviceDTO = null
-
-        if (FileHelper.isValidPath(credentialsFilePath)) {
-          this.logger.debug(`credential file found at location: ${credentialsFilePath}`)
-
-          const credentialsFile = FileHelper.readJsonObjFromFile(credentialsFilePath)
-
-          if (!credentialsFile.credentials) {
-            credentialsFile.credentials = {}
-          }
-
-          const device = credentialsFile.credentials[deviceId]
-
-          if (device) {
-            amtDevice = new AMTDeviceDTO(device.deviceId, device.name, device.mpsuser, device.mpspass, device.amtuser, device.amtpass)
-          } else {
-            throw new RPSError('device not found')
-          }
-
-          this.logger.debug(`returning device: ${JSON.stringify(amtDevice, null, 2)}}`)
-
-          return amtDevice
+        if (device) {
+          amtDevice = new AMTDeviceDTO(device.deviceId, device.name, device.mpsuser, device.mpspass, device.amtuser, device.amtpass, device.mebxpass)
         } else {
-          this.logger.warn(`credential file not found at location: ${credentialsFilePath}`)
-          throw new Error('credentials path not valid')
+          throw new RPSError('device not found')
         }
-      } catch (error) {
-        this.logger.error(`failed to get device record guid: ${deviceId}, error: ${JSON.stringify(error)}, error: ${error}`)
-        throw new RPSError(`Exception reading device: ${deviceId}`)
+
+        this.logger.debug(`returning device: ${JSON.stringify(amtDevice, null, 2)}}`)
+
+        return amtDevice
+      } else {
+        this.logger.warn(`credential file not found at location: ${credentialsFilePath}`)
+        throw new Error('credentials path not valid')
       }
+    } catch (error) {
+      this.logger.error(`failed to get device record guid: ${deviceId}, error: ${JSON.stringify(error)}, error: ${error}`)
+      throw new RPSError(`Exception reading device: ${deviceId}`)
     }
+  }
 }

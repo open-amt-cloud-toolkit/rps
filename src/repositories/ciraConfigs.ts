@@ -39,7 +39,7 @@ export class CiraConfigDb implements ICiraConfigDb {
       return (results.rowCount > 0 ? CIRA_CONFIG_SUCCESSFULLY_DELETED(ciraConfigName) : CIRA_CONFIG_NOT_FOUND(ciraConfigName))
     } catch (error) {
       console.log(error)
-      if (error.code === '23503') { // foreign key violation
+      if (error.code == '23503') { // foreign key violation
         throw (CIRA_CONFIG_DELETION_FAILED_CONSTRAINT(ciraConfigName))
       }
 
@@ -71,7 +71,7 @@ export class CiraConfigDb implements ICiraConfigDb {
       return null
     } catch (error) {
       console.log(error)
-      if (error.code === '23505') { // Unique key violation
+      if (error.code == '23505') { // Unique key violation
         throw (CIRA_CONFIG_INSERTION_FAILED_DUPLICATE(ciraConfig.ConfigName))
       }
 

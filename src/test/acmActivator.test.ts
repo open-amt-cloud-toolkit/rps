@@ -20,7 +20,7 @@ import { IPSHostBasedSetupService } from './helper/AMTJSONResponses'
 import { EnvReader } from '../utils/EnvReader'
 import { CIRAConfigurator } from '../actions/CIRAConfigurator'
 import { ClientAction } from '../RCS.Config'
-
+import { NetworkConfigurator } from '../actions/NetworkConfigurator'
 // EnvReader.InitFromEnv(config);
 EnvReader.GlobalEnvConfig = config
 EnvReader.configPath = path.join(__dirname, './helper/data.json')
@@ -33,7 +33,8 @@ const responseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'), nodeF
 const amtwsman = new WSManProcessor(new Logger('WSManProcessor'), clientManager, responseMsg)
 const validator = new Validator(new Logger('Validator'), configurator, clientManager, nodeForge)
 const ciraConfig = new CIRAConfigurator(new Logger('CIRAConfig'), configurator, responseMsg, amtwsman, clientManager)
-const acmActivator = new ACMActivator(new Logger('ACMActivator'), configurator, certManager, helper, responseMsg, amtwsman, clientManager, validator, ciraConfig)
+const networkConfigurator = new NetworkConfigurator(new Logger('NetworkConfig'), configurator, responseMsg, amtwsman, clientManager, validator, ciraConfig)
+const acmActivator = new ACMActivator(new Logger('ACMActivator'), configurator, certManager, helper, responseMsg, amtwsman, clientManager, validator, networkConfigurator)
 let clientId, activationmsg
 
 beforeAll(() => {

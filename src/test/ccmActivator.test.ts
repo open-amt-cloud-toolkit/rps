@@ -16,6 +16,7 @@ import { ClientManager } from '../ClientManager'
 import { Validator } from '../Validator'
 import { EnvReader } from '../utils/EnvReader'
 import { CIRAConfigurator } from '../actions/CIRAConfigurator'
+import { NetworkConfigurator } from '../actions/NetworkConfigurator'
 
 // EnvReader.InitFromEnv(config);
 EnvReader.GlobalEnvConfig = config
@@ -26,7 +27,8 @@ const responseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'), nodeF
 const amtwsman = new WSManProcessor(new Logger('WSManProcessor'), clientManager, responseMsg)
 const validator = new Validator(new Logger('Validator'), configurator, clientManager, nodeForge)
 const ciraConfig = new CIRAConfigurator(new Logger('CIRAConfig'), configurator, responseMsg, amtwsman, clientManager)
-const ccmActivate = new CCMActivator(new Logger('CCMActivator'), configurator, responseMsg, amtwsman, clientManager, validator, ciraConfig)
+const networkConfigurator = new NetworkConfigurator(new Logger('NetworkConfig'), configurator, responseMsg, amtwsman, clientManager, validator, ciraConfig)
+const ccmActivate = new CCMActivator(new Logger('CCMActivator'), configurator, responseMsg, amtwsman, clientManager, validator, networkConfigurator)
 let clientId, activationmsg
 
 beforeAll(() => {

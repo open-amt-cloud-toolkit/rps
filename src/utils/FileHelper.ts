@@ -49,7 +49,7 @@ export class FileHelper {
             const fileContentsTrimmed = fileContents.trim()
             if (fileContentsTrimmed && fileContentsTrimmed.length > 0) {
               jsonFile = JSON.parse(fileContents)
-              this.logger.debug(`read in file: ${JSON.stringify(jsonFile, null, 2)}}`)
+               this.logger.silly(`read in file: ${JSON.stringify(jsonFile, null, 2)}}`)
             } else {
               this.logger.warn(`file only contains whitespaces ${filePath}`)
             }

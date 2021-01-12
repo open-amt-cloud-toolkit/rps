@@ -36,7 +36,7 @@ export class WebSocketListener implements IWebSocketListener {
    */
   connect (): boolean {
     try {
-      if (this.wsConfig.WebSocketTLS === true && this.wsConfig.WebSocketCertificate !== null && this.wsConfig.WebSocketCertificateKey !== null) {
+      if (this.wsConfig.WebSocketTLS == true && this.wsConfig.WebSocketCertificate !== null && this.wsConfig.WebSocketCertificateKey !== null) {
         let httpsServer
         if (EnvReader.GlobalEnvConfig.DbConfig.useRawCerts) {
           // this means the certs are provided from ENV variables. read them RAW.

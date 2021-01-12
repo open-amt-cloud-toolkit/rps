@@ -17,7 +17,8 @@ import { IClientManager } from '../interfaces/IClientManager'
 import { RPSError } from '../utils/RPSError'
 import { IValidator } from '../interfaces/IValidator'
 import { EnvReader } from '../utils/EnvReader'
-import { CIRAConfigurator } from './CIRAConfigurator'
+import { NetworkConfigurator } from './NetworkConfigurator'
+import { AMTUserName } from './../utils/constants'
 
 export class CCMActivator implements IExecutor {
   constructor (
@@ -27,7 +28,7 @@ export class CCMActivator implements IExecutor {
     private amtwsman: WSManProcessor,
     private clientManager: IClientManager,
     private validator: IValidator,
-    private CIRAConfigurator: CIRAConfigurator
+    private networkConfigurator: NetworkConfigurator
   ) { }
 
   /**
@@ -59,25 +60,33 @@ export class CCMActivator implements IExecutor {
         } else {
           this.logger.debug(`Device ${clientObj.uuid} activated in client mode.`)
           clientObj.ciraconfig.status = 'activated in client mode.'
-          clientObj.action = ClientAction.CIRACONFIG
+
+          if (this.amtwsman.cache[clientId]) {
+            this.amtwsman.cache[clientId].wsman.comm.setupCommunication.getUsername = () => { return AMTUserName }
+            this.amtwsman.cache[clientId].wsman.comm.setupCommunication.getPassword = () => { return clientObj.amtPassword }
+          }
+          // return this.responseMsg.get(clientId, null, 'success', 'success', `Device ${clientObj.uuid} ${clientObj.ciraconfig.status}.`)
+          clientObj.action = ClientAction.NETWORKCONFIG
           this.clientManager.setClientObject(clientObj)
-          await this.CIRAConfigurator.execute(message, clientId)
+          await this.networkConfigurator.execute(message, clientId)
         }
       }
       if (clientObj.action === ClientAction.CLIENTCTLMODE) {
         const amtPassword: string = await this.configurator.profileManager.getAmtPassword(clientObj.ClientData.payload.profile.ProfileName)
-
+        clientObj.amtPassword = amtPassword
+        this.clientManager.setClientObject(clientObj)
         if (this.configurator && this.configurator.amtDeviceRepository) {
           await this.configurator.amtDeviceRepository.insert(new AMTDeviceDTO(clientObj.uuid,
             clientObj.uuid,
             EnvReader.GlobalEnvConfig.mpsusername,
             EnvReader.GlobalEnvConfig.mpspass,
             EnvReader.GlobalEnvConfig.amtusername,
-            amtPassword))
+            amtPassword,
+            null))
         } else {
           this.logger.error('unable to write device')
         }
-        const data: string = 'admin:' + clientObj.ClientData.payload.digestRealm + ':' + amtPassword
+        const data: string = `${AMTUserName}:${clientObj.ClientData.payload.digestRealm}:${amtPassword}`
         const password = SignatureHelper.createMd5Hash(data)
 
         await this.amtwsman.setupCCM(clientId, password)
