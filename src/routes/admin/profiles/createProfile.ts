@@ -5,27 +5,28 @@
  **********************************************************************/
 import { IProfilesDb } from '../../../repositories/interfaces/IProfilesDb'
 import { ProfilesDbFactory } from '../../../repositories/ProfilesDbFactory'
-import { AMTConfig } from '../../../RCS.Config'
+import { AMTConfig, ClientAction } from '../../../RCS.Config'
 import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
 import {
   PROFILE_INSERTION_SUCCESS, PROFILE_ERROR,
   PROFILE_INVALID_INPUT,
   PROFILE_INVALID_INPUT_AMT_PASSWORD,
+  PROFILE_INVALID_INPUT_MEBX_PASSWORD,
   PROFILE_INVALID_AMT_PASSWORD_SELECTION,
   PROFILE_INVALID_MEBX_PASSWORD_SELECTION,
   PROFILE_INVALID_AMT_PASSWORD_LENGTH,
-  PROFILE_INVALID_MEBX_PASSWORD_LENGTH
+  PROFILE_INVALID_MEBX_PASSWORD_LENGTH,
+  PROFILE_MEBX_MANDATORY
 } from '../../../utils/constants'
 import { passwordValidation, passwordLengthValidation } from '../../../utils/passwordValidationUtils'
 
 export async function createProfile (req, res) {
   let profilesDb: IProfilesDb = null
   const log = new Logger('createProfile')
-  let amtConfig: AMTConfig
-  try {
-    amtConfig = readBody(req, res)
+  const amtConfig: AMTConfig = readBody(req, res)
 
+  try {
     // if generateRandomPassword is false, insert the amtPassword into vault using a
     // key and insert the modified profile into db.
     profilesDb = ProfilesDbFactory.getProfilesDb()
@@ -82,8 +83,8 @@ export async function createProfile (req, res) {
     }
   } catch (error) {
     if (res.status) return
+    console.log(error)
     res.status(500).end(PROFILE_ERROR(amtConfig.ProfileName))
-    log.error(error)
   }
 }
 
@@ -120,16 +121,20 @@ function readBody (req, res): AMTConfig {
   config.RandomPasswordCharacters = body.payload.randomPasswordCharacters
   config.NetworkConfigName = body.payload.networkConfigName
 
-  if (config.ProfileName == null ||
-    config.GenerateRandomPassword == null ||
-    config.GenerateRandomMEBxPassword == null ||
-    config.Activation == null ||
+  if (config.ProfileName === null ||
+    config.GenerateRandomPassword === null ||
+    config.GenerateRandomMEBxPassword === null ||
+    config.Activation === null ||
     (config.GenerateRandomPassword === true && config.RandomPasswordLength == null) ||
-    (config.GenerateRandomPassword === false && config.AMTPassword == null) ||
-    (config.GenerateRandomMEBxPassword === true && config.RandomMEBxPasswordLength == null) ||
-    (config.GenerateRandomMEBxPassword === false && config.MEBxPassword == null)) {
+    (config.GenerateRandomPassword === false && config.AMTPassword == null)) {
     res.status(400).end(PROFILE_INVALID_INPUT)
     throw new Error(PROFILE_INVALID_INPUT)
+  }
+
+  if(config.Activation == ClientAction.ADMINCTLMODE && ((config.GenerateRandomMEBxPassword === true && config.RandomMEBxPasswordLength == null) ||
+  (config.GenerateRandomMEBxPassword === false && config.MEBxPassword == null))){
+    res.status(400).end(PROFILE_MEBX_MANDATORY)
+    throw new Error(PROFILE_MEBX_MANDATORY)
   }
 
   if (config.AMTPassword !== null) {
@@ -152,8 +157,8 @@ function readBody (req, res): AMTConfig {
       throw new Error(PROFILE_INVALID_MEBX_PASSWORD_SELECTION)
     }
     if (!passwordValidation(config.MEBxPassword) || !passwordLengthValidation(config.MEBxPassword)) {
-      res.status(400).end(PROFILE_INVALID_INPUT_AMT_PASSWORD)
-      throw new Error(PROFILE_INVALID_INPUT_AMT_PASSWORD)
+      res.status(400).end(PROFILE_INVALID_INPUT_MEBX_PASSWORD)
+      throw new Error(PROFILE_INVALID_INPUT_MEBX_PASSWORD)
     }
   } else if (config.GenerateRandomMEBxPassword === true && (config.RandomMEBxPasswordLength < 8 || config.RandomMEBxPasswordLength > 32)) {
     res.status(400).end(PROFILE_INVALID_MEBX_PASSWORD_LENGTH)

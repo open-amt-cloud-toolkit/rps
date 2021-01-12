@@ -24,6 +24,7 @@ export class ProfilesDbFactory {
         ? new ProfilesDb(ProfilesDbFactory.dbCreator)
         : new AMTConfigDb(ProfilesDbFactory.dbCreator.getDb().AMTConfigurations,
           ProfilesDbFactory.dbCreator.getDb().CIRAConfigurations,
+          ProfilesDbFactory.dbCreator.getDb().NETConfigurations,
           new Logger('ProfilesConfigDb')))
     }
 

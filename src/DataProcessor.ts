@@ -19,6 +19,7 @@ import { RPSError } from './utils/RPSError'
 import { WSManProcessor } from './WSManProcessor'
 import { ClientResponseMsg } from './utils/ClientResponseMsg'
 import { IValidator } from './interfaces/IValidator'
+import { AMTUserName } from './utils/constants'
 
 export class DataProcessor implements IDataProcessor {
     private clientActions: ClientActions;

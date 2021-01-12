@@ -47,7 +47,7 @@ export class Deactivator implements IExecutor {
           throw new RPSError(`Device ${clientObj.uuid} deactivation failed`)
         } else {
           this.logger.debug(`Deleting secret from vault for ${clientObj.uuid}`)
-          await this.configurator.amtDeviceRepository.delete(new AMTDeviceDTO(clientObj.uuid, null, null, null, null, null))
+          await this.configurator.amtDeviceRepository.delete(new AMTDeviceDTO(clientObj.uuid, null, null, null, null, null, null))
           return this.responseMsg.get(clientId, null, 'success', 'success', `Device ${clientObj.uuid} deactivated`)
         }
       } else {

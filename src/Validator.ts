@@ -18,6 +18,7 @@ import { RPSError } from './utils/RPSError'
 import { CommandParser } from './CommandParser'
 import { AMTDeviceDTO } from './repositories/dto/AmtDeviceDTO'
 import { VersionChecker } from './VersionChecker'
+import { AMTUserName } from './utils/constants'
 
 export class Validator implements IValidator {
   jsonParser: IClientMessageParser;
@@ -119,7 +120,7 @@ export class Validator implements IValidator {
           if (profile.Activation === ClientAction.CLIENTCTLMODE) {
             this.logger.debug(`Device ${payload.uuid} already enabled in client mode.`)
             clientObj.ciraconfig.status = 'already enabled in client mode.'
-            clientObj.action = ClientAction.CIRACONFIG
+            clientObj.action = payload.profile.NetworkConfigObject ? ClientAction.NETWORKCONFIG : ClientAction.CIRACONFIG
           } else {
             throw new RPSError(`Device ${payload.uuid} already enabled in client control mode.`)
           }
@@ -129,7 +130,7 @@ export class Validator implements IValidator {
           if (profile.Activation === ClientAction.ADMINCTLMODE) {
             this.logger.debug(`Device ${payload.uuid} already enabled in admin mode.`)
             clientObj.ciraconfig.status = 'already enabled in admin mode.'
-            clientObj.action = ClientAction.CIRACONFIG
+            clientObj.action = payload.profile.NetworkConfigObject ? ClientAction.NETWORKCONFIG : ClientAction.CIRACONFIG
           } else {
             throw new RPSError(`Device ${payload.uuid} already enabled in admin control mode.`)
           }
@@ -155,6 +156,23 @@ export class Validator implements IValidator {
       }
       if (!(await this.configurator.domainCredentialManager.doesDomainExist(payload.fqdn))) {
         throw new RPSError(`Device ${payload.uuid} activation failed. Specified AMT domain suffix: ${payload.fqdn} does not match list of available AMT domain suffixes.`)
+      }
+    }
+
+    if (clientObj.action !== ClientAction.ADMINCTLMODE && clientObj.action !== ClientAction.CLIENTCTLMODE) {
+      if (this.configurator && this.configurator.amtDeviceRepository) {
+        const amtDevice = await this.configurator.amtDeviceRepository.get(payload.uuid)
+        if (amtDevice && amtDevice.amtpass) {
+          payload.username = AMTUserName
+          payload.password = amtDevice.amtpass
+          this.logger.info(`AMT password found for Device ${payload.uuid}`)
+        } else {
+          this.logger.error(`AMT device DOES NOT exists in repository ${payload.uuid}`)
+          throw new RPSError(`AMT device DOES NOT exists in repository ${payload.uuid}`)
+        }
+      } else {
+        this.logger.error(`Device ${payload.uuid} repository not found`)
+        throw new RPSError(`Device ${payload.uuid} repository not found`)
       }
     }
 
@@ -194,6 +212,7 @@ export class Validator implements IValidator {
         case 1: {
           clientObj.action = ClientAction.DEACTIVATE
           this.logger.debug(`Device ${payload.uuid} is in client control mode.`)
+          break
         }
         case 2: {
           clientObj.action = ClientAction.DEACTIVATE
@@ -224,21 +243,22 @@ export class Validator implements IValidator {
           amtDevice = await this.configurator.amtDeviceRepository.get(payload.uuid)
 
           if (amtDevice && amtDevice.amtpass && payload.password && payload.password === amtDevice.amtpass) {
-            this.logger.info(`amt password matches stored version for Device ${payload.uuid}`)
+            this.logger.info(`AMT password matches stored version for Device ${payload.uuid}`)
           } else {
-            this.logger.error(`amt password DOES NOT match stored version for Device ${payload.uuid}`)
-            throw new RPSError(`amt password DOES NOT match stored version for Device ${payload.uuid}`)
+            this.logger.error(`
+            stored version for Device ${payload.uuid}`)
+            throw new RPSError(`AMT password DOES NOT match stored version for Device ${payload.uuid}`)
           }
         } else {
-          this.logger.error(`Device ${payload.uuid} amtDeviceRepository not found`)
-          throw new RPSError(`Device ${payload.uuid} amtDeviceRepository not found`)
+          this.logger.error(`Device ${payload.uuid} repository not found`)
+          throw new RPSError(`Device ${payload.uuid} repository not found`)
         }
       } catch (error) {
-        this.logger.error(`amt device repo exception: ${error}`)
+        this.logger.error(`AMT device repo exception: ${error}`)
         if (error instanceof RPSError) {
           throw new RPSError(`${error}`)
         } else {
-          throw new Error('amt device repo exception')
+          throw new Error('AMT device repo exception')
         }
       }
     }

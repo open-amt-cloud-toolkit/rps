@@ -22,7 +22,7 @@ export class CertManager implements ICertManager {
       * @returns {boolean} Returns true if issuer is from root.  Returns false if issuer is not from root.
       */
     sortCertificate (intermediate: CertificateObject, root: CertificateObject): boolean {
-      if (intermediate.issuer === root.subject) {
+      if (intermediate.issuer == root.subject) {
         return true
       } else {
         return false
@@ -50,11 +50,11 @@ export class CertManager implements ICertManager {
             pem = pem.replace('-----END CERTIFICATE-----', '')
             // pem = pem.replace(/(\r\n|\n|\r)/g, '');
             // Index 0 = Leaf, Root subject.hash will match issuer.hash, rest are Intermediate.
-            if (i === 0) {
+            if (i == 0) {
               leaf.pem = pem
               leaf.subject = cert.subject.hash
               leaf.issuer = cert.issuer.hash
-            } else if (cert.subject.hash === cert.issuer.hash) {
+            } else if (cert.subject.hash == cert.issuer.hash) {
               root.pem = pem
               root.subject = cert.subject.hash
               root.issuer = cert.issuer.hash
@@ -111,7 +111,7 @@ export class CertManager implements ICertManager {
      * @returns {object} Object containing cert pems and private key
      */
     convertPfxToObject (pfxb64: string, passphrase: string): any {
-      const pfx_out: any = { certs: [], keys: [] }
+      const pfxOut: any = { certs: [], keys: [] }
 
       const pfxder: string = this.nodeForge.decode64(pfxb64)
       const asn: any = this.nodeForge.asn1FromDer(pfxder)
@@ -126,7 +126,7 @@ export class CertManager implements ICertManager {
       for (let i = 0; i < bags[this.nodeForge.pkiOidsCertBag].length; i++) {
         // dump cert into DER
         const cert: any = bags[this.nodeForge.pkiOidsCertBag][i]
-        pfx_out.certs.push(cert.cert)
+        pfxOut.certs.push(cert.cert)
       }
       // get shrouded key from key bags
       bags = pfx.getBags({ bagType: this.nodeForge.pkcs8ShroudedKeyBag })
@@ -134,8 +134,8 @@ export class CertManager implements ICertManager {
       for (let i = 0; i < bags[this.nodeForge.pkcs8ShroudedKeyBag].length; i++) {
         // dump cert into DER
         const cert: any = bags[this.nodeForge.pkcs8ShroudedKeyBag][i]
-        pfx_out.keys.push(cert.key)
+        pfxOut.keys.push(cert.key)
       }
-      return pfx_out
+      return pfxOut
     }
 }
