@@ -22,13 +22,13 @@ import { AMTUserName } from './../utils/constants'
 
 export class CCMActivator implements IExecutor {
   constructor (
-    private logger: ILogger,
-    private configurator: IConfigurator,
-    private responseMsg: ClientResponseMsg,
-    private amtwsman: WSManProcessor,
-    private clientManager: IClientManager,
-    private validator: IValidator,
-    private networkConfigurator: NetworkConfigurator
+    private readonly logger: ILogger,
+    private readonly configurator: IConfigurator,
+    private readonly responseMsg: ClientResponseMsg,
+    private readonly amtwsman: WSManProcessor,
+    private readonly clientManager: IClientManager,
+    private readonly validator: IValidator,
+    private readonly networkConfigurator: NetworkConfigurator
   ) { }
 
   /**

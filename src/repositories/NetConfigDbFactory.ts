@@ -13,9 +13,9 @@ import Logger from '../Logger'
 import { NetConfigFileStorageDb } from '../NetConfigFileStorageDb'
 
 export class NetConfigDbFactory {
-  static dbCreator: IDbCreator = null;
-  static dbCreatorFactory: DbCreatorFactory;
-  static netConfigsDb: INetProfilesDb;
+  static dbCreator: IDbCreator = null
+  static dbCreatorFactory: DbCreatorFactory
+  static netConfigsDb: INetProfilesDb
 
   static getConfigDb (): INetProfilesDb {
     if (NetConfigDbFactory.netConfigsDb == null) {

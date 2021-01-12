@@ -6,10 +6,10 @@
 import { ClientObject } from '../RCS.Config'
 
 export interface IClientManager{
-    clients: Array<ClientObject>;
-    addClient(client: ClientObject): void;
-    removeClient(ClientId: string): void;
-    getClientIndex(ClientId: string): number;
-    getClientObject(clientId: string): ClientObject;
-    setClientObject(clientObj: ClientObject);
+  clients: ClientObject[]
+  addClient: (client: ClientObject) => void
+  removeClient: (ClientId: string) => void
+  getClientIndex: (ClientId: string) => number
+  getClientObject: (clientId: string) => ClientObject
+  setClientObject: (clientObj: ClientObject) => any
 }

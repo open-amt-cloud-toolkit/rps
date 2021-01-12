@@ -18,11 +18,11 @@ import { FileHelper } from './utils/FileHelper'
 import { EnvReader } from './utils/EnvReader'
 
 export class WebSocketListener implements IWebSocketListener {
-  clientManager: IClientManager;
-  dataProcessor: IDataProcessor;
-  wsServer: WebSocket.Server;
-  wsConfig: WebSocketConfig;
-  logger: ILogger;
+  clientManager: IClientManager
+  dataProcessor: IDataProcessor
+  wsServer: WebSocket.Server
+  wsConfig: WebSocketConfig
+  logger: ILogger
 
   constructor (logger: ILogger, wsConfig: WebSocketConfig, clientManager: IClientManager, dataProcessor: IDataProcessor) {
     this.logger = logger
@@ -36,7 +36,7 @@ export class WebSocketListener implements IWebSocketListener {
    */
   connect (): boolean {
     try {
-      if (this.wsConfig.WebSocketTLS == true && this.wsConfig.WebSocketCertificate !== null && this.wsConfig.WebSocketCertificateKey !== null) {
+      if (this.wsConfig.WebSocketTLS && this.wsConfig.WebSocketCertificate !== null && this.wsConfig.WebSocketCertificateKey !== null) {
         let httpsServer
         if (EnvReader.GlobalEnvConfig.DbConfig.useRawCerts) {
           // this means the certs are provided from ENV variables. read them RAW.
@@ -97,7 +97,7 @@ export class WebSocketListener implements IWebSocketListener {
     } catch (error) {
       this.logger.error(`Failed on client connection: ${JSON.stringify(error)}`)
     }
-  };
+  }
 
   /**
    * @description Called on close event of WebSocket Server

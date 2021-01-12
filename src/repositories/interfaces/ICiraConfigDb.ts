@@ -6,9 +6,9 @@
 import { CIRAConfig } from '../../RCS.Config'
 
 export interface ICiraConfigDb {
-  getAllCiraConfigs(mapper?: (configName, data) => Promise<string>): Promise<CIRAConfig[]>;
-  getCiraConfigByName(configName): Promise<CIRAConfig>;
-  deleteCiraConfigByName(configName): Promise<any>;
-  insertCiraConfig(ciraConfig): Promise<any>;
-  updateCiraConfig(ciraConfig): Promise<number>;
+  getAllCiraConfigs: (mapper?: (configName, data) => Promise<string>) => Promise<CIRAConfig[]>
+  getCiraConfigByName: (configName) => Promise<CIRAConfig>
+  deleteCiraConfigByName: (configName) => Promise<any>
+  insertCiraConfig: (ciraConfig) => Promise<any>
+  updateCiraConfig: (ciraConfig) => Promise<number>
 }

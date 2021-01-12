@@ -9,7 +9,7 @@ import Logger from '../../../Logger'
 import { CIRA_CONFIG_EMPTY, CIRA_CONFIG_ERROR } from '../../../utils/constants'
 
 export async function allCiraConfigs (req, res) {
-  let ciraConfigDb:ICiraConfigDb = null
+  let ciraConfigDb: ICiraConfigDb = null
   const log = new Logger('allCiraConfigs')
   try {
     ciraConfigDb = CiraConfigDbFactory.getCiraConfigDb()

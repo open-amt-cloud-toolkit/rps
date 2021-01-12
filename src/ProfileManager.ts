@@ -15,10 +15,10 @@ import { IProfilesDb } from './repositories/interfaces/IProfilesDb'
 import { EnvReader } from './utils/EnvReader'
 
 export class ProfileManager implements IProfileManager {
-  private amtConfigurations: IProfilesDb;
-  private logger: ILogger;
-  private configurator: IConfigurator
-  private envConfig: any;
+  private readonly amtConfigurations: IProfilesDb
+  private readonly logger: ILogger
+  private readonly configurator: IConfigurator
+  private readonly envConfig: any
 
   constructor (logger: ILogger, configurator: IConfigurator, amtConfigurations: IProfilesDb, config?: any) {
     this.logger = logger
@@ -142,7 +142,7 @@ export class ProfileManager implements IProfileManager {
     let amtPassword: string
 
     if (profile) {
-      if (profile.GenerateRandomPassword === true) {
+      if (profile.GenerateRandomPassword) {
         amtPassword = PasswordHelper.generateRandomPassword(profile.RandomPasswordLength)
 
         if (amtPassword) {
@@ -180,7 +180,7 @@ export class ProfileManager implements IProfileManager {
     let mebxPassword: string
 
     if (profile) {
-      if (profile.GenerateRandomMEBxPassword === true) {
+      if (profile.GenerateRandomMEBxPassword) {
         mebxPassword = PasswordHelper.generateRandomPassword(profile.RandomMEBxPasswordLength)
 
         if (mebxPassword) {

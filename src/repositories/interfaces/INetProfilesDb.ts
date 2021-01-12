@@ -6,9 +6,9 @@
 import { NetworkConfig } from '../../RCS.Config'
 
 export interface INetProfilesDb {
-  getAllProfiles(): Promise<NetworkConfig[]>;
-  getProfileByName(profileName): Promise<NetworkConfig>;
-  deleteProfileByName(profileName): Promise<any>;
-  insertProfile(netConfig): Promise<any>;
-  updateProfile(netConfig): Promise<any>;
+  getAllProfiles: () => Promise<NetworkConfig[]>
+  getProfileByName: (profileName) => Promise<NetworkConfig>
+  deleteProfileByName: (profileName) => Promise<any>
+  insertProfile: (netConfig) => Promise<any>
+  updateProfile: (netConfig) => Promise<any>
 }

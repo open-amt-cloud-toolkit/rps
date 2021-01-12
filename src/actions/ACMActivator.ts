@@ -24,15 +24,15 @@ import { AMTUserName } from './../utils/constants'
 
 export class ACMActivator implements IExecutor {
   constructor (
-    private logger: ILogger,
-    private configurator: IConfigurator,
-    private certManager: ICertManager,
-    private signatureHelper: SignatureHelper,
-    private responseMsg: ClientResponseMsg,
-    private amtwsman: WSManProcessor,
-    private clientManager: IClientManager,
-    private validator: IValidator,
-    private networkConfigurator: NetworkConfigurator
+    private readonly logger: ILogger,
+    private readonly configurator: IConfigurator,
+    private readonly certManager: ICertManager,
+    private readonly signatureHelper: SignatureHelper,
+    private readonly responseMsg: ClientResponseMsg,
+    private readonly amtwsman: WSManProcessor,
+    private readonly clientManager: IClientManager,
+    private readonly validator: IValidator,
+    private readonly networkConfigurator: NetworkConfigurator
   ) { }
 
   /**
@@ -92,7 +92,7 @@ export class ACMActivator implements IExecutor {
           // Create a one time nonce that allows AMT to verify the digital signature of the management console performing the provisioning
           const nonce = PasswordHelper.generateNonce()
           // Need to create a new array so we can concatinate both nonces (fwNonce first, Nonce second)
-          const arr: Array<Buffer> = [clientObj.ClientData.payload.fwNonce, nonce]
+          const arr: Buffer[] = [clientObj.ClientData.payload.fwNonce, nonce]
           // Then we need to sign the concatinated nonce with the private key of the provisioning certificate and encode as base64.
           const signature = this.signatureHelper.signString(Buffer.concat(arr), clientObj.certObj.privateKey)
           if (signature.errorText) {

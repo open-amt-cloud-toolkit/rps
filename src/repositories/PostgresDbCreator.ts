@@ -7,8 +7,8 @@ import { IDbCreator } from './interfaces/IDbCreator'
 import { PostgresDb } from '../db'
 import { RCSConfig } from '../models/Rcs'
 export class PostgresDbCreator implements IDbCreator {
-  static instance: any;
-  config: RCSConfig;
+  static instance: any
+  config: RCSConfig
   constructor (config: RCSConfig) {
     this.config = config
   }

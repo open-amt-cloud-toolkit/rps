@@ -13,10 +13,10 @@ import { IClientManager } from './IClientManager'
 import { IDataProcessor } from './IDataProcessor'
 
 export interface IConfigurator {
-    domainCredentialManager: IDomainCredentialManager;
-    profileManager: IProfileManager;
-    secretsManager: ISecretManagerService;
-    amtDeviceRepository: IAMTDeviceRepository;
-    dataProcessor: IDataProcessor;
-    clientManager: IClientManager;
+  domainCredentialManager: IDomainCredentialManager
+  profileManager: IProfileManager
+  secretsManager: ISecretManagerService
+  amtDeviceRepository: IAMTDeviceRepository
+  dataProcessor: IDataProcessor
+  clientManager: IClientManager
 }

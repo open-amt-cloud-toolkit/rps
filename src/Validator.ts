@@ -21,13 +21,13 @@ import { VersionChecker } from './VersionChecker'
 import { AMTUserName } from './utils/constants'
 
 export class Validator implements IValidator {
-  jsonParser: IClientMessageParser;
+  jsonParser: IClientMessageParser
 
   constructor (
-    private logger: ILogger,
-    private configurator: IConfigurator,
-    private clientManager: IClientManager,
-    private nodeForge: NodeForge
+    private readonly logger: ILogger,
+    private readonly configurator: IConfigurator,
+    private readonly clientManager: IClientManager,
+    private readonly nodeForge: NodeForge
   ) {
     this.jsonParser = new ClientMsgJsonParser(this.nodeForge)
   }

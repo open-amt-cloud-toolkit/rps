@@ -8,7 +8,7 @@
 import { CertificateObject } from '../models/Rcs'
 
 export interface ICertManager {
-    dumpPfx(pfxobj: any): any;
-    sortCertificate(intermediate: CertificateObject, root: CertificateObject): boolean;
-    convertPfxToObject(pfxb64: string, passphrase: string): any;
+  dumpPfx: (pfxobj: any) => any
+  sortCertificate: (intermediate: CertificateObject, root: CertificateObject) => boolean
+  convertPfxToObject: (pfxb64: string, passphrase: string) => any
 }

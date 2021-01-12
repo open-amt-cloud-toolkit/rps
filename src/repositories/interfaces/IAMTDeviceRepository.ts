@@ -7,7 +7,7 @@
 import { AMTDeviceDTO } from '../dto/AmtDeviceDTO'
 
 export interface IAMTDeviceRepository {
-    insert(device: AMTDeviceDTO): Promise<boolean>;
-    delete(device: AMTDeviceDTO): Promise<boolean>;
-    get(deviceId: string): Promise<AMTDeviceDTO>;
+  insert: (device: AMTDeviceDTO) => Promise<boolean>
+  delete: (device: AMTDeviceDTO) => Promise<boolean>
+  get: (deviceId: string) => Promise<AMTDeviceDTO>
 }

@@ -5,5 +5,5 @@
  **********************************************************************/
 
 export interface IExecutor{
-    execute(message: any, clientId: string): Promise<any>;
+  execute: (message: any, clientId: string) => Promise<any>
 }
