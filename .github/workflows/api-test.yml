@@ -1,0 +1,29 @@
+name: RPS API Tests
+
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x, 14.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}    
+    - run: docker build -f Dockerfile -t rps:${GITHUB_SHA} .
+    - run: docker run -d --network=host -e RPS_HTTPS=false -e RPS_NODE_ENV=dev -e RPS_USE_VAULT=false  -e RPS_USE_DB_PROFILES=false  -e RPS_LOG_LEVEL=silly -p 8081:8081 rps:${GITHUB_SHA} 
+    - uses: matt-ball/newman-action@master
+      with:
+        collection: ./src/test/collections/rps.postman_collection.json
+        environment: ./src/test/collections/rps.postman_environment.json

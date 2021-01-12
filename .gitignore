@@ -74,8 +74,9 @@ typings/
 .next
 .DS_Store
 
-#Visual Studio Code
+#Visual Studio/Code
 .vs
+.vscode
 
 # out/ folder
 out/
