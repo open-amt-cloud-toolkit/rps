@@ -10,8 +10,9 @@ import { EnvReader } from './EnvReader'
 import nodeVault = require('node-vault')
 
 export class SecretManagerService implements ISecretManagerService {
-  vaultClient: nodeVault.Client
-  logger: ILogger
+  vaultClient: nodeVault.client;
+  logger: ILogger;
+
   constructor (logger: ILogger, vault?: any) {
     this.logger = logger
     if (vault) {
