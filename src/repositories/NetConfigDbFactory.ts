@@ -12,12 +12,18 @@ import { EnvReader } from '../utils/EnvReader'
 import Logger from '../Logger'
 import { NetConfigFileStorageDb } from '../NetConfigFileStorageDb'
 
-export class NetConfigDbFactory {
-  static dbCreator: IDbCreator = null
-  static dbCreatorFactory: DbCreatorFactory
-  static netConfigsDb: INetProfilesDb
+export interface INetConfigDbFactory {
+  dbCreator: IDbCreator
+  dbCreatorFactory: DbCreatorFactory
+  netConfigsDb: INetProfilesDb
+  getConfigDb: () => INetProfilesDb
+}
 
-  static getConfigDb (): INetProfilesDb {
+const NetConfigDbFactory: INetConfigDbFactory = {
+  dbCreator: null,
+  dbCreatorFactory: null,
+  netConfigsDb: null,
+  getConfigDb (): INetProfilesDb {
     if (NetConfigDbFactory.netConfigsDb == null) {
       NetConfigDbFactory.dbCreatorFactory = new DbCreatorFactory(EnvReader.GlobalEnvConfig)
       NetConfigDbFactory.dbCreator = NetConfigDbFactory.dbCreatorFactory.getDbCreator()
@@ -31,3 +37,4 @@ export class NetConfigDbFactory {
     return NetConfigDbFactory.netConfigsDb
   }
 }
+export { NetConfigDbFactory }

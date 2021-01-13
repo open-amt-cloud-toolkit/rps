@@ -8,22 +8,22 @@ import * as crypto from 'crypto'
 import { AMTRandomPasswordChars } from '../utils/constants'
 const cryptoRandomString = require('crypto-random-string')
 
-export class PasswordHelper {
+const PasswordHelper = {
   /**
     * @description Generates the console nonce used validate the console.  AMT only accepts a nonce that is 20 bytes long of random data
     * @returns {buffer} Returns console nonce used to verify RCS server to AMT
     */
-  public static generateNonce (): Buffer {
+  generateNonce: (): Buffer => {
     const nonce = Buffer.from(crypto.randomBytes(20), 0, 20)
     return nonce
-  }
+  },
 
   /**
      * @description Checks the proposed AMT password against AMT password requirements
      * @param {string} password Password string to test
      * @returns {boolean} Returns true if password meets AMT password requirements
      */
-  public static passwordCheck (password: string): boolean {
+  passwordCheck: (password: string): boolean => {
     let pass: boolean
     const len: number = 8
     const maxLen: number = 32
@@ -45,14 +45,14 @@ export class PasswordHelper {
       pass = true
     }
     return pass
-  }
+  },
 
   /**
      * @description Generates a random password out of a given set of characters and of a given length
      * @param {number} length Length of desired password
      * @returns {string} Returns random password string
      */
-  public static generateRandomPassword (length: number): string {
+  generateRandomPassword: (length: number): string => {
     for (let i = 0; i < 10000; ++i) {
       const password: string = cryptoRandomString({ length: length, characters: AMTRandomPasswordChars })
 
@@ -64,3 +64,5 @@ export class PasswordHelper {
     return null
   }
 }
+
+export { PasswordHelper }

@@ -9,34 +9,33 @@ import * as fs from 'fs'
 import Logger from '../Logger'
 import { ILogger } from '../interfaces/ILogger'
 
-export class FileHelper {
-  static logger: ILogger = new Logger('FileHelper')
-
-  public static isValidPath (filePath: string): boolean {
+const FileHelper = {
+  logger: new Logger('FileHelper') as ILogger,
+  isValidPath (filePath: string): boolean {
     if (filePath && fs.existsSync(filePath)) {
       return true
     } else {
       return false
     }
-  }
+  },
 
-  public static readFileSync (filePath: string): string {
+  readFileSync (filePath: string): string {
     try {
       return fs.readFileSync(filePath, 'utf8')
     } catch (error) {
       throw new Error(`Exception in reading file: ${error}, filePath: ${filePath}`)
     }
-  }
+  },
 
-  public static readFileSyncToBuffer (filePath: string): Buffer {
+  readFileSyncToBuffer (filePath: string): Buffer {
     try {
       return fs.readFileSync(filePath)
     } catch (error) {
       throw new Error(`Exception in reading file: ${error}, filePath: ${filePath}`)
     }
-  }
+  },
 
-  public static readJsonObjFromFile (filePath: string): any {
+  readJsonObjFromFile (filePath: string): any {
     let jsonFile = {}
 
     try {
@@ -64,9 +63,9 @@ export class FileHelper {
     }
 
     return jsonFile
-  }
+  },
 
-  public static writeObjToJsonFile (obj: any, filePath: string): void {
+  writeObjToJsonFile (obj: any, filePath: string): void {
     try {
       const jsonObj: string = JSON.stringify(obj, null, 2)
       fs.writeFileSync(filePath, jsonObj, 'utf8')
@@ -75,3 +74,4 @@ export class FileHelper {
     }
   }
 }
+export { FileHelper }
