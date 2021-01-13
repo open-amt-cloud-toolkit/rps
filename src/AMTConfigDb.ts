@@ -91,7 +91,7 @@ export class AMTConfigDb implements IProfilesDb {
 
   async updateProfile (amtConfig: any): Promise<any> {
     this.logger.debug(`update Profile: ${amtConfig.ProfileName}`)
-    const isMatch = item => item.ProfileName === amtConfig.ProfileName
+    const isMatch = (item): boolean => item.ProfileName === amtConfig.ProfileName
     const index = this.amtProfiles.findIndex(isMatch)
     if (index >= 0) {
       this.amtProfiles.splice(index, 1)
@@ -105,7 +105,7 @@ export class AMTConfigDb implements IProfilesDb {
     }
   }
 
-  private updateConfigFile () {
+  private updateConfigFile (): void {
     const data: any = FileHelper.readJsonObjFromFile(EnvReader.configPath)
     data.AMTConfigurations = this.amtProfiles
     if (EnvReader.configPath) FileHelper.writeObjToJsonFile(data, EnvReader.configPath)

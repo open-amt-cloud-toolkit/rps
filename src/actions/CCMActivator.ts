@@ -62,8 +62,8 @@ export class CCMActivator implements IExecutor {
           clientObj.ciraconfig.status = 'activated in client mode.'
 
           if (this.amtwsman.cache[clientId]) {
-            this.amtwsman.cache[clientId].wsman.comm.setupCommunication.getUsername = () => { return AMTUserName }
-            this.amtwsman.cache[clientId].wsman.comm.setupCommunication.getPassword = () => { return clientObj.amtPassword }
+            this.amtwsman.cache[clientId].wsman.comm.setupCommunication.getUsername = (): string => { return AMTUserName }
+            this.amtwsman.cache[clientId].wsman.comm.setupCommunication.getPassword = (): string => { return clientObj.amtPassword }
           }
           // return this.responseMsg.get(clientId, null, 'success', 'success', `Device ${clientObj.uuid} ${clientObj.ciraconfig.status}.`)
           clientObj.action = ClientAction.NETWORKCONFIG

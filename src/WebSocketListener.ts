@@ -116,7 +116,7 @@ export class WebSocketListener implements IWebSocketListener {
    * @description Called on error event of WebSocket Server
    * @param {Error} error Websocket error
    */
-  onError (error: Error, clientId: string) {
+  onError (error: Error, clientId: string): void {
     this.logger.error(`${clientId} : ${error}`)
   };
 
@@ -146,7 +146,7 @@ export class WebSocketListener implements IWebSocketListener {
    * @param {Number} index Index of the connected client
    * @param {JSON} message Message in JSON format to be sent to client
    */
-  onSendMessage (message: string, clientId: string) {
+  onSendMessage (message: string, clientId: string): void {
     try {
       const index = this.clientManager.getClientIndex(clientId)
       this.logger.info(`${clientId} : response message sent to device: ${JSON.stringify(message, null, '\t')}`)

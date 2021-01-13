@@ -8,7 +8,7 @@ import { ProfilesDbFactory } from '../../../repositories/ProfilesDbFactory'
 import { PROFILE_NOT_FOUND, PROFILE_ERROR } from '../../../utils/constants'
 import { EnvReader } from '../../../utils/EnvReader'
 
-export async function deleteProfile (req, res) {
+export async function deleteProfile (req, res): Promise<void> {
   let profilesDb: IProfilesDb = null
   const { profileName } = req.params
   try {

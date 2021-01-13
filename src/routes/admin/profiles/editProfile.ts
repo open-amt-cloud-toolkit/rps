@@ -22,7 +22,7 @@ import {
 } from '../../../utils/constants'
 import { passwordValidation, passwordLengthValidation } from '../../../utils/passwordValidationUtils'
 
-export async function editProfile (req, res) {
+export async function editProfile (req, res): Promise<void> {
   let profilesDb: IProfilesDb = null
   const log = new Logger('editProfile')
   const amtConfig: AMTConfig = readBody(req, res)

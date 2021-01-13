@@ -10,7 +10,7 @@ import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
 import { DOMAIN_ERROR, DOMAIN_SUCCESSFULLY_UPDATED, DOMAIN_NOT_FOUND } from '../../../utils/constants'
 
-export async function editDomain (req, res) {
+export async function editDomain (req, res): Promise<void> {
   let domainsDb: IDomainsDb = null
   const log = new Logger('editDomain')
 

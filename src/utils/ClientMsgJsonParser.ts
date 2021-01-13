@@ -67,7 +67,7 @@ export class ClientMsgJsonParser implements IClientMessageParser {
     return payload
   }
 
-  zeroLeftPad (str, len) {
+  zeroLeftPad (str: string, len: number): string {
     if (len == null && typeof len !== 'number') {
       return null
     }

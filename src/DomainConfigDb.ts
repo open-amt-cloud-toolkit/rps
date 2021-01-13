@@ -45,7 +45,7 @@ export class DomainConfigDb implements IDomainsDb {
 
   async updateDomain (amtDomain: AMTDomain): Promise<any> {
     this.logger.debug(`update Domain: ${amtDomain.Name}`)
-    const isMatch = item => item.Name === amtDomain.Name
+    const isMatch = (item): boolean => item.Name === amtDomain.Name
     const index = this.domains.findIndex(isMatch)
 
     if (index >= 0) {
@@ -82,7 +82,7 @@ export class DomainConfigDb implements IDomainsDb {
     }
   }
 
-  private updateConfigFile () {
+  private updateConfigFile (): void {
     const data: any = FileHelper.readJsonObjFromFile(EnvReader.configPath)
     data.AMTDomains = this.domains
     if (FileHelper.isValidPath(EnvReader.configPath)) {

@@ -241,7 +241,7 @@ const recipeRCSConfig = {
   use_raw_certs: 'DbConfig.useRawCerts'
 }
 
-export function mapConfig (src, dot) {
+export function mapConfig (src, dot): RCSConfig {
   let config: RCSConfig
 
   config = <RCSConfig>dot.transform(recipeRCSConfig, src)

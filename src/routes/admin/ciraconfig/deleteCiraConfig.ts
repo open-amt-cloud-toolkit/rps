@@ -8,7 +8,7 @@ import { CiraConfigDbFactory } from '../../../repositories/CiraConfigDbFactory'
 import Logger from '../../../Logger'
 import { CIRA_CONFIG_DELETION_FAILED } from '../../../utils/constants'
 
-export async function deleteCiraConfig (req, res) {
+export async function deleteCiraConfig (req, res): Promise<void> {
   let ciraConfigDb: ICiraConfigDb = null
   const log = new Logger('deleteCiraConfig')
   const { ciraConfigName } = req.params

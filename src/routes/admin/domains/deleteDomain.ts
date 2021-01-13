@@ -7,7 +7,7 @@ import { IDomainsDb } from '../../../repositories/interfaces/IDomainsDb'
 import { DomainsDbFactory } from '../../../repositories/DomainsDbFactory'
 import { DOMAIN_NOT_FOUND, DOMAIN_SUCCESSFULLY_DELETED, DOMAIN_ERROR } from '../../../utils/constants'
 
-export async function deleteDomain (req, res) {
+export async function deleteDomain (req, res): Promise<void> {
   let domainsDb: IDomainsDb = null
   const { domainName } = req.params
   try {

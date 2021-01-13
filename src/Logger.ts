@@ -38,27 +38,27 @@ class Logger implements ILogger {
     this.name = name
   }
 
-  debug (log: string, ...params: any[]) {
+  debug (log: string, ...params: any[]): void {
     logger.debug([this.name + ' - ' + log].concat(params))
   }
 
-  info (log: string, ...params: any[]) {
+  info (log: string, ...params: any[]): void {
     logger.info([this.name + ' - ' + log].concat(params))
   }
 
-  warn (log: string, ...params: any[]) {
+  warn (log: string, ...params: any[]): void {
     logger.warn([this.name + ' - ' + log].concat(params))
   }
 
-  error (log: string, ...params: any[]) {
+  error (log: string, ...params: any[]): void {
     logger.error([this.name + ' - ' + log].concat(params))
   }
 
-  verbose (log: string, ...params: any[]) {
+  verbose (log: string, ...params: any[]): void {
     logger.verbose([this.name + ' - ' + log].concat(params))
   }
 
-  silly (log: string, ...params: any[]) {
+  silly (log: string, ...params: any[]): void {
     logger.silly([this.name + ' - ' + log].concat(params))
   }
 }

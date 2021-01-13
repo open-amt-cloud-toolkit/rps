@@ -7,7 +7,7 @@ import { INetProfilesDb } from '../../../repositories/interfaces/INetProfilesDb'
 import { NetConfigDbFactory } from '../../../repositories/NetConfigDbFactory'
 import { NETWORK_CONFIG_NOT_FOUND, NETWORK_CONFIG_ERROR } from '../../../utils/constants'
 
-export async function deleteNetProfile (req, res) {
+export async function deleteNetProfile (req, res): Promise<void> {
   let profilesDb: INetProfilesDb = null
   const { profileName } = req.params
   try {

@@ -7,7 +7,7 @@ import { INetProfilesDb } from '../../../repositories/interfaces/INetProfilesDb'
 import { NetConfigDbFactory } from '../../../repositories/NetConfigDbFactory'
 import { NETWORK_CONFIG_ERROR, NETWORK_CONFIG_NOT_FOUND } from '../../../utils/constants'
 
-export async function getNetProfile (req, res) {
+export async function getNetProfile (req, res): Promise<void> {
   let profilesDb: INetProfilesDb = null
   const { profileName } = req.params
   try {

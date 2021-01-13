@@ -10,7 +10,7 @@ import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
 import { CIRA_CONFIG_INSERTION_SUCCESS, CIRA_CONFIG_ERROR, PROFILE_INVALID_INPUT } from '../../../utils/constants'
 
-export async function createCiraConfig (req, res) {
+export async function createCiraConfig (req, res): Promise<void> {
   const log = new Logger('createCiraConfig')
 
   let ciraConfigDb: ICiraConfigDb = null

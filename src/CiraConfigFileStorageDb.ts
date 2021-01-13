@@ -77,7 +77,7 @@ export class CiraConfigFileStorageDb implements ICiraConfigDb {
 
   async updateCiraConfig (ciraConfig: CIRAConfig): Promise<number> {
     this.logger.debug(`update CiraConfig: ${ciraConfig.ConfigName}`)
-    const isMatch = item => item.ConfigName === ciraConfig.ConfigName
+    const isMatch = (item): boolean => item.ConfigName === ciraConfig.ConfigName
     const index = this.ciraConfigs.findIndex(isMatch)
     if (index >= 0) {
       this.ciraConfigs.splice(index, 1)
@@ -91,7 +91,7 @@ export class CiraConfigFileStorageDb implements ICiraConfigDb {
     }
   }
 
-  private updateConfigFile () {
+  private updateConfigFile (): void {
     const data: any = FileHelper.readJsonObjFromFile(EnvReader.configPath)
     data.CIRAConfigurations = this.ciraConfigs
     if (EnvReader.configPath) FileHelper.writeObjToJsonFile(data, EnvReader.configPath)

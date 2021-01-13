@@ -12,7 +12,7 @@ import { Version } from './models/Rcs'
 export class VersionChecker {
   private static currentVersion: Version
 
-  static setCurrentVersion (currentVersion: string) {
+  static setCurrentVersion (currentVersion: string): void {
     VersionChecker.currentVersion = VersionChecker.parseString(currentVersion)
   }
 

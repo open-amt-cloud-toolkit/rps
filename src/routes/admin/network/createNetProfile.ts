@@ -9,7 +9,7 @@ import { NetConfigDbFactory } from '../../../repositories/NetConfigDbFactory'
 import { NETWORK_CONFIG_ERROR, NETWORK_CONFIG_INSERTION_SUCCESS } from '../../../utils/constants'
 import { NetworkConfig } from '../../../RCS.Config'
 
-export async function createNetProfile (req, res) {
+export async function createNetProfile (req, res): Promise<void> {
   let profilesDb: INetProfilesDb = null
   const netConfig: NetworkConfig = readBody(req, res)
 

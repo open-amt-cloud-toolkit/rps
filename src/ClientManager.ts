@@ -21,7 +21,7 @@ export class ClientManager implements IClientManager {
   }
 
   // Single entry to keep track of all client connections
-  static getInstance (logger: any) {
+  static getInstance (logger: any): ClientManager {
     if (!ClientManager.instance) {
       ClientManager.instance = new ClientManager(logger)
     }
@@ -37,7 +37,7 @@ export class ClientManager implements IClientManager {
     return clientObj
   }
 
-  setClientObject (clientObj: ClientObject) {
+  setClientObject (clientObj: ClientObject): void {
     const index = this.getClientIndex(clientObj.ClientId)
     if (index > -1) {
       this.clients[index] = clientObj
@@ -64,7 +64,7 @@ export class ClientManager implements IClientManager {
     }
   }
 
-  removeClient (clientId: string) {
+  removeClient (clientId: string): void {
     try {
       const index = this.getClientIndex(clientId)
       this.clients.splice(index, 1)

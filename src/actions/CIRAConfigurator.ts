@@ -133,7 +133,7 @@ export class CIRAConfigurator implements IExecutor {
      * @param {clientObj} ClientObject keep track of client info and status
      * @param {any} wsmanResponse valid client message
      */
-  async delete (clientId: string, clientObj: ClientObject, wsmanResponse: any) {
+  async delete (clientId: string, clientObj: ClientObject, wsmanResponse: any): Promise<void> {
     if (!clientObj.ciraconfig.policyRuleUserInitiate) {
       this.logger.debug(`Deleting CIRA Configuration for device ${clientObj.ClientData.payload.uuid}`)
       clientObj = this.clientManager.getClientObject(clientId)

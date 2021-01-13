@@ -13,7 +13,7 @@ export class ConfigDbCreator implements IDbCreator {
     return this.readData()
   }
 
-  readData () {
+  readData (): any {
     return FileHelper.readJsonObjFromFile(EnvReader.configPath)
   }
 }

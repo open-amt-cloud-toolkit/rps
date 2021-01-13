@@ -6,7 +6,7 @@
  **********************************************************************/
 import { ILogger } from './interfaces/ILogger'
 import { ClientResponseMsg as ResponseMessage } from './utils/ClientResponseMsg'
-import { ClientMsg, Payload, ClientObject } from './RCS.Config'
+import { ClientMsg, Payload, ClientObject, SocketConnection } from './RCS.Config'
 import { IClientManager } from './interfaces/IClientManager'
 
 const WSComm = require('./amt-libraries/amt-wsman-comm')
@@ -67,7 +67,7 @@ export class WSManProcessor {
   * @param {boolean} root
   * @param {string} clientId
   */
-  async getCertChainWSManResponse (cert: any, leaf: boolean, root: boolean, clientId: string) {
+  async getCertChainWSManResponse (cert: any, leaf: boolean, root: boolean, clientId: string): Promise<void> {
     const amtstack = this.getAmtStack(clientId)
     const clientObj = this.clientManager.getClientObject(clientId)
     await amtstack.IPS_HostBasedSetupService_AddNextCertInChain(cert, leaf, root, (stack, name, jsonResponse, status) => {
@@ -80,8 +80,7 @@ export class WSManProcessor {
       } else {
         clientObj.payload = jsonResponse
       }
-    }
-    )
+    })
   }
 
   /**
@@ -91,7 +90,7 @@ export class WSManProcessor {
   * @param {boolean} root
   * @param {string} clientId
   */
-  async setupACM (clientId: string, password: any, nonce: any, signature: any) {
+  async setupACM (clientId: string, password: any, nonce: any, signature: any): Promise<void> {
     const clientObj = this.clientManager.getClientObject(clientId)
     const amtstack = this.getAmtStack(clientId)
     await amtstack.IPS_HostBasedSetupService_AdminSetup(2, password, nonce, 2, signature, (stack, name, jsonResponse, status) => {
@@ -102,8 +101,7 @@ export class WSManProcessor {
       } else {
         clientObj.payload = jsonResponse
       }
-    }
-    )
+    })
   }
 
   /**
@@ -111,7 +109,7 @@ export class WSManProcessor {
   * @param {string} clientId
   * @param {any} password
   */
-  async setupCCM (clientId: string, password: any) {
+  async setupCCM (clientId: string, password: any): Promise<void> {
     const clientObj = this.clientManager.getClientObject(clientId)
     const amtstack = this.getAmtStack(clientId)
     await amtstack.IPS_HostBasedSetupService_Setup(2, password, null, null, null, null, (stack, name, jsonResponse, status) => {
@@ -122,11 +120,10 @@ export class WSManProcessor {
       } else {
         clientObj.payload = jsonResponse
       }
-    }
-    )
+    })
   }
 
-  async deactivateACM (clientId: string) {
+  async deactivateACM (clientId: string): Promise<void> {
     const clientObj = this.clientManager.getClientObject(clientId)
     const amtstack = this.getAmtStack(clientId)
 
@@ -156,14 +153,14 @@ export class WSManProcessor {
         this.logger.debug(`getAmtStack: clientId: ${clientId}, setting up communication`)
 
         payload = clientObj.ClientData.payload
-        const SetupCommunication = (host: string, port: number) => {
+        const SetupCommunication = (host: string, port: number): SocketConnection => {
           clientObj.socketConn = { socket: clientObj.ClientSocket, state: 1 }
-          clientObj.socketConn.close = () => {
+          clientObj.socketConn.close = (): void => {
             if (clientObj.socketConn.onStateChange) {
               clientObj.socketConn.onStateChange(clientObj.ClientSocket, 0)
             }
           }
-          clientObj.socketConn.write = (data: any) => {
+          clientObj.socketConn.write = (data: any): void => {
             const wsmanJsonPayload: ClientMsg = this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
             this.logger.debug(`ClientResponseMsg: Message sending to device ${payload.uuid}: ${JSON.stringify(wsmanJsonPayload, null, '\t')}`)
             clientObj.ClientSocket.send(JSON.stringify(wsmanJsonPayload))
@@ -188,7 +185,7 @@ export class WSManProcessor {
    * @param {string} clientId Id to keep track of connections
    * @param {string} action WSMan action
    */
-  async batchEnum (clientId: string, action: string, amtuser?: string, amtpass?: string) {
+  async batchEnum (clientId: string, action: string, amtuser?: string, amtpass?: string): Promise<void> {
     const clientObj = this.clientManager.getClientObject(clientId)
     try {
       const amtstack = this.getAmtStack(clientId, amtuser, amtpass)
@@ -215,7 +212,7 @@ export class WSManProcessor {
    * @param {string} clientId Id to keep track of connections
    * @param {string} action WSMan action
    */
-  async getWSManResponse (clientId: string, action: string, amtuser?: string, amtpass?: string) {
+  async getWSManResponse (clientId: string, action: string, amtuser?: string, amtpass?: string): Promise<void> {
     const clientObj: ClientObject = this.clientManager.getClientObject(clientId)
     try {
       const amtstack = this.getAmtStack(clientId, amtuser, amtpass)
@@ -240,7 +237,7 @@ export class WSManProcessor {
     }
   }
 
-  async put (clientId: string, action: string, obj: any, amtuser?: string, amtpass?: string) {
+  async put (clientId: string, action: string, obj: any, amtuser?: string, amtpass?: string): Promise<void> {
     const clientObj: ClientObject = this.clientManager.getClientObject(clientId)
     try {
       const amtstack = this.getAmtStack(clientId, amtuser, amtpass)
@@ -263,7 +260,7 @@ export class WSManProcessor {
     }
   }
 
-  async delete (clientId: string, action: string, delete_obj: any, amtuser?: string, amtpass?: string) {
+  async delete (clientId: string, action: string, delete_obj: any, amtuser?: string, amtpass?: string): Promise<void> {
     const clientObj: ClientObject = this.clientManager.getClientObject(clientId)
     try {
       const amtstack = this.getAmtStack(clientId, amtuser, amtpass)
@@ -286,7 +283,7 @@ export class WSManProcessor {
     }
   }
 
-  async execute (clientId: string, name: string, method: string, args: any, selectors: any, amtuser?: string, amtpass?: string) {
+  async execute (clientId: string, name: string, method: string, args: any, selectors: any, amtuser?: string, amtpass?: string): Promise<void> {
     const clientObj: ClientObject = this.clientManager.getClientObject(clientId)
     try {
       const amtstack = this.getAmtStack(clientId, amtuser, amtpass)
