@@ -217,7 +217,7 @@ export class ACMActivator implements IExecutor {
     const mebxPassword: string = await this.configurator.profileManager.getMEBxPassword(clientObj.ClientData.payload.profile.ProfileName)
 
     /* Create a device in the repository. */
-    if (this.configurator && this.configurator.amtDeviceRepository) {
+    if (this.configurator?.amtDeviceRepository) {
       await this.configurator.amtDeviceRepository.insert(new AMTDeviceDTO(clientObj.uuid,
         clientObj.uuid,
         EnvReader.GlobalEnvConfig.mpsusername,

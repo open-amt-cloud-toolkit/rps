@@ -197,7 +197,7 @@ export class WSManProcessor {
         }
         clientObj.payload = jsonResponse
       })
-      if (clientObj.socketConn && clientObj.socketConn.onStateChange && clientObj.readyState == undefined) {
+      if (clientObj.socketConn?.onStateChange && clientObj.readyState == undefined) {
         clientObj.readyState = 2
         this.clientManager.setClientObject(clientObj)
         clientObj.socketConn.onStateChange(clientObj.ClientSocket, clientObj.readyState)
@@ -226,7 +226,7 @@ export class WSManProcessor {
         this.logger.debug(`get request for clientId: ${clientId}, action:${action}, status: ${status} response: ${JSON.stringify(jsonResponse, null, '\t')}`)
       }
       )
-      if (clientObj.socketConn && clientObj.socketConn.onStateChange && clientObj.readyState == undefined) {
+      if (clientObj.socketConn?.onStateChange && clientObj.readyState == undefined) {
         this.logger.debug('updating ready state')
         clientObj.readyState = 2
         this.clientManager.setClientObject(clientObj)
@@ -249,7 +249,7 @@ export class WSManProcessor {
         }
         clientObj.payload = jsonResponse
       }, 0, 1, obj)
-      if (clientObj.socketConn && clientObj.socketConn.onStateChange && clientObj.readyState == undefined) {
+      if (clientObj.socketConn?.onStateChange && clientObj.readyState == undefined) {
         this.logger.debug('updating ready state')
         clientObj.readyState = 2
         this.clientManager.setClientObject(clientObj)
@@ -272,7 +272,7 @@ export class WSManProcessor {
         }
         clientObj.payload = jsonResponse
       })
-      if (clientObj.socketConn && clientObj.socketConn.onStateChange && clientObj.readyState == undefined) {
+      if (clientObj.socketConn?.onStateChange && clientObj.readyState == undefined) {
         this.logger.debug('updating ready state')
         clientObj.readyState = 2
         this.clientManager.setClientObject(clientObj)
@@ -296,7 +296,7 @@ export class WSManProcessor {
         clientObj.payload = jsonResponse
       }, null, 0, selectors)
 
-      if (clientObj.socketConn && clientObj.socketConn.onStateChange && clientObj.readyState == undefined) {
+      if (clientObj.socketConn?.onStateChange && clientObj.readyState == undefined) {
         this.logger.debug('updating ready state')
         clientObj.readyState = 2
         this.clientManager.setClientObject(clientObj)

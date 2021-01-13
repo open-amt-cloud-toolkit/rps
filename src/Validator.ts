@@ -45,7 +45,7 @@ export class Validator implements IValidator {
       if (typeof message === 'string') {
         msg = this.jsonParser.parse(message, clientId)
 
-        if (msg && msg.protocolVersion) {
+        if (msg?.protocolVersion) {
           if (VersionChecker.isCompatible(msg.protocolVersion)) {
             this.logger.silly(`protocol version supported: ${msg.protocolVersion}`)
           } else {
@@ -160,9 +160,9 @@ export class Validator implements IValidator {
     }
 
     if (clientObj.action !== ClientAction.ADMINCTLMODE && clientObj.action !== ClientAction.CLIENTCTLMODE) {
-      if (this.configurator && this.configurator.amtDeviceRepository) {
+      if (this.configurator?.amtDeviceRepository) {
         const amtDevice = await this.configurator.amtDeviceRepository.get(payload.uuid)
-        if (amtDevice && amtDevice.amtpass) {
+        if (amtDevice?.amtpass) {
           payload.username = AMTUserName
           payload.password = amtDevice.amtpass
           this.logger.info(`AMT password found for Device ${payload.uuid}`)
@@ -239,10 +239,10 @@ export class Validator implements IValidator {
     } else {
       try {
         let amtDevice: AMTDeviceDTO
-        if (this.configurator && this.configurator.amtDeviceRepository) {
+        if (this.configurator?.amtDeviceRepository) {
           amtDevice = await this.configurator.amtDeviceRepository.get(payload.uuid)
 
-          if (amtDevice && amtDevice.amtpass && payload.password && payload.password === amtDevice.amtpass) {
+          if (amtDevice?.amtpass && payload.password && payload.password === amtDevice.amtpass) {
             this.logger.info(`AMT password matches stored version for Device ${payload.uuid}`)
           } else {
             this.logger.error(`
@@ -280,7 +280,7 @@ export class Validator implements IValidator {
     const regex: RegExp = /[0-9A-Fa-f]{32}/g
     let isValidRealm: boolean = false
     let realmElements: any = {}
-    if (realm && realm.startsWith('Digest:')) {
+    if (realm?.startsWith('Digest:')) {
       realmElements = realm.split('Digest:')
       if (realmElements[1].length === 32 && regex.test(realmElements[1])) {
         isValidRealm = true

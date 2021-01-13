@@ -76,7 +76,7 @@ export class CIRAConfigurator implements IExecutor {
             const result = wsmanResponse.AMT_ManagementPresenceRemoteSAP
             clientObj.ciraconfig.addRemoteAccessPolicyRule = true
             this.clientManager.setClientObject(clientObj)
-            if (result && result.responses && result.responses.length > 0) {
+            if (result?.responses?.length > 0) {
               // TBD: Check when there are more than one MPS added to system.
               const name = wsmanResponse.AMT_ManagementPresenceRemoteSAP.responses[0].Name
               this.logger.debug(`${clientObj.uuid} : Management Presence Server (MPS) exists.`)
@@ -190,9 +190,7 @@ export class CIRAConfigurator implements IExecutor {
       this.clientManager.setClientObject(clientObj)
       await this.amtwsman.batchEnum(clientId, '*AMT_EnvironmentDetectionSettingData', AMTUserName)
     } else if (clientObj.ciraconfig.getENVSettingData && !clientObj.ciraconfig.setENVSettingData) {
-      if (wsmanResponse.AMT_EnvironmentDetectionSettingData &&
-                wsmanResponse.AMT_EnvironmentDetectionSettingData.response &&
-                wsmanResponse.AMT_EnvironmentDetectionSettingData.response.DetectionStrings !== undefined) {
+      if (wsmanResponse.AMT_EnvironmentDetectionSettingData?.response?.DetectionStrings !== undefined) {
         const envSettings = wsmanResponse.AMT_EnvironmentDetectionSettingData.response
         envSettings.DetectionStrings = []
         await this.amtwsman.put(clientId, 'AMT_EnvironmentDetectionSettingData', envSettings, AMTUserName)
