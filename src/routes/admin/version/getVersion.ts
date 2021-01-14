@@ -5,6 +5,6 @@
  **********************************************************************/
 import { ProtocolVersion } from '../../../utils/constants'
 
-export async function getVersion (req, res) {
+export function getVersion (req, res): void {
   res.status(200).json(`protocol version: ${ProtocolVersion}`).end()
 }

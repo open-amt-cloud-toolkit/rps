@@ -155,7 +155,7 @@ export class ACMActivator implements IExecutor {
    * @param {string} clientId Id to keep track of connections
    * @param {string} message
    */
-  async processWSManJsonResponse (message: any, clientId: string) {
+  async processWSManJsonResponse (message: any, clientId: string): Promise<void> {
     const clientObj = this.clientManager.getClientObject(clientId)
     const wsmanResponse = message.payload
 
@@ -206,12 +206,12 @@ export class ACMActivator implements IExecutor {
    * @param {string} clientId Id to keep track of connections
    * @param {ClientObject} clientObj
    */
-  async setMEBxPassword (clientId: string, clientObj: ClientObject) {
+  async setMEBxPassword (clientId: string, clientObj: ClientObject): Promise<void> {
     this.logger.info('setting MEBx password')
     /* Update the wsman stack username and password */
     if (this.amtwsman.cache[clientId]) {
-      this.amtwsman.cache[clientId].wsman.comm.setupCommunication.getUsername = () => { return AMTUserName }
-      this.amtwsman.cache[clientId].wsman.comm.setupCommunication.getPassword = () => { return clientObj.amtPassword }
+      this.amtwsman.cache[clientId].wsman.comm.setupCommunication.getUsername = (): string => { return AMTUserName }
+      this.amtwsman.cache[clientId].wsman.comm.setupCommunication.getPassword = (): string => { return clientObj.amtPassword }
     }
     /* Get the MEBx password */
     const mebxPassword: string = await this.configurator.profileManager.getMEBxPassword(clientObj.ClientData.payload.profile.ProfileName)

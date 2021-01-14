@@ -7,7 +7,7 @@ import { IDomainsDb } from '../../../repositories/interfaces/IDomainsDb'
 import { DomainsDbFactory } from '../../../repositories/DomainsDbFactory'
 import { DOMAIN_NOT_FOUND, DOMAIN_ERROR } from '../../../utils/constants'
 
-export async function getDomain (req, res) {
+export async function getDomain (req, res): Promise<void> {
   let domainsDb: IDomainsDb = null
   const { domainName } = req.params
   try {

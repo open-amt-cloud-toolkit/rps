@@ -70,7 +70,7 @@ export class Validator implements IValidator {
    * @param {string} clientId
    * @returns {RCSMessage}
    */
-  async validateActivationMsg (msg: ClientMsg, clientId: string) {
+  async validateActivationMsg (msg: ClientMsg, clientId: string): Promise<void> {
     let payload: Payload = null
     if (!msg) {
       throw new RPSError('Error while Validating the client message')
@@ -189,7 +189,7 @@ export class Validator implements IValidator {
  * @param {string} clientId
  * @returns {RCSMessage}
  */
-  async validateDeactivationMsg (msg: ClientMsg, clientId: string) {
+  async validateDeactivationMsg (msg: ClientMsg, clientId: string): Promise<void> {
     let payload: Payload = null
     if (!msg) {
       throw new RPSError('Error while Validating the client message')

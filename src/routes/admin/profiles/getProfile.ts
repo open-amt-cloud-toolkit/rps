@@ -7,7 +7,7 @@ import { IProfilesDb } from '../../../repositories/interfaces/IProfilesDb'
 import { ProfilesDbFactory } from '../../../repositories/ProfilesDbFactory'
 import { PROFILE_NOT_FOUND, PROFILE_ERROR } from '../../../utils/constants'
 
-export async function getProfile (req, res) {
+export async function getProfile (req, res): Promise<void> {
   let profilesDb: IProfilesDb = null
   const { profileName } = req.params
   try {

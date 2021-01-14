@@ -11,7 +11,7 @@ export class EnvReader {
   static GlobalEnvConfig: RCSConfig
   static configPath: string
 
-  static getCertConfig () {
+  static getCertConfig (): any {
     const webTlsConfig: webConfigType = {
       key: process.env.WEB_TLS_CERT_KEY,
       cert: process.env.WEB_TLS_CERT,

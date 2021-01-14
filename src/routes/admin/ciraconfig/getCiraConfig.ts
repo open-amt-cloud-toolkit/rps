@@ -9,7 +9,7 @@ import { CIRAConfig } from '../../../RCS.Config'
 import Logger from '../../../Logger'
 import { CIRA_CONFIG_NOT_FOUND, CIRA_CONFIG_ERROR } from '../../../utils/constants'
 
-export async function getCiraConfig (req, res) {
+export async function getCiraConfig (req, res): Promise<void> {
   let ciraConfigDb: ICiraConfigDb = null
   const log = new Logger('getCiraConfig')
   const { ciraConfigName } = req.params

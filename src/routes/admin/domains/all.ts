@@ -7,13 +7,13 @@ import { IDomainsDb } from '../../../repositories/interfaces/IDomainsDb'
 import { DomainsDbFactory } from '../../../repositories/DomainsDbFactory'
 import { DOMAIN_ERROR, DOMAIN_CONFIG_EMPTY } from '../../../utils/constants'
 
-export async function getAllDomains (req, res) {
+export async function getAllDomains (req, res): Promise<void> {
   let domainsDb: IDomainsDb = null
 
   try {
     domainsDb = DomainsDbFactory.getDomainsDb()
     // TODO: remove this?
-    const mapperFn = async (provisioningCertPassword) => {
+    const mapperFn = async (provisioningCertPassword): Promise<any> => {
       return null
     }
     let results = await domainsDb.getAllDomains(mapperFn)

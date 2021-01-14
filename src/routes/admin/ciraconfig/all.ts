@@ -8,13 +8,13 @@ import { CiraConfigDbFactory } from '../../../repositories/CiraConfigDbFactory'
 import Logger from '../../../Logger'
 import { CIRA_CONFIG_EMPTY, CIRA_CONFIG_ERROR } from '../../../utils/constants'
 
-export async function allCiraConfigs (req, res) {
+export async function allCiraConfigs (req, res): Promise<void> {
   let ciraConfigDb: ICiraConfigDb = null
   const log = new Logger('allCiraConfigs')
   try {
     ciraConfigDb = CiraConfigDbFactory.getCiraConfigDb()
     // TODO: remove this?
-    const mapperFn = async (configName, ciraMpsPassword) => {
+    const mapperFn = async (configName, ciraMpsPassword): Promise<any> => {
       return null
     }
     const results = await ciraConfigDb.getAllCiraConfigs(mapperFn)

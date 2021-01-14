@@ -62,7 +62,7 @@ const configurator: IConfigurator = new Configurator()
 log.silly(`WebSocket Cert Info ${JSON.stringify(EnvReader.GlobalEnvConfig.WSConfiguration)}`)
 const server: WebSocketListener = new WebSocketListener(new Logger('WebSocketListener'), EnvReader.GlobalEnvConfig.WSConfiguration, configurator.clientManager, configurator.dataProcessor)
 
-const isAuthenticated = (req, res, next) => {
+const isAuthenticated = (req, res, next): void => {
   if (req.header('X-RPS-API-Key') !== EnvReader.GlobalEnvConfig.RPSXAPIKEY) {
     res.status(401).end('Not Authenticated.')
   } else {

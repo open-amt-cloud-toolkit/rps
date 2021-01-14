@@ -75,14 +75,20 @@ export interface RemoteConfig {
   AMTConfigurations: AMTConfig[]
   AMTDomains: AMTDomain[]
 }
-
+export interface SocketConnection{
+  socket: WebSocket
+  state: number
+  onStateChange?: Function
+  close?: Function
+  write?: Function
+}
 export interface ClientObject {
   ClientId: string
   action?: ClientAction
   uuid?: string
   ClientSocket?: WebSocket
   ClientData?: any
-  socketConn?: any
+  socketConn?: SocketConnection
   count?: number
   payload?: any
   certObj?: any

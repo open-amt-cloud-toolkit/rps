@@ -83,7 +83,7 @@ export class NetConfigFileStorageDb implements INetProfilesDb {
 
   async updateProfile (netConfig: NetworkConfig): Promise<any> {
     this.logger.debug(`update NetConfig: ${netConfig.ProfileName}`)
-    const isMatch = item => item.ProfileName === netConfig.ProfileName
+    const isMatch = (item): boolean => item.ProfileName === netConfig.ProfileName
 
     if (this.amtProfiles.some(profile => profile.NetworkConfigName == netConfig.ProfileName)) {
       throw NETWORK_UPDATE_ERROR(netConfig.ProfileName)
@@ -104,7 +104,7 @@ export class NetConfigFileStorageDb implements INetProfilesDb {
     }
   }
 
-  private updateConfigFile () {
+  private updateConfigFile (): void {
     const data: any = FileHelper.readJsonObjFromFile(EnvReader.configPath)
     data.NETConfigurations = this.networkConfigs
     if (EnvReader.configPath) FileHelper.writeObjToJsonFile(data, EnvReader.configPath)
