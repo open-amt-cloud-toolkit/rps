@@ -11,12 +11,17 @@ import { EnvReader } from '../utils/EnvReader'
 import { AMTConfigDb } from '../AMTConfigDb'
 import Logger from '../Logger'
 
-export class ProfilesDbFactory {
-  static dbCreator: IDbCreator = null
-  static dbCreatorFactory: DbCreatorFactory
-  static profilesDb: IProfilesDb
-
-  static getProfilesDb (): IProfilesDb {
+export interface IProfilesDbFactory {
+  dbCreator: IDbCreator
+  dbCreatorFactory: DbCreatorFactory
+  profilesDb: IProfilesDb
+  getProfilesDb: () => IProfilesDb
+}
+const ProfilesDbFactory: IProfilesDbFactory = {
+  dbCreator: null,
+  dbCreatorFactory: null,
+  profilesDb: null,
+  getProfilesDb: (): IProfilesDb => {
     if (ProfilesDbFactory.profilesDb == null) {
       ProfilesDbFactory.dbCreatorFactory = new DbCreatorFactory(EnvReader.GlobalEnvConfig)
       ProfilesDbFactory.dbCreator = ProfilesDbFactory.dbCreatorFactory.getDbCreator()
@@ -31,3 +36,5 @@ export class ProfilesDbFactory {
     return ProfilesDbFactory.profilesDb
   }
 }
+
+export { ProfilesDbFactory }

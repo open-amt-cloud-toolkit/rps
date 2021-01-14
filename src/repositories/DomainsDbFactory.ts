@@ -11,12 +11,18 @@ import { DomainsDb } from './domains'
 import { DomainConfigDb } from '../DomainConfigDb'
 import Logger from '../Logger'
 
-export class DomainsDbFactory {
-  static dbCreator: IDbCreator = null
-  static dbCreatorFactory: DbCreatorFactory
-  static domainsDb: IDomainsDb
+export interface IDomainsDbFactory {
+  dbCreator: IDbCreator
+  dbCreatorFactory: DbCreatorFactory
+  domainsDb: IDomainsDb
+  getDomainsDb: () => IDomainsDb
+}
 
-  static getDomainsDb (): IDomainsDb {
+const DomainsDbFactory: IDomainsDbFactory = {
+  dbCreator: null,
+  dbCreatorFactory: null,
+  domainsDb: null,
+  getDomainsDb (): IDomainsDb {
     if (DomainsDbFactory.domainsDb == null) {
       DomainsDbFactory.dbCreatorFactory = new DbCreatorFactory(EnvReader.GlobalEnvConfig)
       DomainsDbFactory.dbCreator = DomainsDbFactory.dbCreatorFactory.getDbCreator()
@@ -28,3 +34,4 @@ export class DomainsDbFactory {
     return DomainsDbFactory.domainsDb
   }
 }
+export { DomainsDbFactory }

@@ -8,20 +8,19 @@
 import { RPSError } from './utils/RPSError'
 import { ProtocolVersion } from './utils/constants'
 import { Version } from './models/Rcs'
-
-export class VersionChecker {
-  private static currentVersion: Version
-
-  static setCurrentVersion (currentVersion: string): void {
+// TODO: REMOVE THIS
+const VersionChecker = {
+  currentVersion: null as Version,
+  setCurrentVersion (currentVersion: string): void {
     VersionChecker.currentVersion = VersionChecker.parseString(currentVersion)
-  }
+  },
 
   /**
      * @description
      * @param {string} version string
      * @returns {Version} object containing parsed version
      */
-  static parseString (version: string): Version {
+  parseString (version: string): Version {
     if (typeof version === 'undefined' || version == '') {
       throw new RPSError('version must be defined')
     }
@@ -57,9 +56,9 @@ export class VersionChecker {
     }
 
     return parsedVersion
-  }
+  },
 
-  static isCompatible (messageVersion: string): boolean {
+  isCompatible (messageVersion: string): boolean {
     if (typeof VersionChecker.currentVersion === 'undefined') {
       VersionChecker.currentVersion = VersionChecker.parseString(ProtocolVersion)
     }
@@ -79,3 +78,5 @@ export class VersionChecker {
     return false
   }
 }
+
+export { VersionChecker }

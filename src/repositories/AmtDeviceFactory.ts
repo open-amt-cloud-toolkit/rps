@@ -11,10 +11,13 @@ import { IConfigurator } from '../interfaces/IConfigurator'
 import Logger from '../Logger'
 import { AMTDeviceFileRepository } from './AMTDeviceFileRepository'
 
-export class AmtDeviceFactory {
-  static amtDeviceRepository: IAMTDeviceRepository
-
-  static getAmtDeviceRepository (configurator: IConfigurator): IAMTDeviceRepository {
+interface IAmtDeviceFactory {
+  amtDeviceRepository: IAMTDeviceRepository
+  getAmtDeviceRepository: (configurator: IConfigurator) => IAMTDeviceRepository
+}
+const AmtDeviceFactory: IAmtDeviceFactory = {
+  amtDeviceRepository: null,
+  getAmtDeviceRepository (configurator: IConfigurator): IAMTDeviceRepository {
     if (AmtDeviceFactory.amtDeviceRepository == null) {
       if (EnvReader.GlobalEnvConfig.VaultConfig.usevault) {
         AmtDeviceFactory.amtDeviceRepository = new AMTDeviceVaultRepository(new Logger('AMTDeviceVaultRepository'), configurator)
@@ -26,3 +29,5 @@ export class AmtDeviceFactory {
     return AmtDeviceFactory.amtDeviceRepository
   }
 }
+
+export { AmtDeviceFactory }

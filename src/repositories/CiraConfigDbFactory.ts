@@ -12,12 +12,18 @@ import { EnvReader } from '../utils/EnvReader'
 import Logger from '../Logger'
 import { CiraConfigFileStorageDb } from '../CiraConfigFileStorageDb'
 
-export class CiraConfigDbFactory {
-  static dbCreator: IDbCreator = null
-  static dbCreatorFactory: DbCreatorFactory
-  static ciraConfigsDb: ICiraConfigDb
+export interface ICiraConfigDbFactory {
+  dbCreator: IDbCreator
+  dbCreatorFactory: DbCreatorFactory
+  ciraConfigsDb: ICiraConfigDb
+  getCiraConfigDb: () => ICiraConfigDb
+}
 
-  static getCiraConfigDb (): ICiraConfigDb {
+const CiraConfigDbFactory: ICiraConfigDbFactory = {
+  dbCreator: null,
+  dbCreatorFactory: null,
+  ciraConfigsDb: null,
+  getCiraConfigDb (): ICiraConfigDb {
     if (CiraConfigDbFactory.ciraConfigsDb == null) {
       CiraConfigDbFactory.dbCreatorFactory = new DbCreatorFactory(EnvReader.GlobalEnvConfig)
       CiraConfigDbFactory.dbCreator = CiraConfigDbFactory.dbCreatorFactory.getDbCreator()
@@ -31,3 +37,5 @@ export class CiraConfigDbFactory {
     return CiraConfigDbFactory.ciraConfigsDb
   }
 }
+
+export { CiraConfigDbFactory }

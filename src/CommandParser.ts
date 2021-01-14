@@ -16,10 +16,9 @@ const options = {
   alias: { t: 'text', p: 'password', f: 'force', e: 'encrypted' }
 }
 
-export class CommandParser {
-  static logger: ILogger = new Logger('CommandParser')
-
-  static parse (msg: ClientMsg): ClientMsg {
+const CommandParser = {
+  logger: new Logger('CommandParser') as ILogger,
+  parse (msg: ClientMsg): ClientMsg {
     try {
       if (msg && msg.method && msg.method.length > 0) {
         const input: string[] = msg.method.trim().split(' ')
@@ -61,3 +60,5 @@ export class CommandParser {
     return msg
   }
 }
+
+export { CommandParser }
