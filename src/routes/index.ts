@@ -4,8 +4,10 @@
  * Author : Ramu Bachala
  **********************************************************************/
 // ./routes/index.js
-import adminRouter = require('./admin/index')
-const router = require('express').Router()
+import adminRouter from './admin/index'
+import { Router } from 'express';
+const router: Router = Router();
+
 
 router.use('/admin', adminRouter)
 
