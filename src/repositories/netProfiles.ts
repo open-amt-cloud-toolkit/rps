@@ -32,7 +32,7 @@ export class NetConfigDb implements INetProfilesDb {
   async deleteProfileByName (configName): Promise<any> {
     const profiles = await this.db.query('SELECT profile_name as ProfileName FROM profiles WHERE network_profile_name = $1', [configName])
     if (profiles.rowCount > 0) {
-      throw NETWORK_UPDATE_ERROR(configName)
+      throw Error(NETWORK_UPDATE_ERROR(configName))
     }
 
     try {
@@ -41,10 +41,10 @@ export class NetConfigDb implements INetProfilesDb {
     } catch (error) {
       console.log(error)
       if (error.code == '23503') { // foreign key violation
-        throw (NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT(configName))
+        throw Error(NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT(configName))
       }
 
-      throw (NETWORK_CONFIG_ERROR(configName))
+      throw Error(NETWORK_CONFIG_ERROR(configName))
     }
   }
 
@@ -67,10 +67,10 @@ export class NetConfigDb implements INetProfilesDb {
     } catch (error) {
       console.log(error)
       if (error.code == '23505') { // Unique key violation
-        throw (NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE(netConfig.ProfileName))
+        throw Error(NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE(netConfig.ProfileName))
       }
 
-      throw (NETWORK_CONFIG_ERROR(netConfig.ProfileName))
+      throw Error(NETWORK_CONFIG_ERROR(netConfig.ProfileName))
     }
   }
 
@@ -78,7 +78,7 @@ export class NetConfigDb implements INetProfilesDb {
     // try {
     const profiles = await this.db.query('SELECT profile_name as ProfileName FROM profiles WHERE network_profile_name = $1', [netConfig.ProfileName])
     if (profiles.rowCount > 0) {
-      throw NETWORK_UPDATE_ERROR(netConfig.ProfileName)
+      throw Error(NETWORK_UPDATE_ERROR(netConfig.ProfileName))
     }
     const results = await this.db.query('UPDATE networkconfigs SET dhcp_enabled=$2, static_ip_shared=$3, ip_sync_enabled=$4 where network_profile_name=$1',
       [

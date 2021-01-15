@@ -52,10 +52,10 @@ export class DomainsDb implements IDomainsDb {
     } catch (error) {
       console.log(error)
       if (error.code == '23505') { // Unique key violation
-        throw (DOMAIN_INSERTION_FAILED_DUPLICATE(amtDomain.Name))
+        throw Error(DOMAIN_INSERTION_FAILED_DUPLICATE(amtDomain.Name))
       }
 
-      throw ('Unknown Error. Check Server Logs.')
+      throw Error('Unknown Error. Check Server Logs.')
     }
   }
 
@@ -73,7 +73,7 @@ export class DomainsDb implements IDomainsDb {
     } catch (error) {
       console.log(error)
 
-      throw ('Unknown Error. Check Server Logs.')
+      throw Error('Unknown Error. Check Server Logs.')
     }
   }
 }

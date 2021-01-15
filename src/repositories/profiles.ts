@@ -83,13 +83,13 @@ export class ProfilesDb implements IProfilesDb {
     } catch (error) {
       console.log(error)
       if (error.code == '23505') { // Unique key violation
-        throw (PROFILE_INSERTION_FAILED_DUPLICATE(amtConfig.ProfileName))
+        throw Error(PROFILE_INSERTION_FAILED_DUPLICATE(amtConfig.ProfileName))
       }
       if (error.code == '23503') { // Unique key violation
-        throw (PROFILE_INSERTION_CIRA_CONSTRAINT(amtConfig.CIRAConfigName))
+        throw Error(PROFILE_INSERTION_CIRA_CONSTRAINT(amtConfig.CIRAConfigName))
       }
 
-      throw ('Unknown Error. Check Server Logs.')
+      throw Error('Unknown Error. Check Server Logs.')
     }
   }
 
@@ -115,10 +115,10 @@ export class ProfilesDb implements IProfilesDb {
     } catch (error) {
       console.log(error)
       if (error.code == '23503') { // Unique key violation
-        throw (PROFILE_INSERTION_CIRA_CONSTRAINT(amtConfig.CIRAConfigName))
+        throw Error(PROFILE_INSERTION_CIRA_CONSTRAINT(amtConfig.CIRAConfigName))
       }
 
-      throw ('Unknown Error. Check Server Logs.')
+      throw Error('Unknown Error. Check Server Logs.')
     }
   }
 }

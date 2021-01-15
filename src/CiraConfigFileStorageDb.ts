@@ -42,7 +42,7 @@ export class CiraConfigFileStorageDb implements ICiraConfigDb {
         const profileUsingThisConfig = this.amtProfiles.find(profile => profile.CIRAConfigName === ciraConfigName)
         if (typeof profileUsingThisConfig !== 'undefined') {
           this.logger.error('Cannot delete the CIRA config. An AMT Profile is already using it.')
-          throw (CIRA_CONFIG_DELETION_FAILED_CONSTRAINT(ciraConfigName))
+          throw Error(CIRA_CONFIG_DELETION_FAILED_CONSTRAINT(ciraConfigName))
         }
         this.ciraConfigs.splice(i, 1)
         found = true
@@ -57,7 +57,7 @@ export class CiraConfigFileStorageDb implements ICiraConfigDb {
       return CIRA_CONFIG_SUCCESSFULLY_DELETED(ciraConfigName)
     } else {
       this.logger.error(`Cira Config not found: ${ciraConfigName}`)
-      throw (CIRA_CONFIG_NOT_FOUND(ciraConfigName))
+      throw Error(CIRA_CONFIG_NOT_FOUND(ciraConfigName))
     }
   }
 
@@ -66,7 +66,7 @@ export class CiraConfigFileStorageDb implements ICiraConfigDb {
 
     if (this.ciraConfigs.some(item => item.ConfigName === ciraConfig.ConfigName)) {
       this.logger.error(`Cira Config already exists: ${ciraConfig.ConfigName}`)
-      throw (CIRA_CONFIG_INSERTION_FAILED_DUPLICATE(ciraConfig.ConfigName))
+      throw Error(CIRA_CONFIG_INSERTION_FAILED_DUPLICATE(ciraConfig.ConfigName))
     } else {
       this.ciraConfigs.push(ciraConfig)
       this.updateConfigFile()

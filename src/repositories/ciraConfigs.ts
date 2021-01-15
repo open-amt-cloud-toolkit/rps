@@ -40,10 +40,10 @@ export class CiraConfigDb implements ICiraConfigDb {
     } catch (error) {
       console.log(error)
       if (error.code == '23503') { // foreign key violation
-        throw (CIRA_CONFIG_DELETION_FAILED_CONSTRAINT(ciraConfigName))
+        throw Error(CIRA_CONFIG_DELETION_FAILED_CONSTRAINT(ciraConfigName))
       }
 
-      throw (CIRA_CONFIG_ERROR(ciraConfigName))
+      throw Error(CIRA_CONFIG_ERROR(ciraConfigName))
     }
   }
 
@@ -72,10 +72,10 @@ export class CiraConfigDb implements ICiraConfigDb {
     } catch (error) {
       console.log(error)
       if (error.code == '23505') { // Unique key violation
-        throw (CIRA_CONFIG_INSERTION_FAILED_DUPLICATE(ciraConfig.ConfigName))
+        throw Error(CIRA_CONFIG_INSERTION_FAILED_DUPLICATE(ciraConfig.ConfigName))
       }
 
-      throw (CIRA_CONFIG_ERROR(ciraConfig.ConfigName))
+      throw Error(CIRA_CONFIG_ERROR(ciraConfig.ConfigName))
     }
   }
 
@@ -99,7 +99,7 @@ export class CiraConfigDb implements ICiraConfigDb {
     } catch (error) {
       console.log(error)
 
-      throw (CIRA_CONFIG_ERROR(ciraConfig.ConfigName))
+      throw Error(CIRA_CONFIG_ERROR(ciraConfig.ConfigName))
     }
   }
 }

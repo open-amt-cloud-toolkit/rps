@@ -34,7 +34,7 @@ export class DomainConfigDb implements IDomainsDb {
     if (this.domains.some(item => item.Name === amtDomain.Name) ||
     this.domains.some(item => item.DomainSuffix === amtDomain.DomainSuffix)) {
       this.logger.error(`domain already exists: ${amtDomain.Name}`)
-      throw (DOMAIN_INSERTION_FAILED_DUPLICATE(amtDomain.Name))
+      throw Error(DOMAIN_INSERTION_FAILED_DUPLICATE(amtDomain.Name))
     } else {
       this.domains.push(amtDomain)
       this.updateConfigFile()

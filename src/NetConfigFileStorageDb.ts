@@ -48,7 +48,7 @@ export class NetConfigFileStorageDb implements INetProfilesDb {
         const profileUsingThisConfig = this.amtProfiles.find(profile => profile.NetworkConfigName === netConfigName)
         if (typeof profileUsingThisConfig !== 'undefined') {
           this.logger.error('Cannot delete the network config. An AMT Profile is already using it.')
-          throw (NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT(netConfigName))
+          throw Error(NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT(netConfigName))
         }
         this.networkConfigs.splice(i, 1)
         found = true
@@ -63,7 +63,7 @@ export class NetConfigFileStorageDb implements INetProfilesDb {
       return NETWORK_CONFIG_SUCCESSFULLY_DELETED(netConfigName)
     } else {
       this.logger.error(`Network Config not found: ${netConfigName}`)
-      throw (NETWORK_CONFIG_NOT_FOUND(netConfigName))
+      throw Error(NETWORK_CONFIG_NOT_FOUND(netConfigName))
     }
   }
 
@@ -72,7 +72,7 @@ export class NetConfigFileStorageDb implements INetProfilesDb {
 
     if (this.networkConfigs.some(item => item.ProfileName === netConfig.ProfileName)) {
       this.logger.error(`Net Config already exists: ${netConfig.ProfileName}`)
-      throw (NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE(netConfig.ProfileName))
+      throw Error(NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE(netConfig.ProfileName))
     } else {
       this.networkConfigs.push(netConfig)
       this.updateConfigFile()
@@ -86,7 +86,7 @@ export class NetConfigFileStorageDb implements INetProfilesDb {
     const isMatch = (item): boolean => item.ProfileName === netConfig.ProfileName
 
     if (this.amtProfiles.some(profile => profile.NetworkConfigName == netConfig.ProfileName)) {
-      throw NETWORK_UPDATE_ERROR(netConfig.ProfileName)
+      throw Error(NETWORK_UPDATE_ERROR(netConfig.ProfileName))
     }
 
     const index = this.networkConfigs.findIndex(isMatch)

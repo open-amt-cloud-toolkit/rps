@@ -80,7 +80,7 @@ export class AMTConfigDb implements IProfilesDb {
 
     if (this.amtProfiles.some(item => item.ProfileName === amtConfig.ProfileName)) {
       this.logger.error(`profile already exists: ${amtConfig.ProfileName}`)
-      throw (PROFILE_INSERTION_FAILED_DUPLICATE(amtConfig.ProfileName))
+      throw Error(PROFILE_INSERTION_FAILED_DUPLICATE(amtConfig.ProfileName))
     } else {
       this.amtProfiles.push(amtConfig)
       this.updateConfigFile()
