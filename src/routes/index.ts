@@ -5,9 +5,8 @@
  **********************************************************************/
 // ./routes/index.js
 import adminRouter from './admin/index'
-import { Router } from 'express';
-const router: Router = Router();
-
+import { Router } from 'express'
+const router: Router = Router()
 
 router.use('/admin', adminRouter)
 

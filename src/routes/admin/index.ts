@@ -3,12 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  * Author : Ramu Bachala
  **********************************************************************/
-const adminRouter = require('express').Router()
-const domains = require('./domains/index')
-const profiles = require('./profiles/index')
-const ciraConfigs = require('./ciraconfig/index')
-const version = require('./version/index')
-const networkconfigs = require('./network/index')
+
+import { Router } from 'express'
+const adminRouter: Router = Router()
+import domains = require('./domains/index')
+import profiles = require('./profiles/index')
+import ciraConfigs = require('./ciraconfig/index')
+import version = require('./version/index')
+import networkconfigs = require('./network/index')
 
 adminRouter.use('/domains', domains)
 adminRouter.use('/profiles', profiles)

@@ -4,12 +4,13 @@
  * SPDX-License-Identifier: Apache-2.0
  * Author : Ramu Bachala
  **********************************************************************/
-const domainRouter = require('express').Router()
-const { getAllDomains } = require('./all')
-const { getDomain } = require('./getDomain')
-const { createDomain } = require('./createDomain')
-const { deleteDomain } = require('./deleteDomain')
-const { editDomain } = require('./editDomain')
+import { Router } from 'express'
+import { getAllDomains } from './all'
+import { getDomain } from './getDomain'
+import { createDomain } from './createDomain'
+import { deleteDomain } from './deleteDomain'
+import { editDomain } from './editDomain'
+const domainRouter: Router = Router()
 
 domainRouter.get('/', getAllDomains)
 domainRouter.get('/:domainName', getDomain)

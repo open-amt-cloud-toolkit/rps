@@ -5,11 +5,12 @@
  **********************************************************************/
 import { deleteProfile } from './deleteProfile'
 
-const profileRouter = require('express').Router()
-const { allProfiles } = require('./all')
-const { getProfile } = require('./getProfile')
-const { createProfile } = require('./createProfile')
-const { editProfile } = require('./editProfile')
+import { Router } from 'express'
+import { allProfiles } from './all'
+import { getProfile } from './getProfile'
+import { createProfile } from './createProfile'
+import { editProfile } from './editProfile'
+const profileRouter: Router = Router()
 
 profileRouter.get('/', allProfiles)
 profileRouter.get('/:profileName', getProfile)
