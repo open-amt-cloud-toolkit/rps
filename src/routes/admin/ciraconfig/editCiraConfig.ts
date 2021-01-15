@@ -67,7 +67,7 @@ export async function editCiraConfig (req, res): Promise<void> {
 }
 
 function readBody (req, res): CIRAConfig {
-  const config: CIRAConfig = <CIRAConfig>{}
+  const config: CIRAConfig = {} as CIRAConfig
   const body = req.body
 
   config.ConfigName = body.payload.configName

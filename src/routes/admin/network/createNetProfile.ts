@@ -35,7 +35,7 @@ export async function createNetProfile (req, res): Promise<void> {
 }
 
 function readBody (req, res): NetworkConfig {
-  const config: NetworkConfig = <NetworkConfig>{}
+  const config: NetworkConfig = {} as NetworkConfig
   const body = req.body
 
   config.ProfileName = body.payload.profileName
