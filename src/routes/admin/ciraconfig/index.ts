@@ -18,4 +18,4 @@ CiraConfigRouter.post('/create', createCiraConfig)
 CiraConfigRouter.patch('/edit', editCiraConfig)
 CiraConfigRouter.delete('/:ciraConfigName', deleteCiraConfig)
 
-module.exports = CiraConfigRouter
+export default CiraConfigRouter

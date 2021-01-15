@@ -35,7 +35,7 @@ log.silly(`Updated config... ${JSON.stringify(config, null, 2)}`)
 EnvReader.GlobalEnvConfig = config
 EnvReader.configPath = path.join(__dirname, '../', config.datapath) // account for the Dist/ folder
 // const expressWs = require('express-ws');
-import routes = require('./routes')
+import routes  from './routes'
 const app = express()
 
 if (config.NodeEnv === 'dev') {
@@ -72,7 +72,7 @@ const isAuthenticated = (req, res, next): void => {
 // let ws = expressWs(this.app)
 app.use('/api/v1', isAuthenticated, (req, res, next) => {
   if (configurator.secretsManager) {
-    req.secretsManager = configurator.secretsManager
+    (req as any).secretsManager = configurator.secretsManager
   }
   next()
 }, routes)
