@@ -9,9 +9,9 @@ import { ClientResponseMsg as ResponseMessage } from './utils/ClientResponseMsg'
 import { ClientMsg, Payload, ClientObject, SocketConnection } from './RCS.Config'
 import { IClientManager } from './interfaces/IClientManager'
 
-const WSComm = require('./amt-libraries/amt-wsman-comm')
-const WSMan = require('./amt-libraries/amt-wsman')
-const AMT = require('./amt-libraries/amt')
+import WSComm = require('./amt-libraries/amt-wsman-comm')
+import WSMan = require('./amt-libraries/amt-wsman')
+import AMT = require('./amt-libraries/amt')
 
 export class WSManProcessor {
   cache: any
@@ -169,7 +169,7 @@ export class WSManProcessor {
         }
         const wsmanUsername: string = username || payload.username
         const wsmanPassword: string = password || payload.password
-        const wsstack = new WSMan(WSComm, payload.uuid, 16992, wsmanUsername, wsmanPassword, 0, null, SetupCommunication)
+        const wsstack = WSMan(WSComm, payload.uuid, 16992, wsmanUsername, wsmanPassword, 0, null, SetupCommunication)
         this.cache[clientId] = new AMT(wsstack)
       } else {
         this.logger.debug(`getAmtStack: clientId: ${clientId}, communication was already setup`)
