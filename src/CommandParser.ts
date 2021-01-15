@@ -20,7 +20,7 @@ const CommandParser = {
   logger: new Logger('CommandParser') as ILogger,
   parse (msg: ClientMsg): ClientMsg {
     try {
-      if (msg && msg.method && msg.method.length > 0) {
+      if (msg?.method?.length > 0) {
         const input: string[] = msg.method.trim().split(' ')
 
         this.logger.debug(`split input: ${input}`)

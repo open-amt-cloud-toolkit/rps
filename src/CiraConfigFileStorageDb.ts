@@ -32,7 +32,7 @@ export class CiraConfigFileStorageDb implements ICiraConfigDb {
   async deleteCiraConfigByName (ciraConfigName: any): Promise<any> {
     this.logger.debug(`deleteCiraConfigByName ${ciraConfigName}`)
 
-    if (CiraConfigDbFactory.dbCreator && CiraConfigDbFactory.dbCreator.getDb()) {
+    if (CiraConfigDbFactory.dbCreator?.getDb()) {
       this.amtProfiles = CiraConfigDbFactory.dbCreator.getDb().AMTConfigurations // get latest profiles every time
     }
     let found: boolean = false

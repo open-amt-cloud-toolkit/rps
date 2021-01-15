@@ -31,7 +31,7 @@ export class DomainCredentialManager implements IDomainCredentialManager {
   async getProvisioningCertStorageType (domainSuffix: string): Promise<string> {
     const domain = await this.getAMTDomain(domainSuffix)
     let format: string = null
-    if (domain && domain.ProvisioningCertStorageFormat) {
+    if (domain?.ProvisioningCertStorageFormat) {
       format = domain.ProvisioningCertStorageFormat
     } else {
       this.logger.warn(`unable to find provisioning cert storage format for profile ${domainSuffix}`)
@@ -48,7 +48,7 @@ export class DomainCredentialManager implements IDomainCredentialManager {
   async getProvisioningCert (domainSuffix: string): Promise<string> {
     const domain = await this.getAMTDomain(domainSuffix)
     let cert: string = null
-    if (domain && domain.ProvisioningCert) {
+    if (domain?.ProvisioningCert) {
       this.logger.debug(`found provisioning cert for domain ${domainSuffix}`)
       cert = domain.ProvisioningCert
     } else {
@@ -67,9 +67,9 @@ export class DomainCredentialManager implements IDomainCredentialManager {
     const domain = await this.getAMTDomain(domainSuffix)
     let cert: string = null
 
-    if (domain && domain.ProvisioningCertPassword) {
+    if (domain?.ProvisioningCertPassword) {
       let provisionCertPwd = null
-      if (this.configurator && this.configurator.secretsManager) {
+      if (this.configurator?.secretsManager) {
         this.logger.info('Calling secret manager')
         provisionCertPwd = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/${domain.Name}/PROVISIONING_CERT`, domain.ProvisioningCertPassword)
       } else {

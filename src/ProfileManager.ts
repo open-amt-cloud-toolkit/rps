@@ -79,7 +79,7 @@ export class ProfileManager implements IProfileManager {
     const profile = await this.getAmtProfile(profileName)
     let activation: string
 
-    if (profile && profile.Activation) {
+    if (profile?.Activation) {
       this.logger.debug(`found activation for profile ${profileName}`)
       activation = profile.Activation
     } else {
@@ -98,12 +98,12 @@ export class ProfileManager implements IProfileManager {
     const profile = await this.getAmtProfile(profileName)
     let ciraConfig: CIRAConfig
 
-    if (profile && profile.CIRAConfigName && profile.CIRAConfigObject) {
+    if (profile?.CIRAConfigName && profile.CIRAConfigObject) {
       this.logger.debug(`found CIRAConfigObject for profile ${JSON.stringify(profile)}`)
       ciraConfig = profile.CIRAConfigObject
 
       this.logger.debug(`retrieve CIRA MPS Password for cira config ${ciraConfig.ConfigName}`)
-      if (this.configurator && this.configurator.secretsManager) {
+      if (this.configurator?.secretsManager) {
         ciraConfig.Password = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfig.ConfigName}`, `${ciraConfig.ConfigName}_CIRA_PROFILE_PASSWORD`)
       }
     } else {
@@ -122,7 +122,7 @@ export class ProfileManager implements IProfileManager {
     const profile = await this.getAmtProfile(profileName)
     let configScript: string
 
-    if (profile && profile.ConfigurationScript) {
+    if (profile?.ConfigurationScript) {
       this.logger.debug(`found configScript for profile ${profileName}`)
       configScript = profile.ConfigurationScript
     } else {
@@ -152,7 +152,7 @@ export class ProfileManager implements IProfileManager {
         }
       } else {
         this.logger.debug(`found amtPassword for profile ${profileName}`)
-        if (this.configurator && this.configurator.secretsManager) {
+        if (this.configurator?.secretsManager) {
           amtPassword = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${profileName}`, `${profileName}_DEVICE_AMT_PASSWORD`)
         } else {
           amtPassword = profile.AMTPassword
@@ -190,7 +190,7 @@ export class ProfileManager implements IProfileManager {
         }
       } else {
         this.logger.debug(`found amtPassword for profile ${profileName}`)
-        if (this.configurator && this.configurator.secretsManager) {
+        if (this.configurator?.secretsManager) {
           mebxPassword = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${profileName}`, `${profileName}_DEVICE_MEBX_PASSWORD`)
         } else {
           mebxPassword = profile.MEBxPassword
@@ -215,7 +215,7 @@ export class ProfileManager implements IProfileManager {
     */
   public async getAmtProfile (profile: string): Promise<AMTConfig> {
     try {
-      if (this.envConfig && this.envConfig.DbConfig.useDbForConfig) {
+      if (this.envConfig?.DbConfig.useDbForConfig) {
         const amtProfile = await this.amtConfigurations.getProfileByName(profile)
         // If the Network Config associated with profile, retrieves from DB
         if (amtProfile.NetworkConfigName) {
@@ -224,8 +224,8 @@ export class ProfileManager implements IProfileManager {
         // If the CIRA Config associated with profile, retrieves from DB
         if (amtProfile.CIRAConfigName) {
           amtProfile.CIRAConfigObject = await this.amtConfigurations.getCiraConfigForProfile(amtProfile.CIRAConfigName)
-          if (this.configurator && this.configurator.secretsManager) {
-            if (amtProfile.CIRAConfigObject && amtProfile.CIRAConfigObject.Password) { amtProfile.CIRAConfigObject.Password = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${amtProfile.CIRAConfigName}`, amtProfile.CIRAConfigObject.Password) } else { this.logger.error('The amtProfile CIRAConfigObject doesnt have a password. Check CIRA profile creation.') }
+          if (this.configurator?.secretsManager) {
+            if (amtProfile.CIRAConfigObject?.Password) { amtProfile.CIRAConfigObject.Password = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${amtProfile.CIRAConfigName}`, amtProfile.CIRAConfigObject.Password) } else { this.logger.error('The amtProfile CIRAConfigObject doesnt have a password. Check CIRA profile creation.') }
           }
         }
         this.logger.debug('AMT Profile returned from db', JSON.stringify(amtProfile))

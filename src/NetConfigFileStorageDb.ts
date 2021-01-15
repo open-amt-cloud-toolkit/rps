@@ -38,7 +38,7 @@ export class NetConfigFileStorageDb implements INetProfilesDb {
   async deleteProfileByName (netConfigName: any): Promise<any> {
     this.logger.debug(`deleteNetConfigByName ${netConfigName}`)
 
-    if (NetConfigDbFactory.dbCreator && NetConfigDbFactory.dbCreator.getDb()) {
+    if (NetConfigDbFactory.dbCreator?.getDb()) {
       this.amtProfiles = NetConfigDbFactory.dbCreator.getDb().AMTConfigurations // get latest profiles every time
     }
     let found: boolean = false

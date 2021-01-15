@@ -23,7 +23,7 @@ export class AMTDeviceVaultRepository implements IAMTDeviceRepository {
 
   public async insert (device: AMTDeviceDTO): Promise<boolean> {
     try {
-      if (this.configurator && this.configurator.secretsManager) {
+      if (this.configurator?.secretsManager) {
         const data = { data: { AMT_PASSWORD: null, MEBX_PASSWORD: null } }
         data.data.AMT_PASSWORD = device.amtpass
         data.data.MEBX_PASSWORD = device.mebxpass
@@ -40,7 +40,7 @@ export class AMTDeviceVaultRepository implements IAMTDeviceRepository {
 
   public async delete (device: AMTDeviceDTO): Promise<boolean> {
     try {
-      if (this.configurator && this.configurator.secretsManager) {
+      if (this.configurator?.secretsManager) {
         await this.configurator.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}devices/${device.guid}`)
         return true
       } else {
@@ -54,7 +54,7 @@ export class AMTDeviceVaultRepository implements IAMTDeviceRepository {
 
   public async get (deviceId: string): Promise<AMTDeviceDTO> {
     try {
-      if (this.configurator && this.configurator.secretsManager) {
+      if (this.configurator?.secretsManager) {
         const devicePwds: any = await this.configurator.secretsManager.getSecretAtPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}devices/${deviceId}`)
         this.logger.info('devicePwds :' + JSON.stringify(devicePwds))
         if (devicePwds) {

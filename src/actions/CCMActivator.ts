@@ -75,7 +75,7 @@ export class CCMActivator implements IExecutor {
         const amtPassword: string = await this.configurator.profileManager.getAmtPassword(clientObj.ClientData.payload.profile.ProfileName)
         clientObj.amtPassword = amtPassword
         this.clientManager.setClientObject(clientObj)
-        if (this.configurator && this.configurator.amtDeviceRepository) {
+        if (this.configurator?.amtDeviceRepository) {
           await this.configurator.amtDeviceRepository.insert(new AMTDeviceDTO(clientObj.uuid,
             clientObj.uuid,
             EnvReader.GlobalEnvConfig.mpsusername,
