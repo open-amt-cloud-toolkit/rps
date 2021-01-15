@@ -21,7 +21,7 @@ const VersionChecker = {
      * @returns {Version} object containing parsed version
      */
   parseString (version: string): Version {
-    if (typeof version === 'undefined' || version == '') {
+    if (version == null || version == '') {
       throw new RPSError('version must be defined')
     }
 
@@ -59,7 +59,7 @@ const VersionChecker = {
   },
 
   isCompatible (messageVersion: string): boolean {
-    if (typeof VersionChecker.currentVersion === 'undefined') {
+    if (VersionChecker.currentVersion == null) {
       VersionChecker.currentVersion = VersionChecker.parseString(ProtocolVersion)
     }
 
