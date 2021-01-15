@@ -11,4 +11,4 @@ const profileRouter: Router = Router()
 
 profileRouter.get('/', getVersion)
 
-module.exports = profileRouter
+export default profileRouter

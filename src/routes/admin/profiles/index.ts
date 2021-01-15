@@ -18,4 +18,4 @@ profileRouter.post('/create', createProfile)
 profileRouter.patch('/edit', editProfile)
 profileRouter.delete('/:profileName', deleteProfile)
 
-module.exports = profileRouter
+export default profileRouter

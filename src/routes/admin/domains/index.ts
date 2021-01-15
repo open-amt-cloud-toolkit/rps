@@ -18,4 +18,4 @@ domainRouter.post('/create', createDomain)
 domainRouter.patch('/edit', editDomain)
 domainRouter.delete('/:domainName', deleteDomain)
 
-export = domainRouter
+export default domainRouter
