@@ -4,8 +4,9 @@
  * Author : Ramu Bachala
  **********************************************************************/
 // ./routes/index.js
-import adminRouter = require('./admin/index')
-const router = require('express').Router()
+import adminRouter from './admin/index'
+import { Router } from 'express'
+const router: Router = Router()
 
 router.use('/admin', adminRouter)
 
@@ -13,4 +14,4 @@ router.get('/', (req, res) => {
   res.status(200).json({ message: 'Connected!' })
 })
 
-module.exports = router
+export default router

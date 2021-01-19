@@ -4,9 +4,11 @@
  * Author : Brian Osburn
  **********************************************************************/
 
-const profileRouter = require('express').Router()
-const { getVersion } = require('./getVersion')
+import { Router } from 'express'
+
+import { getVersion } from './getVersion'
+const profileRouter: Router = Router()
 
 profileRouter.get('/', getVersion)
 
-module.exports = profileRouter
+export default profileRouter
