@@ -102,7 +102,7 @@ export async function editProfile (req, res): Promise<void> {
 }
 
 function readBody (req, res): AMTConfig {
-  const config: AMTConfig = <AMTConfig>{}
+  const config: AMTConfig = {} as AMTConfig
   const body = req.body
 
   if (typeof body.payload.generateRandomPassword === 'string') {

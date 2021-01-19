@@ -16,9 +16,9 @@ import { RCSConfig, mapConfig } from './models/Rcs'
 import { IConfigurator } from './interfaces/IConfigurator'
 import { parseValue } from './utils/parseEnvValue'
 import { existsSync, readFileSync } from 'fs'
-const rc = require('rc')
+import rc = require('rc')
 const log = new Logger('Index')
-const dot = require('dot-object')
+import dot = require('dot-object')
 
 // To merge ENV variables. consider after lowercasing ENV since our config keys are lowercase
 process.env = Object.keys(process.env)
@@ -35,7 +35,7 @@ log.silly(`Updated config... ${JSON.stringify(config, null, 2)}`)
 EnvReader.GlobalEnvConfig = config
 EnvReader.configPath = path.join(__dirname, '../', config.datapath) // account for the Dist/ folder
 // const expressWs = require('express-ws');
-const routes = require('./routes')
+import routes  from './routes'
 const app = express()
 
 if (config.NodeEnv === 'dev') {
@@ -72,7 +72,7 @@ const isAuthenticated = (req, res, next): void => {
 // let ws = expressWs(this.app)
 app.use('/api/v1', isAuthenticated, (req, res, next) => {
   if (configurator.secretsManager) {
-    req.secretsManager = configurator.secretsManager
+    (req as any).secretsManager = configurator.secretsManager
   }
   next()
 }, routes)

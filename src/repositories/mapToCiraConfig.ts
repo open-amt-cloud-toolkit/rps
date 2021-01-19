@@ -8,7 +8,7 @@
 import { CIRAConfig } from '../RCS.Config'
 
 export function mapToCiraConfig (results): CIRAConfig {
-  return <CIRAConfig>{
+  return {
     ConfigName: results.cira_config_name,
     MPSServerAddress: results.mps_server_address,
     MPSPort: results.mps_port,
@@ -19,5 +19,5 @@ export function mapToCiraConfig (results): CIRAConfig {
     AuthMethod: results.auth_method, // Mutual Auth (1), Username/Password (2) (We only support 2)
     MPSRootCertificate: results.mps_root_certificate, // Assumption is Root Cert for MPS. Need to validate.
     ProxyDetails: results.proxydetails
-  }
+  } as CIRAConfig
 }
