@@ -17,6 +17,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@types/pg": "^7.14.8",
+    "atob": "^2.1.2",
     "body-parser": "^1.19.0",
     "crypto-random-string": "^3.3.0",
     "dot-object": "^2.1.4",
@@ -26,9 +27,9 @@
     "minimist": "^1.2.5",
     "node-forge": "^0.10.0",
     "node-vault": "^0.9.21",
-    "request": "^2.88.2",
     "pg": "^8.5.1",
     "rc": "^1.2.8",
+    "request": "^2.88.2",
     "winston": "^3.3.3",
     "ws": "^7.4.2"
   },
