@@ -7,7 +7,7 @@
 import { AMTConfig } from '../RCS.Config'
 
 export function mapToProfile (results): AMTConfig {
-  return <AMTConfig>{
+  return {
     ProfileName: results.profilename,
     AMTPassword: results.amtpassword,
     GenerateRandomPassword: results.generaterandompassword,
@@ -20,5 +20,5 @@ export function mapToProfile (results): AMTConfig {
     MEBxPassword: results.mebxpassword,
     GenerateRandomMEBxPassword: results.generaterandommebxpassword,
     RandomMEBxPasswordLength: results.randommebxpasswordlength
-  }
+  } as AMTConfig
 }

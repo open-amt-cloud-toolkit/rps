@@ -8,10 +8,10 @@
 import { NetworkConfig } from '../RCS.Config'
 
 export function mapToNetworkProfile (results): NetworkConfig {
-  return <NetworkConfig>{
+  return {
     ProfileName: results.network_profile_name,
     DHCPEnabled: results.dhcp_enabled,
     StaticIPShared: results.static_ip_shared,
     IPSyncEnabled: results.ip_sync_enabled
-  }
+  } as NetworkConfig
 }
