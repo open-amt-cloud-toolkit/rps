@@ -19,7 +19,6 @@ import { RPSError } from './utils/RPSError'
 import { WSManProcessor } from './WSManProcessor'
 import { ClientResponseMsg } from './utils/ClientResponseMsg'
 import { IValidator } from './interfaces/IValidator'
-import { AMTUserName } from './utils/constants'
 
 export class DataProcessor implements IDataProcessor {
   private readonly clientActions: ClientActions
@@ -55,11 +54,9 @@ export class DataProcessor implements IDataProcessor {
 
       if (clientMsg.method === ClientMethods.ACTIVATION) {
         this.logger.debug(`ProcessData: Parsed Message received from device ${clientMsg.payload.uuid}: ${JSON.stringify(clientMsg, null, '\t')}`)
-        try {
-          await this.validator.validateActivationMsg(clientMsg, clientId) // Validate the activation message payload
-        } catch (validateErr) {
-          throw validateErr
-        }
+
+        await this.validator.validateActivationMsg(clientMsg, clientId) // Validate the activation message payload
+
         // Makes the first wsman call
         const clientObj = this.clientManager.getClientObject(clientId)
         if (clientObj.action !== ClientAction.CIRACONFIG && !clientMsg.payload.digestRealm) {
@@ -69,11 +66,8 @@ export class DataProcessor implements IDataProcessor {
         }
       } else if (clientMsg.method === ClientMethods.DEACTIVATION) {
         this.logger.debug(`ProcessData: Parsed DEACTIVATION Message received from device ${clientMsg.payload.uuid}: ${JSON.stringify(clientMsg, null, '\t')}`)
-        try {
-          await this.validator.validateDeactivationMsg(clientMsg, clientId) // Validate the deactivation message payload
-        } catch (validateErr) {
-          throw validateErr
-        }
+
+        await this.validator.validateDeactivationMsg(clientMsg, clientId) // Validate the deactivation message payload
 
         await this.amtwsman.getWSManResponse(clientId, 'AMT_SetupAndConfigurationService', 'admin')
       } else if (clientMsg.method === ClientMethods.RESPONSE) {
