@@ -21,7 +21,7 @@
     "crypto-random-string": "^3.3.0",
     "dot-object": "^2.1.4",
     "express": "^4.17.1",
-    "express-promise-router": "^3.0.3",
+    "express-promise-router": "^4.0.1",
     "express-ws": "^4.0.0",
     "minimist": "^1.2.5",
     "node-forge": "^0.10.0",
