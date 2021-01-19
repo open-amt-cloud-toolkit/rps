@@ -15,7 +15,9 @@ import { EnvReader } from './utils/EnvReader'
 import { RCSConfig, mapConfig } from './models/Rcs'
 import { IConfigurator } from './interfaces/IConfigurator'
 import { parseValue } from './utils/parseEnvValue'
-import { existsSync, readFileSync } from 'fs'
+import { existsSync, readFileSync } from 'fs' // account for the Dist/ folder
+// const expressWs = require('express-ws');
+import routes from './routes'
 import rc = require('rc')
 const log = new Logger('Index')
 import dot = require('dot-object')
@@ -33,9 +35,7 @@ log.silly(`Before config... ${JSON.stringify(rcconfig, null, 2)}`)
 const config: RCSConfig = mapConfig(rcconfig, dot)
 log.silly(`Updated config... ${JSON.stringify(config, null, 2)}`)
 EnvReader.GlobalEnvConfig = config
-EnvReader.configPath = path.join(__dirname, '../', config.datapath) // account for the Dist/ folder
-// const expressWs = require('express-ws');
-import routes  from './routes'
+EnvReader.configPath = path.join(__dirname, '../', config.datapath)
 const app = express()
 
 if (config.NodeEnv === 'dev') {

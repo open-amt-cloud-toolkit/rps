@@ -5,12 +5,12 @@
  **********************************************************************/
 
 import { Router } from 'express'
-const adminRouter: Router = Router()
 import domains from './domains/index'
 import profiles from './profiles/index'
 import ciraConfigs from './ciraconfig/index'
 import version from './version/index'
 import networkconfigs from './network/index'
+const adminRouter: Router = Router()
 
 adminRouter.use('/domains', domains)
 adminRouter.use('/profiles', profiles)
