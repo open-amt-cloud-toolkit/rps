@@ -28,7 +28,13 @@
   ],
   "NETConfigurations": [
     {
-      "ProfileName": "Sample_Network_Config",
+      "ProfileName": "dhcp_disabled",
+      "DHCPEnabled": false,
+      "StaticIPShared": true,
+      "IPSyncEnabled": true
+    },
+    {
+      "ProfileName": "dhcp_enabled",
       "DHCPEnabled": true,
       "StaticIPShared": false,
       "IPSyncEnabled": true

@@ -256,7 +256,7 @@ export class Validator implements IValidator {
       } catch (error) {
         this.logger.error(`AMT device repo exception: ${error}`)
         if (error instanceof RPSError) {
-          throw new RPSError(`${error}`)
+          throw new RPSError(`${error.message}`)
         } else {
           throw new Error('AMT device repo exception')
         }

@@ -41,7 +41,7 @@ export interface NetworkConfig {
 /*
 - AddMpServer Method:
 
-AccessInfo IP or FQDN of MPS server (MaxLen 256)
+AccessInfo: IP or FQDN of MPS server(MaxLen 256)
 Port (number)
 Username (16 alphanumeric characters)
 Password (16 characters)

@@ -72,10 +72,10 @@ export class WSManProcessor {
     const clientObj = this.clientManager.getClientObject(clientId)
     await amtstack.IPS_HostBasedSetupService_AddNextCertInChain(cert, leaf, root, (stack, name, jsonResponse, status) => {
       if (status !== 200) {
-        console.log('AddNextCertInChain error, status=' + status)
+        console.log(`AddNextCertInChain error, status=${status}`)
         clientObj.payload = status
       } else if (jsonResponse.Body.ReturnValue !== 0) {
-        console.log('AddNextCertInChain error: ' + jsonResponse.Body.ReturnValue)
+        console.log(`AddNextCertInChain error: ${jsonResponse.Body.ReturnValue}`)
         clientObj.payload = jsonResponse
       } else {
         clientObj.payload = jsonResponse
@@ -95,7 +95,7 @@ export class WSManProcessor {
     const amtstack = this.getAmtStack(clientId)
     await amtstack.IPS_HostBasedSetupService_AdminSetup(2, password, nonce, 2, signature, (stack, name, jsonResponse, status) => {
       if (status !== 200) {
-        console.log('Error, AdminSetup status: ' + status)
+        console.log(`Error, AdminSetup status: ${status}`)
       } else if (jsonResponse.Body.ReturnValue !== 0) {
         clientObj.payload = jsonResponse
       } else {
@@ -260,11 +260,11 @@ export class WSManProcessor {
     }
   }
 
-  async delete (clientId: string, action: string, delete_obj: any, amtuser?: string, amtpass?: string): Promise<void> {
+  async delete (clientId: string, action: string, deleteObj: any, amtuser?: string, amtpass?: string): Promise<void> {
     const clientObj: ClientObject = this.clientManager.getClientObject(clientId)
     try {
       const amtstack = this.getAmtStack(clientId, amtuser, amtpass)
-      await amtstack.Delete(action, delete_obj, (stack, name, jsonResponse, status) => {
+      await amtstack.Delete(action, deleteObj, (stack, name, jsonResponse, status) => {
         if (status !== 200) {
           this.logger.error(`Delete request failed during delete for clientId: ${clientId}, action:${action}.`)
         } else {
