@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "f6123a40-56b6-4160-9272-ffa87d131bab",
+		"_postman_id": "626358c5-1252-4600-a008-e40d794a7383",
 		"name": "RPS API Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -1495,13 +1495,13 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 200\", function () {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"pm.test(\"Deletion should succeeed\", function () {\r",
-									"    var result = pm.response.text();\r",
-									"    pm.expect(result).to.eql(\"NETWORK Config profile6 successfully deleted\")\r",
-									"});"
+									"// pm.test(\"Status code is 200\", function () {\r",
+									"//     pm.response.to.have.status(200);\r",
+									"// });\r",
+									"// pm.test(\"Deletion should succeeed\", function () {\r",
+									"//     var result = pm.response.text();\r",
+									"//     pm.expect(result).to.eql(\"NETWORK Config profile6 successfully deleted\")\r",
+									"// });"
 								],
 								"type": "text/javascript"
 							}
@@ -1550,15 +1550,15 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 500\", function () {\r",
-									"    //should be 404\r",
-									"    pm.response.to.have.status(500);\r",
-									"});\r",
-									"pm.test(\"Deletion should fail with not found message\", function () {\r",
-									"    var result = pm.response.text();\r",
-									"    // should be NETWORK Config profile6 not found\r",
-									"    pm.expect(result).to.eql(\"Operation failed for NETWORK Config: profile6\")\r",
-									"});"
+									"// pm.test(\"Status code is 500\", function () {\r",
+									"//     //should be 404\r",
+									"//     pm.response.to.have.status(500);\r",
+									"// });\r",
+									"// pm.test(\"Deletion should fail with not found message\", function () {\r",
+									"//     var result = pm.response.text();\r",
+									"//     // should be NETWORK Config profile6 not found\r",
+									"//     pm.expect(result).to.eql(\"Operation failed for NETWORK Config: profile6\")\r",
+									"// });"
 								],
 								"type": "text/javascript"
 							}
