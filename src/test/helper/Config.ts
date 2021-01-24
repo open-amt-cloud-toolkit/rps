@@ -17,6 +17,9 @@ export const config: RCSConfig = {
   https: false,
   webport: 8081,
   credentialspath: '../../../MPS_MicroService/private/data.json',
+  corsHeaders:"*",
+  corsMethods:"*",
+  corsOrigin:"*",
   WSConfiguration: {
     WebSocketPort: 8080,
     WebSocketTLS: false,

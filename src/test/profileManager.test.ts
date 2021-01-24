@@ -37,6 +37,9 @@ const rcsConfig: RCSConfig = {
   https: false,
   webport: 8081,
   credentialspath: '../../../MPS_MicroService/private/data.json',
+  corsHeaders:"*",
+  corsMethods:"*",
+  corsOrigin:"*",
   DbConfig: {
     useDbForConfig: false,
     dbhost: '',
