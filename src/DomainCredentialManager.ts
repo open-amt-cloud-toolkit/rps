@@ -92,7 +92,7 @@ export class DomainCredentialManager implements IDomainCredentialManager {
   private async getAMTDomain (domainSuffix: string): Promise<AMTDomain> {
     const amtDomainList = await this.amtDomains.getAllDomains()
     for (let index = 0; index < amtDomainList.length; ++index) {
-      if (amtDomainList[index].DomainSuffix == domainSuffix) {
+      if (amtDomainList[index].DomainSuffix === domainSuffix) {
         this.logger.debug(`found amt domain: ${domainSuffix}`)
         this.logger.silly(`Domain Info ${domainSuffix}: ${JSON.stringify(amtDomainList[index])}`)
         return amtDomainList[index]

@@ -82,10 +82,10 @@ export class ProfilesDb implements IProfilesDb {
       return null
     } catch (error) {
       console.log(error)
-      if (error.code == '23505') { // Unique key violation
+      if (error.code === '23505') { // Unique key violation
         throw (PROFILE_INSERTION_FAILED_DUPLICATE(amtConfig.ProfileName))
       }
-      if (error.code == '23503') { // Unique key violation
+      if (error.code === '23503') { // Unique key violation
         throw (PROFILE_INSERTION_CIRA_CONSTRAINT(amtConfig.CIRAConfigName))
       }
 
@@ -114,7 +114,7 @@ export class ProfilesDb implements IProfilesDb {
       return results.rowCount
     } catch (error) {
       console.log(error)
-      if (error.code == '23503') { // Unique key violation
+      if (error.code === '23503') { // Unique key violation
         throw (PROFILE_INSERTION_CIRA_CONSTRAINT(amtConfig.CIRAConfigName))
       }
 

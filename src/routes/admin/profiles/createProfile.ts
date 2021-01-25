@@ -131,7 +131,7 @@ function readBody (req, res): AMTConfig {
     throw new Error(PROFILE_INVALID_INPUT)
   }
 
-  if (config.Activation == ClientAction.ADMINCTLMODE && ((config.GenerateRandomMEBxPassword && config.RandomMEBxPasswordLength == null) ||
+  if (config.Activation === ClientAction.ADMINCTLMODE && ((config.GenerateRandomMEBxPassword && config.RandomMEBxPasswordLength == null) ||
   (!config.GenerateRandomMEBxPassword && config.MEBxPassword == null))) {
     res.status(400).end(PROFILE_MEBX_MANDATORY)
     throw new Error(PROFILE_MEBX_MANDATORY)

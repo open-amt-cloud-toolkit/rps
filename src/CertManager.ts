@@ -22,7 +22,7 @@ export class CertManager implements ICertManager {
       * @returns {boolean} Returns true if issuer is from root.  Returns false if issuer is not from root.
       */
   sortCertificate (intermediate: CertificateObject, root: CertificateObject): boolean {
-    if (intermediate.issuer == root.subject) {
+    if (intermediate.issuer === root.subject) {
       return true
     } else {
       return false
@@ -50,11 +50,11 @@ export class CertManager implements ICertManager {
           pem = pem.replace('-----END CERTIFICATE-----', '')
           // pem = pem.replace(/(\r\n|\n|\r)/g, '');
           // Index 0 = Leaf, Root subject.hash will match issuer.hash, rest are Intermediate.
-          if (i == 0) {
+          if (i === 0) {
             leaf.pem = pem
             leaf.subject = cert.subject.hash
             leaf.issuer = cert.issuer.hash
-          } else if (cert.subject.hash == cert.issuer.hash) {
+          } else if (cert.subject.hash === cert.issuer.hash) {
             root.pem = pem
             root.subject = cert.subject.hash
             root.issuer = cert.issuer.hash
