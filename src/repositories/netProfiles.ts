@@ -40,7 +40,7 @@ export class NetConfigDb implements INetProfilesDb {
       return (results.rowCount > 0 ? NETWORK_CONFIG_SUCCESSFULLY_DELETED(configName) : NETWORK_CONFIG_NOT_FOUND(configName))
     } catch (error) {
       console.log(error)
-      if (error.code == '23503') { // foreign key violation
+      if (error.code === '23503') { // foreign key violation
         throw (NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT(configName))
       }
 
@@ -66,7 +66,7 @@ export class NetConfigDb implements INetProfilesDb {
       return null
     } catch (error) {
       console.log(error)
-      if (error.code == '23505') { // Unique key violation
+      if (error.code === '23505') { // Unique key violation
         throw (NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE(netConfig.ProfileName))
       }
 

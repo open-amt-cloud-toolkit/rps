@@ -40,7 +40,7 @@ export class WSManProcessor {
       amtstack.wsman.comm.socketData = ''
 
       amtstack.wsman.comm.xxOnSocketData(wsManResponseXML)
-      if (statusCode == '401') {
+      if (statusCode === '401') {
         amtstack.wsman.comm.xxOnSocketConnected()
         if (clientObj.payload) {
           const payload = clientObj.payload
@@ -96,7 +96,7 @@ export class WSManProcessor {
     await amtstack.IPS_HostBasedSetupService_AdminSetup(2, password, nonce, 2, signature, (stack, name, jsonResponse, status) => {
       if (status !== 200) {
         console.log(`Error, AdminSetup status: ${status}`)
-      } else if (jsonResponse.Body.ReturnValue != 0) {
+      } else if (jsonResponse.Body.ReturnValue !== 0) {
         clientObj.payload = jsonResponse
       } else {
         clientObj.payload = jsonResponse
@@ -115,7 +115,7 @@ export class WSManProcessor {
     await amtstack.IPS_HostBasedSetupService_Setup(2, password, null, null, null, null, (stack, name, jsonResponse, status) => {
       if (status !== 200) {
         this.logger.debug(`Failed to activate in client control mode.status: ${status}`)
-      } else if (jsonResponse.Body.ReturnValue != 0) {
+      } else if (jsonResponse.Body.ReturnValue !== 0) {
         clientObj.payload = jsonResponse
       } else {
         clientObj.payload = jsonResponse
@@ -128,9 +128,9 @@ export class WSManProcessor {
     const amtstack = this.getAmtStack(clientId)
 
     await amtstack.AMT_SetupAndConfigurationService_Unprovision(2, (stack, name, jsonResponse, status) => {
-      if (status != 200) {
+      if (status !== 200) {
         this.logger.error(`Failed to fully unconfigure AMT, status ${status}`)
-      } else if (jsonResponse.Body.ReturnValue != 0) {
+      } else if (jsonResponse.Body.ReturnValue !== 0) {
         clientObj.payload = jsonResponse
       } else {
         this.logger.debug('AMT fully unprovisioned.')
@@ -190,14 +190,14 @@ export class WSManProcessor {
     try {
       const amtstack = this.getAmtStack(clientId, amtuser, amtpass)
       await amtstack.BatchEnum('', [action], (stack, name, jsonResponse, status) => {
-        if (status != 200) {
+        if (status !== 200) {
           console.log('Request failed during hardware_info BatchEnum Exec.')
         } else {
           this.logger.info(`batchEnum request succeeded for clientId: ${clientId}, action:${action}.`)
         }
         clientObj.payload = jsonResponse
       })
-      if (clientObj.socketConn?.onStateChange && clientObj.readyState == undefined) {
+      if (clientObj.socketConn?.onStateChange && clientObj.readyState == null) {
         clientObj.readyState = 2
         this.clientManager.setClientObject(clientObj)
         clientObj.socketConn.onStateChange(clientObj.ClientSocket, clientObj.readyState)
@@ -217,7 +217,7 @@ export class WSManProcessor {
     try {
       const amtstack = this.getAmtStack(clientId, amtuser, amtpass)
       await amtstack.Get(action, (stack, name, jsonResponse, status) => {
-        if (status != 200) {
+        if (status !== 200) {
           this.logger.error(`Get request failed during get for clientId: ${clientId}, action:${action}.`)
         } else {
           this.logger.info(`Get request succeeded for clientId: ${clientId}, action:${action}.`)
@@ -226,7 +226,7 @@ export class WSManProcessor {
         this.logger.debug(`get request for clientId: ${clientId}, action:${action}, status: ${status} response: ${JSON.stringify(jsonResponse, null, '\t')}`)
       }
       )
-      if (clientObj.socketConn?.onStateChange && clientObj.readyState == undefined) {
+      if (clientObj.socketConn?.onStateChange && clientObj.readyState == null) {
         this.logger.debug('updating ready state')
         clientObj.readyState = 2
         this.clientManager.setClientObject(clientObj)
@@ -242,14 +242,14 @@ export class WSManProcessor {
     try {
       const amtstack = this.getAmtStack(clientId, amtuser, amtpass)
       await amtstack.Put(action, obj, (stack, name, jsonResponse, status) => {
-        if (status != 200) {
+        if (status !== 200) {
           this.logger.error(`Put request failed during put for clientId: ${clientId}, action:${action}.`)
         } else {
           this.logger.info(`Put request succeeded for clientId: ${clientId}, action:${action}.`)
         }
         clientObj.payload = jsonResponse
       }, 0, 1, obj)
-      if (clientObj.socketConn?.onStateChange && clientObj.readyState == undefined) {
+      if (clientObj.socketConn?.onStateChange && clientObj.readyState == null) {
         this.logger.debug('updating ready state')
         clientObj.readyState = 2
         this.clientManager.setClientObject(clientObj)
@@ -265,14 +265,14 @@ export class WSManProcessor {
     try {
       const amtstack = this.getAmtStack(clientId, amtuser, amtpass)
       await amtstack.Delete(action, deleteObj, (stack, name, jsonResponse, status) => {
-        if (status != 200) {
+        if (status !== 200) {
           this.logger.error(`Delete request failed during delete for clientId: ${clientId}, action:${action}.`)
         } else {
           this.logger.info(`Delete request succeeded for clientId: ${clientId}, action:${action}.`)
         }
         clientObj.payload = jsonResponse
       })
-      if (clientObj.socketConn?.onStateChange && clientObj.readyState == undefined) {
+      if (clientObj.socketConn?.onStateChange && clientObj.readyState == null) {
         this.logger.debug('updating ready state')
         clientObj.readyState = 2
         this.clientManager.setClientObject(clientObj)
@@ -288,7 +288,7 @@ export class WSManProcessor {
     try {
       const amtstack = this.getAmtStack(clientId, amtuser, amtpass)
       await amtstack.Exec(name, method, args, (stack, name, jsonResponse, status) => {
-        if (status != 200) {
+        if (status !== 200) {
           this.logger.error(`Execute request failed during execute for clientId: ${clientId}, action:${name}.`)
         } else {
           this.logger.info(`Execute request succeeded for clientId: ${clientId}, action:${name}.`)
@@ -296,7 +296,7 @@ export class WSManProcessor {
         clientObj.payload = jsonResponse
       }, null, 0, selectors)
 
-      if (clientObj.socketConn?.onStateChange && clientObj.readyState == undefined) {
+      if (clientObj.socketConn?.onStateChange && clientObj.readyState == null) {
         this.logger.debug('updating ready state')
         clientObj.readyState = 2
         this.clientManager.setClientObject(clientObj)
