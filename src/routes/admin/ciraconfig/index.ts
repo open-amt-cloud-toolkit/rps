@@ -4,12 +4,13 @@
  * Author : Ramu Bachala
  **********************************************************************/
 
-const CiraConfigRouter = require('express').Router()
-const { allCiraConfigs } = require('./all')
-const { getCiraConfig } = require('./getCiraConfig')
-const { createCiraConfig } = require('./createCiraConfig')
-const { editCiraConfig } = require('./editCiraConfig')
-const { deleteCiraConfig } = require('./deleteCiraConfig')
+import { Router } from 'express'
+import { allCiraConfigs } from './all'
+import { getCiraConfig } from './getCiraConfig'
+import { createCiraConfig } from './createCiraConfig'
+import { editCiraConfig } from './editCiraConfig'
+import { deleteCiraConfig } from './deleteCiraConfig'
+const CiraConfigRouter: Router = Router()
 
 CiraConfigRouter.get('/', allCiraConfigs)
 CiraConfigRouter.get('/:ciraConfigName', getCiraConfig)
@@ -17,4 +18,4 @@ CiraConfigRouter.post('/create', createCiraConfig)
 CiraConfigRouter.patch('/edit', editCiraConfig)
 CiraConfigRouter.delete('/:ciraConfigName', deleteCiraConfig)
 
-module.exports = CiraConfigRouter
+export default CiraConfigRouter

@@ -9,9 +9,9 @@ import { ClientResponseMsg as ResponseMessage } from './utils/ClientResponseMsg'
 import { ClientMsg, Payload, ClientObject, SocketConnection } from './RCS.Config'
 import { IClientManager } from './interfaces/IClientManager'
 
-const WSComm = require('./amt-libraries/amt-wsman-comm')
-const WSMan = require('./amt-libraries/amt-wsman')
-const AMT = require('./amt-libraries/amt')
+import WSComm = require('./amt-libraries/amt-wsman-comm')
+import WSMan = require('./amt-libraries/amt-wsman')
+import AMT = require('./amt-libraries/amt')
 
 export class WSManProcessor {
   cache: any
@@ -72,10 +72,10 @@ export class WSManProcessor {
     const clientObj = this.clientManager.getClientObject(clientId)
     await amtstack.IPS_HostBasedSetupService_AddNextCertInChain(cert, leaf, root, (stack, name, jsonResponse, status) => {
       if (status !== 200) {
-        console.log('AddNextCertInChain error, status=' + status)
+        console.log(`AddNextCertInChain error, status=${status}`)
         clientObj.payload = status
       } else if (jsonResponse.Body.ReturnValue !== 0) {
-        console.log('AddNextCertInChain error: ' + jsonResponse.Body.ReturnValue)
+        console.log(`AddNextCertInChain error: ${jsonResponse.Body.ReturnValue}`)
         clientObj.payload = jsonResponse
       } else {
         clientObj.payload = jsonResponse
@@ -95,7 +95,7 @@ export class WSManProcessor {
     const amtstack = this.getAmtStack(clientId)
     await amtstack.IPS_HostBasedSetupService_AdminSetup(2, password, nonce, 2, signature, (stack, name, jsonResponse, status) => {
       if (status !== 200) {
-        console.log('Error, AdminSetup status: ' + status)
+        console.log(`Error, AdminSetup status: ${status}`)
       } else if (jsonResponse.Body.ReturnValue != 0) {
         clientObj.payload = jsonResponse
       } else {
@@ -169,7 +169,7 @@ export class WSManProcessor {
         }
         const wsmanUsername: string = username || payload.username
         const wsmanPassword: string = password || payload.password
-        const wsstack = new WSMan(WSComm, payload.uuid, 16992, wsmanUsername, wsmanPassword, 0, null, SetupCommunication)
+        const wsstack = WSMan(WSComm, payload.uuid, 16992, wsmanUsername, wsmanPassword, 0, null, SetupCommunication)
         this.cache[clientId] = new AMT(wsstack)
       } else {
         this.logger.debug(`getAmtStack: clientId: ${clientId}, communication was already setup`)
@@ -260,11 +260,11 @@ export class WSManProcessor {
     }
   }
 
-  async delete (clientId: string, action: string, delete_obj: any, amtuser?: string, amtpass?: string): Promise<void> {
+  async delete (clientId: string, action: string, deleteObj: any, amtuser?: string, amtpass?: string): Promise<void> {
     const clientObj: ClientObject = this.clientManager.getClientObject(clientId)
     try {
       const amtstack = this.getAmtStack(clientId, amtuser, amtpass)
-      await amtstack.Delete(action, delete_obj, (stack, name, jsonResponse, status) => {
+      await amtstack.Delete(action, deleteObj, (stack, name, jsonResponse, status) => {
         if (status != 200) {
           this.logger.error(`Delete request failed during delete for clientId: ${clientId}, action:${action}.`)
         } else {

@@ -106,7 +106,7 @@ export class ACMActivator implements IExecutor {
           const data: string = `admin:${clientObj.ClientData.payload.digestRealm}:${amtPassword}`
           const password = SignatureHelper.createMd5Hash(data)
 
-          this.amtwsman.setupACM(clientId, password, nonce.toString('base64'), signature)
+          await this.amtwsman.setupACM(clientId, password, nonce.toString('base64'), signature)
         }
       }
     } catch (error) {
@@ -230,6 +230,6 @@ export class ACMActivator implements IExecutor {
     }
 
     /*  API is only for Admin control mode */
-    this.amtwsman.execute(clientId, 'AMT_SetupAndConfigurationService', 'SetMEBxPassword', { Password: mebxPassword }, null)
+    await this.amtwsman.execute(clientId, 'AMT_SetupAndConfigurationService', 'SetMEBxPassword', { Password: mebxPassword }, null)
   }
 }

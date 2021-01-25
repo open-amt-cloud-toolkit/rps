@@ -242,9 +242,5 @@ const recipeRCSConfig = {
 }
 
 export function mapConfig (src, dot): RCSConfig {
-  let config: RCSConfig
-
-  config = <RCSConfig>dot.transform(recipeRCSConfig, src)
-
-  return config
+  return dot.transform(recipeRCSConfig, src) as RCSConfig
 }

@@ -117,7 +117,7 @@ export class WebSocketListener implements IWebSocketListener {
    * @param {Error} error Websocket error
    */
   onError (error: Error, clientId: string): void {
-    this.logger.error(`${clientId} : ${error}`)
+    this.logger.error(`${clientId} : ${error.message}`)
   };
 
   /**
