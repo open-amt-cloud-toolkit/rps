@@ -38,24 +38,27 @@ EnvReader.GlobalEnvConfig = config
 EnvReader.configPath = path.join(__dirname, '../', config.datapath)
 const app = express()
 
-if (config.NodeEnv === 'dev') {
-  // disable Clickjacking defence
-  app.use(function (req, res, next) {
-    res.header('Access-Control-Allow-Origin', '*')
-    res.header('Access-Control-Allow-Headers', '*')
-    if (req.method === 'OPTIONS') {
-      res.header('Access-Control-Allow-Methods', '*')
-      return res.status(200).json({})
+app.use(function (req, res, next) {
+// disable Clickjacking defence
+
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN')
+
+  if (config.corsOrigin != null && config.corsOrigin !== '') {
+    res.setHeader('Access-Control-Allow-Origin', config.corsOrigin)
+  }
+  if (config.corsHeaders != null && config.corsHeaders !== '') {
+    res.setHeader('Access-Control-Allow-Headers', config.corsHeaders)
+  }
+  if (req.method === 'OPTIONS') {
+    if (config.corsMethods != null && config.corsMethods !== '') {
+      res.setHeader('Access-Control-Allow-Methods', config.corsMethods)
+    } else {
+      res.setHeader('Access-Control-Allow-Methods', '*')
     }
-    next()
-  })
-} else {
-  // Clickjacking defence
-  app.use(function (req, res, next) {
-    res.setHeader('X-Frame-Options', 'SAMEORIGIN')
-    next()
-  })
-}
+    return res.status(200).end()
+  }
+  next()
+})
 
 app.use(parser.json())
 const configurator: IConfigurator = new Configurator()

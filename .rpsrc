@@ -24,5 +24,8 @@
   "db_user": "postgresadmin",
   "db_password": "admin123",
   "use_db_profiles": true,
-  "use_raw_certs": false
+  "use_raw_certs": false,
+  "cors_origin":"*",
+  "cors_headers":"*",
+  "cors_methods":"*"
 }

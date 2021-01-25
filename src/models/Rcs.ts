@@ -56,6 +56,9 @@ export class RCSConfig {
   DbConfig: DbConfig
   RPSXAPIKEY: string
   NodeEnv?: string
+  corsOrigin: string
+  corsHeaders: string
+  corsMethods: string
   constructor () {
     this.VaultConfig = new VaultConfig()
     this.WSConfiguration = new WSConfiguration()
@@ -238,7 +241,10 @@ const recipeRCSConfig = {
   cira_configurations: 'CIRAConfigurations',
   data_path: 'datapath',
   node_env: 'NodeEnv',
-  use_raw_certs: 'DbConfig.useRawCerts'
+  use_raw_certs: 'DbConfig.useRawCerts',
+  cors_origin: 'corsOrigin',
+  cors_headers: 'corsHeaders',
+  cors_methods: 'corsMethods'
 }
 
 export function mapConfig (src, dot): RCSConfig {
