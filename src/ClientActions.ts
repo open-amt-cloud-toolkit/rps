@@ -61,6 +61,7 @@ export class ClientActions {
     const clientObj = this.clientManager.getClientObject(clientId)
     if (clientObj.action) {
       if (this.actions[clientObj.action]) {
+        // eslint-disable-next-line @typescript-eslint/return-await
         return await this.actions[clientObj.action].execute(message, clientId)
       } else {
         throw new RPSError(`Device ${clientObj.uuid} - Not supported action.`)
