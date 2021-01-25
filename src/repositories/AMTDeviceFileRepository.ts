@@ -61,6 +61,7 @@ export class AMTDeviceFileRepository implements IAMTDeviceRepository {
         return false
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete credentialsFile.credentials[device.guid]
 
       this.logger.debug(`deleted entry from credential file: ${JSON.stringify(credentialsFile, null, 2)}}`)
