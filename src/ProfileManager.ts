@@ -63,7 +63,7 @@ export class ProfileManager implements IProfileManager {
       profiles.push(config)
     }
 
-    if (profiles.length == 0) {
+    if (profiles.length === 0) {
       this.logger.error('Warning: No AMT configurations detected.')
     }
 

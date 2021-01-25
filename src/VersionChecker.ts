@@ -21,7 +21,7 @@ const VersionChecker = {
      * @returns {Version} object containing parsed version
      */
   parseString (version: string): Version {
-    if (version == null || version == '') {
+    if (version == null || version === '') {
       throw new RPSError('version must be defined')
     }
 
