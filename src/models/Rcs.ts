@@ -242,9 +242,9 @@ const recipeRCSConfig = {
   data_path: 'datapath',
   node_env: 'NodeEnv',
   use_raw_certs: 'DbConfig.useRawCerts',
-  cors_origin:"corsOrigin",
-  cors_headers:"corsHeaders",
-  cors_methods:"corsMethods"
+  cors_origin: 'corsOrigin',
+  cors_headers: 'corsHeaders',
+  cors_methods: 'corsMethods'
 }
 
 export function mapConfig (src, dot): RCSConfig {

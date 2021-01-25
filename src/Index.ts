@@ -38,20 +38,19 @@ EnvReader.GlobalEnvConfig = config
 EnvReader.configPath = path.join(__dirname, '../', config.datapath)
 const app = express()
 
-
 app.use(function (req, res, next) {
 // disable Clickjacking defence
 
   res.setHeader('X-Frame-Options', 'SAMEORIGIN')
 
-  if(config.corsOrigin != null && config.corsOrigin != ''){
+  if (config.corsOrigin != null && config.corsOrigin !== '') {
     res.setHeader('Access-Control-Allow-Origin', config.corsOrigin)
   }
-  if(config.corsHeaders != null && config.corsHeaders != ''){
+  if (config.corsHeaders != null && config.corsHeaders !== '') {
     res.setHeader('Access-Control-Allow-Headers', config.corsHeaders)
   }
   if (req.method === 'OPTIONS') {
-    if(config.corsMethods != null && config.corsMethods != ''){
+    if (config.corsMethods != null && config.corsMethods !== '') {
       res.setHeader('Access-Control-Allow-Methods', config.corsMethods)
     } else {
       res.setHeader('Access-Control-Allow-Methods', '*')
