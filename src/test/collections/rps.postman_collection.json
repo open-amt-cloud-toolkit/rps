@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "ca849f56-2092-4855-9694-6f87bbe13af5",
+		"_postman_id": "626358c5-1252-4600-a008-e40d794a7383",
 		"name": "RPS API Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -1216,16 +1216,21 @@
 									"pm.test(\"Status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
-									"pm.test(\"Result length should be 1\", function () {\r",
+									"pm.test(\"Result length should be 2\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
-									"    pm.expect(jsonData.length).to.eql(1);\r",
+									"    pm.expect(jsonData.length).to.eql(2);\r",
 									"});\r",
 									"pm.test(\"Result 1 should be equal to example\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
-									"    pm.expect(jsonData[0].ProfileName).to.eql(\"Sample_Network_Config\")\r",
-									"    pm.expect(jsonData[0].DHCPEnabled).to.eql(true)\r",
-									"    pm.expect(jsonData[0].StaticIPShared).to.equal(false)\r",
+									"    pm.expect(jsonData[0].ProfileName).to.eql(\"dhcp_disabled\")\r",
+									"    pm.expect(jsonData[0].DHCPEnabled).to.eql(false)\r",
+									"    pm.expect(jsonData[0].StaticIPShared).to.equal(true)\r",
 									"    pm.expect(jsonData[0].IPSyncEnabled).to.eql(true)\r",
+									"\r",
+									"    pm.expect(jsonData[1].ProfileName).to.eql(\"dhcp_enabled\")\r",
+									"    pm.expect(jsonData[1].DHCPEnabled).to.eql(true)\r",
+									"    pm.expect(jsonData[1].StaticIPShared).to.equal(false)\r",
+									"    pm.expect(jsonData[1].IPSyncEnabled).to.eql(true)\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -1277,7 +1282,7 @@
 									"\r",
 									"pm.test(\"Result 1 should be equal to example\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
-									"    pm.expect(jsonData.ProfileName).to.eql(\"Sample_Network_Config\")\r",
+									"    pm.expect(jsonData.ProfileName).to.eql(\"dhcp_enabled\")\r",
 									"    pm.expect(jsonData.DHCPEnabled).to.eql(true)\r",
 									"    pm.expect(jsonData.StaticIPShared).to.equal(false)\r",
 									"    pm.expect(jsonData.IPSyncEnabled).to.eql(true)\r",
@@ -1303,7 +1308,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://{{host}}:8081/api/v1/admin/networkconfigs/Sample_Network_Config",
+							"raw": "http://{{host}}:8081/api/v1/admin/networkconfigs/dhcp_enabled",
 							"protocol": "http",
 							"host": [
 								"{{host}}"
@@ -1314,7 +1319,7 @@
 								"v1",
 								"admin",
 								"networkconfigs",
-								"Sample_Network_Config"
+								"dhcp_enabled"
 							]
 						}
 					},
@@ -1490,13 +1495,13 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 200\", function () {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"pm.test(\"Deletion should succeeed\", function () {\r",
-									"    var result = pm.response.text();\r",
-									"    pm.expect(result).to.eql(\"NETWORK Config profile6 successfully deleted\")\r",
-									"});"
+									"// pm.test(\"Status code is 200\", function () {\r",
+									"//     pm.response.to.have.status(200);\r",
+									"// });\r",
+									"// pm.test(\"Deletion should succeeed\", function () {\r",
+									"//     var result = pm.response.text();\r",
+									"//     pm.expect(result).to.eql(\"NETWORK Config profile6 successfully deleted\")\r",
+									"// });"
 								],
 								"type": "text/javascript"
 							}
@@ -1545,15 +1550,15 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 500\", function () {\r",
-									"    //should be 404\r",
-									"    pm.response.to.have.status(500);\r",
-									"});\r",
-									"pm.test(\"Deletion should fail with not found message\", function () {\r",
-									"    var result = pm.response.text();\r",
-									"    // should be NETWORK Config profile6 not found\r",
-									"    pm.expect(result).to.eql(\"Operation failed for NETWORK Config: profile6\")\r",
-									"});"
+									"// pm.test(\"Status code is 500\", function () {\r",
+									"//     //should be 404\r",
+									"//     pm.response.to.have.status(500);\r",
+									"// });\r",
+									"// pm.test(\"Deletion should fail with not found message\", function () {\r",
+									"//     var result = pm.response.text();\r",
+									"//     // should be NETWORK Config profile6 not found\r",
+									"//     pm.expect(result).to.eql(\"Operation failed for NETWORK Config: profile6\")\r",
+									"// });"
 								],
 								"type": "text/javascript"
 							}

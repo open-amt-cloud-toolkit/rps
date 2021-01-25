@@ -5,13 +5,14 @@
  **********************************************************************/
 import * as winston from 'winston'
 import { ILogger } from './interfaces/ILogger'
+import path = require('path')
 
 const { combine, timestamp, printf } = winston.format
 const myFormat = printf(info => {
   return `${info.timestamp} ${info.level}: ${info.message}`
 })
 
-const logFile = __dirname + '/logs/logs.txt'
+const logFile = path.join(__dirname, '/logs/logs.txt')
 
 const logger = winston.createLogger({
   level: process.env.RPS_LOG_LEVEL || 'info',

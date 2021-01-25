@@ -51,7 +51,7 @@ export class DomainsDb implements IDomainsDb {
       return results
     } catch (error) {
       console.log(error)
-      if (error.code == '23505') { // Unique key violation
+      if (error.code === '23505') { // Unique key violation
         throw (DOMAIN_INSERTION_FAILED_DUPLICATE(amtDomain.Name))
       }
 
