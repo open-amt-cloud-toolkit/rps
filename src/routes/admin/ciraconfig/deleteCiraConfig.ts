@@ -6,26 +6,33 @@
 import { ICiraConfigDb } from '../../../repositories/interfaces/ICiraConfigDb'
 import { CiraConfigDbFactory } from '../../../repositories/CiraConfigDbFactory'
 import Logger from '../../../Logger'
-import { CIRA_CONFIG_DELETION_FAILED } from '../../../utils/constants'
+import { API_UNEXPECTED_EXCEPTION, CIRA_CONFIG_NOT_FOUND } from '../../../utils/constants'
+import { EnvReader } from '../../../utils/EnvReader'
+import { RPSError } from '../../../utils/RPSError'
 
 export async function deleteCiraConfig (req, res): Promise<void> {
-  let ciraConfigDb: ICiraConfigDb = null
   const log = new Logger('deleteCiraConfig')
-  const { ciraConfigName } = req.params
+  let ciraConfigDb: ICiraConfigDb = null
+  const ciraConfigName: string = req.params.ciraConfigName
   try {
     ciraConfigDb = CiraConfigDbFactory.getCiraConfigDb()
-
-    let error
-    const results = await ciraConfigDb.deleteCiraConfigByName(ciraConfigName).catch((reason) => {
-      error = reason
-    })
-    if (error) {
-      res.status(404).end(error)
+    const result: boolean = await ciraConfigDb.deleteCiraConfigByName(ciraConfigName)
+    if (result) {
+      if (req.secretsManager) {
+        await req.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfigName}`)
+      }
+      log.info(`Deleted CIRA config profile : ${ciraConfigName}`)
+      res.status(204).end()
     } else {
-      res.status(200).end(results)
+      log.info(`Not found : ${ciraConfigName}`)
+      res.status(404).end(CIRA_CONFIG_NOT_FOUND(ciraConfigName))
     }
   } catch (error) {
-    log.error(error)
-    res.status(500).end(CIRA_CONFIG_DELETION_FAILED(ciraConfigName))
+    log.error(`Failed to delete CIRA config profile : ${ciraConfigName}`, error)
+    if (error instanceof RPSError) {
+      res.status(400).end(error.message)
+    } else {
+      res.status(500).end(API_UNEXPECTED_EXCEPTION(`DELETE ${ciraConfigName}`))
+    }
   }
 }

@@ -7,47 +7,73 @@ import { IDbCreator } from './interfaces/IDbCreator'
 import { ICiraConfigDb } from './interfaces/ICiraConfigDb'
 import { CIRAConfig } from '../RCS.Config'
 import { mapToCiraConfig } from './mapToCiraConfig'
-import { CIRA_CONFIG_DELETION_FAILED_CONSTRAINT, CIRA_CONFIG_ERROR, CIRA_CONFIG_SUCCESSFULLY_DELETED, CIRA_CONFIG_NOT_FOUND, CIRA_CONFIG_INSERTION_SUCCESS, CIRA_CONFIG_INSERTION_FAILED_DUPLICATE } from '../utils/constants'
+import { CIRA_CONFIG_DELETION_FAILED_CONSTRAINT, API_UNEXPECTED_EXCEPTION, CIRA_CONFIG_INSERTION_FAILED_DUPLICATE } from '../utils/constants'
+import { RPSError } from '../utils/RPSError'
+import Logger from '../Logger'
 
 export class CiraConfigDb implements ICiraConfigDb {
   db: any
+  log: Logger
   constructor (dbCreator: IDbCreator) {
     this.db = dbCreator.getDb()
+    this.log = new Logger('CiraConfigDb')
   }
 
-  async getAllCiraConfigs (mapperFn?: (configName, data) => Promise<any>): Promise<CIRAConfig[]> {
+  /**
+   * @description Get all CIRA config from DB
+   * @returns {CIRAConfig[]} returns an array of CIRA config objects
+   */
+  async getAllCiraConfigs (): Promise<CIRAConfig[]> {
     const results = await this.db.query('SELECT cira_config_name, mps_server_address, mps_port, user_name, password, common_name, server_address_format, auth_method, mps_root_certificate, proxydetails from ciraconfigs')
-
     return await Promise.all(results.rows.map(async (p) => {
       const result = mapToCiraConfig(p)
-      if (mapperFn) {
-        result.Password = await mapperFn(result.ConfigName, result.Password)
-      }
       return result
     }
     ))
   }
 
-  async getCiraConfigByName (configName): Promise<CIRAConfig> {
+  /**
+   * @description Get CIRA config from DB by name
+   * @param {string} configName
+   * @returns {CIRAConfig} CIRA config object
+   */
+  async getCiraConfigByName (configName: string): Promise<CIRAConfig> {
     const results = await this.db.query('SELECT cira_config_name, mps_server_address, mps_port, user_name, password, common_name, server_address_format, auth_method, mps_root_certificate, proxydetails FROM ciraconfigs WHERE cira_config_name = $1', [configName])
-    return (results.rowCount > 0 ? mapToCiraConfig(results.rows[0]) : null)
+    let ciraConfig: CIRAConfig = {} as CIRAConfig
+    if (results.rowCount > 0) {
+      ciraConfig = mapToCiraConfig(results.rows[0])
+    }
+    return ciraConfig
   }
 
-  async deleteCiraConfigByName (ciraConfigName): Promise<any> {
+  /**
+   * @description Delete CIRA config from DB by name
+   * @param {string} ciraConfigName
+   * @returns {boolean} Return true on successful deletion
+   */
+  async deleteCiraConfigByName (ciraConfigName: string): Promise<boolean> {
     try {
       const results = await this.db.query('DELETE FROM ciraconfigs WHERE cira_config_name = $1', [ciraConfigName])
-      return (results.rowCount > 0 ? CIRA_CONFIG_SUCCESSFULLY_DELETED(ciraConfigName) : CIRA_CONFIG_NOT_FOUND(ciraConfigName))
-    } catch (error) {
-      console.log(error)
-      if (error.code === '23503') { // foreign key violation
-        throw (CIRA_CONFIG_DELETION_FAILED_CONSTRAINT(ciraConfigName))
+      if (results.rowCount > 0) {
+        return true
+      } else {
+        return false
       }
-
-      throw (CIRA_CONFIG_ERROR(ciraConfigName))
+    } catch (error) {
+      this.log.error(`Failed to delete CIRA config : ${ciraConfigName}`, error)
+      if (error.code === '23503') { // foreign key violation
+        throw new RPSError(CIRA_CONFIG_DELETION_FAILED_CONSTRAINT(ciraConfigName))
+      }
+      throw new RPSError(API_UNEXPECTED_EXCEPTION(`Delete CIRA config : ${ciraConfigName}`))
     }
   }
 
-  async insertCiraConfig (ciraConfig: CIRAConfig): Promise<any> {
+  /**
+   * @description Insert CIRA config into DB
+   * @param {CIRAConfig} ciraConfig
+   * @returns {boolean} Return true on successful insertion
+   */
+  async insertCiraConfig (ciraConfig: CIRAConfig): Promise<boolean> {
     try {
       const results = await this.db.query('INSERT INTO ciraconfigs(cira_config_name, mps_server_address, mps_port, user_name, password, common_name, server_address_format, auth_method, mps_root_certificate, proxydetails) ' +
         'values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)',
@@ -63,23 +89,25 @@ export class CiraConfigDb implements ICiraConfigDb {
         ciraConfig.MPSRootCertificate,
         ciraConfig.ProxyDetails
       ])
-
       if (results.rowCount > 0) {
-        return CIRA_CONFIG_INSERTION_SUCCESS(ciraConfig.ConfigName)
+        return true
       }
-
-      return null
+      return false
     } catch (error) {
-      console.log(error)
+      this.log.error('Failed to insert CIRA config :', error)
       if (error.code === '23505') { // Unique key violation
-        throw (CIRA_CONFIG_INSERTION_FAILED_DUPLICATE(ciraConfig.ConfigName))
+        throw new RPSError(CIRA_CONFIG_INSERTION_FAILED_DUPLICATE(ciraConfig.ConfigName))
       }
-
-      throw (CIRA_CONFIG_ERROR(ciraConfig.ConfigName))
+      throw new RPSError(API_UNEXPECTED_EXCEPTION(ciraConfig.ConfigName))
     }
   }
 
-  async updateCiraConfig (ciraConfig: CIRAConfig): Promise<number> {
+  /**
+   * @description Update CIRA config into DB
+   * @param {CIRAConfig} ciraConfig object
+   * @returns {boolean} Return true on successful updation
+   */
+  async updateCiraConfig (ciraConfig: CIRAConfig): Promise<boolean> {
     try {
       const results = await this.db.query('UPDATE ciraconfigs SET mps_server_address=$2, mps_port=$3, user_name=$4, password=$5, common_name=$6, server_address_format=$7, auth_method=$8, mps_root_certificate=$9, proxydetails=$10 where cira_config_name=$1',
         [
@@ -94,12 +122,13 @@ export class CiraConfigDb implements ICiraConfigDb {
           ciraConfig.MPSRootCertificate,
           ciraConfig.ProxyDetails
         ])
-
-      return results.rowCount
+      if (results.rowCount > 0) {
+        return true
+      }
+      return false
     } catch (error) {
-      console.log(error)
-
-      throw (CIRA_CONFIG_ERROR(ciraConfig.ConfigName))
+      this.log.error('Failed to update CIRA config :', error)
+      throw new RPSError(API_UNEXPECTED_EXCEPTION(ciraConfig.ConfigName))
     }
   }
 }

@@ -11,6 +11,7 @@ import { AMTConfigDb } from '../AMTConfigDb'
 import * as path from 'path'
 import { EnvReader } from '../utils/EnvReader'
 import { CiraConfigFileStorageDb } from '../CiraConfigFileStorageDb'
+import { RPSError } from '../utils/RPSError'
 
 const logger: ILogger = new Logger('ProfileManagerTests')
 
@@ -170,17 +171,20 @@ test('retrieve configuration for cira', async () => {
 
 test('delete configuration for cira', async () => {
   const ciraConfigDb = new CiraConfigFileStorageDb(AMTConfigurations, CIRAConfigurations, new Logger('AMTConfigDb'))
-  let reason
-  await ciraConfigDb.deleteCiraConfigByName('ciraconfig1').catch((error) => {
-    reason = error
-  })
-  expect(reason).toEqual('Deletion failed for CIRA Config: ciraconfig1. Profile associated with this Config.')
+  let rpsError = null
+  try {
+    await ciraConfigDb.deleteCiraConfigByName('ciraconfig1')
+  } catch (error) {
+    rpsError = error
+  }
+  expect(rpsError).toBeInstanceOf(RPSError)
+  expect(rpsError.message).toEqual('Deletion failed for CIRA Config: ciraconfig1. Profile associated with this Config.')
 })
 
 test('delete configuration for cira not associated with a profile', async () => {
   const ciraConfigDb = new CiraConfigFileStorageDb(AMTConfigurations, CIRAConfigurations, new Logger('CIRAConfigDb'))
   const actual = await ciraConfigDb.deleteCiraConfigByName('ciraconfig2')
-  expect(actual).toEqual('CIRA Config ciraconfig2 successfully deleted')
+  expect(actual).toEqual(true)
 })
 
 test('retrieve amt password', async () => {

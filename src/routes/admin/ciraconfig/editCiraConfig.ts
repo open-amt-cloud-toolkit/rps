@@ -8,91 +8,98 @@ import { CiraConfigDbFactory } from '../../../repositories/CiraConfigDbFactory'
 import { CIRAConfig } from '../../../RCS.Config'
 import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
-import { CIRA_CONFIG_ERROR, PROFILE_INVALID_INPUT, CIRA_CONFIG_UPDATE_SUCCESS, CIRA_CONFIG_NOT_FOUND } from '../../../utils/constants'
+import { API_UNEXPECTED_EXCEPTION, CIRA_CONFIG_NOT_FOUND } from '../../../utils/constants'
+import { validationResult } from 'express-validator'
 
 export async function editCiraConfig (req, res): Promise<void> {
   const log = new Logger('editCiraConfig')
-
   let ciraConfigDb: ICiraConfigDb = null
-  const ciraConfig: CIRAConfig = readBody(req, res)
-
+  const newConfig = req.body.payload
   try {
-    // console.log("SecretsManagement", req.secretsManager);
-    // if generateRandomPassword is false, insert the amtPassword into vault using a
-    // key and insert the modified profile into db.
-
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+      res.status(400).json({ errors: errors.array() })
+      return
+    }
     ciraConfigDb = CiraConfigDbFactory.getCiraConfigDb()
-
-    const pwdBefore = ciraConfig.Password
-
-    if (req.secretsManager) {
-      console.log('Generate password key')
-      ciraConfig.Password = `${ciraConfig.ConfigName}_CIRA_PROFILE_PASSWORD`
-    }
-
-    let errorReason
-    // SQL Query > Insert Data
-    const results = await ciraConfigDb.updateCiraConfig(ciraConfig).catch((reason) => {
-      errorReason = reason
-    })
-
-    // profile inserted  into db successfully. insert the secret into vault
-
-    if (!errorReason) {
-      // store the password sent into Vault
-      if (req.secretsManager) {
-        log.debug('Store in vault')
-        await req.secretsManager.writeSecretWithKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfig.ConfigName}`, ciraConfig.Password, pwdBefore)
-        log.debug('Password written to vault')
-      } else {
-        log.debug('No secrets manager configured. Storing in DB.')
-        log.debug('Password will be visible in plain text.')
-      }
-    }
-
-    if (!errorReason && results > 0) {
-      res.status(200).end(CIRA_CONFIG_UPDATE_SUCCESS(ciraConfig.ConfigName))
+    const oldConfig: CIRAConfig = await ciraConfigDb.getCiraConfigByName(newConfig.configName)
+    if (Object.keys(oldConfig).length === 0) {
+      log.info('Not found : ', newConfig.configName)
+      res.status(404).end(CIRA_CONFIG_NOT_FOUND(newConfig.configName))
     } else {
-      if (results == null) {
-        res.status(500).end(`${errorReason}`)
-      } else {
-        res.status(404).end(CIRA_CONFIG_NOT_FOUND(ciraConfig.ConfigName))
+      const ciraConfig: CIRAConfig = getUpdatedData(newConfig, oldConfig)
+      const mpsPwd = newConfig.password
+      if (req.secretsManager) {
+        ciraConfig.Password = `${ciraConfig.ConfigName}_CIRA_PROFILE_PASSWORD`
       }
+      // TBD: Need to check the ServerAddressFormat, CommonName and MPSServerAddress if they are not updated.
+      // SQL Query > Insert Data
+      const results = await ciraConfigDb.updateCiraConfig(ciraConfig)
+      if (results !== undefined) {
+        // update the password in Vault if not null
+        if (req.secretsManager && mpsPwd !== null) {
+          await req.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfig.ConfigName}`)
+          await req.secretsManager.writeSecretWithKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfig.ConfigName}`, ciraConfig.Password, mpsPwd)
+          log.info(`MPS password updated in Vault for CIRA Config ${ciraConfig.ConfigName}`)
+        }
+      }
+      log.info(`Updated CIRA config profile : ${ciraConfig.ConfigName}`)
+      res.status(204).end()
     }
   } catch (error) {
-    if (res.status) return
-    log.error(error)
-    res.status(500).end(CIRA_CONFIG_ERROR(ciraConfig.ConfigName))
+    log.error(`Failed to update CIRA config : ${newConfig.ConfigName}`, error)
+    res.status(500).end(API_UNEXPECTED_EXCEPTION(`UPDATE ${newConfig.ConfigName}`))
   }
 }
 
-function readBody (req, res): CIRAConfig {
+function getUpdatedData (newConfig: any, oldConfig: CIRAConfig): CIRAConfig {
   const config: CIRAConfig = {} as CIRAConfig
-  const body = req.body
+  config.ConfigName = newConfig.configName
 
-  config.ConfigName = body.payload.configName
-  config.MPSServerAddress = body.payload.mpsServerAddress
-  config.MPSPort = body.payload.mpsPort
-  config.Username = body.payload.username
-  config.Password = body.payload.password
-  config.CommonName = body.payload.commonName
-  config.ServerAddressFormat = body.payload.serverAddressFormat
-  config.MPSRootCertificate = body.payload.mpsRootCertificate
-  config.ProxyDetails = body.payload.proxyDetails
-  config.AuthMethod = body.payload.authMethod
-
-  if (config.ConfigName == null ||
-    config.MPSServerAddress == null ||
-    config.MPSPort == null ||
-    config.Username == null ||
-    config.Password == null ||
-    config.CommonName == null ||
-    config.ServerAddressFormat == null ||
-    config.MPSRootCertificate == null ||
-    // config.ProxyDetails == null ||
-    config.AuthMethod == null) {
-    res.status(400).end(PROFILE_INVALID_INPUT)
-    return
+  if (newConfig.mpsServerAddress == null) {
+    config.MPSServerAddress = oldConfig.MPSServerAddress
+  } else {
+    config.MPSServerAddress = newConfig.mpsServerAddress
+  }
+  if (newConfig.mpsPort == null) {
+    config.MPSPort = oldConfig.MPSPort
+  } else {
+    config.MPSPort = newConfig.mpsPort
+  }
+  if (newConfig.username == null) {
+    config.Username = oldConfig.Username
+  } else {
+    config.Username = newConfig.username
+  }
+  if (newConfig.password == null) {
+    config.Password = oldConfig.Password
+  } else {
+    config.Password = newConfig.password
+  }
+  if (newConfig.commonName == null) {
+    config.CommonName = oldConfig.CommonName
+  } else {
+    config.CommonName = newConfig.commonName
+  }
+  if (newConfig.serverAddressFormat == null) {
+    config.ServerAddressFormat = oldConfig.ServerAddressFormat
+  } else {
+    config.ServerAddressFormat = newConfig.serverAddressFormat
+  }
+  if (newConfig.mpsRootCertificate == null) {
+    config.MPSRootCertificate = oldConfig.MPSRootCertificate
+  } else {
+    config.MPSRootCertificate = newConfig.mpsRootCertificate
+  }
+  if (newConfig.proxyDetails == null) {
+    config.ProxyDetails = oldConfig.ProxyDetails
+  } else {
+    config.ProxyDetails = newConfig.proxyDetails
+  }
+  if (newConfig.authMethod == null) {
+    config.AuthMethod = oldConfig.AuthMethod
+  } else {
+    config.AuthMethod = newConfig.authMethod
   }
   return config
 }

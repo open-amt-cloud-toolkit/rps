@@ -21,6 +21,7 @@ import { RPSError } from '../utils/RPSError'
 import { EnvReader } from '../utils/EnvReader'
 import { NetworkConfigurator } from './NetworkConfigurator'
 import { AMTUserName } from './../utils/constants'
+import { AMTDomain } from '../models/Rcs'
 
 export class ACMActivator implements IExecutor {
   constructor (
@@ -54,13 +55,13 @@ export class ACMActivator implements IExecutor {
       if (clientObj.ClientData.payload.fwNonce && clientObj.action === ClientAction.ADMINCTLMODE) {
         if (!clientObj.count) {
           clientObj.count = 0
-          const provisioningCert: string = await this.configurator.domainCredentialManager.getProvisioningCert(clientObj.ClientData.payload.fqdn)
+          const amtDomain: AMTDomain = await this.configurator.domainCredentialManager.getProvisioningCert(clientObj.ClientData.payload.fqdn)
+          this.logger.info(`domain : ${JSON.stringify(amtDomain)}`)
           // Verify that the certificate path points to a file that exists
-          if (!provisioningCert) {
+          if (!amtDomain.ProvisioningCert) {
             throw new RPSError(`Device ${clientObj.uuid} activation failed. AMT provisioning certificate not found on server`)
           }
-          const provisioningCertPassword: string = await this.configurator.domainCredentialManager.getProvisioningCertPassword(clientObj.ClientData.payload.fqdn)
-          clientObj.certObj = this.GetProvisioningCertObj(clientObj.ClientData, provisioningCert, provisioningCertPassword, clientId)
+          clientObj.certObj = this.GetProvisioningCertObj(clientObj.ClientData, amtDomain.ProvisioningCert, amtDomain.ProvisioningCertPassword, clientId)
           if (clientObj.certObj) {
             // Check if we got an error while getting the provisioning cert object
             if (clientObj.certObj.errorText) {

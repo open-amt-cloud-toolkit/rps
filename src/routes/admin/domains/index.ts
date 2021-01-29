@@ -10,12 +10,13 @@ import { getDomain } from './getDomain'
 import { createDomain } from './createDomain'
 import { deleteDomain } from './deleteDomain'
 import { editDomain } from './editDomain'
+import { domainInsertValidator, domainUpdateValidator } from './domainValidator'
 const domainRouter: Router = Router()
 
 domainRouter.get('/', getAllDomains)
 domainRouter.get('/:domainName', getDomain)
-domainRouter.post('/create', createDomain)
-domainRouter.patch('/edit', editDomain)
+domainRouter.post('/', domainInsertValidator(), createDomain)
+domainRouter.patch('/', domainUpdateValidator(), editDomain)
 domainRouter.delete('/:domainName', deleteDomain)
 
 export default domainRouter

@@ -4,7 +4,7 @@
 * Description: Constants
 **********************************************************************/
 
-import { NetworkConfig } from '../RCS.Config'
+import { CIRAConfig, NetworkConfig } from '../RCS.Config'
 
 export class ProvisioningCertObj {
   certChain: string[]
@@ -79,6 +79,7 @@ export class AMTConfiguration {
   MEBxPassword: string
   GenerateRandomMEBxPassword: boolean
   RandomMEBxPasswordLength?: number
+  CIRAConfigObject?: CIRAConfig
 }
 
 export class AMTDomain {

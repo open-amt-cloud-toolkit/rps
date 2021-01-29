@@ -3,57 +3,61 @@
  * SPDX-License-Identifier: Apache-2.0
  * Author : Ramu Bachala
  **********************************************************************/
+import { validationResult } from 'express-validator'
 import { AMTDomain } from '../../../models/Rcs'
 import { IDomainsDb } from '../../../repositories/interfaces/IDomainsDb'
 import { DomainsDbFactory } from '../../../repositories/DomainsDbFactory'
 import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
-import { DOMAIN_INSERTION_SUCCESS, DOMAIN_ERROR } from '../../../utils/constants'
+import { API_UNEXPECTED_EXCEPTION, DOMAIN_INSERTION_SUCCESS } from '../../../utils/constants'
+import { RPSError } from '../../../utils/RPSError'
 
 export async function createDomain (req, res): Promise<void> {
   let domainsDb: IDomainsDb = null
+  const amtDomain: AMTDomain = {} as AMTDomain
   const log = new Logger('createDomain')
-
-  const amtDomain: AMTDomain = req.body.payload
-
+  let cert: any
+  let domainPwd: string
   try {
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+      res.status(400).json({ errors: errors.array() })
+      return
+    }
+    amtDomain.Name = req.body.payload.profileName
+    amtDomain.DomainSuffix = req.body.payload.domainSuffix
+    amtDomain.ProvisioningCert = req.body.payload.provisioningCert
+    amtDomain.ProvisioningCertStorageFormat = req.body.payload.provisioningCertStorageFormat
+    amtDomain.ProvisioningCertPassword = req.body.payload.provisioningCertPassword
     domainsDb = DomainsDbFactory.getDomainsDb()
 
-    const pwdBefore = amtDomain.ProvisioningCertPassword
-
-    if (amtDomain.ProvisioningCertPassword) {
-      // store the password sent into Vault
-      if (req.secretsManager) {
-        amtDomain.ProvisioningCertPassword = 'PROVISIONING_CERT_PASSWORD_KEY'
-      }
+    // store the cert and password key in database
+    if (req.secretsManager) {
+      cert = amtDomain.ProvisioningCert
+      domainPwd = amtDomain.ProvisioningCertPassword
+      amtDomain.ProvisioningCert = `${amtDomain.Name}_CERT_KEY`
+      amtDomain.ProvisioningCertPassword = `${amtDomain.Name}_CERT_PASSWORD_KEY`
     }
-
-    let errorReason
     // SQL Query > Insert Data
-    const results = await domainsDb.insertDomain(amtDomain).catch((reason) => {
-      errorReason = reason
-    })
-
-    if (!errorReason && amtDomain.ProvisioningCertPassword) {
-      // store the password sent into Vault
+    const results = await domainsDb.insertDomain(amtDomain)
+    // store the actual cert and password into Vault
+    if (results) {
       if (req.secretsManager) {
-        log.debug('Store in vault')
-        await req.secretsManager.writeSecretWithKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/${amtDomain.Name}/PROVISIONING_CERT`, 'PROVISIONING_CERT_PASSWORD_KEY', pwdBefore)
-        log.debug('Password written to vault')
-        amtDomain.ProvisioningCertPassword = 'PROVISIONING_CERT_PASSWORD_KEY'
-      } else {
-        log.debug('No secrets manager configured. Storing in DB.')
-        log.debug('Password will be visible in plain text.')
+        const data = { data: { CERT_KEY: '', CERT_PASSWORD_KEY: '' } }
+        data.data.CERT_KEY = cert
+        data.data.CERT_PASSWORD_KEY = domainPwd
+        await req.secretsManager.writeSecretWithObject(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/${amtDomain.Name}`, data)
+        log.info(`${amtDomain.Name} provisioing cert & password stored in Vault`)
       }
-    }
-
-    if (typeof results === 'undefined' || results === null || errorReason) {
-      res.status(500).end(`${errorReason}`)
-    } else {
-      res.status(200).end(DOMAIN_INSERTION_SUCCESS(amtDomain.Name))
+      log.info(`Created Domain : ${amtDomain.Name}`)
+      res.status(201).end(DOMAIN_INSERTION_SUCCESS(amtDomain.Name))
     }
   } catch (error) {
-    log.error(error)
-    res.end(DOMAIN_ERROR(amtDomain.Name))
+    log.error(`Failed to create a AMT Domain : ${amtDomain.Name}`, error)
+    if (error instanceof RPSError) {
+      res.status(400).end(error.message)
+    } else {
+      res.status(500).end(API_UNEXPECTED_EXCEPTION(`Insert Domain ${amtDomain.Name}`))
+    }
   }
 }

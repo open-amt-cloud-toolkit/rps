@@ -43,45 +43,23 @@ export class DomainCredentialManager implements IDomainCredentialManager {
   /**
      * @description get the provisioning cert for a given domain
      * @param {string} domainSuffix
-     * @returns {string} returns path to provisioning cert if domain is found otherwise null
+     * @returns {AMTDomain} returns domain object
      */
-  async getProvisioningCert (domainSuffix: string): Promise<string> {
+  async getProvisioningCert (domainSuffix: string): Promise<AMTDomain> {
     const domain = await this.getAMTDomain(domainSuffix)
-    let cert: string = null
+    this.logger.info(`domain : ${JSON.stringify(domain)}`)
+    let certPwd = null
     if (domain?.ProvisioningCert) {
-      this.logger.debug(`found provisioning cert for domain ${domainSuffix}`)
-      cert = domain.ProvisioningCert
+      if (this.configurator?.secretsManager) {
+        certPwd = await this.configurator.secretsManager.getSecretAtPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/${domain.Name}`)
+        this.logger.info(`CertPwd : ${JSON.stringify(certPwd)}`)
+        domain.ProvisioningCert = certPwd.data.CERT_KEY
+        domain.ProvisioningCertPassword = certPwd.data.CERT_PASSWORD_KEY
+      }
     } else {
       this.logger.warn(`unable to find provisioning cert for profile ${domainSuffix}`)
     }
-
-    return cert
-  }
-
-  /**
-     * @description get the provisioning cert password for a given domain
-     * @param {string} domainSuffix
-     * @returns {string} returns provisioning cert password if domain is found otherwise null
-     */
-  async getProvisioningCertPassword (domainSuffix: string): Promise<string> {
-    const domain = await this.getAMTDomain(domainSuffix)
-    let cert: string = null
-
-    if (domain?.ProvisioningCertPassword) {
-      let provisionCertPwd = null
-      if (this.configurator?.secretsManager) {
-        this.logger.info('Calling secret manager')
-        provisionCertPwd = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/${domain.Name}/PROVISIONING_CERT`, domain.ProvisioningCertPassword)
-      } else {
-        provisionCertPwd = domain.ProvisioningCertPassword
-      }
-      this.logger.debug(`found provisioning cert pwd for domain ${domainSuffix}`)
-      cert = provisionCertPwd
-    } else {
-      this.logger.error(`unable to find provisioning cert password for profile ${domainSuffix}`)
-    }
-
-    return cert
+    return domain
   }
 
   /**

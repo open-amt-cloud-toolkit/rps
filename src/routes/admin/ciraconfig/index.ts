@@ -10,12 +10,13 @@ import { getCiraConfig } from './getCiraConfig'
 import { createCiraConfig } from './createCiraConfig'
 import { editCiraConfig } from './editCiraConfig'
 import { deleteCiraConfig } from './deleteCiraConfig'
+import { ciraInsertValidator, ciraUpdateValidator } from './ciraValidator'
 const CiraConfigRouter: Router = Router()
 
 CiraConfigRouter.get('/', allCiraConfigs)
 CiraConfigRouter.get('/:ciraConfigName', getCiraConfig)
-CiraConfigRouter.post('/create', createCiraConfig)
-CiraConfigRouter.patch('/edit', editCiraConfig)
+CiraConfigRouter.post('/', ciraInsertValidator(), createCiraConfig)
+CiraConfigRouter.patch('/', ciraUpdateValidator(), editCiraConfig)
 CiraConfigRouter.delete('/:ciraConfigName', deleteCiraConfig)
 
 export default CiraConfigRouter

@@ -3,7 +3,8 @@ import { AMTDomain } from './models/Rcs'
 import { IDomainsDb } from './repositories/interfaces/IDomainsDb'
 import { EnvReader } from './utils/EnvReader'
 import { FileHelper } from './utils/FileHelper'
-import { DOMAIN_INSERTION_FAILED_DUPLICATE } from './utils/constants'
+import { DUPLICATE_DOMAIN_FAILED } from './utils/constants'
+import { RPSError } from './utils/RPSError'
 
 export class DomainConfigDb implements IDomainsDb {
   private readonly domains: AMTDomain[]
@@ -16,25 +17,36 @@ export class DomainConfigDb implements IDomainsDb {
     this.logger.debug('using local domain db')
   }
 
-  async getAllDomains (): Promise<any> {
-    this.logger.debug('getAllDomains called')
+  /**
+   * @description Get all Domains from FileStorage
+   * @returns {AMTDomain[]} returns an array of AMT Domain objects
+   */
+  async getAllDomains (): Promise<AMTDomain[]> {
     const data: any = FileHelper.readJsonObjFromFile(EnvReader.configPath)
     return data.AMTDomains
   }
 
-  async getDomainByName (domainName: string): Promise<any> {
-    this.logger.debug(`getDomainByName: ${domainName}`)
+  /**
+   * @description Get Domain from FileStorage by name
+   * @param {string} domainName
+   * @returns {AMTDomain} Domain object
+   */
+  async getDomainByName (domainName: string): Promise<AMTDomain> {
     const data: any = FileHelper.readJsonObjFromFile(EnvReader.configPath)
-    return data.AMTDomains.find(item => item.Name === domainName)
+    const amtDomain: AMTDomain = data.AMTDomains.find((item: { Name: string }) => item.Name === domainName) || {} as AMTDomain
+    return amtDomain
   }
 
-  async insertDomain (amtDomain: AMTDomain): Promise<any> {
-    this.logger.debug(`insertDomain: ${amtDomain.Name}`)
-
+  /**
+   * @description Insert Domain into FileStorage
+   * @param {AMTDomain} amtDomain
+   * @returns {boolean} Return true on successful insertion
+   */
+  async insertDomain (amtDomain: AMTDomain): Promise<boolean> {
     if (this.domains.some(item => item.Name === amtDomain.Name) ||
     this.domains.some(item => item.DomainSuffix === amtDomain.DomainSuffix)) {
       this.logger.error(`domain already exists: ${amtDomain.Name}`)
-      throw (DOMAIN_INSERTION_FAILED_DUPLICATE(amtDomain.Name))
+      throw new RPSError(DUPLICATE_DOMAIN_FAILED(`insert Domain: '${amtDomain.Name}'`))
     } else {
       this.domains.push(amtDomain)
       this.updateConfigFile()
@@ -43,25 +55,39 @@ export class DomainConfigDb implements IDomainsDb {
     }
   }
 
-  async updateDomain (amtDomain: AMTDomain): Promise<any> {
-    this.logger.debug(`update Domain: ${amtDomain.Name}`)
+  /**
+   * @description Update AMT Domain into FileStorage
+   * @param {AMTDomain} amtDomain object
+   * @returns {boolean} Return true on successful updation
+   */
+  async updateDomain (amtDomain: AMTDomain): Promise<boolean> {
     const isMatch = (item): boolean => item.Name === amtDomain.Name
     const index = this.domains.findIndex(isMatch)
-
     if (index >= 0) {
+      this.domains.forEach((domain) => {
+        if (domain.Name !== amtDomain.Name && domain.DomainSuffix === amtDomain.DomainSuffix) {
+          this.logger.error(`domain suffix already exists: ${amtDomain.DomainSuffix}`)
+          throw new RPSError(DUPLICATE_DOMAIN_FAILED(`update Domain: '${amtDomain.Name}'`))
+        }
+      })
       this.domains.splice(index, 1)
       this.domains.push(amtDomain)
       this.updateConfigFile()
       this.logger.info(`Domain: ${amtDomain.Name} updated`)
       this.logger.silly(`Domain ${JSON.stringify(amtDomain)}`)
-      return 1
+      return true
     } else {
       this.logger.info(`Domain: ${amtDomain.Name} doesnt exist`)
-      return 0
+      return false
     }
   }
 
-  async deleteDomainByName (domainName: string): Promise<any> {
+  /**
+   * @description Delete Domain from DB by name
+   * @param {string} domainName
+   * @returns {boolean} Return true on successful deletion
+   */
+  async deleteDomainByName (domainName: string): Promise<boolean> {
     this.logger.debug(`deleteDomainByName ${domainName}`)
 
     let found: boolean = false

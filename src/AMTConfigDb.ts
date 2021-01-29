@@ -4,7 +4,8 @@ import { FileHelper } from './utils/FileHelper'
 import { EnvReader } from './utils/EnvReader'
 import { ILogger } from './interfaces/ILogger'
 import { CIRAConfig, NetworkConfig } from './RCS.Config'
-import { PROFILE_SUCCESSFULLY_DELETED, PROFILE_NOT_FOUND, PROFILE_INSERTION_FAILED_DUPLICATE } from './utils/constants'
+import { PROFILE_INSERTION_FAILED_DUPLICATE, PROFILE_NOT_FOUND } from './utils/constants'
+import { RPSError } from './utils/RPSError'
 
 export class AMTConfigDb implements IProfilesDb {
   amtProfiles: AMTConfiguration[]
@@ -20,14 +21,24 @@ export class AMTConfigDb implements IProfilesDb {
     this.networkConfigs = networkConfigs || []
   }
 
-  async getAllProfiles (): Promise<any> {
+  /**
+   * @description Get all AMT Profiles from DB
+   * @returns {any} returns an array of AMT profile objects
+   */
+  async getAllProfiles (): Promise<AMTConfiguration[]> {
     this.logger.debug('getAllProfiles called')
     return this.amtProfiles
   }
 
-  async getProfileByName (profileName: any): Promise<any> {
+  /**
+   * @description Get AMT Profile from DB by name
+   * @param {string} profileName
+   * @returns {AMTConfiguration} AMT Profile object
+   */
+  async getProfileByName (profileName: string): Promise<AMTConfiguration> {
     this.logger.debug(`getProfileByName: ${profileName}`)
-    return this.amtProfiles.find(item => item.ProfileName === profileName)
+    const profile: AMTConfiguration = this.amtProfiles.find(item => item.ProfileName === profileName) || {} as AMTConfiguration
+    return profile
   }
 
   async getNetworkConfigForProfile (networkConfigName): Promise<any> {
@@ -54,9 +65,12 @@ export class AMTConfigDb implements IProfilesDb {
     return config
   }
 
-  async deleteProfileByName (profileName: any): Promise<any> {
-    this.logger.debug(`deleteProfileByName ${profileName}`)
-
+  /**
+   * @description Delete AMT Profile from DB by name
+   * @param {string} profileName
+   * @returns {boolean} Return true on successful deletion
+   */
+  async deleteProfileByName (profileName: string): Promise<boolean> {
     let found: boolean = false
     for (let i = 0; i < this.amtProfiles.length; i++) {
       if (this.amtProfiles[i].ProfileName === profileName) {
@@ -65,22 +79,26 @@ export class AMTConfigDb implements IProfilesDb {
         break
       }
     }
-
     if (found) {
       this.updateConfigFile()
       this.logger.info(`profile deleted: ${profileName}`)
-      return PROFILE_SUCCESSFULLY_DELETED(profileName)
+      return true
     } else {
       this.logger.error(PROFILE_NOT_FOUND(profileName))
+      return false
     }
   }
 
-  async insertProfile (amtConfig: any): Promise<any> {
-    this.logger.debug(`insertProfile: ${amtConfig.ProfileName}`)
-
+  /**
+   * @description Insert AMT profile into DB
+   * @param {AMTConfiguration} amtConfig
+   * @returns {boolean} Return true on successful insertion
+   */
+  async insertProfile (amtConfig: any): Promise<boolean> {
     if (this.amtProfiles.some(item => item.ProfileName === amtConfig.ProfileName)) {
       this.logger.error(`profile already exists: ${amtConfig.ProfileName}`)
-      throw (PROFILE_INSERTION_FAILED_DUPLICATE(amtConfig.ProfileName))
+      throw new RPSError(PROFILE_INSERTION_FAILED_DUPLICATE(amtConfig.ProfileName))
+      // return false
     } else {
       this.amtProfiles.push(amtConfig)
       this.updateConfigFile()
@@ -89,7 +107,12 @@ export class AMTConfigDb implements IProfilesDb {
     }
   }
 
-  async updateProfile (amtConfig: any): Promise<any> {
+  /**
+   * @description Update AMT profile into DB
+   * @param {AMTConfiguration} amtConfig
+   * @returns {boolean} Return true on successful updation
+   */
+  async updateProfile (amtConfig: any): Promise<boolean> {
     this.logger.debug(`update Profile: ${amtConfig.ProfileName}`)
     const isMatch = (item): boolean => item.ProfileName === amtConfig.ProfileName
     const index = this.amtProfiles.findIndex(isMatch)
@@ -98,10 +121,10 @@ export class AMTConfigDb implements IProfilesDb {
       this.amtProfiles.push(amtConfig)
       this.updateConfigFile()
       this.logger.info(`profile updated: ${amtConfig.ProfileName}`)
-      return 1
+      return true
     } else {
       this.logger.info(`profile doesnt exist: ${amtConfig.ProfileName}`)
-      return 0
+      return false
     }
   }
 

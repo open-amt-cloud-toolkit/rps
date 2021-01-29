@@ -5,28 +5,29 @@
  **********************************************************************/
 import { IDomainsDb } from '../../../repositories/interfaces/IDomainsDb'
 import { DomainsDbFactory } from '../../../repositories/DomainsDbFactory'
-import { DOMAIN_NOT_FOUND, DOMAIN_ERROR } from '../../../utils/constants'
+import { DOMAIN_NOT_FOUND, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
+import { AMTDomain } from '../../../models/Rcs'
+import Logger from '../../../Logger'
 
 export async function getDomain (req, res): Promise<void> {
+  const log = new Logger('getDomain')
   let domainsDb: IDomainsDb = null
   const { domainName } = req.params
   try {
     domainsDb = DomainsDbFactory.getDomainsDb()
-
-    const results = await domainsDb.getDomainByName(domainName)
-    if (typeof results === 'undefined' || results === null) {
-      res.status(404).end(DOMAIN_NOT_FOUND(domainName))
-    } else {
-      // if (req.secretsManager && results.ProvisioningCertPassword)
-      //   results.ProvisioningCertPassword = await req.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/PROVISIONING_CERT`, results.ProvisioningCertPassword);
-
+    const result: AMTDomain = await domainsDb.getDomainByName(domainName)
+    if (Object.keys(result).length !== 0) {
       // Return null. Check Security objectives around returning passwords.
-      results.ProvisioningCertPassword = null
-      results.ProvisioningCert = null
-      res.json(results).end()
+      result.ProvisioningCertPassword = null
+      result.ProvisioningCert = null
+      log.info(`Domain : ${JSON.stringify(result)}`)
+      res.status(200).json(result).end()
+    } else {
+      log.info(`Not found : ${domainName}`)
+      res.status(404).end(DOMAIN_NOT_FOUND(domainName))
     }
   } catch (error) {
-    console.log(error)
-    res.end(DOMAIN_ERROR(domainName))
+    log.error(`Failed to get AMT Domain : ${domainName}`, error)
+    res.status(500).end(API_UNEXPECTED_EXCEPTION(`GET ${domainName}`))
   }
 }
