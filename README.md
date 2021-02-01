@@ -1,5 +1,7 @@
 # Remote Provisioning Server
 
+[![Known Vulnerabilities](https://snyk.io/test/github/open-amt-cloud-toolkit/rps/badge.svg?targetFile=package.json)](https://snyk.io/test/github/open-amt-cloud-toolkit/rps?targetFile=package.json) ![RPS API Tests](https://github.com/open-amt-cloud-toolkit/rps/workflows/RPS%20API%20Tests/badge.svg) ![Node.js CI](https://github.com/open-amt-cloud-toolkit/rps/workflows/Node.js%20CI/badge.svg)
+
 > Disclaimer: Production viable releases are tagged and listed under 'Releases'.  All other check-ins should be considered 'in-development' and should not be used in production
 
 The Remote Provisioning Server (RPS) enables the configuration and activation of Intel® AMT devices based on a defined profile. RPS utilizes the [Remote Provision Client (RPC)](https://github.com/open-amt-cloud-toolkit/rps) deployed onto edge devices to connect the devices to the [Management Presence Server (MPS)](https://github.com/open-amt-cloud-toolkit/mps) and enable remote manageability features.
