@@ -38,6 +38,7 @@ export class AMTConfigDb implements IProfilesDb {
         this.logger.debug(`found matching Network configuration: ${JSON.stringify(networkConfig, null, '\t')}`)
         return networkConfig
       }
+      return null // not found
     })
     return networkConfig
   }
@@ -50,6 +51,7 @@ export class AMTConfigDb implements IProfilesDb {
         this.logger.debug(`found matching element CIRA: ${JSON.stringify(ciraConfig, null, '\t')}`)
         return ciraConfig
       }
+      return null // not found
     })
     return config
   }
