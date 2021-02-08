@@ -20,6 +20,7 @@ export const config: RCSConfig = {
   corsHeaders: '*',
   corsMethods: '*',
   corsOrigin: '*',
+  corsAllowCredentials: 'true',
   WSConfiguration: {
     WebSocketPort: 8080,
     WebSocketTLS: false,

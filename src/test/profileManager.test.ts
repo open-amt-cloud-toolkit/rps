@@ -40,6 +40,7 @@ const rcsConfig: RCSConfig = {
   corsHeaders: '*',
   corsMethods: '*',
   corsOrigin: '*',
+  corsAllowCredentials: 'true',
   DbConfig: {
     useDbForConfig: false,
     dbhost: '',

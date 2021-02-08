@@ -42,6 +42,7 @@ app.use(function (req, res, next) {
 // disable Clickjacking defence
 
   res.setHeader('X-Frame-Options', 'SAMEORIGIN')
+  res.setHeader('Access-Control-Allow-Credentials', config.corsAllowCredentials)
 
   if (config.corsOrigin != null && config.corsOrigin !== '') {
     res.setHeader('Access-Control-Allow-Origin', config.corsOrigin)
