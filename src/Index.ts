@@ -43,9 +43,11 @@ app.use(function (req, res, next) {
 
   res.setHeader('X-Frame-Options', 'SAMEORIGIN')
   res.setHeader('Access-Control-Allow-Credentials', config.corsAllowCredentials)
-
-  if (config.corsOrigin != null && config.corsOrigin !== '') {
-    res.setHeader('Access-Control-Allow-Origin', config.corsOrigin)
+  const allowedOrigins: string[] = config.corsOrigin.split(',').map((domain) => {
+    return domain.trim()
+  })
+  if (allowedOrigins.includes(req.headers.origin)) {
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin)
   }
   if (config.corsHeaders != null && config.corsHeaders !== '') {
     res.setHeader('Access-Control-Allow-Headers', config.corsHeaders)
