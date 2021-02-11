@@ -80,3 +80,5 @@ typings/
 
 # out/ folder
 out/
+
+*.exe
