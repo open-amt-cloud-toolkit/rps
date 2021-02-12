@@ -11,7 +11,8 @@ import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
 import {
   CIRA_CONFIG_INSERTION_SUCCESS,
-  API_UNEXPECTED_EXCEPTION
+  API_UNEXPECTED_EXCEPTION,
+  API_RESPONSE
 } from '../../../utils/constants'
 import { RPSError } from '../../../utils/RPSError'
 
@@ -52,14 +53,14 @@ export async function createCiraConfig (req, res): Promise<void> {
         log.info(`MPS password stored in Vault for CIRA config : ${ciraConfig.ConfigName}`)
       }
       log.info(`Created CIRA config : ${ciraConfig.ConfigName}`)
-      res.status(201).end(CIRA_CONFIG_INSERTION_SUCCESS(ciraConfig.ConfigName))
+      res.status(201).json(API_RESPONSE(null, null, CIRA_CONFIG_INSERTION_SUCCESS(ciraConfig.ConfigName))).end()
     }
   } catch (error) {
     log.error(`Failed to get CIRA config profile : ${ciraConfig.ConfigName}`, error)
     if (error instanceof RPSError) {
-      res.status(400).end(error.message)
+      res.status(400).json(API_RESPONSE(null, error.name, error.message)).end()
     } else {
-      res.status(500).end(API_UNEXPECTED_EXCEPTION(`CREATE ${ciraConfig.ConfigName}`))
+      res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`CREATE ${ciraConfig.ConfigName}`))).end()
     }
   }
 }

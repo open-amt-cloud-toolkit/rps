@@ -43,8 +43,8 @@ export const ciraInsertValidator = (): any => {
       .not()
       .isEmpty()
       .withMessage('MPS user name is required')
-      .matches('^[a-zA-Z0-9$@$!%*#?&-_~^]+$')
-      .withMessage('MPS user name accepts letters, numbers, special characters and no spaces'),
+      .matches('^[a-zA-Z0-9]+$') // As per AMT SDK, accepts only alphanumeric values
+      .withMessage('MPS user name should be alphanumeric'),
     check('payload.password')
       .not()
       .isEmpty()

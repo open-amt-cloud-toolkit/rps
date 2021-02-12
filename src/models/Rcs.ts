@@ -67,8 +67,8 @@ export class RCSConfig {
   }
 }
 export class AMTConfiguration {
-  ProfileName: string
-  AMTPassword: string
+  ProfileName?: string
+  AMTPassword?: string
   GenerateRandomPassword: boolean
   RandomPasswordLength?: number
   RandomPasswordCharacters?: string

@@ -36,7 +36,7 @@ export class CiraConfigFileStorageDb implements ICiraConfigDb {
    */
   async getCiraConfigByName (ciraConfigName: string): Promise<CIRAConfig> {
     this.logger.debug(`getCiraConfigByName: ${ciraConfigName}`)
-    const ciraConfig: CIRAConfig = this.ciraConfigs.find(item => item.ConfigName === ciraConfigName) || {} as CIRAConfig
+    const ciraConfig: CIRAConfig = this.ciraConfigs.find(item => item.ConfigName === ciraConfigName) || null
     return ciraConfig
   }
 
@@ -57,7 +57,7 @@ export class CiraConfigFileStorageDb implements ICiraConfigDb {
         const profileUsingThisConfig = this.amtProfiles.find(profile => profile.CIRAConfigName === ciraConfigName)
         if (typeof profileUsingThisConfig !== 'undefined') {
           this.logger.error('Cannot delete the CIRA config. An AMT Profile is already using it.')
-          throw new RPSError(CIRA_CONFIG_DELETION_FAILED_CONSTRAINT(ciraConfigName))
+          throw new RPSError(CIRA_CONFIG_DELETION_FAILED_CONSTRAINT(ciraConfigName), 'Foreign key violation')
         }
         this.ciraConfigs.splice(i, 1)
         found = true
@@ -82,7 +82,7 @@ export class CiraConfigFileStorageDb implements ICiraConfigDb {
   async insertCiraConfig (ciraConfig: CIRAConfig): Promise<boolean> {
     if (this.ciraConfigs.some(item => item.ConfigName === ciraConfig.ConfigName)) {
       this.logger.info(`Cira Config already exists: ${ciraConfig.ConfigName}`)
-      throw new RPSError(CIRA_CONFIG_INSERTION_FAILED_DUPLICATE(ciraConfig.ConfigName))
+      throw new RPSError(CIRA_CONFIG_INSERTION_FAILED_DUPLICATE(ciraConfig.ConfigName), 'Unique key violation')
     } else {
       this.ciraConfigs.push(ciraConfig)
       this.updateConfigFile()

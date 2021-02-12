@@ -16,6 +16,7 @@ import { RCSConfig, mapConfig } from './models/Rcs'
 import { IConfigurator } from './interfaces/IConfigurator'
 import { parseValue } from './utils/parseEnvValue'
 import { existsSync, readFileSync } from 'fs' // account for the Dist/ folder
+import { API_RESPONSE } from './utils/constants'
 // const expressWs = require('express-ws');
 import routes from './routes'
 import rc = require('rc')
@@ -70,7 +71,7 @@ const server: WebSocketListener = new WebSocketListener(new Logger('WebSocketLis
 
 const isAuthenticated = (req, res, next): void => {
   if (req.header('X-RPS-API-Key') !== EnvReader.GlobalEnvConfig.RPSXAPIKEY) {
-    res.status(401).end('Not Authenticated.')
+    res.status(401).json(API_RESPONSE(null, 'Authentication Error', 'Mismatched API key')).end()
   } else {
     next()
   }

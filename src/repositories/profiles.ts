@@ -9,7 +9,7 @@ import { CIRAConfig, NetworkConfig } from '../RCS.Config'
 import { mapToProfile } from './mapToProfile'
 import { AMTConfiguration } from '../models/Rcs'
 import { CiraConfigDb } from './ciraConfigs'
-import { PROFILE_INSERTION_FAILED_DUPLICATE, PROFILE_INSERTION_CIRA_CONSTRAINT, API_UNEXPECTED_EXCEPTION } from '../utils/constants'
+import { PROFILE_INSERTION_FAILED_DUPLICATE, PROFILE_INSERTION_CIRA_CONSTRAINT, API_UNEXPECTED_EXCEPTION, PROFILE_INSERTION_NETWORK_CONSTRAINT } from '../utils/constants'
 import { NetConfigDb } from './netProfiles'
 import Logger from '../Logger'
 import { RPSError } from '../utils/RPSError'
@@ -45,7 +45,7 @@ export class ProfilesDb implements IProfilesDb {
    */
   async getProfileByName (profileName: string): Promise<AMTConfiguration> {
     const results = await this.db.query('SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, generate_random_password as GenerateRandomPassword, configuration_script as ConfigurationScript, cira_config_name as ciraConfigName, random_password_length as RandomPasswordLength, network_profile_name as NetworkProfileName, mebx_password as MEBxPassword, generate_random_mebx_password as GenerateRandomMEBxPassword, random_mebx_password_length as RandomMEBxPasswordLength FROM profiles WHERE profile_name = $1', [profileName])
-    let amtProfile: AMTConfiguration = {} as AMTConfiguration
+    let amtProfile: AMTConfiguration = null
     if (results.rowCount > 0) {
       amtProfile = mapToProfile(results.rows[0])
     }
@@ -113,10 +113,14 @@ export class ProfilesDb implements IProfilesDb {
     } catch (error) {
       this.log.error(`Failed to insert AMT profile: ${amtConfig.ProfileName}`, error)
       if (error.code === '23505') { // Unique key violation
-        throw new RPSError(PROFILE_INSERTION_FAILED_DUPLICATE(amtConfig.ProfileName))
+        throw new RPSError(PROFILE_INSERTION_FAILED_DUPLICATE(amtConfig.ProfileName), 'Unique key violation')
       }
       if (error.code === '23503') { // Unique key violation
-        throw new RPSError(PROFILE_INSERTION_CIRA_CONSTRAINT(amtConfig.CIRAConfigName))
+        if (error.message.includes('profiles_cira_config_name_fkey')) {
+          throw new RPSError(PROFILE_INSERTION_CIRA_CONSTRAINT(amtConfig.CIRAConfigName), 'Foreign key constraint violation')
+        } else {
+          throw new RPSError(PROFILE_INSERTION_NETWORK_CONSTRAINT(amtConfig.NetworkConfigName), 'Foreign key constraint violation')
+        }
       }
       throw new RPSError(API_UNEXPECTED_EXCEPTION(amtConfig.ProfileName))
     }
@@ -150,8 +154,12 @@ export class ProfilesDb implements IProfilesDb {
       return false
     } catch (error) {
       this.log.error(`Failed to update AMT profile: ${amtConfig.ProfileName}`, error)
-      if (error.code === '23503') { // Unique key violation
-        throw new RPSError(PROFILE_INSERTION_CIRA_CONSTRAINT(amtConfig.CIRAConfigName))
+      if (error.code === '23503') { // Foreign key constraint violation
+        if (error.message.includes('profiles_cira_config_name_fkey')) {
+          throw new RPSError(PROFILE_INSERTION_CIRA_CONSTRAINT(amtConfig.CIRAConfigName), 'Foreign key constraint violation')
+        } else {
+          throw new RPSError(PROFILE_INSERTION_NETWORK_CONSTRAINT(amtConfig.NetworkConfigName), 'Foreign key constraint violation')
+        }
       }
       throw new RPSError(API_UNEXPECTED_EXCEPTION(amtConfig.ProfileName))
     }

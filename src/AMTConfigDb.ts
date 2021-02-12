@@ -37,7 +37,7 @@ export class AMTConfigDb implements IProfilesDb {
    */
   async getProfileByName (profileName: string): Promise<AMTConfiguration> {
     this.logger.debug(`getProfileByName: ${profileName}`)
-    const profile: AMTConfiguration = this.amtProfiles.find(item => item.ProfileName === profileName) || {} as AMTConfiguration
+    const profile: AMTConfiguration = this.amtProfiles.find(item => item.ProfileName === profileName) || null
     return profile
   }
 
@@ -99,7 +99,7 @@ export class AMTConfigDb implements IProfilesDb {
   async insertProfile (amtConfig: any): Promise<boolean> {
     if (this.amtProfiles.some(item => item.ProfileName === amtConfig.ProfileName)) {
       this.logger.error(`profile already exists: ${amtConfig.ProfileName}`)
-      throw new RPSError(PROFILE_INSERTION_FAILED_DUPLICATE(amtConfig.ProfileName))
+      throw new RPSError(PROFILE_INSERTION_FAILED_DUPLICATE(amtConfig.ProfileName), 'Unique key violation')
       // return false
     } else {
       this.amtProfiles.push(amtConfig)
