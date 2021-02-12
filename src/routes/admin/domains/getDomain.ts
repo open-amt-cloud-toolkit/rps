@@ -5,7 +5,7 @@
  **********************************************************************/
 import { IDomainsDb } from '../../../repositories/interfaces/IDomainsDb'
 import { DomainsDbFactory } from '../../../repositories/DomainsDbFactory'
-import { DOMAIN_NOT_FOUND, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
+import { DOMAIN_NOT_FOUND, API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../../utils/constants'
 import { AMTDomain } from '../../../models/Rcs'
 import Logger from '../../../Logger'
 
@@ -16,18 +16,18 @@ export async function getDomain (req, res): Promise<void> {
   try {
     domainsDb = DomainsDbFactory.getDomainsDb()
     const result: AMTDomain = await domainsDb.getDomainByName(domainName)
-    if (Object.keys(result).length !== 0) {
+    if (result !== null) {
       // Return null. Check Security objectives around returning passwords.
-      result.ProvisioningCertPassword = null
-      result.ProvisioningCert = null
+      delete result.ProvisioningCertPassword
+      delete result.ProvisioningCert
       log.info(`Domain : ${JSON.stringify(result)}`)
-      res.status(200).json(result).end()
+      res.status(200).json(API_RESPONSE(result)).end()
     } else {
       log.info(`Not found : ${domainName}`)
-      res.status(404).end(DOMAIN_NOT_FOUND(domainName))
+      res.status(404).json(API_RESPONSE(null, 'Not Found', DOMAIN_NOT_FOUND(domainName))).end()
     }
   } catch (error) {
     log.error(`Failed to get AMT Domain : ${domainName}`, error)
-    res.status(500).end(API_UNEXPECTED_EXCEPTION(`GET ${domainName}`))
+    res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`GET ${domainName}`))).end()
   }
 }

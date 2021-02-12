@@ -1,7 +1,10 @@
 export class RPSError extends Error {
-  constructor (m: string) {
-    super(m)
-
+  errorName: string
+  constructor (message: string, errorName?: string) {
+    super(message)
+    if (errorName) {
+      this.name = errorName
+    }
     // Set the prototype explicitly.
     Object.setPrototypeOf(this, RPSError.prototype)
   }

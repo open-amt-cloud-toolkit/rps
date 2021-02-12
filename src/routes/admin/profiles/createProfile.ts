@@ -9,7 +9,7 @@ import { ProfilesDbFactory } from '../../../repositories/ProfilesDbFactory'
 import { AMTConfig } from '../../../RCS.Config'
 import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
-import { PROFILE_ERROR, PROFILE_INSERTION_SUCCESS } from '../../../utils/constants'
+import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, PROFILE_INSERTION_SUCCESS } from '../../../utils/constants'
 import { RPSError } from '../../../utils/RPSError'
 
 export async function createProfile (req, res): Promise<void> {
@@ -63,14 +63,14 @@ export async function createProfile (req, res): Promise<void> {
         }
         await req.secretsManager.writeSecretWithObject(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${amtConfig.ProfileName}`, data)
       }
-      res.status(201).end(PROFILE_INSERTION_SUCCESS(amtConfig.ProfileName))
+      res.status(201).json(API_RESPONSE(null, null, PROFILE_INSERTION_SUCCESS(amtConfig.ProfileName))).end()
     }
   } catch (error) {
     log.error(`Failed to create a AMT profile: ${amtConfig.ProfileName}`, error)
     if (error instanceof RPSError) {
-      res.status(400).end(error.message)
+      res.status(400).json(API_RESPONSE(null, error.name, error.message)).end()
     } else {
-      res.status(500).end(PROFILE_ERROR(amtConfig.ProfileName))
+      res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`Insert AMT profile ${amtConfig.ProfileName}`))).end()
     }
   }
 }

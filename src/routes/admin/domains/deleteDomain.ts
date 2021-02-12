@@ -5,7 +5,7 @@
  **********************************************************************/
 import { IDomainsDb } from '../../../repositories/interfaces/IDomainsDb'
 import { DomainsDbFactory } from '../../../repositories/DomainsDbFactory'
-import { DOMAIN_NOT_FOUND, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
+import { DOMAIN_NOT_FOUND, API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../../utils/constants'
 import { EnvReader } from '../../../utils/EnvReader'
 import { AMTDomain } from '../../../models/Rcs'
 import Logger from '../../../Logger'
@@ -17,8 +17,8 @@ export async function deleteDomain (req, res): Promise<void> {
   try {
     domainsDb = DomainsDbFactory.getDomainsDb()
     const domain: AMTDomain = await domainsDb.getDomainByName(domainName)
-    if (Object.keys(domain).length === 0) {
-      res.status(404).end(DOMAIN_NOT_FOUND(domainName))
+    if (domain == null) {
+      res.status(404).json(API_RESPONSE(null, 'Not Found', DOMAIN_NOT_FOUND(domainName))).end()
     } else {
       const results = await domainsDb.deleteDomainByName(domainName)
       if (results) {
@@ -30,6 +30,6 @@ export async function deleteDomain (req, res): Promise<void> {
     }
   } catch (error) {
     log.error(`Failed to delete AMT Domain : ${domainName}`, error)
-    res.status(500).end(API_UNEXPECTED_EXCEPTION(domainName))
+    res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(domainName))).end()
   }
 }

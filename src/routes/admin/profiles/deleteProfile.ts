@@ -7,7 +7,7 @@ import Logger from '../../../Logger'
 import { AMTConfiguration } from '../../../models/Rcs'
 import { IProfilesDb } from '../../../repositories/interfaces/IProfilesDb'
 import { ProfilesDbFactory } from '../../../repositories/ProfilesDbFactory'
-import { PROFILE_NOT_FOUND, PROFILE_ERROR } from '../../../utils/constants'
+import { PROFILE_NOT_FOUND, API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../../utils/constants'
 import { EnvReader } from '../../../utils/EnvReader'
 
 export async function deleteProfile (req, res): Promise<void> {
@@ -17,8 +17,8 @@ export async function deleteProfile (req, res): Promise<void> {
   try {
     profilesDb = ProfilesDbFactory.getProfilesDb()
     const profile: AMTConfiguration = await profilesDb.getProfileByName(profileName)
-    if (Object.keys(profile).length === 0) {
-      res.status(404).end(PROFILE_NOT_FOUND(profileName))
+    if (profile == null) {
+      res.status(404).json(API_RESPONSE(null, 'Not Found', PROFILE_NOT_FOUND(profileName))).end()
     } else {
       const results: boolean = await profilesDb.deleteProfileByName(profileName)
       if (results) {
@@ -32,6 +32,6 @@ export async function deleteProfile (req, res): Promise<void> {
     }
   } catch (error) {
     log.error(`Failed to delete AMT profile : ${profileName}`, error)
-    res.status(500).end(PROFILE_ERROR(profileName))
+    res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`Delete AMT profile ${profileName}`))).end()
   }
 }

@@ -6,7 +6,7 @@
 import Logger from '../../../Logger'
 import { IProfilesDb } from '../../../repositories/interfaces/IProfilesDb'
 import { ProfilesDbFactory } from '../../../repositories/ProfilesDbFactory'
-import { PROFILE_NOT_FOUND, PROFILE_ERROR } from '../../../utils/constants'
+import { PROFILE_NOT_FOUND, API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../../utils/constants'
 import { AMTConfiguration } from '../../../models/Rcs'
 
 export async function getProfile (req, res): Promise<void> {
@@ -16,16 +16,16 @@ export async function getProfile (req, res): Promise<void> {
   try {
     profilesDb = ProfilesDbFactory.getProfilesDb()
     const result: AMTConfiguration = await profilesDb.getProfileByName(profileName)
-    if (Object.keys(result).length === 0) {
-      res.status(404).end(PROFILE_NOT_FOUND(profileName))
+    if (result == null) {
+      res.status(404).json(API_RESPONSE(null, 'Not Found', PROFILE_NOT_FOUND(profileName))).end()
     } else {
       // Return null. Check Security objectives around returning passwords.
-      result.AMTPassword = null
-      result.MEBxPassword = null
-      res.status(200).json(result).end()
+      delete result.AMTPassword
+      delete result.MEBxPassword
+      res.status(200).json(API_RESPONSE(result)).end()
     }
   } catch (error) {
     log.error('Failed to get AMT profile : ', error)
-    res.status(500).end(PROFILE_ERROR(profileName))
+    res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`Get AMT profile ${profileName}`))).end()
   }
 }

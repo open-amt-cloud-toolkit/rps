@@ -18,6 +18,6 @@ export const networkValidator = (): any => {
       .isEmpty()
       .withMessage('dhcpEnabled is required')
       .isBoolean()
-      .withMessage('Must be a boolean true or false')
+      .withMessage('Must be a boolean, true or false')
   ]
 }

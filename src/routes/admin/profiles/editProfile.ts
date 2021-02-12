@@ -7,10 +7,11 @@ import { IProfilesDb } from '../../../repositories/interfaces/IProfilesDb'
 import { ProfilesDbFactory } from '../../../repositories/ProfilesDbFactory'
 import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
-import { API_UNEXPECTED_EXCEPTION, PROFILE_NOT_FOUND } from '../../../utils/constants'
+import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, PROFILE_NOT_FOUND } from '../../../utils/constants'
 import { validationResult } from 'express-validator'
 import { AMTConfiguration } from '../../../models/Rcs'
 import { ClientAction } from '../../../RCS.Config'
+import { RPSError } from '../../../utils/RPSError'
 
 export async function editProfile (req, res): Promise<void> {
   let profilesDb: IProfilesDb = null
@@ -25,9 +26,9 @@ export async function editProfile (req, res): Promise<void> {
     profilesDb = ProfilesDbFactory.getProfilesDb()
     const oldConfig: AMTConfiguration = await profilesDb.getProfileByName(newConfig.profileName)
 
-    if (Object.keys(oldConfig).length === 0) {
+    if (oldConfig == null) {
       log.info(`Not found: ${newConfig.profileName}`)
-      res.status(404).end(PROFILE_NOT_FOUND(newConfig.profileName))
+      res.status(404).json(API_RESPONSE(null, 'Not Found', PROFILE_NOT_FOUND(newConfig.profileName))).end()
     } else {
       const amtConfig: AMTConfiguration = getUpdatedData(newConfig, oldConfig)
       // Assigning value key value for AMT Random Password and MEBx Random Password to store in database
@@ -73,13 +74,16 @@ export async function editProfile (req, res): Promise<void> {
     }
   } catch (error) {
     log.error(`Failed to update AMT profile: ${newConfig.profileName}`, error)
-    res.status(500).end(API_UNEXPECTED_EXCEPTION(`UPDATE ${newConfig.profileName}`))
+    if (error instanceof RPSError) {
+      res.status(400).json(API_RESPONSE(null, error.name, error.message)).end()
+    } else {
+      res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`Update AMT profile ${newConfig.profileName}`))).end()
+    }
   }
 }
 
 function getUpdatedData (newConfig: any, oldConfig: AMTConfiguration): AMTConfiguration {
-  const amtConfig: AMTConfiguration = {} as AMTConfiguration
-  amtConfig.ProfileName = newConfig.profileName
+  const amtConfig: AMTConfiguration = { ProfileName: newConfig.profileName } as AMTConfiguration
   if (newConfig.amtPassword == null) {
     amtConfig.AMTPassword = oldConfig.AMTPassword
     amtConfig.GenerateRandomPassword = false
@@ -94,7 +98,6 @@ function getUpdatedData (newConfig: any, oldConfig: AMTConfiguration): AMTConfig
   } else {
     amtConfig.MEBxPassword = newConfig.mebxPassword
   }
-
   if (newConfig.generateRandomPassword) {
     amtConfig.GenerateRandomPassword = newConfig.generateRandomPassword
     amtConfig.RandomPasswordLength = newConfig.passwordLength
@@ -103,7 +106,6 @@ function getUpdatedData (newConfig: any, oldConfig: AMTConfiguration): AMTConfig
     amtConfig.GenerateRandomPassword = newConfig.amtPassword == null ? oldConfig.GenerateRandomPassword : null
     amtConfig.RandomPasswordLength = newConfig.amtPassword == null ? oldConfig.RandomPasswordLength : null
   }
-
   if (newConfig.generateRandomMEBxPassword) {
     amtConfig.GenerateRandomMEBxPassword = newConfig.generateRandomMEBxPassword
     amtConfig.RandomMEBxPasswordLength = newConfig.mebxPasswordLength
@@ -112,25 +114,13 @@ function getUpdatedData (newConfig: any, oldConfig: AMTConfiguration): AMTConfig
     amtConfig.GenerateRandomMEBxPassword = newConfig.mebxPassword == null ? oldConfig.GenerateRandomMEBxPassword : null
     amtConfig.RandomMEBxPasswordLength = newConfig.mebxPassword == null ? oldConfig.RandomMEBxPasswordLength : null
   }
-  if (newConfig.activation == null) {
-    amtConfig.Activation = oldConfig.Activation
-  } else {
-    amtConfig.Activation = newConfig.activation
-  }
+  amtConfig.Activation = newConfig.activation ?? oldConfig.Activation
   if (amtConfig.Activation === ClientAction.CLIENTCTLMODE) {
     amtConfig.GenerateRandomMEBxPassword = false
     amtConfig.RandomMEBxPasswordLength = null
     amtConfig.MEBxPassword = null
   }
-  if (newConfig.ciraConfigName == null) {
-    amtConfig.CIRAConfigName = oldConfig.CIRAConfigName
-  } else {
-    amtConfig.CIRAConfigName = newConfig.ciraConfigName
-  }
-  if (newConfig.networkConfigName == null) {
-    amtConfig.NetworkConfigName = oldConfig.NetworkConfigName
-  } else {
-    amtConfig.NetworkConfigName = newConfig.networkConfigName
-  }
+  amtConfig.CIRAConfigName = newConfig.ciraConfigName ?? oldConfig.CIRAConfigName
+  amtConfig.NetworkConfigName = newConfig.networkConfigName ?? oldConfig.NetworkConfigName
   return amtConfig
 }

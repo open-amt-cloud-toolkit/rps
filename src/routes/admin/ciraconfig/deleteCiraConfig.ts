@@ -6,7 +6,7 @@
 import { ICiraConfigDb } from '../../../repositories/interfaces/ICiraConfigDb'
 import { CiraConfigDbFactory } from '../../../repositories/CiraConfigDbFactory'
 import Logger from '../../../Logger'
-import { API_UNEXPECTED_EXCEPTION, CIRA_CONFIG_NOT_FOUND } from '../../../utils/constants'
+import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, CIRA_CONFIG_NOT_FOUND } from '../../../utils/constants'
 import { EnvReader } from '../../../utils/EnvReader'
 import { RPSError } from '../../../utils/RPSError'
 
@@ -25,14 +25,14 @@ export async function deleteCiraConfig (req, res): Promise<void> {
       res.status(204).end()
     } else {
       log.info(`Not found : ${ciraConfigName}`)
-      res.status(404).end(CIRA_CONFIG_NOT_FOUND(ciraConfigName))
+      res.status(404).json(API_RESPONSE(null, 'Not Found', CIRA_CONFIG_NOT_FOUND(ciraConfigName))).end()
     }
   } catch (error) {
     log.error(`Failed to delete CIRA config profile : ${ciraConfigName}`, error)
     if (error instanceof RPSError) {
-      res.status(400).end(error.message)
+      res.status(400).json(API_RESPONSE(null, error.message)).end()
     } else {
-      res.status(500).end(API_UNEXPECTED_EXCEPTION(`DELETE ${ciraConfigName}`))
+      res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`DELETE ${ciraConfigName}`))).end()
     }
   }
 }

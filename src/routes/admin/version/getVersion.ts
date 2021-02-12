@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  * Author : Brian Osburn
  **********************************************************************/
-import { ProtocolVersion } from '../../../utils/constants'
+import { API_RESPONSE, ProtocolVersion } from '../../../utils/constants'
 
 export function getVersion (req, res): void {
-  res.status(200).json(`protocol version: ${ProtocolVersion}`).end()
+  res.status(200).json(API_RESPONSE(`protocol version: ${ProtocolVersion}`)).end()
 }

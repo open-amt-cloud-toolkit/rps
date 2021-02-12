@@ -7,7 +7,7 @@ import Logger from '../../../Logger'
 import { AMTConfiguration } from '../../../models/Rcs'
 import { IProfilesDb } from '../../../repositories/interfaces/IProfilesDb'
 import { ProfilesDbFactory } from '../../../repositories/ProfilesDbFactory'
-import { PROFILE_ERROR } from '../../../utils/constants'
+import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
 
 export async function allProfiles (req, res): Promise<void> {
   const log = new Logger('allProfiles')
@@ -18,14 +18,14 @@ export async function allProfiles (req, res): Promise<void> {
     results = await profilesDb.getAllProfiles()
     if (results.length >= 0) {
       results = results.map((result: AMTConfiguration) => {
-        result.AMTPassword = null
-        result.MEBxPassword = null
+        delete result.AMTPassword
+        delete result.MEBxPassword
         return result
       })
-      res.status(200).json(results).end()
+      res.status(200).json(API_RESPONSE(results)).end()
     }
   } catch (error) {
     log.error('Failed to get all the AMT Domains :', error)
-    res.status(500).end(PROFILE_ERROR(''))
+    res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION('GET all AMT profiles'))).end()
   }
 }

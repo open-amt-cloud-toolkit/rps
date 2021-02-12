@@ -40,7 +40,7 @@ export class NetConfigFileStorageDb implements INetProfilesDb {
    * @returns {NetworkConfig} NetworkConfig object
    */
   async getProfileByName (netConfigName: string): Promise<NetworkConfig> {
-    const networkConfig: NetworkConfig = this.networkConfigs.find(item => item.ProfileName === netConfigName) || {} as NetworkConfig
+    const networkConfig: NetworkConfig = this.networkConfigs.find(item => item.ProfileName === netConfigName) || null
     return networkConfig
   }
 
@@ -60,7 +60,7 @@ export class NetConfigFileStorageDb implements INetProfilesDb {
         const profileUsingThisConfig = this.amtProfiles.find(profile => profile.NetworkConfigName === netConfigName)
         if (typeof profileUsingThisConfig !== 'undefined') {
           this.logger.error('Cannot delete the network config. An AMT Profile is already using it.')
-          throw new RPSError(NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT(netConfigName))
+          throw new RPSError(NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT(netConfigName), 'Foreign key violation')
         }
         this.networkConfigs.splice(i, 1)
         found = true
@@ -85,7 +85,7 @@ export class NetConfigFileStorageDb implements INetProfilesDb {
   async insertProfile (netConfig: NetworkConfig): Promise<boolean> {
     if (this.networkConfigs.some(item => item.ProfileName === netConfig.ProfileName)) {
       this.logger.error(`Net Config already exists: ${netConfig.ProfileName}`)
-      throw new RPSError(NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE(netConfig.ProfileName))
+      throw new RPSError(NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE(netConfig.ProfileName), 'Unique key violation')
     } else {
       this.networkConfigs.push(netConfig)
       this.updateConfigFile()

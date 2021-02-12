@@ -4,6 +4,7 @@
  * Author : Madhavi Losetty
  **********************************************************************/
 import { check } from 'express-validator'
+import { ClientAction } from '../../../RCS.Config'
 
 export const amtProfileValidator = (): any => {
   return [
@@ -17,18 +18,18 @@ export const amtProfileValidator = (): any => {
       .not()
       .isEmpty()
       .withMessage('Activation is required')
-      .isIn(['acmactivate', 'ccmactivate'])
+      .isIn([ClientAction.ADMINCTLMODE, ClientAction.CLIENTCTLMODE])
       .withMessage('Activation accepts either acmactivate(admin control activation) or ccmactivate(client control mode activation)')
       .custom((value, { req }) => {
         const pwd = req.body.payload.amtPassword
         const randomPwd = req.body.payload.generateRandomPassword
-        if ((pwd === undefined && randomPwd === undefined)) {
+        if ((pwd == null && randomPwd == null)) {
           throw new Error('Either payload.generateRandomPassword should be enabled with payload.amtPassword or should provide payload.amtPassword')
         }
-        if (value === 'acmactivate') {
+        if (value === ClientAction.ADMINCTLMODE) {
           const mebxPwd = req.body.payload.mebxPassword
           const mebxRandomPwd = req.body.payload.generateRandomMEBxPassword
-          if ((mebxPwd === undefined && mebxRandomPwd === undefined)) {
+          if ((mebxPwd == null && mebxRandomPwd == null)) {
             throw new Error('Either payload.generateRandomMEBxPassword should be enabled with payload.mebxPasswordLength or should provide payload.mebxPassword')
           }
         }
@@ -81,18 +82,18 @@ export const amtProfileValidator = (): any => {
         const pwd = req.body.payload.mebxPassword
         const pwdLength = req.body.payload.mebxPasswordLength
         const activationMode = req.body.payload.activation
-        if (activationMode === 'acmactivate') {
+        if (activationMode === ClientAction.ADMINCTLMODE) {
           if (value === true) {
-            if (pwd !== undefined) {
+            if (pwd != null) {
               throw new Error('Either generate MEBx password should be enabled with random MEBx password length or should provide MEBx password, but not both')
             }
-            if (pwdLength === undefined) {
+            if (pwdLength == null) {
               throw new Error('If generate random MEBx password is enabled, payload.mebxPasswordLength is mandatory')
             }
           } else {
-            if (pwd === undefined) {
+            if (pwd == null) {
               throw new Error('If generate random MEBx password is disabled, payload.amtPassword is mandatory')
-            } else if (pwdLength !== undefined) {
+            } else if (pwdLength != null) {
               throw new Error('If generate random MEBx password is disabled, payload.mebxPasswordLength is not necessary')
             }
           }
@@ -104,7 +105,7 @@ export const amtProfileValidator = (): any => {
   ]
 }
 
-export const ProfileupdateValidator = (): any => {
+export const profileUpdateValidator = (): any => {
   return [
     check('payload.profileName')
       .not()
@@ -114,16 +115,16 @@ export const ProfileupdateValidator = (): any => {
       .withMessage('AMT profile name accepts letters, numbers, special characters and no spaces'),
     check('payload.activation')
       .optional()
-      .isIn(['acmactivate', 'ccmactivate'])
+      .isIn([ClientAction.ADMINCTLMODE, ClientAction.CLIENTCTLMODE])
       .withMessage('Activation accepts either acmactivate(admin control activation) or ccmactivate(client control mode activation)')
       .custom((value, { req }) => {
         // if (typeof value !== 'string') {
         //   throw new Error('MPS Port value should range between 1024 and 49151')
         // }
-        if (value === 'acmactivate') {
+        if (value === ClientAction.ADMINCTLMODE) {
           const mebxPwd = req.body.payload.mebxPassword
           const mebxRandomPwd = req.body.payload.generateRandomMEBxPassword
-          if ((mebxPwd === undefined && mebxRandomPwd === undefined)) {
+          if ((mebxPwd == null && mebxRandomPwd == null)) {
             throw new Error('Either payload.generateRandomMEBxPassword should be enabled with payload.mebxPasswordLength or should provide payload.mebxPassword')
           }
         }
@@ -166,18 +167,18 @@ export const ProfileupdateValidator = (): any => {
         const pwd = req.body.payload.mebxPassword
         const pwdLength = req.body.payload.mebxPasswordLength
         const activationMode = req.body.payload.activation
-        if (activationMode === 'acmactivate') {
+        if (activationMode === ClientAction.ADMINCTLMODE) {
           if (value === true) {
-            if (pwd !== undefined) {
+            if (pwd != null) {
               throw new Error('Either generate MEBx password should be enabled with random MEBx password length or should provide MEBx password, but not both')
             }
-            if (pwdLength === undefined) {
+            if (pwdLength == null) {
               throw new Error('If generate random MEBx password is enabled, payload.mebxPasswordLength is mandatory')
             }
           } else {
-            if (pwd === undefined) {
+            if (pwd == null) {
               throw new Error('If generate random MEBx password is disabled, payload.amtPassword is mandatory')
-            } else if (pwdLength !== undefined) {
+            } else if (pwdLength != null) {
               throw new Error('If generate random MEBx password is disabled, payload.mebxPasswordLength is not necessary')
             }
           }

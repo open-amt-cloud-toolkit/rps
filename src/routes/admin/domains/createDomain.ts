@@ -9,7 +9,7 @@ import { IDomainsDb } from '../../../repositories/interfaces/IDomainsDb'
 import { DomainsDbFactory } from '../../../repositories/DomainsDbFactory'
 import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
-import { API_UNEXPECTED_EXCEPTION, DOMAIN_INSERTION_SUCCESS } from '../../../utils/constants'
+import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, DOMAIN_INSERTION_SUCCESS } from '../../../utils/constants'
 import { RPSError } from '../../../utils/RPSError'
 
 export async function createDomain (req, res): Promise<void> {
@@ -50,14 +50,14 @@ export async function createDomain (req, res): Promise<void> {
         log.info(`${amtDomain.Name} provisioing cert & password stored in Vault`)
       }
       log.info(`Created Domain : ${amtDomain.Name}`)
-      res.status(201).end(DOMAIN_INSERTION_SUCCESS(amtDomain.Name))
+      res.status(201).json(API_RESPONSE(null, null, DOMAIN_INSERTION_SUCCESS(amtDomain.Name))).end()
     }
   } catch (error) {
     log.error(`Failed to create a AMT Domain : ${amtDomain.Name}`, error)
     if (error instanceof RPSError) {
-      res.status(400).end(error.message)
+      res.status(400).json(API_RESPONSE(null, error.name, error.message)).end()
     } else {
-      res.status(500).end(API_UNEXPECTED_EXCEPTION(`Insert Domain ${amtDomain.Name}`))
+      res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`Insert Domain ${amtDomain.Name}`))).end()
     }
   }
 }
