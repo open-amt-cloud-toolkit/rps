@@ -4,8 +4,9 @@ import { EnvReader } from './utils/EnvReader'
 import { ILogger } from './interfaces/ILogger'
 import { ICiraConfigDb } from './repositories/interfaces/ICiraConfigDb'
 import { CIRAConfig } from './RCS.Config'
-import { CIRA_CONFIG_DELETION_FAILED_CONSTRAINT, CIRA_CONFIG_SUCCESSFULLY_DELETED, CIRA_CONFIG_NOT_FOUND, CIRA_CONFIG_INSERTION_FAILED_DUPLICATE } from './utils/constants'
+import { CIRA_CONFIG_DELETION_FAILED_CONSTRAINT, CIRA_CONFIG_INSERTION_FAILED_DUPLICATE } from './utils/constants'
 import { CiraConfigDbFactory } from './repositories/CiraConfigDbFactory'
+import { RPSError } from './utils/RPSError'
 
 export class CiraConfigFileStorageDb implements ICiraConfigDb {
   ciraConfigs: CIRAConfig[]
@@ -15,23 +16,37 @@ export class CiraConfigFileStorageDb implements ICiraConfigDb {
   constructor (amtProfiles: AMTConfiguration[], ciraConfigs: CIRAConfig[], logger: ILogger) {
     this.logger = logger
     this.logger.debug('using local CiraConfigFileStorageDb')
-    this.ciraConfigs = ciraConfigs || []
+    this.ciraConfigs = ciraConfigs
     this.amtProfiles = amtProfiles
   }
 
-  async getAllCiraConfigs (): Promise<any> {
+  /**
+   * @description Get all CIRA config from FileStorage
+   * @returns {CIRAConfig[]} returns an array of CIRA config objects
+   */
+  async getAllCiraConfigs (): Promise<CIRAConfig[]> {
     this.logger.debug('getAllCiraConfigs called')
     return this.ciraConfigs
   }
 
-  async getCiraConfigByName (ciraConfigName: any): Promise<any> {
+  /**
+   * @description Get CIRA config from FileStorage by name
+   * @param {string} ciraConfigName
+   * @returns {CIRAConfig} CIRA config object
+   */
+  async getCiraConfigByName (ciraConfigName: string): Promise<CIRAConfig> {
     this.logger.debug(`getCiraConfigByName: ${ciraConfigName}`)
-    return this.ciraConfigs.find(item => item.ConfigName === ciraConfigName)
+    const ciraConfig: CIRAConfig = this.ciraConfigs.find(item => item.ConfigName === ciraConfigName) || {} as CIRAConfig
+    return ciraConfig
   }
 
-  async deleteCiraConfigByName (ciraConfigName: any): Promise<any> {
+  /**
+   * @description Delete CIRA config from FileStorage by name
+   * @param {string} ciraConfigName
+   * @returns {boolean} Return true on successful deletion
+   */
+  async deleteCiraConfigByName (ciraConfigName: string): Promise<boolean> {
     this.logger.debug(`deleteCiraConfigByName ${ciraConfigName}`)
-
     if (CiraConfigDbFactory.dbCreator?.getDb()) {
       this.amtProfiles = CiraConfigDbFactory.dbCreator.getDb().AMTConfigurations // get latest profiles every time
     }
@@ -42,31 +57,32 @@ export class CiraConfigFileStorageDb implements ICiraConfigDb {
         const profileUsingThisConfig = this.amtProfiles.find(profile => profile.CIRAConfigName === ciraConfigName)
         if (typeof profileUsingThisConfig !== 'undefined') {
           this.logger.error('Cannot delete the CIRA config. An AMT Profile is already using it.')
-          throw (CIRA_CONFIG_DELETION_FAILED_CONSTRAINT(ciraConfigName))
+          throw new RPSError(CIRA_CONFIG_DELETION_FAILED_CONSTRAINT(ciraConfigName))
         }
         this.ciraConfigs.splice(i, 1)
         found = true
         break
       }
     }
-
     if (found) {
-      this.logger.silly(`Found ${ciraConfigName}. Lets delete it.`)
       this.updateConfigFile()
       this.logger.info(`Cira Config deleted: ${ciraConfigName}`)
-      return CIRA_CONFIG_SUCCESSFULLY_DELETED(ciraConfigName)
+      return true
     } else {
       this.logger.error(`Cira Config not found: ${ciraConfigName}`)
-      throw (CIRA_CONFIG_NOT_FOUND(ciraConfigName))
+      return false
     }
   }
 
-  async insertCiraConfig (ciraConfig: CIRAConfig): Promise<any> {
-    this.logger.debug(`insertCiraConfig: ${ciraConfig.ConfigName}`)
-
+  /**
+   * @description Insert CIRA config into FileStorage
+   * @param {string} ciraConfigName
+   * @returns {boolean} Return true on successful insertion
+   */
+  async insertCiraConfig (ciraConfig: CIRAConfig): Promise<boolean> {
     if (this.ciraConfigs.some(item => item.ConfigName === ciraConfig.ConfigName)) {
-      this.logger.error(`Cira Config already exists: ${ciraConfig.ConfigName}`)
-      throw (CIRA_CONFIG_INSERTION_FAILED_DUPLICATE(ciraConfig.ConfigName))
+      this.logger.info(`Cira Config already exists: ${ciraConfig.ConfigName}`)
+      throw new RPSError(CIRA_CONFIG_INSERTION_FAILED_DUPLICATE(ciraConfig.ConfigName))
     } else {
       this.ciraConfigs.push(ciraConfig)
       this.updateConfigFile()
@@ -75,7 +91,12 @@ export class CiraConfigFileStorageDb implements ICiraConfigDb {
     }
   }
 
-  async updateCiraConfig (ciraConfig: CIRAConfig): Promise<number> {
+  /**
+   * @description Update CIRA config into FileStorage
+   * @param {string} ciraConfigName
+   * @returns {boolean} Return true on successful updation
+   */
+  async updateCiraConfig (ciraConfig: CIRAConfig): Promise<boolean> {
     this.logger.debug(`update CiraConfig: ${ciraConfig.ConfigName}`)
     const isMatch = (item): boolean => item.ConfigName === ciraConfig.ConfigName
     const index = this.ciraConfigs.findIndex(isMatch)
@@ -84,10 +105,10 @@ export class CiraConfigFileStorageDb implements ICiraConfigDb {
       this.ciraConfigs.push(ciraConfig)
       this.updateConfigFile()
       this.logger.info(`Cira Config updated: ${ciraConfig.ConfigName}`)
-      return 1
+      return true
     } else {
       this.logger.info(`Cira Config doesnt exist: ${ciraConfig.ConfigName}`)
-      return 0
+      return false
     }
   }
 

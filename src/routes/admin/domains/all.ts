@@ -5,30 +5,26 @@
  **********************************************************************/
 import { IDomainsDb } from '../../../repositories/interfaces/IDomainsDb'
 import { DomainsDbFactory } from '../../../repositories/DomainsDbFactory'
-import { DOMAIN_ERROR, DOMAIN_CONFIG_EMPTY } from '../../../utils/constants'
+import { API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
+import Logger from '../../../Logger'
+import { AMTDomain } from '../../../models/Rcs'
 
 export async function getAllDomains (req, res): Promise<void> {
-  let domainsDb: IDomainsDb = null
-
+  const log = new Logger('getAllDomains')
+  let domainsDb: IDomainsDb
   try {
     domainsDb = DomainsDbFactory.getDomainsDb()
-    // TODO: remove this?
-    const mapperFn = async (provisioningCertPassword): Promise<any> => {
-      return null
-    }
-    let results = await domainsDb.getAllDomains(mapperFn)
-    results = results.map((result) => {
-      result.ProvisioningCert = null
-      return result
-    })
-
-    if (typeof results === 'undefined' || results.length === 0) {
-      res.status(404).end(DOMAIN_CONFIG_EMPTY)
-    } else {
+    let results: AMTDomain[] = await domainsDb.getAllDomains()
+    if (results.length >= 0) {
+      results = results.map((result: AMTDomain) => {
+        result.ProvisioningCert = null
+        result.ProvisioningCertPassword = null
+        return result
+      })
       res.status(200).json(results).end()
     }
   } catch (error) {
-    console.log(error)
-    res.end(DOMAIN_ERROR(''))
+    log.error('Failed to get all the AMT Domains :', error)
+    res.status(500).end(API_UNEXPECTED_EXCEPTION('GET all Domains'))
   }
 }

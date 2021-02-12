@@ -3,18 +3,19 @@
  * SPDX-License-Identifier: Apache-2.0
  * Author : Ramu Bachala
  **********************************************************************/
-import { validationResult } from 'express-validator'
+
 import { INetProfilesDb } from '../../../repositories/interfaces/INetProfilesDb'
 import { NetConfigDbFactory } from '../../../repositories/NetConfigDbFactory'
-import { NETWORK_CONFIG_INSERTION_SUCCESS, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
+import { API_UNEXPECTED_EXCEPTION, NETWORK_CONFIG_NOT_FOUND } from '../../../utils/constants'
 import { NetworkConfig } from '../../../RCS.Config'
 import Logger from '../../../Logger'
+import { validationResult } from 'express-validator'
 import { RPSError } from '../../../utils/RPSError'
 
-export async function createNetProfile (req, res): Promise<void> {
+export async function editNetProfile (req, res): Promise<void> {
+  const log = new Logger('editNetProfile')
   let profilesDb: INetProfilesDb = null
-  const netConfig: NetworkConfig = {} as NetworkConfig
-  const log = new Logger('createNetProfile')
+  const netConfig: NetworkConfig = <NetworkConfig>{}
   try {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
@@ -27,16 +28,19 @@ export async function createNetProfile (req, res): Promise<void> {
     netConfig.IPSyncEnabled = true
 
     profilesDb = NetConfigDbFactory.getConfigDb()
-    const results = await profilesDb.insertProfile(netConfig)
-    if (results === true) {
-      res.status(201).end(NETWORK_CONFIG_INSERTION_SUCCESS(netConfig.ProfileName))
+    // SQL Query > Insert Data
+    const results: boolean = await profilesDb.updateProfile(netConfig)
+    if (results) {
+      res.status(204).end()
+    } else {
+      res.status(404).end(NETWORK_CONFIG_NOT_FOUND(netConfig.ProfileName))
     }
   } catch (error) {
-    log.error(`Failed to create a network configuration : ${netConfig.ProfileName}`, error)
+    log.error(`Failed to edit network configuration : ${netConfig.ProfileName}`, error)
     if (error instanceof RPSError) {
       res.status(400).end(error.message)
     } else {
-      res.status(500).end(API_UNEXPECTED_EXCEPTION(`Insert network configuration ${netConfig.ProfileName}`))
+      res.status(500).end(API_UNEXPECTED_EXCEPTION(`UPDATE ${netConfig.ProfileName}`))
     }
   }
 }

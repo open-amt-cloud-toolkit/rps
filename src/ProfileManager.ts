@@ -9,7 +9,7 @@ import { AMTConfiguration } from './models/Rcs'
 import { ILogger } from './interfaces/ILogger'
 import { IProfileManager } from './interfaces/IProfileManager'
 import { PasswordHelper } from './utils/PasswordHelper'
-import { AMTConfig, CIRAConfig } from './RCS.Config'
+import { CIRAConfig } from './RCS.Config'
 import { IConfigurator } from './interfaces/IConfigurator'
 import { IProfilesDb } from './repositories/interfaces/IProfilesDb'
 import { EnvReader } from './utils/EnvReader'
@@ -211,9 +211,9 @@ export class ProfileManager implements IProfileManager {
   /**
     * @description Checks if the AMT profile exists or not
     * @param {string} profile
-    * @returns {AMTConfig} returns AMTConfig object if profile exists otherwise null.
+    * @returns {AMTConfiguration} returns AMTConfig object if profile exists otherwise null.
     */
-  public async getAmtProfile (profile: string): Promise<AMTConfig> {
+  public async getAmtProfile (profile: string): Promise<AMTConfiguration> {
     try {
       if (this.envConfig?.DbConfig.useDbForConfig) {
         const amtProfile = await this.amtConfigurations.getProfileByName(profile)

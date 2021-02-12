@@ -3,23 +3,23 @@
 * SPDX-License-Identifier: Apache-2.0
 * Author : Ramu Bachala
 **********************************************************************/
+import Logger from '../../../Logger'
+import { NetworkConfig } from '../../../RCS.Config'
 import { INetProfilesDb } from '../../../repositories/interfaces/INetProfilesDb'
 import { NetConfigDbFactory } from '../../../repositories/NetConfigDbFactory'
-import { NETWORK_CONFIG_ERROR, NETWORK_CONFIG_EMPTY } from '../../../utils/constants'
+import { API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
 
 export async function allProfiles (req, res): Promise<void> {
+  const log = new Logger('allProfiles')
   let profilesDb: INetProfilesDb = null
   try {
     profilesDb = NetConfigDbFactory.getConfigDb()
-
-    const results = await profilesDb.getAllProfiles()
-    if (typeof results === 'undefined' || results.length === 0) {
-      res.status(404).end(NETWORK_CONFIG_EMPTY)
-    } else {
+    const results: NetworkConfig[] = await profilesDb.getAllProfiles()
+    if (results.length >= 0) {
       res.status(200).json(results).end()
     }
   } catch (error) {
-    console.log(error)
-    res.status(500).end(NETWORK_CONFIG_ERROR(''))
+    log.error('Failed to get all network profiles :', error)
+    res.status(500).end(API_UNEXPECTED_EXCEPTION('GET all Network Configs'))
   }
 }

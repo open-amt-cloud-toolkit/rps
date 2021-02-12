@@ -5,9 +5,10 @@
  * Author: Brian Osburn
  **********************************************************************/
 
+import { AMTDomain } from '../models/Rcs'
+
 export interface IDomainCredentialManager {
   getProvisioningCertStorageType: (domain: string) => Promise<string>
-  getProvisioningCert: (domain: string) => Promise<string>
-  getProvisioningCertPassword: (domain: string) => Promise<string>
+  getProvisioningCert: (domain: string) => Promise<AMTDomain>
   doesDomainExist: (domain: string) => Promise<boolean>
 }

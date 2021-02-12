@@ -3,64 +3,56 @@
  * SPDX-License-Identifier: Apache-2.0
  * Author : Ramu Bachala
  **********************************************************************/
+import { validationResult } from 'express-validator'
 import { IProfilesDb } from '../../../repositories/interfaces/IProfilesDb'
 import { ProfilesDbFactory } from '../../../repositories/ProfilesDbFactory'
-import { AMTConfig, ClientAction } from '../../../RCS.Config'
+import { AMTConfig } from '../../../RCS.Config'
 import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
-import {
-  PROFILE_INSERTION_SUCCESS, PROFILE_ERROR,
-  PROFILE_INVALID_INPUT,
-  PROFILE_INVALID_INPUT_AMT_PASSWORD,
-  PROFILE_INVALID_INPUT_MEBX_PASSWORD,
-  PROFILE_INVALID_AMT_PASSWORD_SELECTION,
-  PROFILE_INVALID_MEBX_PASSWORD_SELECTION,
-  PROFILE_INVALID_AMT_PASSWORD_LENGTH,
-  PROFILE_INVALID_MEBX_PASSWORD_LENGTH,
-  PROFILE_MEBX_MANDATORY
-} from '../../../utils/constants'
-import { passwordValidation, passwordLengthValidation } from '../../../utils/passwordValidationUtils'
+import { PROFILE_ERROR, PROFILE_INSERTION_SUCCESS } from '../../../utils/constants'
+import { RPSError } from '../../../utils/RPSError'
 
 export async function createProfile (req, res): Promise<void> {
   let profilesDb: IProfilesDb = null
   const log = new Logger('createProfile')
-  const amtConfig: AMTConfig = readBody(req, res)
-
+  const amtConfig: AMTConfig = {} as AMTConfig
   try {
-    // if generateRandomPassword is false, insert the amtPassword into vault using a
-    // key and insert the modified profile into db.
-    profilesDb = ProfilesDbFactory.getProfilesDb()
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+      res.status(400).json({ errors: errors.array() })
+      return
+    }
+    const payload = req.body.payload
+    amtConfig.ProfileName = payload.profileName
+    amtConfig.AMTPassword = payload.amtPassword !== undefined ? payload.amtPassword : null
+    amtConfig.MEBxPassword = payload.mebxPassword !== undefined ? payload.mebxPassword : null
+    amtConfig.GenerateRandomMEBxPassword = payload.generateRandomMEBxPassword !== undefined ? req.body.payload.generateRandomMEBxPassword : false
+    amtConfig.RandomMEBxPasswordLength = payload.mebxPasswordLength !== undefined ? req.body.payload.mebxPasswordLength : null
+    amtConfig.GenerateRandomPassword = payload.generateRandomPassword !== undefined ? payload.generateRandomPassword : false
+    amtConfig.RandomPasswordLength = payload.passwordLength !== undefined ? payload.passwordLength : null
+    amtConfig.ConfigurationScript = req.body.payload.configScript
+    amtConfig.CIRAConfigName = payload.ciraConfigName
+    amtConfig.Activation = payload.activation
+    amtConfig.RandomPasswordCharacters = payload.randomPasswordCharacters
+    amtConfig.NetworkConfigName = payload.networkConfigName
 
+    profilesDb = ProfilesDbFactory.getProfilesDb()
     const pwdBefore = amtConfig.AMTPassword
-    if (!amtConfig.GenerateRandomPassword) {
-      // store the AMT password key into db
-      if (req.secretsManager) {
-        log.silly('Generate AMT password key')
+    const mebxPwdBefore = amtConfig.MEBxPassword
+    if (req.secretsManager) {
+      if (!amtConfig.GenerateRandomPassword) {
         amtConfig.AMTPassword = `${amtConfig.ProfileName}_DEVICE_AMT_PASSWORD`
       }
-    }
-
-    const mebxPwdBefore = amtConfig.MEBxPassword
-    if (!amtConfig.GenerateRandomMEBxPassword) {
-      // store the MEBX password key into db
-      if (req.secretsManager) {
-        log.silly('Generate MEBX password key')
+      if (!amtConfig.GenerateRandomMEBxPassword) {
         amtConfig.MEBxPassword = `${amtConfig.ProfileName}_DEVICE_MEBX_PASSWORD`
       }
     }
-
-    let errorReason
-    // SQL Query > Insert Data
-    const results = await profilesDb.insertProfile(amtConfig).catch((reason) => {
-      errorReason = reason
-    })
-
-    // profile inserted  into db successfully. insert the secret into vault
-    if (!errorReason && (!amtConfig.GenerateRandomPassword || !amtConfig.GenerateRandomMEBxPassword)) {
-      // store the password sent into Vault
-      if (req.secretsManager) {
+    const results: boolean = await profilesDb.insertProfile(amtConfig)
+    if (results) {
+      // profile inserted  into db successfully.
+      if (req.secretsManager && (!amtConfig.GenerateRandomPassword || !amtConfig.GenerateRandomMEBxPassword)) {
+        // store the passwords in Vault
         const data = { data: {} }
-        log.debug('Store in vault')
         if (!amtConfig.GenerateRandomPassword) {
           data.data[`${amtConfig.ProfileName}_DEVICE_AMT_PASSWORD`] = pwdBefore
           log.debug('AMT Password written to vault')
@@ -70,100 +62,15 @@ export async function createProfile (req, res): Promise<void> {
           log.debug('MEBX Password written to vault')
         }
         await req.secretsManager.writeSecretWithObject(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${amtConfig.ProfileName}`, data)
-      } else {
-        log.debug('No secrets manager configured. Storing in DB.')
-        log.debug('Password will be visible in plain text.')
       }
-    }
-
-    if (!errorReason && results) {
       res.status(201).end(PROFILE_INSERTION_SUCCESS(amtConfig.ProfileName))
-    } else {
-      res.status(500).end(`${errorReason}`)
     }
   } catch (error) {
-    if (res.status) return
-    console.log(error)
-    res.status(500).end(PROFILE_ERROR(amtConfig.ProfileName))
-  }
-}
-
-function readBody (req, res): AMTConfig {
-  const config: AMTConfig = {} as AMTConfig
-  const body = req.body
-
-  if (typeof body.payload.generateRandomPassword === 'string') {
-    if (body.payload.generateRandomPassword.toLowerCase() === 'true') {
-      body.payload.generateRandomPassword = true
-    } else if (body.payload.generateRandomPassword.toLowerCase() === 'false') {
-      body.payload.generateRandomPassword = false
+    log.error(`Failed to create a AMT profile: ${amtConfig.ProfileName}`, error)
+    if (error instanceof RPSError) {
+      res.status(400).end(error.message)
+    } else {
+      res.status(500).end(PROFILE_ERROR(amtConfig.ProfileName))
     }
   }
-
-  if (typeof body.payload.generateRandomMEBxPassword === 'string') {
-    if (body.payload.generateRandomMEBxPassword.toLowerCase() === 'true') {
-      body.payload.generateRandomMEBxPassword = true
-    } else if (body.payload.generateRandomMEBxPassword.toLowerCase() === 'false') {
-      body.payload.generateRandomMEBxPassword = false
-    }
-  }
-
-  config.ProfileName = body.payload.profileName
-  config.AMTPassword = body.payload.amtPassword ? body.payload.amtPassword : null
-  config.MEBxPassword = body.payload.mebxPassword ? body.payload.mebxPassword : null
-  config.GenerateRandomMEBxPassword = body.payload.generateRandomMEBxPassword ? body.payload.generateRandomMEBxPassword : false
-  config.RandomMEBxPasswordLength = body.payload.mebxPasswordLength ? body.payload.mebxPasswordLength : null
-  config.GenerateRandomPassword = body.payload.generateRandomPassword ? body.payload.generateRandomPassword : false
-  config.RandomPasswordLength = body.payload.passwordLength ? body.payload.passwordLength : null
-  config.ConfigurationScript = body.payload.configScript
-  config.CIRAConfigName = body.payload.ciraConfigName
-  config.Activation = body.payload.activation
-  config.RandomPasswordCharacters = body.payload.randomPasswordCharacters
-  config.NetworkConfigName = body.payload.networkConfigName
-
-  if (config.ProfileName === null ||
-    config.GenerateRandomPassword === null ||
-    config.GenerateRandomMEBxPassword === null ||
-    config.Activation === null ||
-    (config.GenerateRandomPassword && config.RandomPasswordLength == null) ||
-    (!config.GenerateRandomPassword && config.AMTPassword == null)) {
-    res.status(400).end(PROFILE_INVALID_INPUT)
-    throw new Error(PROFILE_INVALID_INPUT)
-  }
-
-  if (config.Activation === ClientAction.ADMINCTLMODE && ((config.GenerateRandomMEBxPassword && config.RandomMEBxPasswordLength == null) ||
-  (!config.GenerateRandomMEBxPassword && config.MEBxPassword == null))) {
-    res.status(400).end(PROFILE_MEBX_MANDATORY)
-    throw new Error(PROFILE_MEBX_MANDATORY)
-  }
-
-  if (config.AMTPassword !== null) {
-    if (config.GenerateRandomPassword) {
-      res.status(400).end(PROFILE_INVALID_AMT_PASSWORD_SELECTION)
-      throw new Error(PROFILE_INVALID_AMT_PASSWORD_SELECTION)
-    }
-    if (!passwordValidation(config.AMTPassword) || !passwordLengthValidation(config.AMTPassword)) {
-      res.status(400).end(PROFILE_INVALID_INPUT_AMT_PASSWORD)
-      throw new Error(PROFILE_INVALID_INPUT_AMT_PASSWORD)
-    }
-  } else if (config.GenerateRandomPassword && (config.RandomPasswordLength < 8 || config.RandomPasswordLength > 32)) {
-    res.status(400).end(PROFILE_INVALID_AMT_PASSWORD_LENGTH)
-    throw new Error(PROFILE_INVALID_AMT_PASSWORD_LENGTH)
-  }
-
-  if (config.MEBxPassword !== null) {
-    if (config.GenerateRandomMEBxPassword) {
-      res.status(400).end(PROFILE_INVALID_MEBX_PASSWORD_SELECTION)
-      throw new Error(PROFILE_INVALID_MEBX_PASSWORD_SELECTION)
-    }
-    if (!passwordValidation(config.MEBxPassword) || !passwordLengthValidation(config.MEBxPassword)) {
-      res.status(400).end(PROFILE_INVALID_INPUT_MEBX_PASSWORD)
-      throw new Error(PROFILE_INVALID_INPUT_MEBX_PASSWORD)
-    }
-  } else if (config.GenerateRandomMEBxPassword && (config.RandomMEBxPasswordLength < 8 || config.RandomMEBxPasswordLength > 32)) {
-    res.status(400).end(PROFILE_INVALID_MEBX_PASSWORD_LENGTH)
-    throw new Error(PROFILE_INVALID_MEBX_PASSWORD_LENGTH)
-  }
-
-  return config
 }

@@ -6,38 +6,64 @@
 import { IDbCreator } from './interfaces/IDbCreator'
 import { IDomainsDb } from './interfaces/IDomainsDb'
 import { mapToDomain } from './mapToDomain'
-import { DOMAIN_INSERTION_FAILED_DUPLICATE } from '../utils/constants'
+import { DUPLICATE_DOMAIN_FAILED, API_UNEXPECTED_EXCEPTION } from '../utils/constants'
+import { AMTDomain } from '../models/Rcs'
+import { RPSError } from '../utils/RPSError'
+import Logger from '../Logger'
 
 export class DomainsDb implements IDomainsDb {
   db: any
+  log: Logger
   constructor (dbCreator: IDbCreator) {
     this.db = dbCreator.getDb()
+    this.log = new Logger('DomainsDb')
   }
 
-  async getAllDomains (mapperFn?: (data) => any): Promise<any> {
+  /**
+   * @description Get all Domains from DB
+   * @returns {AMTDomain[]} returns an array of AMT Domain objects
+   */
+  async getAllDomains (): Promise<AMTDomain[]> {
     const results = await this.db.query('SELECT name as Name, domain_suffix as DomainSuffix, provisioning_cert as ProvisioningCert, provisioning_cert_storage_format as ProvisioningCertStorageFormat, provisioning_cert_key as ProvisioningCertPassword FROM domains')
-
-    return await Promise.all(results.rows.map(async element => {
-      const d = mapToDomain(element)
-      if (mapperFn && d.ProvisioningCertPassword) {
-        d.ProvisioningCertPassword = await mapperFn(d.ProvisioningCertPassword)
-      }
-      return d
-    }
-    ))
+    return await Promise.all(results.rows.map(async p => {
+      const result = mapToDomain(p)
+      return result
+    }))
   }
 
-  async getDomainByName (domainName): Promise<any> {
+  /**
+   * @description Get Domain from DB by name
+   * @param {string} domainName
+   * @returns {AMTDomain} Domain object
+   */
+  async getDomainByName (domainName): Promise<AMTDomain> {
     const results = await this.db.query('SELECT name as Name, domain_suffix as DomainSuffix, provisioning_cert as ProvisioningCert, provisioning_cert_storage_format as ProvisioningCertStorageFormat, provisioning_cert_key as ProvisioningCertPassword FROM domains WHERE Name = $1', [domainName])
-    return (results.rowCount > 0 ? mapToDomain(results.rows[0]) : null)
+    let domain: AMTDomain = {} as AMTDomain
+    if (results.rowCount > 0) {
+      domain = mapToDomain(results.rows[0])
+    }
+    return domain
   }
 
-  async deleteDomainByName (domainName): Promise<any> {
+  /**
+   * @description Delete Domain from DB by name
+   * @param {string} domainName
+   * @returns {boolean} Return true on successful deletion
+   */
+  async deleteDomainByName (domainName): Promise<boolean> {
     const results = await this.db.query('DELETE FROM domains WHERE Name = $1', [domainName])
-    return (results.rowCount > 0 ? results.rowCount : null)
+    if (results.rowCount > 0) {
+      return true
+    }
+    return false
   }
 
-  async insertDomain (amtDomain): Promise<any> {
+  /**
+   * @description Insert Domain into DB
+   * @param {AMTDomain} amtDomain
+   * @returns {boolean} Return true on successful insertion
+   */
+  async insertDomain (amtDomain: AMTDomain): Promise<boolean> {
     try {
       const results = await this.db.query('INSERT INTO domains(name, domain_suffix, provisioning_cert, provisioning_cert_storage_format, provisioning_cert_key) ' +
         'values($1, $2, $3, $4, $5)',
@@ -48,18 +74,25 @@ export class DomainsDb implements IDomainsDb {
         amtDomain.ProvisioningCertStorageFormat,
         amtDomain.ProvisioningCertPassword
       ])
-      return results
-    } catch (error) {
-      console.log(error)
-      if (error.code === '23505') { // Unique key violation
-        throw (DOMAIN_INSERTION_FAILED_DUPLICATE(amtDomain.Name))
+      if (results.rowCount > 0) {
+        return true
       }
-
-      throw ('Unknown Error. Check Server Logs.')
+      return false
+    } catch (error) {
+      this.log.error(`Failed to insert Domain: ${amtDomain.Name}`, error)
+      if (error.code === '23505') { // Unique key violation
+        throw new RPSError(DUPLICATE_DOMAIN_FAILED(`insert Domain: '${amtDomain.Name}'`))
+      }
+      throw new RPSError(API_UNEXPECTED_EXCEPTION(amtDomain.Name))
     }
   }
 
-  async updateDomain (amtDomain): Promise<any> {
+  /**
+   * @description Update AMT Domain into DB
+   * @param {AMTDomain} amtDomain object
+   * @returns {boolean} Return true on successful updation
+   */
+  async updateDomain (amtDomain: AMTDomain): Promise <boolean> {
     try {
       const results = await this.db.query('UPDATE domains SET domain_suffix=$2, provisioning_cert=$3, provisioning_cert_storage_format=$4, provisioning_cert_key=$5 WHERE name=$1',
         [
@@ -69,11 +102,16 @@ export class DomainsDb implements IDomainsDb {
           amtDomain.ProvisioningCertStorageFormat,
           amtDomain.ProvisioningCertPassword
         ])
-      return results.rowCount
+      if (results.rowCount > 0) {
+        return true
+      }
+      return false
     } catch (error) {
-      console.log(error)
-
-      throw ('Unknown Error. Check Server Logs.')
+      this.log.error('Failed to update Domain :', error)
+      if (error.code === '23505') { // Unique key violation
+        throw new RPSError(DUPLICATE_DOMAIN_FAILED(`update Domain: '${amtDomain.Name}'`))
+      }
+      throw new RPSError(API_UNEXPECTED_EXCEPTION(amtDomain.Name))
     }
   }
 }
