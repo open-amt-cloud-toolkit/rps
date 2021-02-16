@@ -38,9 +38,9 @@ export const amtProfileValidator = (): any => {
     check('payload.amtPassword')
       .optional()
       .matches('^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9$@$!%*#?&-_~^]{8,32}$')
-      .withMessage('AMT password is required field should contains atleast one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
+      .withMessage('AMT password is required field should contains at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
     check('payload.passwordLength')
-      .optional()
+      .optional({ nullable: true })
       .isInt({ min: 8, max: 32 })
       .withMessage('Random AMT password length value should range between 8 and 32'),
     check('payload.generateRandomPassword')
@@ -69,9 +69,9 @@ export const amtProfileValidator = (): any => {
     check('payload.mebxPassword')
       .optional()
       .matches('^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9$@$!%*#?&-_~^]{8,32}$')
-      .withMessage('MEBx password is required field should contains atleast one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
+      .withMessage('MEBx password is required field should contains at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
     check('payload.mebxPasswordLength')
-      .optional()
+      .optional({ nullable: true })
       .isInt({ min: 8, max: 32 })
       .withMessage('Random MEBx password length value should range between 8 and 32'),
     check('payload.generateRandomMEBxPassword')
@@ -133,7 +133,7 @@ export const profileUpdateValidator = (): any => {
     check('payload.amtPassword')
       .optional()
       .matches('^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9$@$!%*#?&-_~^]{8,32}$')
-      .withMessage('AMT password is required field should contains atleast one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
+      .withMessage('AMT password is required field should contains at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
     check('payload.passwordLength')
       .optional()
       .isInt({ min: 8, max: 32 })
@@ -154,7 +154,7 @@ export const profileUpdateValidator = (): any => {
     check('payload.mebxPassword')
       .optional()
       .matches('^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9$@$!%*#?&-_~^]{8,32}$')
-      .withMessage('MEBx password is required field should contains atleast one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
+      .withMessage('MEBx password is required field should contains at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
     check('payload.mebxPasswordLength')
       .optional()
       .isInt({ min: 8, max: 32 })

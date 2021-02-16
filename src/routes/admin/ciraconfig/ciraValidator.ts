@@ -50,7 +50,7 @@ export const ciraInsertValidator = (): any => {
       .isEmpty()
       .withMessage('MPS password is required')
       .matches('^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9$@$!%*#?&-_~^]{8,32}$')
-      .withMessage('Password should contain atleast one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
+      .withMessage('Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
     check('payload.commonName')
       .optional()
       .matches('^([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])$')
@@ -111,7 +111,7 @@ export const ciraUpdateValidator = (): any => {
     check('payload.password')
       .optional()
       .matches('^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9$@$!%*#?&-_~^]{8,32}$')
-      .withMessage('Password should contain atleast one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
+      .withMessage('Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
     check('payload.commonName')
       .optional()
       .matches('^([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])$')
