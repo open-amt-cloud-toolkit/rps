@@ -6,5 +6,8 @@
 import { ProtocolVersion } from '../../../utils/constants'
 
 export function getVersion (req, res): void {
-  res.status(200).json(`protocol version: ${ProtocolVersion}`).end()
+  const response = {
+    protocolVersion: ProtocolVersion
+  }
+  res.status(200).json(response).end()
 }

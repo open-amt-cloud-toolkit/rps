@@ -95,7 +95,7 @@ describe('Network Profile tests', () => {
       rpsError = error
     }
     expect(rpsError).toBeInstanceOf(RPSError)
-    expect(rpsError.message).toEqual('Deletion failed for NETWORK Config: profile1. Profile associated with this Config.')
+    expect(rpsError.message).toEqual('NETWORK Config: profile1 is associated with an AMT Profile.')
   })
 
   test('delete configuration for network profile no constraint', async () => {
@@ -174,7 +174,7 @@ describe('Network Profile tests', () => {
       rpsError = error
     }
     expect(rpsError).toBeInstanceOf(RPSError)
-    expect(rpsError.message).toEqual('NETWORK Config insertion failed for profile11. NETWORK Config already exists.')
+    expect(rpsError.message).toEqual('NETWORK Config profile11 already exists')
   })
 
   test('get network configs', async () => {
@@ -197,6 +197,6 @@ describe('Network Profile tests', () => {
   test('get network config by name does exist', async () => {
     const netConfigDb = new NetConfigFileStorageDb(AMTConfigurations, NETConfigurations, new Logger('NetConfigDb'))
     const actual: NetworkConfig = await netConfigDb.getProfileByName('profile111')
-    expect(Object.keys(actual).length).toEqual(0)
+    expect(actual).toEqual(null)
   })
 })

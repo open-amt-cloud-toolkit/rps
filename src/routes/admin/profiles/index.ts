@@ -10,13 +10,13 @@ import { allProfiles } from './all'
 import { getProfile } from './getProfile'
 import { createProfile } from './createProfile'
 import { editProfile } from './editProfile'
-import { amtProfileValidator, ProfileupdateValidator } from './amtProfileValidator'
+import { amtProfileValidator, profileUpdateValidator } from './amtProfileValidator'
 const profileRouter: Router = Router()
 
 profileRouter.get('/', allProfiles)
 profileRouter.get('/:profileName', getProfile)
 profileRouter.post('/', amtProfileValidator(), createProfile)
-profileRouter.patch('/', ProfileupdateValidator(), editProfile)
+profileRouter.patch('/', profileUpdateValidator(), editProfile)
 profileRouter.delete('/:profileName', deleteProfile)
 
 export default profileRouter

@@ -8,7 +8,7 @@ import { CiraConfigDbFactory } from '../../../repositories/CiraConfigDbFactory'
 import { CIRAConfig } from '../../../RCS.Config'
 import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
-import { API_UNEXPECTED_EXCEPTION, CIRA_CONFIG_NOT_FOUND } from '../../../utils/constants'
+import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, CIRA_CONFIG_NOT_FOUND } from '../../../utils/constants'
 import { validationResult } from 'express-validator'
 
 export async function editCiraConfig (req, res): Promise<void> {
@@ -23,9 +23,9 @@ export async function editCiraConfig (req, res): Promise<void> {
     }
     ciraConfigDb = CiraConfigDbFactory.getCiraConfigDb()
     const oldConfig: CIRAConfig = await ciraConfigDb.getCiraConfigByName(newConfig.configName)
-    if (Object.keys(oldConfig).length === 0) {
+    if (oldConfig == null) {
       log.info('Not found : ', newConfig.configName)
-      res.status(404).end(CIRA_CONFIG_NOT_FOUND(newConfig.configName))
+      res.status(404).json(API_RESPONSE(null, 'Not Found', CIRA_CONFIG_NOT_FOUND(newConfig.configName))).end()
     } else {
       const ciraConfig: CIRAConfig = getUpdatedData(newConfig, oldConfig)
       const mpsPwd = newConfig.password
@@ -48,58 +48,20 @@ export async function editCiraConfig (req, res): Promise<void> {
     }
   } catch (error) {
     log.error(`Failed to update CIRA config : ${newConfig.ConfigName}`, error)
-    res.status(500).end(API_UNEXPECTED_EXCEPTION(`UPDATE ${newConfig.ConfigName}`))
+    res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`UPDATE ${newConfig.ConfigName}`))).end()
   }
 }
 
 function getUpdatedData (newConfig: any, oldConfig: CIRAConfig): CIRAConfig {
-  const config: CIRAConfig = {} as CIRAConfig
-  config.ConfigName = newConfig.configName
-
-  if (newConfig.mpsServerAddress == null) {
-    config.MPSServerAddress = oldConfig.MPSServerAddress
-  } else {
-    config.MPSServerAddress = newConfig.mpsServerAddress
-  }
-  if (newConfig.mpsPort == null) {
-    config.MPSPort = oldConfig.MPSPort
-  } else {
-    config.MPSPort = newConfig.mpsPort
-  }
-  if (newConfig.username == null) {
-    config.Username = oldConfig.Username
-  } else {
-    config.Username = newConfig.username
-  }
-  if (newConfig.password == null) {
-    config.Password = oldConfig.Password
-  } else {
-    config.Password = newConfig.password
-  }
-  if (newConfig.commonName == null) {
-    config.CommonName = oldConfig.CommonName
-  } else {
-    config.CommonName = newConfig.commonName
-  }
-  if (newConfig.serverAddressFormat == null) {
-    config.ServerAddressFormat = oldConfig.ServerAddressFormat
-  } else {
-    config.ServerAddressFormat = newConfig.serverAddressFormat
-  }
-  if (newConfig.mpsRootCertificate == null) {
-    config.MPSRootCertificate = oldConfig.MPSRootCertificate
-  } else {
-    config.MPSRootCertificate = newConfig.mpsRootCertificate
-  }
-  if (newConfig.proxyDetails == null) {
-    config.ProxyDetails = oldConfig.ProxyDetails
-  } else {
-    config.ProxyDetails = newConfig.proxyDetails
-  }
-  if (newConfig.authMethod == null) {
-    config.AuthMethod = oldConfig.AuthMethod
-  } else {
-    config.AuthMethod = newConfig.authMethod
-  }
+  const config: CIRAConfig = { ConfigName: newConfig.configName } as CIRAConfig
+  config.MPSServerAddress = newConfig.mpsServerAddress ?? oldConfig.MPSServerAddress
+  config.MPSPort = newConfig.mpsPort ?? oldConfig.MPSPort
+  config.Username = newConfig.username ?? oldConfig.Username
+  config.Password = newConfig.password ?? oldConfig.Password
+  config.CommonName = newConfig.commonName ?? oldConfig.CommonName
+  config.ServerAddressFormat = newConfig.serverAddressFormat ?? oldConfig.ServerAddressFormat
+  config.MPSRootCertificate = newConfig.mpsRootCertificate ?? oldConfig.MPSRootCertificate
+  config.ProxyDetails = newConfig.proxyDetails ?? oldConfig.ProxyDetails
+  config.AuthMethod = newConfig.authMethod ?? oldConfig.AuthMethod
   return config
 }

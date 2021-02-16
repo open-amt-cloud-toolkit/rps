@@ -38,7 +38,7 @@ export class DomainsDb implements IDomainsDb {
    */
   async getDomainByName (domainName): Promise<AMTDomain> {
     const results = await this.db.query('SELECT name as Name, domain_suffix as DomainSuffix, provisioning_cert as ProvisioningCert, provisioning_cert_storage_format as ProvisioningCertStorageFormat, provisioning_cert_key as ProvisioningCertPassword FROM domains WHERE Name = $1', [domainName])
-    let domain: AMTDomain = {} as AMTDomain
+    let domain: AMTDomain = null
     if (results.rowCount > 0) {
       domain = mapToDomain(results.rows[0])
     }
@@ -81,7 +81,7 @@ export class DomainsDb implements IDomainsDb {
     } catch (error) {
       this.log.error(`Failed to insert Domain: ${amtDomain.Name}`, error)
       if (error.code === '23505') { // Unique key violation
-        throw new RPSError(DUPLICATE_DOMAIN_FAILED(`insert Domain: '${amtDomain.Name}'`))
+        throw new RPSError(DUPLICATE_DOMAIN_FAILED(amtDomain.Name), 'Unique key violation')
       }
       throw new RPSError(API_UNEXPECTED_EXCEPTION(amtDomain.Name))
     }
@@ -109,7 +109,7 @@ export class DomainsDb implements IDomainsDb {
     } catch (error) {
       this.log.error('Failed to update Domain :', error)
       if (error.code === '23505') { // Unique key violation
-        throw new RPSError(DUPLICATE_DOMAIN_FAILED(`update Domain: '${amtDomain.Name}'`))
+        throw new RPSError(DUPLICATE_DOMAIN_FAILED(amtDomain.Name), 'Unique key violation')
       }
       throw new RPSError(API_UNEXPECTED_EXCEPTION(amtDomain.Name))
     }

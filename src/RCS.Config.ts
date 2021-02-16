@@ -181,3 +181,9 @@ export enum ClientMethods{
   DEACTIVATION = 'deactivate',
   CIRACONFIG= 'ciraconfig'
 }
+
+export interface apiResponse {
+  data?: any
+  error?: string
+  message?: string
+}

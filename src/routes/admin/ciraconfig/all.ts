@@ -6,7 +6,7 @@
 import { ICiraConfigDb } from '../../../repositories/interfaces/ICiraConfigDb'
 import { CiraConfigDbFactory } from '../../../repositories/CiraConfigDbFactory'
 import Logger from '../../../Logger'
-import { API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
+import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
 import { CIRAConfig } from '../../../RCS.Config'
 
 export async function allCiraConfigs (req, res): Promise<void> {
@@ -17,13 +17,13 @@ export async function allCiraConfigs (req, res): Promise<void> {
     let results: CIRAConfig[] = await ciraConfigDb.getAllCiraConfigs() || [] as CIRAConfig[]
     if (results.length >= 0) {
       results = results.map((result: CIRAConfig) => {
-        result.Password = null
+        delete result.Password
         return result
       })
-      res.status(200).json(results).end()
+      res.status(200).json(API_RESPONSE(results)).end()
     }
   } catch (error) {
     log.error('Failed to get all the CIRA config profiles :', error)
-    res.status(500).end(API_UNEXPECTED_EXCEPTION('Get all CIRA config profiles'))
+    res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION('Get all CIRA config profiles'))).end()
   }
 }

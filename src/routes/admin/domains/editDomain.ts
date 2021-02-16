@@ -9,7 +9,7 @@ import { IDomainsDb } from '../../../repositories/interfaces/IDomainsDb'
 import { DomainsDbFactory } from '../../../repositories/DomainsDbFactory'
 import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
-import { API_UNEXPECTED_EXCEPTION, DOMAIN_NOT_FOUND } from '../../../utils/constants'
+import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, DOMAIN_NOT_FOUND } from '../../../utils/constants'
 import { RPSError } from '../../../utils/RPSError'
 
 export async function editDomain (req, res): Promise<void> {
@@ -27,8 +27,8 @@ export async function editDomain (req, res): Promise<void> {
     }
     domainsDb = DomainsDbFactory.getDomainsDb()
     const oldDomain: AMTDomain = await domainsDb.getDomainByName(newDomain.profileName)
-    if (Object.keys(oldDomain).length === 0) {
-      res.status(404).end(DOMAIN_NOT_FOUND(newDomain.profileName))
+    if (oldDomain == null) {
+      res.status(404).json(API_RESPONSE(null, 'Not Found', DOMAIN_NOT_FOUND(newDomain.profileName))).end()
     } else {
       amtDomain = getUpdatedData(newDomain, oldDomain)
       // store the cert and password key in database
@@ -56,40 +56,19 @@ export async function editDomain (req, res): Promise<void> {
   } catch (error) {
     log.error(`Failed to update AMT Domain : ${amtDomain.Name}`, error)
     if (error instanceof RPSError) {
-      res.status(400).end(error.message)
+      res.status(400).json(API_RESPONSE(null, error.name, error.message)).end()
     } else {
-      res.status(500).end(API_UNEXPECTED_EXCEPTION(`UPDATE ${amtDomain.Name}`))
+      res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`UPDATE ${amtDomain.Name}`))).end()
     }
   }
 }
 
 function getUpdatedData (newDomain: any, oldDomain: AMTDomain): AMTDomain {
-  const amtDomain: AMTDomain = {} as AMTDomain
-  amtDomain.Name = newDomain.profileName
-
-  if (newDomain.domainSuffix == null) {
-    amtDomain.DomainSuffix = oldDomain.DomainSuffix
-  } else {
-    amtDomain.DomainSuffix = newDomain.domainSuffix
-  }
-
-  if (newDomain.provisioningCert == null) {
-    amtDomain.ProvisioningCert = oldDomain.ProvisioningCert
-  } else {
-    amtDomain.ProvisioningCert = newDomain.provisioningCert
-  }
-
-  if (newDomain.provisioningCertStorageFormat == null) {
-    amtDomain.ProvisioningCertStorageFormat = oldDomain.ProvisioningCertStorageFormat
-  } else {
-    amtDomain.ProvisioningCertStorageFormat = newDomain.provisioningCertStorageFormat
-  }
-
-  if (newDomain.provisioningCertPassword == null) {
-    amtDomain.ProvisioningCertPassword = oldDomain.ProvisioningCertPassword
-  } else {
-    amtDomain.ProvisioningCertPassword = newDomain.provisioningCertPassword
-  }
+  const amtDomain: AMTDomain = { Name: newDomain.profileName } as AMTDomain
+  amtDomain.DomainSuffix = newDomain.domainSuffix ?? oldDomain.DomainSuffix
+  amtDomain.ProvisioningCert = newDomain.provisioningCert ?? oldDomain.ProvisioningCert
+  amtDomain.ProvisioningCertStorageFormat = newDomain.provisioningCertStorageFormat ?? oldDomain.ProvisioningCertStorageFormat
+  amtDomain.ProvisioningCertPassword = newDomain.provisioningCertPassword ?? oldDomain.ProvisioningCertPassword
 
   return amtDomain
 }

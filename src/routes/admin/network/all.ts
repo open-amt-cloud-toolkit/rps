@@ -7,7 +7,7 @@ import Logger from '../../../Logger'
 import { NetworkConfig } from '../../../RCS.Config'
 import { INetProfilesDb } from '../../../repositories/interfaces/INetProfilesDb'
 import { NetConfigDbFactory } from '../../../repositories/NetConfigDbFactory'
-import { API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
+import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
 
 export async function allProfiles (req, res): Promise<void> {
   const log = new Logger('allProfiles')
@@ -16,10 +16,10 @@ export async function allProfiles (req, res): Promise<void> {
     profilesDb = NetConfigDbFactory.getConfigDb()
     const results: NetworkConfig[] = await profilesDb.getAllProfiles()
     if (results.length >= 0) {
-      res.status(200).json(results).end()
+      res.status(200).json(API_RESPONSE(results)).end()
     }
   } catch (error) {
     log.error('Failed to get all network profiles :', error)
-    res.status(500).end(API_UNEXPECTED_EXCEPTION('GET all Network Configs'))
+    res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION('GET all Network Configs'))).end()
   }
 }

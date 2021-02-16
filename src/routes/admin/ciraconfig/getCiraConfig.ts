@@ -7,7 +7,7 @@ import { ICiraConfigDb } from '../../../repositories/interfaces/ICiraConfigDb'
 import { CiraConfigDbFactory } from '../../../repositories/CiraConfigDbFactory'
 import { CIRAConfig } from '../../../RCS.Config'
 import Logger from '../../../Logger'
-import { CIRA_CONFIG_NOT_FOUND, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
+import { CIRA_CONFIG_NOT_FOUND, API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../../utils/constants'
 
 export async function getCiraConfig (req, res): Promise<void> {
   let ciraConfigDb: ICiraConfigDb = null
@@ -16,17 +16,17 @@ export async function getCiraConfig (req, res): Promise<void> {
   try {
     ciraConfigDb = CiraConfigDbFactory.getCiraConfigDb()
     const results: CIRAConfig = await ciraConfigDb.getCiraConfigByName(ciraConfigName)
-    if (Object.keys(results).length !== 0) {
+    if (results != null) {
       // Return null. Check Security objectives around returning passwords.
-      results.Password = null
+      delete results.Password
       log.info(`CIRA config profile : ${JSON.stringify(results)}`)
-      res.status(200).json(results).end()
+      res.status(200).json(API_RESPONSE(results)).end()
     } else {
       log.info(`Not found : ${ciraConfigName}`)
-      res.status(404).end(CIRA_CONFIG_NOT_FOUND(ciraConfigName))
+      res.status(404).json(API_RESPONSE(null, 'Not Found', CIRA_CONFIG_NOT_FOUND(ciraConfigName))).end()
     }
   } catch (error) {
     log.error(`Failed to get CIRA config profile : ${ciraConfigName}`, error)
-    res.status(500).end(API_UNEXPECTED_EXCEPTION(`GET ${ciraConfigName}`))
+    res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`GET ${ciraConfigName}`))).end()
   }
 }

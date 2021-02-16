@@ -179,7 +179,7 @@ test('delete configuration for cira', async () => {
     rpsError = error
   }
   expect(rpsError).toBeInstanceOf(RPSError)
-  expect(rpsError.message).toEqual('Deletion failed for CIRA Config: ciraconfig1. Profile associated with this Config.')
+  expect(rpsError.message).toEqual('CIRA Config: ciraconfig1 associated with an AMT profile')
 })
 
 test('delete configuration for cira not associated with a profile', async () => {

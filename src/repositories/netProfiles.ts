@@ -38,7 +38,7 @@ export class NetConfigDb implements INetProfilesDb {
    */
   async getProfileByName (configName: string): Promise<NetworkConfig> {
     const results = await this.db.query('SELECT network_profile_name, dhcp_enabled, static_ip_shared, ip_sync_enabled FROM networkconfigs WHERE network_profile_name = $1', [configName])
-    let networkConfig: NetworkConfig = {} as NetworkConfig
+    let networkConfig: NetworkConfig = null
     if (results.rowCount > 0) {
       networkConfig = mapToNetworkProfile(results.rows[0])
     }
@@ -65,7 +65,7 @@ export class NetConfigDb implements INetProfilesDb {
     } catch (error) {
       this.log.error(`Failed to delete network configuration : ${configName}`, error)
       if (error.code === '23503') { // foreign key violation
-        throw (NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT(configName))
+        throw (NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT(configName), 'Foreign key violation')
       }
       throw new RPSError(API_UNEXPECTED_EXCEPTION(`Delete network configuration : ${configName}`))
     }
@@ -92,9 +92,10 @@ export class NetConfigDb implements INetProfilesDb {
       return false
     } catch (error) {
       if (error.code === '23505') { // Unique key violation
-        throw new RPSError(NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE(netConfig.ProfileName))
+        throw new RPSError(NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE(netConfig.ProfileName), 'Unique key violation')
       }
-      throw new RPSError(NETWORK_CONFIG_ERROR(netConfig.ProfileName))
+      throw new RPSError(NETWORK_CONFIG_ERROR(netConfig.ProfileName)
+      )
     }
   }
 

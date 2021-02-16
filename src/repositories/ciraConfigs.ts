@@ -39,7 +39,7 @@ export class CiraConfigDb implements ICiraConfigDb {
    */
   async getCiraConfigByName (configName: string): Promise<CIRAConfig> {
     const results = await this.db.query('SELECT cira_config_name, mps_server_address, mps_port, user_name, password, common_name, server_address_format, auth_method, mps_root_certificate, proxydetails FROM ciraconfigs WHERE cira_config_name = $1', [configName])
-    let ciraConfig: CIRAConfig = {} as CIRAConfig
+    let ciraConfig: CIRAConfig = null
     if (results.rowCount > 0) {
       ciraConfig = mapToCiraConfig(results.rows[0])
     }
@@ -62,7 +62,7 @@ export class CiraConfigDb implements ICiraConfigDb {
     } catch (error) {
       this.log.error(`Failed to delete CIRA config : ${ciraConfigName}`, error)
       if (error.code === '23503') { // foreign key violation
-        throw new RPSError(CIRA_CONFIG_DELETION_FAILED_CONSTRAINT(ciraConfigName))
+        throw new RPSError(CIRA_CONFIG_DELETION_FAILED_CONSTRAINT(ciraConfigName), 'Foreign key violation')
       }
       throw new RPSError(API_UNEXPECTED_EXCEPTION(`Delete CIRA config : ${ciraConfigName}`))
     }
@@ -96,7 +96,7 @@ export class CiraConfigDb implements ICiraConfigDb {
     } catch (error) {
       this.log.error('Failed to insert CIRA config :', error)
       if (error.code === '23505') { // Unique key violation
-        throw new RPSError(CIRA_CONFIG_INSERTION_FAILED_DUPLICATE(ciraConfig.ConfigName))
+        throw new RPSError(CIRA_CONFIG_INSERTION_FAILED_DUPLICATE(ciraConfig.ConfigName), 'Unique key violation')
       }
       throw new RPSError(API_UNEXPECTED_EXCEPTION(ciraConfig.ConfigName))
     }

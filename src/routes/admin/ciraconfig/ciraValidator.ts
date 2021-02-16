@@ -43,14 +43,14 @@ export const ciraInsertValidator = (): any => {
       .not()
       .isEmpty()
       .withMessage('MPS user name is required')
-      .matches('^[a-zA-Z0-9$@$!%*#?&-_~^]+$')
-      .withMessage('MPS user name accepts letters, numbers, special characters and no spaces'),
+      .matches('^[a-zA-Z0-9]+$') // As per AMT SDK, accepts only alphanumeric values
+      .withMessage('MPS user name should be alphanumeric'),
     check('payload.password')
       .not()
       .isEmpty()
       .withMessage('MPS password is required')
       .matches('^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9$@$!%*#?&-_~^]{8,32}$')
-      .withMessage('Password should contain atleast one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
+      .withMessage('Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
     check('payload.commonName')
       .optional()
       .matches('^([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])$')
@@ -111,7 +111,7 @@ export const ciraUpdateValidator = (): any => {
     check('payload.password')
       .optional()
       .matches('^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9$@$!%*#?&-_~^]{8,32}$')
-      .withMessage('Password should contain atleast one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
+      .withMessage('Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
     check('payload.commonName')
       .optional()
       .matches('^([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])$')
