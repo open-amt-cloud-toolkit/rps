@@ -47,7 +47,7 @@ export async function createDomain (req, res): Promise<void> {
         data.data.CERT_KEY = cert
         data.data.CERT_PASSWORD_KEY = domainPwd
         await req.secretsManager.writeSecretWithObject(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/${amtDomain.Name}`, data)
-        log.info(`${amtDomain.Name} provisioing cert & password stored in Vault`)
+        log.info(`${amtDomain.Name} provisioning cert & password stored in Vault`)
       }
       log.info(`Created Domain : ${amtDomain.Name}`)
       res.status(201).json(API_RESPONSE(null, null, DOMAIN_INSERTION_SUCCESS(amtDomain.Name))).end()

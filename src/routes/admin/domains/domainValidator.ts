@@ -10,9 +10,9 @@ export const domainInsertValidator = (): any => {
     check('payload.profileName')
       .not()
       .isEmpty()
-      .withMessage('Network profile name is required')
+      .withMessage('AMT Domain profile name is required')
       .matches('^[a-zA-Z0-9$@$!%*#?&-_~^]+$')
-      .withMessage('AMT Domain name accepts letters, numbers, special characters and no spaces'),
+      .withMessage('AMT Domain profile name accepts letters, numbers, special characters and no spaces'),
     check('payload.domainSuffix')
       .not()
       .isEmpty()
@@ -32,7 +32,7 @@ export const domainInsertValidator = (): any => {
       .isEmpty()
       .withMessage('Provisioning Cert Password is required')
       .matches('^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9$@$!%*#?&-_~^]{8,32}$')
-      .withMessage('Password should contain atleast one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.')
+      .withMessage('Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.')
   ]
 }
 
@@ -41,7 +41,7 @@ export const domainUpdateValidator = (): any => {
     check('payload.profileName')
       .not()
       .isEmpty()
-      .withMessage('Network profile name is required')
+      .withMessage('AMT Domain profile name is required')
       .matches('^[a-zA-Z0-9$@$!%*#?&-_~^]+$')
       .withMessage('AMT Domain name accepts letters, numbers, special characters and no spaces'),
     check('payload.domainSuffix')
@@ -55,6 +55,6 @@ export const domainUpdateValidator = (): any => {
     check('payload.provisioningCertPassword')
       .optional()
       .matches('^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9$@$!%*#?&-_~^]{8,32}$')
-      .withMessage('Password is required field should contains atleast one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.')
+      .withMessage('Password is required field should contains at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.')
   ]
 }
