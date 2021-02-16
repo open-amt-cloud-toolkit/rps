@@ -50,7 +50,7 @@ export const API_RESPONSE = (data?: any, error?: string, message?: string): apiR
   if (error != null) {
     response.error = error
   } else if (data != null) {
-    response.data = data
+    return data
   }
   if (message != null) {
     response.message = message
