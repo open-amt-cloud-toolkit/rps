@@ -33,7 +33,7 @@ export class DomainConfigDb implements IDomainsDb {
    */
   async getDomainByName (domainName: string): Promise<AMTDomain> {
     const data: any = FileHelper.readJsonObjFromFile(EnvReader.configPath)
-    const amtDomain: AMTDomain = data.AMTDomains.find((item: { Name: string }) => item.Name === domainName) || null
+    const amtDomain: AMTDomain = data.AMTDomains.find((item: { profileName: string }) => item.profileName === domainName) || null
     return amtDomain
   }
 
@@ -43,14 +43,14 @@ export class DomainConfigDb implements IDomainsDb {
    * @returns {boolean} Return true on successful insertion
    */
   async insertDomain (amtDomain: AMTDomain): Promise<boolean> {
-    if (this.domains.some(item => item.Name === amtDomain.Name) ||
-    this.domains.some(item => item.DomainSuffix === amtDomain.DomainSuffix)) {
-      this.logger.error(`domain already exists: ${amtDomain.Name}`)
-      throw new RPSError(DUPLICATE_DOMAIN_FAILED(amtDomain.Name), 'Unique key violation')
+    if (this.domains.some(item => item.profileName === amtDomain.profileName) ||
+    this.domains.some(item => item.domainSuffix === amtDomain.domainSuffix)) {
+      this.logger.error(`domain already exists: ${amtDomain.profileName}`)
+      throw new RPSError(DUPLICATE_DOMAIN_FAILED(amtDomain.profileName), 'Unique key violation')
     } else {
       this.domains.push(amtDomain)
       this.updateConfigFile()
-      this.logger.info(`Domain: ${amtDomain.Name} inserted`)
+      this.logger.info(`Domain: ${amtDomain.profileName} inserted`)
       return true
     }
   }
@@ -61,23 +61,23 @@ export class DomainConfigDb implements IDomainsDb {
    * @returns {boolean} Return true on successful updation
    */
   async updateDomain (amtDomain: AMTDomain): Promise<boolean> {
-    const isMatch = (item): boolean => item.Name === amtDomain.Name
+    const isMatch = (item): boolean => item.profileName === amtDomain.profileName
     const index = this.domains.findIndex(isMatch)
     if (index >= 0) {
       this.domains.forEach((domain) => {
-        if (domain.Name !== amtDomain.Name && domain.DomainSuffix === amtDomain.DomainSuffix) {
-          this.logger.error(`domain suffix already exists: ${amtDomain.DomainSuffix}`)
-          throw new RPSError(DUPLICATE_DOMAIN_FAILED(amtDomain.Name), 'Unique key violation')
+        if (domain.profileName !== amtDomain.profileName && domain.domainSuffix === amtDomain.domainSuffix) {
+          this.logger.error(`domain suffix already exists: ${amtDomain.domainSuffix}`)
+          throw new RPSError(DUPLICATE_DOMAIN_FAILED(amtDomain.profileName), 'Unique key violation')
         }
       })
       this.domains.splice(index, 1)
       this.domains.push(amtDomain)
       this.updateConfigFile()
-      this.logger.info(`Domain: ${amtDomain.Name} updated`)
+      this.logger.info(`Domain: ${amtDomain.profileName} updated`)
       this.logger.silly(`Domain ${JSON.stringify(amtDomain)}`)
       return true
     } else {
-      this.logger.info(`Domain: ${amtDomain.Name} doesnt exist`)
+      this.logger.info(`Domain: ${amtDomain.profileName} doesnt exist`)
       return false
     }
   }
@@ -92,7 +92,7 @@ export class DomainConfigDb implements IDomainsDb {
 
     let found: boolean = false
     for (let i = 0; i < this.domains.length; i++) {
-      if (this.domains[i].Name === domainName) {
+      if (this.domains[i].profileName === domainName) {
         this.domains.splice(i, 1)
         found = true
         break

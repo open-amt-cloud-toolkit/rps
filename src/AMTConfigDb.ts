@@ -37,7 +37,7 @@ export class AMTConfigDb implements IProfilesDb {
    */
   async getProfileByName (profileName: string): Promise<AMTConfiguration> {
     this.logger.debug(`getProfileByName: ${profileName}`)
-    const profile: AMTConfiguration = this.amtProfiles.find(item => item.ProfileName === profileName) || null
+    const profile: AMTConfiguration = this.amtProfiles.find(item => item.profileName === profileName) || null
     return profile
   }
 
@@ -45,7 +45,7 @@ export class AMTConfigDb implements IProfilesDb {
     const data: any = FileHelper.readJsonObjFromFile(EnvReader.configPath)
     this.networkConfigs = data ? data.NETConfigurations : this.networkConfigs
     const networkConfig = this.networkConfigs.find((networkConfig: NetworkConfig) => {
-      if (networkConfig.ProfileName === networkConfigName) {
+      if (networkConfig.profileName === networkConfigName) {
         this.logger.debug(`found matching Network configuration: ${JSON.stringify(networkConfig, null, '\t')}`)
         return networkConfig
       }
@@ -58,7 +58,7 @@ export class AMTConfigDb implements IProfilesDb {
     const data: any = FileHelper.readJsonObjFromFile(EnvReader.configPath)
     this.ciraConfigs = data ? data.CIRAConfigurations : this.ciraConfigs
     const config = this.ciraConfigs.find((ciraConfig: CIRAConfig) => {
-      if (ciraConfig.ConfigName === ciraConfigName) {
+      if (ciraConfig.configName === ciraConfigName) {
         this.logger.debug(`found matching element CIRA: ${JSON.stringify(ciraConfig, null, '\t')}`)
         return ciraConfig
       }
@@ -75,7 +75,7 @@ export class AMTConfigDb implements IProfilesDb {
   async deleteProfileByName (profileName: string): Promise<boolean> {
     let found: boolean = false
     for (let i = 0; i < this.amtProfiles.length; i++) {
-      if (this.amtProfiles[i].ProfileName === profileName) {
+      if (this.amtProfiles[i].profileName === profileName) {
         this.amtProfiles.splice(i, 1)
         found = true
         break
@@ -97,14 +97,14 @@ export class AMTConfigDb implements IProfilesDb {
    * @returns {boolean} Return true on successful insertion
    */
   async insertProfile (amtConfig: any): Promise<boolean> {
-    if (this.amtProfiles.some(item => item.ProfileName === amtConfig.ProfileName)) {
-      this.logger.error(`profile already exists: ${amtConfig.ProfileName}`)
-      throw new RPSError(PROFILE_INSERTION_FAILED_DUPLICATE(amtConfig.ProfileName), 'Unique key violation')
+    if (this.amtProfiles.some(item => item.profileName === amtConfig.profileName)) {
+      this.logger.error(`profile already exists: ${amtConfig.profileName}`)
+      throw new RPSError(PROFILE_INSERTION_FAILED_DUPLICATE(amtConfig.profileName), 'Unique key violation')
       // return false
     } else {
       this.amtProfiles.push(amtConfig)
       this.updateConfigFile()
-      this.logger.info(`profile created: ${amtConfig.ProfileName}`)
+      this.logger.info(`profile created: ${amtConfig.profileName}`)
       return true
     }
   }
@@ -115,17 +115,17 @@ export class AMTConfigDb implements IProfilesDb {
    * @returns {boolean} Return true on successful updation
    */
   async updateProfile (amtConfig: any): Promise<boolean> {
-    this.logger.debug(`update Profile: ${amtConfig.ProfileName}`)
-    const isMatch = (item): boolean => item.ProfileName === amtConfig.ProfileName
+    this.logger.debug(`update Profile: ${amtConfig.profileName}`)
+    const isMatch = (item): boolean => item.profileName === amtConfig.profileName
     const index = this.amtProfiles.findIndex(isMatch)
     if (index >= 0) {
       this.amtProfiles.splice(index, 1)
       this.amtProfiles.push(amtConfig)
       this.updateConfigFile()
-      this.logger.info(`profile updated: ${amtConfig.ProfileName}`)
+      this.logger.info(`profile updated: ${amtConfig.profileName}`)
       return true
     } else {
-      this.logger.info(`profile doesnt exist: ${amtConfig.ProfileName}`)
+      this.logger.info(`profile doesnt exist: ${amtConfig.profileName}`)
       return false
     }
   }

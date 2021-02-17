@@ -28,20 +28,20 @@ export async function createCiraConfig (req, res): Promise<void> {
     }
     ciraConfigDb = CiraConfigDbFactory.getCiraConfigDb()
 
-    ciraConfig.ConfigName = req.body.payload.configName
-    ciraConfig.MPSServerAddress = req.body.payload.mpsServerAddress
-    ciraConfig.MPSPort = req.body.payload.mpsPort
-    ciraConfig.Username = req.body.payload.username
-    ciraConfig.Password = req.body.payload.password
-    ciraConfig.CommonName = req.body.payload.commonName
-    ciraConfig.ServerAddressFormat = req.body.payload.serverAddressFormat
-    ciraConfig.MPSRootCertificate = req.body.payload.mpsRootCertificate
-    ciraConfig.ProxyDetails = req.body.payload.proxyDetails
-    ciraConfig.AuthMethod = req.body.payload.authMethod
+    ciraConfig.configName = req.body.payload.configName
+    ciraConfig.mpsServerAddress = req.body.payload.mpsServerAddress
+    ciraConfig.mpsPort = req.body.payload.mpsPort
+    ciraConfig.username = req.body.payload.username
+    ciraConfig.password = req.body.payload.password
+    ciraConfig.commonName = req.body.payload.commonName
+    ciraConfig.serverAddressFormat = req.body.payload.serverAddressFormat
+    ciraConfig.mpsRootCertificate = req.body.payload.mpsRootCertificate
+    ciraConfig.proxyDetails = req.body.payload.proxyDetails
+    ciraConfig.authMethod = req.body.payload.authMethod
 
-    const mpsPwd = ciraConfig.Password
+    const mpsPwd = ciraConfig.password
     if (req.secretsManager) {
-      ciraConfig.Password = `${ciraConfig.ConfigName}_CIRA_PROFILE_PASSWORD`
+      ciraConfig.password = `${ciraConfig.configName}_CIRA_PROFILE_PASSWORD`
     }
     // SQL Query > Insert Data
     const results: boolean = await ciraConfigDb.insertCiraConfig(ciraConfig)
@@ -49,18 +49,18 @@ export async function createCiraConfig (req, res): Promise<void> {
     if (results) {
       // store the password into Vault
       if (req.secretsManager) {
-        await req.secretsManager.writeSecretWithKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfig.ConfigName}`, ciraConfig.Password, mpsPwd)
-        log.info(`MPS password stored in Vault for CIRA config : ${ciraConfig.ConfigName}`)
+        await req.secretsManager.writeSecretWithKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfig.configName}`, ciraConfig.password, mpsPwd)
+        log.info(`MPS password stored in Vault for CIRA config : ${ciraConfig.configName}`)
       }
-      log.info(`Created CIRA config : ${ciraConfig.ConfigName}`)
-      res.status(201).json(API_RESPONSE(null, null, CIRA_CONFIG_INSERTION_SUCCESS(ciraConfig.ConfigName))).end()
+      log.info(`Created CIRA config : ${ciraConfig.configName}`)
+      res.status(201).json(API_RESPONSE(null, null, CIRA_CONFIG_INSERTION_SUCCESS(ciraConfig.configName))).end()
     }
   } catch (error) {
-    log.error(`Failed to get CIRA config profile : ${ciraConfig.ConfigName}`, error)
+    log.error(`Failed to get CIRA config profile : ${ciraConfig.configName}`, error)
     if (error instanceof RPSError) {
       res.status(400).json(API_RESPONSE(null, error.name, error.message)).end()
     } else {
-      res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`CREATE ${ciraConfig.ConfigName}`))).end()
+      res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`CREATE ${ciraConfig.configName}`))).end()
     }
   }
 }

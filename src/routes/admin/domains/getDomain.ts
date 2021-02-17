@@ -18,8 +18,8 @@ export async function getDomain (req, res): Promise<void> {
     const result: AMTDomain = await domainsDb.getDomainByName(domainName)
     if (result !== null) {
       // Return null. Check Security objectives around returning passwords.
-      delete result.ProvisioningCertPassword
-      delete result.ProvisioningCert
+      delete result.provisioningCertPassword
+      delete result.provisioningCert
       log.info(`Domain : ${JSON.stringify(result)}`)
       res.status(200).json(API_RESPONSE(result)).end()
     } else {

@@ -9,10 +9,10 @@ import { AMTDomain } from '../models/Rcs'
 
 export function mapToDomain (result): AMTDomain {
   return {
-    Name: result.name,
-    DomainSuffix: result.domainsuffix,
-    ProvisioningCert: result.provisioningcert,
-    ProvisioningCertStorageFormat: result.provisioningcertstorageformat,
-    ProvisioningCertPassword: result.provisioningcertpassword
+    profileName: result.name,
+    domainSuffix: result.domainsuffix,
+    provisioningCert: result.provisioningcert,
+    provisioningCertStorageFormat: result.provisioningcertstorageformat,
+    provisioningCertPassword: result.provisioningcertpassword
   } as AMTDomain
 }

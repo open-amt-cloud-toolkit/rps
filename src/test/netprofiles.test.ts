@@ -11,78 +11,78 @@ import { RPSError } from '../utils/RPSError'
 
 const AMTConfigurations = [
   {
-    ProfileName: 'profile1',
-    AMTPassword: 'P@ssw0rd',
-    MEBxPassword: 'P@ssw0rd',
-    GenerateRandomPassword: false,
-    RandomPasswordLength: 8,
-    GenerateRandomMEBxPassword: false,
-    RandomMEBxPasswordLength: 8,
-    RandomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
-    ConfigurationScript: null,
-    Activation: 'acmactivate',
-    CIRAConfigName: 'ciraconfig1'
+    profileName: 'profile1',
+    amtPassword: 'P@ssw0rd',
+    mebxPassword: 'P@ssw0rd',
+    generateRandomPassword: false,
+    randomPasswordLength: 8,
+    generateRandomMEBxPassword: false,
+    randomMEBxPasswordLength: 8,
+    randomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
+    configurationScript: null,
+    activation: 'acmactivate',
+    ciraConfigName: 'ciraconfig1'
   },
   {
-    ProfileName: 'profile2',
-    AMTPassword: 'P@ssw0rd',
-    MEBxPassword: 'P@ssw0rd',
-    GenerateRandomPassword: false,
-    RandomPasswordLength: 8,
-    GenerateRandomMEBxPassword: false,
-    RandomMEBxPasswordLength: 8,
-    RandomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
-    ConfigurationScript: null,
-    Activation: 'ccmactivate',
-    CIRAConfigName: 'ciraconfig1'
+    profileName: 'profile2',
+    amtPassword: 'P@ssw0rd',
+    mebxPassword: 'P@ssw0rd',
+    generateRandomPassword: false,
+    randomPasswordLength: 8,
+    generateRandomMEBxPassword: false,
+    randomMEBxPasswordLength: 8,
+    randomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
+    configurationScript: null,
+    activation: 'ccmactivate',
+    ciraConfigName: 'ciraconfig1'
   },
   {
-    ProfileName: 'profile3',
-    AMTPassword: 'P@ssw0rd',
-    MEBxPassword: 'P@ssw0rd',
-    GenerateRandomPassword: false,
-    RandomPasswordLength: 8,
-    GenerateRandomMEBxPassword: false,
-    RandomMEBxPasswordLength: 8,
-    RandomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
-    ConfigurationScript: null,
-    Activation: 'invalid',
-    CIRAConfigName: 'ciraconfig1'
+    profileName: 'profile3',
+    amtPassword: 'P@ssw0rd',
+    mebxPassword: 'P@ssw0rd',
+    generateRandomPassword: false,
+    randomPasswordLength: 8,
+    generateRandomMEBxPassword: false,
+    randomMEBxPasswordLength: 8,
+    randomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
+    configurationScript: null,
+    activation: 'invalid',
+    ciraConfigName: 'ciraconfig1'
   },
   {
-    ProfileName: 'profile4',
-    AMTPassword: 'P@ssw0rd',
-    MEBxPassword: 'P@ssw0rd',
-    GenerateRandomPassword: false,
-    RandomPasswordLength: 8,
-    GenerateRandomMEBxPassword: false,
-    RandomMEBxPasswordLength: 8,
-    RandomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
-    ConfigurationScript: null,
-    Activation: '',
-    CIRAConfigName: 'ciraconfig1',
-    NetworkConfigName: 'profile1'
+    profileName: 'profile4',
+    amtPassword: 'P@ssw0rd',
+    mebxPassword: 'P@ssw0rd',
+    generateRandomPassword: false,
+    randomPasswordLength: 8,
+    generateRandomMEBxPassword: false,
+    randomMEBxPasswordLength: 8,
+    randomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
+    configurationScript: null,
+    activation: '',
+    ciraConfigName: 'ciraconfig1',
+    networkConfigName: 'profile1'
   }
 ]
 
 const NETConfigurations = [
   {
-    ProfileName: 'profile1',
-    DHCPEnabled: true,
-    StaticIPShared: true,
-    IPSyncEnabled: true
+    profileName: 'profile1',
+    dhcpEnabled: true,
+    staticIPShared: true,
+    ipSyncEnabled: true
   },
   {
-    ProfileName: 'profile2',
-    DHCPEnabled: true,
-    StaticIPShared: true,
-    IPSyncEnabled: true
+    profileName: 'profile2',
+    dhcpEnabled: true,
+    staticIPShared: true,
+    ipSyncEnabled: true
   },
   {
-    ProfileName: 'profile3',
-    DHCPEnabled: true,
-    StaticIPShared: true,
-    IPSyncEnabled: true
+    profileName: 'profile3',
+    dhcpEnabled: true,
+    staticIPShared: true,
+    ipSyncEnabled: true
   }
 ]
 describe('Network Profile tests', () => {
@@ -108,10 +108,10 @@ describe('Network Profile tests', () => {
   test('update configuration for network profile exists', async () => {
     const netConfigDb = new NetConfigFileStorageDb(AMTConfigurations, NETConfigurations, new Logger('NetConfigDb'))
     const newProfile = {
-      ProfileName: 'profile3',
-      DHCPEnabled: false,
-      StaticIPShared: true,
-      IPSyncEnabled: true
+      profileName: 'profile3',
+      dhcpEnabled: false,
+      staticIPShared: true,
+      ipSyncEnabled: true
     }
     const actual = await netConfigDb.updateProfile(newProfile)
     expect(actual).toEqual(true)
@@ -120,10 +120,10 @@ describe('Network Profile tests', () => {
   test('update configuration for network profile doesnt exist', async () => {
     const netConfigDb = new NetConfigFileStorageDb(AMTConfigurations, NETConfigurations, new Logger('NetConfigDb'))
     const newProfile = {
-      ProfileName: 'profile4',
-      DHCPEnabled: false,
-      StaticIPShared: true,
-      IPSyncEnabled: true
+      profileName: 'profile4',
+      dhcpEnabled: false,
+      staticIPShared: true,
+      ipSyncEnabled: true
     }
     const actual = await netConfigDb.updateProfile(newProfile)
     expect(actual).toEqual(false)
@@ -132,10 +132,10 @@ describe('Network Profile tests', () => {
   test('update configuration for network profile associated with profile', async () => {
     const netConfigDb = new NetConfigFileStorageDb(AMTConfigurations, NETConfigurations, new Logger('NetConfigDb'))
     const newProfile = {
-      ProfileName: 'profile1',
-      DHCPEnabled: false,
-      StaticIPShared: true,
-      IPSyncEnabled: true
+      profileName: 'profile1',
+      dhcpEnabled: false,
+      staticIPShared: true,
+      ipSyncEnabled: true
     }
     let rpsError = null
     try {
@@ -150,10 +150,10 @@ describe('Network Profile tests', () => {
   test('create configuration for network profile doesn\'t exist', async () => {
     const netConfigDb = new NetConfigFileStorageDb(AMTConfigurations, NETConfigurations, new Logger('NetConfigDb'))
     const newProfile = {
-      ProfileName: 'profile11',
-      DHCPEnabled: false,
-      StaticIPShared: true,
-      IPSyncEnabled: true
+      profileName: 'profile11',
+      dhcpEnabled: false,
+      staticIPShared: true,
+      ipSyncEnabled: true
     }
     const actual = await netConfigDb.insertProfile(newProfile)
     expect(actual).toEqual(true)
@@ -162,10 +162,10 @@ describe('Network Profile tests', () => {
   test('create configuration for network profile already exist', async () => {
     const netConfigDb = new NetConfigFileStorageDb(AMTConfigurations, NETConfigurations, new Logger('NetConfigDb'))
     const newProfile = {
-      ProfileName: 'profile11',
-      DHCPEnabled: false,
-      StaticIPShared: true,
-      IPSyncEnabled: true
+      profileName: 'profile11',
+      dhcpEnabled: false,
+      staticIPShared: true,
+      ipSyncEnabled: true
     }
     let rpsError = null
     try {
@@ -187,10 +187,10 @@ describe('Network Profile tests', () => {
     const netConfigDb = new NetConfigFileStorageDb(AMTConfigurations, NETConfigurations, new Logger('NetConfigDb'))
     const actual = await netConfigDb.getProfileByName('profile11')
     expect(actual).toEqual({
-      ProfileName: 'profile11',
-      DHCPEnabled: false,
-      StaticIPShared: true,
-      IPSyncEnabled: true
+      profileName: 'profile11',
+      dhcpEnabled: false,
+      staticIPShared: true,
+      ipSyncEnabled: true
     })
   })
 

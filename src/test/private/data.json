@@ -1,38 +1,38 @@
 {
   "AMTConfigurations": [
         {
-            "ProfileName": "profile 1",
-            "AMTPassword": "<StrongPassword>",
-            "GenerateRandomPassword": false,
-            "RandomPasswordLength": 8,
-            "RandomPasswordCharacters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()",
-            "ConfigurationScript": null,
-            "Activation": "ccmactivate"
+            "profileName": "profile 1",
+            "amtPassword": "<StrongPassword>",
+            "generateRandomPassword": false,
+            "randomPasswordLength": 8,
+            "randomPasswordCharacters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()",
+            "configurationScript": null,
+            "activation": "ccmactivate"
         },
         {
-            "ProfileName": "profile 2",
-            "AMTPassword": "<StrongPassword>",
-            "GenerateRandomPassword": true,
-            "RandomPasswordLength": 8,
-            "RandomPasswordCharacters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()",
-            "ConfigurationScript": null,
-            "Activation": "acmactivate"
+            "profileName": "profile 2",
+            "amtPassword": "<StrongPassword>",
+            "generateRandomPassword": true,
+            "randomPasswordLength": 8,
+            "randomPasswordCharacters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()",
+            "configurationScript": null,
+            "activation": "acmactivate"
         }
     ],
     "AMTDomains": [
         {
-            "Name": "domain1",
-            "DomainSuffix": "d1.net",
-            "ProvisioningCert": "d1.pfx",
-            "ProvisioningCertStorageFormat": "string",
-            "ProvisioningCertPassword": "PROVISIONING_CERT_PASSWORD_KEY"
+            "profileName": "domain1",
+            "domainSuffix": "d1.net",
+            "provisioningCert": "d1.pfx",
+            "provisioningCertStorageFormat": "string",
+            "provisioningCertPassword": "PROVISIONING_CERT_PASSWORD_KEY"
         },
         {
-            "Name": "domain2",
-            "DomainSuffix": "d2.com",
-            "ProvisioningCert": "d2.pfx",
-            "ProvisioningCertStorageFormat": "string",
-            "ProvisioningCertPassword": "PROVISIONING_CERT_PASSWORD_KEY"
+            "profileName": "domain2",
+            "domainSuffix": "d2.com",
+            "provisioningCert": "d2.pfx",
+            "provisioningCertStorageFormat": "string",
+            "provisioningCertPassword": "PROVISIONING_CERT_PASSWORD_KEY"
         }
     ]
 }

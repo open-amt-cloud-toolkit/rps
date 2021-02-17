@@ -93,36 +93,36 @@ export class ProfilesDb implements IProfilesDb {
       const results = await this.db.query('INSERT INTO profiles(profile_name, activation, amt_password, configuration_script, cira_config_name, generate_random_password, random_password_characters, random_password_length, network_profile_name, mebx_password, generate_random_mebx_password, random_mebx_password_length) ' +
         'values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)',
       [
-        amtConfig.ProfileName,
-        amtConfig.Activation,
-        amtConfig.AMTPassword,
-        amtConfig.ConfigurationScript,
-        amtConfig.CIRAConfigName,
-        amtConfig.GenerateRandomPassword,
-        amtConfig.RandomPasswordCharacters,
-        amtConfig.RandomPasswordLength,
-        amtConfig.NetworkConfigName,
-        amtConfig.MEBxPassword,
-        amtConfig.GenerateRandomMEBxPassword,
-        amtConfig.RandomMEBxPasswordLength
+        amtConfig.profileName,
+        amtConfig.activation,
+        amtConfig.amtPassword,
+        amtConfig.configurationScript,
+        amtConfig.ciraConfigName,
+        amtConfig.generateRandomPassword,
+        amtConfig.randomPasswordCharacters,
+        amtConfig.randomPasswordLength,
+        amtConfig.networkConfigName,
+        amtConfig.mebxPassword,
+        amtConfig.generateRandomMEBxPassword,
+        amtConfig.randomMEBxPasswordLength
       ])
       if (results.rowCount > 0) {
         return true
       }
       return false
     } catch (error) {
-      this.log.error(`Failed to insert AMT profile: ${amtConfig.ProfileName}`, error)
+      this.log.error(`Failed to insert AMT profile: ${amtConfig.profileName}`, error)
       if (error.code === '23505') { // Unique key violation
-        throw new RPSError(PROFILE_INSERTION_FAILED_DUPLICATE(amtConfig.ProfileName), 'Unique key violation')
+        throw new RPSError(PROFILE_INSERTION_FAILED_DUPLICATE(amtConfig.profileName), 'Unique key violation')
       }
       if (error.code === '23503') { // Unique key violation
         if (error.message.includes('profiles_cira_config_name_fkey')) {
-          throw new RPSError(PROFILE_INSERTION_CIRA_CONSTRAINT(amtConfig.CIRAConfigName), 'Foreign key constraint violation')
+          throw new RPSError(PROFILE_INSERTION_CIRA_CONSTRAINT(amtConfig.ciraConfigName), 'Foreign key constraint violation')
         } else {
-          throw new RPSError(PROFILE_INSERTION_NETWORK_CONSTRAINT(amtConfig.NetworkConfigName), 'Foreign key constraint violation')
+          throw new RPSError(PROFILE_INSERTION_NETWORK_CONSTRAINT(amtConfig.networkConfigName), 'Foreign key constraint violation')
         }
       }
-      throw new RPSError(API_UNEXPECTED_EXCEPTION(amtConfig.ProfileName))
+      throw new RPSError(API_UNEXPECTED_EXCEPTION(amtConfig.profileName))
     }
   }
 
@@ -135,33 +135,33 @@ export class ProfilesDb implements IProfilesDb {
     try {
       const results = await this.db.query('UPDATE profiles SET activation=$2, amt_password=$3, configuration_script=$4, cira_config_name=$5, generate_random_password=$6, random_password_characters=$7, random_password_length=$8, network_profile_name=$9, mebx_password=$10, generate_random_mebx_password=$11, random_mebx_password_length=$12 WHERE profile_name=$1',
         [
-          amtConfig.ProfileName,
-          amtConfig.Activation,
-          amtConfig.AMTPassword,
-          amtConfig.ConfigurationScript,
-          amtConfig.CIRAConfigName,
-          amtConfig.GenerateRandomPassword,
-          amtConfig.RandomPasswordCharacters,
-          amtConfig.RandomPasswordLength,
-          amtConfig.NetworkConfigName,
-          amtConfig.MEBxPassword,
-          amtConfig.GenerateRandomMEBxPassword,
-          amtConfig.RandomMEBxPasswordLength
+          amtConfig.profileName,
+          amtConfig.activation,
+          amtConfig.amtPassword,
+          amtConfig.configurationScript,
+          amtConfig.ciraConfigName,
+          amtConfig.generateRandomPassword,
+          amtConfig.randomPasswordCharacters,
+          amtConfig.randomPasswordLength,
+          amtConfig.networkConfigName,
+          amtConfig.mebxPassword,
+          amtConfig.generateRandomMEBxPassword,
+          amtConfig.randomMEBxPasswordLength
         ])
       if (results.rowCount > 0) {
         return true
       }
       return false
     } catch (error) {
-      this.log.error(`Failed to update AMT profile: ${amtConfig.ProfileName}`, error)
+      this.log.error(`Failed to update AMT profile: ${amtConfig.profileName}`, error)
       if (error.code === '23503') { // Foreign key constraint violation
         if (error.message.includes('profiles_cira_config_name_fkey')) {
-          throw new RPSError(PROFILE_INSERTION_CIRA_CONSTRAINT(amtConfig.CIRAConfigName), 'Foreign key constraint violation')
+          throw new RPSError(PROFILE_INSERTION_CIRA_CONSTRAINT(amtConfig.ciraConfigName), 'Foreign key constraint violation')
         } else {
-          throw new RPSError(PROFILE_INSERTION_NETWORK_CONSTRAINT(amtConfig.NetworkConfigName), 'Foreign key constraint violation')
+          throw new RPSError(PROFILE_INSERTION_NETWORK_CONSTRAINT(amtConfig.networkConfigName), 'Foreign key constraint violation')
         }
       }
-      throw new RPSError(API_UNEXPECTED_EXCEPTION(amtConfig.ProfileName))
+      throw new RPSError(API_UNEXPECTED_EXCEPTION(amtConfig.profileName))
     }
   }
 }

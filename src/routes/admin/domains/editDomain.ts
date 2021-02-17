@@ -33,10 +33,10 @@ export async function editDomain (req, res): Promise<void> {
       amtDomain = getUpdatedData(newDomain, oldDomain)
       // store the cert and password key in database
       if (req.secretsManager) {
-        cert = amtDomain.ProvisioningCert
-        domainPwd = amtDomain.ProvisioningCertPassword
-        amtDomain.ProvisioningCert = `${amtDomain.Name}_CERT_KEY`
-        amtDomain.ProvisioningCertPassword = `${amtDomain.Name}_CERT_PASSWORD_KEY`
+        cert = amtDomain.provisioningCert
+        domainPwd = amtDomain.provisioningCertPassword
+        amtDomain.provisioningCert = `${amtDomain.profileName}_CERT_KEY`
+        amtDomain.provisioningCertPassword = `${amtDomain.profileName}_CERT_PASSWORD_KEY`
       }
       // SQL Query > Insert Data
       const results = await domainsDb.updateDomain(amtDomain)
@@ -44,31 +44,31 @@ export async function editDomain (req, res): Promise<void> {
         // Delete the previous values of cert and password in vault and store the updated values
         if (req.secretsManager && (newDomain.provisioningCert != null || newDomain.provisioningCertPassword != null)) {
           const data = { data: {} }
-          await req.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/${amtDomain.Name}`)
-          data.data[`${amtDomain.Name}_CERT_KEY`] = cert
-          data.data[`${amtDomain.Name}_CERT_PASSWORD_KEY`] = domainPwd
-          await req.secretsManager.writeSecretWithObject(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/${amtDomain.Name}`, data)
-          log.debug(`Updated AMT Domain : ${amtDomain.Name} in vault`)
+          await req.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/${amtDomain.profileName}`)
+          data.data[`${amtDomain.profileName}_CERT_KEY`] = cert
+          data.data[`${amtDomain.profileName}_CERT_PASSWORD_KEY`] = domainPwd
+          await req.secretsManager.writeSecretWithObject(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/${amtDomain.profileName}`, data)
+          log.debug(`Updated AMT Domain : ${amtDomain.profileName} in vault`)
         }
         res.status(204).end()
       }
     }
   } catch (error) {
-    log.error(`Failed to update AMT Domain : ${amtDomain.Name}`, error)
+    log.error(`Failed to update AMT Domain : ${amtDomain.profileName}`, error)
     if (error instanceof RPSError) {
       res.status(400).json(API_RESPONSE(null, error.name, error.message)).end()
     } else {
-      res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`UPDATE ${amtDomain.Name}`))).end()
+      res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`UPDATE ${amtDomain.profileName}`))).end()
     }
   }
 }
 
 function getUpdatedData (newDomain: any, oldDomain: AMTDomain): AMTDomain {
-  const amtDomain: AMTDomain = { Name: newDomain.profileName } as AMTDomain
-  amtDomain.DomainSuffix = newDomain.domainSuffix ?? oldDomain.DomainSuffix
-  amtDomain.ProvisioningCert = newDomain.provisioningCert ?? oldDomain.ProvisioningCert
-  amtDomain.ProvisioningCertStorageFormat = newDomain.provisioningCertStorageFormat ?? oldDomain.ProvisioningCertStorageFormat
-  amtDomain.ProvisioningCertPassword = newDomain.provisioningCertPassword ?? oldDomain.ProvisioningCertPassword
+  const amtDomain: AMTDomain = { profileName: newDomain.profileName } as AMTDomain
+  amtDomain.domainSuffix = newDomain.domainSuffix ?? oldDomain.domainSuffix
+  amtDomain.provisioningCert = newDomain.provisioningCert ?? oldDomain.provisioningCert
+  amtDomain.provisioningCertStorageFormat = newDomain.provisioningCertStorageFormat ?? oldDomain.provisioningCertStorageFormat
+  amtDomain.provisioningCertPassword = newDomain.provisioningCertPassword ?? oldDomain.provisioningCertPassword
 
   return amtDomain
 }

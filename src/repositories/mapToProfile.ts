@@ -8,17 +8,17 @@ import { AMTConfig } from '../RCS.Config'
 
 export function mapToProfile (results): AMTConfig {
   return {
-    ProfileName: results.profilename,
-    AMTPassword: results.amtpassword,
-    GenerateRandomPassword: results.generaterandompassword,
-    RandomPasswordLength: results.randompasswordlength,
-    RandomPasswordCharacters: results.randompasswordcharacters,
-    ConfigurationScript: results.configurationscript,
-    Activation: results.activation,
-    CIRAConfigName: results.ciraconfigname,
-    NetworkConfigName: results.networkprofilename,
-    MEBxPassword: results.mebxpassword,
-    GenerateRandomMEBxPassword: results.generaterandommebxpassword,
-    RandomMEBxPasswordLength: results.randommebxpasswordlength
+    profileName: results.profilename,
+    amtPassword: results.amtpassword,
+    generateRandomPassword: results.generaterandompassword,
+    randomPasswordLength: results.randompasswordlength,
+    randomPasswordCharacters: results.randompasswordcharacters,
+    configurationScript: results.configurationscript,
+    activation: results.activation,
+    ciraConfigName: results.ciraconfigname,
+    networkConfigName: results.networkprofilename,
+    mebxPassword: results.mebxpassword,
+    generateRandomMEBxPassword: results.generaterandommebxpassword,
+    randomMEBxPasswordLength: results.randommebxpasswordlength
   } as AMTConfig
 }

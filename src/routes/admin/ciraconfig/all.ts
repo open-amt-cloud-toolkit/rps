@@ -17,7 +17,7 @@ export async function allCiraConfigs (req, res): Promise<void> {
     let results: CIRAConfig[] = await ciraConfigDb.getAllCiraConfigs() || [] as CIRAConfig[]
     if (results.length >= 0) {
       results = results.map((result: CIRAConfig) => {
-        delete result.Password
+        delete result.password
         return result
       })
       res.status(200).json(API_RESPONSE(results)).end()

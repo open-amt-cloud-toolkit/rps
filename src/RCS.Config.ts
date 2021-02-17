@@ -15,27 +15,27 @@ export interface WebSocketConfig {
 }
 
 export interface AMTConfig {
-  ProfileName: string
-  AMTPassword: string
-  GenerateRandomPassword: boolean
-  RandomPasswordLength: number
-  MEBxPassword: string
-  GenerateRandomMEBxPassword: boolean
-  RandomMEBxPasswordLength: number
-  RandomPasswordCharacters: string
-  ConfigurationScript: string
-  CIRAConfigName: string
-  Activation: string
-  CIRAConfigObject?: CIRAConfig
-  NetworkConfigName?: string
-  NetworkConfigObject?: NetworkConfig
+  profileName: string
+  amtPassword: string
+  generateRandomPassword: boolean
+  randomPasswordLength: number
+  mebxPassword: string
+  generateRandomMEBxPassword: boolean
+  randomMEBxPasswordLength: number
+  randomPasswordCharacters: string
+  configurationScript: string
+  ciraConfigName: string
+  activation: string
+  ciraConfigObject?: CIRAConfig
+  networkConfigName?: string
+  networkConfigObject?: NetworkConfig
 }
 
 export interface NetworkConfig {
-  ProfileName: string
-  DHCPEnabled: boolean
-  StaticIPShared: boolean
-  IPSyncEnabled: boolean
+  profileName: string
+  dhcpEnabled: boolean
+  staticIPShared: boolean
+  ipSyncEnabled: boolean
 }
 
 /*
@@ -56,16 +56,16 @@ AuthMethod Mutual Auth (1), Username/Password (2) (We only support 2)
 Certificate (Not required)
 */
 export interface CIRAConfig {
-  ConfigName: string
-  MPSServerAddress: string
-  MPSPort: number
-  Username: string
-  Password: string
-  CommonName: string
-  ServerAddressFormat: number // IPv4 (3), IPv6 (4), FQDN (201)
-  AuthMethod: number // Mutual Auth (1), Username/Password (2) (We only support 2)
-  MPSRootCertificate: string // Assumption is Root Cert for MPS. Need to validate.
-  ProxyDetails: string
+  configName: string
+  mpsServerAddress: string
+  mpsPort: number
+  username: string
+  password: string
+  commonName: string
+  serverAddressFormat: number // IPv4 (3), IPv6 (4), FQDN (201)
+  authMethod: number // Mutual Auth (1), Username/Password (2) (We only support 2)
+  mpsRootCertificate: string // Assumption is Root Cert for MPS. Need to validate.
+  proxyDetails: string
 }
 
 export interface RemoteConfig {

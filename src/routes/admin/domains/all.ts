@@ -17,8 +17,8 @@ export async function getAllDomains (req, res): Promise<void> {
     let results: AMTDomain[] = await domainsDb.getAllDomains()
     if (results.length >= 0) {
       results = results.map((result: AMTDomain) => {
-        delete result.ProvisioningCert
-        delete result.ProvisioningCertPassword
+        delete result.provisioningCert
+        delete result.provisioningCertPassword
         return result
       })
       res.status(200).json(API_RESPONSE(results)).end()

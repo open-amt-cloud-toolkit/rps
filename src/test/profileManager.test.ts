@@ -53,64 +53,64 @@ const rcsConfig: RCSConfig = {
 }
 
 const CIRAConfigurations = [{
-  ConfigName: 'ciraconfig1',
-  MPSServerAddress: 'localhost',
-  MPSPort: 4433,
-  Username: 'admin',
-  Password: 'P@ssw0rd',
-  CommonName: 'localhost',
-  ServerAddressFormat: 201, // IPv4 (3), IPv6 (4), FQDN (201)
-  AuthMethod: 2, // Mutual Auth (1), Username/Password (2) (We only support 2)
-  MPSRootCertificate: 'rootcert', // Assumption is Root Cert for MPS. Need to validate.
-  ProxyDetails: ''
+  configName: 'ciraconfig1',
+  mpsServerAddress: 'localhost',
+  mpsPort: 4433,
+  username: 'admin',
+  password: 'P@ssw0rd',
+  commonName: 'localhost',
+  serverAddressFormat: 201, // IPv4 (3), IPv6 (4), FQDN (201)
+  authMethod: 2, // Mutual Auth (1), Username/Password (2) (We only support 2)
+  mpsRootCertificate: 'rootcert', // Assumption is Root Cert for MPS. Need to validate.
+  proxyDetails: ''
 },
 {
-  ConfigName: 'ciraconfig2',
-  MPSServerAddress: 'localhost',
-  MPSPort: 4433,
-  Username: 'admin',
-  Password: 'P@ssw0rd',
-  CommonName: 'localhost',
-  ServerAddressFormat: 201, // IPv4 (3), IPv6 (4), FQDN (201)
-  AuthMethod: 2, // Mutual Auth (1), Username/Password (2) (We only support 2)
-  MPSRootCertificate: 'rootcert', // Assumption is Root Cert for MPS. Need to validate.
-  ProxyDetails: ''
+  configName: 'ciraconfig2',
+  mpsServerAddress: 'localhost',
+  mpsPort: 4433,
+  username: 'admin',
+  password: 'P@ssw0rd',
+  commonName: 'localhost',
+  serverAddressFormat: 201, // IPv4 (3), IPv6 (4), FQDN (201)
+  authMethod: 2, // Mutual Auth (1), Username/Password (2) (We only support 2)
+  mpsRootCertificate: 'rootcert', // Assumption is Root Cert for MPS. Need to validate.
+  proxyDetails: ''
 }]
 
 const AMTConfigurations = [
   {
-    ProfileName: 'profile 1',
-    AMTPassword: '<StrongPassword1!>',
-    MEBxPassword: 'P@ssw0rd',
-    GenerateRandomPassword: false,
-    RandomPasswordLength: 8,
-    GenerateRandomMEBxPassword: false,
-    RandomMEBxPasswordLength: 8,
-    RandomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
-    ConfigurationScript: 'sample config script 1',
-    Activation: 'ccmactivate',
-    CIRAConfigName: 'ciraconfig1'
+    profileName: 'profile 1',
+    amtPassword: '<StrongPassword1!>',
+    mebxPassword: 'P@ssw0rd',
+    generateRandomPassword: false,
+    randomPasswordLength: 8,
+    generateRandomMEBxPassword: false,
+    randomMEBxPasswordLength: 8,
+    randomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
+    configurationScript: 'sample config script 1',
+    activation: 'ccmactivate',
+    ciraConfigName: 'ciraconfig1'
   },
   {
-    ProfileName: 'profile 2',
-    AMTPassword: '<StrongPassword2!>',
-    MEBxPassword: 'P@ssw0rd',
-    GenerateRandomPassword: true,
-    RandomPasswordLength: 8,
-    GenerateRandomMEBxPassword: false,
-    RandomMEBxPasswordLength: 8,
-    RandomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
-    ConfigurationScript: 'sample config script 2',
-    Activation: 'acmactivate',
-    CIRAConfigName: 'ciraconfig1'
+    profileName: 'profile 2',
+    amtPassword: '<StrongPassword2!>',
+    mebxPassword: 'P@ssw0rd',
+    generateRandomPassword: true,
+    randomPasswordLength: 8,
+    generateRandomMEBxPassword: false,
+    randomMEBxPasswordLength: 8,
+    randomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
+    configurationScript: 'sample config script 2',
+    activation: 'acmactivate',
+    ciraConfigName: 'ciraconfig1'
   }
 ]
 const NETConfigurations = [
   {
-    ProfileName: 'netprofile1',
-    DHCPEnabled: true,
-    StaticIPShared: true,
-    IPSyncEnabled: true
+    profileName: 'netprofile1',
+    dhcpEnabled: true,
+    staticIPShared: true,
+    ipSyncEnabled: true
   }
 ]
 
@@ -167,7 +167,7 @@ test('retrieve configuration for cira', async () => {
 
   const expected = 'ciraconfig1'
   const actual = await profileManager.getCiraConfiguration('profile 2')
-  expect(actual.ConfigName).toEqual(expected)
+  expect(actual.configName).toEqual(expected)
 })
 
 test('delete configuration for cira', async () => {
@@ -209,57 +209,57 @@ test('retrieve amt password auto generated', async () => {
 
 test('validate password', () => {
   const CIRAConfigurations = [{
-    ConfigName: 'ciraconfig1',
-    MPSServerAddress: 'localhost',
-    MPSPort: 4433,
-    Username: 'admin',
-    Password: 'P@ssw0rd',
-    CommonName: 'localhost',
-    ServerAddressFormat: 201, // IPv4 (3), IPv6 (4), FQDN (201)
-    AuthMethod: 2, // Mutual Auth (1), Username/Password (2) (We only support 2)
-    MPSRootCertificate: 'rootcert', // Assumption is Root Cert for MPS. Need to validate.
-    ProxyDetails: ''
+    configName: 'ciraconfig1',
+    mpsServerAddress: 'localhost',
+    mpsPort: 4433,
+    username: 'admin',
+    password: 'P@ssw0rd',
+    commonName: 'localhost',
+    serverAddressFormat: 201, // IPv4 (3), IPv6 (4), FQDN (201)
+    authMethod: 2, // Mutual Auth (1), Username/Password (2) (We only support 2)
+    mpsRootCertificate: 'rootcert', // Assumption is Root Cert for MPS. Need to validate.
+    proxyDetails: ''
   }]
 
   const amtConfigurations = [
     {
-      ProfileName: 'profile 1',
-      AMTPassword: '<StrongPassword1!>',
-      MEBxPassword: '<StrongPassword1!>',
-      GenerateRandomPassword: false,
-      RandomPasswordLength: 8,
-      GenerateRandomMEBxPassword: false,
-      RandomMEBxPasswordLength: 8,
-      RandomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
-      ConfigurationScript: 'sample config script 1',
-      Activation: 'ccmactivate',
-      CIRAConfigName: 'ciraconfig1'
+      profileName: 'profile 1',
+      amtPassword: '<StrongPassword1!>',
+      mebxPassword: '<StrongPassword1!>',
+      generateRandomPassword: false,
+      randomPasswordLength: 8,
+      generateRandomMEBxPassword: false,
+      randomMEBxPasswordLength: 8,
+      randomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
+      configurationScript: 'sample config script 1',
+      activation: 'ccmactivate',
+      ciraConfigName: 'ciraconfig1'
     },
     {
-      ProfileName: 'profile 2',
-      AMTPassword: '<StrongPassword>',
-      MEBxPassword: '<StrongPassword1!>',
-      GenerateRandomPassword: false,
-      RandomPasswordLength: 8,
-      GenerateRandomMEBxPassword: false,
-      RandomMEBxPasswordLength: 8,
-      RandomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
-      ConfigurationScript: 'sample config script 2',
-      Activation: 'acmactivate',
-      CIRAConfigName: 'ciraconfig1'
+      profileName: 'profile 2',
+      amtPassword: '<StrongPassword>',
+      mebxPassword: '<StrongPassword1!>',
+      generateRandomPassword: false,
+      randomPasswordLength: 8,
+      generateRandomMEBxPassword: false,
+      randomMEBxPasswordLength: 8,
+      randomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
+      configurationScript: 'sample config script 2',
+      activation: 'acmactivate',
+      ciraConfigName: 'ciraconfig1'
     },
     {
-      ProfileName: 'profile 3',
-      AMTPassword: '<StrongPassword2!>',
-      MEBxPassword: '<StrongPassword1!>',
-      GenerateRandomPassword: true,
-      RandomPasswordLength: 8,
-      GenerateRandomMEBxPassword: false,
-      RandomMEBxPasswordLength: 8,
-      RandomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
-      ConfigurationScript: 'sample config script 3',
-      Activation: 'acmactivate',
-      CIRAConfigName: 'ciraconfig1'
+      profileName: 'profile 3',
+      amtPassword: '<StrongPassword2!>',
+      mebxPassword: '<StrongPassword1!>',
+      generateRandomPassword: true,
+      randomPasswordLength: 8,
+      generateRandomMEBxPassword: false,
+      randomMEBxPasswordLength: 8,
+      randomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
+      configurationScript: 'sample config script 3',
+      activation: 'acmactivate',
+      ciraConfigName: 'ciraconfig1'
     }
   ]
 
@@ -268,49 +268,49 @@ test('validate password', () => {
   const actual = profileManager.validateAMTPasswords(amtConfigurations)
 
   expect(actual.length).toBe(3)
-  expect(actual[0].ProfileName).toBe('profile 1')
-  expect(actual[1].ProfileName).toBe('profile 2')
+  expect(actual[0].profileName).toBe('profile 1')
+  expect(actual[1].profileName).toBe('profile 2')
 })
 
 test('validate password with bad amt passwords', () => {
   const CIRAConfigurations = [{
-    ConfigName: 'ciraconfig1',
-    MPSServerAddress: 'localhost',
-    MPSPort: 4433,
-    Username: 'admin',
-    Password: 'P@ssw0rd',
-    CommonName: 'localhost',
-    ServerAddressFormat: 201, // IPv4 (3), IPv6 (4), FQDN (201)
-    AuthMethod: 2, // Mutual Auth (1), Username/Password (2) (We only support 2)
-    MPSRootCertificate: 'rootcert', // Assumption is Root Cert for MPS. Need to validate.
-    ProxyDetails: ''
+    configName: 'ciraconfig1',
+    mpsServerAddress: 'localhost',
+    mpsPort: 4433,
+    username: 'admin',
+    password: 'P@ssw0rd',
+    commonName: 'localhost',
+    serverAddressFormat: 201, // IPv4 (3), IPv6 (4), FQDN (201)
+    authMethod: 2, // Mutual Auth (1), Username/Password (2) (We only support 2)
+    mpsRootCertificate: 'rootcert', // Assumption is Root Cert for MPS. Need to validate.
+    proxyDetails: ''
   }]
   const AMTConfigurations = [
     {
-      ProfileName: 'profile 1',
-      AMTPassword: 'password1',
-      MEBxPassword: 'password1',
-      GenerateRandomPassword: false,
-      RandomPasswordLength: 8,
-      GenerateRandomMEBxPassword: false,
-      RandomMEBxPasswordLength: 8,
-      RandomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
-      ConfigurationScript: 'sample config script 1',
-      Activation: 'ccmactivate',
-      CIRAConfigName: 'ciraconfig1'
+      profileName: 'profile 1',
+      amtPassword: 'password1',
+      mebxPassword: 'password1',
+      generateRandomPassword: false,
+      randomPasswordLength: 8,
+      generateRandomMEBxPassword: false,
+      randomMEBxPasswordLength: 8,
+      randomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
+      configurationScript: 'sample config script 1',
+      activation: 'ccmactivate',
+      ciraConfigName: 'ciraconfig1'
     },
     {
-      ProfileName: 'profile 2',
-      AMTPassword: 'password2',
-      MEBxPassword: 'password2',
-      GenerateRandomPassword: false,
-      RandomPasswordLength: 8,
-      GenerateRandomMEBxPassword: false,
-      RandomMEBxPasswordLength: 8,
-      RandomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
-      ConfigurationScript: 'sample config script 2',
-      Activation: 'acmactivate',
-      CIRAConfigName: 'ciraconfig1'
+      profileName: 'profile 2',
+      amtPassword: 'password2',
+      mebxPassword: 'password2',
+      generateRandomPassword: false,
+      randomPasswordLength: 8,
+      generateRandomMEBxPassword: false,
+      randomMEBxPasswordLength: 8,
+      randomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
+      configurationScript: 'sample config script 2',
+      activation: 'acmactivate',
+      ciraConfigName: 'ciraconfig1'
     }
 
   ]

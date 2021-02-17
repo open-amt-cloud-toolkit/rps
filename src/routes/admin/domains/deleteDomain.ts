@@ -23,7 +23,7 @@ export async function deleteDomain (req, res): Promise<void> {
       const results = await domainsDb.deleteDomainByName(domainName)
       if (results) {
         if (req.secretsManager) {
-          await req.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/${domain.Name}`)
+          await req.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/${domain.profileName}`)
         }
         res.status(204).end()
       }

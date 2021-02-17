@@ -79,9 +79,9 @@ export class ProfileManager implements IProfileManager {
     const profile = await this.getAmtProfile(profileName)
     let activation: string
 
-    if (profile?.Activation) {
+    if (profile?.activation) {
       this.logger.debug(`found activation for profile ${profileName}`)
-      activation = profile.Activation
+      activation = profile.activation
     } else {
       this.logger.warn(`unable to find activation for profile ${profileName}`)
     }
@@ -98,13 +98,13 @@ export class ProfileManager implements IProfileManager {
     const profile = await this.getAmtProfile(profileName)
     let ciraConfig: CIRAConfig
 
-    if (profile?.CIRAConfigName && profile.CIRAConfigObject) {
+    if (profile?.ciraConfigName && profile.ciraConfigObject) {
       this.logger.debug(`found CIRAConfigObject for profile ${JSON.stringify(profile)}`)
-      ciraConfig = profile.CIRAConfigObject
+      ciraConfig = profile.ciraConfigObject
 
-      this.logger.debug(`retrieve CIRA MPS Password for cira config ${ciraConfig.ConfigName}`)
+      this.logger.debug(`retrieve CIRA MPS Password for cira config ${ciraConfig.configName}`)
       if (this.configurator?.secretsManager) {
-        ciraConfig.Password = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfig.ConfigName}`, `${ciraConfig.ConfigName}_CIRA_PROFILE_PASSWORD`)
+        ciraConfig.password = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfig.configName}`, `${ciraConfig.configName}_CIRA_PROFILE_PASSWORD`)
       }
     } else {
       this.logger.debug(`unable to find CIRAConfig for profile ${JSON.stringify(profile)}`)
@@ -122,9 +122,9 @@ export class ProfileManager implements IProfileManager {
     const profile = await this.getAmtProfile(profileName)
     let configScript: string
 
-    if (profile?.ConfigurationScript) {
+    if (profile?.configurationScript) {
       this.logger.debug(`found configScript for profile ${profileName}`)
-      configScript = profile.ConfigurationScript
+      configScript = profile.configurationScript
     } else {
       this.logger.debug(`unable to find configScript for profile ${profileName}`)
     }
@@ -142,20 +142,20 @@ export class ProfileManager implements IProfileManager {
     let amtPassword: string
 
     if (profile) {
-      if (profile.GenerateRandomPassword) {
-        amtPassword = PasswordHelper.generateRandomPassword(profile.RandomPasswordLength)
+      if (profile.generateRandomPassword) {
+        amtPassword = PasswordHelper.generateRandomPassword(profile.randomPasswordLength)
 
         if (amtPassword) {
-          this.logger.debug('Created random password for ' + profile.ProfileName + '.')
+          this.logger.debug(`Created random password for ${profile.profileName}`)
         } else {
-          this.logger.error('unable to create a random password for ' + profile.ProfileName + '.')
+          this.logger.error(`unable to create a random password for ${profile.profileName}`)
         }
       } else {
         this.logger.debug(`found amtPassword for profile ${profileName}`)
         if (this.configurator?.secretsManager) {
           amtPassword = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${profileName}`, `${profileName}_DEVICE_AMT_PASSWORD`)
         } else {
-          amtPassword = profile.AMTPassword
+          amtPassword = profile.amtPassword
         }
       }
     } else {
@@ -180,20 +180,20 @@ export class ProfileManager implements IProfileManager {
     let mebxPassword: string
 
     if (profile) {
-      if (profile.GenerateRandomMEBxPassword) {
-        mebxPassword = PasswordHelper.generateRandomPassword(profile.RandomMEBxPasswordLength)
+      if (profile.generateRandomMEBxPassword) {
+        mebxPassword = PasswordHelper.generateRandomPassword(profile.randomMEBxPasswordLength)
 
         if (mebxPassword) {
-          this.logger.debug('Created random MEBx password for ' + profile.ProfileName + '.')
+          this.logger.debug(`Created random MEBx password for ${profile.profileName}`)
         } else {
-          this.logger.error('unable to create MEBx random password for ' + profile.ProfileName + '.')
+          this.logger.error(`unable to create MEBx random password for ${profile.profileName}`)
         }
       } else {
         this.logger.debug(`found amtPassword for profile ${profileName}`)
         if (this.configurator?.secretsManager) {
           mebxPassword = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${profileName}`, `${profileName}_DEVICE_MEBX_PASSWORD`)
         } else {
-          mebxPassword = profile.MEBxPassword
+          mebxPassword = profile.mebxPassword
         }
       }
     } else {
@@ -218,14 +218,14 @@ export class ProfileManager implements IProfileManager {
       if (this.envConfig?.DbConfig.useDbForConfig) {
         const amtProfile = await this.amtConfigurations.getProfileByName(profile)
         // If the Network Config associated with profile, retrieves from DB
-        if (amtProfile.NetworkConfigName) {
-          amtProfile.NetworkConfigObject = await this.amtConfigurations.getNetworkConfigForProfile(amtProfile.NetworkConfigName)
+        if (amtProfile.networkConfigName) {
+          amtProfile.networkConfigObject = await this.amtConfigurations.getNetworkConfigForProfile(amtProfile.networkConfigName)
         }
         // If the CIRA Config associated with profile, retrieves from DB
-        if (amtProfile.CIRAConfigName) {
-          amtProfile.CIRAConfigObject = await this.amtConfigurations.getCiraConfigForProfile(amtProfile.CIRAConfigName)
+        if (amtProfile.ciraConfigName) {
+          amtProfile.ciraConfigObject = await this.amtConfigurations.getCiraConfigForProfile(amtProfile.ciraConfigName)
           if (this.configurator?.secretsManager) {
-            if (amtProfile.CIRAConfigObject?.Password) { amtProfile.CIRAConfigObject.Password = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${amtProfile.CIRAConfigName}`, amtProfile.CIRAConfigObject.Password) } else { this.logger.error('The amtProfile CIRAConfigObject doesnt have a password. Check CIRA profile creation.') }
+            if (amtProfile.ciraConfigObject?.password) { amtProfile.ciraConfigObject.password = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${amtProfile.ciraConfigName}`, amtProfile.ciraConfigObject.password) } else { this.logger.error('The amtProfile CIRAConfigObject doesnt have a password. Check CIRA profile creation.') }
           }
         }
         this.logger.debug('AMT Profile returned from db', JSON.stringify(amtProfile))
@@ -233,15 +233,15 @@ export class ProfileManager implements IProfileManager {
       } else {
         const amtProfiles = await this.amtConfigurations.getAllProfiles()
         for (let index = 0; index < amtProfiles.length; ++index) {
-          if (amtProfiles[index].ProfileName === profile) {
+          if (amtProfiles[index].profileName === profile) {
             const amtProfile = amtProfiles[index]
             this.logger.debug(`found amt profile: ${JSON.stringify(amtProfile, null, '\t')}`)
-            if (amtProfile.NetworkConfigName) {
-              amtProfile.NetworkConfigObject = await this.amtConfigurations.getNetworkConfigForProfile(amtProfile.NetworkConfigName)
+            if (amtProfile.networkConfigName) {
+              amtProfile.networkConfigObject = await this.amtConfigurations.getNetworkConfigForProfile(amtProfile.networkConfigName)
               this.logger.debug(`found AMT Network Config: ${JSON.stringify(amtProfile, null, '\t')}`)
             }
-            if (amtProfile.CIRAConfigName) {
-              amtProfile.CIRAConfigObject = await this.amtConfigurations.getCiraConfigForProfile(amtProfile.CIRAConfigName)
+            if (amtProfile.ciraConfigName) {
+              amtProfile.ciraConfigObject = await this.amtConfigurations.getCiraConfigForProfile(amtProfile.ciraConfigName)
               this.logger.debug(`found AMT CIRA Config: ${JSON.stringify(amtProfile, null, '\t')}`)
             }
             return amtProfile

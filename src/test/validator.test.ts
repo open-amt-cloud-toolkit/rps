@@ -234,29 +234,29 @@ describe('Activation message for admin control mode', () => {
     activationmsg.payload.fwNonce = undefined
     activationmsg.payload.modes = undefined
     activationmsg.payload.profile = {
-      AMTPassword: 'P@ssw0rd',
-      Activation: 'acmactivate',
-      CIRAConfigName: 'ciraconfig1',
-      CIRAConfigObject: {
-        AuthMethod: 2,
-        CommonName: 'localhost',
-        ConfigName: 'ciraconfig1',
-        MPSPort: 4433,
-        MPSRootCertificate: 'rootcert',
-        MPSServerAddress: 'localhost',
-        Password: 'P@ssw0rd',
-        ProxyDetails: '',
-        ServerAddressFormat: 201,
-        Username: 'admin'
+      amtPassword: 'P@ssw0rd',
+      activation: 'acmactivate',
+      ciraConfigName: 'ciraconfig1',
+      ciraConfigObject: {
+        authMethod: 2,
+        commonName: 'localhost',
+        configName: 'ciraconfig1',
+        mpsPort: 4433,
+        mpsRootCertificate: 'rootcert',
+        mpsServerAddress: 'localhost',
+        password: 'P@ssw0rd',
+        proxyDetails: '',
+        serverAddressFormat: 201,
+        username: 'admin'
       },
-      ConfigurationScript: null,
-      GenerateRandomMEBxPassword: false,
-      GenerateRandomPassword: false,
-      MEBxPassword: 'P@ssw0rd',
-      ProfileName: 'profile1',
-      RandomMEBxPasswordLength: 8,
-      RandomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
-      RandomPasswordLength: 8
+      configurationScript: null,
+      generateRandomMEBxPassword: false,
+      generateRandomPassword: false,
+      mebxPassword: 'P@ssw0rd',
+      profileName: 'profile1',
+      randomMEBxPasswordLength: 8,
+      randomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
+      randomPasswordLength: 8
     }
     expect(clientObj.ClientData).toEqual(activationmsg)
   })

@@ -107,9 +107,9 @@ export class Validator implements IValidator {
     const profile = await this.configurator.profileManager.getAmtProfile(payload.profile)
     payload.profile = profile
 
-    if (profile.Activation === ClientAction.ADMINCTLMODE) {
+    if (profile.activation === ClientAction.ADMINCTLMODE) {
       clientObj.action = ClientAction.ADMINCTLMODE
-    } else if (profile.Activation === ClientAction.CLIENTCTLMODE) {
+    } else if (profile.activation === ClientAction.CLIENTCTLMODE) {
       clientObj.action = ClientAction.CLIENTCTLMODE
     }
 
@@ -117,7 +117,7 @@ export class Validator implements IValidator {
     if (payload.currentMode > 0) {
       switch (payload.currentMode) {
         case 1: {
-          if (profile.Activation === ClientAction.CLIENTCTLMODE) {
+          if (profile.activation === ClientAction.CLIENTCTLMODE) {
             this.logger.debug(`Device ${payload.uuid} already enabled in client mode.`)
             clientObj.ciraconfig.status = 'already enabled in client mode.'
             clientObj.action = payload.profile.NetworkConfigObject ? ClientAction.NETWORKCONFIG : ClientAction.CIRACONFIG
@@ -127,7 +127,7 @@ export class Validator implements IValidator {
           break
         }
         case 2: {
-          if (profile.Activation === ClientAction.ADMINCTLMODE) {
+          if (profile.activation === ClientAction.ADMINCTLMODE) {
             this.logger.debug(`Device ${payload.uuid} already enabled in admin mode.`)
             clientObj.ciraconfig.status = 'already enabled in admin mode.'
             clientObj.action = payload.profile.NetworkConfigObject ? ClientAction.NETWORKCONFIG : ClientAction.CIRACONFIG

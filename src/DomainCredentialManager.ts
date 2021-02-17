@@ -31,8 +31,8 @@ export class DomainCredentialManager implements IDomainCredentialManager {
   async getProvisioningCertStorageType (domainSuffix: string): Promise<string> {
     const domain = await this.getAMTDomain(domainSuffix)
     let format: string = null
-    if (domain?.ProvisioningCertStorageFormat) {
-      format = domain.ProvisioningCertStorageFormat
+    if (domain?.provisioningCertStorageFormat) {
+      format = domain.provisioningCertStorageFormat
     } else {
       this.logger.warn(`unable to find provisioning cert storage format for profile ${domainSuffix}`)
     }
@@ -49,12 +49,12 @@ export class DomainCredentialManager implements IDomainCredentialManager {
     const domain = await this.getAMTDomain(domainSuffix)
     this.logger.info(`domain : ${JSON.stringify(domain)}`)
     let certPwd = null
-    if (domain?.ProvisioningCert) {
+    if (domain?.provisioningCert) {
       if (this.configurator?.secretsManager) {
-        certPwd = await this.configurator.secretsManager.getSecretAtPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/${domain.Name}`)
+        certPwd = await this.configurator.secretsManager.getSecretAtPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/${domain.profileName}`)
         this.logger.info(`CertPwd : ${JSON.stringify(certPwd)}`)
-        domain.ProvisioningCert = certPwd.data.CERT_KEY
-        domain.ProvisioningCertPassword = certPwd.data.CERT_PASSWORD_KEY
+        domain.provisioningCert = certPwd.data.CERT_KEY
+        domain.provisioningCertPassword = certPwd.data.CERT_PASSWORD_KEY
       }
     } else {
       this.logger.warn(`unable to find provisioning cert for profile ${domainSuffix}`)
@@ -70,7 +70,7 @@ export class DomainCredentialManager implements IDomainCredentialManager {
   private async getAMTDomain (domainSuffix: string): Promise<AMTDomain> {
     const amtDomainList = await this.amtDomains.getAllDomains()
     for (let index = 0; index < amtDomainList.length; ++index) {
-      if (amtDomainList[index].DomainSuffix === domainSuffix) {
+      if (amtDomainList[index].domainSuffix === domainSuffix) {
         this.logger.debug(`found amt domain: ${domainSuffix}`)
         this.logger.silly(`Domain Info ${domainSuffix}: ${JSON.stringify(amtDomainList[index])}`)
         return amtDomainList[index]
