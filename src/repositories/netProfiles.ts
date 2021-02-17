@@ -81,10 +81,10 @@ export class NetConfigDb implements INetProfilesDb {
       const results = await this.db.query('INSERT INTO networkconfigs(network_profile_name, dhcp_enabled, static_ip_shared, ip_sync_enabled) ' +
         'values($1, $2, $3, $4)',
       [
-        netConfig.ProfileName,
-        netConfig.DHCPEnabled,
-        netConfig.StaticIPShared,
-        netConfig.IPSyncEnabled
+        netConfig.profileName,
+        netConfig.dhcpEnabled,
+        netConfig.staticIPShared,
+        netConfig.ipSyncEnabled
       ])
       if (results.rowCount > 0) {
         return true
@@ -92,9 +92,9 @@ export class NetConfigDb implements INetProfilesDb {
       return false
     } catch (error) {
       if (error.code === '23505') { // Unique key violation
-        throw new RPSError(NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE(netConfig.ProfileName), 'Unique key violation')
+        throw new RPSError(NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE(netConfig.profileName), 'Unique key violation')
       }
-      throw new RPSError(NETWORK_CONFIG_ERROR(netConfig.ProfileName)
+      throw new RPSError(NETWORK_CONFIG_ERROR(netConfig.profileName)
       )
     }
   }
@@ -105,16 +105,16 @@ export class NetConfigDb implements INetProfilesDb {
    * @returns {boolean} Return true on successful updation
    */
   async updateProfile (netConfig: NetworkConfig): Promise<any> {
-    const profiles = await this.db.query('SELECT profile_name as ProfileName FROM profiles WHERE network_profile_name = $1', [netConfig.ProfileName])
+    const profiles = await this.db.query('SELECT profile_name as ProfileName FROM profiles WHERE network_profile_name = $1', [netConfig.profileName])
     if (profiles.rowCount > 0) {
-      throw new RPSError(NETWORK_UPDATE_ERROR(netConfig.ProfileName))
+      throw new RPSError(NETWORK_UPDATE_ERROR(netConfig.profileName))
     }
     const results = await this.db.query('UPDATE networkconfigs SET dhcp_enabled=$2, static_ip_shared=$3, ip_sync_enabled=$4 where network_profile_name=$1',
       [
-        netConfig.ProfileName,
-        netConfig.DHCPEnabled,
-        netConfig.StaticIPShared,
-        netConfig.IPSyncEnabled
+        netConfig.profileName,
+        netConfig.dhcpEnabled,
+        netConfig.staticIPShared,
+        netConfig.ipSyncEnabled
       ])
     if (results.rowCount > 0) {
       return true

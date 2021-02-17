@@ -67,28 +67,28 @@ export class RCSConfig {
   }
 }
 export class AMTConfiguration {
-  ProfileName?: string
-  AMTPassword?: string
-  GenerateRandomPassword: boolean
-  RandomPasswordLength?: number
-  RandomPasswordCharacters?: string
-  ConfigurationScript?: string
-  CIRAConfigName?: string
-  Activation: string
-  NetworkConfigName?: string
-  NetworkConfigObject?: NetworkConfig
-  MEBxPassword: string
-  GenerateRandomMEBxPassword: boolean
-  RandomMEBxPasswordLength?: number
-  CIRAConfigObject?: CIRAConfig
+  profileName?: string
+  amtPassword?: string
+  generateRandomPassword: boolean
+  randomPasswordLength?: number
+  randomPasswordCharacters?: string
+  configurationScript?: string
+  ciraConfigName?: string
+  activation: string
+  networkConfigName?: string
+  networkConfigObject?: NetworkConfig
+  mebxPassword: string
+  generateRandomMEBxPassword: boolean
+  randomMEBxPasswordLength?: number
+  ciraConfigObject?: CIRAConfig
 }
 
 export class AMTDomain {
-  Name: string
-  DomainSuffix: string
-  ProvisioningCert: string
-  ProvisioningCertStorageFormat: string
-  ProvisioningCertPassword: string
+  profileName: string
+  domainSuffix: string
+  provisioningCert: string
+  provisioningCertStorageFormat: string
+  provisioningCertPassword: string
 }
 
 export class WSMessage {

@@ -58,10 +58,10 @@ export class ACMActivator implements IExecutor {
           const amtDomain: AMTDomain = await this.configurator.domainCredentialManager.getProvisioningCert(clientObj.ClientData.payload.fqdn)
           this.logger.info(`domain : ${JSON.stringify(amtDomain)}`)
           // Verify that the certificate path points to a file that exists
-          if (!amtDomain.ProvisioningCert) {
+          if (!amtDomain.provisioningCert) {
             throw new RPSError(`Device ${clientObj.uuid} activation failed. AMT provisioning certificate not found on server`)
           }
-          clientObj.certObj = this.GetProvisioningCertObj(clientObj.ClientData, amtDomain.ProvisioningCert, amtDomain.ProvisioningCertPassword, clientId)
+          clientObj.certObj = this.GetProvisioningCertObj(clientObj.ClientData, amtDomain.provisioningCert, amtDomain.provisioningCertPassword, clientId)
           if (clientObj.certObj) {
             // Check if we got an error while getting the provisioning cert object
             if (clientObj.certObj.errorText) {
@@ -100,7 +100,7 @@ export class ACMActivator implements IExecutor {
             throw new RPSError(signature.errorText)
           }
 
-          const amtPassword: string = await this.configurator.profileManager.getAmtPassword(clientObj.ClientData.payload.profile.ProfileName)
+          const amtPassword: string = await this.configurator.profileManager.getAmtPassword(clientObj.ClientData.payload.profile.profileName)
           clientObj.amtPassword = amtPassword
           this.clientManager.setClientObject(clientObj)
 
@@ -215,7 +215,7 @@ export class ACMActivator implements IExecutor {
       this.amtwsman.cache[clientId].wsman.comm.setupCommunication.getPassword = (): string => { return clientObj.amtPassword }
     }
     /* Get the MEBx password */
-    const mebxPassword: string = await this.configurator.profileManager.getMEBxPassword(clientObj.ClientData.payload.profile.ProfileName)
+    const mebxPassword: string = await this.configurator.profileManager.getMEBxPassword(clientObj.ClientData.payload.profile.profileName)
 
     /* Create a device in the repository. */
     if (this.configurator?.amtDeviceRepository) {

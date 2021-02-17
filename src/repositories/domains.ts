@@ -68,22 +68,22 @@ export class DomainsDb implements IDomainsDb {
       const results = await this.db.query('INSERT INTO domains(name, domain_suffix, provisioning_cert, provisioning_cert_storage_format, provisioning_cert_key) ' +
         'values($1, $2, $3, $4, $5)',
       [
-        amtDomain.Name,
-        amtDomain.DomainSuffix,
-        amtDomain.ProvisioningCert,
-        amtDomain.ProvisioningCertStorageFormat,
-        amtDomain.ProvisioningCertPassword
+        amtDomain.profileName,
+        amtDomain.domainSuffix,
+        amtDomain.provisioningCert,
+        amtDomain.provisioningCertStorageFormat,
+        amtDomain.provisioningCertPassword
       ])
       if (results.rowCount > 0) {
         return true
       }
       return false
     } catch (error) {
-      this.log.error(`Failed to insert Domain: ${amtDomain.Name}`, error)
+      this.log.error(`Failed to insert Domain: ${amtDomain.profileName}`, error)
       if (error.code === '23505') { // Unique key violation
-        throw new RPSError(DUPLICATE_DOMAIN_FAILED(amtDomain.Name), 'Unique key violation')
+        throw new RPSError(DUPLICATE_DOMAIN_FAILED(amtDomain.profileName), 'Unique key violation')
       }
-      throw new RPSError(API_UNEXPECTED_EXCEPTION(amtDomain.Name))
+      throw new RPSError(API_UNEXPECTED_EXCEPTION(amtDomain.profileName))
     }
   }
 
@@ -96,11 +96,11 @@ export class DomainsDb implements IDomainsDb {
     try {
       const results = await this.db.query('UPDATE domains SET domain_suffix=$2, provisioning_cert=$3, provisioning_cert_storage_format=$4, provisioning_cert_key=$5 WHERE name=$1',
         [
-          amtDomain.Name,
-          amtDomain.DomainSuffix,
-          amtDomain.ProvisioningCert,
-          amtDomain.ProvisioningCertStorageFormat,
-          amtDomain.ProvisioningCertPassword
+          amtDomain.profileName,
+          amtDomain.domainSuffix,
+          amtDomain.provisioningCert,
+          amtDomain.provisioningCertStorageFormat,
+          amtDomain.provisioningCertPassword
         ])
       if (results.rowCount > 0) {
         return true
@@ -109,9 +109,9 @@ export class DomainsDb implements IDomainsDb {
     } catch (error) {
       this.log.error('Failed to update Domain :', error)
       if (error.code === '23505') { // Unique key violation
-        throw new RPSError(DUPLICATE_DOMAIN_FAILED(amtDomain.Name), 'Unique key violation')
+        throw new RPSError(DUPLICATE_DOMAIN_FAILED(amtDomain.profileName), 'Unique key violation')
       }
-      throw new RPSError(API_UNEXPECTED_EXCEPTION(amtDomain.Name))
+      throw new RPSError(API_UNEXPECTED_EXCEPTION(amtDomain.profileName))
     }
   }
 }

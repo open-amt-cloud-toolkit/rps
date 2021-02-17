@@ -78,16 +78,16 @@ export class CiraConfigDb implements ICiraConfigDb {
       const results = await this.db.query('INSERT INTO ciraconfigs(cira_config_name, mps_server_address, mps_port, user_name, password, common_name, server_address_format, auth_method, mps_root_certificate, proxydetails) ' +
         'values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)',
       [
-        ciraConfig.ConfigName,
-        ciraConfig.MPSServerAddress,
-        ciraConfig.MPSPort,
-        ciraConfig.Username,
-        ciraConfig.Password,
-        ciraConfig.CommonName,
-        ciraConfig.ServerAddressFormat,
-        ciraConfig.AuthMethod,
-        ciraConfig.MPSRootCertificate,
-        ciraConfig.ProxyDetails
+        ciraConfig.configName,
+        ciraConfig.mpsServerAddress,
+        ciraConfig.mpsPort,
+        ciraConfig.username,
+        ciraConfig.password,
+        ciraConfig.commonName,
+        ciraConfig.serverAddressFormat,
+        ciraConfig.authMethod,
+        ciraConfig.mpsRootCertificate,
+        ciraConfig.proxyDetails
       ])
       if (results.rowCount > 0) {
         return true
@@ -96,9 +96,9 @@ export class CiraConfigDb implements ICiraConfigDb {
     } catch (error) {
       this.log.error('Failed to insert CIRA config :', error)
       if (error.code === '23505') { // Unique key violation
-        throw new RPSError(CIRA_CONFIG_INSERTION_FAILED_DUPLICATE(ciraConfig.ConfigName), 'Unique key violation')
+        throw new RPSError(CIRA_CONFIG_INSERTION_FAILED_DUPLICATE(ciraConfig.configName), 'Unique key violation')
       }
-      throw new RPSError(API_UNEXPECTED_EXCEPTION(ciraConfig.ConfigName))
+      throw new RPSError(API_UNEXPECTED_EXCEPTION(ciraConfig.configName))
     }
   }
 
@@ -111,16 +111,16 @@ export class CiraConfigDb implements ICiraConfigDb {
     try {
       const results = await this.db.query('UPDATE ciraconfigs SET mps_server_address=$2, mps_port=$3, user_name=$4, password=$5, common_name=$6, server_address_format=$7, auth_method=$8, mps_root_certificate=$9, proxydetails=$10 where cira_config_name=$1',
         [
-          ciraConfig.ConfigName,
-          ciraConfig.MPSServerAddress,
-          ciraConfig.MPSPort,
-          ciraConfig.Username,
-          ciraConfig.Password,
-          ciraConfig.CommonName,
-          ciraConfig.ServerAddressFormat,
-          ciraConfig.AuthMethod,
-          ciraConfig.MPSRootCertificate,
-          ciraConfig.ProxyDetails
+          ciraConfig.configName,
+          ciraConfig.mpsServerAddress,
+          ciraConfig.mpsPort,
+          ciraConfig.username,
+          ciraConfig.password,
+          ciraConfig.commonName,
+          ciraConfig.serverAddressFormat,
+          ciraConfig.authMethod,
+          ciraConfig.mpsRootCertificate,
+          ciraConfig.proxyDetails
         ])
       if (results.rowCount > 0) {
         return true
@@ -128,7 +128,7 @@ export class CiraConfigDb implements ICiraConfigDb {
       return false
     } catch (error) {
       this.log.error('Failed to update CIRA config :', error)
-      throw new RPSError(API_UNEXPECTED_EXCEPTION(ciraConfig.ConfigName))
+      throw new RPSError(API_UNEXPECTED_EXCEPTION(ciraConfig.configName))
     }
   }
 }

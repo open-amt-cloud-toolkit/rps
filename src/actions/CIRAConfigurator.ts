@@ -39,28 +39,28 @@ export class CIRAConfigurator implements IExecutor {
       if (wsmanResponse) {
         await this.delete(clientId, clientObj, wsmanResponse)
 
-        if (clientObj.ClientData.payload.profile.CIRAConfigName && clientObj.ciraconfig.setENVSettingData) {
+        if (clientObj.ClientData.payload.profile.ciraConfigName && clientObj.ciraconfig.setENVSettingData) {
           // Add trusted root certificate and MPS server
           if (clientObj.ciraconfig.mpsRemoteSAPDelete && !clientObj.ciraconfig.addTrustedRootCert) {
             clientObj.ciraconfig.addTrustedRootCert = true
             this.clientManager.setClientObject(clientObj)
-            const configScript: CIRAConfig = clientObj.ClientData.payload.profile.CIRAConfigObject
-            await this.amtwsman.execute(clientId, 'AMT_PublicKeyManagementService', 'AddTrustedRootCertificate', { CertificateBlob: configScript.MPSRootCertificate }, null, AMTUserName, clientObj.ClientData.payload.password)
+            const configScript: CIRAConfig = clientObj.ClientData.payload.profile.ciraConfigObject
+            await this.amtwsman.execute(clientId, 'AMT_PublicKeyManagementService', 'AddTrustedRootCertificate', { CertificateBlob: configScript.mpsRootCertificate }, null, AMTUserName, clientObj.ClientData.payload.password)
           } else if (clientObj.ciraconfig.addTrustedRootCert && !clientObj.ciraconfig.addMPSServer) {
             this.logger.debug(`${clientObj.uuid}  Adding trusted root certificate.`)
             clientObj.ciraconfig.addMPSServer = true
             this.clientManager.setClientObject(clientObj)
-            const configScript: CIRAConfig = clientObj.ClientData.payload.profile.CIRAConfigObject
+            const configScript: CIRAConfig = clientObj.ClientData.payload.profile.ciraConfigObject
             const server: mpsServer = {
-              AccessInfo: configScript.MPSServerAddress,
-              InfoFormat: configScript.ServerAddressFormat,
-              Port: configScript.MPSPort,
-              AuthMethod: configScript.AuthMethod,
-              Username: configScript.Username,
-              Password: configScript.Password
+              AccessInfo: configScript.mpsServerAddress,
+              InfoFormat: configScript.serverAddressFormat,
+              Port: configScript.mpsPort,
+              AuthMethod: configScript.authMethod,
+              Username: configScript.username,
+              Password: configScript.password
             }
-            if (configScript.ServerAddressFormat === 3 && configScript.CommonName) {
-              server.CN = configScript.CommonName
+            if (configScript.serverAddressFormat === 3 && configScript.commonName) {
+              server.CN = configScript.commonName
             }
             await this.amtwsman.execute(clientId, 'AMT_RemoteAccessService', 'AddMpServer', server, null, AMTUserName, clientObj.ClientData.payload.password)
           } else if (clientObj.ciraconfig.addMPSServer && !clientObj.ciraconfig.mpsRemoteSAP) {

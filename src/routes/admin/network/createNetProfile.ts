@@ -21,22 +21,22 @@ export async function createNetProfile (req, res): Promise<void> {
       res.status(400).json({ errors: errors.array() })
       return
     }
-    netConfig.ProfileName = req.body.payload.profileName
-    netConfig.DHCPEnabled = req.body.payload.dhcpEnabled
-    netConfig.StaticIPShared = !req.body.payload.dhcpEnabled
-    netConfig.IPSyncEnabled = true
+    netConfig.profileName = req.body.payload.profileName
+    netConfig.dhcpEnabled = req.body.payload.dhcpEnabled
+    netConfig.staticIPShared = !req.body.payload.dhcpEnabled
+    netConfig.ipSyncEnabled = true
 
     profilesDb = NetConfigDbFactory.getConfigDb()
     const results = await profilesDb.insertProfile(netConfig)
     if (results === true) {
-      res.status(201).json(API_RESPONSE(null, null, NETWORK_CONFIG_INSERTION_SUCCESS(netConfig.ProfileName))).end()
+      res.status(201).json(API_RESPONSE(null, null, NETWORK_CONFIG_INSERTION_SUCCESS(netConfig.profileName))).end()
     }
   } catch (error) {
-    log.error(`Failed to create a network configuration : ${netConfig.ProfileName}`, error)
+    log.error(`Failed to create a network configuration : ${netConfig.profileName}`, error)
     if (error instanceof RPSError) {
       res.status(400).json(API_RESPONSE(null, error.name, error.message)).end()
     } else {
-      res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`Insert network configuration ${netConfig.ProfileName}`))).end()
+      res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`Insert network configuration ${netConfig.profileName}`))).end()
     }
   }
 }

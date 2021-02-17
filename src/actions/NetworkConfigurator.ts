@@ -57,10 +57,10 @@ export class NetworkConfigurator implements IExecutor {
           // When 'DHCPEnabled' property is set to true the following properties should be set to NULL:
           // SubnetMask, DefaultGateway, IPAddress, PrimaryDNS, SecondaryDNS.
           if (!clientObj.ciraconfig.setEthernetPortSettings) {
-            if (networkConfig.DHCPEnabled !== response.DHCPEnabled || networkConfig.IPSyncEnabled !== response.IpSyncEnabled) {
-              response.DHCPEnabled = networkConfig.DHCPEnabled
-              response.SharedStaticIp = networkConfig.StaticIPShared
-              response.IpSyncEnabled = networkConfig.IPSyncEnabled
+            if (networkConfig.dhcpEnabled !== response.DHCPEnabled || networkConfig.ipSyncEnabled !== response.IpSyncEnabled) {
+              response.DHCPEnabled = networkConfig.dhcpEnabled
+              response.SharedStaticIp = networkConfig.staticIPShared
+              response.IpSyncEnabled = networkConfig.ipSyncEnabled
               if (response.DHCPEnabled || response.IpSyncEnabled) {
                 response.SubnetMask = null
                 response.DefaultGateway = null
@@ -88,8 +88,8 @@ export class NetworkConfigurator implements IExecutor {
               await this.CIRAConfigurator.execute(message, clientId)
             }
           } else {
-            if (networkConfig.DHCPEnabled !== response.DHCPEnabled ||
-              networkConfig.IPSyncEnabled !== response.IpSyncEnabled) {
+            if (networkConfig.dhcpEnabled !== response.DHCPEnabled ||
+              networkConfig.ipSyncEnabled !== response.IpSyncEnabled) {
               this.logger.debug(`Device ${clientObj.uuid} network configuration failed with profile : ${clientObj.ClientData.payload.profile.NetworkConfigObject}`)
               clientObj.ciraconfig.status += 'network configuration failed.'
             } else {

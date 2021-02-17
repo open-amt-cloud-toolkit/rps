@@ -22,10 +22,10 @@ export async function editNetProfile (req, res): Promise<void> {
       res.status(400).json({ errors: errors.array() })
       return
     }
-    netConfig.ProfileName = req.body.payload.profileName
-    netConfig.DHCPEnabled = req.body.payload.dhcpEnabled
-    netConfig.StaticIPShared = !req.body.payload.dhcpEnabled
-    netConfig.IPSyncEnabled = true
+    netConfig.profileName = req.body.payload.profileName
+    netConfig.dhcpEnabled = req.body.payload.dhcpEnabled
+    netConfig.staticIPShared = !req.body.payload.dhcpEnabled
+    netConfig.ipSyncEnabled = true
 
     profilesDb = NetConfigDbFactory.getConfigDb()
     // SQL Query > Insert Data
@@ -33,14 +33,14 @@ export async function editNetProfile (req, res): Promise<void> {
     if (results) {
       res.status(204).end()
     } else {
-      res.status(404).json(API_RESPONSE(null, 'Not Found', NETWORK_CONFIG_NOT_FOUND(netConfig.ProfileName))).end()
+      res.status(404).json(API_RESPONSE(null, 'Not Found', NETWORK_CONFIG_NOT_FOUND(netConfig.profileName))).end()
     }
   } catch (error) {
-    log.error(`Failed to edit network configuration : ${netConfig.ProfileName}`, error)
+    log.error(`Failed to edit network configuration : ${netConfig.profileName}`, error)
     if (error instanceof RPSError) {
       res.status(400).json(API_RESPONSE(null, error.message)).end()
     } else {
-      res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`UPDATE ${netConfig.ProfileName}`))).end()
+      res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`UPDATE ${netConfig.profileName}`))).end()
     }
   }
 }

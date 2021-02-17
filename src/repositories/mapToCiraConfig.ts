@@ -9,15 +9,15 @@ import { CIRAConfig } from '../RCS.Config'
 
 export function mapToCiraConfig (results): CIRAConfig {
   return {
-    ConfigName: results.cira_config_name,
-    MPSServerAddress: results.mps_server_address,
-    MPSPort: results.mps_port,
-    Username: results.user_name,
-    Password: results.password,
-    CommonName: results.common_name,
-    ServerAddressFormat: results.server_address_format, // IPv4 (3), IPv6 (4), FQDN (201)
-    AuthMethod: results.auth_method, // Mutual Auth (1), Username/Password (2) (We only support 2)
-    MPSRootCertificate: results.mps_root_certificate, // Assumption is Root Cert for MPS. Need to validate.
-    ProxyDetails: results.proxydetails
+    configName: results.cira_config_name,
+    mpsServerAddress: results.mps_server_address,
+    mpsPort: results.mps_port,
+    username: results.user_name,
+    password: results.password,
+    commonName: results.common_name,
+    serverAddressFormat: results.server_address_format, // IPv4 (3), IPv6 (4), FQDN (201)
+    authMethod: results.auth_method, // Mutual Auth (1), Username/Password (2) (We only support 2)
+    mpsRootCertificate: results.mps_root_certificate, // Assumption is Root Cert for MPS. Need to validate.
+    proxyDetails: results.proxydetails
   } as CIRAConfig
 }

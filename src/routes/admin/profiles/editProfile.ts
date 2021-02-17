@@ -32,41 +32,41 @@ export async function editProfile (req, res): Promise<void> {
     } else {
       const amtConfig: AMTConfiguration = getUpdatedData(newConfig, oldConfig)
       // Assigning value key value for AMT Random Password and MEBx Random Password to store in database
-      const amtPwdBefore = amtConfig.AMTPassword
-      const mebxPwdBefore = amtConfig.MEBxPassword
+      const amtPwdBefore = amtConfig.amtPassword
+      const mebxPwdBefore = amtConfig.mebxPassword
       if (req.secretsManager) {
         // store the AMT password key into db
-        if (!amtConfig.GenerateRandomPassword) {
-          amtConfig.AMTPassword = `${amtConfig.ProfileName}_DEVICE_AMT_PASSWORD`
+        if (!amtConfig.generateRandomPassword) {
+          amtConfig.amtPassword = `${amtConfig.profileName}_DEVICE_AMT_PASSWORD`
         }
         // store the MEBX password key into db
-        if (!amtConfig.GenerateRandomMEBxPassword) {
-          amtConfig.MEBxPassword = `${amtConfig.ProfileName}_DEVICE_MEBX_PASSWORD`
+        if (!amtConfig.generateRandomMEBxPassword) {
+          amtConfig.mebxPassword = `${amtConfig.profileName}_DEVICE_MEBX_PASSWORD`
         }
       }
       // SQL Query > Insert Data
       const results = await profilesDb.updateProfile(amtConfig)
       // profile inserted  into db successfully. insert the secret into vault
-      if (oldConfig.AMTPassword !== null || oldConfig.MEBxPassword !== null) {
+      if (oldConfig.amtPassword !== null || oldConfig.mebxPassword !== null) {
         if (req.secretsManager) {
           log.debug('Delete in vault') // User might be flipping from false to true which we dont know. So try deleting either way.
-          await req.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${amtConfig.ProfileName}`)
+          await req.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${amtConfig.profileName}`)
           log.debug('Password deleted from vault')
         }
       }
       if (results) {
       // store the password sent into Vault
-        if (req.secretsManager && (!amtConfig.GenerateRandomPassword || !amtConfig.GenerateRandomMEBxPassword)) {
+        if (req.secretsManager && (!amtConfig.generateRandomPassword || !amtConfig.generateRandomMEBxPassword)) {
           const data = { data: {} }
-          if (!amtConfig.GenerateRandomPassword) {
-            data.data[`${amtConfig.ProfileName}_DEVICE_AMT_PASSWORD`] = amtPwdBefore
+          if (!amtConfig.generateRandomPassword) {
+            data.data[`${amtConfig.profileName}_DEVICE_AMT_PASSWORD`] = amtPwdBefore
             log.debug('AMT Password written to vault')
           }
-          if (!amtConfig.GenerateRandomMEBxPassword) {
-            data.data[`${amtConfig.ProfileName}_DEVICE_MEBX_PASSWORD`] = mebxPwdBefore
+          if (!amtConfig.generateRandomMEBxPassword) {
+            data.data[`${amtConfig.profileName}_DEVICE_MEBX_PASSWORD`] = mebxPwdBefore
             log.debug('MEBX Password written to vault')
           }
-          await req.secretsManager.writeSecretWithObject(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${amtConfig.ProfileName}`, data)
+          await req.secretsManager.writeSecretWithObject(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${amtConfig.profileName}`, data)
         }
         log.info(`Updated AMT profile: ${newConfig.profileName}`)
         res.status(204).end()
@@ -83,44 +83,44 @@ export async function editProfile (req, res): Promise<void> {
 }
 
 function getUpdatedData (newConfig: any, oldConfig: AMTConfiguration): AMTConfiguration {
-  const amtConfig: AMTConfiguration = { ProfileName: newConfig.profileName } as AMTConfiguration
+  const amtConfig: AMTConfiguration = { profileName: newConfig.profileName } as AMTConfiguration
   if (newConfig.amtPassword == null) {
-    amtConfig.AMTPassword = oldConfig.AMTPassword
-    amtConfig.GenerateRandomPassword = false
-    amtConfig.RandomPasswordLength = null
+    amtConfig.amtPassword = oldConfig.amtPassword
+    amtConfig.generateRandomPassword = false
+    amtConfig.randomPasswordLength = null
   } else {
-    amtConfig.AMTPassword = newConfig.amtPassword
+    amtConfig.amtPassword = newConfig.amtPassword
   }
   if (newConfig.mebxPassword == null) {
-    amtConfig.MEBxPassword = oldConfig.MEBxPassword
-    amtConfig.GenerateRandomMEBxPassword = false
-    amtConfig.RandomMEBxPasswordLength = null
+    amtConfig.mebxPassword = oldConfig.mebxPassword
+    amtConfig.generateRandomMEBxPassword = false
+    amtConfig.randomMEBxPasswordLength = null
   } else {
-    amtConfig.MEBxPassword = newConfig.mebxPassword
+    amtConfig.mebxPassword = newConfig.mebxPassword
   }
   if (newConfig.generateRandomPassword) {
-    amtConfig.GenerateRandomPassword = newConfig.generateRandomPassword
-    amtConfig.RandomPasswordLength = newConfig.passwordLength
-    amtConfig.AMTPassword = null
+    amtConfig.generateRandomPassword = newConfig.generateRandomPassword
+    amtConfig.randomPasswordLength = newConfig.passwordLength
+    amtConfig.amtPassword = null
   } else {
-    amtConfig.GenerateRandomPassword = newConfig.amtPassword == null ? oldConfig.GenerateRandomPassword : null
-    amtConfig.RandomPasswordLength = newConfig.amtPassword == null ? oldConfig.RandomPasswordLength : null
+    amtConfig.generateRandomPassword = newConfig.amtPassword == null ? oldConfig.generateRandomPassword : null
+    amtConfig.randomPasswordLength = newConfig.amtPassword == null ? oldConfig.randomPasswordLength : null
   }
   if (newConfig.generateRandomMEBxPassword) {
-    amtConfig.GenerateRandomMEBxPassword = newConfig.generateRandomMEBxPassword
-    amtConfig.RandomMEBxPasswordLength = newConfig.mebxPasswordLength
-    amtConfig.MEBxPassword = null
+    amtConfig.generateRandomMEBxPassword = newConfig.generateRandomMEBxPassword
+    amtConfig.randomMEBxPasswordLength = newConfig.mebxPasswordLength
+    amtConfig.mebxPassword = null
   } else {
-    amtConfig.GenerateRandomMEBxPassword = newConfig.mebxPassword == null ? oldConfig.GenerateRandomMEBxPassword : null
-    amtConfig.RandomMEBxPasswordLength = newConfig.mebxPassword == null ? oldConfig.RandomMEBxPasswordLength : null
+    amtConfig.generateRandomMEBxPassword = newConfig.mebxPassword == null ? oldConfig.generateRandomMEBxPassword : null
+    amtConfig.randomMEBxPasswordLength = newConfig.mebxPassword == null ? oldConfig.randomMEBxPasswordLength : null
   }
-  amtConfig.Activation = newConfig.activation ?? oldConfig.Activation
-  if (amtConfig.Activation === ClientAction.CLIENTCTLMODE) {
-    amtConfig.GenerateRandomMEBxPassword = false
-    amtConfig.RandomMEBxPasswordLength = null
-    amtConfig.MEBxPassword = null
+  amtConfig.activation = newConfig.activation ?? oldConfig.activation
+  if (amtConfig.activation === ClientAction.CLIENTCTLMODE) {
+    amtConfig.generateRandomMEBxPassword = false
+    amtConfig.randomMEBxPasswordLength = null
+    amtConfig.mebxPassword = null
   }
-  amtConfig.CIRAConfigName = newConfig.ciraConfigName ?? oldConfig.CIRAConfigName
-  amtConfig.NetworkConfigName = newConfig.networkConfigName ?? oldConfig.NetworkConfigName
+  amtConfig.ciraConfigName = newConfig.ciraConfigName ?? oldConfig.ciraConfigName
+  amtConfig.networkConfigName = newConfig.networkConfigName ?? oldConfig.networkConfigName
   return amtConfig
 }

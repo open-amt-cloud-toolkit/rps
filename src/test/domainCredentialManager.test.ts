@@ -22,5 +22,5 @@ test('retrieve provisioning cert based on domain', async () => {
 
   const expectedProvisioningCert: string = 'd2.pfx'
   const domain: AMTDomain = await domainCredentialManager.getProvisioningCert('d2.com')
-  expect(domain.ProvisioningCert).toEqual(expectedProvisioningCert)
+  expect(domain.provisioningCert).toEqual(expectedProvisioningCert)
 })

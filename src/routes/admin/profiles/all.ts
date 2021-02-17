@@ -18,8 +18,8 @@ export async function allProfiles (req, res): Promise<void> {
     results = await profilesDb.getAllProfiles()
     if (results.length >= 0) {
       results = results.map((result: AMTConfiguration) => {
-        delete result.AMTPassword
-        delete result.MEBxPassword
+        delete result.amtPassword
+        delete result.mebxPassword
         return result
       })
       res.status(200).json(API_RESPONSE(results)).end()

@@ -1,52 +1,49 @@
 {
   "AMTConfigurations": [
     {
-      "ProfileName": "Sample_Profile",
-      "AMTPassword": "<your_amt_password>",
-      "MEBxPassword": "<StrongPassword>",
-      "GenerateRandomPassword": false,
-      "RandomPasswordLength": 8,
-      "GenerateRandomMEBxPassword": false,
-      "RandomMEBxPasswordLength": 8,
-      "Activation": "acmactivate",
-      "CIRAConfigName": "Sample_CIRA_Config"
+      "profileName": "Sample_Profile",
+      "generateRandomPassword": false,
+      "randomPasswordLength": 8,
+      "generateRandomMEBxPassword": false,
+      "randomMEBxPasswordLength": 8,
+      "activation": "acmactivate",
+      "ciraConfigName": "Sample_CIRA_Config"
     }
   ],
   "CIRAConfigurations": [
     {
-      "ConfigName": "Sample_CIRA_Config",
-      "MPSServerAddress": "localhost",
-      "MPSPort": "4433",
-      "Username": "admin",
-      "Password": "<your_mps_password>",
-      "CommonName": "localhost",
-      "ServerAddressFormat": 201,
-      "AuthMethod": 2,
-      "MPSRootCertificate": "rootcert",
-      "ProxyDetails": ""
+      "configName": "Sample_CIRA_Config",
+      "mpsServerAddress": "localhost",
+      "mpsPort": "4433",
+      "username": "admin",
+      "commonName": "localhost",
+      "serverAddressFormat": 201,
+      "authMethod": 2,
+      "mpsRootCertificate": "rootcert",
+      "proxyDetails": ""
     }
   ],
   "NETConfigurations": [
     {
-      "ProfileName": "dhcp_disabled",
-      "DHCPEnabled": false,
-      "StaticIPShared": true,
-      "IPSyncEnabled": true
+      "profileName": "dhcp_disabled",
+      "dhcpEnabled": false,
+      "staticIPShared": true,
+      "ipSyncEnabled": true
     },
     {
-      "ProfileName": "dhcp_enabled",
-      "DHCPEnabled": true,
-      "StaticIPShared": false,
-      "IPSyncEnabled": true
+      "profileName": "dhcp_enabled",
+      "dhcpEnabled": true,
+      "staticIPShared": false,
+      "ipSyncEnabled": true
     }
   ],
   "AMTDomains": [
     {
-      "Name": "Sample_Domain",
-      "DomainSuffix": "sample.com",
-      "ProvisioningCert": "<your_certificate_filename>",
-      "ProvisioningCertStorageFormat": "string",
-      "ProvisioningCertPassword": "<your_certificate_password>"
+      "profileName": "Sample_Domain",
+      "domainSuffix": "sample.com",
+      "provisioningCert": "<your_certificate_filename>",
+      "provisioningCertStorageFormat": "string",
+      "provisioningCertPassword": "<your_certificate_password>"
     }
   ]
 }

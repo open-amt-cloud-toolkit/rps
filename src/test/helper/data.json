@@ -1,50 +1,50 @@
 {
   "AMTConfigurations": [
     {
-      "ProfileName": "profile1",
-      "AMTPassword": "P@ssw0rd",
-      "MEBxPassword": "P@ssw0rd",
-      "GenerateRandomPassword": false,
-      "RandomPasswordLength": 8,
-      "GenerateRandomMEBxPassword": false,
-      "RandomMEBxPasswordLength": 8,
-      "RandomPasswordCharacters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()",
-      "ConfigurationScript": null,
-      "Activation": "acmactivate",
-      "CIRAConfigName": "ciraconfig1"
+      "profileName": "profile1",
+      "amtPassword": "P@ssw0rd",
+      "mebxPassword": "P@ssw0rd",
+      "generateRandomPassword": false,
+      "randomPasswordLength": 8,
+      "generateRandomMEBxPassword": false,
+      "randomMEBxPasswordLength": 8,
+      "randomPasswordCharacters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()",
+      "configurationScript": null,
+      "activation": "acmactivate",
+      "ciraConfigName": "ciraconfig1"
     },
     {
-      "ProfileName": "profile2",
-      "AMTPassword": "P@ssw0rd",
-      "MEBxPassword": "P@ssw0rd",
-      "GenerateRandomPassword": false,
-      "RandomPasswordLength": 8,
-      "GenerateRandomMEBxPassword": false,
-      "RandomMEBxPasswordLength": 8,
-      "RandomPasswordCharacters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()",
-      "ConfigurationScript": null,
-      "Activation": "ccmactivate",
-      "CIRAConfigName": "ciraconfig1"
+      "profileName": "profile2",
+      "amtPassword": "P@ssw0rd",
+      "mebxPassword": "P@ssw0rd",
+      "generateRandomPassword": false,
+      "randomPasswordLength": 8,
+      "generateRandomMEBxPassword": false,
+      "randomMEBxPasswordLength": 8,
+      "randomPasswordCharacters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()",
+      "configurationScript": null,
+      "activation": "ccmactivate",
+      "ciraConfigName": "ciraconfig1"
     },
     {
-      "ProfileName": "profile3",
-      "AMTPassword": "P@ssw0rd",
-      "GenerateRandomPassword": false,
-      "RandomPasswordLength": 8,
-      "RandomPasswordCharacters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()",
-      "ConfigurationScript": null,
-      "Activation": "invalid",
-      "CIRAConfigName": "ciraconfig1"
+      "profileName": "profile3",
+      "amtPassword": "P@ssw0rd",
+      "generateRandomPassword": false,
+      "randomPasswordLength": 8,
+      "randomPasswordCharacters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()",
+      "configurationScript": null,
+      "activation": "invalid",
+      "ciraConfigName": "ciraconfig1"
     },
     {
-      "ProfileName": "profile4",
-      "AMTPassword": "P@ssw0rd",
-      "GenerateRandomPassword": false,
-      "RandomPasswordLength": 8,
-      "RandomPasswordCharacters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()",
-      "ConfigurationScript": null,
-      "Activation": "",
-      "CIRAConfigName": "ciraconfig1"
+      "profileName": "profile4",
+      "amtPassword": "P@ssw0rd",
+      "generateRandomPassword": false,
+      "randomPasswordLength": 8,
+      "randomPasswordCharacters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()",
+      "configurationScript": null,
+      "activation": "",
+      "ciraConfigName": "ciraconfig1"
     }
   ],
   "NETConfigurations": [
@@ -57,39 +57,39 @@
   ],
   "CIRAConfigurations": [
     {
-      "ConfigName": "ciraconfig1",
-      "MPSServerAddress": "localhost",
-      "MPSPort": 4433,
-      "Username": "admin",
-      "Password": "P@ssw0rd",
-      "CommonName": "localhost",
-      "ServerAddressFormat": 201,
-      "AuthMethod": 2,
-      "MPSRootCertificate": "rootcert",
-      "ProxyDetails": ""
+      "configName": "ciraconfig1",
+      "mpsServerAddress": "localhost",
+      "mpsPort": 4433,
+      "username": "admin",
+      "password": "P@ssw0rd",
+      "commonName": "localhost",
+      "serverAddressFormat": 201,
+      "authMethod": 2,
+      "mpsRootCertificate": "rootcert",
+      "proxyDetails": ""
     }
   ],
   "AMTDomains": [
     {
-      "Name": "domain1",
-      "DomainSuffix": "vprodemo.com",
-      "ProvisioningCert": "vprodemo.pfx",
-      "ProvisioningCertStorageFormat": "string",
-      "ProvisioningCertPassword": "P@ssw0rd"
+      "profileName": "domain1",
+      "domainSuffix": "vprodemo.com",
+      "provisioningCert": "vprodemo.pfx",
+      "provisioningCertStorageFormat": "string",
+      "provisioningCertPassword": "P@ssw0rd"
     },
     {
-      "Name": "domain2",
-      "DomainSuffix": "d2.com",
-      "ProvisioningCert": "d2.pfx",
-      "ProvisioningCertStorageFormat": "string",
-      "ProvisioningCertPassword": "<StrongPassword>"
+      "profielName": "domain2",
+      "domainSuffix": "d2.com",
+      "provisioningCert": "d2.pfx",
+      "provisioningCertStorageFormat": "string",
+      "provisioningCertPassword": "<StrongPassword>"
     },
     {
-      "Name": "domain3",
-      "DomainSuffix": "d2.com",
-      "ProvisioningCert": "d2.pfx",
-      "ProvisioningCertStorageFormat": "string",
-      "ProvisioningCertPassword": "P@ssw0rd"
+      "profileName": "domain3",
+      "domainSuffix": "d2.com",
+      "provisioningCert": "d2.pfx",
+      "provisioningCertStorageFormat": "string",
+      "provisioningCertPassword": "P@ssw0rd"
     }
   ]
 }
