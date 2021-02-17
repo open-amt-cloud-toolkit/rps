@@ -224,7 +224,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"NewDomain\",\r\n        \"domainSuffix\": \"NewDomain.com\",\r\n        \"provisioningCert\": \"test\",\r\n        \"provisioningCertStorageFormat\": \"raw\",\r\n        \"provisioningCertPassword\": \"P@ssw0rd\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"NewDomain\",\r\n    \"domainSuffix\": \"NewDomain.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
@@ -279,7 +279,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"vprodemo\",\r\n        \"domainSuffix\": \"vprodemo.com\",\r\n        \"provisioningCert\": \"test\",\r\n        \"provisioningCertStorageFormat\": \"raw\",\r\n        \"provisioningCertPassword\": \"P@ssw0rd\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"vprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
@@ -311,7 +311,7 @@
 									"pm.test(\"Creation should fail when payload doesn't contain suffix\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Domain suffix name is required\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.domainSuffix\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"domainSuffix\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -335,7 +335,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"vprodemo\",\r\n        \"provisioningCert\": \"test\",\r\n        \"provisioningCertStorageFormat\": \"raw\",\r\n        \"provisioningCertPassword\": \"P@ssw0rd\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
@@ -367,11 +367,11 @@
 									"pm.test(\"Creation should fail when payload doesn't contain password\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Provisioning Cert Password is required\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.provisioningCertPassword\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"provisioningCertPassword\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"\r",
 									"    pm.expect(result.errors[1].msg).to.eql(\"Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.\")\r",
-									"    pm.expect(result.errors[1].param).to.eql(\"payload.provisioningCertPassword\")\r",
+									"    pm.expect(result.errors[1].param).to.eql(\"provisioningCertPassword\")\r",
 									"    pm.expect(result.errors[1].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -395,7 +395,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"vprodemo\",\r\n        \"domainSuffix\": \"vprodemo.com\",\r\n        \"provisioningCert\": \"test\",\r\n        \"provisioningCertStorageFormat\": \"raw\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"vprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
@@ -427,7 +427,7 @@
 									"pm.test(\"Creation should fail when password is inavlid\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.provisioningCertPassword\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"provisioningCertPassword\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -451,7 +451,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"vprodemo\",\r\n        \"domainSuffix\": \"vprodemo.com\",\r\n        \"provisioningCert\": \"test\",\r\n        \"provisioningCertStorageFormat\": \"raw\",\r\n        \"provisioningCertPassword\": \"password\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"vprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"password\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
@@ -483,7 +483,7 @@
 									"pm.test(\"Creation should fail when password length is less than eight\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.provisioningCertPassword\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"provisioningCertPassword\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -507,7 +507,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"vprodemo\",\r\n        \"domainSuffix\": \"vprodemo.com\",\r\n        \"provisioningCert\": \"test\",\r\n        \"provisioningCertStorageFormat\": \"raw\",\r\n        \"provisioningCertPassword\": \"passwo\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"vprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"passwo\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
@@ -539,7 +539,7 @@
 									"pm.test(\"Creation should fail when password length greater than 32\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.provisioningCertPassword\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"provisioningCertPassword\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -563,7 +563,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"vprodemo\",\r\n        \"domainSuffix\": \"vprodemo.com\",\r\n        \"provisioningCert\": \"test\",\r\n        \"provisioningCertStorageFormat\": \"raw\",\r\n        \"provisioningCertPassword\": \"0123456789012345678901234567890123456789\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"vprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"0123456789012345678901234567890123456789\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
@@ -595,7 +595,7 @@
 									"pm.test(\"Creation should fail when certificate doesn't exist\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Provisioning certificate is required\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.provisioningCert\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"provisioningCert\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -619,7 +619,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"vprodemo\",\r\n        \"domainSuffix\": \"vprodemo.com\",\r\n        \"provisioningCertStorageFormat\": \"raw\",\r\n        \"provisioningCertPassword\": \"P@ssw0rd\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"vprodemo.com\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
@@ -651,11 +651,11 @@
 									"pm.test(\"Creation should fail when cert storage format doesn't exist\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Provisioning Cert Storage Format is required\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.provisioningCertStorageFormat\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"provisioningCertStorageFormat\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"\r",
 									"     pm.expect(result.errors[1].msg).to.eql(\"Provisioning Cert Storage Format should be either 'raw' or 'string'\")\r",
-									"    pm.expect(result.errors[1].param).to.eql(\"payload.provisioningCertStorageFormat\")\r",
+									"    pm.expect(result.errors[1].param).to.eql(\"provisioningCertStorageFormat\")\r",
 									"    pm.expect(result.errors[1].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -679,7 +679,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"vprodemo\",\r\n        \"domainSuffix\": \"vprodemo.com\",\r\n        \"provisioningCert\": \"test\",\r\n        \"provisioningCertPassword\": \"P@ssw0rd\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"vprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
@@ -711,7 +711,7 @@
 									"pm.test(\"Creation should fail when storage format is invalid\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Provisioning Cert Storage Format should be either \\'raw\\' or \\'string\\'\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.provisioningCertStorageFormat\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"provisioningCertStorageFormat\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -735,7 +735,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"vprodemo\",\r\n        \"domainSuffix\": \"vprodemo.com\",\r\n        \"provisioningCert\": \"test\",\r\n        \"provisioningCertStorageFormat\": \"wrong\",\r\n        \"provisioningCertPassword\": \"P@ssw0rd\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"vprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"wrong\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
@@ -789,7 +789,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"vprodemo\",\r\n        \"domainSuffix\": \"vprodemo.com\",\r\n        \"provisioningCert\": \"test\",\r\n        \"provisioningCertStorageFormat\": \"raw\",\r\n        \"provisioningCertPassword\": \"P@ssw0rd\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"vprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
@@ -844,7 +844,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"vprodemo\",\r\n        \"domainSuffix\": \"vprodemo.com\",\r\n        \"provisioningCert\": \"test\",\r\n        \"provisioningCertStorageFormat\": \"raw\",\r\n        \"provisioningCertPassword\": \"P@ssw0rd\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"vprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
@@ -899,7 +899,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"newvprodemo\",\r\n        \"domainSuffix\": \"vprodemo.com\",\r\n        \"provisioningCert\": \"test\",\r\n        \"provisioningCertStorageFormat\": \"raw\",\r\n        \"provisioningCertPassword\": \"P@ssw0rd\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"newvprodemo\",\r\n    \"domainSuffix\": \"vprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains/",
@@ -956,7 +956,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"vprodemo\",\r\n        \"domainSuffix\": \"newvprodemo.com\",\r\n        \"provisioningCert\": \"test\",\r\n        \"provisioningCertStorageFormat\": \"raw\",\r\n        \"provisioningCertPassword\": \"P@ssw0rd\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"newvprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
@@ -1011,7 +1011,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"vprodemo\",\r\n        \"domainSuffix\": \"NewDomain.com\",\r\n        \"provisioningCert\": \"test\",\r\n        \"provisioningCertStorageFormat\": \"raw\",\r\n        \"provisioningCertPassword\": \"P@ssw0rd\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"NewDomain.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
@@ -1068,7 +1068,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"vprodemo\",\r\n        \"domainSuffix\": \"newvprodemo.com\",\r\n        \"provisioningCert\": \"test\",\r\n        \"provisioningCertStorageFormat\": \"raw\",\r\n        \"provisioningCertPassword\": \"Intel123!\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"newvprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"Intel123!\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
@@ -1124,7 +1124,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"vprodemo\",\r\n        \"domainSuffix\": \"newvprodemo.com\",\r\n        \"provisioningCert\": \"provisioning certificate\",\r\n        \"provisioningCertStorageFormat\": \"raw\",\r\n        \"provisioningCertPassword\": \"Intel123!\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"newvprodemo.com\",\r\n    \"provisioningCert\": \"provisioning certificate\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"Intel123!\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
@@ -1179,7 +1179,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"newDomain\",\r\n        \"domainSuffix\": \"newDomain.com\",\r\n        \"provisioningCert\": \"test\",\r\n        \"provisioningCertStorageFormat\": \"raw\",\r\n        \"provisioningCertPassword\": \"P@ssw0rd\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"newDomain\",\r\n    \"domainSuffix\": \"newDomain.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
@@ -1577,7 +1577,7 @@
 									"pm.test(\"Creation should fail when payload doesn't contain mps cert\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"MPS public root certificate is required\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.mpsRootCertificate\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"mpsRootCertificate\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -1601,7 +1601,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"mpsServerAddress\": \"192.168.8.50\",\r\n        \"mpsPort\": 4433,\r\n        \"username\": \"admin\",\r\n        \"password\": \"Intel123!\",\r\n        \"commonName\": \"192.168.8.50\",\r\n        \"serverAddressFormat\": 3,\r\n        \"authMethod\": 2,\r\n        \"proxyDetails\": \"\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.50\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"password\": \"Intel123!\",\r\n    \"commonName\": \"192.168.8.50\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"proxyDetails\": \"\"\r\n}\r\n"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -1633,11 +1633,11 @@
 									"pm.test(\"Creation should fail when payload doesn't contain mps port\", function () {\r",
 									"     var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"MPS port is required\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.mpsPort\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"mpsPort\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"\r",
 									"    pm.expect(result.errors[1].msg).to.eql(\"MPS Port value should range between 1024 and 49151\")\r",
-									"    pm.expect(result.errors[1].param).to.eql(\"payload.mpsPort\")\r",
+									"    pm.expect(result.errors[1].param).to.eql(\"mpsPort\")\r",
 									"    pm.expect(result.errors[1].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -1661,7 +1661,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"mpsServerAddress\": \"192.168.8.50\",\r\n        \"username\": \"admin\",\r\n        \"password\": \"Intel123!\",\r\n        \"commonName\": \"192.168.8.50\",\r\n        \"serverAddressFormat\": 3,\r\n        \"authMethod\": 2,\r\n        \"mpsRootCertificate\": \"rootcert\",\r\n        \"proxyDetails\": \"\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.50\",\r\n    \"username\": \"admin\",\r\n    \"password\": \"Intel123!\",\r\n    \"commonName\": \"192.168.8.50\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\"       \r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -1693,7 +1693,7 @@
 									"pm.test(\"Creation should fail when mps port is invalid\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"MPS Port value should range between 1024 and 49151\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.mpsPort\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"mpsPort\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -1717,7 +1717,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"mpsServerAddress\": \"192.168.8.50\",\r\n        \"mpsPort\": 1000,\r\n        \"username\": \"admin\",\r\n        \"password\": \"Intel123!\",\r\n        \"commonName\": \"192.168.8.50\",\r\n        \"serverAddressFormat\": 3,\r\n        \"authMethod\": 2,\r\n        \"mpsRootCertificate\": \"rootcert\",\r\n        \"proxyDetails\": \"\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.50\",\r\n    \"mpsPort\": 1000,\r\n    \"username\": \"admin\",\r\n    \"password\": \"Intel123!\",\r\n    \"commonName\": \"192.168.8.50\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -1749,7 +1749,7 @@
 									"pm.test(\"Creation should fail when mps port is invalid\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"MPS Port value should range between 1024 and 49151\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.mpsPort\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"mpsPort\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -1773,7 +1773,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"mpsServerAddress\": \"192.168.8.50\",\r\n        \"mpsPort\": 50000,\r\n        \"username\": \"admin\",\r\n        \"password\": \"Intel123!\",\r\n        \"commonName\": \"192.168.8.50\",\r\n        \"serverAddressFormat\": 3,\r\n        \"authMethod\": 2,\r\n        \"mpsRootCertificate\": \"rootcert\",\r\n        \"proxyDetails\": \"\"\r\n    }\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 50000,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -1805,7 +1805,7 @@
 									"pm.test(\"Creation should fail when mps port is invalid\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"MPS Port value should range between 1024 and 49151\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.mpsPort\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"mpsPort\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -1829,7 +1829,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"mpsServerAddress\": \"192.168.8.50\",\r\n        \"mpsPort\": \"wrong\",\r\n        \"username\": \"admin\",\r\n        \"password\": \"Intel123!\",\r\n        \"commonName\": \"192.168.8.50\",\r\n        \"serverAddressFormat\": 3,\r\n        \"authMethod\": 2,\r\n        \"mpsRootCertificate\": \"rootcert\",\r\n        \"proxyDetails\": \"\"\r\n    }\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": \"wrong\",\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -1861,7 +1861,7 @@
 									"pm.test(\"Creation should fail when payload doesn't conatain mps server address\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"MPS server address is required\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.mpsServerAddress\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"mpsServerAddress\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -1885,7 +1885,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"mpsPort\": 4433,\r\n        \"username\": \"admin\",\r\n        \"password\": \"Intel123!\",\r\n        \"commonName\": \"192.168.8.50\",\r\n        \"serverAddressFormat\": 3,\r\n        \"authMethod\": 2,\r\n        \"mpsRootCertificate\": \"rootcert\",\r\n        \"proxyDetails\": \"\"\r\n    }\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -1917,7 +1917,7 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"MPS user name should be alphanumeric\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.username\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"username\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -1941,7 +1941,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"mpsServerAddress\": \"192.168.8.50\",\r\n        \"mpsPort\": 4433,\r\n        \"username\": \"admin user\",\r\n        \"password\": \"Intel123!\",\r\n        \"commonName\": \"192.168.8.50\",\r\n        \"serverAddressFormat\": 3,\r\n        \"authMethod\": 2,\r\n        \"mpsRootCertificate\": \"rootcert\",\r\n        \"proxyDetails\": \"\"\r\n    }\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin user\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -1973,7 +1973,7 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"MPS user name should be alphanumeric\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.username\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"username\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -1997,7 +1997,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"mpsServerAddress\": \"192.168.8.50\",\r\n        \"mpsPort\": 4433,\r\n        \"username\": \"admin@user\",\r\n        \"password\": \"Intel123!\",\r\n        \"commonName\": \"192.168.8.50\",\r\n        \"serverAddressFormat\": 3,\r\n        \"authMethod\": 2,\r\n        \"mpsRootCertificate\": \"rootcert\",\r\n        \"proxyDetails\": \"\"\r\n    }\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin@user\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -2029,7 +2029,7 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.password\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"password\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -2053,7 +2053,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"mpsServerAddress\": \"192.168.8.50\",\r\n        \"mpsPort\": 4433,\r\n        \"username\": \"adminuser\",\r\n        \"password\": \"intel1234\",\r\n        \"commonName\": \"192.168.8.50\",\r\n        \"serverAddressFormat\": 3,\r\n        \"authMethod\": 2,\r\n        \"mpsRootCertificate\": \"rootcert\",\r\n        \"proxyDetails\": \"\"\r\n    }\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"adminuser\",\r\n\t\"password\": \"intel1234\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -2085,7 +2085,7 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.password\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"password\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -2109,7 +2109,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"mpsServerAddress\": \"192.168.8.50\",\r\n        \"mpsPort\": 4433,\r\n        \"username\": \"adminuser\",\r\n        \"password\": \"Intel@1\",\r\n        \"commonName\": \"192.168.8.50\",\r\n        \"serverAddressFormat\": 3,\r\n        \"authMethod\": 2,\r\n        \"mpsRootCertificate\": \"rootcert\",\r\n        \"proxyDetails\": \"\"\r\n    }\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"adminuser\",\r\n\t\"password\": \"Intel@1\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -2141,7 +2141,7 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.password\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"password\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -2165,7 +2165,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"mpsServerAddress\": \"192.168.8.50\",\r\n        \"mpsPort\": 4433,\r\n        \"username\": \"adminuser\",\r\n        \"password\": \"0123456789012345678901234567890123456789\",\r\n        \"commonName\": \"192.168.8.50\",\r\n        \"serverAddressFormat\": 3,\r\n        \"authMethod\": 2,\r\n        \"mpsRootCertificate\": \"rootcert\",\r\n        \"proxyDetails\": \"\"\r\n    }\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"adminuser\",\r\n\t\"password\": \"0123456789012345678901234567890123456789\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -2197,19 +2197,19 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"MPS user name is required\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.username\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"username\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"\r",
 									"    pm.expect(result.errors[1].msg).to.eql(\"MPS user name should be alphanumeric\")\r",
-									"    pm.expect(result.errors[1].param).to.eql(\"payload.username\")\r",
+									"    pm.expect(result.errors[1].param).to.eql(\"username\")\r",
 									"    pm.expect(result.errors[1].location).to.eql(\"body\")\r",
 									"\r",
 									"    pm.expect(result.errors[2].msg).to.eql(\"MPS password is required\")\r",
-									"    pm.expect(result.errors[2].param).to.eql(\"payload.password\")\r",
+									"    pm.expect(result.errors[2].param).to.eql(\"password\")\r",
 									"    pm.expect(result.errors[2].location).to.eql(\"body\")\r",
 									"\r",
 									"    pm.expect(result.errors[3].msg).to.eql(\"Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.\")\r",
-									"    pm.expect(result.errors[3].param).to.eql(\"payload.password\")\r",
+									"    pm.expect(result.errors[3].param).to.eql(\"password\")\r",
 									"    pm.expect(result.errors[3].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -2233,7 +2233,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"mpsServerAddress\": \"192.168.8.50\",\r\n        \"mpsPort\": 4433,\r\n        \"commonName\": \"192.168.8.50\",\r\n        \"serverAddressFormat\": 3,\r\n        \"authMethod\": 2,\r\n        \"mpsRootCertificate\": \"rootcert\",\r\n        \"proxyDetails\": \"\"\r\n    }\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -2288,7 +2288,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"mpsServerAddress\": \"192.168.8.50\",\r\n        \"mpsPort\": 4433,\r\n        \"username\": \"admin\",\r\n        \"password\": \"Intel123!\",\r\n        \"commonName\": \"192.168.8.50\",\r\n        \"serverAddressFormat\": 3,\r\n        \"authMethod\": 2,\r\n        \"mpsRootCertificate\": \"rootcert\",\r\n        \"proxyDetails\": \"\"\r\n    }\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -2320,11 +2320,11 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"MPS server address format is required\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.serverAddressFormat\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"serverAddressFormat\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"\r",
 									"    pm.expect(result.errors[1].msg).to.eql(\"MPS server address format should be either 3(IPV4) , 4(IPV6) or 201(FQDN)\")\r",
-									"    pm.expect(result.errors[1].param).to.eql(\"payload.serverAddressFormat\")\r",
+									"    pm.expect(result.errors[1].param).to.eql(\"serverAddressFormat\")\r",
 									"    pm.expect(result.errors[1].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -2348,7 +2348,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"mpsServerAddress\": \"192.168.8.50\",\r\n        \"mpsPort\": 4433,\r\n        \"username\": \"admin\",\r\n        \"password\": \"Intel123!\",\r\n        \"commonName\": \"192.168.8.50\",\r\n        \"authMethod\": 2,\r\n        \"mpsRootCertificate\": \"rootcert\",\r\n        \"proxyDetails\": \"\"\r\n    }\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -2379,8 +2379,8 @@
 									"});\r",
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"payload.serverAddressFormat 4 requires IPV6 server address\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.mpsServerAddress\")\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"serverAddressFormat 4 requires IPV6 server address\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"mpsServerAddress\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -2404,7 +2404,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"mpsServerAddress\": \"192.168.8.50\",\r\n        \"mpsPort\": 4433,\r\n        \"username\": \"admin\",\r\n        \"password\": \"Intel123!\",\r\n        \"commonName\": \"192.168.8.50\",\r\n        \"serverAddressFormat\": 4,\r\n        \"authMethod\": 2,\r\n        \"mpsRootCertificate\": \"rootcert\",\r\n        \"proxyDetails\": \"\"\r\n    }\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 4,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -2436,7 +2436,7 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"MPS server address format should be either 3(IPV4) , 4(IPV6) or 201(FQDN)\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.serverAddressFormat\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"serverAddressFormat\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -2460,7 +2460,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"mpsServerAddress\": \"192.168.8.50\",\r\n        \"mpsPort\": 4433,\r\n        \"username\": \"admin\",\r\n        \"password\": \"Intel123!\",\r\n        \"commonName\": \"192.168.8.50\",\r\n        \"serverAddressFormat\": 401,\r\n        \"authMethod\": 2,\r\n        \"mpsRootCertificate\": \"rootcert\",\r\n        \"proxyDetails\": \"\"\r\n    }\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 401,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -2492,7 +2492,7 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"MPS server address format should be either 3(IPV4) , 4(IPV6) or 201(FQDN)\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.serverAddressFormat\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"serverAddressFormat\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -2516,7 +2516,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"mpsServerAddress\": \"192.168.8.50\",\r\n        \"mpsPort\": 4433,\r\n        \"username\": \"admin\",\r\n        \"password\": \"Intel123!\",\r\n        \"commonName\": \"192.168.8.50\",\r\n        \"serverAddressFormat\": \"FQDN\",\r\n        \"authMethod\": 2,\r\n        \"mpsRootCertificate\": \"rootcert\",\r\n        \"proxyDetails\": \"\"\r\n    }\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": \"FQDN\",\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -2548,11 +2548,11 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Authentication method is required\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.authMethod\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"authMethod\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"\r",
 									"    pm.expect(result.errors[1].msg).to.eql(\"Authentication method should be either 1 (Mutual Auth) or 2 (username and password)\")\r",
-									"    pm.expect(result.errors[1].param).to.eql(\"payload.authMethod\")\r",
+									"    pm.expect(result.errors[1].param).to.eql(\"authMethod\")\r",
 									"    pm.expect(result.errors[1].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -2576,7 +2576,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"mpsServerAddress\": \"192.168.8.50\",\r\n        \"mpsPort\": 4433,\r\n        \"username\": \"admin\",\r\n        \"password\": \"Intel123!\",\r\n        \"commonName\": \"192.168.8.50\",\r\n        \"serverAddressFormat\": 3,\r\n        \"mpsRootCertificate\": \"rootcert\",\r\n        \"proxyDetails\": \"\"\r\n    }\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -2608,7 +2608,7 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Authentication method should be either 1 (Mutual Auth) or 2 (username and password)\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.authMethod\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"authMethod\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -2632,7 +2632,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"mpsServerAddress\": \"192.168.8.50\",\r\n        \"mpsPort\": 4433,\r\n        \"username\": \"admin\",\r\n        \"password\": \"Intel123!\",\r\n        \"commonName\": \"192.168.8.50\",\r\n        \"serverAddressFormat\": 3,\r\n        \"authMethod\": 5,\r\n        \"mpsRootCertificate\": \"rootcert\",\r\n        \"proxyDetails\": \"\"\r\n    }\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 5,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -2664,7 +2664,7 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Authentication method should be either 1 (Mutual Auth) or 2 (username and password)\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.authMethod\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"authMethod\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -2688,7 +2688,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"mpsServerAddress\": \"192.168.8.50\",\r\n        \"mpsPort\": 4433,\r\n        \"username\": \"admin\",\r\n        \"password\": \"Intel123!\",\r\n        \"commonName\": \"192.168.8.50\",\r\n        \"serverAddressFormat\": 3,\r\n        \"authMethod\": \"mutual\",\r\n        \"mpsRootCertificate\": \"rootcert\",\r\n        \"proxyDetails\": \"\"\r\n    }\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": \"mutual\",\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -2742,7 +2742,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"mpsServerAddress\": \"192.168.8.50\",\r\n        \"mpsPort\": 4433,\r\n        \"username\": \"admin\",\r\n        \"password\": \"Intel123!\",\r\n        \"commonName\": \"192.168.8.50\",\r\n        \"serverAddressFormat\": 3,\r\n        \"authMethod\": 2,\r\n        \"mpsRootCertificate\": \"rootcert\",\r\n        \"proxyDetails\": \"\"\r\n    }\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -2797,7 +2797,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"mpsServerAddress\": \"192.168.8.50\",\r\n        \"mpsPort\": 4433,\r\n        \"username\": \"admin\",\r\n        \"password\": \"Intel123!\",\r\n        \"commonName\": \"192.168.8.50\",\r\n        \"serverAddressFormat\": 201,\r\n        \"authMethod\": 2,\r\n        \"mpsRootCertificate\": \"rootcert\",\r\n        \"proxyDetails\": \"\"\r\n    }\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 201,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -2828,8 +2828,8 @@
 									"});\r",
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"payload.serverAddressFormat is required\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.mpsServerAddress\")\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"serverAddressFormat is required\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"mpsServerAddress\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -2853,7 +2853,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"mpsServerAddress\": \"192.168.8.55\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.55\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -2884,8 +2884,8 @@
 									"});\r",
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"payload.commonName is required when payload.serverAddressFormat is 3\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.mpsServerAddress\")\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"commonName is required when serverAddressFormat is 3\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"mpsServerAddress\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -2909,7 +2909,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"mpsServerAddress\": \"192.168.8.55\",\r\n        \"serverAddressFormat\": 3\r\n    }\r\n}"
+							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.55\",\r\n    \"serverAddressFormat\": 3\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -2940,8 +2940,8 @@
 									"});\r",
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"payload.serverAddressFormat and payload.mpsServerAddress is required\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.commonName\")\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"serverAddressFormat and mpsServerAddress is required\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"commonName\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -2965,7 +2965,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"commonName\": \"192.168.8.55\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"commonName\": \"192.168.8.55\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -2997,7 +2997,7 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.password\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"password\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -3021,7 +3021,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"password\": \"intel1234\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"password\": \"intel1234\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -3053,7 +3053,7 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.password\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"password\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -3077,7 +3077,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"password\": \"Intel@1\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"password\": \"Intel@1\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -3109,7 +3109,7 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.password\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"password\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -3133,7 +3133,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"password\": \"0123456789012345678901234567890123456789\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"password\": \"0123456789012345678901234567890123456789\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -3165,7 +3165,7 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"MPS Port value should range between 1024 and 49151\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.mpsPort\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"mpsPort\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -3189,7 +3189,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"mpsPort\": 433\r\n    }\r\n}"
+							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsPort\": 433\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -3221,7 +3221,7 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"MPS Port value should range between 1024 and 49151\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.mpsPort\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"mpsPort\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -3245,7 +3245,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"mpsPort\": 50000\r\n    }\r\n}"
+							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsPort\": 50000\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -3277,7 +3277,7 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"MPS Port value should range between 1024 and 49151\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.mpsPort\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"mpsPort\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -3301,7 +3301,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"mpsPort\": \"wrong\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsPort\": \"wrong\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -3334,7 +3334,7 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"MPS user name accepts letters, numbers, special characters and no spaces\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.username\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"username\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -3358,7 +3358,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"username\": \"admin user\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"username\": \"admin user\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -3420,7 +3420,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"mpsServerAddress\": \"192.168.8.55\",\r\n        \"mpsPort\": 4433,\r\n        \"username\": \"admin\",\r\n        \"password\": \"Intel123!\",\r\n        \"commonName\": \"192.168.8.55\",\r\n        \"serverAddressFormat\": 3,\r\n        \"authMethod\": 2,\r\n        \"mpsRootCertificate\": \"rootcert\",\r\n        \"proxyDetails\": \"\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.55\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"password\": \"Intel123!\",\r\n    \"commonName\": \"192.168.8.55\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\"\r\n}\r\n"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -3527,7 +3527,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig2\",\r\n        \"mpsServerAddress\": \"192.168.8.50\",\r\n        \"mpsPort\": 4433,\r\n        \"username\": \"admin\",\r\n        \"password\": \"Intel123!\",\r\n        \"commonName\": \"192.168.8.50\",\r\n        \"serverAddressFormat\": 201,\r\n        \"authMethod\": 2,\r\n        \"mpsRootCertificate\": \"rootcert\",\r\n        \"proxyDetails\": \"\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.50\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"password\": \"Intel123!\",\r\n    \"commonName\": \"192.168.8.50\",\r\n    \"serverAddressFormat\": 201,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -3811,11 +3811,11 @@
 									"pm.test(\"Creation should fail without activation\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Activation is required\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.activation\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"activation\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"\r",
 									"    pm.expect(result.errors[1].msg).to.eql(\"Activation accepts either acmactivate(admin control activation) or ccmactivate(client control mode activation)\")\r",
-									"    pm.expect(result.errors[1].param).to.eql(\"payload.activation\")\r",
+									"    pm.expect(result.errors[1].param).to.eql(\"activation\")\r",
 									"    pm.expect(result.errors[1].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -3839,7 +3839,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\",\r\n        \"amtPassword\": \"Intel123!\",\r\n        \"mebxPassword\": \"Intel123!\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
@@ -3872,7 +3872,7 @@
 									"pm.test(\"Creation should fail when activation is inavlid\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Activation accepts either acmactivate(admin control activation) or ccmactivate(client control mode activation)\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.activation\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"activation\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -3896,7 +3896,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\",\r\n        \"amtPassword\": \"Intel123!\",\r\n        \"mebxPassword\": \"Intel123!\",\r\n        \"activation\": \"activate\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"activate\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
@@ -3928,8 +3928,8 @@
 									"});\r",
 									"pm.test(\"Creation should fail when activation is valid\", function () {\r",
 									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Either payload.generateRandomPassword should be enabled with payload.amtPassword or should provide payload.amtPassword\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.activation\")\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"Either generateRandomPassword should be enabled with amtPassword or should provide amtPassword\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"activation\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -3953,7 +3953,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\",\r\n        \"activation\": \"ccmactivate\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
@@ -3985,8 +3985,8 @@
 									"});\r",
 									"pm.test(\"Creation should fail when payload contains both amtPassword and generate random password\", function () {\r",
 									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Either payload.generateRandomMEBxPassword should be enabled with payload.mebxPasswordLength or should provide payload.mebxPassword\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.generateRandomPassword\")\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"Either generateRandomMEBxPassword should be enabled with mebxPasswordLength or should provide mebxPassword\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"generateRandomPassword\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -4010,7 +4010,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\",\r\n        \"amtPassword\": \"Intel123!\",\r\n        \"generateRandomPassword\": true,\r\n        \"passwordLength\": 8,\r\n        \"activation\": \"ccmactivate\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomPassword\": true,\r\n    \"passwordLength\": 8,\r\n    \"activation\": \"ccmactivate\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
@@ -4043,7 +4043,7 @@
 									"pm.test(\"Creation should fail when payload contains invalid amtPassword\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"AMT password is required field should contains at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.amtPassword\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"amtPassword\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -4067,7 +4067,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\",\r\n        \"amtPassword\": \"Intel123\",\r\n        \"activation\": \"ccmactivate\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123\",\r\n    \"activation\": \"ccmactivate\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
@@ -4099,8 +4099,8 @@
 									"});\r",
 									"pm.test(\"Creation should fail when payload contains generate random password without password length\", function () {\r",
 									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"If generate random AMT password is enabled, payload.passwordLength is mandatory\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.generateRandomPassword\")\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"If generate random AMT password is enabled, passwordLength is mandatory\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"generateRandomPassword\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -4124,7 +4124,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\",\r\n        \"generateRandomPassword\": true,\r\n        \"activation\": \"ccmactivate\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": true,\r\n    \"activation\": \"ccmactivate\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
@@ -4157,7 +4157,7 @@
 									"pm.test(\"Creation should fail when payload conatins generate random password and password length less than 8\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Random AMT password length value should range between 8 and 32\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.passwordLength\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"passwordLength\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -4181,7 +4181,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\",\r\n        \"generateRandomPassword\": true,\r\n        \"passwordLength\": 6,\r\n        \"activation\": \"ccmactivate\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": true,\r\n    \"passwordLength\": 6,\r\n    \"activation\": \"ccmactivate\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
@@ -4214,7 +4214,7 @@
 									"pm.test(\"Creation should fail when payload conatins generate random password and password length greater than 32\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Random AMT password length value should range between 8 and 32\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.passwordLength\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"passwordLength\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -4238,7 +4238,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\",\r\n        \"generateRandomPassword\": true,\r\n        \"passwordLength\": 33,\r\n        \"activation\": \"ccmactivate\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": true,\r\n    \"passwordLength\": 33,\r\n    \"activation\": \"ccmactivate\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
@@ -4270,8 +4270,8 @@
 									"});\r",
 									"pm.test(\"Creation should fail when payload contains acmactivate but no mebxPassword\", function () {\r",
 									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Either payload.generateRandomMEBxPassword should be enabled with payload.mebxPasswordLength or should provide payload.mebxPassword\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.activation\")\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"Either generateRandomMEBxPassword should be enabled with mebxPasswordLength or should provide mebxPassword\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"activation\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -4295,7 +4295,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\",\r\n        \"amtPassword\": \"Intel123!\",\r\n        \"activation\": \"acmactivate\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"activation\": \"acmactivate\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
@@ -4328,7 +4328,7 @@
 									"pm.test(\"Creation should fail when mebxPassword is invalid\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"MEBx password is required field should contains at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.mebxPassword\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"mebxPassword\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -4352,7 +4352,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\",\r\n        \"amtPassword\": \"Intel123!\",\r\n        \"mebxPassword\": \"Intel123\",\r\n        \"activation\": \"acmactivate\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123\",\r\n    \"activation\": \"acmactivate\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
@@ -4384,8 +4384,8 @@
 									"});\r",
 									"pm.test(\"Creation should fail when payload contains generate mebx random password but no password length\", function () {\r",
 									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"If generate random MEBx password is enabled, payload.mebxPasswordLength is mandatory\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.generateRandomMEBxPassword\")\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"If generate random MEBx password is enabled, mebxPasswordLength is mandatory\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"generateRandomMEBxPassword\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -4409,7 +4409,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\",\r\n        \"amtPassword\": \"Intel123!\",\r\n        \"generateRandomMEBxPassword\": true,\r\n        \"activation\": \"acmactivate\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"activation\": \"acmactivate\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
@@ -4442,7 +4442,7 @@
 									"pm.test(\"Creation should fail when payload contains generate mebx random password and length less than 8\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Random MEBx password length value should range between 8 and 32\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.mebxPasswordLength\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"mebxPasswordLength\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -4466,7 +4466,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\",\r\n        \"amtPassword\": \"Intel123!\",\r\n        \"generateRandomMEBxPassword\": true,\r\n        \"mebxPasswordLength\": 6,\r\n        \"activation\": \"acmactivate\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"mebxPasswordLength\": 6,\r\n    \"activation\": \"acmactivate\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
@@ -4499,7 +4499,7 @@
 									"pm.test(\"Creation should fail when payload contains generate mebx random password and length greater than 8\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Random MEBx password length value should range between 8 and 32\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.mebxPasswordLength\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"mebxPasswordLength\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -4523,7 +4523,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\",\r\n        \"amtPassword\": \"Intel123!\",\r\n        \"generateRandomMEBxPassword\": true,\r\n        \"mebxPasswordLength\": 33,\r\n        \"activation\": \"acmactivate\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"mebxPasswordLength\": 33,\r\n    \"activation\": \"acmactivate\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
@@ -4578,7 +4578,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\",\r\n        \"amtPassword\": \"Intel123!\",\r\n        \"mebxPassword\": \"Intel123!\",\r\n        \"activation\": \"ccmactivate\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
@@ -4634,7 +4634,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\",\r\n        \"amtPassword\": \"Intel123!\",\r\n        \"mebxPassword\": \"Intel123!\",\r\n        \"generateRandomPassword\": false,\r\n        \"activation\": \"acmactivate\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"generateRandomPassword\": false,\r\n    \"activation\": \"acmactivate\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
@@ -4667,7 +4667,7 @@
 									"pm.test(\"Update should fail when payload contains invalid activation\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Activation accepts either acmactivate(admin control activation) or ccmactivate(client control mode activation)\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.activation\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"activation\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -4691,7 +4691,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\",\r\n        \"mebxPassword\": \"Intel123!\",\r\n        \"activation\": \"activate\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"activate\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
@@ -4724,7 +4724,7 @@
 									"pm.test(\"Creation should fail when payload contains invalid amtPassword\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"AMT password is required field should contains at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.amtPassword\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"amtPassword\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -4748,7 +4748,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\",\r\n        \"amtPassword\": \"Intel123\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
@@ -4780,8 +4780,8 @@
 									"});\r",
 									"pm.test(\"Creation should fail when payload contains generate random password but no password length\", function () {\r",
 									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"If generate random AMT password is enabled, payload.passwordLength is mandatory\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.generateRandomPassword\")\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"If generate random AMT password is enabled, passwordLength is mandatory\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"generateRandomPassword\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -4805,7 +4805,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\",\r\n        \"generateRandomPassword\": true\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": true\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
@@ -4865,7 +4865,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\",\r\n        \"generateRandomPassword\": true,\r\n        \"passwordLength\": 16\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": true,\r\n    \"passwordLength\": 16\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
@@ -4924,7 +4924,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\",\r\n        \"activation\": \"ccmactivate\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
@@ -4956,8 +4956,8 @@
 									"});\r",
 									"pm.test(\"Creation should fail when payload contains acmactivate without mebx password\", function () {\r",
 									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Either payload.generateRandomMEBxPassword should be enabled with payload.mebxPasswordLength or should provide payload.mebxPassword\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.activation\")\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"Either generateRandomMEBxPassword should be enabled with mebxPasswordLength or should provide mebxPassword\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"activation\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -4981,7 +4981,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\",\r\n        \"activation\": \"acmactivate\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"acmactivate\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
@@ -5041,7 +5041,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\",\r\n        \"generateRandomMEBxPassword\": true,\r\n        \"mebxPasswordLength\": 8,\r\n        \"activation\": \"acmactivate\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"mebxPasswordLength\": 8,\r\n    \"activation\": \"acmactivate\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
@@ -5101,7 +5101,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\",\r\n        \"mebxPassword\": \"P@ssw0rd\",\r\n        \"activation\": \"acmactivate\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"mebxPassword\": \"P@ssw0rd\",\r\n    \"activation\": \"acmactivate\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
@@ -5161,7 +5161,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\",\r\n        \"amtPassword\": \"P@ssw0rd\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"P@ssw0rd\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
@@ -5477,11 +5477,11 @@
 									"pm.test(\"Request should fail as dhcpEnabled is mandatory\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"dhcpEnabled is required\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"payload.dhcpEnabled\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"dhcpEnabled\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"\r",
 									"    pm.expect(result.errors[1].msg).to.eql(\"Must be a boolean, true or false\")\r",
-									"    pm.expect(result.errors[1].param).to.eql(\"payload.dhcpEnabled\")\r",
+									"    pm.expect(result.errors[1].param).to.eql(\"dhcpEnabled\")\r",
 									"    pm.expect(result.errors[1].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -5505,7 +5505,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/networkconfigs/",
@@ -5561,7 +5561,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\",\r\n        \"dhcpEnabled\": true\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"dhcpEnabled\": true\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/networkconfigs/",
@@ -5616,7 +5616,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\",\r\n        \"dhcpEnabled\": true\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"dhcpEnabled\": true\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/networkconfigs/",
@@ -5672,7 +5672,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\",\r\n        \"dhcpEnabled\": true\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"dhcpEnabled\": true\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/networkconfigs/",
@@ -5730,7 +5730,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\",\r\n        \"dhcpEnabled\": false\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"dhcpEnabled\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/networkconfigs/",
@@ -5893,7 +5893,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\",\r\n        \"dhcpEnabled\": false\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"dhcpEnabled\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/networkconfigs/",
@@ -5953,7 +5953,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig\",\r\n        \"mpsServerAddress\": \"192.168.8.50\",\r\n        \"mpsPort\": 4433,\r\n        \"username\": \"admin\",\r\n        \"password\": \"Intel123!\",\r\n        \"commonName\": \"192.168.8.50\",\r\n        \"serverAddressFormat\": 3,\r\n        \"authMethod\": 2,\r\n        \"mpsRootCertificate\": \"rootcert\",\r\n        \"proxyDetails\": \"\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"configName\": \"ciraconfig\",\r\n    \"mpsServerAddress\": \"192.168.8.50\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"password\": \"Intel123!\",\r\n    \"commonName\": \"192.168.8.50\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -6007,7 +6007,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile-ciraconfig\",\r\n        \"amtPassword\": \"Intel123!\",\r\n        \"mebxPassword\": \"Intel123!\",\r\n        \"activation\": \"acmactivate\",\r\n        \"ciraConfigName\": \"ciraconfig\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
@@ -6127,7 +6127,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"configName\": \"ciraconfig\",\r\n        \"password\": \"P@ssw0rd\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"configName\": \"ciraconfig\",\r\n    \"password\": \"P@ssw0rd\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",

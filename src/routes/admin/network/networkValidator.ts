@@ -7,13 +7,13 @@ import { check } from 'express-validator'
 
 export const networkValidator = (): any => {
   return [
-    check('payload.profileName')
+    check('profileName')
       .not()
       .isEmpty()
       .withMessage('Network profile name is required')
       .matches('^[a-zA-Z0-9$@$!%*#?&-_~^]+$')
       .withMessage('Network profile name accepts letters, numbers, special characters and no spaces'),
-    check('payload.dhcpEnabled')
+    check('dhcpEnabled')
       .not()
       .isEmpty()
       .withMessage('dhcpEnabled is required')

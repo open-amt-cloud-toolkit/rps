@@ -15,7 +15,7 @@ import { RPSError } from '../../../utils/RPSError'
 export async function editCiraConfig (req, res): Promise<void> {
   const log = new Logger('editCiraConfig')
   let ciraConfigDb: ICiraConfigDb = null
-  const newConfig = req.body.payload
+  const newConfig = req.body
   try {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {

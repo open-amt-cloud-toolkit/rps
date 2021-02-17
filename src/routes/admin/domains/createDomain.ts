@@ -24,7 +24,7 @@ export async function createDomain (req, res): Promise<void> {
       res.status(400).json({ errors: errors.array() })
       return
     }
-    amtDomain = req.body.payload
+    amtDomain = req.body
     domainsDb = DomainsDbFactory.getDomainsDb()
 
     // store the cert and password key in database
