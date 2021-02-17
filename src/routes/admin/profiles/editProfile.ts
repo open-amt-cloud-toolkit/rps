@@ -16,7 +16,7 @@ import { RPSError } from '../../../utils/RPSError'
 export async function editProfile (req, res): Promise<void> {
   let profilesDb: IProfilesDb = null
   const log = new Logger('editProfile')
-  const newConfig = req.body.payload
+  const newConfig = req.body
   try {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
@@ -84,8 +84,7 @@ export async function editProfile (req, res): Promise<void> {
   }
 }
 
-function getUpdatedData (newConfig: any, oldConfig: AMTConfiguration): AMTConfiguration {
-  const amtConfig: AMTConfiguration = { profileName: newConfig.profileName } as AMTConfiguration
+const handleAMTPassword = (amtConfig: AMTConfiguration, newConfig: AMTConfiguration, oldConfig: AMTConfiguration): AMTConfiguration => {
   if (newConfig.amtPassword == null) {
     amtConfig.amtPassword = oldConfig.amtPassword
     amtConfig.generateRandomPassword = false
@@ -93,6 +92,10 @@ function getUpdatedData (newConfig: any, oldConfig: AMTConfiguration): AMTConfig
   } else {
     amtConfig.amtPassword = newConfig.amtPassword
   }
+  return amtConfig
+}
+
+const handleMEBxPassword = (amtConfig: AMTConfiguration, newConfig: AMTConfiguration, oldConfig: AMTConfiguration): AMTConfiguration => {
   if (newConfig.mebxPassword == null) {
     amtConfig.mebxPassword = oldConfig.mebxPassword
     amtConfig.generateRandomMEBxPassword = false
@@ -100,6 +103,10 @@ function getUpdatedData (newConfig: any, oldConfig: AMTConfiguration): AMTConfig
   } else {
     amtConfig.mebxPassword = newConfig.mebxPassword
   }
+  return amtConfig
+}
+
+const handleGenerateRandomPassword = (amtConfig: AMTConfiguration, newConfig: AMTConfiguration, oldConfig: AMTConfiguration): AMTConfiguration => {
   if (newConfig.generateRandomPassword) {
     amtConfig.generateRandomPassword = newConfig.generateRandomPassword
     amtConfig.passwordLength = newConfig.passwordLength
@@ -108,6 +115,10 @@ function getUpdatedData (newConfig: any, oldConfig: AMTConfiguration): AMTConfig
     amtConfig.generateRandomPassword = newConfig.amtPassword == null ? oldConfig.generateRandomPassword : null
     amtConfig.passwordLength = newConfig.amtPassword == null ? oldConfig.passwordLength : null
   }
+  return amtConfig
+}
+
+const handleGenerateRandomMEBxPassword = (amtConfig: AMTConfiguration, newConfig: AMTConfiguration, oldConfig: AMTConfiguration): AMTConfiguration => {
   if (newConfig.generateRandomMEBxPassword) {
     amtConfig.generateRandomMEBxPassword = newConfig.generateRandomMEBxPassword
     amtConfig.mebxPasswordLength = newConfig.mebxPasswordLength
@@ -116,6 +127,15 @@ function getUpdatedData (newConfig: any, oldConfig: AMTConfiguration): AMTConfig
     amtConfig.generateRandomMEBxPassword = newConfig.mebxPassword == null ? oldConfig.generateRandomMEBxPassword : null
     amtConfig.mebxPasswordLength = newConfig.mebxPassword == null ? oldConfig.mebxPasswordLength : null
   }
+  return amtConfig
+}
+
+const getUpdatedData = (newConfig: any, oldConfig: AMTConfiguration): AMTConfiguration => {
+  let amtConfig: AMTConfiguration = { profileName: newConfig.profileName } as AMTConfiguration
+  amtConfig = handleAMTPassword(amtConfig, newConfig, oldConfig)
+  amtConfig = handleMEBxPassword(amtConfig, newConfig, oldConfig)
+  amtConfig = handleGenerateRandomPassword(amtConfig, newConfig, oldConfig)
+  amtConfig = handleGenerateRandomMEBxPassword(amtConfig, newConfig, oldConfig)
   amtConfig.activation = newConfig.activation ?? oldConfig.activation
   if (amtConfig.activation === ClientAction.CLIENTCTLMODE) {
     amtConfig.generateRandomMEBxPassword = false

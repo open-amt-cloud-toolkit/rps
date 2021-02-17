@@ -11,19 +11,19 @@ const fqdn = '^(?=.{1,254}$)((?=[a-z0-9-]{1,63}\\.)(xn--+)?[a-z0-9]+(-[a-z0-9]+)
 
 export const ciraInsertValidator = (): any => {
   return [
-    check('payload.configName')
+    check('configName')
       .not()
       .isEmpty()
       .withMessage('CIRA profile name is required')
       .matches('^[a-zA-Z0-9$@$!%*#?&-_~^]+$')
       .withMessage('CIRA profile name accepts letters, numbers, special characters and no spaces'),
-    check('payload.serverAddressFormat')
+    check('serverAddressFormat')
       .not()
       .isEmpty()
       .withMessage('MPS server address format is required')
       .isIn([3, 4, 201])
       .withMessage('MPS server address format should be either 3(IPV4) , 4(IPV6) or 201(FQDN)'),
-    check('payload.mpsServerAddress')
+    check('mpsServerAddress')
       .not()
       .isEmpty()
       .withMessage('MPS server address is required')
@@ -33,62 +33,62 @@ export const ciraInsertValidator = (): any => {
         }
         return false
       }),
-    check('payload.mpsPort')
+    check('mpsPort')
       .not()
       .isEmpty()
       .withMessage('MPS port is required')
       .isInt({ min: 1024, max: 49151 })
       .withMessage('MPS Port value should range between 1024 and 49151'),
-    check('payload.username')
+    check('username')
       .not()
       .isEmpty()
       .withMessage('MPS user name is required')
       .matches('^[a-zA-Z0-9]+$') // As per AMT SDK, accepts only alphanumeric values
       .withMessage('MPS user name should be alphanumeric'),
-    check('payload.password')
+    check('password')
       .not()
       .isEmpty()
       .withMessage('MPS password is required')
       .matches('^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9$@$!%*#?&-_~^]{8,32}$')
       .withMessage('Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
-    check('payload.commonName')
+    check('commonName')
       .optional()
       .matches('^([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])$')
       .withMessage('Cert. Hostname(CN) should be an IP address.'),
-    check('payload.authMethod')
+    check('authMethod')
       .not()
       .isEmpty()
       .withMessage('Authentication method is required')
       .isIn([1, 2])
       .withMessage('Authentication method should be either 1 (Mutual Auth) or 2 (username and password)'),
-    check('payload.mpsRootCertificate')
+    check('mpsRootCertificate')
       .not()
       .isEmpty()
       .withMessage('MPS public root certificate is required'),
-    check('payload.proxyDetails')
+    check('proxyDetails')
       .optional()
   ]
 }
 
 export const ciraUpdateValidator = (): any => {
   return [
-    check('payload.configName')
+    check('configName')
       .not()
       .isEmpty()
       .withMessage('CIRA profile name is required')
       .matches('^[a-zA-Z0-9$@$!%*#?&-_~^]+$')
       .withMessage('CIRA profile name accepts letters, numbers, special characters and no spaces'),
-    check('payload.serverAddressFormat')
+    check('serverAddressFormat')
       .optional()
       .isIn([3, 4, 201])
       .withMessage('MPS server address format 3(IPV4) , 4(IPV6) or 201(FQDN)')
       .custom((value, { req }) => {
-        if (req.body.payload.mpsServerAddress == null) {
+        if (req.body.mpsServerAddress == null) {
           throw new Error('Server address is required to update')
         }
         return true
       }),
-    check('payload.mpsServerAddress')
+    check('mpsServerAddress')
       .optional()
       .custom((value, { req }) => {
         if (serverAddressFormatValidator(value, req)) {
@@ -96,7 +96,7 @@ export const ciraUpdateValidator = (): any => {
         }
         return false
       }),
-    check('payload.mpsPort')
+    check('mpsPort')
       .optional()
       .custom((value, { req }) => {
         if (typeof value !== 'number' || value <= 1024 || value >= 49151) {
@@ -104,53 +104,53 @@ export const ciraUpdateValidator = (): any => {
         }
         return true
       }),
-    check('payload.username')
+    check('username')
       .optional()
       .matches('^[a-zA-Z0-9$@$!%*#?&-_~^]+$')
       .withMessage('MPS user name accepts letters, numbers, special characters and no spaces'),
-    check('payload.password')
+    check('password')
       .optional()
       .matches('^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9$@$!%*#?&-_~^]{8,32}$')
       .withMessage('Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
-    check('payload.commonName')
+    check('commonName')
       .optional()
       .matches('^([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])$')
       .withMessage('Cert. Hostname(CN) should be an IP address.')
       .custom((value, { req }) => {
-        if (req.body.payload.serverAddressFormat == null || req.body.payload.mpsServerAddress == null) {
-          throw new Error('payload.serverAddressFormat and payload.mpsServerAddress is required')
+        if (req.body.serverAddressFormat == null || req.body.mpsServerAddress == null) {
+          throw new Error('serverAddressFormat and mpsServerAddress is required')
         }
         return true
       }),
-    check('payload.authMethod')
+    check('authMethod')
       .optional()
       .isIn([1, 2])
       .withMessage('Authentication method accepts either 1 - Mutual Auth or 2 -username/password)'),
-    check('payload.mpsRootCertificate')
+    check('mpsRootCertificate')
       .optional(),
-    check('payload.proxyDetails')
+    check('proxyDetails')
       .optional()
   ]
 }
 
 function serverAddressFormatValidator (value, req): boolean {
-  if (req.body.payload.serverAddressFormat == null) {
-    throw new Error('payload.serverAddressFormat is required')
+  if (req.body.serverAddressFormat == null) {
+    throw new Error('serverAddressFormat is required')
   }
   if (value != null) {
-    if (req.body.payload.serverAddressFormat === 3) {
+    if (req.body.serverAddressFormat === 3) {
       if (!value.match(ipv4)) {
-        throw new Error('payload.serverAddressFormat 3 requires IPV4 server address')
-      } else if (req.body.payload.commonName == null) {
-        throw new Error('payload.commonName is required when payload.serverAddressFormat is 3')
+        throw new Error('serverAddressFormat 3 requires IPV4 server address')
+      } else if (req.body.commonName == null) {
+        throw new Error('commonName is required when serverAddressFormat is 3')
       }
-    } else if (req.body.payload.serverAddressFormat === 4) {
+    } else if (req.body.serverAddressFormat === 4) {
       if (!value.match(ipv6)) {
-        throw new Error('payload.serverAddressFormat 4 requires IPV6 server address')
+        throw new Error('serverAddressFormat 4 requires IPV6 server address')
       }
-    } else if (req.body.payload.serverAddressFormat === 201) {
+    } else if (req.body.serverAddressFormat === 201) {
       if (!value.match(fqdn) && !value.match(ipv4)) {
-        throw new Error('payload.serverAddressFormat 201 requires FQDN server address')
+        throw new Error('serverAddressFormat 201 requires FQDN server address')
       }
     }
   }

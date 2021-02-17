@@ -22,7 +22,7 @@ export async function createProfile (req, res): Promise<void> {
       res.status(400).json({ errors: errors.array() })
       return
     }
-    amtConfig = req.body.payload
+    amtConfig = req.body
     profilesDb = ProfilesDbFactory.getProfilesDb()
     const pwdBefore = amtConfig.amtPassword
     const mebxPwdBefore = amtConfig.mebxPassword

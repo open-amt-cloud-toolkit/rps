@@ -18,7 +18,7 @@ export async function editDomain (req, res): Promise<void> {
   const log = new Logger('editDomain')
   let cert: any
   let domainPwd: string
-  const newDomain = req.body.payload
+  const newDomain = req.body
   try {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {

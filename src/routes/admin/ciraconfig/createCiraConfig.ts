@@ -27,7 +27,7 @@ export async function createCiraConfig (req, res): Promise<void> {
       return
     }
     ciraConfigDb = CiraConfigDbFactory.getCiraConfigDb()
-    ciraConfig = req.body.payload
+    ciraConfig = req.body
     const mpsPwd = ciraConfig.password
     if (req.secretsManager) {
       ciraConfig.password = `${ciraConfig.configName}_CIRA_PROFILE_PASSWORD`

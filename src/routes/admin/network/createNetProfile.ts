@@ -21,7 +21,7 @@ export async function createNetProfile (req, res): Promise<void> {
       res.status(400).json({ errors: errors.array() })
       return
     }
-    netConfig = req.body.payload
+    netConfig = req.body
     netConfig.staticIPShared = !netConfig.dhcpEnabled
     netConfig.ipSyncEnabled = true
 
