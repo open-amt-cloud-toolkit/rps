@@ -2,10 +2,12 @@
   "AMTConfigurations": [
     {
       "profileName": "Sample_Profile",
+      "amtPassword": "<your_amt_password>",
+      "mebxPassword": "<StrongPassword>",
       "generateRandomPassword": false,
-      "randomPasswordLength": 8,
+      "passwordLength": 8,
       "generateRandomMEBxPassword": false,
-      "randomMEBxPasswordLength": 8,
+      "mebxPasswordLength": 8,
       "activation": "acmactivate",
       "ciraConfigName": "Sample_CIRA_Config"
     }
@@ -16,6 +18,7 @@
       "mpsServerAddress": "localhost",
       "mpsPort": "4433",
       "username": "admin",
+      "password": "<your_mps_password>",
       "commonName": "localhost",
       "serverAddressFormat": 201,
       "authMethod": 2,

@@ -13,7 +13,7 @@ import { RPSError } from '../../../utils/RPSError'
 
 export async function createNetProfile (req, res): Promise<void> {
   let profilesDb: INetProfilesDb = null
-  const netConfig: NetworkConfig = {} as NetworkConfig
+  let netConfig: NetworkConfig = {} as NetworkConfig
   const log = new Logger('createNetProfile')
   try {
     const errors = validationResult(req)
@@ -21,14 +21,13 @@ export async function createNetProfile (req, res): Promise<void> {
       res.status(400).json({ errors: errors.array() })
       return
     }
-    netConfig.profileName = req.body.payload.profileName
-    netConfig.dhcpEnabled = req.body.payload.dhcpEnabled
-    netConfig.staticIPShared = !req.body.payload.dhcpEnabled
+    netConfig = req.body.payload
+    netConfig.staticIPShared = !netConfig.dhcpEnabled
     netConfig.ipSyncEnabled = true
 
     profilesDb = NetConfigDbFactory.getConfigDb()
     const results = await profilesDb.insertProfile(netConfig)
-    if (results === true) {
+    if (results) {
       res.status(201).json(API_RESPONSE(null, null, NETWORK_CONFIG_INSERTION_SUCCESS(netConfig.profileName))).end()
     }
   } catch (error) {

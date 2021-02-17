@@ -104,7 +104,7 @@ export class NetConfigDb implements INetProfilesDb {
    * @param {NetworkConfig} netConfig
    * @returns {boolean} Return true on successful updation
    */
-  async updateProfile (netConfig: NetworkConfig): Promise<any> {
+  async updateProfile (netConfig: NetworkConfig): Promise<NetworkConfig> {
     const profiles = await this.db.query('SELECT profile_name as ProfileName FROM profiles WHERE network_profile_name = $1', [netConfig.profileName])
     if (profiles.rowCount > 0) {
       throw new RPSError(NETWORK_UPDATE_ERROR(netConfig.profileName))
@@ -117,8 +117,9 @@ export class NetConfigDb implements INetProfilesDb {
         netConfig.ipSyncEnabled
       ])
     if (results.rowCount > 0) {
-      return true
+      const profile = await this.getProfileByName(netConfig.profileName)
+      return profile
     }
-    return false
+    return null
   }
 }

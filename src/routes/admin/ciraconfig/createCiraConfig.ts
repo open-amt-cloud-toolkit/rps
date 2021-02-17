@@ -19,7 +19,7 @@ import { RPSError } from '../../../utils/RPSError'
 export async function createCiraConfig (req, res): Promise<void> {
   const log = new Logger('createCiraConfig')
   let ciraConfigDb: ICiraConfigDb
-  const ciraConfig: CIRAConfig = {} as CIRAConfig
+  let ciraConfig: CIRAConfig = null
   try {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
@@ -27,18 +27,7 @@ export async function createCiraConfig (req, res): Promise<void> {
       return
     }
     ciraConfigDb = CiraConfigDbFactory.getCiraConfigDb()
-
-    ciraConfig.configName = req.body.payload.configName
-    ciraConfig.mpsServerAddress = req.body.payload.mpsServerAddress
-    ciraConfig.mpsPort = req.body.payload.mpsPort
-    ciraConfig.username = req.body.payload.username
-    ciraConfig.password = req.body.payload.password
-    ciraConfig.commonName = req.body.payload.commonName
-    ciraConfig.serverAddressFormat = req.body.payload.serverAddressFormat
-    ciraConfig.mpsRootCertificate = req.body.payload.mpsRootCertificate
-    ciraConfig.proxyDetails = req.body.payload.proxyDetails
-    ciraConfig.authMethod = req.body.payload.authMethod
-
+    ciraConfig = req.body.payload
     const mpsPwd = ciraConfig.password
     if (req.secretsManager) {
       ciraConfig.password = `${ciraConfig.configName}_CIRA_PROFILE_PASSWORD`

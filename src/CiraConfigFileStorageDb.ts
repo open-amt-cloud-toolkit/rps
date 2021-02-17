@@ -96,20 +96,19 @@ export class CiraConfigFileStorageDb implements ICiraConfigDb {
    * @param {string} ciraConfigName
    * @returns {boolean} Return true on successful updation
    */
-  async updateCiraConfig (ciraConfig: CIRAConfig): Promise<boolean> {
+  async updateCiraConfig (ciraConfig: CIRAConfig): Promise<CIRAConfig> {
     this.logger.debug(`update CiraConfig: ${ciraConfig.configName}`)
-    const isMatch = (item): boolean => item.ConfigName === ciraConfig.configName
+    const isMatch = (item): boolean => item.configName === ciraConfig.configName
     const index = this.ciraConfigs.findIndex(isMatch)
     if (index >= 0) {
       this.ciraConfigs.splice(index, 1)
       this.ciraConfigs.push(ciraConfig)
       this.updateConfigFile()
       this.logger.info(`Cira Config updated: ${ciraConfig.configName}`)
-      return true
-    } else {
-      this.logger.info(`Cira Config doesnt exist: ${ciraConfig.configName}`)
-      return false
+      const config = await this.getCiraConfigByName(ciraConfig.configName)
+      return config
     }
+    return null
   }
 
   private updateConfigFile (): void {

@@ -92,7 +92,7 @@ export class DomainsDb implements IDomainsDb {
    * @param {AMTDomain} amtDomain object
    * @returns {boolean} Return true on successful updation
    */
-  async updateDomain (amtDomain: AMTDomain): Promise <boolean> {
+  async updateDomain (amtDomain: AMTDomain): Promise <AMTDomain> {
     try {
       const results = await this.db.query('UPDATE domains SET domain_suffix=$2, provisioning_cert=$3, provisioning_cert_storage_format=$4, provisioning_cert_key=$5 WHERE name=$1',
         [
@@ -103,9 +103,10 @@ export class DomainsDb implements IDomainsDb {
           amtDomain.provisioningCertPassword
         ])
       if (results.rowCount > 0) {
-        return true
+        const domain = await this.getDomainByName(amtDomain.profileName)
+        return domain
       }
-      return false
+      return null
     } catch (error) {
       this.log.error('Failed to update Domain :', error)
       if (error.code === '23505') { // Unique key violation

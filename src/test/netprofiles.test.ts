@@ -15,9 +15,9 @@ const AMTConfigurations = [
     amtPassword: 'P@ssw0rd',
     mebxPassword: 'P@ssw0rd',
     generateRandomPassword: false,
-    randomPasswordLength: 8,
+    passwordLength: 8,
     generateRandomMEBxPassword: false,
-    randomMEBxPasswordLength: 8,
+    mebxPasswordLength: 8,
     randomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
     configurationScript: null,
     activation: 'acmactivate',
@@ -28,9 +28,9 @@ const AMTConfigurations = [
     amtPassword: 'P@ssw0rd',
     mebxPassword: 'P@ssw0rd',
     generateRandomPassword: false,
-    randomPasswordLength: 8,
+    passwordLength: 8,
     generateRandomMEBxPassword: false,
-    randomMEBxPasswordLength: 8,
+    mebxPasswordLength: 8,
     randomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
     configurationScript: null,
     activation: 'ccmactivate',
@@ -41,9 +41,9 @@ const AMTConfigurations = [
     amtPassword: 'P@ssw0rd',
     mebxPassword: 'P@ssw0rd',
     generateRandomPassword: false,
-    randomPasswordLength: 8,
+    passwordLength: 8,
     generateRandomMEBxPassword: false,
-    randomMEBxPasswordLength: 8,
+    mebxPasswordLength: 8,
     randomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
     configurationScript: null,
     activation: 'invalid',
@@ -54,9 +54,9 @@ const AMTConfigurations = [
     amtPassword: 'P@ssw0rd',
     mebxPassword: 'P@ssw0rd',
     generateRandomPassword: false,
-    randomPasswordLength: 8,
+    passwordLength: 8,
     generateRandomMEBxPassword: false,
-    randomMEBxPasswordLength: 8,
+    mebxPasswordLength: 8,
     randomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
     configurationScript: null,
     activation: '',
@@ -114,7 +114,7 @@ describe('Network Profile tests', () => {
       ipSyncEnabled: true
     }
     const actual = await netConfigDb.updateProfile(newProfile)
-    expect(actual).toEqual(true)
+    expect(actual).toEqual(newProfile)
   })
 
   test('update configuration for network profile doesnt exist', async () => {
@@ -126,7 +126,7 @@ describe('Network Profile tests', () => {
       ipSyncEnabled: true
     }
     const actual = await netConfigDb.updateProfile(newProfile)
-    expect(actual).toEqual(false)
+    expect(actual).toEqual(null)
   })
 
   test('update configuration for network profile associated with profile', async () => {

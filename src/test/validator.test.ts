@@ -254,9 +254,9 @@ describe('Activation message for admin control mode', () => {
       generateRandomPassword: false,
       mebxPassword: 'P@ssw0rd',
       profileName: 'profile1',
-      randomMEBxPasswordLength: 8,
+      mebxPasswordLength: 8,
       randomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
-      randomPasswordLength: 8
+      passwordLength: 8
     }
     expect(clientObj.ClientData).toEqual(activationmsg)
   })

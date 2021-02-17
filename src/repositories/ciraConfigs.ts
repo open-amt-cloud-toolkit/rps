@@ -107,7 +107,7 @@ export class CiraConfigDb implements ICiraConfigDb {
    * @param {CIRAConfig} ciraConfig object
    * @returns {boolean} Return true on successful updation
    */
-  async updateCiraConfig (ciraConfig: CIRAConfig): Promise<boolean> {
+  async updateCiraConfig (ciraConfig: CIRAConfig): Promise<CIRAConfig> {
     try {
       const results = await this.db.query('UPDATE ciraconfigs SET mps_server_address=$2, mps_port=$3, user_name=$4, password=$5, common_name=$6, server_address_format=$7, auth_method=$8, mps_root_certificate=$9, proxydetails=$10 where cira_config_name=$1',
         [
@@ -123,9 +123,10 @@ export class CiraConfigDb implements ICiraConfigDb {
           ciraConfig.proxyDetails
         ])
       if (results.rowCount > 0) {
-        return true
+        const config = await this.getCiraConfigByName(ciraConfig.configName)
+        return config
       }
-      return false
+      return null
     } catch (error) {
       this.log.error('Failed to update CIRA config :', error)
       throw new RPSError(API_UNEXPECTED_EXCEPTION(ciraConfig.configName))

@@ -60,7 +60,7 @@ export class DomainConfigDb implements IDomainsDb {
    * @param {AMTDomain} amtDomain object
    * @returns {boolean} Return true on successful updation
    */
-  async updateDomain (amtDomain: AMTDomain): Promise<boolean> {
+  async updateDomain (amtDomain: AMTDomain): Promise<AMTDomain> {
     const isMatch = (item): boolean => item.profileName === amtDomain.profileName
     const index = this.domains.findIndex(isMatch)
     if (index >= 0) {
@@ -74,12 +74,10 @@ export class DomainConfigDb implements IDomainsDb {
       this.domains.push(amtDomain)
       this.updateConfigFile()
       this.logger.info(`Domain: ${amtDomain.profileName} updated`)
-      this.logger.silly(`Domain ${JSON.stringify(amtDomain)}`)
-      return true
-    } else {
-      this.logger.info(`Domain: ${amtDomain.profileName} doesnt exist`)
-      return false
+      const domain = await this.getDomainByName(amtDomain.profileName)
+      return domain
     }
+    return null
   }
 
   /**

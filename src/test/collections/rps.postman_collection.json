@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "e6b95496-8f00-4476-9815-2f5d68a3bc08",
+		"_postman_id": "0c50d20a-0b99-4eff-9cfe-db6f46d5475a",
 		"name": "RPS API Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -926,8 +926,14 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 204\", function () {\r",
-									"    pm.response.to.have.status(204);\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"Result should be equal to payload\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.profileName).to.eql(\"vprodemo\")\r",
+									"    pm.expect(jsonData.domainSuffix).to.eql(\"newvprodemo.com\")\r",
+									"    pm.expect(jsonData.provisioningCertStorageFormat).to.eql(\"raw\")\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -1031,8 +1037,15 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 204\", function () {\r",
-									"    pm.response.to.have.status(204);\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Result should be equal to payload\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.profileName).to.eql(\"vprodemo\")\r",
+									"    pm.expect(jsonData.domainSuffix).to.eql(\"newvprodemo.com\")\r",
+									"    pm.expect(jsonData.provisioningCertStorageFormat).to.eql(\"raw\")\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -1081,8 +1094,14 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 204\", function () {\r",
-									"    pm.response.to.have.status(204);\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"Result should be equal to payload\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.profileName).to.eql(\"vprodemo\")\r",
+									"    pm.expect(jsonData.domainSuffix).to.eql(\"newvprodemo.com\")\r",
+									"    pm.expect(jsonData.provisioningCertStorageFormat).to.eql(\"raw\")\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -3365,9 +3384,21 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 204\", function () {\r",
-									"    pm.response.to.have.status(204);\r",
-									"});"
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									" pm.test(\"Result should be equal to example\", function () {\r",
+									"        var jsonData = pm.response.json();\r",
+									"        pm.expect(jsonData.configName).to.eql(\"ciraconfig2\")\r",
+									"        pm.expect(jsonData.mpsServerAddress).to.eql(\"192.168.8.55\")\r",
+									"        pm.expect(jsonData.mpsPort).to.eql(4433)\r",
+									"        pm.expect(jsonData.username).to.eql(\"admin\")\r",
+									"        pm.expect(jsonData.commonName).to.eql(\"192.168.8.55\")\r",
+									"        pm.expect(jsonData.serverAddressFormat).to.eql(3)\r",
+									"        pm.expect(jsonData.authMethod).to.eql(2)\r",
+									"        pm.expect(jsonData.mpsRootCertificate).to.eql(\"rootcert\")\r",
+									"        pm.expect(jsonData.proxyDetails).to.eql(\"\")\r",
+									"    });"
 								],
 								"type": "text/javascript"
 							}
@@ -3596,7 +3627,9 @@
 									"        var jsonData = pm.response.json();\r",
 									"        pm.expect(jsonData[0].profileName).to.eql(\"Sample_Profile\")\r",
 									"        pm.expect(jsonData[0].generateRandomPassword).to.equal(false)\r",
-									"        pm.expect(jsonData[0].randomPasswordLength).to.eql(8)\r",
+									"        pm.expect(jsonData[0].passwordLength).to.eql(8)\r",
+									"         pm.expect(jsonData[0].generateRandomMEBxPassword).to.equal(false)\r",
+									"        pm.expect(jsonData[0].mebxPasswordLength).to.eql(8)\r",
 									"        pm.expect(jsonData[0].activation).to.equal(\"acmactivate\")\r",
 									"        pm.expect(jsonData[0].ciraConfigName).to.equal(\"Sample_CIRA_Config\") \r",
 									"    });\r",
@@ -3656,16 +3689,15 @@
 									"        pm.response.to.have.status(200);\r",
 									"    });\r",
 									"\r",
-									"    pm.test(\"Result 1 should be equal to example\", function () {\r",
+									"   pm.test(\"Result 1 should be equal to example\", function () {\r",
 									"        var jsonData = pm.response.json();\r",
 									"        pm.expect(jsonData.profileName).to.eql(\"Sample_Profile\")\r",
 									"        pm.expect(jsonData.generateRandomPassword).to.equal(false)\r",
-									"        pm.expect(jsonData.randomPasswordLength).to.eql(8)\r",
+									"        pm.expect(jsonData.passwordLength).to.eql(8)\r",
 									"        pm.expect(jsonData.generateRandomMEBxPassword).to.equal(false)\r",
-									"        pm.expect(jsonData.randomMEBxPasswordLength).to.eql(8)\r",
+									"        pm.expect(jsonData.mebxPasswordLength).to.eql(8)\r",
 									"        pm.expect(jsonData.activation).to.equal(\"acmactivate\")\r",
-									"        pm.expect(jsonData.ciraConfigName).to.equal(\"Sample_CIRA_Config\")\r",
-									"        \r",
+									"        pm.expect(jsonData.ciraConfigName).to.equal(\"Sample_CIRA_Config\") \r",
 									"    });\r",
 									"} else {\r",
 									"    pm.test(\"Status code is 404\", function () {    \r",
@@ -3978,7 +4010,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\",\r\n        \"amtPassword\": \"Intel123!\",\r\n        \"generateRandomPassword\": true,\r\n        \"RandomPasswordLength\": 8,\r\n        \"activation\": \"ccmactivate\"\r\n    }\r\n}"
+							"raw": "{\r\n    \"payload\": {\r\n        \"profileName\": \"profile6\",\r\n        \"amtPassword\": \"Intel123!\",\r\n        \"generateRandomPassword\": true,\r\n        \"passwordLength\": 8,\r\n        \"activation\": \"ccmactivate\"\r\n    }\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
@@ -4800,10 +4832,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 204\", function () {\r",
-									"    pm.response.to.have.status(204);\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
 									"});\r",
-									""
+									"pm.test(\"Update should succeed\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
+									"    pm.expect(jsonData.generateRandomPassword).to.equal(true)\r",
+									"    pm.expect(jsonData.passwordLength).to.eql(16)\r",
+									"    pm.expect(jsonData.generateRandomMEBxPassword).to.equal(false)\r",
+									"    pm.expect(jsonData.mebxPasswordLength).to.eql(null)\r",
+									"    pm.expect(jsonData.activation).to.equal(\"ccmactivate\")\r",
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -4852,8 +4892,16 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 204\", function () {\r",
-									"    pm.response.to.have.status(204);\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Result 1 should be equal to example\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
+									"    pm.expect(jsonData.generateRandomMEBxPassword).to.equal(false)\r",
+									"    pm.expect(jsonData.mebxPasswordLength).to.eql(null)\r",
+									"    pm.expect(jsonData.activation).to.equal(\"ccmactivate\")    \r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -4960,8 +5008,17 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 204\", function () {\r",
-									"    pm.response.to.have.status(204);\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"Result 1 should be equal to example\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
+									"    pm.expect(jsonData.generateRandomPassword).to.equal(true)\r",
+									"    pm.expect(jsonData.passwordLength).to.eql(16)\r",
+									"    pm.expect(jsonData.generateRandomMEBxPassword).to.equal(true)\r",
+									"    pm.expect(jsonData.mebxPasswordLength).to.eql(8)\r",
+									"    pm.expect(jsonData.activation).to.equal(\"acmactivate\")    \r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -5011,8 +5068,17 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 204\", function () {\r",
-									"    pm.response.to.have.status(204);\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"Result 1 should be equal to example\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
+									"    pm.expect(jsonData.generateRandomPassword).to.equal(true)\r",
+									"    pm.expect(jsonData.passwordLength).to.eql(16)\r",
+									"    pm.expect(jsonData.generateRandomMEBxPassword).to.equal(null)\r",
+									"    pm.expect(jsonData.mebxPasswordLength).to.eql(null)\r",
+									"    pm.expect(jsonData.activation).to.equal(\"acmactivate\")    \r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -5062,8 +5128,17 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 204\", function () {\r",
-									"    pm.response.to.have.status(204);\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"Update should succeed\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
+									"    pm.expect(jsonData.generateRandomPassword).to.equal(null)\r",
+									"    pm.expect(jsonData.passwordLength).to.eql(null)\r",
+									"    pm.expect(jsonData.generateRandomMEBxPassword).to.equal(null)\r",
+									"    pm.expect(jsonData.mebxPasswordLength).to.eql(null)\r",
+									"    pm.expect(jsonData.activation).to.equal(\"acmactivate\")    \r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -5624,8 +5699,15 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 204\", function () {\r",
-									"    pm.response.to.have.status(204);\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"Result 1 should be equal to example\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
+									"    pm.expect(jsonData.dhcpEnabled).to.eql(false)\r",
+									"    pm.expect(jsonData.staticIPShared).to.equal(true)\r",
+									"    pm.expect(jsonData.ipSyncEnabled).to.eql(true)\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -6009,10 +6091,21 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 204\", function () {\r",
-									"    pm.response.to.have.status(204);\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
 									"});\r",
-									""
+									"pm.test(\"Update should succeed\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.configName).to.eql(\"ciraconfig\")\r",
+									"    pm.expect(jsonData.mpsServerAddress).to.equal(\"192.168.8.50\")\r",
+									"    pm.expect(jsonData.mpsPort).to.eql(4433)\r",
+									"    pm.expect(jsonData.username).to.equal(\"admin\")\r",
+									"    pm.expect(jsonData.commonName).to.eql(\"192.168.8.50\")\r",
+									"    pm.expect(jsonData.serverAddressFormat).to.equal(3)    \r",
+									"    pm.expect(jsonData.mpsRootCertificate).to.equal(\"rootcert\")\r",
+									"    pm.expect(jsonData.proxyDetails).to.equal(\"\")\r",
+									"    pm.expect(jsonData.authMethod).to.equal(2)\r",
+									"});"
 								],
 								"type": "text/javascript"
 							}
