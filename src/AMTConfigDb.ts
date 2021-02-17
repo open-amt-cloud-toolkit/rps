@@ -96,7 +96,7 @@ export class AMTConfigDb implements IProfilesDb {
    * @param {AMTConfiguration} amtConfig
    * @returns {boolean} Return true on successful insertion
    */
-  async insertProfile (amtConfig: any): Promise<boolean> {
+  async insertProfile (amtConfig: AMTConfiguration): Promise<boolean> {
     if (this.amtProfiles.some(item => item.profileName === amtConfig.profileName)) {
       this.logger.error(`profile already exists: ${amtConfig.profileName}`)
       throw new RPSError(PROFILE_INSERTION_FAILED_DUPLICATE(amtConfig.profileName), 'Unique key violation')
@@ -114,7 +114,7 @@ export class AMTConfigDb implements IProfilesDb {
    * @param {AMTConfiguration} amtConfig
    * @returns {boolean} Return true on successful updation
    */
-  async updateProfile (amtConfig: any): Promise<boolean> {
+  async updateProfile (amtConfig: AMTConfiguration): Promise<AMTConfiguration> {
     this.logger.debug(`update Profile: ${amtConfig.profileName}`)
     const isMatch = (item): boolean => item.profileName === amtConfig.profileName
     const index = this.amtProfiles.findIndex(isMatch)
@@ -123,11 +123,10 @@ export class AMTConfigDb implements IProfilesDb {
       this.amtProfiles.push(amtConfig)
       this.updateConfigFile()
       this.logger.info(`profile updated: ${amtConfig.profileName}`)
-      return true
-    } else {
-      this.logger.info(`profile doesnt exist: ${amtConfig.profileName}`)
-      return false
+      const profile: AMTConfiguration = await this.getProfileByName(amtConfig.profileName)
+      return profile
     }
+    return null
   }
 
   private updateConfigFile (): void {

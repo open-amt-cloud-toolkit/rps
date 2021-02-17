@@ -11,7 +11,7 @@ export interface IProfilesDb {
   getProfileByName: (profileName) => Promise<AMTConfiguration>
   getCiraConfigForProfile: (ciraConfigName) => Promise<CIRAConfig>
   getNetworkConfigForProfile: (networkConfigName) => Promise<NetworkConfig>
-  deleteProfileByName: (profileName) => Promise<any>
+  deleteProfileByName: (profileName) => Promise<boolean>
   insertProfile: (amtConfig) => Promise<boolean>
-  updateProfile: (amtConfig) => Promise<any>
+  updateProfile: (amtConfig) => Promise<AMTConfiguration>
 }

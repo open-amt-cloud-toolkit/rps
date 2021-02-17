@@ -99,7 +99,7 @@ export class NetConfigFileStorageDb implements INetProfilesDb {
    * @param {NetworkConfig} netConfig
    * @returns {boolean} Return true on successful updation
    */
-  async updateProfile (netConfig: NetworkConfig): Promise<boolean> {
+  async updateProfile (netConfig: NetworkConfig): Promise<NetworkConfig> {
     this.logger.debug(`update NetConfig: ${netConfig.profileName}`)
     const isMatch = (item): boolean => item.profileName === netConfig.profileName
     if (this.amtProfiles.some(profile => profile.networkConfigName === netConfig.profileName)) {
@@ -111,11 +111,10 @@ export class NetConfigFileStorageDb implements INetProfilesDb {
       this.networkConfigs.push(netConfig)
       this.updateConfigFile()
       this.logger.info(`Net Config updated: ${netConfig.profileName}`)
-      return true
-    } else {
-      this.logger.info(`Net Config doesnt exist: ${netConfig.profileName}`)
-      return false
+      const networkConfig: NetworkConfig = await this.getProfileByName(netConfig.profileName)
+      return networkConfig
     }
+    return null
   }
 
   private updateConfigFile (): void {

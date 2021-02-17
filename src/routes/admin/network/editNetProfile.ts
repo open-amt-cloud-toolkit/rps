@@ -15,25 +15,27 @@ import { RPSError } from '../../../utils/RPSError'
 export async function editNetProfile (req, res): Promise<void> {
   const log = new Logger('editNetProfile')
   let profilesDb: INetProfilesDb = null
-  const netConfig: NetworkConfig = <NetworkConfig>{}
+  let netConfig: NetworkConfig = <NetworkConfig>{}
   try {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
       res.status(400).json({ errors: errors.array() })
       return
     }
-    netConfig.profileName = req.body.payload.profileName
-    netConfig.dhcpEnabled = req.body.payload.dhcpEnabled
-    netConfig.staticIPShared = !req.body.payload.dhcpEnabled
+    netConfig = req.body.payload
+    netConfig.staticIPShared = !netConfig.dhcpEnabled
     netConfig.ipSyncEnabled = true
 
     profilesDb = NetConfigDbFactory.getConfigDb()
-    // SQL Query > Insert Data
-    const results: boolean = await profilesDb.updateProfile(netConfig)
-    if (results) {
-      res.status(204).end()
-    } else {
+    const config: NetworkConfig = await profilesDb.getProfileByName(netConfig.profileName)
+    if (config == null) {
       res.status(404).json(API_RESPONSE(null, 'Not Found', NETWORK_CONFIG_NOT_FOUND(netConfig.profileName))).end()
+    } else {
+      // SQL Query > Insert Data
+      const results: NetworkConfig = await profilesDb.updateProfile(netConfig)
+      if (results) {
+        res.status(200).json(results).end()
+      }
     }
   } catch (error) {
     log.error(`Failed to edit network configuration : ${netConfig.profileName}`, error)

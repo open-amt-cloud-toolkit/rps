@@ -11,7 +11,7 @@ export function mapToProfile (results): AMTConfig {
     profileName: results.profilename,
     amtPassword: results.amtpassword,
     generateRandomPassword: results.generaterandompassword,
-    randomPasswordLength: results.randompasswordlength,
+    passwordLength: results.passwordlength,
     randomPasswordCharacters: results.randompasswordcharacters,
     configurationScript: results.configurationscript,
     activation: results.activation,
@@ -19,6 +19,6 @@ export function mapToProfile (results): AMTConfig {
     networkConfigName: results.networkprofilename,
     mebxPassword: results.mebxpassword,
     generateRandomMEBxPassword: results.generaterandommebxpassword,
-    randomMEBxPasswordLength: results.randommebxpasswordlength
+    mebxPasswordLength: results.mebxpasswordlength
   } as AMTConfig
 }

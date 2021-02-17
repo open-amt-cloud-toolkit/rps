@@ -15,27 +15,14 @@ import { RPSError } from '../../../utils/RPSError'
 export async function createProfile (req, res): Promise<void> {
   let profilesDb: IProfilesDb = null
   const log = new Logger('createProfile')
-  const amtConfig: AMTConfig = {} as AMTConfig
+  let amtConfig: AMTConfig = {} as AMTConfig
   try {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
       res.status(400).json({ errors: errors.array() })
       return
     }
-    const payload = req.body.payload
-    amtConfig.profileName = payload.profileName
-    amtConfig.amtPassword = payload.amtPassword !== undefined ? payload.amtPassword : null
-    amtConfig.mebxPassword = payload.mebxPassword !== undefined ? payload.mebxPassword : null
-    amtConfig.generateRandomMEBxPassword = payload.generateRandomMEBxPassword !== undefined ? req.body.payload.generateRandomMEBxPassword : false
-    amtConfig.randomMEBxPasswordLength = payload.mebxPasswordLength !== undefined ? req.body.payload.mebxPasswordLength : null
-    amtConfig.generateRandomPassword = payload.generateRandomPassword !== undefined ? payload.generateRandomPassword : false
-    amtConfig.randomPasswordLength = payload.passwordLength !== undefined ? payload.passwordLength : null
-    amtConfig.configurationScript = req.body.payload.configScript
-    amtConfig.ciraConfigName = payload.ciraConfigName
-    amtConfig.activation = payload.activation
-    amtConfig.randomPasswordCharacters = payload.randomPasswordCharacters
-    amtConfig.networkConfigName = payload.networkConfigName
-
+    amtConfig = req.body.payload
     profilesDb = ProfilesDbFactory.getProfilesDb()
     const pwdBefore = amtConfig.amtPassword
     const mebxPwdBefore = amtConfig.mebxPassword

@@ -69,17 +69,17 @@ export class RCSConfig {
 export class AMTConfiguration {
   profileName?: string
   amtPassword?: string
-  generateRandomPassword: boolean
-  randomPasswordLength?: number
+  generateRandomPassword?: boolean
+  passwordLength?: number
   randomPasswordCharacters?: string
   configurationScript?: string
   ciraConfigName?: string
   activation: string
   networkConfigName?: string
   networkConfigObject?: NetworkConfig
-  mebxPassword: string
-  generateRandomMEBxPassword: boolean
-  randomMEBxPasswordLength?: number
+  mebxPassword?: string
+  generateRandomMEBxPassword?: boolean
+  mebxPasswordLength?: number
   ciraConfigObject?: CIRAConfig
 }
 

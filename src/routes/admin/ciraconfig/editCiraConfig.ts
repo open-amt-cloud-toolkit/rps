@@ -10,6 +10,7 @@ import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, CIRA_CONFIG_NOT_FOUND } from '../../../utils/constants'
 import { validationResult } from 'express-validator'
+import { RPSError } from '../../../utils/RPSError'
 
 export async function editCiraConfig (req, res): Promise<void> {
   const log = new Logger('editCiraConfig')
@@ -44,11 +45,16 @@ export async function editCiraConfig (req, res): Promise<void> {
         }
       }
       log.info(`Updated CIRA config profile : ${ciraConfig.configName}`)
-      res.status(204).end()
+      delete results.password
+      res.status(200).json(results).end()
     }
   } catch (error) {
     log.error(`Failed to update CIRA config : ${newConfig.ConfigName}`, error)
-    res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`UPDATE ${newConfig.ConfigName}`))).end()
+    if (error instanceof RPSError) {
+      res.status(400).json(API_RESPONSE(null, error.name, error.message)).end()
+    } else {
+      res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`UPDATE ${newConfig.ConfigName}`))).end()
+    }
   }
 }
 

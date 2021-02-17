@@ -10,5 +10,5 @@ export interface ICiraConfigDb {
   getCiraConfigByName: (configName) => Promise<CIRAConfig>
   deleteCiraConfigByName: (configName) => Promise<boolean>
   insertCiraConfig: (ciraConfig) => Promise<boolean>
-  updateCiraConfig: (ciraConfig) => Promise<boolean>
+  updateCiraConfig: (ciraConfig) => Promise<CIRAConfig>
 }

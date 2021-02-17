@@ -31,7 +31,7 @@ export class ProfilesDb implements IProfilesDb {
    * @returns {AMTConfiguration[]} returns an array of AMT profile objects
    */
   async getAllProfiles (): Promise<AMTConfiguration[]> {
-    const results = await this.db.query('SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, generate_random_password as GenerateRandomPassword, configuration_script as ConfigurationScript, cira_config_name as ciraConfigName, random_password_length as RandomPasswordLength, network_profile_name as NetworkProfileName,mebx_password as MEBxPassword, generate_random_mebx_password as GenerateRandomMEBxPassword, random_mebx_password_length as RandomMEBxPasswordLength FROM profiles')
+    const results = await this.db.query('SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, generate_random_password as GenerateRandomPassword, configuration_script as ConfigurationScript, cira_config_name as ciraConfigName, random_password_length as passwordLength, network_profile_name as NetworkProfileName,mebx_password as MEBxPassword, generate_random_mebx_password as GenerateRandomMEBxPassword, random_mebx_password_length as mebxPasswordLength FROM profiles')
     return await Promise.all(results.rows.map(async p => {
       const result = mapToProfile(p)
       return result
@@ -44,7 +44,7 @@ export class ProfilesDb implements IProfilesDb {
    * @returns {AMTConfiguration} AMT Profile object
    */
   async getProfileByName (profileName: string): Promise<AMTConfiguration> {
-    const results = await this.db.query('SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, generate_random_password as GenerateRandomPassword, configuration_script as ConfigurationScript, cira_config_name as ciraConfigName, random_password_length as RandomPasswordLength, network_profile_name as NetworkProfileName, mebx_password as MEBxPassword, generate_random_mebx_password as GenerateRandomMEBxPassword, random_mebx_password_length as RandomMEBxPasswordLength FROM profiles WHERE profile_name = $1', [profileName])
+    const results = await this.db.query('SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, generate_random_password as GenerateRandomPassword, configuration_script as ConfigurationScript, cira_config_name as ciraConfigName, random_password_length as passwordLength, network_profile_name as NetworkProfileName, mebx_password as MEBxPassword, generate_random_mebx_password as GenerateRandomMEBxPassword, random_mebx_password_length as  mebxPasswordLength FROM profiles WHERE profile_name = $1', [profileName])
     let amtProfile: AMTConfiguration = null
     if (results.rowCount > 0) {
       amtProfile = mapToProfile(results.rows[0])
@@ -100,11 +100,11 @@ export class ProfilesDb implements IProfilesDb {
         amtConfig.ciraConfigName,
         amtConfig.generateRandomPassword,
         amtConfig.randomPasswordCharacters,
-        amtConfig.randomPasswordLength,
+        amtConfig.passwordLength,
         amtConfig.networkConfigName,
         amtConfig.mebxPassword,
         amtConfig.generateRandomMEBxPassword,
-        amtConfig.randomMEBxPasswordLength
+        amtConfig.mebxPasswordLength
       ])
       if (results.rowCount > 0) {
         return true
@@ -131,7 +131,7 @@ export class ProfilesDb implements IProfilesDb {
    * @param {AMTConfiguration} amtConfig
    * @returns {boolean} Return true on successful updation
    */
-  async updateProfile (amtConfig: AMTConfiguration): Promise<boolean> {
+  async updateProfile (amtConfig: AMTConfiguration): Promise<AMTConfiguration> {
     try {
       const results = await this.db.query('UPDATE profiles SET activation=$2, amt_password=$3, configuration_script=$4, cira_config_name=$5, generate_random_password=$6, random_password_characters=$7, random_password_length=$8, network_profile_name=$9, mebx_password=$10, generate_random_mebx_password=$11, random_mebx_password_length=$12 WHERE profile_name=$1',
         [
@@ -142,16 +142,17 @@ export class ProfilesDb implements IProfilesDb {
           amtConfig.ciraConfigName,
           amtConfig.generateRandomPassword,
           amtConfig.randomPasswordCharacters,
-          amtConfig.randomPasswordLength,
+          amtConfig.passwordLength,
           amtConfig.networkConfigName,
           amtConfig.mebxPassword,
           amtConfig.generateRandomMEBxPassword,
-          amtConfig.randomMEBxPasswordLength
+          amtConfig.mebxPasswordLength
         ])
       if (results.rowCount > 0) {
-        return true
+        const profile = await this.getProfileByName(amtConfig.profileName)
+        return profile
       }
-      return false
+      return null
     } catch (error) {
       this.log.error(`Failed to update AMT profile: ${amtConfig.profileName}`, error)
       if (error.code === '23503') { // Foreign key constraint violation

@@ -16,15 +16,15 @@ export interface WebSocketConfig {
 
 export interface AMTConfig {
   profileName: string
-  amtPassword: string
-  generateRandomPassword: boolean
-  randomPasswordLength: number
-  mebxPassword: string
-  generateRandomMEBxPassword: boolean
-  randomMEBxPasswordLength: number
-  randomPasswordCharacters: string
-  configurationScript: string
-  ciraConfigName: string
+  amtPassword?: string
+  generateRandomPassword?: boolean
+  passwordLength?: number
+  mebxPassword?: string
+  generateRandomMEBxPassword?: boolean
+  mebxPasswordLength?: number
+  randomPasswordCharacters?: string
+  configurationScript?: string
+  ciraConfigName?: string
   activation: string
   ciraConfigObject?: CIRAConfig
   networkConfigName?: string
@@ -34,8 +34,8 @@ export interface AMTConfig {
 export interface NetworkConfig {
   profileName: string
   dhcpEnabled: boolean
-  staticIPShared: boolean
-  ipSyncEnabled: boolean
+  staticIPShared?: boolean
+  ipSyncEnabled?: boolean
 }
 
 /*

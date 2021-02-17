@@ -14,7 +14,7 @@ import { RPSError } from '../../../utils/RPSError'
 
 export async function createDomain (req, res): Promise<void> {
   let domainsDb: IDomainsDb = null
-  const amtDomain: AMTDomain = {} as AMTDomain
+  let amtDomain: AMTDomain = null
   const log = new Logger('createDomain')
   let cert: any
   let domainPwd: string
@@ -24,11 +24,7 @@ export async function createDomain (req, res): Promise<void> {
       res.status(400).json({ errors: errors.array() })
       return
     }
-    amtDomain.profileName = req.body.payload.profileName
-    amtDomain.domainSuffix = req.body.payload.domainSuffix
-    amtDomain.provisioningCert = req.body.payload.provisioningCert
-    amtDomain.provisioningCertStorageFormat = req.body.payload.provisioningCertStorageFormat
-    amtDomain.provisioningCertPassword = req.body.payload.provisioningCertPassword
+    amtDomain = req.body.payload
     domainsDb = DomainsDbFactory.getDomainsDb()
 
     // store the cert and password key in database
