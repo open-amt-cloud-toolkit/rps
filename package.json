@@ -38,7 +38,7 @@
     "@types/body-parser": "^1.17.1",
     "@types/express": "^4.17.11",
     "@types/jest": "^26.0.20",
-    "@types/node": "^14.14.28",
+    "@types/node": "^14.14.31",
     "@types/node-forge": "^0.9.7",
     "@types/node-vault": "^0.9.13",
     "@types/ws": "^7.4.0",
