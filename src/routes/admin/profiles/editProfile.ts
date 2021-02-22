@@ -84,7 +84,7 @@ export async function editProfile (req, res): Promise<void> {
   }
 }
 
-const handleAMTPassword = (amtConfig: AMTConfiguration, newConfig: AMTConfiguration, oldConfig: AMTConfiguration): AMTConfiguration => {
+export const handleAMTPassword = (amtConfig: AMTConfiguration, newConfig: AMTConfiguration, oldConfig: AMTConfiguration): AMTConfiguration => {
   if (newConfig.amtPassword == null) {
     amtConfig.amtPassword = oldConfig.amtPassword
     amtConfig.generateRandomPassword = false
@@ -95,7 +95,7 @@ const handleAMTPassword = (amtConfig: AMTConfiguration, newConfig: AMTConfigurat
   return amtConfig
 }
 
-const handleMEBxPassword = (amtConfig: AMTConfiguration, newConfig: AMTConfiguration, oldConfig: AMTConfiguration): AMTConfiguration => {
+export const handleMEBxPassword = (amtConfig: AMTConfiguration, newConfig: AMTConfiguration, oldConfig: AMTConfiguration): AMTConfiguration => {
   if (newConfig.mebxPassword == null) {
     amtConfig.mebxPassword = oldConfig.mebxPassword
     amtConfig.generateRandomMEBxPassword = false
@@ -106,7 +106,7 @@ const handleMEBxPassword = (amtConfig: AMTConfiguration, newConfig: AMTConfigura
   return amtConfig
 }
 
-const handleGenerateRandomPassword = (amtConfig: AMTConfiguration, newConfig: AMTConfiguration, oldConfig: AMTConfiguration): AMTConfiguration => {
+export const handleGenerateRandomPassword = (amtConfig: AMTConfiguration, newConfig: AMTConfiguration, oldConfig: AMTConfiguration): AMTConfiguration => {
   if (newConfig.generateRandomPassword) {
     amtConfig.generateRandomPassword = newConfig.generateRandomPassword
     amtConfig.passwordLength = newConfig.passwordLength
@@ -118,7 +118,7 @@ const handleGenerateRandomPassword = (amtConfig: AMTConfiguration, newConfig: AM
   return amtConfig
 }
 
-const handleGenerateRandomMEBxPassword = (amtConfig: AMTConfiguration, newConfig: AMTConfiguration, oldConfig: AMTConfiguration): AMTConfiguration => {
+export const handleGenerateRandomMEBxPassword = (amtConfig: AMTConfiguration, newConfig: AMTConfiguration, oldConfig: AMTConfiguration): AMTConfiguration => {
   if (newConfig.generateRandomMEBxPassword) {
     amtConfig.generateRandomMEBxPassword = newConfig.generateRandomMEBxPassword
     amtConfig.mebxPasswordLength = newConfig.mebxPasswordLength
@@ -130,7 +130,7 @@ const handleGenerateRandomMEBxPassword = (amtConfig: AMTConfiguration, newConfig
   return amtConfig
 }
 
-const getUpdatedData = (newConfig: any, oldConfig: AMTConfiguration): AMTConfiguration => {
+export const getUpdatedData = (newConfig: any, oldConfig: AMTConfiguration): AMTConfiguration => {
   let amtConfig: AMTConfiguration = { profileName: newConfig.profileName } as AMTConfiguration
   amtConfig = handleAMTPassword(amtConfig, newConfig, oldConfig)
   amtConfig = handleMEBxPassword(amtConfig, newConfig, oldConfig)
