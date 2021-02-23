@@ -160,8 +160,14 @@ describe('Network Profile tests', () => {
       staticIPShared: true,
       ipSyncEnabled: true
     }
+    const result = {
+      dhcpEnabled: false,
+      ipSyncEnabled: true,
+      profileName: 'profile11',
+      staticIPShared: true
+    }
     const actual = await netConfigDb.insertProfile(newProfile)
-    expect(actual).toEqual(true)
+    expect(actual).toEqual(result)
   })
 
   test('create configuration for network profile already exist', async () => {

@@ -71,9 +71,9 @@ export class CiraConfigDb implements ICiraConfigDb {
   /**
    * @description Insert CIRA config into DB
    * @param {CIRAConfig} ciraConfig
-   * @returns {boolean} Return true on successful insertion
+   * @returns {CIRAConfig} Returns cira config object
    */
-  async insertCiraConfig (ciraConfig: CIRAConfig): Promise<boolean> {
+  async insertCiraConfig (ciraConfig: CIRAConfig): Promise<CIRAConfig> {
     try {
       const results = await this.db.query('INSERT INTO ciraconfigs(cira_config_name, mps_server_address, mps_port, user_name, password, common_name, server_address_format, auth_method, mps_root_certificate, proxydetails) ' +
         'values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)',
@@ -90,9 +90,10 @@ export class CiraConfigDb implements ICiraConfigDb {
         ciraConfig.proxyDetails
       ])
       if (results.rowCount > 0) {
-        return true
+        const config = await this.getCiraConfigByName(ciraConfig.configName)
+        return config
       }
-      return false
+      return null
     } catch (error) {
       this.log.error('Failed to insert CIRA config :', error)
       if (error.code === '23505') { // Unique key violation
@@ -105,7 +106,7 @@ export class CiraConfigDb implements ICiraConfigDb {
   /**
    * @description Update CIRA config into DB
    * @param {CIRAConfig} ciraConfig object
-   * @returns {boolean} Return true on successful updation
+   * @returns {CIRAConfig} Returns cira config object
    */
   async updateCiraConfig (ciraConfig: CIRAConfig): Promise<CIRAConfig> {
     try {
