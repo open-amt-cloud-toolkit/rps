@@ -8,6 +8,8 @@ import Logger from '../Logger'
 import { NetConfigFileStorageDb } from '../NetConfigFileStorageDb'
 import { NetworkConfig } from '../RCS.Config'
 import { RPSError } from '../utils/RPSError'
+import * as path from 'path'
+import { EnvReader } from '../utils/EnvReader'
 
 const AMTConfigurations = [
   {
@@ -85,6 +87,9 @@ const NETConfigurations = [
     ipSyncEnabled: true
   }
 ]
+
+EnvReader.configPath = path.join(__dirname, './helper/data.json')
+
 describe('Network Profile tests', () => {
   test('delete configuration for network profile with constraint', async () => {
     const netConfigDb = new NetConfigFileStorageDb(AMTConfigurations, NETConfigurations, new Logger('NetConfigDb'))

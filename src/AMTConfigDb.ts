@@ -27,7 +27,8 @@ export class AMTConfigDb implements IProfilesDb {
    */
   async getAllProfiles (): Promise<AMTConfiguration[]> {
     this.logger.debug('getAllProfiles called')
-    return this.amtProfiles
+    const data: any = FileHelper.readJsonObjFromFile(EnvReader.configPath)
+    return data.AMTConfigurations
   }
 
   /**

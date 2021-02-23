@@ -31,7 +31,8 @@ export class NetConfigFileStorageDb implements INetProfilesDb {
    * @returns {NetworkConfig[]} returns an array of NetworkConfig objects
    */
   async getAllProfiles (): Promise<NetworkConfig[]> {
-    return this.networkConfigs
+    const data: any = FileHelper.readJsonObjFromFile(EnvReader.configPath)
+    return data.NETConfigurations
   }
 
   /**

@@ -26,7 +26,8 @@ export class CiraConfigFileStorageDb implements ICiraConfigDb {
    */
   async getAllCiraConfigs (): Promise<CIRAConfig[]> {
     this.logger.debug('getAllCiraConfigs called')
-    return this.ciraConfigs
+    const data: any = FileHelper.readJsonObjFromFile(EnvReader.configPath)
+    return data.CIRAConfigurations
   }
 
   /**
