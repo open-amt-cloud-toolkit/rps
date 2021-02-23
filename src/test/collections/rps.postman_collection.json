@@ -5650,7 +5650,17 @@
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.error).to.eql('Unique key violation')\r",
 									"    pm.expect(jsonData.message).to.eql('NETWORK Config profile6 already exists')\r",
-									"});"
+									"});\r",
+									"postman.setNextRequest(\"Create CIRA Config\")"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
 								],
 								"type": "text/javascript"
 							}

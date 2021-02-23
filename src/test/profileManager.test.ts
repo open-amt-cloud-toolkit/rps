@@ -119,7 +119,7 @@ EnvReader.configPath = path.join(__dirname, './helper/data.json')
 test('test if profile exists', () => {
   const profileManager: ProfileManager = new ProfileManager(logger, null, new AMTConfigDb(AMTConfigurations, CIRAConfigurations, NETConfigurations, new Logger('AMTConfigDb')))
 
-  const actual = profileManager.doesProfileExist('profile 1')
+  const actual = profileManager.doesProfileExist('profile1')
   console.log('actual : ', actual)
   expect(actual).toBeTruthy()
 })
@@ -135,7 +135,7 @@ test('retrieve activation based on profile', async () => {
   const profileManager: ProfileManager = new ProfileManager(logger, null, new AMTConfigDb(AMTConfigurations, CIRAConfigurations, NETConfigurations, new Logger('AMTConfigDb')))
 
   const expected = 'ccmactivate'
-  const actual = await profileManager.getActivationMode('profile 1')
+  const actual = await profileManager.getActivationMode('profile2')
   expect(actual).toEqual(expected)
 })
 
@@ -143,14 +143,14 @@ test('retrieve activation based on profile', async () => {
   const profileManager: ProfileManager = new ProfileManager(logger, null, new AMTConfigDb(AMTConfigurations, CIRAConfigurations, NETConfigurations, new Logger('AMTConfigDb')), rcsConfig)
 
   const expected = 'acmactivate'
-  const actual = await profileManager.getActivationMode('profile 2')
+  const actual = await profileManager.getActivationMode('profile1')
   expect(actual).toEqual(expected)
 })
 
 test('retrieve config script', async () => {
   const profileManager: ProfileManager = new ProfileManager(logger, null, new AMTConfigDb(AMTConfigurations, CIRAConfigurations, NETConfigurations, new Logger('AMTConfigDb')))
   const expected = 'sample config script 1'
-  const actual = await profileManager.getConfigurationScript('profile 1')
+  const actual = await profileManager.getConfigurationScript('profile1')
   expect(actual).toEqual(expected)
 })
 
@@ -158,7 +158,7 @@ test('retrieve config script', async () => {
   const profileManager: ProfileManager = new ProfileManager(logger, null, new AMTConfigDb(AMTConfigurations, CIRAConfigurations, NETConfigurations, new Logger('AMTConfigDb')), rcsConfig)
 
   const expected = 'sample config script 2'
-  const actual = await profileManager.getConfigurationScript('profile 2')
+  const actual = await profileManager.getConfigurationScript('profile2')
   expect(actual).toEqual(expected)
 })
 
@@ -166,7 +166,7 @@ test('retrieve configuration for cira', async () => {
   const profileManager: ProfileManager = new ProfileManager(logger, null, new AMTConfigDb(AMTConfigurations, CIRAConfigurations, NETConfigurations, new Logger('AMTConfigDb')), rcsConfig)
 
   const expected = 'ciraconfig1'
-  const actual = await profileManager.getCiraConfiguration('profile 2')
+  const actual = await profileManager.getCiraConfiguration('profile2')
   expect(actual.configName).toEqual(expected)
 })
 
@@ -191,8 +191,8 @@ test('delete configuration for cira not associated with a profile', async () => 
 test('retrieve amt password', async () => {
   const profileManager: ProfileManager = new ProfileManager(logger, null, new AMTConfigDb(AMTConfigurations, CIRAConfigurations, NETConfigurations, new Logger('AMTConfigDb')))
 
-  const expected = '<StrongPassword1!>'
-  const profile = 'profile 1'
+  const expected = 'P@ssw0rd'
+  const profile = 'profile1'
   const actual = await profileManager.getAmtPassword(profile)
 
   expect(actual).toEqual(expected)
@@ -201,7 +201,7 @@ test('retrieve amt password', async () => {
 test('retrieve amt password auto generated', async () => {
   const profileManager: ProfileManager = new ProfileManager(logger, null, new AMTConfigDb(AMTConfigurations, CIRAConfigurations, NETConfigurations, new Logger('AMTConfigDb')), rcsConfig)
 
-  const profile = 'profile 2'
+  const profile = 'profile2'
   const expected = '<StrongPassword2!>'
   const actual = await profileManager.getAmtPassword(profile)
   expect(actual).not.toBe(expected)

@@ -3,7 +3,7 @@
     {
       "profileName": "Sample_Profile",
       "amtPassword": "<your_amt_password>",
-      "mebxPassword": "<StrongPassword>",
+      "mebxPassword": "<your_mebx_password>",
       "generateRandomPassword": false,
       "passwordLength": 8,
       "generateRandomMEBxPassword": false,

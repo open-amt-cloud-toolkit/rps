@@ -9,7 +9,7 @@
       "generateRandomMEBxPassword": false,
       "mebxPasswordLength": 8,
       "randomPasswordCharacters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()",
-      "configurationScript": null,
+      "configurationScript": "sample config script 1",
       "activation": "acmactivate",
       "ciraConfigName": "ciraconfig1"
     },
@@ -22,7 +22,7 @@
       "generateRandomMEBxPassword": false,
       "mebxPasswordLength": 8,
       "randomPasswordCharacters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()",
-      "configurationScript": null,
+      "configurationScript": "sample config script 2",
       "activation": "ccmactivate",
       "ciraConfigName": "ciraconfig1"
     },
@@ -49,10 +49,22 @@
   ],
   "NETConfigurations": [
     {
-      "ProfileName": "netprofile1",
-      "DHCPEnabled": true,
-      "StaticIPShared": true,
-      "IPSyncEnabled": true
+      "profileName": "profile1",
+      "dhcpEnabled": true,
+      "staticIPShared": true,
+      "ipSyncEnabled": true
+    },
+    {
+      "profileName": "profile3",
+      "dhcpEnabled": false,
+      "staticIPShared": true,
+      "ipSyncEnabled": true
+    },
+    {
+      "profileName": "profile11",
+      "dhcpEnabled": false,
+      "staticIPShared": true,
+      "ipSyncEnabled": true
     }
   ],
   "CIRAConfigurations": [
