@@ -27,7 +27,8 @@ export class AMTConfigDb implements IProfilesDb {
    */
   async getAllProfiles (): Promise<AMTConfiguration[]> {
     this.logger.debug('getAllProfiles called')
-    return this.amtProfiles
+    const data: any = FileHelper.readJsonObjFromFile(EnvReader.configPath)
+    return data.AMTConfigurations
   }
 
   /**
@@ -94,9 +95,9 @@ export class AMTConfigDb implements IProfilesDb {
   /**
    * @description Insert AMT profile into DB
    * @param {AMTConfiguration} amtConfig
-   * @returns {boolean} Return true on successful insertion
+   * @returns {AMTConfiguration} Returns amtConfig object
    */
-  async insertProfile (amtConfig: AMTConfiguration): Promise<boolean> {
+  async insertProfile (amtConfig: AMTConfiguration): Promise<AMTConfiguration> {
     if (this.amtProfiles.some(item => item.profileName === amtConfig.profileName)) {
       this.logger.error(`profile already exists: ${amtConfig.profileName}`)
       throw new RPSError(PROFILE_INSERTION_FAILED_DUPLICATE(amtConfig.profileName), 'Unique key violation')
@@ -105,14 +106,15 @@ export class AMTConfigDb implements IProfilesDb {
       this.amtProfiles.push(amtConfig)
       this.updateConfigFile()
       this.logger.info(`profile created: ${amtConfig.profileName}`)
-      return true
+      const profile: AMTConfiguration = await this.getProfileByName(amtConfig.profileName)
+      return profile
     }
   }
 
   /**
    * @description Update AMT profile into DB
    * @param {AMTConfiguration} amtConfig
-   * @returns {boolean} Return true on successful updation
+   * @returns {AMTConfiguration} Returns amtConfig object
    */
   async updateProfile (amtConfig: AMTConfiguration): Promise<AMTConfiguration> {
     this.logger.debug(`update Profile: ${amtConfig.profileName}`)

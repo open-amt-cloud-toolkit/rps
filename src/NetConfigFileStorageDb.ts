@@ -31,7 +31,8 @@ export class NetConfigFileStorageDb implements INetProfilesDb {
    * @returns {NetworkConfig[]} returns an array of NetworkConfig objects
    */
   async getAllProfiles (): Promise<NetworkConfig[]> {
-    return this.networkConfigs
+    const data: any = FileHelper.readJsonObjFromFile(EnvReader.configPath)
+    return data.NETConfigurations
   }
 
   /**
@@ -80,9 +81,9 @@ export class NetConfigFileStorageDb implements INetProfilesDb {
   /**
    * @description Insert Network Config into DB
    * @param {NetworkConfig} netConfig
-   * @returns {boolean} Return true on successful insertion
+   * @returns {NetworkConfig} Returns netConfig object
    */
-  async insertProfile (netConfig: NetworkConfig): Promise<boolean> {
+  async insertProfile (netConfig: NetworkConfig): Promise<NetworkConfig> {
     if (this.networkConfigs.some(item => item.profileName === netConfig.profileName)) {
       this.logger.error(`Net Config already exists: ${netConfig.profileName}`)
       throw new RPSError(NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE(netConfig.profileName), 'Unique key violation')
@@ -90,14 +91,15 @@ export class NetConfigFileStorageDb implements INetProfilesDb {
       this.networkConfigs.push(netConfig)
       this.updateConfigFile()
       this.logger.info(`Net Config created: ${netConfig.profileName}`)
-      return true
+      const networkConfig: NetworkConfig = await this.getProfileByName(netConfig.profileName)
+      return networkConfig
     }
   }
 
   /**
    * @description Update Network Config into DB
    * @param {NetworkConfig} netConfig
-   * @returns {boolean} Return true on successful updation
+   * @returns {NetworkConfig} Returns netConfig object
    */
   async updateProfile (netConfig: NetworkConfig): Promise<NetworkConfig> {
     this.logger.debug(`update NetConfig: ${netConfig.profileName}`)

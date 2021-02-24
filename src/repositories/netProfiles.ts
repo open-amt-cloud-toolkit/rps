@@ -74,9 +74,9 @@ export class NetConfigDb implements INetProfilesDb {
   /**
    * @description Insert Network Config into DB
    * @param {NetworkConfig} netConfig
-   * @returns {boolean} Return true on successful insertion
+   * @returns {NetworkConfig} Returns netConfig object
    */
-  async insertProfile (netConfig: NetworkConfig): Promise<boolean> {
+  async insertProfile (netConfig: NetworkConfig): Promise<NetworkConfig> {
     try {
       const results = await this.db.query('INSERT INTO networkconfigs(network_profile_name, dhcp_enabled, static_ip_shared, ip_sync_enabled) ' +
         'values($1, $2, $3, $4)',
@@ -87,9 +87,10 @@ export class NetConfigDb implements INetProfilesDb {
         netConfig.ipSyncEnabled
       ])
       if (results.rowCount > 0) {
-        return true
+        const profile = await this.getProfileByName(netConfig.profileName)
+        return profile
       }
-      return false
+      return null
     } catch (error) {
       if (error.code === '23505') { // Unique key violation
         throw new RPSError(NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE(netConfig.profileName), 'Unique key violation')
@@ -102,7 +103,7 @@ export class NetConfigDb implements INetProfilesDb {
   /**
    * @description Update Network Config into DB
    * @param {NetworkConfig} netConfig
-   * @returns {boolean} Return true on successful updation
+   * @returns {boolean} Returns netConfig object
    */
   async updateProfile (netConfig: NetworkConfig): Promise<NetworkConfig> {
     const profiles = await this.db.query('SELECT profile_name as ProfileName FROM profiles WHERE network_profile_name = $1', [netConfig.profileName])

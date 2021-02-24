@@ -1,0 +1,953 @@
+openapi: 3.0.0
+info:
+  title: Remote Provisioning Server API
+  contact: {}
+  version: '1.0'
+servers:
+- url: http://example.com:8081/api/v1
+  variables: {}
+paths:
+  /domains:
+    get:
+      tags:
+      - Domains
+      summary: Get All Domains
+      operationId: GetAllDomains
+      parameters:
+      - name: X-RPS-API-Key
+        in: header
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: APIKEYFORRPS123!
+      responses:
+        200:
+          description: 'successful operation'
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DomainRequest'
+        404:
+          description: 'not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        500:
+          description: 'internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+      deprecated: false
+    post:
+      tags:
+      - Domains
+      summary: Create Domain
+      operationId: CreateDomain
+      parameters:
+      - name: X-RPS-API-Key
+        in: header
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: APIKEYFORRPS123!
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DomainRequest'
+        required: true
+      responses:
+        201:
+          description: 'successful operation'
+          headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DomainRequest'
+        400:
+          description: 'bad request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        500:
+          description: 'internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+      deprecated: false
+    patch:
+      tags:
+      - Domains
+      summary: Update Domain Suffix
+      operationId: UpdateDomainSuffix
+      parameters:
+      - name: X-RPS-API-Key
+        in: header
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: APIKEYFORRPS123!
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DomainRequest'
+        required: true
+      responses:
+        200:
+          description: 'successful operation'
+          headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DomainRequest'
+        400:
+          description: 'bad request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        500:
+          description: 'internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+      deprecated: false
+  /domains/{profileName}:
+    get:
+      tags:
+        - Domains
+      summary: Get Domain
+      operationId: GetDomain
+      parameters:
+      - name: profileName
+        in: path
+        description: Name of domain profile to return
+        required: true
+        schema:
+          type: string
+      - name: X-RPS-API-Key
+        in: header
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: APIKEYFORRPS123!
+      responses:
+        200:
+          description: 'successful operation'
+          headers: {}
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/DomainRequest'
+        404:
+          description: 'not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        500:
+          description: 'internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+          
+      deprecated: false
+    delete:
+      tags:
+      - Domains
+      summary: Remove Domain
+      operationId: RemoveDomain
+      parameters:
+      - name: profileName
+        in: path
+        description: Name of domain profile to remove
+        required: true
+        schema:
+          type: string
+      - name: X-RPS-API-Key
+        in: header
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: APIKEYFORRPS123!
+      responses:
+        204:
+          description: 'successful operation'
+          headers: {}
+        404:
+          description: 'not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        500:
+          description: 'internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+      deprecated: false
+  /ciraconfigs:
+    get:
+      tags:
+      - CIRA
+      summary: Get All CIRA Configs
+      operationId: GetAllCIRAConfigs
+      parameters:
+      - name: X-RPS-API-Key
+        in: header
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: APIKEYFORRPS123!
+      responses:
+        200:
+          description: 'successful operation'
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CIRAConfigRequest'
+        404:
+          description: 'not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        500:
+          description: 'internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+      deprecated: false
+    post:
+      tags:
+      - CIRA
+      summary: Create CIRA Config
+      operationId: CreateCIRAConfig
+      parameters:
+      - name: X-RPS-API-Key
+        in: header
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: APIKEYFORRPS123!
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CIRAConfigRequest'
+        required: true
+      responses:
+        201:
+          description: 'successful operation'
+          headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CIRAConfigRequest'
+        400:
+          description: 'bad request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        500:
+          description: 'internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+      deprecated: false
+    patch:
+      tags:
+      - CIRA
+      summary: Edit CIRA Config
+      operationId: EditCIRAConfig
+      parameters:
+      - name: X-RPS-API-Key
+        in: header
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: APIKEYFORRPS123!
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CIRAConfigRequest'
+        required: true
+      responses:
+        200:
+          description: 'successful operation'
+          headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CIRAConfigRequest'
+        400:
+          description: 'bad request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        500:
+          description: 'internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+      deprecated: false
+  /ciraconfigs/{configName}:
+    get:
+      tags:
+      - CIRA
+      summary: Get CIRA Config
+      operationId: GetCIRAConfig
+      parameters:
+      - name: configName
+        in: path
+        description: Name of CIRA config to return
+        required: true
+        schema:
+          type: string
+      - name: X-RPS-API-Key
+        in: header
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: APIKEYFORRPS123!
+      responses:
+        200:
+          description: 'successful operation'
+          headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CIRAConfigRequest'
+        404:
+          description: 'not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        500:
+          description: 'internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+      deprecated: false
+    delete:
+      tags:
+      - CIRA
+      summary: Remove CIRA Config
+      operationId: RemoveCIRAConfig
+      parameters:
+      - name: configName
+        in: path
+        description: Name of CIRA config to return
+        required: true
+        schema:
+          type: string
+      - name: X-RPS-API-Key
+        in: header
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: APIKEYFORRPS123!
+      responses:
+        204:
+          description: 'successful operation'
+          headers: {}
+        404:
+          description: 'not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        500:
+          description: 'internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+      deprecated: false
+  /profiles:
+    get:
+      tags:
+      - Profiles
+      summary: Get All Profiles
+      operationId: GetAllProfiles
+      parameters:
+      - name: X-RPS-API-Key
+        in: header
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: APIKEYFORRPS123!
+      responses:
+        200:
+          description: 'successful operation'
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProfileRequest'
+        404:
+          description: 'not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        500:
+          description: 'internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+      deprecated: false
+    post:
+      tags:
+      - Profiles
+      summary: Create Profile
+      operationId: CreateProfile
+      parameters:
+      - name: X-RPS-API-Key
+        in: header
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: APIKEYFORRPS123!
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileRequest'
+        required: true
+      responses:
+        201:
+          description: 'successful operation'
+          headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileRequest'
+        400:
+          description: 'bad request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        500:
+          description: 'internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+      deprecated: false
+    patch:
+      tags:
+      - Profiles
+      summary: Update Profile
+      operationId: UpdateProfile
+      parameters:
+      - name: X-RPS-API-Key
+        in: header
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: APIKEYFORRPS123!
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileRequest'
+        required: true
+      responses:
+        200:
+          description: 'successful operation'
+          headers: {}
+        400:
+          description: 'bad request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        500:
+          description: 'internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+      deprecated: false
+  /profiles/{profileName}:
+    get:
+      tags:
+      - Profiles
+      summary: Get Profile
+      operationId: GetProfile
+      parameters:
+      - name: profileName
+        in: path
+        description: Name of profile to return
+        required: true
+        schema:
+          type: string
+      - name: X-RPS-API-Key
+        in: header
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: APIKEYFORRPS123!
+      responses:
+        200:
+          description: 'successful operation'
+          headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileRequest'
+        404:
+          description: 'not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        500:
+          description: 'internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+      deprecated: false
+    delete:
+      tags:
+      - Profiles
+      summary: Remove Profile
+      operationId: RemoveProfile
+      parameters:
+      - name: profileName
+        in: path
+        description: Name of profile to return
+        required: true
+        schema:
+          type: string
+      - name: X-RPS-API-Key
+        in: header
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: APIKEYFORRPS123!
+      responses:
+        204:
+          description: 'successful operation'
+          headers: {}
+        404:
+          description: 'not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        500:
+          description: 'internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+      deprecated: false
+  /networkconfigs:
+    get:
+      tags:
+      - Networks
+      summary: Get All Networks
+      operationId: GetAllNetworks
+      parameters:
+      - name: X-RPS-API-Key
+        in: header
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: APIKEYFORRPS123!
+      responses:
+        200:
+          description: 'successful operation'
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NetworkConfigRequest'
+        404:
+          description: 'not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        500:
+          description: 'internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+      deprecated: false
+    post:
+      tags:
+      - Networks
+      summary: Create Network Config
+      operationId: CreateNetworkConfig
+      parameters:
+      - name: X-RPS-API-Key
+        in: header
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: APIKEYFORRPS123!
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NetworkConfigRequest'
+        required: true
+      responses:
+        201:
+          description: 'successful operation'
+          headers: {}
+        400:
+          description: 'bad request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        500:
+          description: 'internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+      deprecated: false
+    patch:
+      tags:
+      - Networks
+      summary: Update Network Config
+      operationId: UpdateNetworkConfig
+      parameters:
+      - name: X-RPS-API-Key
+        in: header
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: APIKEYFORRPS123!
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NetworkConfigRequest'
+        required: true
+      responses:
+        200:
+          description: 'successful operation'
+          headers: {}
+        400:
+          description: 'bad request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        500:
+          description: 'internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+      deprecated: false
+  /networkconfigs/{profileName}:
+    get:
+      tags:
+      - Networks
+      summary: Get Network Config
+      operationId: GetNetworkConfig
+      parameters:
+      - name: profileName
+        in: path
+        description: Name of network config to return
+        required: true
+        schema:
+          type: string
+      - name: X-RPS-API-Key
+        in: header
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: APIKEYFORRPS123!
+      responses:
+        200:
+          description: 'successful operation'
+          headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetworkConfigRequest'
+        404:
+          description: 'not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        500:
+          description: 'internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+      deprecated: false
+    delete:
+      tags:
+      - Networks
+      summary: Remove Network Config
+      operationId: RemoveNetworkConfig
+      parameters:
+      - name: profileName
+        in: path
+        description: Name of profile to delete
+        required: true
+        schema:
+          type: string
+      - name: X-RPS-API-Key
+        in: header
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: APIKEYFORRPS123!
+      responses:
+        204:
+          description: 'successful operation'
+          headers: {}
+        404:
+          description: 'not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        500:
+          description: 'internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+      deprecated: false
+  /version:
+    get:
+      tags:
+      - Misc
+      summary: Get Version
+      operationId: GetVersion
+      parameters:
+      - name: X-RPS-API-Key
+        in: header
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: APIKEYFORRPS123!
+      responses:
+        200:
+          description: 'successful operation'
+          headers: {}
+      deprecated: false
+components:
+  schemas:
+    DomainRequest:
+      title: DomainRequest
+      type: object
+      required:
+      - profileName
+      - domainSuffix
+      - provisioningCert
+      - provisioningCertStorageFormat
+      - provisioningCertPassword
+      properties:
+        profileName:
+          type: string
+        domainSuffix:
+          type: string
+        provisioningCert:
+          type: string
+        provisioningCertStorageFormat:
+          type: string
+        provisioningCertPassword:
+          type: string
+      example:
+        profileName: NewDomain
+        domainSuffix: NewDomain.com
+        provisioningCert: test
+        provisioningCertStorageFormat: raw
+        provisioningCertPassword: P@ssw0rd
+
+    CIRAConfigRequest:
+      title: CIRAConfigRequest
+      required:
+      - configName
+      - mpsServerAddress
+      - mpsPort
+      - username
+      - password
+      - commonName
+      - serverAddressFormat
+      - authMethod
+      - mpsRootCertificate
+      - proxyDetails
+      type: object
+      properties:
+        configName:
+          type: string
+        mpsServerAddress:
+          type: string
+        mpsPort:
+          type: integer
+          format: int32
+        username:
+          type: string
+        password:
+          type: string
+        commonName:
+          type: string
+        serverAddressFormat:
+          type: integer
+          format: int32
+        authMethod:
+          type: integer
+          format: int32
+        mpsRootCertificate:
+          type: string
+        proxyDetails:
+          type: string
+      example:
+        configName: ciraconfig2
+        mpsServerAddress: 192.168.8.50
+        mpsPort: 1000
+        username: admin
+        password: Intel123!
+        commonName: 192.168.8.50
+        serverAddressFormat: 3
+        authMethod: 2
+        mpsRootCertificate: rootcert
+        proxyDetails: ''      
+    ProfileRequest:
+      title: ProfileRequest
+      required:
+      - profileName
+      - amtPassword
+      - mebxPassword
+      - activation
+      type: object
+      properties:
+        profileName:
+          type: string
+        amtPassword:
+          type: string
+        mebxPassword:
+          type: string
+        activation:
+          type: string
+      example:
+        profileName: profile6
+        amtPassword: Intel123!
+        mebxPassword: Intel123!
+        activation: activate      
+    NetworkConfigRequest:
+      title: NetworkConfigRequest
+      required:
+      - profileName
+      - dhcpEnabled
+      type: object
+      properties:
+        profileName:
+          type: string
+        dhcpEnabled:
+          type: boolean
+      example:
+        profileName: profile6
+        dhcpEnabled: true
+    APIResponse:
+      title: APIResponse 
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+
+tags:
+- name: Domains
+- name: CIRA
+- name: Profiles
+- name: Networks
+- name: Integration
+- name: Misc
+  description: ''
