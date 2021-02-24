@@ -61,9 +61,9 @@ export class DomainsDb implements IDomainsDb {
   /**
    * @description Insert Domain into DB
    * @param {AMTDomain} amtDomain
-   * @returns {boolean} Return true on successful insertion
+   * @returns {AMTDomain} Returns amtDomain object
    */
-  async insertDomain (amtDomain: AMTDomain): Promise<boolean> {
+  async insertDomain (amtDomain: AMTDomain): Promise<AMTDomain> {
     try {
       const results = await this.db.query('INSERT INTO domains(name, domain_suffix, provisioning_cert, provisioning_cert_storage_format, provisioning_cert_key) ' +
         'values($1, $2, $3, $4, $5)',
@@ -75,9 +75,10 @@ export class DomainsDb implements IDomainsDb {
         amtDomain.provisioningCertPassword
       ])
       if (results.rowCount > 0) {
-        return true
+        const domain = await this.getDomainByName(amtDomain.profileName)
+        return domain
       }
-      return false
+      return null
     } catch (error) {
       this.log.error(`Failed to insert Domain: ${amtDomain.profileName}`, error)
       if (error.code === '23505') { // Unique key violation
@@ -90,7 +91,7 @@ export class DomainsDb implements IDomainsDb {
   /**
    * @description Update AMT Domain into DB
    * @param {AMTDomain} amtDomain object
-   * @returns {boolean} Return true on successful updation
+   * @returns {AMTDomain} Returns amtDomain object
    */
   async updateDomain (amtDomain: AMTDomain): Promise <AMTDomain> {
     try {
