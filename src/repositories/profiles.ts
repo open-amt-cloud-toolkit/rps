@@ -86,9 +86,9 @@ export class ProfilesDb implements IProfilesDb {
   /**
    * @description Insert AMT profile into DB
    * @param {AMTConfiguration} amtConfig
-   * @returns {boolean} Return true on successful insertion
+   * @returns {boolean} Returns amtConfig object
    */
-  async insertProfile (amtConfig: AMTConfiguration): Promise<boolean> {
+  async insertProfile (amtConfig: AMTConfiguration): Promise<AMTConfiguration> {
     try {
       const results = await this.db.query('INSERT INTO profiles(profile_name, activation, amt_password, configuration_script, cira_config_name, generate_random_password, random_password_characters, random_password_length, network_profile_name, mebx_password, generate_random_mebx_password, random_mebx_password_length) ' +
         'values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)',
@@ -107,9 +107,10 @@ export class ProfilesDb implements IProfilesDb {
         amtConfig.mebxPasswordLength
       ])
       if (results.rowCount > 0) {
-        return true
+        const profile = await this.getProfileByName(amtConfig.profileName)
+        return profile
       }
-      return false
+      return null
     } catch (error) {
       this.log.error(`Failed to insert AMT profile: ${amtConfig.profileName}`, error)
       if (error.code === '23505') { // Unique key violation
@@ -129,7 +130,7 @@ export class ProfilesDb implements IProfilesDb {
   /**
    * @description Update AMT profile into DB
    * @param {AMTConfiguration} amtConfig
-   * @returns {boolean} Return true on successful updation
+   * @returns {AMTConfiguration} Returns amtConfig object
    */
   async updateProfile (amtConfig: AMTConfiguration): Promise<AMTConfiguration> {
     try {

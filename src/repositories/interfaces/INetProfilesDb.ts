@@ -8,6 +8,6 @@ export interface INetProfilesDb {
   getAllProfiles: () => Promise<NetworkConfig[]>
   getProfileByName: (profileName) => Promise<NetworkConfig>
   deleteProfileByName: (profileName) => Promise<boolean>
-  insertProfile: (netConfig) => Promise<boolean>
+  insertProfile: (netConfig) => Promise<NetworkConfig>
   updateProfile: (netConfig) => Promise<NetworkConfig>
 }
