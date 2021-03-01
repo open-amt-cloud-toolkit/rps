@@ -22,6 +22,7 @@ import { EnvReader } from '../utils/EnvReader'
 import { NetworkConfigurator } from './NetworkConfigurator'
 import { AMTUserName } from './../utils/constants'
 import { AMTDomain } from '../models/Rcs'
+import got from 'got'
 
 export class ACMActivator implements IExecutor {
   constructor (
@@ -167,6 +168,7 @@ export class ACMActivator implements IExecutor {
         throw new RPSError(`Device ${clientObj.uuid} activation failed. Not a valid digest realm.`)
       }
       clientObj.ClientData.payload.digestRealm = digestRealm
+      clientObj.hostname = clientObj.ClientData.payload.hostname
       this.clientManager.setClientObject(clientObj)
       if (clientObj.ClientData.payload.fwNonce === undefined) {
         await this.amtwsman.batchEnum(clientId, '*IPS_HostBasedSetupService')
@@ -220,7 +222,7 @@ export class ACMActivator implements IExecutor {
     /* Create a device in the repository. */
     if (this.configurator?.amtDeviceRepository) {
       await this.configurator.amtDeviceRepository.insert(new AMTDeviceDTO(clientObj.uuid,
-        clientObj.uuid,
+        clientObj.hostname,
         EnvReader.GlobalEnvConfig.mpsusername,
         EnvReader.GlobalEnvConfig.mpspass,
         EnvReader.GlobalEnvConfig.amtusername,
@@ -228,6 +230,21 @@ export class ACMActivator implements IExecutor {
         mebxPassword))
     } else {
       this.logger.error('unable to write device')
+    }
+
+    /* Register device metadata with MPS */
+    try {
+      await got(`${EnvReader.GlobalEnvConfig.mpsServer}/devices`, {
+        method: 'POST',
+        rejectUnauthorized: false,
+        json: {
+          guid: clientObj.uuid,
+          hostname: clientObj.hostname,
+          tags: []
+        }
+      })
+    } catch (err) {
+      this.logger.warn('unable to register metadata with MPS', err)
     }
 
     /*  API is only for Admin control mode */

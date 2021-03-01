@@ -36,7 +36,7 @@ export class DomainsDb implements IDomainsDb {
    * @param {string} domainName
    * @returns {AMTDomain} Domain object
    */
-  async getDomainByName (domainName): Promise<AMTDomain> {
+  async getDomainByName (domainName: string): Promise<AMTDomain> {
     const results = await this.db.query('SELECT name as Name, domain_suffix as DomainSuffix, provisioning_cert as ProvisioningCert, provisioning_cert_storage_format as ProvisioningCertStorageFormat, provisioning_cert_key as ProvisioningCertPassword FROM domains WHERE Name = $1', [domainName])
     let domain: AMTDomain = null
     if (results.rowCount > 0) {
@@ -50,7 +50,7 @@ export class DomainsDb implements IDomainsDb {
    * @param {string} domainName
    * @returns {boolean} Return true on successful deletion
    */
-  async deleteDomainByName (domainName): Promise<boolean> {
+  async deleteDomainByName (domainName: string): Promise<boolean> {
     const results = await this.db.query('DELETE FROM domains WHERE Name = $1', [domainName])
     if (results.rowCount > 0) {
       return true

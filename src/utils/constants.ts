@@ -38,7 +38,7 @@ export const DOMAIN_NOT_FOUND = (domain: string): string => `Domain ${domain} no
 export const DUPLICATE_DOMAIN_FAILED = (message: string): string => `Domain ${message} ID or Suffix already exists`
 
 // Generic REST API Error Message
-export const API_UNEXPECTED_EXCEPTION = (messsage: string): string => `Operation failed: ${messsage}`
+export const API_UNEXPECTED_EXCEPTION = (message: string): string => `Operation failed: ${message}`
 
 // JSON response
 export const API_RESPONSE = (data?: any, error?: string, message?: string): apiResponse => {

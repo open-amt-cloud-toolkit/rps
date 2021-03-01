@@ -92,16 +92,16 @@ if (config.https) {
   if (EnvReader.GlobalEnvConfig.WSConfiguration.RootCACert) {
     RootCACertPath = path.join(__dirname, EnvReader.GlobalEnvConfig.WSConfiguration.RootCACert)
     if (!existsSync(RootCACertPath)) {
-      log.error(`Root cert ${RootCACertPath} doesnt exist. Exiting..`)
+      log.error(`Root cert ${RootCACertPath} doesn't exist. Exiting..`)
       process.exit(1)
     }
   }
   if (!existsSync(WebSocketCertificatePath)) {
-    log.error(`Cert File ${WebSocketCertificatePath} doesnt exist. Exiting..`)
+    log.error(`Cert File ${WebSocketCertificatePath} doesn't exist. Exiting..`)
     process.exit(1)
   }
   if (!existsSync(WebSocketCertificateKeyPath)) {
-    log.error(`Cert KeyFile ${WebSocketCertificateKeyPath} doesnt exist. Exiting..`)
+    log.error(`Cert KeyFile ${WebSocketCertificateKeyPath} doesn't exist. Exiting..`)
     process.exit(1)
   }
   const certs: any = {

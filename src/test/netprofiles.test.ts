@@ -5,7 +5,7 @@
 
 import Logger from '../Logger'
 
-import { NetConfigFileStorageDb } from '../NetConfigFileStorageDb'
+import { NetConfigFileStorageDb } from '../db/NetConfigFileStorageDb'
 import { NetworkConfig } from '../RCS.Config'
 import { RPSError } from '../utils/RPSError'
 import * as path from 'path'
@@ -122,7 +122,7 @@ describe('Network Profile tests', () => {
     expect(actual).toEqual(newProfile)
   })
 
-  test('update configuration for network profile doesnt exist', async () => {
+  test("update configuration for network profile doesn't exist", async () => {
     const netConfigDb = new NetConfigFileStorageDb(AMTConfigurations, NETConfigurations, new Logger('NetConfigDb'))
     const newProfile = {
       profileName: 'profile4',

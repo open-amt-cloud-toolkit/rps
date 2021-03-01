@@ -70,7 +70,7 @@ const FileHelper = {
       const jsonObj: string = JSON.stringify(obj, null, 2)
       fs.writeFileSync(filePath, jsonObj, 'utf8')
     } catch (error) {
-      throw new Error(`Exception in writting file: ${error}, filePath: ${filePath}`)
+      throw new Error(`Exception in writing file: ${error}, filePath: ${filePath}`)
     }
   }
 }

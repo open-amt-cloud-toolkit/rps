@@ -5,7 +5,7 @@
  **********************************************************************/
 import { validationResult } from 'express-validator'
 import { INetProfilesDb } from '../../../repositories/interfaces/INetProfilesDb'
-import { NetConfigDbFactory } from '../../../repositories/NetConfigDbFactory'
+import { NetConfigDbFactory } from '../../../repositories/factories/NetConfigDbFactory'
 import { API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../../utils/constants'
 import { NetworkConfig } from '../../../RCS.Config'
 import Logger from '../../../Logger'

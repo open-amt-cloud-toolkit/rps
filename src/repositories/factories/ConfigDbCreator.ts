@@ -1,7 +1,7 @@
-import { IDbCreator } from './interfaces/IDbCreator'
-import { RCSConfig } from '../models/Rcs'
-import { FileHelper } from '../utils/FileHelper'
-import { EnvReader } from '../utils/EnvReader'
+import { IDbCreator } from '../interfaces/IDbCreator'
+import { RCSConfig } from '../../models/Rcs'
+import { FileHelper } from '../../utils/FileHelper'
+import { EnvReader } from '../../utils/EnvReader'
 export class ConfigDbCreator implements IDbCreator {
   static instance: any
   config: RCSConfig

@@ -4,12 +4,12 @@
  * Author : Ramu Bachala
  **********************************************************************/
 import { DbCreatorFactory } from './DbCreatorFactory'
-import { IDbCreator } from './interfaces/IDbCreator'
-import { IProfilesDb } from './interfaces/IProfilesDb'
-import { ProfilesDb } from './profiles'
-import { EnvReader } from '../utils/EnvReader'
-import { AMTConfigDb } from '../AMTConfigDb'
-import Logger from '../Logger'
+import { IDbCreator } from '../interfaces/IDbCreator'
+import { IProfilesDb } from '../interfaces/IProfilesDb'
+import { ProfilesDb } from '../profiles'
+import { EnvReader } from '../../utils/EnvReader'
+import { AMTConfigDb } from '../../db/AMTConfigDb'
+import Logger from '../../Logger'
 
 export interface IProfilesDbFactory {
   dbCreator: IDbCreator

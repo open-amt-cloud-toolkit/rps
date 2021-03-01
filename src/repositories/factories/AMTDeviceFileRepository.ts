@@ -5,12 +5,12 @@
  * Author: Brian Osburn
  **********************************************************************/
 import * as path from 'path'
-import { ILogger } from '../interfaces/ILogger'
-import { AMTDeviceDTO } from './dto/AmtDeviceDTO'
-import { IAMTDeviceRepository } from './interfaces/IAMTDeviceRepository'
-import { FileHelper } from '../utils/FileHelper'
-import { EnvReader } from '../utils/EnvReader'
-import { RPSError } from '../utils/RPSError'
+import { ILogger } from '../../interfaces/ILogger'
+import { AMTDeviceDTO } from '.././dto/AmtDeviceDTO'
+import { IAMTDeviceRepository } from '../interfaces/IAMTDeviceRepository'
+import { FileHelper } from '../../utils/FileHelper'
+import { EnvReader } from '../../utils/EnvReader'
+import { RPSError } from '../../utils/RPSError'
 
 export class AMTDeviceFileRepository implements IAMTDeviceRepository {
   private readonly logger: ILogger
@@ -47,7 +47,7 @@ export class AMTDeviceFileRepository implements IAMTDeviceRepository {
       return true
     } catch (error) {
       this.logger.error(`failed to insert record guid: ${device.guid}, error: ${JSON.stringify(error)}`)
-      throw new RPSError('Exception writting to credentials file')
+      throw new RPSError('Exception writing to credentials file')
     }
   }
 
