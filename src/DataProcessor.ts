@@ -42,7 +42,7 @@ export class DataProcessor implements IDataProcessor {
      * @param {string} clientId Id to keep track of connections
      * @returns {RCSMessage} returns configuration message
      */
-  async processData (message: WebSocket.Data, clientId: string): Promise<any> {
+  async processData (message: WebSocket.Data, clientId: string): Promise<ClientMsg | null> {
     try {
       let clientMsg: ClientMsg = null
 
@@ -52,47 +52,21 @@ export class DataProcessor implements IDataProcessor {
         throw new RPSError(parseErr)
       }
 
-      if (clientMsg.method === ClientMethods.ACTIVATION) {
-        this.logger.debug(`ProcessData: Parsed Message received from device ${clientMsg.payload.uuid}: ${JSON.stringify(clientMsg, null, '\t')}`)
-
-        await this.validator.validateActivationMsg(clientMsg, clientId) // Validate the activation message payload
-
-        // Makes the first wsman call
-        const clientObj = this.clientManager.getClientObject(clientId)
-        if (clientObj.action !== ClientAction.CIRACONFIG && !clientMsg.payload.digestRealm) {
-          await this.amtwsman.batchEnum(clientId, '*AMT_GeneralSettings')
-        } else {
-          return await this.clientActions.buildResponseMessage(clientMsg, clientId)
+      switch (clientMsg.method) {
+        case ClientMethods.ACTIVATION: {
+          return await this.activateDevice(clientMsg, clientId)
         }
-      } else if (clientMsg.method === ClientMethods.DEACTIVATION) {
-        this.logger.debug(`ProcessData: Parsed DEACTIVATION Message received from device ${clientMsg.payload.uuid}: ${JSON.stringify(clientMsg, null, '\t')}`)
-
-        await this.validator.validateDeactivationMsg(clientMsg, clientId) // Validate the deactivation message payload
-
-        await this.amtwsman.getWSManResponse(clientId, 'AMT_SetupAndConfigurationService', 'admin')
-      } else if (clientMsg.method === ClientMethods.RESPONSE) {
-        const clientObj = this.clientManager.getClientObject(clientId)
-        const payload = clientObj.ClientData.payload
-        // this.logger.debug(`ProcessData: Parsed Message received from device ${payload.uuid}, clientId: ${clientId}: ${JSON.stringify(clientMsg, null, "\t")}`);
-        const msg = clientMsg.payload.split('\r\n')
-        const statusCode = msg[0].substr(9, 3).trim()
-
-        if (statusCode === '401') {
-          return this.amtwsman.parseWsManResponseXML(clientMsg.payload, clientId, statusCode)
-        } else if (statusCode === '200') {
-          clientMsg.payload = this.amtwsman.parseWsManResponseXML(clientMsg.payload, clientId, statusCode)
-          this.logger.debug(`Device ${payload.uuid} wsman response ${statusCode}: ${JSON.stringify(clientMsg.payload, null, '\t')}`)
-        } else {
-          clientMsg.payload = this.amtwsman.parseWsManResponseXML(clientMsg.payload, clientId, statusCode)
-          this.logger.debug(`Device ${payload.uuid} wsman response ${statusCode}: ${JSON.stringify(clientMsg.payload, null, '\t')}`)
-          if (clientObj.action !== ClientAction.CIRACONFIG) {
-            throw new RPSError(`Device ${payload.uuid} activation failed.Bad wsman response from AMT device`)
-          }
+        case ClientMethods.DEACTIVATION: {
+          await this.deactivateDevice(clientMsg, clientId)
+          return null
         }
-        return await this.clientActions.buildResponseMessage(clientMsg, clientId)
-      } else {
-        const uuid = clientMsg.payload.uuid ? clientMsg.payload.uuid : this.clientManager.getClientObject(clientId).ClientData.payload.uuid
-        throw new RPSError(`Device ${uuid} Not a supported method received from AMT device`)
+        case ClientMethods.RESPONSE: {
+          return await this.handleResponse(clientMsg, clientId)
+        }
+        default: {
+          const uuid = clientMsg.payload.uuid ? clientMsg.payload.uuid : this.clientManager.getClientObject(clientId).ClientData.payload.uuid
+          throw new RPSError(`Device ${uuid} Not a supported method received from AMT device`)
+        }
       }
     } catch (error) {
       this.logger.error(`${clientId} : Failed to process data - ${error.message}`)
@@ -102,5 +76,48 @@ export class DataProcessor implements IDataProcessor {
         this.responseMsg.get(clientId, null, 'error', 'failed', 'request failed')
       }
     }
+  }
+
+  async activateDevice (clientMsg: ClientMsg, clientId: string): Promise<ClientMsg> {
+    this.logger.debug(`ProcessData: Parsed Message received from device ${clientMsg.payload.uuid}: ${JSON.stringify(clientMsg, null, '\t')}`)
+
+    await this.validator.validateActivationMsg(clientMsg, clientId) // Validate the activation message payload
+
+    // Makes the first wsman call
+    const clientObj = this.clientManager.getClientObject(clientId)
+    if (clientObj.action !== ClientAction.CIRACONFIG && !clientMsg.payload.digestRealm) {
+      await this.amtwsman.batchEnum(clientId, '*AMT_GeneralSettings')
+    } else {
+      const response = await this.clientActions.buildResponseMessage(clientMsg, clientId)
+      return response
+    }
+  }
+
+  async deactivateDevice (clientMsg: ClientMsg, clientId: string): Promise<void> {
+    this.logger.debug(`ProcessData: Parsed DEACTIVATION Message received from device ${clientMsg.payload.uuid}: ${JSON.stringify(clientMsg, null, '\t')}`)
+    await this.validator.validateDeactivationMsg(clientMsg, clientId) // Validate the deactivation message payload
+    await this.amtwsman.getWSManResponse(clientId, 'AMT_SetupAndConfigurationService', 'admin')
+  }
+
+  async handleResponse (clientMsg: ClientMsg, clientId: string): Promise<ClientMsg> {
+    const clientObj = this.clientManager.getClientObject(clientId)
+    const payload = clientObj.ClientData.payload
+    // this.logger.debug(`ProcessData: Parsed Message received from device ${payload.uuid}, clientId: ${clientId}: ${JSON.stringify(clientMsg, null, "\t")}`);
+    const msg = clientMsg.payload.split('\r\n')
+    const statusCode = msg[0].substr(9, 3).trim()
+
+    if (statusCode === '401') {
+      return this.amtwsman.parseWsManResponseXML(clientMsg.payload, clientId, statusCode)
+    } else if (statusCode === '200') {
+      clientMsg.payload = this.amtwsman.parseWsManResponseXML(clientMsg.payload, clientId, statusCode)
+      this.logger.debug(`Device ${payload.uuid} wsman response ${statusCode}: ${JSON.stringify(clientMsg.payload, null, '\t')}`)
+    } else {
+      clientMsg.payload = this.amtwsman.parseWsManResponseXML(clientMsg.payload, clientId, statusCode)
+      this.logger.debug(`Device ${payload.uuid} wsman response ${statusCode}: ${JSON.stringify(clientMsg.payload, null, '\t')}`)
+      if (clientObj.action !== ClientAction.CIRACONFIG) {
+        throw new RPSError(`Device ${payload.uuid} activation failed. Bad wsman response from AMT device`)
+      }
+    }
+    return await this.clientActions.buildResponseMessage(clientMsg, clientId)
   }
 }

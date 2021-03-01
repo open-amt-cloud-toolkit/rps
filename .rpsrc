@@ -6,10 +6,10 @@
   "amt_user":"admin", 
   "https":true,
   "web_port":8081,
-  "credentials_path":"../../../mps/private/data.json", // mps credentials path
+  "credentials_path":"../../../../mps/private/data.json", // mps credentials path
   "data_path": "private/data.json", // data path to store AMT Profiles and AMT Domains in devmode
   "xapikey": "APIKEYFORRPS123!",
-  "use_vault": true,
+  "use_vault": false,
   "secrets_path": "secret/data/",
   "vault_address": "http://localhost:8200",
   "vault_token": "myroot",
@@ -28,5 +28,6 @@
   "cors_origin":"*",
   "cors_headers":"Origin, X-Requested-With, Accept, X-RPS-API-Key, Content-Type, csrf-token, authorization",
   "cors_methods":"*",
-  "cors_allow_credentials":"true"
+  "cors_allow_credentials":"true",
+  "mps_server":"https://localhost:3000"
 }

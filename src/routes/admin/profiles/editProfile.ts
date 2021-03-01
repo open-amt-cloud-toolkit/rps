@@ -4,7 +4,7 @@
  * Author : Ramu Bachala
  **********************************************************************/
 import { IProfilesDb } from '../../../repositories/interfaces/IProfilesDb'
-import { ProfilesDbFactory } from '../../../repositories/ProfilesDbFactory'
+import { ProfilesDbFactory } from '../../../repositories/factories/ProfilesDbFactory'
 import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, PROFILE_NOT_FOUND } from '../../../utils/constants'

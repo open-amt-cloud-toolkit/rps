@@ -6,7 +6,7 @@
 import { validationResult } from 'express-validator'
 import { AMTDomain } from '../../../models/Rcs'
 import { IDomainsDb } from '../../../repositories/interfaces/IDomainsDb'
-import { DomainsDbFactory } from '../../../repositories/DomainsDbFactory'
+import { DomainsDbFactory } from '../../../repositories/factories/DomainsDbFactory'
 import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'

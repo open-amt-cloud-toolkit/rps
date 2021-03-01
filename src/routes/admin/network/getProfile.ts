@@ -5,7 +5,7 @@
 **********************************************************************/
 import Logger from '../../../Logger'
 import { INetProfilesDb } from '../../../repositories/interfaces/INetProfilesDb'
-import { NetConfigDbFactory } from '../../../repositories/NetConfigDbFactory'
+import { NetConfigDbFactory } from '../../../repositories/factories/NetConfigDbFactory'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, NETWORK_CONFIG_NOT_FOUND } from '../../../utils/constants'
 
 export async function getNetProfile (req, res): Promise<void> {

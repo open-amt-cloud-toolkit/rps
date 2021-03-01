@@ -5,9 +5,9 @@
  **********************************************************************/
 import { AMTDomain } from '../../models/Rcs'
 export interface IDomainsDb {
-  getAllDomains: () => Promise<any>
-  getDomainByName: (domainName) => Promise<any>
-  insertDomain: (amtDomain) => Promise<AMTDomain>
-  updateDomain: (amtDomain) => Promise<AMTDomain>
-  deleteDomainByName: (domainName) => Promise<any>
+  getAllDomains: () => Promise<AMTDomain[]>
+  getDomainByName: (domainName: string) => Promise<AMTDomain>
+  insertDomain: (amtDomain: AMTDomain) => Promise<AMTDomain>
+  updateDomain: (amtDomain: AMTDomain) => Promise<AMTDomain>
+  deleteDomainByName: (domainName: string) => Promise<boolean>
 }

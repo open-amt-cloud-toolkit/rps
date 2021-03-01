@@ -7,7 +7,7 @@
 import { DomainCredentialManager } from '../DomainCredentialManager'
 import { ILogger } from '../interfaces/ILogger'
 import Logger from '../Logger'
-import { DomainConfigDb } from '../DomainConfigDb'
+import { DomainConfigDb } from '../db/DomainConfigDb'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 import { EnvReader } from '../utils/EnvReader'

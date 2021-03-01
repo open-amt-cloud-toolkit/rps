@@ -4,7 +4,7 @@
  * Author : Ramu Bachala
  **********************************************************************/
 import { IDomainsDb } from '../../../repositories/interfaces/IDomainsDb'
-import { DomainsDbFactory } from '../../../repositories/DomainsDbFactory'
+import { DomainsDbFactory } from '../../../repositories/factories/DomainsDbFactory'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
 import Logger from '../../../Logger'
 import { AMTDomain } from '../../../models/Rcs'

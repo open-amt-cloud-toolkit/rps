@@ -1,11 +1,11 @@
-import { AMTConfiguration } from './models/Rcs'
-import { IProfilesDb } from './repositories/interfaces/IProfilesDb'
-import { FileHelper } from './utils/FileHelper'
-import { EnvReader } from './utils/EnvReader'
-import { ILogger } from './interfaces/ILogger'
-import { CIRAConfig, NetworkConfig } from './RCS.Config'
-import { PROFILE_INSERTION_FAILED_DUPLICATE, PROFILE_NOT_FOUND } from './utils/constants'
-import { RPSError } from './utils/RPSError'
+import { AMTConfiguration } from '../models/Rcs'
+import { IProfilesDb } from '../repositories/interfaces/IProfilesDb'
+import { FileHelper } from '../utils/FileHelper'
+import { EnvReader } from '../utils/EnvReader'
+import { ILogger } from '../interfaces/ILogger'
+import { CIRAConfig, NetworkConfig } from '../RCS.Config'
+import { PROFILE_INSERTION_FAILED_DUPLICATE, PROFILE_NOT_FOUND } from '../utils/constants'
+import { RPSError } from '../utils/RPSError'
 
 export class AMTConfigDb implements IProfilesDb {
   amtProfiles: AMTConfiguration[]

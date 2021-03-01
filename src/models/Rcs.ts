@@ -60,6 +60,7 @@ export class RCSConfig {
   corsHeaders: string
   corsMethods: string
   corsAllowCredentials: string
+  mpsServer: string
   constructor () {
     this.VaultConfig = new VaultConfig()
     this.WSConfiguration = new WSConfiguration()
@@ -247,7 +248,8 @@ const recipeRCSConfig = {
   cors_origin: 'corsOrigin',
   cors_headers: 'corsHeaders',
   cors_methods: 'corsMethods',
-  cors_allow_credentials: 'corsAllowCredentials'
+  cors_allow_credentials: 'corsAllowCredentials',
+  mps_server: 'mpsServer'
 }
 
 export function mapConfig (src, dot): RCSConfig {

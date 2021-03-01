@@ -32,7 +32,7 @@ export class CertManager implements ICertManager {
   /**
    * @description Pulls the provisioning certificate apart and exports each PEM for injecting into AMT.  Only supports certificate chains up to 4 certificates long
    * @param {any} pfxobj Certificate object from convertPfxToObject function
-   * @returns {any} Returns provisioning certificiate object with certificate chain in proper order and fingerprint
+   * @returns {any} Returns provisioning certificate object with certificate chain in proper order and fingerprint
    */
   dumpPfx (pfxobj: any): any {
     const provisioningCertificateObj = new ProvisioningCertObj()

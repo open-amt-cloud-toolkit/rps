@@ -4,7 +4,7 @@
  * Author : Ramu Bachala
  **********************************************************************/
 import { ICiraConfigDb } from '../../../repositories/interfaces/ICiraConfigDb'
-import { CiraConfigDbFactory } from '../../../repositories/CiraConfigDbFactory'
+import { CiraConfigDbFactory } from '../../../repositories/factories/CiraConfigDbFactory'
 import { CIRAConfig } from '../../../RCS.Config'
 import Logger from '../../../Logger'
 import { CIRA_CONFIG_NOT_FOUND, API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../../utils/constants'
