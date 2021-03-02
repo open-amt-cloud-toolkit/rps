@@ -53,7 +53,7 @@ export class NetworkConfigurator implements IExecutor {
         } else if (wsmanResponse.AMT_EthernetPortSettings !== undefined) {
           // Assume first entry is WIRED network port
           const response: AMTEthernetPortSettings = wsmanResponse.AMT_EthernetPortSettings.responses[0]
-          const networkConfig: NetworkConfig = clientObj.ClientData.payload.profile.NetworkConfigObject
+          const networkConfig: NetworkConfig = clientObj.ClientData.payload.profile.networkConfigObject
           // When 'DHCPEnabled' property is set to true the following properties should be set to NULL:
           // SubnetMask, DefaultGateway, IPAddress, PrimaryDNS, SecondaryDNS.
           if (!clientObj.ciraconfig.setEthernetPortSettings) {
@@ -81,7 +81,7 @@ export class NetworkConfigurator implements IExecutor {
               this.clientManager.setClientObject(clientObj)
             } else {
               this.logger.debug(`Device ${clientObj.uuid} network settings same as network profile`)
-              clientObj.ciraconfig.status += `Similar Network settings on device as requested by the profile: ${clientObj.ClientData.payload.profile.NetworkConfigObject.ProfileName} .`
+              clientObj.ciraconfig.status += `Similar Network settings on device as requested by the profile: ${clientObj.ClientData.payload.profile.networkConfigObject.profileName} .`
               clientObj.ciraconfig.setEthernetPortSettings = true
               clientObj.action = ClientAction.CIRACONFIG
               this.clientManager.setClientObject(clientObj)
@@ -90,10 +90,10 @@ export class NetworkConfigurator implements IExecutor {
           } else {
             if (networkConfig.dhcpEnabled !== response.DHCPEnabled ||
               networkConfig.ipSyncEnabled !== response.IpSyncEnabled) {
-              this.logger.debug(`Device ${clientObj.uuid} network configuration failed with profile : ${clientObj.ClientData.payload.profile.NetworkConfigObject}`)
+              this.logger.debug(`Device ${clientObj.uuid} network configuration failed with profile : ${clientObj.ClientData.payload.profile.networkConfigObject}`)
               clientObj.ciraconfig.status += 'network configuration failed.'
             } else {
-              this.logger.debug(`Device ${clientObj.uuid} network configured with profile : ${clientObj.ClientData.payload.profile.NetworkConfigObject}`)
+              this.logger.debug(`Device ${clientObj.uuid} network configured with profile : ${clientObj.ClientData.payload.profile.networkConfigObject}`)
               clientObj.ciraconfig.status += 'network configured.'
             }
             clientObj.action = ClientAction.CIRACONFIG
@@ -101,10 +101,10 @@ export class NetworkConfigurator implements IExecutor {
             await this.CIRAConfigurator.execute(message, clientId)
           }
         } else {
-          this.logger.info(JSON.stringify(clientObj.ClientData.payload.profile.NetworkConfigObject, null, '\t'))
+          this.logger.info(JSON.stringify(clientObj.ClientData.payload.profile.networkConfigObject, null, '\t'))
           const payload: any = clientObj.ClientData.payload
-          if (payload.profile.NetworkConfigObject) {
-            this.logger.debug(`Setting Network configuration : ${JSON.stringify(payload.profile.NetworkConfigObject, null, '\t')} for device : ${payload.uuid}`)
+          if (payload.profile.networkConfigObject) {
+            this.logger.debug(`Setting Network configuration : ${JSON.stringify(payload.profile.networkConfigObject, null, '\t')} for device : ${payload.uuid}`)
             await this.amtwsman.batchEnum(clientId, '*AMT_GeneralSettings', AMTUserName, payload.password)
           } else {
             clientObj.action = ClientAction.CIRACONFIG
