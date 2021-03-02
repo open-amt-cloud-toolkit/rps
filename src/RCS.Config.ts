@@ -86,6 +86,7 @@ export interface ClientObject {
   ClientId: string
   action?: ClientAction
   uuid?: string
+  hostname?: string
   ClientSocket?: WebSocket
   ClientData?: any
   socketConn?: SocketConnection
@@ -148,6 +149,7 @@ export interface Payload {
   fwNonce?: Buffer
   password?: string
   currentMode?: number
+  hostname?: string
   certHashes?: string[]
   sku?: string
   uuid?: any

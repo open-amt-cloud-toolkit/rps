@@ -6,7 +6,7 @@
 import Logger from '../../../Logger'
 import { AMTConfiguration } from '../../../models/Rcs'
 import { IProfilesDb } from '../../../repositories/interfaces/IProfilesDb'
-import { ProfilesDbFactory } from '../../../repositories/ProfilesDbFactory'
+import { ProfilesDbFactory } from '../../../repositories/factories/ProfilesDbFactory'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
 
 export async function allProfiles (req, res): Promise<void> {

@@ -7,10 +7,10 @@ import { RCSConfig } from '../models/Rcs'
 import { ProfileManager } from '../ProfileManager'
 import { ILogger } from '../interfaces/ILogger'
 import Logger from '../Logger'
-import { AMTConfigDb } from '../AMTConfigDb'
+import { AMTConfigDb } from '../db/AMTConfigDb'
 import * as path from 'path'
 import { EnvReader } from '../utils/EnvReader'
-import { CiraConfigFileStorageDb } from '../CiraConfigFileStorageDb'
+import { CiraConfigFileStorageDb } from '../db/CiraConfigFileStorageDb'
 import { RPSError } from '../utils/RPSError'
 
 const logger: ILogger = new Logger('ProfileManagerTests')
@@ -42,6 +42,7 @@ const rcsConfig: RCSConfig = {
   corsMethods: '*',
   corsOrigin: '*',
   corsAllowCredentials: 'true',
+  mpsServer: 'https://localhost:3000',
   DbConfig: {
     useDbForConfig: false,
     dbhost: '',

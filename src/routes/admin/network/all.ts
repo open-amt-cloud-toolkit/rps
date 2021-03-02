@@ -6,7 +6,7 @@
 import Logger from '../../../Logger'
 import { NetworkConfig } from '../../../RCS.Config'
 import { INetProfilesDb } from '../../../repositories/interfaces/INetProfilesDb'
-import { NetConfigDbFactory } from '../../../repositories/NetConfigDbFactory'
+import { NetConfigDbFactory } from '../../../repositories/factories/NetConfigDbFactory'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
 
 export async function allProfiles (req, res): Promise<void> {

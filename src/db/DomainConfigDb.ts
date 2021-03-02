@@ -1,10 +1,10 @@
-import { ILogger } from './interfaces/ILogger'
-import { AMTDomain } from './models/Rcs'
-import { IDomainsDb } from './repositories/interfaces/IDomainsDb'
-import { EnvReader } from './utils/EnvReader'
-import { FileHelper } from './utils/FileHelper'
-import { DUPLICATE_DOMAIN_FAILED } from './utils/constants'
-import { RPSError } from './utils/RPSError'
+import { ILogger } from '../interfaces/ILogger'
+import { AMTDomain } from '../models/Rcs'
+import { IDomainsDb } from '../repositories/interfaces/IDomainsDb'
+import { EnvReader } from '../utils/EnvReader'
+import { FileHelper } from '../utils/FileHelper'
+import { DUPLICATE_DOMAIN_FAILED } from '../utils/constants'
+import { RPSError } from '../utils/RPSError'
 
 export class DomainConfigDb implements IDomainsDb {
   private readonly domains: AMTDomain[]

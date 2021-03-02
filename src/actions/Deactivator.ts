@@ -14,6 +14,8 @@ import { IClientManager } from '../interfaces/IClientManager'
 import { RPSError } from '../utils/RPSError'
 import { AMTDeviceDTO } from '../repositories/dto/AmtDeviceDTO'
 import { IConfigurator } from '../interfaces/IConfigurator'
+import { EnvReader } from '../utils/EnvReader'
+import got from 'got'
 
 export class Deactivator implements IExecutor {
   constructor (
@@ -48,6 +50,18 @@ export class Deactivator implements IExecutor {
         } else {
           this.logger.debug(`Deleting secret from vault for ${clientObj.uuid}`)
           await this.configurator.amtDeviceRepository.delete(new AMTDeviceDTO(clientObj.uuid, null, null, null, null, null, null))
+          this.logger.debug(`Deleting metadata from mps for ${clientObj.uuid}`)
+
+          /* unregister device metadata with MPS */
+          try {
+            await got(`${EnvReader.GlobalEnvConfig.mpsServer}/devices/${clientObj.uuid}`, {
+              method: 'DELETE',
+              rejectUnauthorized: false
+            })
+          } catch (err) {
+            this.logger.warn('unable to removed metadata with MPS', err)
+          }
+
           return this.responseMsg.get(clientId, null, 'success', 'success', `Device ${clientObj.uuid} deactivated`)
         }
       } else {

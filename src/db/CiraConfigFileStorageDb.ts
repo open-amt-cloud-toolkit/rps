@@ -1,12 +1,12 @@
-import { AMTConfiguration } from './models/Rcs'
-import { FileHelper } from './utils/FileHelper'
-import { EnvReader } from './utils/EnvReader'
-import { ILogger } from './interfaces/ILogger'
-import { ICiraConfigDb } from './repositories/interfaces/ICiraConfigDb'
-import { CIRAConfig } from './RCS.Config'
-import { CIRA_CONFIG_DELETION_FAILED_CONSTRAINT, CIRA_CONFIG_INSERTION_FAILED_DUPLICATE } from './utils/constants'
-import { CiraConfigDbFactory } from './repositories/CiraConfigDbFactory'
-import { RPSError } from './utils/RPSError'
+import { AMTConfiguration } from '../models/Rcs'
+import { FileHelper } from '../utils/FileHelper'
+import { EnvReader } from '../utils/EnvReader'
+import { ILogger } from '../interfaces/ILogger'
+import { ICiraConfigDb } from '../repositories/interfaces/ICiraConfigDb'
+import { CIRAConfig } from '../RCS.Config'
+import { CIRA_CONFIG_DELETION_FAILED_CONSTRAINT, CIRA_CONFIG_INSERTION_FAILED_DUPLICATE } from '../utils/constants'
+import { CiraConfigDbFactory } from '../repositories/factories/CiraConfigDbFactory'
+import { RPSError } from '../utils/RPSError'
 
 export class CiraConfigFileStorageDb implements ICiraConfigDb {
   ciraConfigs: CIRAConfig[]
