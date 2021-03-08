@@ -1,12 +1,12 @@
-import { AMTConfiguration } from './models/Rcs'
-import { FileHelper } from './utils/FileHelper'
-import { EnvReader } from './utils/EnvReader'
-import { ILogger } from './interfaces/ILogger'
-import { ICiraConfigDb } from './repositories/interfaces/ICiraConfigDb'
-import { CIRAConfig } from './RCS.Config'
-import { CIRA_CONFIG_DELETION_FAILED_CONSTRAINT, CIRA_CONFIG_INSERTION_FAILED_DUPLICATE } from './utils/constants'
-import { CiraConfigDbFactory } from './repositories/CiraConfigDbFactory'
-import { RPSError } from './utils/RPSError'
+import { AMTConfiguration } from '../models/Rcs'
+import { FileHelper } from '../utils/FileHelper'
+import { EnvReader } from '../utils/EnvReader'
+import { ILogger } from '../interfaces/ILogger'
+import { ICiraConfigDb } from '../repositories/interfaces/ICiraConfigDb'
+import { CIRAConfig } from '../RCS.Config'
+import { CIRA_CONFIG_DELETION_FAILED_CONSTRAINT, CIRA_CONFIG_INSERTION_FAILED_DUPLICATE } from '../utils/constants'
+import { CiraConfigDbFactory } from '../repositories/factories/CiraConfigDbFactory'
+import { RPSError } from '../utils/RPSError'
 
 export class CiraConfigFileStorageDb implements ICiraConfigDb {
   ciraConfigs: CIRAConfig[]
@@ -26,7 +26,8 @@ export class CiraConfigFileStorageDb implements ICiraConfigDb {
    */
   async getAllCiraConfigs (): Promise<CIRAConfig[]> {
     this.logger.debug('getAllCiraConfigs called')
-    return this.ciraConfigs
+    const data: any = FileHelper.readJsonObjFromFile(EnvReader.configPath)
+    return data.CIRAConfigurations
   }
 
   /**
@@ -77,9 +78,9 @@ export class CiraConfigFileStorageDb implements ICiraConfigDb {
   /**
    * @description Insert CIRA config into FileStorage
    * @param {string} ciraConfigName
-   * @returns {boolean} Return true on successful insertion
+   * @returns {CIRAConfig} Returns created cira config object
    */
-  async insertCiraConfig (ciraConfig: CIRAConfig): Promise<boolean> {
+  async insertCiraConfig (ciraConfig: CIRAConfig): Promise<CIRAConfig> {
     if (this.ciraConfigs.some(item => item.configName === ciraConfig.configName)) {
       this.logger.info(`Cira Config already exists: ${ciraConfig.configName}`)
       throw new RPSError(CIRA_CONFIG_INSERTION_FAILED_DUPLICATE(ciraConfig.configName), 'Unique key violation')
@@ -87,14 +88,15 @@ export class CiraConfigFileStorageDb implements ICiraConfigDb {
       this.ciraConfigs.push(ciraConfig)
       this.updateConfigFile()
       this.logger.info(`Cira Config created: ${ciraConfig.configName}`)
-      return true
+      const config = await this.getCiraConfigByName(ciraConfig.configName)
+      return config
     }
   }
 
   /**
    * @description Update CIRA config into FileStorage
    * @param {string} ciraConfigName
-   * @returns {boolean} Return true on successful updation
+   * @returns {CIRAConfig} Returns updated cira config object
    */
   async updateCiraConfig (ciraConfig: CIRAConfig): Promise<CIRAConfig> {
     this.logger.debug(`update CiraConfig: ${ciraConfig.configName}`)

@@ -5,17 +5,17 @@
  **********************************************************************/
 import { validationResult } from 'express-validator'
 import { IProfilesDb } from '../../../repositories/interfaces/IProfilesDb'
-import { ProfilesDbFactory } from '../../../repositories/ProfilesDbFactory'
-import { AMTConfig } from '../../../RCS.Config'
+import { ProfilesDbFactory } from '../../../repositories/factories/ProfilesDbFactory'
 import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
-import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, PROFILE_INSERTION_SUCCESS } from '../../../utils/constants'
+import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
 import { RPSError } from '../../../utils/RPSError'
+import { AMTConfiguration } from '../../../models/Rcs'
 
 export async function createProfile (req, res): Promise<void> {
   let profilesDb: IProfilesDb = null
   const log = new Logger('createProfile')
-  let amtConfig: AMTConfig = {} as AMTConfig
+  let amtConfig: AMTConfiguration = {} as AMTConfiguration
   try {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
@@ -34,8 +34,8 @@ export async function createProfile (req, res): Promise<void> {
         amtConfig.mebxPassword = `${amtConfig.profileName}_DEVICE_MEBX_PASSWORD`
       }
     }
-    const results: boolean = await profilesDb.insertProfile(amtConfig)
-    if (results) {
+    const results: AMTConfiguration = await profilesDb.insertProfile(amtConfig)
+    if (results != null) {
       // profile inserted  into db successfully.
       if (req.secretsManager && (!amtConfig.generateRandomPassword || !amtConfig.generateRandomMEBxPassword)) {
         // store the passwords in Vault
@@ -50,7 +50,9 @@ export async function createProfile (req, res): Promise<void> {
         }
         await req.secretsManager.writeSecretWithObject(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${amtConfig.profileName}`, data)
       }
-      res.status(201).json(API_RESPONSE(null, null, PROFILE_INSERTION_SUCCESS(amtConfig.profileName))).end()
+      delete results.amtPassword
+      delete results.mebxPassword
+      res.status(201).json(results).end()
     }
   } catch (error) {
     log.error(`Failed to create a AMT profile: ${amtConfig.profileName}`, error)

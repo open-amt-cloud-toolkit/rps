@@ -6,10 +6,10 @@
 import { validationResult } from 'express-validator'
 import { AMTDomain } from '../../../models/Rcs'
 import { IDomainsDb } from '../../../repositories/interfaces/IDomainsDb'
-import { DomainsDbFactory } from '../../../repositories/DomainsDbFactory'
+import { DomainsDbFactory } from '../../../repositories/factories/DomainsDbFactory'
 import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
-import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, DOMAIN_INSERTION_SUCCESS } from '../../../utils/constants'
+import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
 import { RPSError } from '../../../utils/RPSError'
 
 export async function createDomain (req, res): Promise<void> {
@@ -35,9 +35,9 @@ export async function createDomain (req, res): Promise<void> {
       amtDomain.provisioningCertPassword = `${amtDomain.profileName}_CERT_PASSWORD_KEY`
     }
     // SQL Query > Insert Data
-    const results = await domainsDb.insertDomain(amtDomain)
+    const results: AMTDomain = await domainsDb.insertDomain(amtDomain)
     // store the actual cert and password into Vault
-    if (results) {
+    if (results != null) {
       if (req.secretsManager) {
         const data = { data: { CERT_KEY: '', CERT_PASSWORD_KEY: '' } }
         data.data.CERT_KEY = cert
@@ -46,7 +46,9 @@ export async function createDomain (req, res): Promise<void> {
         log.info(`${amtDomain.profileName} provisioing cert & password stored in Vault`)
       }
       log.info(`Created Domain : ${amtDomain.profileName}`)
-      res.status(201).json(API_RESPONSE(null, null, DOMAIN_INSERTION_SUCCESS(amtDomain.profileName))).end()
+      delete results.provisioningCert
+      delete results.provisioningCertPassword
+      res.status(201).json(results).end()
     }
   } catch (error) {
     log.error(`Failed to create a AMT Domain : ${amtDomain.profileName}`, error)

@@ -8,10 +8,10 @@ import { CIRAConfig, NetworkConfig } from '../../RCS.Config'
 
 export interface IProfilesDb {
   getAllProfiles: () => Promise<AMTConfiguration[]>
-  getProfileByName: (profileName) => Promise<AMTConfiguration>
-  getCiraConfigForProfile: (ciraConfigName) => Promise<CIRAConfig>
-  getNetworkConfigForProfile: (networkConfigName) => Promise<NetworkConfig>
-  deleteProfileByName: (profileName) => Promise<boolean>
-  insertProfile: (amtConfig) => Promise<boolean>
-  updateProfile: (amtConfig) => Promise<AMTConfiguration>
+  getProfileByName: (profileName: string) => Promise<AMTConfiguration>
+  getCiraConfigForProfile: (ciraConfigName: string) => Promise<CIRAConfig>
+  getNetworkConfigForProfile: (networkConfigName: string) => Promise<NetworkConfig>
+  deleteProfileByName: (profileName: string) => Promise<boolean>
+  insertProfile: (amtConfig: AMTConfiguration) => Promise<AMTConfiguration>
+  updateProfile: (amtConfig: AMTConfiguration) => Promise<AMTConfiguration>
 }

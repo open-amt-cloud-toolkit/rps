@@ -4,13 +4,12 @@
  * Author : Ramu Bachala
  **********************************************************************/
 import { DbCreatorFactory } from './DbCreatorFactory'
-import { IDbCreator } from './interfaces/IDbCreator'
-import { INetProfilesDb } from './interfaces/INetProfilesDb'
-import { NetConfigDb } from './netProfiles'
-import { EnvReader } from '../utils/EnvReader'
-// import { CiraConfigFileStorageDb } from "../AMTConfigDb";
-import Logger from '../Logger'
-import { NetConfigFileStorageDb } from '../NetConfigFileStorageDb'
+import { IDbCreator } from '.././interfaces/IDbCreator'
+import { INetProfilesDb } from '../interfaces/INetProfilesDb'
+import { NetConfigDb } from '../netProfiles'
+import { EnvReader } from '../../utils/EnvReader'
+import Logger from '../../Logger'
+import { NetConfigFileStorageDb } from '../../db/NetConfigFileStorageDb'
 
 export interface INetConfigDbFactory {
   dbCreator: IDbCreator

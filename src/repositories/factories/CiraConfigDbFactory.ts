@@ -4,13 +4,12 @@
  * Author : Ramu Bachala
  **********************************************************************/
 import { DbCreatorFactory } from './DbCreatorFactory'
-import { IDbCreator } from './interfaces/IDbCreator'
-import { ICiraConfigDb } from './interfaces/ICiraConfigDb'
-import { CiraConfigDb } from './ciraConfigs'
-import { EnvReader } from '../utils/EnvReader'
-// import { CiraConfigFileStorageDb } from "../AMTConfigDb";
-import Logger from '../Logger'
-import { CiraConfigFileStorageDb } from '../CiraConfigFileStorageDb'
+import { IDbCreator } from '../interfaces/IDbCreator'
+import { ICiraConfigDb } from '../interfaces/ICiraConfigDb'
+import { CiraConfigDb } from '../ciraConfigs'
+import { EnvReader } from '../../utils/EnvReader'
+import Logger from '../../Logger'
+import { CiraConfigFileStorageDb } from '../../db/CiraConfigFileStorageDb'
 
 export interface ICiraConfigDbFactory {
   dbCreator: IDbCreator

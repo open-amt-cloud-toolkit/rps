@@ -19,6 +19,7 @@ import { IValidator } from '../interfaces/IValidator'
 import { EnvReader } from '../utils/EnvReader'
 import { NetworkConfigurator } from './NetworkConfigurator'
 import { AMTUserName } from './../utils/constants'
+import got from 'got'
 
 export class CCMActivator implements IExecutor {
   constructor (
@@ -46,13 +47,14 @@ export class CCMActivator implements IExecutor {
         throw new RPSError(`Device ${clientObj.uuid} activation failed : Missing/invalid WSMan response payload.`)
       }
 
-      if (wsmanResponse.AMT_GeneralSettings !== undefined) {
+      if (wsmanResponse.AMT_GeneralSettings != null) {
         const response = wsmanResponse.AMT_GeneralSettings.response
         // Validate Digest Realm
         if (!this.validator.isDigestRealmValid(response.DigestRealm)) {
           throw new RPSError(`Device ${clientObj.uuid} activation failed : Not a valid digest realm.`)
         }
         clientObj.ClientData.payload.digestRealm = response.DigestRealm
+        clientObj.hostname = clientObj.ClientData.payload.hostname
         this.clientManager.setClientObject(clientObj)
       } else if (wsmanResponse.Header.Method === 'Setup') {
         if (wsmanResponse.Body.ReturnValue !== 0) {
@@ -77,7 +79,7 @@ export class CCMActivator implements IExecutor {
         this.clientManager.setClientObject(clientObj)
         if (this.configurator?.amtDeviceRepository) {
           await this.configurator.amtDeviceRepository.insert(new AMTDeviceDTO(clientObj.uuid,
-            clientObj.uuid,
+            clientObj.hostname,
             EnvReader.GlobalEnvConfig.mpsusername,
             EnvReader.GlobalEnvConfig.mpspass,
             EnvReader.GlobalEnvConfig.amtusername,
@@ -85,6 +87,19 @@ export class CCMActivator implements IExecutor {
             null))
         } else {
           this.logger.error('unable to write device')
+        }
+        /* Register device metadata with MPS */
+        try {
+          await got(`${EnvReader.GlobalEnvConfig.mpsServer}/devices`, {
+            method: 'POST',
+            json: {
+              guid: clientObj.uuid,
+              hostname: clientObj.hostname,
+              tags: []
+            }
+          })
+        } catch (err) {
+          this.logger.warn('unable to register metadata with MPS')
         }
         const data: string = `${AMTUserName}:${clientObj.ClientData.payload.digestRealm}:${amtPassword}`
         const password = SignatureHelper.createMd5Hash(data)

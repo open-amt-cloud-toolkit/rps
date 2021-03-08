@@ -4,12 +4,12 @@
  * Author : Ramu Bachala
  **********************************************************************/
 import { DbCreatorFactory } from './DbCreatorFactory'
-import { IDbCreator } from './interfaces/IDbCreator'
-import { EnvReader } from '../utils/EnvReader'
-import { IDomainsDb } from './interfaces/IDomainsDb'
-import { DomainsDb } from './domains'
-import { DomainConfigDb } from '../DomainConfigDb'
-import Logger from '../Logger'
+import { IDbCreator } from '../interfaces/IDbCreator'
+import { EnvReader } from '../../utils/EnvReader'
+import { IDomainsDb } from '../interfaces/IDomainsDb'
+import { DomainsDb } from '../domains'
+import { DomainConfigDb } from '../../db/DomainConfigDb'
+import Logger from '../../Logger'
 
 export interface IDomainsDbFactory {
   dbCreator: IDbCreator

@@ -5,12 +5,12 @@
  * Author: Brian Osburn
  **********************************************************************/
 
-import { ILogger } from '../interfaces/ILogger'
-import { AMTDeviceDTO } from './dto/AmtDeviceDTO'
-import { IAMTDeviceRepository } from './interfaces/IAMTDeviceRepository'
-import { IConfigurator } from '../interfaces/IConfigurator'
-import { EnvReader } from '../utils/EnvReader'
-import { RPSError } from '../utils/RPSError'
+import { ILogger } from '../../interfaces/ILogger'
+import { AMTDeviceDTO } from '.././dto/AmtDeviceDTO'
+import { IAMTDeviceRepository } from '../interfaces/IAMTDeviceRepository'
+import { IConfigurator } from '../../interfaces/IConfigurator'
+import { EnvReader } from '../../utils/EnvReader'
+import { RPSError } from '../../utils/RPSError'
 
 export class AMTDeviceVaultRepository implements IAMTDeviceRepository {
   private readonly logger: ILogger
@@ -34,7 +34,7 @@ export class AMTDeviceVaultRepository implements IAMTDeviceRepository {
       }
     } catch (error) {
       this.logger.error(`failed to insert record guid: ${device.guid}, error: ${JSON.stringify(error)}`)
-      throw new RPSError('Exception writting to vault')
+      throw new RPSError('Exception writing to vault')
     }
   }
 

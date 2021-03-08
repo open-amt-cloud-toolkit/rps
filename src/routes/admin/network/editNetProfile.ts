@@ -5,7 +5,7 @@
  **********************************************************************/
 
 import { INetProfilesDb } from '../../../repositories/interfaces/INetProfilesDb'
-import { NetConfigDbFactory } from '../../../repositories/NetConfigDbFactory'
+import { NetConfigDbFactory } from '../../../repositories/factories/NetConfigDbFactory'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, NETWORK_CONFIG_NOT_FOUND } from '../../../utils/constants'
 import { NetworkConfig } from '../../../RCS.Config'
 import Logger from '../../../Logger'

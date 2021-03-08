@@ -16,7 +16,6 @@ export const mpsserver = (name: string): string => {
 
 // Profile API
 export const PROFILE_NOT_FOUND = (profileName: string): string => `Profile ${profileName} not found`
-export const PROFILE_INSERTION_SUCCESS = (profileName: string): string => `Profile ${profileName} successfully created`
 export const PROFILE_INSERTION_FAILED_DUPLICATE = (profileName: string): string => `AMT profile ${profileName} already exists`
 export const PROFILE_INSERTION_CIRA_CONSTRAINT = (config: string): string => `Referenced config ${config} doesn't exist`
 export const PROFILE_INSERTION_NETWORK_CONSTRAINT = (config: string): string => `Referenced network ${config} doesn't exist`
@@ -24,7 +23,6 @@ export const PROFILE_INSERTION_NETWORK_CONSTRAINT = (config: string): string => 
 // CIRA REST API
 export const CIRA_CONFIG_NOT_FOUND = (ciraConfig: string): string => `CIRA Config ${ciraConfig} not found`
 export const CIRA_CONFIG_DELETION_FAILED_CONSTRAINT = (ciraConfig: string): string => `CIRA Config: ${ciraConfig} associated with an AMT profile`
-export const CIRA_CONFIG_INSERTION_SUCCESS = (ciraConfig: string): string => `CIRA Config ${ciraConfig} created`
 export const CIRA_CONFIG_INSERTION_FAILED = (ciraConfig: string): string => `CIRA Config insertion failed for ${ciraConfig}`
 export const CIRA_CONFIG_INSERTION_FAILED_DUPLICATE = (ciraConfig: string): string => `CIRA Config ${ciraConfig} already exists.`
 
@@ -33,16 +31,14 @@ export const NETWORK_CONFIG_NOT_FOUND = (networkConfig: string): string => `NETW
 export const NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT = (networkConfig: string): string => `NETWORK Config: ${networkConfig} is associated with an AMT Profile.`
 export const NETWORK_CONFIG_ERROR = (networkConfig: string): string => `Operation failed for NETWORK Config: ${networkConfig}`
 export const NETWORK_UPDATE_ERROR = (networkConfig: string): string => `Operation failed for NETWORK Config: ${networkConfig}. Cannot Update Network settings if its already associated with a profile.`
-export const NETWORK_CONFIG_INSERTION_SUCCESS = (networkConfig: string): string => `NETWORK Config ${networkConfig} created`
 export const NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE = (networkConfig: string): string => `NETWORK Config ${networkConfig} already exists`
 
 // Domain REST API
 export const DOMAIN_NOT_FOUND = (domain: string): string => `Domain ${domain} not found`
-export const DOMAIN_INSERTION_SUCCESS = (domain: string): string => `Domain ${domain} created`
 export const DUPLICATE_DOMAIN_FAILED = (message: string): string => `Domain ${message} ID or Suffix already exists`
 
 // Generic REST API Error Message
-export const API_UNEXPECTED_EXCEPTION = (messsage: string): string => `Operation failed: ${messsage}`
+export const API_UNEXPECTED_EXCEPTION = (message: string): string => `Operation failed: ${message}`
 
 // JSON response
 export const API_RESPONSE = (data?: any, error?: string, message?: string): apiResponse => {

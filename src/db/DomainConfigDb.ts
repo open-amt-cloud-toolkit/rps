@@ -1,10 +1,10 @@
-import { ILogger } from './interfaces/ILogger'
-import { AMTDomain } from './models/Rcs'
-import { IDomainsDb } from './repositories/interfaces/IDomainsDb'
-import { EnvReader } from './utils/EnvReader'
-import { FileHelper } from './utils/FileHelper'
-import { DUPLICATE_DOMAIN_FAILED } from './utils/constants'
-import { RPSError } from './utils/RPSError'
+import { ILogger } from '../interfaces/ILogger'
+import { AMTDomain } from '../models/Rcs'
+import { IDomainsDb } from '../repositories/interfaces/IDomainsDb'
+import { EnvReader } from '../utils/EnvReader'
+import { FileHelper } from '../utils/FileHelper'
+import { DUPLICATE_DOMAIN_FAILED } from '../utils/constants'
+import { RPSError } from '../utils/RPSError'
 
 export class DomainConfigDb implements IDomainsDb {
   private readonly domains: AMTDomain[]
@@ -40,9 +40,9 @@ export class DomainConfigDb implements IDomainsDb {
   /**
    * @description Insert Domain into FileStorage
    * @param {AMTDomain} amtDomain
-   * @returns {boolean} Return true on successful insertion
+   * @returns {AMTDomain} Returns amtDomain object
    */
-  async insertDomain (amtDomain: AMTDomain): Promise<boolean> {
+  async insertDomain (amtDomain: AMTDomain): Promise<AMTDomain> {
     if (this.domains.some(item => item.profileName === amtDomain.profileName) ||
     this.domains.some(item => item.domainSuffix === amtDomain.domainSuffix)) {
       this.logger.error(`domain already exists: ${amtDomain.profileName}`)
@@ -51,14 +51,15 @@ export class DomainConfigDb implements IDomainsDb {
       this.domains.push(amtDomain)
       this.updateConfigFile()
       this.logger.info(`Domain: ${amtDomain.profileName} inserted`)
-      return true
+      const domain = await this.getDomainByName(amtDomain.profileName)
+      return domain
     }
   }
 
   /**
    * @description Update AMT Domain into FileStorage
    * @param {AMTDomain} amtDomain object
-   * @returns {boolean} Return true on successful updation
+   * @returns {AMTDomain} Returns amtDomain object
    */
   async updateDomain (amtDomain: AMTDomain): Promise<AMTDomain> {
     const isMatch = (item): boolean => item.profileName === amtDomain.profileName

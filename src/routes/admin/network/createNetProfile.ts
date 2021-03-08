@@ -5,8 +5,8 @@
  **********************************************************************/
 import { validationResult } from 'express-validator'
 import { INetProfilesDb } from '../../../repositories/interfaces/INetProfilesDb'
-import { NetConfigDbFactory } from '../../../repositories/NetConfigDbFactory'
-import { NETWORK_CONFIG_INSERTION_SUCCESS, API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../../utils/constants'
+import { NetConfigDbFactory } from '../../../repositories/factories/NetConfigDbFactory'
+import { API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../../utils/constants'
 import { NetworkConfig } from '../../../RCS.Config'
 import Logger from '../../../Logger'
 import { RPSError } from '../../../utils/RPSError'
@@ -26,9 +26,9 @@ export async function createNetProfile (req, res): Promise<void> {
     netConfig.ipSyncEnabled = true
 
     profilesDb = NetConfigDbFactory.getConfigDb()
-    const results = await profilesDb.insertProfile(netConfig)
-    if (results) {
-      res.status(201).json(API_RESPONSE(null, null, NETWORK_CONFIG_INSERTION_SUCCESS(netConfig.profileName))).end()
+    const results: NetworkConfig = await profilesDb.insertProfile(netConfig)
+    if (results != null) {
+      res.status(201).json(results).end()
     }
   } catch (error) {
     log.error(`Failed to create a network configuration : ${netConfig.profileName}`, error)

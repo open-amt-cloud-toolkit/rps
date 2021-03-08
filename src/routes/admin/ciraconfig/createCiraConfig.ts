@@ -5,12 +5,11 @@
  **********************************************************************/
 import { validationResult } from 'express-validator'
 import { ICiraConfigDb } from '../../../repositories/interfaces/ICiraConfigDb'
-import { CiraConfigDbFactory } from '../../../repositories/CiraConfigDbFactory'
+import { CiraConfigDbFactory } from '../../../repositories/factories/CiraConfigDbFactory'
 import { CIRAConfig } from '../../../RCS.Config'
 import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
 import {
-  CIRA_CONFIG_INSERTION_SUCCESS,
   API_UNEXPECTED_EXCEPTION,
   API_RESPONSE
 } from '../../../utils/constants'
@@ -33,16 +32,17 @@ export async function createCiraConfig (req, res): Promise<void> {
       ciraConfig.password = `${ciraConfig.configName}_CIRA_PROFILE_PASSWORD`
     }
     // SQL Query > Insert Data
-    const results: boolean = await ciraConfigDb.insertCiraConfig(ciraConfig)
+    const results: CIRAConfig = await ciraConfigDb.insertCiraConfig(ciraConfig)
     // CIRA profile inserted  into db successfully.
-    if (results) {
+    if (results != null) {
       // store the password into Vault
       if (req.secretsManager) {
         await req.secretsManager.writeSecretWithKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfig.configName}`, ciraConfig.password, mpsPwd)
         log.info(`MPS password stored in Vault for CIRA config : ${ciraConfig.configName}`)
       }
       log.info(`Created CIRA config : ${ciraConfig.configName}`)
-      res.status(201).json(API_RESPONSE(null, null, CIRA_CONFIG_INSERTION_SUCCESS(ciraConfig.configName))).end()
+      delete results.password
+      res.status(201).json(results).end()
     }
   } catch (error) {
     log.error(`Failed to get CIRA config profile : ${ciraConfig.configName}`, error)

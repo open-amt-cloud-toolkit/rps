@@ -4,11 +4,11 @@
  * Author : Brian Osburn
  **********************************************************************/
 
-import { EnvReader } from '../utils/EnvReader'
-import { IAMTDeviceRepository } from './interfaces/IAMTDeviceRepository'
+import { EnvReader } from '../../utils/EnvReader'
+import { IAMTDeviceRepository } from '../interfaces/IAMTDeviceRepository'
 import { AMTDeviceVaultRepository } from './AMTDeviceVaultRepository'
-import { IConfigurator } from '../interfaces/IConfigurator'
-import Logger from '../Logger'
+import { IConfigurator } from '../../interfaces/IConfigurator'
+import Logger from '../../Logger'
 import { AMTDeviceFileRepository } from './AMTDeviceFileRepository'
 
 interface IAmtDeviceFactory {
