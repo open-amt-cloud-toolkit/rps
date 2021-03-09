@@ -101,7 +101,8 @@ export const amtProfileValidator = (): any => {
         return true
       }),
     check('ciraConfigName').optional(),
-    check('networkConfigName').optional()
+    check('networkConfigName').optional(),
+    check('tags').optional({ nullable: true }).isArray()
   ]
 }
 
@@ -186,6 +187,7 @@ export const profileUpdateValidator = (): any => {
         return true
       }),
     check('ciraConfigName').optional(),
-    check('networkConfigName').optional()
+    check('networkConfigName').optional(),
+    check('tags').optional({ nullable: true }).isArray()
   ]
 }

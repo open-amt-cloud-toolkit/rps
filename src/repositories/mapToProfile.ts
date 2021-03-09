@@ -4,9 +4,9 @@
  * Author : Ramu Bachala
  **********************************************************************/
 
-import { AMTConfig } from '../RCS.Config'
+import { AMTConfiguration } from '../models/Rcs'
 
-export function mapToProfile (results): AMTConfig {
+export function mapToProfile (results): AMTConfiguration {
   return {
     profileName: results.profilename,
     amtPassword: results.amtpassword,
@@ -19,6 +19,7 @@ export function mapToProfile (results): AMTConfig {
     networkConfigName: results.networkprofilename,
     mebxPassword: results.mebxpassword,
     generateRandomMEBxPassword: results.generaterandommebxpassword,
-    mebxPasswordLength: results.mebxpasswordlength
-  } as AMTConfig
+    mebxPasswordLength: results.mebxpasswordlength,
+    tags: results.tags
+  } as AMTConfiguration
 }

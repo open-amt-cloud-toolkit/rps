@@ -9,7 +9,8 @@
       "generateRandomMEBxPassword": false,
       "mebxPasswordLength": 8,
       "activation": "acmactivate",
-      "ciraConfigName": "Sample_CIRA_Config"
+      "ciraConfigName": "Sample_CIRA_Config",
+      "tags": []
     }
   ],
   "CIRAConfigurations": [

@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "0c50d20a-0b99-4eff-9cfe-db6f46d5475a",
+		"_postman_id": "6f60fdb6-92a0-4bb1-8043-86e4119691bd",
 		"name": "RPS API Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -3635,6 +3635,7 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {\r",
+									"pm.environment.unset(\"variable_key\");\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
 									"var env = pm.environment.get(\"env\");\r",
@@ -3654,6 +3655,7 @@
 									"        pm.expect(jsonData[0].mebxPassword).to.eql(),\r",
 									"        pm.expect(jsonData[0].activation).to.equal(\"acmactivate\")\r",
 									"        pm.expect(jsonData[0].ciraConfigName).to.equal(\"Sample_CIRA_Config\") \r",
+									"        pm.expect(jsonData[0].tags.length).to.equal(0)\r",
 									"    });\r",
 									"} else {\r",
 									"    pm.test(\"Result length should be equal to zero\", function () {\r",
@@ -4583,6 +4585,8 @@
 									"    pm.expect(result.amtPassword).to.eql(),\r",
 									"    pm.expect(result.mebxPassword).to.eql(),\r",
 									"    pm.expect(result.activation).to.eql(\"ccmactivate\")\r",
+									"    pm.expect(result.tags.length).to.equal(1)\r",
+									"\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -4605,7 +4609,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\":[\"tag1\"]\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
@@ -4951,7 +4955,66 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\"    \r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"profiles",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile with tags",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Result 1 should be equal to example\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
+									"    pm.expect(jsonData.generateRandomMEBxPassword).to.equal(false)\r",
+									"    pm.expect(jsonData.mebxPasswordLength).to.eql(null)\r",
+									"    pm.expect(jsonData.activation).to.equal(\"ccmactivate\")    \r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"tags\": [\"tag123\"]\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
