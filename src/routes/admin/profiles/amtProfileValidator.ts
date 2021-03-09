@@ -40,6 +40,7 @@ export const amtProfileValidator = (): any => {
       .matches('^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9$@$!%*#?&-_~^]{8,32}$')
       .withMessage('AMT password is required field should contains at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
     check('passwordLength')
+      .if((value, { req }) => req.body.generateRandomPassword === true)
       .optional({ nullable: true })
       .isInt({ min: 8, max: 32 })
       .withMessage('Random AMT password length value should range between 8 and 32'),
@@ -71,6 +72,7 @@ export const amtProfileValidator = (): any => {
       .matches('^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9$@$!%*#?&-_~^]{8,32}$')
       .withMessage('MEBx password is required field should contains at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
     check('mebxPasswordLength')
+      .if((value, { req }) => req.body.generateRandomMEBxPassword === true)
       .optional({ nullable: true })
       .isInt({ min: 8, max: 32 })
       .withMessage('Random MEBx password length value should range between 8 and 32'),
@@ -136,12 +138,13 @@ export const profileUpdateValidator = (): any => {
       .matches('^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9$@$!%*#?&-_~^]{8,32}$')
       .withMessage('AMT password is required field should contains at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
     check('passwordLength')
+      .if((value, { req }) => req.body.generateRandomPassword === true)
       .optional()
       .isInt({ min: 8, max: 32 })
       .withMessage('Random AMT password length value should range between 8 and 32'),
     check('generateRandomPassword')
-      .optional()
       .isBoolean()
+      .optional()
       .withMessage('Generate random AMT password must be a boolean true or false')
       .custom((value, { req }) => {
         const pwdLength = req.body.passwordLength
@@ -153,16 +156,18 @@ export const profileUpdateValidator = (): any => {
         return true
       }),
     check('mebxPassword')
+      .if((value, { req }) => req.body.generateRandomMEBxPassword === false)
       .optional()
       .matches('^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9$@$!%*#?&-_~^]{8,32}$')
       .withMessage('MEBx password is required field should contains at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
     check('mebxPasswordLength')
+      .if((value, { req }) => req.body.generateRandomMEBxPassword === true)
       .optional()
       .isInt({ min: 8, max: 32 })
       .withMessage('Random MEBx password length value should range between 8 and 32'),
     check('generateRandomMEBxPassword')
-      .optional()
       .isBoolean()
+      .optional()
       .withMessage('Generate random MEBx password must be a boolean true or false')
       .custom((value, { req }) => {
         const pwd = req.body.mebxPassword

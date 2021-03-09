@@ -112,7 +112,6 @@ if (config.https) {
       ca: (EnvReader.GlobalEnvConfig.WSConfiguration.RootCACert !== '' ? readFileSync(RootCACertPath) : '')
     }
   }
-  log.debug(`Web Endpoint Cert Info ${JSON.stringify(certs.webConfig)}`)
   serverHttps = https.createServer(certs.webConfig, app)
   // this.expressWs = expressWs(this.app, this.serverHttps);
 }

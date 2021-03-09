@@ -5169,7 +5169,7 @@
 									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
 									"    pm.expect(jsonData.generateRandomPassword).to.equal(true)\r",
 									"    pm.expect(jsonData.passwordLength).to.eql(16)\r",
-									"    pm.expect(jsonData.generateRandomMEBxPassword).to.equal(null)\r",
+									"    pm.expect(jsonData.generateRandomMEBxPassword).to.equal(false)\r",
 									"    pm.expect(jsonData.mebxPasswordLength).to.eql(null)\r",
 									"    pm.expect(jsonData.activation).to.equal(\"acmactivate\")    \r",
 									"});"
@@ -5227,9 +5227,9 @@
 									"pm.test(\"Update should succeed\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
-									"    pm.expect(jsonData.generateRandomPassword).to.equal(null)\r",
+									"    pm.expect(jsonData.generateRandomPassword).to.equal(false)\r",
 									"    pm.expect(jsonData.passwordLength).to.eql(null)\r",
-									"    pm.expect(jsonData.generateRandomMEBxPassword).to.equal(null)\r",
+									"    pm.expect(jsonData.generateRandomMEBxPassword).to.equal(false)\r",
 									"    pm.expect(jsonData.mebxPasswordLength).to.eql(null)\r",
 									"    pm.expect(jsonData.activation).to.equal(\"acmactivate\")    \r",
 									"});"
