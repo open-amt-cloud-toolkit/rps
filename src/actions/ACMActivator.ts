@@ -231,7 +231,12 @@ export class ACMActivator implements IExecutor {
     } else {
       this.logger.error('unable to write device')
     }
-
+    // TODO: performance: avoid second call to db from ~line 220
+    const profile = await this.configurator.profileManager.getAmtProfile(clientObj.ClientData.payload.profile.profileName)
+    let tags = []
+    if (profile?.tags != null) {
+      tags = profile.tags
+    }
     /* Register device metadata with MPS */
     try {
       await got(`${EnvReader.GlobalEnvConfig.mpsServer}/devices`, {
@@ -240,7 +245,7 @@ export class ACMActivator implements IExecutor {
         json: {
           guid: clientObj.uuid,
           hostname: clientObj.hostname,
-          tags: []
+          tags: tags
         }
       })
     } catch (err) {
