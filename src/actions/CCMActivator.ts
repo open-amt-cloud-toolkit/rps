@@ -90,12 +90,18 @@ export class CCMActivator implements IExecutor {
         }
         /* Register device metadata with MPS */
         try {
+          // TODO: performance: avoid second call to db from ~line 77
+          const profile = await this.configurator.profileManager.getAmtProfile(clientObj.ClientData.payload.profile.profileName)
+          let tags = []
+          if (profile?.tags != null) {
+            tags = profile.tags
+          }
           await got(`${EnvReader.GlobalEnvConfig.mpsServer}/devices`, {
             method: 'POST',
             json: {
               guid: clientObj.uuid,
               hostname: clientObj.hostname,
-              tags: []
+              tags: tags
             }
           })
         } catch (err) {
