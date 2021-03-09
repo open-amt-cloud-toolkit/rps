@@ -3649,7 +3649,7 @@
 									"        pm.expect(jsonData[0].profileName).to.eql(\"Sample_Profile\")\r",
 									"        pm.expect(jsonData[0].generateRandomPassword).to.equal(false)\r",
 									"        pm.expect(jsonData[0].passwordLength).to.eql(8)\r",
-									"         pm.expect(jsonData[0].generateRandomMEBxPassword).to.equal(false)\r",
+									"        pm.expect(jsonData[0].generateRandomMEBxPassword).to.equal(false)\r",
 									"        pm.expect(jsonData[0].mebxPasswordLength).to.eql(8)\r",
 									"        pm.expect(jsonData[0].amtPassword).to.eql(),\r",
 									"        pm.expect(jsonData[0].mebxPassword).to.eql(),\r",
@@ -3724,6 +3724,8 @@
 									"        pm.expect(jsonData.mebxPassword).to.eql(),\r",
 									"        pm.expect(jsonData.activation).to.equal(\"acmactivate\")\r",
 									"        pm.expect(jsonData.ciraConfigName).to.equal(\"Sample_CIRA_Config\") \r",
+									"        pm.expect(jsonData.tags.length).to.equal(0)\r",
+									"\r",
 									"    });\r",
 									"} else {\r",
 									"    pm.test(\"Status code is 404\", function () {    \r",
@@ -4609,7 +4611,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\":[\"tag1\"]\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"]\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
@@ -4991,7 +4993,8 @@
 									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
 									"    pm.expect(jsonData.generateRandomMEBxPassword).to.equal(false)\r",
 									"    pm.expect(jsonData.mebxPasswordLength).to.eql(null)\r",
-									"    pm.expect(jsonData.activation).to.equal(\"ccmactivate\")    \r",
+									"    pm.expect(jsonData.activation).to.equal(\"ccmactivate\")\r",
+									"    pm.expect(jsonData.tags.length).to.equal(1)    \r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -5166,7 +5169,7 @@
 									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
 									"    pm.expect(jsonData.generateRandomPassword).to.equal(true)\r",
 									"    pm.expect(jsonData.passwordLength).to.eql(16)\r",
-									"    pm.expect(jsonData.generateRandomMEBxPassword).to.equal(null)\r",
+									"    pm.expect(jsonData.generateRandomMEBxPassword).to.equal(false)\r",
 									"    pm.expect(jsonData.mebxPasswordLength).to.eql(null)\r",
 									"    pm.expect(jsonData.activation).to.equal(\"acmactivate\")    \r",
 									"});"
@@ -5224,9 +5227,9 @@
 									"pm.test(\"Update should succeed\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
-									"    pm.expect(jsonData.generateRandomPassword).to.equal(null)\r",
+									"    pm.expect(jsonData.generateRandomPassword).to.equal(false)\r",
 									"    pm.expect(jsonData.passwordLength).to.eql(null)\r",
-									"    pm.expect(jsonData.generateRandomMEBxPassword).to.equal(null)\r",
+									"    pm.expect(jsonData.generateRandomMEBxPassword).to.equal(false)\r",
 									"    pm.expect(jsonData.mebxPasswordLength).to.eql(null)\r",
 									"    pm.expect(jsonData.activation).to.equal(\"acmactivate\")    \r",
 									"});"
