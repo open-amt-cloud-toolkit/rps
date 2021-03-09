@@ -82,6 +82,7 @@ export class AMTConfiguration {
   generateRandomMEBxPassword?: boolean
   mebxPasswordLength?: number
   ciraConfigObject?: CIRAConfig
+  tags?: string[]
 }
 
 export class AMTDomain {

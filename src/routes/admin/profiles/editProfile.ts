@@ -144,5 +144,6 @@ export const getUpdatedData = (newConfig: any, oldConfig: AMTConfiguration): AMT
   }
   amtConfig.ciraConfigName = newConfig.ciraConfigName ?? oldConfig.ciraConfigName
   amtConfig.networkConfigName = newConfig.networkConfigName ?? oldConfig.networkConfigName
+  amtConfig.tags = newConfig.tags ?? oldConfig.tags
   return amtConfig
 }

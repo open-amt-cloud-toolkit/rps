@@ -4,7 +4,7 @@
  * Author: Madhavi Losetty
  **********************************************************************/
 import * as WebSocket from 'ws'
-import { AMTDomain } from './models/Rcs'
+import { AMTConfiguration, AMTDomain } from './models/Rcs'
 
 export interface WebSocketConfig {
   WebSocketPort: number
@@ -13,24 +13,6 @@ export interface WebSocketConfig {
   WebSocketCertificateKey: string
   RootCACert?: string
 }
-
-export interface AMTConfig {
-  profileName: string
-  amtPassword?: string
-  generateRandomPassword?: boolean
-  passwordLength?: number
-  mebxPassword?: string
-  generateRandomMEBxPassword?: boolean
-  mebxPasswordLength?: number
-  randomPasswordCharacters?: string
-  configurationScript?: string
-  ciraConfigName?: string
-  activation: string
-  ciraConfigObject?: CIRAConfig
-  networkConfigName?: string
-  networkConfigObject?: NetworkConfig
-}
-
 export interface NetworkConfig {
   profileName: string
   dhcpEnabled: boolean
@@ -72,7 +54,7 @@ export interface RemoteConfig {
   Name: string
   Description: string
   WSConfiguration: WebSocketConfig
-  AMTConfigurations: AMTConfig[]
+  AMTConfigurations: AMTConfiguration[]
   AMTDomains: AMTDomain[]
 }
 export interface SocketConnection{
