@@ -112,7 +112,7 @@ export const handleGenerateRandomPassword = (amtConfig: AMTConfiguration, newCon
     amtConfig.passwordLength = newConfig.passwordLength
     amtConfig.amtPassword = null
   } else {
-    amtConfig.generateRandomPassword = newConfig.amtPassword == null ? oldConfig.generateRandomPassword : null
+    amtConfig.generateRandomPassword = newConfig.amtPassword == null ? oldConfig.generateRandomPassword : false
     amtConfig.passwordLength = newConfig.amtPassword == null ? oldConfig.passwordLength : null
   }
   return amtConfig
@@ -124,7 +124,7 @@ export const handleGenerateRandomMEBxPassword = (amtConfig: AMTConfiguration, ne
     amtConfig.mebxPasswordLength = newConfig.mebxPasswordLength
     amtConfig.mebxPassword = null
   } else {
-    amtConfig.generateRandomMEBxPassword = newConfig.mebxPassword == null ? oldConfig.generateRandomMEBxPassword : null
+    amtConfig.generateRandomMEBxPassword = newConfig.mebxPassword == null ? oldConfig.generateRandomMEBxPassword : false
     amtConfig.mebxPasswordLength = newConfig.mebxPassword == null ? oldConfig.mebxPasswordLength : null
   }
   return amtConfig

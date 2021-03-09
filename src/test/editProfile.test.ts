@@ -19,7 +19,7 @@ test('test handleAMTpassword when the request body amtPassword is null or undefi
     passwordLength: null
   }
   const result: AMTConfiguration = handleAMTPassword(amtConfig, newConfig, oldConfig)
-  expect(expected).toEqual(result)
+  expect(result).toEqual(expected)
 })
 
 test('test handleAMTpassword when the request body amtPassword is not null', () => {
@@ -32,7 +32,7 @@ test('test handleAMTpassword when the request body amtPassword is not null', () 
     amtPassword: 'Intel@123'
   }
   const result: AMTConfiguration = handleAMTPassword(amtConfig, newConfig, oldConfig)
-  expect(expected).toEqual(result)
+  expect(result).toEqual(expected)
 })
 
 test('test handleMEBxPassword when the request body mebxPassword is null or undefined', () => {
@@ -47,7 +47,7 @@ test('test handleMEBxPassword when the request body mebxPassword is null or unde
     mebxPasswordLength: null
   }
   const result: AMTConfiguration = handleMEBxPassword(amtConfig, newConfig, oldConfig)
-  expect(expected).toEqual(result)
+  expect(result).toEqual(expected)
 })
 
 test('test handleMEBxPassword when the request body mebxPassword is not null', () => {
@@ -60,7 +60,7 @@ test('test handleMEBxPassword when the request body mebxPassword is not null', (
     mebxPassword: 'Intel@123'
   }
   const result: AMTConfiguration = handleMEBxPassword(amtConfig, newConfig, oldConfig)
-  expect(expected).toEqual(result)
+  expect(result).toEqual(expected)
 })
 
 test('test handleGenerateRandomPassword when the request body generateRandomPassword is true', () => {
@@ -75,7 +75,7 @@ test('test handleGenerateRandomPassword when the request body generateRandomPass
     amtPassword: null
   }
   const result: AMTConfiguration = handleGenerateRandomPassword(amtConfig, newConfig, oldConfig)
-  expect(expected).toEqual(result)
+  expect(result).toEqual(expected)
 })
 
 test('test handleGenerateRandomPassword when passwordLength is updated', () => {
@@ -90,7 +90,7 @@ test('test handleGenerateRandomPassword when passwordLength is updated', () => {
     amtPassword: null
   }
   const result: AMTConfiguration = handleGenerateRandomPassword(amtConfig, newConfig, oldConfig)
-  expect(expected).toEqual(result)
+  expect(result).toEqual(expected)
 })
 
 test('test handleGenerateRandomPassword when the request body generateRandomPassword is undefined and profile created with amtPassword', () => {
@@ -104,7 +104,7 @@ test('test handleGenerateRandomPassword when the request body generateRandomPass
     profileName: 'acm'
   }
   const result: AMTConfiguration = handleGenerateRandomPassword(amtConfig, newConfig, oldConfig)
-  expect(expected).toEqual(result)
+  expect(result).toEqual(expected)
 })
 
 test('test handleGenerateRandomPassword when the request body generateRandomPassword is undefined and profile created with random amtPassword', () => {
@@ -119,7 +119,7 @@ test('test handleGenerateRandomPassword when the request body generateRandomPass
   }
   const result: AMTConfiguration = handleGenerateRandomPassword(amtConfig, newConfig, oldConfig)
   console.log(result)
-  expect(expected).toEqual(result)
+  expect(result).toEqual(expected)
 })
 
 test('test handleGenerateRandomMEBxPassword when the request body generateRandomMEBxPassword is true', () => {
@@ -134,7 +134,7 @@ test('test handleGenerateRandomMEBxPassword when the request body generateRandom
     mebxPassword: null
   }
   const result: AMTConfiguration = handleGenerateRandomMEBxPassword(amtConfig, newConfig, oldConfig)
-  expect(expected).toEqual(result)
+  expect(result).toEqual(expected)
 })
 
 test('test handleGenerateRandomMEBxPassword when mebxPasswordLength is updated', () => {
@@ -149,7 +149,7 @@ test('test handleGenerateRandomMEBxPassword when mebxPasswordLength is updated',
     mebxPassword: null
   }
   const result: AMTConfiguration = handleGenerateRandomMEBxPassword(amtConfig, newConfig, oldConfig)
-  expect(expected).toEqual(result)
+  expect(result).toEqual(expected)
 })
 
 test('test handleGenerateRandomMEBxPassword when the request body generateRandomMEBxPassword is undefined and profile created with mebxPassword', () => {
@@ -163,7 +163,7 @@ test('test handleGenerateRandomMEBxPassword when the request body generateRandom
     profileName: 'acm'
   }
   const result: AMTConfiguration = handleGenerateRandomMEBxPassword(amtConfig, newConfig, oldConfig)
-  expect(expected).toEqual(result)
+  expect(result).toEqual(expected)
 })
 
 test('test getUpdatedData when the request body when activation changed', () => {
@@ -177,7 +177,7 @@ test('test getUpdatedData when the request body when activation changed', () => 
     profileName: 'acm'
   }
   const result: AMTConfiguration = handleGenerateRandomMEBxPassword(amtConfig, newConfig, oldConfig)
-  expect(expected).toEqual(result)
+  expect(result).toEqual(expected)
 })
 
 test('test getUpdatedData when static passwords are changed to random', () => {
@@ -208,7 +208,7 @@ test('test getUpdatedData when static passwords are changed to random', () => {
     passwordLength: 10
   }
   const result: AMTConfiguration = getUpdatedData(newConfig, oldConfig)
-  expect(amtConfig).toEqual(result)
+  expect(result).toEqual(amtConfig)
 })
 
 test('test getUpdatedData when random passwords are changed to static', () => {
@@ -231,15 +231,16 @@ test('test getUpdatedData when random passwords are changed to static', () => {
     activation: 'acmactivate',
     amtPassword: 'P@ssw0rd',
     ciraConfigName: undefined,
-    generateRandomMEBxPassword: null,
-    generateRandomPassword: null,
+    generateRandomMEBxPassword: false,
+    generateRandomPassword: false,
     mebxPassword: 'P@ssw0rd',
     mebxPasswordLength: null,
     networkConfigName: undefined,
-    passwordLength: null
+    passwordLength: null,
+    tags: undefined
   }
   const result: AMTConfiguration = getUpdatedData(newConfig, oldConfig)
-  expect(amtConfig).toEqual(result)
+  expect(result).toEqual(amtConfig)
 })
 
 test('test getUpdatedData when activation messaged changed from acmactivate to ccmactivate', () => {
@@ -266,5 +267,5 @@ test('test getUpdatedData when activation messaged changed from acmactivate to c
     passwordLength: undefined
   }
   const result: AMTConfiguration = getUpdatedData(newConfig, oldConfig)
-  expect(amtConfig).toEqual(result)
+  expect(result).toEqual(amtConfig)
 })
