@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "6f60fdb6-92a0-4bb1-8043-86e4119691bd",
+		"_postman_id": "bc7d4ca7-cc53-4f55-8db7-a8e090963af3",
 		"name": "RPS API Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -4013,7 +4013,7 @@
 									"});\r",
 									"pm.test(\"Creation should fail when payload contains both amtPassword and generate random password\", function () {\r",
 									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Either generateRandomMEBxPassword should be enabled with mebxPasswordLength or should provide mebxPassword\")\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"Either generate Random AMT Password should be enabled with Password Length or should provide AMT Password\")\r",
 									"    pm.expect(result.errors[0].param).to.eql(\"generateRandomPassword\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
@@ -4095,7 +4095,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123\",\r\n    \"activation\": \"ccmactivate\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"activation\": \"ccmactivate\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
@@ -4380,7 +4380,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123\",\r\n    \"activation\": \"acmactivate\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123\",\r\n    \"activation\": \"acmactivate\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
@@ -4611,7 +4611,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"]\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"]\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
@@ -4667,7 +4667,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"generateRandomPassword\": false,\r\n    \"activation\": \"acmactivate\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"activation\": \"acmactivate\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
@@ -4781,7 +4781,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
@@ -4898,7 +4898,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": true,\r\n    \"passwordLength\": 16\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"passwordLength\": 16\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
@@ -6126,7 +6126,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n     \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",

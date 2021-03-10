@@ -36,6 +36,7 @@ export const amtProfileValidator = (): any => {
         return true
       }),
     check('amtPassword')
+      .if((value, { req }) => req.body.generateRandomPassword === false)
       .optional()
       .matches('^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9$@$!%*#?&-_~^]{8,32}$')
       .withMessage('AMT password is required field should contains at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
@@ -52,8 +53,8 @@ export const amtProfileValidator = (): any => {
         const pwd = req.body.amtPassword
         const pwdLength = req.body.passwordLength
         if (value === true) {
-          if (pwd !== undefined) {
-            throw new Error('Either generateRandomMEBxPassword should be enabled with mebxPasswordLength or should provide mebxPassword')
+          if (pwd != null) {
+            throw new Error('Either generate Random AMT Password should be enabled with Password Length or should provide AMT Password')
           }
           if (pwdLength == null) {
             throw new Error('If generate random AMT password is enabled, passwordLength is mandatory')
@@ -68,7 +69,8 @@ export const amtProfileValidator = (): any => {
         return true
       }),
     check('mebxPassword')
-      .optional()
+      .if((value, { req }) => req.body.generateRandomMEBxPassword === false)
+      .optional({ nullable: true })
       .matches('^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9$@$!%*#?&-_~^]{8,32}$')
       .withMessage('MEBx password is required field should contains at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
     check('mebxPasswordLength')
@@ -77,7 +79,6 @@ export const amtProfileValidator = (): any => {
       .isInt({ min: 8, max: 32 })
       .withMessage('Random MEBx password length value should range between 8 and 32'),
     check('generateRandomMEBxPassword')
-      .optional()
       .isBoolean()
       .withMessage('Generate random MEBx password must be a boolean true or false')
       .custom((value, { req }) => {
@@ -121,9 +122,6 @@ export const profileUpdateValidator = (): any => {
       .isIn([ClientAction.ADMINCTLMODE, ClientAction.CLIENTCTLMODE])
       .withMessage('Activation accepts either acmactivate(admin control activation) or ccmactivate(client control mode activation)')
       .custom((value, { req }) => {
-        // if (typeof value !== 'string') {
-        //   throw new Error('MPS Port value should range between 1024 and 49151')
-        // }
         if (value === ClientAction.ADMINCTLMODE) {
           const mebxPwd = req.body.mebxPassword
           const mebxRandomPwd = req.body.generateRandomMEBxPassword
@@ -134,6 +132,7 @@ export const profileUpdateValidator = (): any => {
         return true
       }),
     check('amtPassword')
+      .if((value, { req }) => req.body.generateRandomPassword === false)
       .optional()
       .matches('^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9$@$!%*#?&-_~^]{8,32}$')
       .withMessage('AMT password is required field should contains at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
@@ -143,8 +142,8 @@ export const profileUpdateValidator = (): any => {
       .isInt({ min: 8, max: 32 })
       .withMessage('Random AMT password length value should range between 8 and 32'),
     check('generateRandomPassword')
-      .isBoolean()
       .optional()
+      .isBoolean()
       .withMessage('Generate random AMT password must be a boolean true or false')
       .custom((value, { req }) => {
         const pwdLength = req.body.passwordLength
@@ -157,7 +156,7 @@ export const profileUpdateValidator = (): any => {
       }),
     check('mebxPassword')
       .if((value, { req }) => req.body.generateRandomMEBxPassword === false)
-      .optional()
+      .optional({ nullable: true })
       .matches('^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9$@$!%*#?&-_~^]{8,32}$')
       .withMessage('MEBx password is required field should contains at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
     check('mebxPasswordLength')
@@ -166,8 +165,8 @@ export const profileUpdateValidator = (): any => {
       .isInt({ min: 8, max: 32 })
       .withMessage('Random MEBx password length value should range between 8 and 32'),
     check('generateRandomMEBxPassword')
-      .isBoolean()
       .optional()
+      .isBoolean()
       .withMessage('Generate random MEBx password must be a boolean true or false')
       .custom((value, { req }) => {
         const pwd = req.body.mebxPassword
