@@ -54,7 +54,7 @@ export class Deactivator implements IExecutor {
 
           /* unregister device metadata with MPS */
           try {
-            await got(`${EnvReader.GlobalEnvConfig.mpsServer}/devices/${clientObj.uuid}`, {
+            await got(`${EnvReader.GlobalEnvConfig.mpsServer}/metadata/${clientObj.uuid}`, {
               method: 'DELETE',
               rejectUnauthorized: false
             })

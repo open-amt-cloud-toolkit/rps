@@ -239,7 +239,7 @@ export class ACMActivator implements IExecutor {
     }
     /* Register device metadata with MPS */
     try {
-      await got(`${EnvReader.GlobalEnvConfig.mpsServer}/devices`, {
+      await got(`${EnvReader.GlobalEnvConfig.mpsServer}/metadata`, {
         method: 'POST',
         rejectUnauthorized: false,
         json: {
