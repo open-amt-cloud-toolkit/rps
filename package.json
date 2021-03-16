@@ -1,6 +1,6 @@
 {
   "name": "rcs_microservice",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "AMT Remote configuration service",
   "main": "index.js",
   "scripts": {
@@ -44,7 +44,7 @@
     "@types/node-vault": "^0.9.13",
     "@types/ws": "^7.4.0",
     "@typescript-eslint/eslint-plugin": "^4.18.0",
-    "@typescript-eslint/parser": "^4.17.0",
+    "@typescript-eslint/parser": "^4.18.0",
     "eslint": "^7.22.0",
     "eslint-config-standard": "^16.0.2",
     "eslint-config-standard-with-typescript": "^20.0.0",

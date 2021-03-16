@@ -98,6 +98,7 @@ export class CCMActivator implements IExecutor {
           }
           await got(`${EnvReader.GlobalEnvConfig.mpsServer}/metadata`, {
             method: 'POST',
+            rejectUnauthorized: false,
             json: {
               guid: clientObj.uuid,
               hostname: clientObj.hostname,
@@ -105,7 +106,7 @@ export class CCMActivator implements IExecutor {
             }
           })
         } catch (err) {
-          this.logger.warn('unable to register metadata with MPS')
+          this.logger.warn('unable to register metadata with MPS', err)
         }
         const data: string = `${AMTUserName}:${clientObj.ClientData.payload.digestRealm}:${amtPassword}`
         const password = SignatureHelper.createMd5Hash(data)
