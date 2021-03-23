@@ -46,11 +46,16 @@ export class ACMActivator implements IExecutor {
   async execute (message: any, clientId: string): Promise<ClientMsg> {
     try {
       let clientObj = this.clientManager.getClientObject(clientId)
-      if (!message.payload) {
+      if (!clientObj.activationStatus && !message.payload) {
         throw new RPSError(`Device ${clientObj.uuid} activation failed. Missing/invalid WSMan response payload.`)
+      } else if (clientObj.activationStatus && !clientObj.mebxPassword) {
+        const msg = await this.waitAfterActivation(clientId, clientObj)
+        return msg
       }
-
-      await this.processWSManJsonResponse(message, clientId)
+      const msg = await this.processWSManJsonResponse(message, clientId)
+      if (msg) {
+        return msg
+      }
 
       clientObj = this.clientManager.getClientObject(clientId)
       if (clientObj.ClientData.payload.fwNonce && clientObj.action === ClientAction.ADMINCTLMODE) {
@@ -90,7 +95,7 @@ export class ACMActivator implements IExecutor {
           this.clientManager.setClientObject(clientObj)
         }
 
-        if (clientObj.count > clientObj.certObj.certChain.length) {
+        if (clientObj.count > clientObj.certObj.certChain.length && !clientObj.activationStatus) {
           // Create a one time nonce that allows AMT to verify the digital signature of the management console performing the provisioning
           const nonce = PasswordHelper.generateNonce()
           // Need to create a new array so we can concatinate both nonces (fwNonce first, Nonce second)
@@ -157,10 +162,9 @@ export class ACMActivator implements IExecutor {
    * @param {string} clientId Id to keep track of connections
    * @param {string} message
    */
-  async processWSManJsonResponse (message: any, clientId: string): Promise<void> {
+  async processWSManJsonResponse (message: any, clientId: string): Promise<ClientMsg> {
     const clientObj = this.clientManager.getClientObject(clientId)
     const wsmanResponse = message.payload
-
     if (wsmanResponse.AMT_GeneralSettings) {
       const digestRealm = wsmanResponse.AMT_GeneralSettings.response.DigestRealm
       // Validate Digest Realm
@@ -190,17 +194,47 @@ export class ACMActivator implements IExecutor {
       } else {
         this.logger.debug(`Device ${clientObj.uuid} activated in admin mode.`)
         clientObj.ciraconfig.status = 'activated in admin mode.'
+        clientObj.activationStatus = true
         this.clientManager.setClientObject(clientObj)
-
-        /* Set MEBx password called after the activation as the API is accessible only with admin user */
-        await this.setMEBxPassword(clientId, clientObj)
-
+        const msg = await this.waitAfterActivation(clientId, clientObj)
+        return msg
+      }
+    } else if (wsmanResponse.Header && wsmanResponse.Header.Method === 'SetMEBxPassword') {
+      if (wsmanResponse.Body.ReturnValue !== 0) {
+        throw new RPSError(`Device ${clientObj.uuid} failed to set MEBx password.`)
+      } else {
+        this.logger.debug(`Device ${clientObj.uuid} MEBx password updated.`)
         /* After the activation, control goes to Network configuration */
         clientObj.action = ClientAction.NETWORKCONFIG
-        await this.networkConfigurator.execute(message, clientId)
+        await this.networkConfigurator.execute(null, clientId)
       }
     } else {
       throw new RPSError(`Device ${clientObj.uuid} sent an invalid response.`)
+    }
+  }
+
+  /**
+   * @description Waiting for few seconds after activation as required by AMT
+   * @param {string} clientId Id to keep track of connections
+   * @param {ClientObject} clientObj
+   * @returns {ClientMsg} returns message to client
+   */
+  async waitAfterActivation (clientId: string, clientObj: ClientObject): Promise<ClientMsg> {
+    if (clientObj.delayEndTime == null) {
+      this.logger.info(`waiting for ${EnvReader.GlobalEnvConfig.delayTimer} seconds after activation`)
+      const endTime: Date = new Date()
+      clientObj.delayEndTime = endTime.setSeconds(endTime.getSeconds() + EnvReader.GlobalEnvConfig.delayTimer)
+      this.clientManager.setClientObject(clientObj)
+      this.logger.info(`Delay end time : ${clientObj.delayEndTime}`)
+    }
+    const currentTime = new Date().getTime()
+    if (currentTime >= clientObj.delayEndTime) {
+      this.logger.info(`Delay ${EnvReader.GlobalEnvConfig.delayTimer} seconds after activation completed`)
+      /* Set MEBx password called after the activation as the API is accessible only with admin user */
+      await this.setMEBxPassword(clientId, clientObj)
+    } else {
+      this.logger.info(`Current Time: ${currentTime} Delay end time : ${clientObj.delayEndTime}`)
+      return this.responseMsg.get(clientId, null, 'heartbeat_request', 'heartbeat', '')
     }
   }
 
@@ -210,49 +244,52 @@ export class ACMActivator implements IExecutor {
    * @param {ClientObject} clientObj
    */
   async setMEBxPassword (clientId: string, clientObj: ClientObject): Promise<void> {
-    this.logger.info('setting MEBx password')
-    /* Update the wsman stack username and password */
-    if (this.amtwsman.cache[clientId]) {
-      this.amtwsman.cache[clientId].wsman.comm.setupCommunication.getUsername = (): string => { return AMTUserName }
-      this.amtwsman.cache[clientId].wsman.comm.setupCommunication.getPassword = (): string => { return clientObj.amtPassword }
-    }
-    /* Get the MEBx password */
-    const mebxPassword: string = await this.configurator.profileManager.getMEBxPassword(clientObj.ClientData.payload.profile.profileName)
+    if (!clientObj.mebxPassword) {
+      this.logger.info('setting MEBx password')
+      /* Update the wsman stack username and password */
+      if (this.amtwsman.cache[clientId]) {
+        this.amtwsman.cache[clientId].wsman.comm.setupCommunication.getUsername = (): string => { return AMTUserName }
+        this.amtwsman.cache[clientId].wsman.comm.setupCommunication.getPassword = (): string => { return clientObj.amtPassword }
+      }
+      /* Get the MEBx password */
+      const mebxPassword: string = await this.configurator.profileManager.getMEBxPassword(clientObj.ClientData.payload.profile.profileName)
 
-    /* Create a device in the repository. */
-    if (this.configurator?.amtDeviceRepository) {
-      await this.configurator.amtDeviceRepository.insert(new AMTDeviceDTO(clientObj.uuid,
-        clientObj.hostname,
-        EnvReader.GlobalEnvConfig.mpsusername,
-        EnvReader.GlobalEnvConfig.mpspass,
-        EnvReader.GlobalEnvConfig.amtusername,
-        clientObj.amtPassword,
-        mebxPassword))
-    } else {
-      this.logger.error('unable to write device')
+      /* Create a device in the repository. */
+      if (this.configurator?.amtDeviceRepository) {
+        await this.configurator.amtDeviceRepository.insert(new AMTDeviceDTO(clientObj.uuid,
+          clientObj.hostname,
+          EnvReader.GlobalEnvConfig.mpsusername,
+          EnvReader.GlobalEnvConfig.mpspass,
+          EnvReader.GlobalEnvConfig.amtusername,
+          clientObj.amtPassword,
+          mebxPassword))
+      } else {
+        this.logger.error('unable to write device')
+      }
+      // TODO: performance: avoid second call to db from ~line 220
+      const profile = await this.configurator.profileManager.getAmtProfile(clientObj.ClientData.payload.profile.profileName)
+      let tags = []
+      if (profile?.tags != null) {
+        tags = profile.tags
+      }
+      /* Register device metadata with MPS */
+      try {
+        await got(`${EnvReader.GlobalEnvConfig.mpsServer}/devices`, {
+          method: 'POST',
+          rejectUnauthorized: false,
+          json: {
+            guid: clientObj.uuid,
+            hostname: clientObj.hostname,
+            tags: tags
+          }
+        })
+      } catch (err) {
+        this.logger.warn('unable to register metadata with MPS', err)
+      }
+      clientObj.mebxPassword = true
+      this.clientManager.setClientObject(clientObj)
+      /*  API is only for Admin control mode */
+      await this.amtwsman.execute(clientId, 'AMT_SetupAndConfigurationService', 'SetMEBxPassword', { Password: mebxPassword }, null)
     }
-    // TODO: performance: avoid second call to db from ~line 220
-    const profile = await this.configurator.profileManager.getAmtProfile(clientObj.ClientData.payload.profile.profileName)
-    let tags = []
-    if (profile?.tags != null) {
-      tags = profile.tags
-    }
-    /* Register device metadata with MPS */
-    try {
-      await got(`${EnvReader.GlobalEnvConfig.mpsServer}/metadata`, {
-        method: 'POST',
-        rejectUnauthorized: false,
-        json: {
-          guid: clientObj.uuid,
-          hostname: clientObj.hostname,
-          tags: tags
-        }
-      })
-    } catch (err) {
-      this.logger.warn('unable to register metadata with MPS', err)
-    }
-
-    /*  API is only for Admin control mode */
-    await this.amtwsman.execute(clientId, 'AMT_SetupAndConfigurationService', 'SetMEBxPassword', { Password: mebxPassword }, null)
   }
 }
