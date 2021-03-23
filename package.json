@@ -22,7 +22,7 @@
     "crypto-random-string": "^3.3.1",
     "dot-object": "^2.1.4",
     "express": "^4.17.1",
-    "express-promise-router": "^4.0.1",
+    "express-promise-router": "^4.1.0",
     "express-validator": "^6.10.0",
     "express-ws": "^4.0.0",
     "got": "^11.8.2",
