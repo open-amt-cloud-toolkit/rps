@@ -38,9 +38,9 @@ export class NetworkConfigurator implements IExecutor {
   async execute (message: any, clientId: string): Promise<ClientMsg> {
     try {
       const clientObj: ClientObject = this.clientManager.getClientObject(clientId)
-      const wsmanResponse = message.payload
-      if (wsmanResponse) {
-        if (wsmanResponse.AMT_GeneralSettings !== undefined) {
+      if (message?.payload != null) {
+        const wsmanResponse = message.payload
+        if (wsmanResponse.AMT_GeneralSettings != null && clientObj.ClientData.payload.profile.networkConfigObject != null) {
           const response: AMTGeneralSettings = wsmanResponse.AMT_GeneralSettings.response
           if (!response.SharedFQDN || response.AMTNetworkEnabled !== 1 || !response.RmcpPingResponseEnabled) {
             response.SharedFQDN = true
@@ -100,17 +100,17 @@ export class NetworkConfigurator implements IExecutor {
             this.clientManager.setClientObject(clientObj)
             await this.CIRAConfigurator.execute(message, clientId)
           }
+        }
+      } else {
+        this.logger.info(JSON.stringify(clientObj.ClientData.payload.profile.networkConfigObject, null, '\t'))
+        const payload: any = clientObj.ClientData.payload
+        if (payload.profile.networkConfigObject) {
+          this.logger.debug(`Setting Network configuration : ${JSON.stringify(payload.profile.networkConfigObject, null, '\t')} for device : ${payload.uuid}`)
+          await this.amtwsman.batchEnum(clientId, '*AMT_GeneralSettings', AMTUserName, payload.password)
         } else {
-          this.logger.info(JSON.stringify(clientObj.ClientData.payload.profile.networkConfigObject, null, '\t'))
-          const payload: any = clientObj.ClientData.payload
-          if (payload.profile.networkConfigObject) {
-            this.logger.debug(`Setting Network configuration : ${JSON.stringify(payload.profile.networkConfigObject, null, '\t')} for device : ${payload.uuid}`)
-            await this.amtwsman.batchEnum(clientId, '*AMT_GeneralSettings', AMTUserName, payload.password)
-          } else {
-            clientObj.action = ClientAction.CIRACONFIG
-            this.clientManager.setClientObject(clientObj)
-            await this.CIRAConfigurator.execute(message, clientId)
-          }
+          clientObj.action = ClientAction.CIRACONFIG
+          this.clientManager.setClientObject(clientObj)
+          await this.CIRAConfigurator.execute(message, clientId)
         }
       }
     } catch (error) {

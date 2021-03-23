@@ -53,7 +53,7 @@ export class Validator implements IValidator {
           }
         }
 
-        if (msg.method !== ClientMethods.RESPONSE) {
+        if (msg.method !== ClientMethods.RESPONSE && msg.method !== ClientMethods.HEARTBEAT) {
           msg = CommandParser.parse(msg)
         }
       }

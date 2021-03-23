@@ -29,5 +29,6 @@
   "cors_headers":"Origin, X-Requested-With, Accept, X-RPS-API-Key, Content-Type, csrf-token, authorization",
   "cors_methods":"*",
   "cors_allow_credentials":"true",
-  "mps_server":"https://localhost:3000"
+  "mps_server":"https://localhost:3000",
+  "delay_timer":12
 }

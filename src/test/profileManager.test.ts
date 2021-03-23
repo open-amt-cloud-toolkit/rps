@@ -50,7 +50,8 @@ const rcsConfig: RCSConfig = {
     dbport: 0,
     dbuser: '',
     dbpassword: ''
-  }
+  },
+  delayTimer: 12
 }
 
 const CIRAConfigurations = [{

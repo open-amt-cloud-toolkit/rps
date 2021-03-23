@@ -6384,7 +6384,7 @@
 							"});\r",
 							"pm.test(\"Version request should succeed\", function () {\r",
 							"    var result = pm.response.json();\r",
-							"    pm.expect(result.protocolVersion).to.eql(\"3.0.0\")\r",
+							"    pm.expect(result.protocolVersion).to.eql(\"4.0.0\")\r",
 							"});"
 						],
 						"type": "text/javascript"

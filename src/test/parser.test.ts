@@ -10,8 +10,8 @@ test('test activation command parsing', () => {
   const clientMessage: ClientMsg = {
     method: '--text activate --profile profile1',
     apiKey: 'key',
-    appVersion: '1.0.0',
-    protocolVersion: '2.0.0',
+    appVersion: '1.2.0',
+    protocolVersion: '4.0.0',
     status: 'ok',
     message: "all's good!",
     payload: {
@@ -59,8 +59,8 @@ test('test deactivate command parsing', () => {
   const clientMessage: ClientMsg = {
     method: '--text deactivate --password Intel123! --force',
     apiKey: 'key',
-    appVersion: '1.0.0',
-    protocolVersion: '2.0.0',
+    appVersion: '1.2.0',
+    protocolVersion: '4.0.0',
     status: 'ok',
     message: "all's good!",
     payload: {
@@ -109,8 +109,8 @@ test('test activation command parsing short flags', () => {
   const clientMessage: ClientMsg = {
     method: '-t activate --profile profile1',
     apiKey: 'key',
-    appVersion: '1.0.0',
-    protocolVersion: '2.0.0',
+    appVersion: '1.2.0',
+    protocolVersion: '4.0.0',
     status: 'ok',
     message: "all's good!",
     payload: {
@@ -158,8 +158,8 @@ test('test deactivate command parsing short flags', () => {
   const clientMessage: ClientMsg = {
     method: '-t deactivate -p Intel123! -f',
     apiKey: 'key',
-    appVersion: '1.0.0',
-    protocolVersion: '2.0.0',
+    appVersion: '1.2.0',
+    protocolVersion: '4.0.0',
     status: 'ok',
     message: "all's good!",
     payload: {
