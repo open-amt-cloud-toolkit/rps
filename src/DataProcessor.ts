@@ -63,6 +63,9 @@ export class DataProcessor implements IDataProcessor {
         case ClientMethods.RESPONSE: {
           return await this.handleResponse(clientMsg, clientId)
         }
+        case ClientMethods.HEARTBEAT: {
+          return await this.heartbeat(clientMsg, clientId)
+        }
         default: {
           const uuid = clientMsg.payload.uuid ? clientMsg.payload.uuid : this.clientManager.getClientObject(clientId).ClientData.payload.uuid
           throw new RPSError(`Device ${uuid} Not a supported method received from AMT device`)
@@ -119,5 +122,15 @@ export class DataProcessor implements IDataProcessor {
       }
     }
     return await this.clientActions.buildResponseMessage(clientMsg, clientId)
+  }
+
+  async heartbeat (clientMsg: ClientMsg, clientId: string): Promise<ClientMsg> {
+    const clientObj = this.clientManager.getClientObject(clientId)
+    const currentTime = new Date().getTime()
+    if (currentTime >= clientObj.delayEndTime) {
+      return await this.clientActions.buildResponseMessage(clientMsg, clientId)
+    } else {
+      return this.responseMsg.get(clientId, null, 'heartbeat_request', 'heartbeat', '')
+    }
   }
 }

@@ -30,8 +30,8 @@ beforeAll(() => {
   deactivatemsg = {
     method: 'deactivation',
     apiKey: 'key',
-    appVersion: '1.0.0',
-    protocolVersion: '2.0.0',
+    appVersion: '1.2.0',
+    protocolVersion: '4.0.0',
     status: 'ok',
     message: "all's good!",
     payload: {

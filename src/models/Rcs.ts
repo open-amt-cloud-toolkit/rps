@@ -61,6 +61,7 @@ export class RCSConfig {
   corsMethods: string
   corsAllowCredentials: string
   mpsServer: string
+  delayTimer: number
   constructor () {
     this.VaultConfig = new VaultConfig()
     this.WSConfiguration = new WSConfiguration()
@@ -250,7 +251,8 @@ const recipeRCSConfig = {
   cors_headers: 'corsHeaders',
   cors_methods: 'corsMethods',
   cors_allow_credentials: 'corsAllowCredentials',
-  mps_server: 'mpsServer'
+  mps_server: 'mpsServer',
+  delay_timer: 'delayTimer'
 }
 
 export function mapConfig (src, dot): RCSConfig {
