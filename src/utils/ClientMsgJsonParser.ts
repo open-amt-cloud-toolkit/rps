@@ -35,14 +35,12 @@ export class ClientMsgJsonParser implements IClientMessageParser {
    * @returns {ClientMsg}
    */
   convertClientMsg (message: ClientMsg): ClientMsg {
-    let payload: any = this.nodeForge.decode64(message.payload)
-    if (payload) {
+    if (message.payload) {
+      let payload: any = this.nodeForge.decode64(message.payload)
       if (message.method !== ClientMethods.RESPONSE) {
         payload = this.parsePayload(payload)
       }
       message.payload = payload
-    } else {
-      throw new RPSError('Missing payload')
     }
     return message
   }

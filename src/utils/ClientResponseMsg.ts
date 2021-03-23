@@ -23,6 +23,8 @@ export class ClientResponseMsg {
     try {
       if (method === 'error') {
         msg = { method: method, apiKey: 'xxxxx', appVersion: AppVersion, protocolVersion: ProtocolVersion, status: status, message: message, payload: payload }
+      } else if (method === 'heartbeat_request') {
+        msg = { method: method, apiKey: 'xxxxx', appVersion: AppVersion, protocolVersion: ProtocolVersion, status: status, message: message, payload: '' }
       } else if (method === 'success') {
         msg = { method: method, apiKey: 'xxxxx', appVersion: AppVersion, protocolVersion: ProtocolVersion, status: status, message: message, payload: payload }
       } else {

@@ -76,7 +76,10 @@ export interface ClientObject {
   payload?: any
   certObj?: any
   readyState?: number
+  activationStatus?: boolean
+  delayEndTime?: any
   amtPassword?: string
+  mebxPassword?: boolean
   ciraconfig?: CIRAConfigFlow
 }
 
@@ -163,7 +166,8 @@ export enum ClientMethods{
   RESPONSE = 'response',
   ACTIVATION = 'activate',
   DEACTIVATION = 'deactivate',
-  CIRACONFIG= 'ciraconfig'
+  CIRACONFIG= 'ciraconfig',
+  HEARTBEAT='heartbeat_response'
 }
 
 export interface apiResponse {

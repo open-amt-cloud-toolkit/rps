@@ -36,8 +36,8 @@ beforeAll(() => {
   activationmsg = {
     method: 'activation',
     apiKey: 'key',
-    appVersion: '1.0.0',
-    protocolVersion: '2.0.0',
+    appVersion: '1.2.0',
+    protocolVersion: '4.0.0',
     status: 'ok',
     message: "all's good!",
     payload: {
@@ -67,6 +67,6 @@ describe('Activate in client control mode', () => {
     clientManager.setClientObject(clientObj)
     const clientMsg = { payload: null }
     const ccmactivateMsg = await ccmActivate.execute(clientMsg, clientId)
-    expect(ccmactivateMsg.message).toEqual(`Device ${activationmsg.payload.uuid} activation failed : Missing/invalid WSMan response payload.`)
+    expect(ccmactivateMsg.message).toEqual(' Failed to activate in client control mode')
   })
 })

@@ -35,10 +35,9 @@ export class CIRAConfigurator implements IExecutor {
     let clientObj
     try {
       clientObj = this.clientManager.getClientObject(clientId)
-      const wsmanResponse = message.payload
-      if (wsmanResponse) {
-        await this.delete(clientId, clientObj, wsmanResponse)
-
+      await this.delete(clientId, clientObj, message)
+      if (message?.payload != null) {
+        const wsmanResponse = message.payload
         if (clientObj.ClientData.payload.profile.ciraConfigName && clientObj.ciraconfig.setENVSettingData) {
           // Add trusted root certificate and MPS server
           if (clientObj.ciraconfig.mpsRemoteSAPDelete && !clientObj.ciraconfig.addTrustedRootCert) {
@@ -70,25 +69,29 @@ export class CIRAConfigurator implements IExecutor {
               this.logger.debug(`${clientObj.uuid}  Management Presence Server (MPS) successfully added.`)
               await this.amtwsman.batchEnum(clientId, 'AMT_ManagementPresenceRemoteSAP', AMTUserName, clientObj.ClientData.payload.uuid)
             } else {
+              this.logger.info('AMT_ManagementPresenceRemoteSAP')
               throw new RPSError(`Device ${clientObj.uuid} ${clientObj.ciraconfig.status} Failed to add Management Presence Server.`)
             }
           } else if (!clientObj.ciraconfig.addRemoteAccessPolicyRule && clientObj.ciraconfig.addMPSServer) {
             const result = wsmanResponse.AMT_ManagementPresenceRemoteSAP
-            clientObj.ciraconfig.addRemoteAccessPolicyRule = true
-            this.clientManager.setClientObject(clientObj)
-            if (result?.responses?.length > 0) {
-              // TBD: Check when there are more than one MPS added to system.
-              const name = wsmanResponse.AMT_ManagementPresenceRemoteSAP.responses[0].Name
-              this.logger.debug(`${clientObj.uuid} : Management Presence Server (MPS) exists.`)
-              const policy = {
-                Trigger: 2, // 2 – Periodic
-                TunnelLifeTime: 0, // 0 means that the tunnel should stay open until it is closed
-                ExtendedData: 'AAAAAAAAABk=', // Equals to 25 seconds in base 64 with network order.
-                MpServer: mpsserver(name)
+            if (result) {
+              if (result?.responses?.length > 0) {
+                // TBD: Check when there are more than one MPS added to system.
+                const name = wsmanResponse.AMT_ManagementPresenceRemoteSAP.responses[0].Name
+                this.logger.debug(`${clientObj.uuid} : Management Presence Server (MPS) exists.`)
+                const policy = {
+                  Trigger: 2, // 2 – Periodic
+                  TunnelLifeTime: 0, // 0 means that the tunnel should stay open until it is closed
+                  ExtendedData: 'AAAAAAAAABk=', // Equals to 25 seconds in base 64 with network order.
+                  MpServer: mpsserver(name)
+                }
+                clientObj.ciraconfig.addRemoteAccessPolicyRule = true
+                this.clientManager.setClientObject(clientObj)
+                await this.amtwsman.execute(clientId, 'AMT_RemoteAccessService', 'AddRemoteAccessPolicyRule', policy, null, AMTUserName, clientObj.ClientData.payload.password)
+              } else {
+                this.logger.info('AMT_RemoteAccessService')
+                throw new RPSError(`Device ${clientObj.uuid} ${clientObj.ciraconfig.status} Failed to add Management Presence Server.`)
               }
-              await this.amtwsman.execute(clientId, 'AMT_RemoteAccessService', 'AddRemoteAccessPolicyRule', policy, null, AMTUserName, clientObj.ClientData.payload.password)
-            } else {
-              throw new RPSError(`Device ${clientObj.uuid} ${clientObj.ciraconfig.status} Failed to add Management Presence Server.`)
             }
           } else if (!clientObj.ciraconfig.userInitConnectionService && clientObj.ciraconfig.addRemoteAccessPolicyRule) {
             clientObj.ciraconfig.userInitConnectionService = true
@@ -131,9 +134,10 @@ export class CIRAConfigurator implements IExecutor {
      * @description Delete existing CIRA configurations
      * @param {string} clientId Id to keep track of connections
      * @param {clientObj} ClientObject keep track of client info and status
-     * @param {any} wsmanResponse valid client message
+     * @param {any} message valid client message
      */
-  async delete (clientId: string, clientObj: ClientObject, wsmanResponse: any): Promise<void> {
+  async delete (clientId: string, clientObj: ClientObject, message: any): Promise<void> {
+    const wsmanResponse: any = message?.payload
     if (!clientObj.ciraconfig.policyRuleUserInitiate) {
       this.logger.debug(`Deleting CIRA Configuration for device ${clientObj.ClientData.payload.uuid}`)
       clientObj = this.clientManager.getClientObject(clientId)
@@ -153,11 +157,11 @@ export class CIRAConfigurator implements IExecutor {
       clientObj.ciraconfig.mpsRemoteSAPEnumerate = true
       this.clientManager.setClientObject(clientObj)
       await this.amtwsman.batchEnum(clientId, 'AMT_ManagementPresenceRemoteSAP')
-    } else if (!clientObj.ciraconfig.mpsRemoteSAPDelete && wsmanResponse.AMT_ManagementPresenceRemoteSAP) {
+    } else if (!clientObj.ciraconfig.mpsRemoteSAPDelete && wsmanResponse?.AMT_ManagementPresenceRemoteSAP) {
       clientObj.ciraconfig.mpsRemoteSAPDelete = true
       this.clientManager.setClientObject(clientObj)
       let selector: any
-      if (wsmanResponse.AMT_ManagementPresenceRemoteSAP.responses.length > 0) {
+      if (wsmanResponse?.AMT_ManagementPresenceRemoteSAP.responses.length > 0) {
         const name = wsmanResponse.AMT_ManagementPresenceRemoteSAP.responses[0].Name
         selector = { Name: name }
         this.logger.debug(`MPS Name : ${name},  selector : ${JSON.stringify(selector, null, '\t')}`)
@@ -173,9 +177,9 @@ export class CIRAConfigurator implements IExecutor {
       await this.amtwsman.batchEnum(clientId, 'AMT_PublicKeyCertificate')
     } else if (clientObj.ciraconfig.mpsRemoteSAPGet && !clientObj.ciraconfig.mpsPublicCertDelete) {
       if (clientObj.ciraconfig.publicCerts === undefined) {
-        clientObj.ciraconfig.publicCerts = wsmanResponse.AMT_PublicKeyCertificate.responses
+        clientObj.ciraconfig.publicCerts = wsmanResponse?.AMT_PublicKeyCertificate.responses
       }
-      if (clientObj.ciraconfig.publicCerts.length > 0) {
+      if (clientObj.ciraconfig.publicCerts?.length > 0) {
         const cert = clientObj.ciraconfig.publicCerts[clientObj.ciraconfig.publicCerts.length - 1]
         clientObj.ciraconfig.publicCerts.pop()
         await this.amtwsman.delete(clientId, 'AMT_PublicKeyCertificate', cert, AMTUserName)

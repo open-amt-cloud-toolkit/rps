@@ -22,6 +22,7 @@ export const config: RCSConfig = {
   corsOrigin: '*',
   corsAllowCredentials: 'true',
   mpsServer: 'https://localhost:3000',
+  delayTimer: 12,
   WSConfiguration: {
     WebSocketPort: 8080,
     WebSocketTLS: false,
