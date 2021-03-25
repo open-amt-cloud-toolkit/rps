@@ -233,7 +233,7 @@ export class ProfileManager implements IProfileManager {
       } else {
         const amtProfiles = await this.amtConfigurations.getAllProfiles()
         for (let index = 0; index < amtProfiles.length; ++index) {
-          if (amtProfiles[index].profileName === profile) {
+          if (amtProfiles[index].profileName.toLowerCase() === profile.toLowerCase()) {
             const amtProfile = amtProfiles[index]
             this.logger.debug(`found amt profile: ${JSON.stringify(amtProfile, null, '\t')}`)
             if (amtProfile.networkConfigName != null) {

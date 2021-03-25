@@ -38,7 +38,7 @@ export class AMTConfigDb implements IProfilesDb {
    */
   async getProfileByName (profileName: string): Promise<AMTConfiguration> {
     this.logger.debug(`getProfileByName: ${profileName}`)
-    const profile: AMTConfiguration = this.amtProfiles.find(item => item.profileName === profileName) || null
+    const profile: AMTConfiguration = this.amtProfiles.find(item => item.profileName.toLowerCase() === profileName.toLowerCase()) || null
     return profile
   }
 
@@ -76,7 +76,7 @@ export class AMTConfigDb implements IProfilesDb {
   async deleteProfileByName (profileName: string): Promise<boolean> {
     let found: boolean = false
     for (let i = 0; i < this.amtProfiles.length; i++) {
-      if (this.amtProfiles[i].profileName === profileName) {
+      if (this.amtProfiles[i].profileName.toLowerCase() === profileName.toLowerCase()) {
         this.amtProfiles.splice(i, 1)
         found = true
         break
@@ -118,7 +118,7 @@ export class AMTConfigDb implements IProfilesDb {
    */
   async updateProfile (amtConfig: AMTConfiguration): Promise<AMTConfiguration> {
     this.logger.debug(`update Profile: ${amtConfig.profileName}`)
-    const isMatch = (item): boolean => item.profileName === amtConfig.profileName
+    const isMatch = (item): boolean => item.profileName.toLowerCase() === amtConfig.profileName.toLowerCase()
     const index = this.amtProfiles.findIndex(isMatch)
     if (index >= 0) {
       this.amtProfiles.splice(index, 1)
