@@ -881,6 +881,61 @@
 					"response": []
 				},
 				{
+					"name": "Create Domain Duplicate with different case",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"pm.test(\"Creation should succeed\", function () {\r",
+									"    var result = pm.response.json();\r",
+									"    pm.expect(result.error).to.eql('Unique key violation')\r",
+									"    pm.expect(result.message).to.eql('Domain vproDemo ID or Suffix already exists')\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"value": "APIKEYFORRPS123!",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"profileName\": \"vproDemo\",\r\n    \"domainSuffix\": \"vprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\"\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"domains"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Create Domain with Duplicate Name",
 					"event": [
 						{
@@ -2845,6 +2900,133 @@
 					"response": []
 				},
 				{
+					"name": "Create CIRA Config duplicate with config name with different case",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"pm.test(\"Creation should succeed\", function () {\r",
+									"    var result = pm.response.json();\r",
+									"    pm.expect(result.error).to.eql(\"Unique key violation\")\r",
+									"    pm.expect(result.message).to.eql(\"CIRA Config ciraConfig2 already exists.\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\t\"configName\": \"ciraConfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"ciraconfigs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get CIRA Config with different config name case",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var env = pm.environment.get(\"env\");\r",
+									"if (env == 'dev') {\r",
+									"    pm.test(\"Status code is 200\", function () {\r",
+									"        pm.response.to.have.status(200);\r",
+									"    });\r",
+									"    pm.test(\"Result should be equal to example\", function () {\r",
+									"        var jsonData = pm.response.json();\r",
+									"        pm.expect(jsonData.configName).to.eql(\"ciraconfig2\")\r",
+									"        pm.expect(jsonData.mpsServerAddress).to.eql(\"192.168.8.50\")\r",
+									"        pm.expect(jsonData.mpsPort).to.eql(4433)\r",
+									"        pm.expect(jsonData.username).to.eql(\"admin\")\r",
+									"        pm.expect(jsonData.password).to.eql()\r",
+									"        pm.expect(jsonData.commonName).to.eql(\"192.168.8.50\")\r",
+									"        pm.expect(jsonData.serverAddressFormat).to.eql(3)\r",
+									"        pm.expect(jsonData.authMethod).to.eql(2)\r",
+									"        pm.expect(jsonData.mpsRootCertificate).to.eql(\"rootcert\")\r",
+									"        pm.expect(jsonData.proxyDetails).to.eql(\"\")\r",
+									"    });\r",
+									"} else {\r",
+									"    pm.test(\"Status code is 404\", function () {    \r",
+									"    pm.response.to.have.status(404);\r",
+									"    });\r",
+									"    pm.test(\"Request should succeed\", function () {\r",
+									"    var result = pm.response.json();\r",
+									"    pm.expect(result.error).to.eql('Not Found')\r",
+									"    pm.expect(result.message).to.eql('CIRA Config Sample_CIRA_Config not found')\r",
+									"    });\r",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs/ciraConfig2",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"ciraconfigs",
+								"ciraConfig2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Create CIRA Config Already Exist",
 					"event": [
 						{
@@ -3524,7 +3706,70 @@
 					"response": []
 				},
 				{
-					"name": "Remove CIRA Config",
+					"name": "Edit CIRA Config with different config name case",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									" pm.test(\"Result should be equal to example\", function () {\r",
+									"        var jsonData = pm.response.json();\r",
+									"        pm.expect(jsonData.configName).to.eql(\"ciraconfig2\")\r",
+									"        pm.expect(jsonData.mpsServerAddress).to.eql(\"192.168.8.5\")\r",
+									"        pm.expect(jsonData.mpsPort).to.eql(4433)\r",
+									"        pm.expect(jsonData.username).to.eql(\"admin\")\r",
+									"        pm.expect(jsonData.password).to.eql()\r",
+									"        pm.expect(jsonData.commonName).to.eql(\"192.168.8.5\")\r",
+									"        pm.expect(jsonData.serverAddressFormat).to.eql(3)\r",
+									"        pm.expect(jsonData.authMethod).to.eql(2)\r",
+									"        pm.expect(jsonData.mpsRootCertificate).to.eql(\"rootcert\")\r",
+									"        pm.expect(jsonData.proxyDetails).to.eql(\"\")\r",
+									"    });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"configName\": \"ciraConfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.5\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"password\": \"Intel123!\",\r\n    \"commonName\": \"192.168.8.5\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\"\r\n}\r\n"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"ciraconfigs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove CIRA Config with different config name case",
 					"event": [
 						{
 							"listen": "test",
@@ -3558,7 +3803,7 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs/ciraconfig2",
+							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs/ciraConfig2",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
@@ -3569,7 +3814,7 @@
 								"v1",
 								"admin",
 								"ciraconfigs",
-								"ciraconfig2"
+								"ciraConfig2"
 							]
 						}
 					},
