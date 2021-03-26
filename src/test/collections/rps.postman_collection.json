@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "bc7d4ca7-cc53-4f55-8db7-a8e090963af3",
+		"_postman_id": "5a8ae93e-faca-43f1-8ffb-fd6991508a26",
 		"name": "RPS API Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -242,6 +242,70 @@
 								"v1",
 								"admin",
 								"domains"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Domain - domain name case insensitive",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var env = pm.environment.get(\"env\");\r",
+									"if (env == 'dev') {\r",
+									"    pm.test(\"Status code is 200\", function () {\r",
+									"        pm.response.to.have.status(200);\r",
+									"    });\r",
+									"    pm.test(\"Result should be equal to example\", function () {\r",
+									"        var jsonData = pm.response.json();\r",
+									"        pm.expect(jsonData.profileName).to.eql(\"NewDomain\")\r",
+									"        pm.expect(jsonData.domainSuffix).to.eql(\"NewDomain.com\")\r",
+									"        pm.expect(jsonData.provisioningCertStorageFormat).to.eql(\"raw\")\r",
+									"    });\r",
+									"} else {\r",
+									"    pm.test(\"Status code is 404\", function () {    \r",
+									"    pm.response.to.have.status(404);\r",
+									"    });\r",
+									"    pm.test(\"Request should succeed\", function () {\r",
+									"        var result = pm.response.json();\r",
+									"        pm.expect(result.error).to.eql('Not Found')\r",
+									"    });\r",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains/newdomain",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"domains",
+								"newdomain"
 							]
 						}
 					},
@@ -1164,7 +1228,7 @@
 									"pm.test(\"Update should fail when it doesn't exists\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.error).to.eql('Not Found')\r",
-									"    pm.expect(result.message).to.eql('Domain newDomain not found')\r",
+									"    pm.expect(result.message).to.eql('Domain Domain not found')\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -1187,7 +1251,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"newDomain\",\r\n    \"domainSuffix\": \"newDomain.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"Domain\",\r\n    \"domainSuffix\": \"newDomain.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
@@ -1314,7 +1378,7 @@
 					"response": []
 				},
 				{
-					"name": "Remove Domain",
+					"name": "Remove Domain - domain name with different case",
 					"event": [
 						{
 							"listen": "test",
@@ -1347,7 +1411,7 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains/NewDomain",
+							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains/newdomain",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
@@ -1358,7 +1422,7 @@
 								"v1",
 								"admin",
 								"domains",
-								"NewDomain"
+								"newdomain"
 							]
 						}
 					},

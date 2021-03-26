@@ -16,7 +16,7 @@ export class DomainCredentialManager implements IDomainCredentialManager {
   private readonly amtDomains: IDomainsDb
   private readonly logger: ILogger
   private readonly configurator: IConfigurator = null
-
+  // TBD: Need to be refactored when dev mode is removed
   constructor (logger: ILogger, amtDomains: IDomainsDb, configurator?: IConfigurator) {
     this.amtDomains = amtDomains
     this.logger = logger
@@ -70,7 +70,7 @@ export class DomainCredentialManager implements IDomainCredentialManager {
   private async getAMTDomain (domainSuffix: string): Promise<AMTDomain> {
     const amtDomainList = await this.amtDomains.getAllDomains()
     for (let index = 0; index < amtDomainList.length; ++index) {
-      if (amtDomainList[index].domainSuffix === domainSuffix) {
+      if (amtDomainList[index].domainSuffix.toLowerCase() === domainSuffix.toLowerCase()) {
         this.logger.debug(`found amt domain: ${domainSuffix}`)
         this.logger.silly(`Domain Info ${domainSuffix}: ${JSON.stringify(amtDomainList[index])}`)
         return amtDomainList[index]
