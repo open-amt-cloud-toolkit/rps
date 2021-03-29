@@ -86,19 +86,16 @@ app.use('/api/v1', isAuthenticated, (req, res, next) => {
 
 let serverHttps: any
 if (config.https) {
-  let certs: any
+  let webSocketCertificateKey: any
+  let webSocketCertificate: any
+  let webSocketRootCACert: any
 
   if (EnvReader.GlobalEnvConfig.DbConfig.useRawCerts) {
     log.debug('using raw certs')
 
-    certs = {
-      webConfig: {
-        key: EnvReader.GlobalEnvConfig.WSConfiguration.WebSocketCertificateKey,
-        cert: EnvReader.GlobalEnvConfig.WSConfiguration.WebSocketCertificate,
-        secureOptions: ['SSL_OP_NO_SSLv2', 'SSL_OP_NO_SSLv3', 'SSL_OP_NO_COMPRESSION', 'SSL_OP_CIPHER_SERVER_PREFERENCE', 'SSL_OP_NO_TLSv1', 'SSL_OP_NO_TLSv11'],
-        ca: EnvReader.GlobalEnvConfig.WSConfiguration.RootCACert
-      }
-    }
+    webSocketCertificateKey = EnvReader.GlobalEnvConfig.WSConfiguration.WebSocketCertificateKey
+    webSocketCertificate = EnvReader.GlobalEnvConfig.WSConfiguration.WebSocketCertificate
+    webSocketRootCACert = EnvReader.GlobalEnvConfig.WSConfiguration.RootCACert
   } else {
     log.debug('using cert files')
 
@@ -117,19 +114,22 @@ if (config.https) {
       process.exit(1)
     }
     if (!existsSync(WebSocketCertificateKeyPath)) {
-      log.error(`Cert KeyFile ${WebSocketCertificateKeyPath} doesnt exist. Exiting..`)
+      log.error(`Cert KeyFile ${WebSocketCertificateKeyPath} doesn't exist. Exiting..`)
       process.exit(1)
     }
-    certs = {
-      webConfig: {
-        key: readFileSync(WebSocketCertificateKeyPath),
-        cert: readFileSync(WebSocketCertificatePath),
-        secureOptions: ['SSL_OP_NO_SSLv2', 'SSL_OP_NO_SSLv3', 'SSL_OP_NO_COMPRESSION', 'SSL_OP_CIPHER_SERVER_PREFERENCE', 'SSL_OP_NO_TLSv1', 'SSL_OP_NO_TLSv11'],
-        ca: (EnvReader.GlobalEnvConfig.WSConfiguration.RootCACert !== '' ? readFileSync(RootCACertPath) : '')
-      }
-    }
+
+    webSocketCertificateKey = readFileSync(WebSocketCertificateKeyPath)
+    webSocketCertificate = readFileSync(WebSocketCertificatePath)
+    webSocketRootCACert = (EnvReader.GlobalEnvConfig.WSConfiguration.RootCACert !== '' ? readFileSync(RootCACertPath) : '')
   }
-  serverHttps = https.createServer(certs.webConfig, app)
+
+  const webConfig: any = {}
+  webConfig.key = webSocketCertificateKey
+  webConfig.cert = webSocketCertificate
+  webConfig.secureOptions = ['SSL_OP_NO_SSLv2', 'SSL_OP_NO_SSLv3', 'SSL_OP_NO_COMPRESSION', 'SSL_OP_CIPHER_SERVER_PREFERENCE', 'SSL_OP_NO_TLSv1', 'SSL_OP_NO_TLSv11']
+  webConfig.ca = webSocketRootCACert
+
+  serverHttps = https.createServer(webConfig, app)
   // this.expressWs = expressWs(this.app, this.serverHttps);
 }
 
