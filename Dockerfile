@@ -19,6 +19,6 @@ RUN npm ci
 
 # Transpile TS => JS
 RUN npm run compile
-RUN npm prune --production
+#RUN npm prune --production
 
 CMD ["node", "./dist/Index.js"]
