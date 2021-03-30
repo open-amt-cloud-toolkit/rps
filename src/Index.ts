@@ -101,11 +101,11 @@ if (config.https) {
 
     const webSocketCertificatePath = path.join(__dirname, EnvReader.GlobalEnvConfig.WSConfiguration.WebSocketCertificate)
     const webSocketCertificateKeyPath = path.join(__dirname, EnvReader.GlobalEnvConfig.WSConfiguration.WebSocketCertificateKey)
-    let RootCACertPath
+    let rootCACertPath
     if (EnvReader.GlobalEnvConfig.WSConfiguration.RootCACert) {
-      RootCACertPath = path.join(__dirname, EnvReader.GlobalEnvConfig.WSConfiguration.RootCACert)
-      if (!existsSync(RootCACertPath)) {
-        log.error(`Root cert ${RootCACertPath} doesn't exist. Exiting..`)
+      rootCACertPath = path.join(__dirname, EnvReader.GlobalEnvConfig.WSConfiguration.RootCACert)
+      if (!existsSync(rootCACertPath)) {
+        log.error(`Root cert ${rootCACertPath} doesn't exist. Exiting..`)
         process.exit(1)
       }
     }
@@ -120,7 +120,7 @@ if (config.https) {
 
     webSocketCertificateKey = readFileSync(webSocketCertificateKeyPath)
     webSocketCertificate = readFileSync(webSocketCertificatePath)
-    webSocketRootCACert = (EnvReader.GlobalEnvConfig.WSConfiguration.RootCACert !== '' ? readFileSync(RootCACertPath) : '')
+    webSocketRootCACert = (EnvReader.GlobalEnvConfig.WSConfiguration.RootCACert !== '' ? readFileSync(rootCACertPath) : '')
   }
 
   const webConfig: any = {}
@@ -130,7 +130,6 @@ if (config.https) {
   webConfig.ca = webSocketRootCACert
 
   serverHttps = https.createServer(webConfig, app)
-  // this.expressWs = expressWs(this.app, this.serverHttps);
 }
 
 if (config.https) {
