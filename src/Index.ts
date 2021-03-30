@@ -86,9 +86,9 @@ app.use('/api/v1', isAuthenticated, (req, res, next) => {
 
 let serverHttps: any
 if (config.https) {
-  let webSocketCertificateKey: any
-  let webSocketCertificate: any
-  let webSocketRootCACert: any
+  let webSocketCertificateKey: string | Buffer
+  let webSocketCertificate: string | Buffer
+  let webSocketRootCACert: string | Buffer
 
   if (EnvReader.GlobalEnvConfig.DbConfig.useRawCerts) {
     log.debug('using raw certs')
@@ -99,8 +99,8 @@ if (config.https) {
   } else {
     log.debug('using cert files')
 
-    const WebSocketCertificatePath = path.join(__dirname, EnvReader.GlobalEnvConfig.WSConfiguration.WebSocketCertificate)
-    const WebSocketCertificateKeyPath = path.join(__dirname, EnvReader.GlobalEnvConfig.WSConfiguration.WebSocketCertificateKey)
+    const webSocketCertificatePath = path.join(__dirname, EnvReader.GlobalEnvConfig.WSConfiguration.WebSocketCertificate)
+    const webSocketCertificateKeyPath = path.join(__dirname, EnvReader.GlobalEnvConfig.WSConfiguration.WebSocketCertificateKey)
     let RootCACertPath
     if (EnvReader.GlobalEnvConfig.WSConfiguration.RootCACert) {
       RootCACertPath = path.join(__dirname, EnvReader.GlobalEnvConfig.WSConfiguration.RootCACert)
@@ -109,17 +109,17 @@ if (config.https) {
         process.exit(1)
       }
     }
-    if (!existsSync(WebSocketCertificatePath)) {
-      log.error(`Cert File ${WebSocketCertificatePath} doesn't exist. Exiting..`)
+    if (!existsSync(webSocketCertificatePath)) {
+      log.error(`Cert File ${webSocketCertificatePath} doesn't exist. Exiting..`)
       process.exit(1)
     }
-    if (!existsSync(WebSocketCertificateKeyPath)) {
-      log.error(`Cert KeyFile ${WebSocketCertificateKeyPath} doesn't exist. Exiting..`)
+    if (!existsSync(webSocketCertificateKeyPath)) {
+      log.error(`Cert KeyFile ${webSocketCertificateKeyPath} doesn't exist. Exiting..`)
       process.exit(1)
     }
 
-    webSocketCertificateKey = readFileSync(WebSocketCertificateKeyPath)
-    webSocketCertificate = readFileSync(WebSocketCertificatePath)
+    webSocketCertificateKey = readFileSync(webSocketCertificateKeyPath)
+    webSocketCertificate = readFileSync(webSocketCertificatePath)
     webSocketRootCACert = (EnvReader.GlobalEnvConfig.WSConfiguration.RootCACert !== '' ? readFileSync(RootCACertPath) : '')
   }
 
