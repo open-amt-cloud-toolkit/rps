@@ -25,7 +25,7 @@
   "db_password": "admin123",
   "use_db_profiles": true,
   "use_raw_certs": false,
-  "cors_origin":"*",
+  "cors_origin":"http://localhost:4200",
   "cors_headers":"Origin, X-Requested-With, Accept, X-RPS-API-Key, Content-Type, csrf-token, authorization",
   "cors_methods":"*",
   "cors_allow_credentials":"true",
