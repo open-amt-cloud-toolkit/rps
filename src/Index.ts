@@ -86,34 +86,50 @@ app.use('/api/v1', isAuthenticated, (req, res, next) => {
 
 let serverHttps: any
 if (config.https) {
-  const WebSocketCertificatePath = path.join(__dirname, EnvReader.GlobalEnvConfig.WSConfiguration.WebSocketCertificate)
-  const WebSocketCertificateKeyPath = path.join(__dirname, EnvReader.GlobalEnvConfig.WSConfiguration.WebSocketCertificateKey)
-  let RootCACertPath
-  if (EnvReader.GlobalEnvConfig.WSConfiguration.RootCACert) {
-    RootCACertPath = path.join(__dirname, EnvReader.GlobalEnvConfig.WSConfiguration.RootCACert)
-    if (!existsSync(RootCACertPath)) {
-      log.error(`Root cert ${RootCACertPath} doesn't exist. Exiting..`)
+  let webSocketCertificateKey: string | Buffer
+  let webSocketCertificate: string | Buffer
+  let webSocketRootCACert: string | Buffer
+
+  if (EnvReader.GlobalEnvConfig.DbConfig.useRawCerts) {
+    log.debug('using raw certs')
+
+    webSocketCertificateKey = EnvReader.GlobalEnvConfig.WSConfiguration.WebSocketCertificateKey
+    webSocketCertificate = EnvReader.GlobalEnvConfig.WSConfiguration.WebSocketCertificate
+    webSocketRootCACert = EnvReader.GlobalEnvConfig.WSConfiguration.RootCACert
+  } else {
+    log.debug('using cert files')
+
+    const webSocketCertificatePath = path.join(__dirname, EnvReader.GlobalEnvConfig.WSConfiguration.WebSocketCertificate)
+    const webSocketCertificateKeyPath = path.join(__dirname, EnvReader.GlobalEnvConfig.WSConfiguration.WebSocketCertificateKey)
+    let rootCACertPath
+    if (EnvReader.GlobalEnvConfig.WSConfiguration.RootCACert) {
+      rootCACertPath = path.join(__dirname, EnvReader.GlobalEnvConfig.WSConfiguration.RootCACert)
+      if (!existsSync(rootCACertPath)) {
+        log.error(`Root cert ${rootCACertPath} doesn't exist. Exiting..`)
+        process.exit(1)
+      }
+    }
+    if (!existsSync(webSocketCertificatePath)) {
+      log.error(`Cert File ${webSocketCertificatePath} doesn't exist. Exiting..`)
       process.exit(1)
     }
-  }
-  if (!existsSync(WebSocketCertificatePath)) {
-    log.error(`Cert File ${WebSocketCertificatePath} doesn't exist. Exiting..`)
-    process.exit(1)
-  }
-  if (!existsSync(WebSocketCertificateKeyPath)) {
-    log.error(`Cert KeyFile ${WebSocketCertificateKeyPath} doesn't exist. Exiting..`)
-    process.exit(1)
-  }
-  const certs: any = {
-    webConfig: {
-      key: readFileSync(WebSocketCertificateKeyPath),
-      cert: readFileSync(WebSocketCertificatePath),
-      secureOptions: ['SSL_OP_NO_SSLv2', 'SSL_OP_NO_SSLv3', 'SSL_OP_NO_COMPRESSION', 'SSL_OP_CIPHER_SERVER_PREFERENCE', 'SSL_OP_NO_TLSv1', 'SSL_OP_NO_TLSv11'],
-      ca: (EnvReader.GlobalEnvConfig.WSConfiguration.RootCACert !== '' ? readFileSync(RootCACertPath) : '')
+    if (!existsSync(webSocketCertificateKeyPath)) {
+      log.error(`Cert KeyFile ${webSocketCertificateKeyPath} doesn't exist. Exiting..`)
+      process.exit(1)
     }
+
+    webSocketCertificateKey = readFileSync(webSocketCertificateKeyPath)
+    webSocketCertificate = readFileSync(webSocketCertificatePath)
+    webSocketRootCACert = (EnvReader.GlobalEnvConfig.WSConfiguration.RootCACert !== '' ? readFileSync(rootCACertPath) : '')
   }
-  serverHttps = https.createServer(certs.webConfig, app)
-  // this.expressWs = expressWs(this.app, this.serverHttps);
+
+  const webConfig: any = {}
+  webConfig.key = webSocketCertificateKey
+  webConfig.cert = webSocketCertificate
+  webConfig.secureOptions = ['SSL_OP_NO_SSLv2', 'SSL_OP_NO_SSLv3', 'SSL_OP_NO_COMPRESSION', 'SSL_OP_CIPHER_SERVER_PREFERENCE', 'SSL_OP_NO_TLSv1', 'SSL_OP_NO_TLSv11']
+  webConfig.ca = webSocketRootCACert
+
+  serverHttps = https.createServer(webConfig, app)
 }
 
 if (config.https) {
