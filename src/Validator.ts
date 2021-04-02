@@ -120,7 +120,7 @@ export class Validator implements IValidator {
           if (profile.activation === ClientAction.CLIENTCTLMODE) {
             this.logger.debug(`Device ${payload.uuid} already enabled in client mode.`)
             clientObj.ciraconfig.status = 'already enabled in client mode.'
-            clientObj.action = payload.profile.NetworkConfigObject ? ClientAction.NETWORKCONFIG : ClientAction.CIRACONFIG
+            clientObj.action = payload.profile.networkConfigObject ? ClientAction.NETWORKCONFIG : ClientAction.CIRACONFIG
           } else {
             throw new RPSError(`Device ${payload.uuid} already enabled in client control mode.`)
           }
@@ -130,7 +130,7 @@ export class Validator implements IValidator {
           if (profile.activation === ClientAction.ADMINCTLMODE) {
             this.logger.debug(`Device ${payload.uuid} already enabled in admin mode.`)
             clientObj.ciraconfig.status = 'already enabled in admin mode.'
-            clientObj.action = payload.profile.NetworkConfigObject ? ClientAction.NETWORKCONFIG : ClientAction.CIRACONFIG
+            clientObj.action = payload.profile.networkConfigObject ? ClientAction.NETWORKCONFIG : ClientAction.CIRACONFIG
           } else {
             throw new RPSError(`Device ${payload.uuid} already enabled in admin control mode.`)
           }

@@ -35,8 +35,8 @@ export class CIRAConfigurator implements IExecutor {
     let clientObj
     try {
       clientObj = this.clientManager.getClientObject(clientId)
-      await this.delete(clientId, clientObj, message)
-      if (message?.payload != null) {
+      if (message?.payload != null || !clientObj.ciraconfig.policyRuleUserInitiate) {
+        await this.delete(clientId, clientObj, message)
         const wsmanResponse = message.payload
         if (clientObj.ClientData.payload.profile.ciraConfigName && clientObj.ciraconfig.setENVSettingData) {
           // Add trusted root certificate and MPS server
@@ -116,7 +116,6 @@ export class CIRAConfigurator implements IExecutor {
             return this.responseMsg.get(clientId, null, 'success', 'success', `Device ${clientObj.uuid} ${clientObj.ciraconfig.status} CIRA Configured.`)
           }
         } else if (clientObj.ciraconfig.setENVSettingData) {
-          this.logger.debug('test message')
           return this.responseMsg.get(clientId, null, 'success', 'success', `Device ${clientObj.uuid} ${clientObj.ciraconfig.status}`)
         }
       }
@@ -176,7 +175,7 @@ export class CIRAConfigurator implements IExecutor {
       this.clientManager.setClientObject(clientObj)
       await this.amtwsman.batchEnum(clientId, 'AMT_PublicKeyCertificate')
     } else if (clientObj.ciraconfig.mpsRemoteSAPGet && !clientObj.ciraconfig.mpsPublicCertDelete) {
-      if (clientObj.ciraconfig.publicCerts === undefined) {
+      if (clientObj.ciraconfig.publicCerts == null) {
         clientObj.ciraconfig.publicCerts = wsmanResponse?.AMT_PublicKeyCertificate.responses
       }
       if (clientObj.ciraconfig.publicCerts?.length > 0) {
