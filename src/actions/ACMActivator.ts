@@ -196,6 +196,38 @@ export class ACMActivator implements IExecutor {
         clientObj.ciraconfig.status = 'activated in admin mode.'
         clientObj.activationStatus = true
         this.clientManager.setClientObject(clientObj)
+        /* Create a device in the repository. */
+        if (this.configurator?.amtDeviceRepository) {
+          await this.configurator.amtDeviceRepository.insert(new AMTDeviceDTO(clientObj.uuid,
+            clientObj.hostname,
+            EnvReader.GlobalEnvConfig.mpsusername,
+            EnvReader.GlobalEnvConfig.mpspass,
+            EnvReader.GlobalEnvConfig.amtusername,
+            clientObj.amtPassword,
+            null))
+        } else {
+          this.logger.error('unable to write device')
+        }
+        // TODO: performance: avoid second call to db from ~line 220
+        const profile = await this.configurator.profileManager.getAmtProfile(clientObj.ClientData.payload.profile.profileName)
+        let tags = []
+        if (profile?.tags != null) {
+          tags = profile.tags
+        }
+        /* Register device metadata with MPS */
+        try {
+          await got(`${EnvReader.GlobalEnvConfig.mpsServer}/metadata`, {
+            method: 'POST',
+            rejectUnauthorized: false,
+            json: {
+              guid: clientObj.uuid,
+              hostname: clientObj.hostname,
+              tags: tags
+            }
+          })
+        } catch (err) {
+          this.logger.warn('unable to register metadata with MPS', err)
+        }
         const msg = await this.waitAfterActivation(clientId, clientObj)
         return msg
       }
@@ -204,6 +236,19 @@ export class ACMActivator implements IExecutor {
         throw new RPSError(`Device ${clientObj.uuid} failed to set MEBx password.`)
       } else {
         this.logger.debug(`Device ${clientObj.uuid} MEBx password updated.`)
+        /* Update a device in the repository. */
+        if (this.configurator?.amtDeviceRepository) {
+          await this.configurator.amtDeviceRepository.insert(new AMTDeviceDTO(clientObj.uuid,
+            clientObj.hostname,
+            EnvReader.GlobalEnvConfig.mpsusername,
+            EnvReader.GlobalEnvConfig.mpspass,
+            EnvReader.GlobalEnvConfig.amtusername,
+            clientObj.amtPassword,
+            clientObj.mebxPassword
+          ))
+        } else {
+          this.logger.error('unable to write device')
+        }
         /* After the activation, control goes to Network configuration */
         clientObj.action = ClientAction.NETWORKCONFIG
         await this.networkConfigurator.execute(null, clientId)
@@ -244,7 +289,7 @@ export class ACMActivator implements IExecutor {
    * @param {ClientObject} clientObj
    */
   async setMEBxPassword (clientId: string, clientObj: ClientObject): Promise<void> {
-    if (!clientObj.mebxPassword) {
+    if (clientObj.mebxPassword == null) {
       this.logger.info('setting MEBx password')
       /* Update the wsman stack username and password */
       if (this.amtwsman.cache[clientId]) {
@@ -254,39 +299,7 @@ export class ACMActivator implements IExecutor {
       /* Get the MEBx password */
       const mebxPassword: string = await this.configurator.profileManager.getMEBxPassword(clientObj.ClientData.payload.profile.profileName)
 
-      /* Create a device in the repository. */
-      if (this.configurator?.amtDeviceRepository) {
-        await this.configurator.amtDeviceRepository.insert(new AMTDeviceDTO(clientObj.uuid,
-          clientObj.hostname,
-          EnvReader.GlobalEnvConfig.mpsusername,
-          EnvReader.GlobalEnvConfig.mpspass,
-          EnvReader.GlobalEnvConfig.amtusername,
-          clientObj.amtPassword,
-          mebxPassword))
-      } else {
-        this.logger.error('unable to write device')
-      }
-      // TODO: performance: avoid second call to db from ~line 220
-      const profile = await this.configurator.profileManager.getAmtProfile(clientObj.ClientData.payload.profile.profileName)
-      let tags = []
-      if (profile?.tags != null) {
-        tags = profile.tags
-      }
-      /* Register device metadata with MPS */
-      try {
-        await got(`${EnvReader.GlobalEnvConfig.mpsServer}/metadata`, {
-          method: 'POST',
-          rejectUnauthorized: false,
-          json: {
-            guid: clientObj.uuid,
-            hostname: clientObj.hostname,
-            tags: tags
-          }
-        })
-      } catch (err) {
-        this.logger.warn('unable to register metadata with MPS', err)
-      }
-      clientObj.mebxPassword = true
+      clientObj.mebxPassword = mebxPassword
       this.clientManager.setClientObject(clientObj)
       /*  API is only for Admin control mode */
       await this.amtwsman.execute(clientId, 'AMT_SetupAndConfigurationService', 'SetMEBxPassword', { Password: mebxPassword }, null)
