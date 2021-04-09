@@ -19,23 +19,17 @@ const rcsConfig: RCSConfig = {
   Name: 'RCS Configuration File',
   Description: 'Contains settings to configure the RCS Server',
   WSConfiguration: {
-    WebSocketPort: 8080,
-    WebSocketTLS: false,
-    WebSocketCertificate: 'tlscert.pem',
-    WebSocketCertificateKey: 'tlskey.pem'
+    WebSocketPort: 8080
   },
   mpsusername: 'admin',
   mpspass: 'P@ssw0rd',
   amtusername: 'admin',
-  RPSXAPIKEY: 'P@ssw0rd',
   VaultConfig: {
     usevault: false,
     SecretsPath: 'kv/data/rcs/',
     token: '',
     address: ''
   },
-  devmode: true,
-  https: false,
   webport: 8081,
   credentialspath: '../../../MPS_MicroService/private/data.json',
   corsHeaders: '*',

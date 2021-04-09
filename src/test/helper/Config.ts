@@ -12,9 +12,6 @@ export const config: RCSConfig = {
   mpsusername: 'admin',
   mpspass: 'P@ssw0rd',
   amtusername: 'admin',
-  RPSXAPIKEY: 'P@ssw0rd',
-  devmode: true,
-  https: false,
   webport: 8081,
   credentialspath: '../../../MPS_MicroService/private/data.json',
   corsHeaders: '*',
@@ -24,10 +21,7 @@ export const config: RCSConfig = {
   mpsServer: 'https://localhost:3000',
   delayTimer: 12,
   WSConfiguration: {
-    WebSocketPort: 8080,
-    WebSocketTLS: false,
-    WebSocketCertificate: 'tlscert.pem',
-    WebSocketCertificateKey: 'tlskey.pem'
+    WebSocketPort: 8080
   },
   DbConfig:
   {
