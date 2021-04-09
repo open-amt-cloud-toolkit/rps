@@ -4,7 +4,7 @@
 * Description: Constants
 **********************************************************************/
 
-import { CIRAConfig, NetworkConfig } from '../RCS.Config'
+import { CIRAConfig, NetworkConfig, WebSocketConfig } from '../RCS.Config'
 
 export class ProvisioningCertObj {
   certChain: string[]
@@ -33,13 +33,6 @@ export class VaultConfig {
   address: string
   token: string
 }
-export class WSConfiguration {
-  WebSocketPort: number
-  WebSocketTLS: boolean
-  WebSocketCertificate: string
-  WebSocketCertificateKey: string
-  RootCACert?: string
-}
 export class RCSConfig {
   Name: string
   Description: string
@@ -47,14 +40,11 @@ export class RCSConfig {
   mpsusername: string
   mpspass: string
   amtusername: string
-  devmode: boolean
-  https: boolean
   webport: number
   credentialspath: string
   datapath?: string
-  WSConfiguration: WSConfiguration
+  WSConfiguration: WebSocketConfig
   DbConfig: DbConfig
-  RPSXAPIKEY: string
   NodeEnv?: string
   corsOrigin: string
   corsHeaders: string
@@ -64,7 +54,6 @@ export class RCSConfig {
   delayTimer: number
   constructor () {
     this.VaultConfig = new VaultConfig()
-    this.WSConfiguration = new WSConfiguration()
     this.DbConfig = new DbConfig()
   }
 }
@@ -222,14 +211,9 @@ const recipeRCSConfig = {
   password: 'mpspass',
   amt_user: 'amtusername',
   developer_mode: 'devmode',
-  https: 'https',
   web_port: 'webport',
   credentials_path: 'credentialspath',
   websocketport: 'WSConfiguration.WebSocketPort',
-  websockettls: 'WSConfiguration.WebSocketTLS',
-  web_tls_cert: 'WSConfiguration.WebSocketCertificate',
-  web_tls_cert_key: 'WSConfiguration.WebSocketCertificateKey',
-  root_ca_cert: 'WSConfiguration.RootCACert',
   use_vault: 'VaultConfig.usevault',
   vault_address: 'VaultConfig.address',
   vault_token: 'VaultConfig.token',
@@ -240,7 +224,6 @@ const recipeRCSConfig = {
   db_user: 'DbConfig.dbuser',
   db_password: 'DbConfig.dbpassword',
   use_db_profiles: 'DbConfig.useDbForConfig',
-  xapikey: 'RPSXAPIKEY',
   amt_domains: 'AMTDomains',
   amt_configurations: 'AMTConfigurations',
   cira_configurations: 'CIRAConfigurations',

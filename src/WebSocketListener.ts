@@ -4,8 +4,6 @@
  * Author: Madhavi Losetty
  * Description: Simple Websocket server
  **********************************************************************/
-import * as https from 'https'
-import * as path from 'path'
 import * as WebSocket from 'ws'
 import { v4 as uuid } from 'uuid'
 
@@ -14,8 +12,6 @@ import { IWebSocketListener } from './interfaces/IWebSocketListener'
 import { IClientManager } from './interfaces/IClientManager'
 import { IDataProcessor } from './interfaces/IDataProcessor'
 import { ILogger } from './interfaces/ILogger'
-import { FileHelper } from './utils/FileHelper'
-import { EnvReader } from './utils/EnvReader'
 
 export class WebSocketListener implements IWebSocketListener {
   clientManager: IClientManager
@@ -36,28 +32,8 @@ export class WebSocketListener implements IWebSocketListener {
    */
   connect (): boolean {
     try {
-      if (this.wsConfig.WebSocketTLS && this.wsConfig.WebSocketCertificate !== null && this.wsConfig.WebSocketCertificateKey !== null) {
-        let httpsServer
-        if (EnvReader.GlobalEnvConfig.DbConfig.useRawCerts) {
-          // this means the certs are provided from ENV variables. read them RAW.
-          this.logger.info('This means the certs are provided from ENV variables. read them RAW.')
-          httpsServer = https.createServer({
-            cert: this.wsConfig.WebSocketCertificate,
-            key: this.wsConfig.WebSocketCertificateKey,
-            ca: (this.wsConfig.RootCACert !== '' ? this.wsConfig.RootCACert : '')
-          })
-        } else {
-          httpsServer = https.createServer({
-            cert: FileHelper.readFileSync(`${path.join(__dirname, this.wsConfig.WebSocketCertificate)}`),
-            key: FileHelper.readFileSync(`${path.join(__dirname, this.wsConfig.WebSocketCertificateKey)}`),
-            ca: (this.wsConfig.RootCACert !== '' ? FileHelper.readFileSync(path.join(__dirname, this.wsConfig.RootCACert)) : '')
-          })
-        }
-        httpsServer.listen(this.wsConfig.WebSocketPort)
-        this.wsServer = new WebSocket.Server({ server: httpsServer })
-      } else {
-        this.wsServer = new WebSocket.Server({ port: this.wsConfig.WebSocketPort })
-      }
+      this.wsServer = new WebSocket.Server({ port: this.wsConfig.WebSocketPort })
+
       if (this.wsServer !== null) {
         this.wsServer.on('connection', this.onClientConnected)
         this.logger.debug(`RPS Microservice socket listening on port: ${this.wsConfig.WebSocketPort} ...!`)
