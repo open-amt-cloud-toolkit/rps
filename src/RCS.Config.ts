@@ -75,7 +75,7 @@ export interface ClientObject {
   activationStatus?: boolean
   delayEndTime?: any
   amtPassword?: string
-  mebxPassword?: boolean
+  mebxPassword?: string
   ciraconfig?: CIRAConfigFlow
 }
 
