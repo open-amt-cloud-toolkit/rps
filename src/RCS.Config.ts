@@ -8,10 +8,6 @@ import { AMTConfiguration, AMTDomain } from './models/Rcs'
 
 export interface WebSocketConfig {
   WebSocketPort: number
-  WebSocketTLS: boolean
-  WebSocketCertificate: string
-  WebSocketCertificateKey: string
-  RootCACert?: string
 }
 export interface NetworkConfig {
   profileName: string

@@ -4,20 +4,14 @@
   "user": "standalone", //mps username
   "password":"G@ppm0ym", // mps password
   "amt_user":"admin", 
-  "https":true,
   "web_port":8081,
   "credentials_path":"../../../../mps/private/data.json", // mps credentials path
   "data_path": "private/data.json", // data path to store AMT Profiles and AMT Domains in devmode
-  "xapikey": "APIKEYFORRPS123!",
   "use_vault": true,
   "secrets_path": "secret/data/",
   "vault_address": "http://localhost:8200",
   "vault_token": "myroot",
   "websocketport": 8080,
-  "websockettls": true,
-  "web_tls_cert": "../../mps/private/mpsserver-cert-public.crt",
-  "web_tls_cert_key": "../../mps/private/mpsserver-cert-private.key",
-  "root_ca_cert": "../../mps/private/root-cert-public.crt",
   "db_host": "localhost",
   "db_name": "rpsdb",
   "db_port": 5432,
@@ -29,6 +23,6 @@
   "cors_headers":"Origin, X-Requested-With, Accept, X-RPS-API-Key, Content-Type, csrf-token, authorization",
   "cors_methods":"*",
   "cors_allow_credentials":"true",
-  "mps_server":"https://localhost:3000",
+  "mps_server":"http://localhost:3000",
   "delay_timer":12
 }
