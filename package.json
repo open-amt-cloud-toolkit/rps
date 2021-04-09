@@ -19,6 +19,7 @@
     "@types/pg": "^7.14.11",
     "atob": "^2.1.2",
     "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
     "crypto-random-string": "^3.3.1",
     "dot-object": "^2.1.4",
     "express": "^4.17.1",
@@ -43,8 +44,8 @@
     "@types/node-forge": "^0.9.7",
     "@types/node-vault": "^0.9.13",
     "@types/ws": "^7.4.1",
-    "@typescript-eslint/eslint-plugin": "^4.20.0",
-    "@typescript-eslint/parser": "^4.20.0",
+    "@typescript-eslint/eslint-plugin": "^4.21.0",
+    "@typescript-eslint/parser": "^4.21.0",
     "eslint": "^7.23.0",
     "eslint-config-standard": "^16.0.2",
     "eslint-config-standard-with-typescript": "^20.0.0",
@@ -56,10 +57,10 @@
     "jest-sinon": "^1.0.4",
     "jest-transform-stub": "^2.0.0",
     "nodemon": "^2.0.7",
-    "sinon": "^10.0.0",
+    "sinon": "^10.0.1",
     "ts-jest": "^26.5.4",
     "ts-loader": "^8.1.0",
     "ts-node": "^9.1.1",
-    "typescript": "^4.2.3"
+    "typescript": "^4.2.4"
   }
 }

@@ -10,10 +10,7 @@ import { IClientManager } from '../interfaces/IClientManager'
 import { ClientManager } from '../ClientManager'
 
 const wsConfig: WebSocketConfig = {
-  WebSocketPort: 8080,
-  WebSocketTLS: false,
-  WebSocketCertificate: 'tlscert.pem',
-  WebSocketCertificateKey: 'tlskey.pem'
+  WebSocketPort: 8080
 }
 
 const log: ILogger = new Logger('WebSocketListener')

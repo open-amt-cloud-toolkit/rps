@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "9ebc7f60-ea09-4823-9fad-9c9a6955aa16",
+		"_postman_id": "edfed698-3449-4224-85ed-cdda98f708ba",
 		"name": "RPS API Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -190,7 +190,7 @@
 					"response": []
 				},
 				{
-					"name": "Create Domain",
+					"name": "Create Domain (NewDomain)",
 					"event": [
 						{
 							"listen": "test",
@@ -296,61 +296,6 @@
 								"admin",
 								"domains",
 								"newdomain"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create Domain with Invalid API key",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 401\", function () {\r",
-									"    pm.response.to.have.status(401);\r",
-									"});\r",
-									"pm.test(\"Should fail when API key is invalid\", function () {\r",
-									"    var jsonData = pm.response.json();\r",
-									"    pm.expect(jsonData.error).to.eql('Authentication Error')\r",
-									"    pm.expect(jsonData.message).to.eql('Mismatched API key')\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"value": "APIKEYFORRRPS123!",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"vprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\"\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"port": "8081",
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"domains"
 							]
 						}
 					},
@@ -813,7 +758,7 @@
 					"response": []
 				},
 				{
-					"name": "Create Domain",
+					"name": "Create Domain (vprodemo)",
 					"event": [
 						{
 							"listen": "test",
@@ -2353,61 +2298,6 @@
 						"body": {
 							"mode": "raw",
 							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"port": "8081",
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"ciraconfigs"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create CIRA Config with invalid API Key",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 401\", function () {\r",
-									"    pm.response.to.have.status(401);\r",
-									"});\r",
-									"pm.test(\"Should fail when API key is invalid\", function () {\r",
-									"    var jsonData = pm.response.json();\r",
-									"    pm.expect(jsonData.error).to.eql('Authentication Error')\r",
-									"    pm.expect(jsonData.message).to.eql('Mismatched API key')\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRRPS123!"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
@@ -5942,62 +5832,6 @@
 						"body": {
 							"mode": "raw",
 							"raw": "{\r\n    \"profileName\": \"profile6\"\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/networkconfigs/",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"port": "8081",
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"networkconfigs",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create Network Config invalid API key",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 401\", function () {\r",
-									"    pm.response.to.have.status(401);\r",
-									"});\r",
-									"pm.test(\"Request should fail when invalid API key\", function () {\r",
-									"    var jsonData = pm.response.json();\r",
-									"    pm.expect(jsonData.error).to.eql('Authentication Error')\r",
-									"    pm.expect(jsonData.message).to.eql('Mismatched API key')\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRRPS123!"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"dhcpEnabled\": true\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/networkconfigs/",
