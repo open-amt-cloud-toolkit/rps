@@ -218,7 +218,6 @@ export class ACMActivator implements IExecutor {
         try {
           await got(`${EnvReader.GlobalEnvConfig.mpsServer}/metadata`, {
             method: 'POST',
-            rejectUnauthorized: false,
             json: {
               guid: clientObj.uuid,
               hostname: clientObj.hostname,

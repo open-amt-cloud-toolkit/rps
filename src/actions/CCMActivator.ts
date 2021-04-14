@@ -96,7 +96,6 @@ export class CCMActivator implements IExecutor {
           }
           await got(`${EnvReader.GlobalEnvConfig.mpsServer}/metadata`, {
             method: 'POST',
-            rejectUnauthorized: false,
             json: {
               guid: clientObj.uuid,
               hostname: clientObj.hostname,

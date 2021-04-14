@@ -43,10 +43,13 @@ export async function editDomain (req, res): Promise<void> {
       if (results) {
         // Delete the previous values of cert and password in vault and store the updated values
         if (req.secretsManager && (newDomain.provisioningCert != null || newDomain.provisioningCertPassword != null)) {
-          const data = { data: {} }
+          const data = {
+            data: {
+              CERT_KEY: cert,
+              CERT_PASSWORD_KEY: domainPwd
+            }
+          }
           await req.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/${amtDomain.profileName}`)
-          data.data[`${amtDomain.profileName}_CERT_KEY`] = cert
-          data.data[`${amtDomain.profileName}_CERT_PASSWORD_KEY`] = domainPwd
           await req.secretsManager.writeSecretWithObject(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/${amtDomain.profileName}`, data)
           log.debug(`Updated AMT Domain : ${amtDomain.profileName} in vault`)
         }
