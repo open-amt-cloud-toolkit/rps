@@ -34,7 +34,7 @@
     "rc": "^1.2.8",
     "request": "^2.88.2",
     "winston": "^3.3.3",
-    "ws": "^7.4.4"
+    "ws": "^7.4.5"
   },
   "devDependencies": {
     "@types/body-parser": "^1.17.1",
