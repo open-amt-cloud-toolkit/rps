@@ -1,7 +1,6 @@
 FROM node:14-buster-slim
 
 WORKDIR /rcs-microservice
-RUN apt-get update -y && apt-get install netcat -y
 
 # Default Ports Used
 EXPOSE 8080
