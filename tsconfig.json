@@ -4,7 +4,7 @@
         "moduleResolution": "node",
         "module": "commonjs",
         "allowJs": true,
-        "target":"es2015",
+        "target":"es2019",
         "sourceMap": true,
         "resolveJsonModule": true,
         "typeRoots": [

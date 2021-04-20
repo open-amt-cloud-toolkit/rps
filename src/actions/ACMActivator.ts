@@ -298,6 +298,38 @@ export class ACMActivator implements IExecutor {
       /* Get the MEBx password */
       const mebxPassword: string = await this.configurator.profileManager.getMEBxPassword(clientObj.ClientData.payload.profile.profileName)
 
+      /* Create a device in the repository. */
+      if (this.configurator?.amtDeviceRepository) {
+        await this.configurator.amtDeviceRepository.insert(new AMTDeviceDTO(clientObj.uuid,
+          clientObj.hostname,
+          EnvReader.GlobalEnvConfig.mpsusername,
+          EnvReader.GlobalEnvConfig.mpspass,
+          AMTUserName,
+          clientObj.amtPassword,
+          mebxPassword))
+      } else {
+        this.logger.error('unable to write device')
+      }
+      // TODO: performance: avoid second call to db from ~line 220
+      const profile = await this.configurator.profileManager.getAmtProfile(clientObj.ClientData.payload.profile.profileName)
+      let tags = []
+      if (profile?.tags != null) {
+        tags = profile.tags
+      }
+      /* Register device metadata with MPS */
+      try {
+        await got(`${EnvReader.GlobalEnvConfig.mpsServer}/metadata`, {
+          method: 'POST',
+          rejectUnauthorized: false,
+          json: {
+            guid: clientObj.uuid,
+            hostname: clientObj.hostname,
+            tags: tags
+          }
+        })
+      } catch (err) {
+        this.logger.warn('unable to register metadata with MPS', err)
+      }
       clientObj.mebxPassword = mebxPassword
       this.clientManager.setClientObject(clientObj)
       /*  API is only for Admin control mode */

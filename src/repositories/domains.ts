@@ -32,6 +32,20 @@ export class DomainsDb implements IDomainsDb {
   }
 
   /**
+   * @description Get Domain from DB by Domain Suffix
+   * @param {string} domainSuffix
+   * @returns {AMTDomain} Domain object
+   */
+  async getDomainByDomainSuffix (domainSuffix: string): Promise<AMTDomain> {
+    const results = await this.db.query('SELECT name as Name, domain_suffix as DomainSuffix, provisioning_cert as ProvisioningCert, provisioning_cert_storage_format as ProvisioningCertStorageFormat, provisioning_cert_key as ProvisioningCertPassword FROM domains WHERE domain_suffix = $1', [domainSuffix])
+    let domain: AMTDomain = null
+    if (results.rowCount > 0) {
+      domain = mapToDomain(results.rows[0])
+    }
+    return domain
+  }
+
+  /**
    * @description Get Domain from DB by name
    * @param {string} domainName
    * @returns {AMTDomain} Domain object

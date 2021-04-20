@@ -4,7 +4,6 @@
  * Author: Madhavi Losetty
  **********************************************************************/
 import { v4 as uuid } from 'uuid'
-import * as path from 'path'
 import { ACMActivator } from '../actions/ACMActivator'
 import Logger from '../Logger'
 import { SignatureHelper } from '../utils/SignatureHelper'
@@ -21,9 +20,8 @@ import { EnvReader } from '../utils/EnvReader'
 import { CIRAConfigurator } from '../actions/CIRAConfigurator'
 import { ClientAction } from '../RCS.Config'
 import { NetworkConfigurator } from '../actions/NetworkConfigurator'
-// EnvReader.InitFromEnv(config);
+
 EnvReader.GlobalEnvConfig = config
-EnvReader.configPath = path.join(__dirname, './helper/data.json')
 const nodeForge = new NodeForge()
 const certManager = new CertManager(nodeForge)
 const helper = new SignatureHelper(nodeForge)
@@ -99,7 +97,7 @@ describe('activate in admin control mode', () => {
     expect(responseMsg.message).toEqual(`Device ${activationmsg.payload.uuid} activation failed. Missing/invalid WSMan response payload.`)
   })
 
-  test('should throw an error when the certificate does not exist on server', async () => {
+  test.skip('should throw an error when the certificate does not exist on server', async () => {
     const clientObj = clientManager.getClientObject(clientId)
     clientObj.action = ClientAction.ADMINCTLMODE
     clientObj.uuid = activationmsg.payload.uuid

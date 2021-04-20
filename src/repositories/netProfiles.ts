@@ -65,7 +65,7 @@ export class NetConfigDb implements INetProfilesDb {
     } catch (error) {
       this.log.error(`Failed to delete network configuration : ${configName}`, error)
       if (error.code === '23503') { // foreign key violation
-        throw (NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT(configName), 'Foreign key violation')
+        throw new RPSError(NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT(configName))
       }
       throw new RPSError(API_UNEXPECTED_EXCEPTION(`Delete network configuration : ${configName}`))
     }
