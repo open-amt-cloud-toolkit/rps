@@ -61,10 +61,7 @@ export class Configurator implements IConfigurator {
   }
 
   constructor () {
-    if (EnvReader.GlobalEnvConfig.VaultConfig.usevault) {
-      this._secretManager = new SecretManagerService(new Logger('SecretManagerService'))
-    }
-
+    this._secretManager = new SecretManagerService(new Logger('SecretManagerService'))
     const nodeForge = new NodeForge()
     this._clientManager = ClientManager.getInstance(new Logger('ClientManager'))
     const responseMsg: ClientResponseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'), nodeForge)
