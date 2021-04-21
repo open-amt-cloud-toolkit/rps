@@ -94,7 +94,7 @@ export class CCMActivator implements IExecutor {
           if (profile?.tags != null) {
             tags = profile.tags
           }
-          await got(`${EnvReader.GlobalEnvConfig.mpsServer}/metadata`, {
+          await got(`${EnvReader.GlobalEnvConfig.mpsServer}/api/v1/metadata`, {
             method: 'POST',
             json: {
               guid: clientObj.uuid,
