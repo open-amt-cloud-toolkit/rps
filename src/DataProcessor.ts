@@ -130,7 +130,7 @@ export class DataProcessor implements IDataProcessor {
     if (currentTime >= clientObj.delayEndTime) {
       return await this.clientActions.buildResponseMessage(clientMsg, clientId)
     } else {
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await new Promise(resolve => setTimeout(resolve, 5000)) // TODO: make configurable rate if required by customers
       return this.responseMsg.get(clientId, null, 'heartbeat_request', 'heartbeat', '')
     }
   }
