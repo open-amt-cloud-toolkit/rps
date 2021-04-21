@@ -8,18 +8,13 @@
   Pattern referred from https://node-postgres.com/guides/project-structure
 */
 import { Pool, QueryResult } from 'pg'
-import { DbConfig } from '../models/Rcs'
 
 export class PostgresDb {
   pool: Pool
 
-  constructor (config: DbConfig) {
+  constructor (connectionString: string) {
     this.pool = new Pool({
-      user: config.dbuser,
-      host: config.dbhost,
-      database: config.dbname,
-      password: config.dbpassword,
-      port: config.dbport
+      connectionString: connectionString
     })
   }
 

@@ -9,11 +9,9 @@ export interface webConfigType {
 
 interface IEnvReader{
   GlobalEnvConfig: RCSConfig
-  configPath: string
 }
 const EnvReader: IEnvReader = {
-  GlobalEnvConfig: null,
-  configPath: null
+  GlobalEnvConfig: null
 }
 
 export { EnvReader }

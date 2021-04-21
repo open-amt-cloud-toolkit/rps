@@ -19,7 +19,6 @@ import { WSManProcessor } from '../WSManProcessor'
 import { EnvReader } from '../utils/EnvReader'
 import { ClientAction } from '../RCS.Config'
 
-// EnvReader.InitFromEnv(config);
 EnvReader.GlobalEnvConfig = config
 
 const nodeForge = new NodeForge()

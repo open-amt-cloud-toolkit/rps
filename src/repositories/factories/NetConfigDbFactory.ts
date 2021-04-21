@@ -8,8 +8,6 @@ import { IDbCreator } from '.././interfaces/IDbCreator'
 import { INetProfilesDb } from '../interfaces/INetProfilesDb'
 import { NetConfigDb } from '../netProfiles'
 import { EnvReader } from '../../utils/EnvReader'
-import Logger from '../../Logger'
-import { NetConfigFileStorageDb } from '../../db/NetConfigFileStorageDb'
 
 export interface INetConfigDbFactory {
   dbCreator: IDbCreator
@@ -26,11 +24,7 @@ const NetConfigDbFactory: INetConfigDbFactory = {
     if (NetConfigDbFactory.netConfigsDb == null) {
       NetConfigDbFactory.dbCreatorFactory = new DbCreatorFactory(EnvReader.GlobalEnvConfig)
       NetConfigDbFactory.dbCreator = NetConfigDbFactory.dbCreatorFactory.getDbCreator()
-      NetConfigDbFactory.netConfigsDb = EnvReader.GlobalEnvConfig.DbConfig.useDbForConfig
-        ? new NetConfigDb(NetConfigDbFactory.dbCreator)
-        : new NetConfigFileStorageDb(NetConfigDbFactory.dbCreator.getDb().AMTConfigurations,
-          NetConfigDbFactory.dbCreator.getDb().NETConfigurations,
-          new Logger('NETConfigFileStorageDb'))
+      NetConfigDbFactory.netConfigsDb = new NetConfigDb(NetConfigDbFactory.dbCreator)
     }
 
     return NetConfigDbFactory.netConfigsDb

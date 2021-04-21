@@ -1,8 +1,6 @@
 import { RCSConfig } from '../../models/Rcs'
 
 export const config: RCSConfig = {
-  Name: 'RCS Configuration File',
-  Description: 'Contains settings to configure the RCS Server',
   VaultConfig: {
     usevault: false,
     SecretsPath: 'kv/data/rcs/',
@@ -17,19 +15,10 @@ export const config: RCSConfig = {
   corsHeaders: '*',
   corsMethods: '*',
   corsOrigin: '*',
-  corsAllowCredentials: 'true',
   mpsServer: 'https://localhost:3000',
   delayTimer: 12,
   WSConfiguration: {
     WebSocketPort: 8080
   },
-  DbConfig:
-  {
-    useDbForConfig: false,
-    dbhost: '',
-    dbname: '',
-    dbport: 0,
-    dbuser: '',
-    dbpassword: ''
-  }
+  connectionString: 'postgresql://postgresadmin:admin123@localhost:5432/rpsdb'
 }

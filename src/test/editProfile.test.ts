@@ -118,7 +118,6 @@ test('test handleGenerateRandomPassword when the request body generateRandomPass
     profileName: 'acm'
   }
   const result: AMTConfiguration = handleGenerateRandomPassword(amtConfig, newConfig, oldConfig)
-  console.log(result)
   expect(result).toEqual(expected)
 })
 

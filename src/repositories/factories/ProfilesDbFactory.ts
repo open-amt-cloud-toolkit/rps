@@ -8,8 +8,6 @@ import { IDbCreator } from '../interfaces/IDbCreator'
 import { IProfilesDb } from '../interfaces/IProfilesDb'
 import { ProfilesDb } from '../profiles'
 import { EnvReader } from '../../utils/EnvReader'
-import { AMTConfigDb } from '../../db/AMTConfigDb'
-import Logger from '../../Logger'
 
 export interface IProfilesDbFactory {
   dbCreator: IDbCreator
@@ -25,12 +23,7 @@ const ProfilesDbFactory: IProfilesDbFactory = {
     if (ProfilesDbFactory.profilesDb == null) {
       ProfilesDbFactory.dbCreatorFactory = new DbCreatorFactory(EnvReader.GlobalEnvConfig)
       ProfilesDbFactory.dbCreator = ProfilesDbFactory.dbCreatorFactory.getDbCreator()
-      ProfilesDbFactory.profilesDb = (EnvReader.GlobalEnvConfig.DbConfig.useDbForConfig
-        ? new ProfilesDb(ProfilesDbFactory.dbCreator)
-        : new AMTConfigDb(ProfilesDbFactory.dbCreator.getDb().AMTConfigurations,
-          ProfilesDbFactory.dbCreator.getDb().CIRAConfigurations,
-          ProfilesDbFactory.dbCreator.getDb().NETConfigurations,
-          new Logger('ProfilesConfigDb')))
+      ProfilesDbFactory.profilesDb = new ProfilesDb(ProfilesDbFactory.dbCreator)
     }
 
     return ProfilesDbFactory.profilesDb

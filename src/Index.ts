@@ -3,11 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  * Author: Madhavi Losetty
  **********************************************************************/
-import * as path from 'path'
 import * as express from 'express'
-import * as parser from 'body-parser'
 import * as cors from 'cors'
-
 import Logger from './Logger'
 import { WebSocketListener } from './WebSocketListener'
 import { Configurator } from './Configurator'
@@ -34,10 +31,11 @@ log.silly(`Before config... ${JSON.stringify(rcconfig, null, 2)}`)
 const config: RCSConfig = mapConfig(rcconfig, dot)
 log.silly(`Updated config... ${JSON.stringify(config, null, 2)}`)
 EnvReader.GlobalEnvConfig = config
-EnvReader.configPath = path.join(__dirname, '../', config.datapath)
 const app = express()
 app.use(cors())
-app.use(parser.json())
+app.use(express.urlencoded())
+app.use(express.json())
+
 const configurator: IConfigurator = new Configurator()
 log.silly(`WebSocket Cert Info ${JSON.stringify(EnvReader.GlobalEnvConfig.WSConfiguration)}`)
 const server: WebSocketListener = new WebSocketListener(new Logger('WebSocketListener'), EnvReader.GlobalEnvConfig.WSConfiguration, configurator.clientManager, configurator.dataProcessor)

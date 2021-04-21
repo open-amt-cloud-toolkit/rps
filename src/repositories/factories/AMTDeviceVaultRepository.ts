@@ -11,6 +11,7 @@ import { IAMTDeviceRepository } from '../interfaces/IAMTDeviceRepository'
 import { IConfigurator } from '../../interfaces/IConfigurator'
 import { EnvReader } from '../../utils/EnvReader'
 import { RPSError } from '../../utils/RPSError'
+import { AMTUserName } from '../../utils/constants'
 
 export class AMTDeviceVaultRepository implements IAMTDeviceRepository {
   private readonly logger: ILogger
@@ -63,7 +64,7 @@ export class AMTDeviceVaultRepository implements IAMTDeviceRepository {
             deviceId,
             EnvReader.GlobalEnvConfig.mpsusername,
             EnvReader.GlobalEnvConfig.mpspass,
-            EnvReader.GlobalEnvConfig.amtusername,
+            AMTUserName,
             devicePwds.data.AMT_PASSWORD,
             devicePwds.data.MEBX_PASSWORD)
           this.logger.debug(`found vault amt device: ${deviceId}, ${JSON.stringify(amtDevice)}`)

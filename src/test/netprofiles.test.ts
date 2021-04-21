@@ -3,99 +3,52 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import Logger from '../Logger'
-
-import { NetConfigFileStorageDb } from '../db/NetConfigFileStorageDb'
 import { NetworkConfig } from '../RCS.Config'
+import { IDbCreator } from '../repositories/interfaces/IDbCreator'
+import { NetConfigDb } from '../repositories/netProfiles'
 import { RPSError } from '../utils/RPSError'
-import * as path from 'path'
-import { EnvReader } from '../utils/EnvReader'
-
-const AMTConfigurations = [
-  {
-    profileName: 'profile1',
-    amtPassword: 'P@ssw0rd',
-    mebxPassword: 'P@ssw0rd',
-    generateRandomPassword: false,
-    passwordLength: 8,
-    generateRandomMEBxPassword: false,
-    mebxPasswordLength: 8,
-    randomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
-    configurationScript: null,
-    activation: 'acmactivate',
-    ciraConfigName: 'ciraconfig1'
-  },
-  {
-    profileName: 'profile2',
-    amtPassword: 'P@ssw0rd',
-    mebxPassword: 'P@ssw0rd',
-    generateRandomPassword: false,
-    passwordLength: 8,
-    generateRandomMEBxPassword: false,
-    mebxPasswordLength: 8,
-    randomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
-    configurationScript: null,
-    activation: 'ccmactivate',
-    ciraConfigName: 'ciraconfig1'
-  },
-  {
-    profileName: 'profile3',
-    amtPassword: 'P@ssw0rd',
-    mebxPassword: 'P@ssw0rd',
-    generateRandomPassword: false,
-    passwordLength: 8,
-    generateRandomMEBxPassword: false,
-    mebxPasswordLength: 8,
-    randomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
-    configurationScript: null,
-    activation: 'invalid',
-    ciraConfigName: 'ciraconfig1'
-  },
-  {
-    profileName: 'profile4',
-    amtPassword: 'P@ssw0rd',
-    mebxPassword: 'P@ssw0rd',
-    generateRandomPassword: false,
-    passwordLength: 8,
-    generateRandomMEBxPassword: false,
-    mebxPasswordLength: 8,
-    randomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
-    configurationScript: null,
-    activation: '',
-    ciraConfigName: 'ciraconfig1',
-    networkConfigName: 'profile1'
-  }
-]
-
-const NETConfigurations = [
-  {
-    profileName: 'profile1',
-    dhcpEnabled: true,
-    staticIPShared: true,
-    ipSyncEnabled: true
-  },
-  {
-    profileName: 'profile2',
-    dhcpEnabled: true,
-    staticIPShared: true,
-    ipSyncEnabled: true
-  },
-  {
-    profileName: 'profile3',
-    dhcpEnabled: true,
-    staticIPShared: true,
-    ipSyncEnabled: true
-  }
-]
-
-EnvReader.configPath = path.join(__dirname, './helper/data.json')
 
 describe('Network Profile tests', () => {
+  let creator: IDbCreator
+  beforeEach(() => {
+    creator = {
+      getDb: function () {
+        return {
+          query: (query) => {
+            if (query.indexOf('SELECT') >= 0) {
+              return {
+                rowCount: 1,
+                rows: [{
+                  network_profile_name: 'profile3',
+                  dhcp_enabled: false,
+                  static_ip_shared: true,
+                  ip_sync_enabled: true
+                }]
+              }
+            }
+          }
+        }
+      }
+    }
+  })
   test('delete configuration for network profile with constraint', async () => {
-    const netConfigDb = new NetConfigFileStorageDb(AMTConfigurations, NETConfigurations, new Logger('NetConfigDb'))
+    creator.getDb = function () {
+      return {
+        query: (query) => {
+          if (query.indexOf('DELETE') >= 0) {
+            const e = new Error();
+            (e as any).code = '23503'
+            throw e
+          } else {
+            return { rowCount: 0 }
+          }
+        }
+      }
+    }
+    const db = new NetConfigDb(creator)
     let rpsError = null
     try {
-      await netConfigDb.deleteProfileByName('profile1')
+      await db.deleteProfileByName('profile1')
     } catch (error) {
       rpsError = error
     }
@@ -104,47 +57,87 @@ describe('Network Profile tests', () => {
   })
 
   test('delete configuration for network profile no constraint', async () => {
-    const netConfigDb = new NetConfigFileStorageDb(AMTConfigurations, NETConfigurations, new Logger('NetConfigDb'))
-
-    const actual = await netConfigDb.deleteProfileByName('profile2')
+    creator.getDb = function () {
+      return {
+        query: (query) => {
+          if (query.indexOf('DELETE') >= 0) {
+            return { rowCount: 1 }
+          } else {
+            return { rowCount: 0 }
+          }
+        }
+      }
+    }
+    const db = new NetConfigDb(creator)
+    const actual = await db.deleteProfileByName('profile2')
     expect(actual).toEqual(true)
   })
 
   test('update configuration for network profile exists', async () => {
-    const netConfigDb = new NetConfigFileStorageDb(AMTConfigurations, NETConfigurations, new Logger('NetConfigDb'))
     const newProfile = {
       profileName: 'profile3',
       dhcpEnabled: false,
       staticIPShared: true,
       ipSyncEnabled: true
     }
-    const actual = await netConfigDb.updateProfile(newProfile)
+    const newProfileFromDb = {
+      network_profile_name: 'profile3',
+      dhcp_enabled: false,
+      static_ip_shared: true,
+      ip_sync_enabled: true
+    }
+    creator.getDb = function () {
+      return {
+        query: (query) => {
+          if (query.indexOf('UPDATE') >= 0) {
+            return { rowCount: 1 }
+          } else if (query.indexOf('SELECT network_profile_name, dhcp_enabled, static_ip_shared, ip_sync_enabled FROM networkconfigs WHERE network_profile_name = ') >= 0) {
+            return { rowCount: 1, rows: [newProfileFromDb] }
+          } else {
+            return { rowCount: 0 }
+          }
+        }
+      }
+    }
+    const db = new NetConfigDb(creator)
+    const actual = await db.updateProfile(newProfile)
     expect(actual).toEqual(newProfile)
   })
 
   test("update configuration for network profile doesn't exist", async () => {
-    const netConfigDb = new NetConfigFileStorageDb(AMTConfigurations, NETConfigurations, new Logger('NetConfigDb'))
     const newProfile = {
       profileName: 'profile4',
       dhcpEnabled: false,
       staticIPShared: true,
       ipSyncEnabled: true
     }
-    const actual = await netConfigDb.updateProfile(newProfile)
+    creator.getDb = function () {
+      return {
+        query: (query) => {
+          if (query.indexOf('UPDATE') >= 0) {
+            return { rowCount: 0 }
+          } else {
+            return { rowCount: 0 }
+          }
+        }
+      }
+    }
+    const db = new NetConfigDb(creator)
+    const actual = await db.updateProfile(newProfile)
     expect(actual).toEqual(null)
   })
 
   test('update configuration for network profile associated with profile', async () => {
-    const netConfigDb = new NetConfigFileStorageDb(AMTConfigurations, NETConfigurations, new Logger('NetConfigDb'))
     const newProfile = {
       profileName: 'profile1',
       dhcpEnabled: false,
       staticIPShared: true,
       ipSyncEnabled: true
     }
+    const db = new NetConfigDb(creator)
     let rpsError = null
     try {
-      await netConfigDb.updateProfile(newProfile)
+      await db.updateProfile(newProfile)
     } catch (error) {
       rpsError = error
     }
@@ -152,8 +145,7 @@ describe('Network Profile tests', () => {
     expect(rpsError.message).toEqual('Operation failed for NETWORK Config: profile1. Cannot Update Network settings if its already associated with a profile.')
   })
 
-  test('create configuration for network profile doesn\'t exist', async () => {
-    const netConfigDb = new NetConfigFileStorageDb(AMTConfigurations, NETConfigurations, new Logger('NetConfigDb'))
+  test("create configuration for network profile doesn't exist", async () => {
     const newProfile = {
       profileName: 'profile11',
       dhcpEnabled: false,
@@ -161,17 +153,29 @@ describe('Network Profile tests', () => {
       ipSyncEnabled: true
     }
     const result = {
-      dhcpEnabled: false,
-      ipSyncEnabled: true,
-      profileName: 'profile11',
-      staticIPShared: true
+      network_profile_name: 'profile11',
+      dhcp_enabled: false,
+      static_ip_shared: true,
+      ip_sync_enabled: true
     }
-    const actual = await netConfigDb.insertProfile(newProfile)
-    expect(actual).toEqual(result)
+    creator.getDb = function () {
+      return {
+        query: (query) => {
+          if (query.indexOf('INSERT') >= 0) {
+            return { rowCount: 1 }
+          } else {
+            return { rowCount: 1, rows: [result] }
+          }
+        }
+      }
+    }
+
+    const db = new NetConfigDb(creator)
+    const actual = await db.insertProfile(newProfile)
+    expect(actual).toEqual(newProfile)
   })
 
   test('create configuration for network profile already exist', async () => {
-    const netConfigDb = new NetConfigFileStorageDb(AMTConfigurations, NETConfigurations, new Logger('NetConfigDb'))
     const newProfile = {
       profileName: 'profile11',
       dhcpEnabled: false,
@@ -179,8 +183,19 @@ describe('Network Profile tests', () => {
       ipSyncEnabled: true
     }
     let rpsError = null
+    creator.getDb = function () {
+      return {
+        query: (query) => {
+          const e = new Error();
+          (e as any).code = '23505'
+          throw e
+        }
+      }
+    }
+    const db = new NetConfigDb(creator)
+
     try {
-      await netConfigDb.insertProfile(newProfile)
+      await db.insertProfile(newProfile)
     } catch (error) {
       rpsError = error
     }
@@ -189,25 +204,32 @@ describe('Network Profile tests', () => {
   })
 
   test('get network configs', async () => {
-    const netConfigDb = new NetConfigFileStorageDb(AMTConfigurations, NETConfigurations, new Logger('NetConfigDb'))
-    const actual = await netConfigDb.getAllProfiles()
+    const db = new NetConfigDb(creator)
+    const actual = await db.getAllProfiles()
     expect(actual.length).toBeGreaterThan(0)
   })
 
   test('get network config by name does exist', async () => {
-    const netConfigDb = new NetConfigFileStorageDb(AMTConfigurations, NETConfigurations, new Logger('NetConfigDb'))
-    const actual = await netConfigDb.getProfileByName('profile11')
+    const db = new NetConfigDb(creator)
+    const actual = await db.getProfileByName('profile3')
     expect(actual).toEqual({
-      profileName: 'profile11',
+      profileName: 'profile3',
       dhcpEnabled: false,
       staticIPShared: true,
       ipSyncEnabled: true
     })
   })
 
-  test('get network config by name does exist', async () => {
-    const netConfigDb = new NetConfigFileStorageDb(AMTConfigurations, NETConfigurations, new Logger('NetConfigDb'))
-    const actual: NetworkConfig = await netConfigDb.getProfileByName('profile111')
-    expect(actual).toEqual(null)
+  test('get network config by name does NOT exist', async () => {
+    creator.getDb = function () {
+      return {
+        query: (query) => {
+          return { rowCount: 0 }
+        }
+      }
+    }
+    const db = new NetConfigDb(creator)
+    const actual: NetworkConfig = await db.getProfileByName('profile111')
+    expect(actual).toBeNull()
   })
 })

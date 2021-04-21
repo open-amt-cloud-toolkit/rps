@@ -15,7 +15,7 @@ export class PostgresDbCreator implements IDbCreator {
 
   getDb (): any {
     if (typeof PostgresDbCreator.instance === 'undefined') {
-      PostgresDbCreator.instance = new PostgresDb(this.config.DbConfig)
+      PostgresDbCreator.instance = new PostgresDb(this.config.connectionString)
     }
 
     return PostgresDbCreator.instance

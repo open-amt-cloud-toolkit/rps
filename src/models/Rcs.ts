@@ -17,16 +17,6 @@ export class CertificateObject {
   subject: string
 }
 
-export class DbConfig {
-  useDbForConfig: boolean
-  useRawCerts?: boolean
-  dbhost: string
-  dbname: string
-  dbport: number
-  dbuser: string
-  dbpassword: string
-}
-
 export class VaultConfig {
   usevault: boolean
   SecretsPath: string
@@ -34,27 +24,21 @@ export class VaultConfig {
   token: string
 }
 export class RCSConfig {
-  Name: string
-  Description: string
   VaultConfig: VaultConfig
   mpsusername: string
   mpspass: string
   amtusername: string
   webport: number
   credentialspath: string
-  datapath?: string
   WSConfiguration: WebSocketConfig
-  DbConfig: DbConfig
-  NodeEnv?: string
+  connectionString: string
   corsOrigin: string
   corsHeaders: string
   corsMethods: string
-  corsAllowCredentials: string
   mpsServer: string
   delayTimer: number
   constructor () {
     this.VaultConfig = new VaultConfig()
-    this.DbConfig = new DbConfig()
   }
 }
 export class AMTConfiguration {
@@ -205,31 +189,18 @@ export class Version {
 }
 
 const recipeRCSConfig = {
-  name: 'Name',
-  description: 'Description',
   user: 'mpsusername',
   password: 'mpspass',
-  amt_user: 'amtusername',
-  developer_mode: 'devmode',
   web_port: 'webport',
   credentials_path: 'credentialspath',
   websocketport: 'WSConfiguration.WebSocketPort',
-  use_vault: 'VaultConfig.usevault',
   vault_address: 'VaultConfig.address',
   vault_token: 'VaultConfig.token',
   secrets_path: 'VaultConfig.SecretsPath',
-  db_host: 'DbConfig.dbhost',
-  db_name: 'DbConfig.dbname',
-  db_port: 'DbConfig.dbport',
-  db_user: 'DbConfig.dbuser',
-  db_password: 'DbConfig.dbpassword',
-  use_db_profiles: 'DbConfig.useDbForConfig',
+  connection_string: 'connectionString',
   amt_domains: 'AMTDomains',
   amt_configurations: 'AMTConfigurations',
   cira_configurations: 'CIRAConfigurations',
-  data_path: 'datapath',
-  node_env: 'NodeEnv',
-  use_raw_certs: 'DbConfig.useRawCerts',
   cors_origin: 'corsOrigin',
   cors_headers: 'corsHeaders',
   cors_methods: 'corsMethods',

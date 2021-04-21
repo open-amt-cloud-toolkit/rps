@@ -7,20 +7,41 @@
 import { DomainCredentialManager } from '../DomainCredentialManager'
 import { ILogger } from '../interfaces/ILogger'
 import Logger from '../Logger'
-import { DomainConfigDb } from '../db/DomainConfigDb'
-import { readFileSync } from 'fs'
-import { join } from 'path'
-import { EnvReader } from '../utils/EnvReader'
 import { AMTDomain } from '../models/Rcs'
+import { DomainsDb } from '../repositories/domains'
+import { IDbCreator } from '../repositories/interfaces/IDbCreator'
 
 const logger: ILogger = new Logger('DomainCredentialManagerTests')
+describe('Domain Credential Manager Tests', () => {
+  let creator: IDbCreator
 
-const data = JSON.parse(readFileSync(join(__dirname, 'private', 'data.json'), 'utf8'))
-EnvReader.configPath = join(__dirname, 'private', 'data.json')
-test('retrieve provisioning cert based on domain', async () => {
-  const domainCredentialManager: DomainCredentialManager = new DomainCredentialManager(logger, new DomainConfigDb(data.AMTDomains, new Logger('DomainConfigDb')))
+  beforeEach(() => {
+    creator = {
+      getDb: function () {
+        return {
+          query: (query) => {
+            if (query.indexOf('SELECT') >= 0) {
+              return {
+                rowCount: 1,
+                rows: [{
+                  name: '',
+                  domainsuffix: 'd2.com',
+                  provisioningcert: 'd2.pfx',
+                  provisioningcertstorageformat: '',
+                  provisioningcertpassword: ''
+                }]
+              }
+            }
+          }
+        }
+      }
+    }
+  })
+  test('retrieve provisioning cert based on domain', async () => {
+    const domainCredentialManager: DomainCredentialManager = new DomainCredentialManager(logger, new DomainsDb(creator))
 
-  const expectedProvisioningCert: string = 'd2.pfx'
-  const domain: AMTDomain = await domainCredentialManager.getProvisioningCert('d2.com')
-  expect(domain.provisioningCert).toEqual(expectedProvisioningCert)
+    const expectedProvisioningCert: string = 'd2.pfx'
+    const domain: AMTDomain = await domainCredentialManager.getProvisioningCert('d2.com')
+    expect(domain.provisioningCert).toEqual(expectedProvisioningCert)
+  })
 })

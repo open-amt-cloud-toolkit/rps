@@ -8,8 +8,6 @@ import { IDbCreator } from '../interfaces/IDbCreator'
 import { EnvReader } from '../../utils/EnvReader'
 import { IDomainsDb } from '../interfaces/IDomainsDb'
 import { DomainsDb } from '../domains'
-import { DomainConfigDb } from '../../db/DomainConfigDb'
-import Logger from '../../Logger'
 
 export interface IDomainsDbFactory {
   dbCreator: IDbCreator
@@ -26,9 +24,7 @@ const DomainsDbFactory: IDomainsDbFactory = {
     if (DomainsDbFactory.domainsDb == null) {
       DomainsDbFactory.dbCreatorFactory = new DbCreatorFactory(EnvReader.GlobalEnvConfig)
       DomainsDbFactory.dbCreator = DomainsDbFactory.dbCreatorFactory.getDbCreator()
-      DomainsDbFactory.domainsDb = (EnvReader.GlobalEnvConfig.DbConfig.useDbForConfig
-        ? new DomainsDb(DomainsDbFactory.dbCreator)
-        : new DomainConfigDb(DomainsDbFactory.dbCreator.getDb().AMTDomains, new Logger('DomainConfigDb')))
+      DomainsDbFactory.domainsDb = new DomainsDb(DomainsDbFactory.dbCreator)
     }
 
     return DomainsDbFactory.domainsDb
