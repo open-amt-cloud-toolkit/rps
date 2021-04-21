@@ -80,7 +80,7 @@ export class CCMActivator implements IExecutor {
             clientObj.hostname,
             EnvReader.GlobalEnvConfig.mpsusername,
             EnvReader.GlobalEnvConfig.mpspass,
-            EnvReader.GlobalEnvConfig.amtusername,
+            AMTUserName,
             amtPassword,
             null))
         } else {

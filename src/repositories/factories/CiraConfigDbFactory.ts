@@ -8,8 +8,6 @@ import { IDbCreator } from '../interfaces/IDbCreator'
 import { ICiraConfigDb } from '../interfaces/ICiraConfigDb'
 import { CiraConfigDb } from '../ciraConfigs'
 import { EnvReader } from '../../utils/EnvReader'
-import Logger from '../../Logger'
-import { CiraConfigFileStorageDb } from '../../db/CiraConfigFileStorageDb'
 
 export interface ICiraConfigDbFactory {
   dbCreator: IDbCreator
@@ -26,11 +24,7 @@ const CiraConfigDbFactory: ICiraConfigDbFactory = {
     if (CiraConfigDbFactory.ciraConfigsDb == null) {
       CiraConfigDbFactory.dbCreatorFactory = new DbCreatorFactory(EnvReader.GlobalEnvConfig)
       CiraConfigDbFactory.dbCreator = CiraConfigDbFactory.dbCreatorFactory.getDbCreator()
-      CiraConfigDbFactory.ciraConfigsDb = EnvReader.GlobalEnvConfig.DbConfig.useDbForConfig
-        ? new CiraConfigDb(CiraConfigDbFactory.dbCreator)
-        : new CiraConfigFileStorageDb(CiraConfigDbFactory.dbCreator.getDb().AMTConfigurations,
-          CiraConfigDbFactory.dbCreator.getDb().CIRAConfigurations,
-          new Logger('CIRAFileStorageDb'))
+      CiraConfigDbFactory.ciraConfigsDb = new CiraConfigDb(CiraConfigDbFactory.dbCreator)
     }
 
     return CiraConfigDbFactory.ciraConfigsDb

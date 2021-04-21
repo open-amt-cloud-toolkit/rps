@@ -9,6 +9,6 @@ import { AMTDomain } from '../models/Rcs'
 
 export interface IDomainCredentialManager {
   getProvisioningCertStorageType: (domain: string) => Promise<string>
-  getProvisioningCert: (domain: string) => Promise<AMTDomain>
-  doesDomainExist: (domain: string) => Promise<boolean>
+  getProvisioningCert: (domainSuffix: string) => Promise<AMTDomain>
+  doesDomainExist: (domainSuffix: string) => Promise<boolean>
 }
