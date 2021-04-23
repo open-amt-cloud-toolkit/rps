@@ -12,8 +12,9 @@ import { ILogger } from './interfaces/ILogger'
 import { ICertManager } from './interfaces/ICertManager'
 import { SignatureHelper } from './utils/SignatureHelper'
 
-import { ACMActivator } from './actions/ACMActivator'
-import { CCMActivator } from './actions/CCMActivator'
+// import { ACMActivator } from './actions/ACMActivator'
+// import { CCMActivator } from './actions/CCMActivator'
+import { Activator } from './actions/Activator'
 import { ClientResponseMsg } from './utils/ClientResponseMsg'
 import { WSManProcessor } from './WSManProcessor'
 import { IClientManager } from './interfaces/IClientManager'
@@ -45,8 +46,8 @@ export class ClientActions {
     const networkConfig = new NetworkConfigurator(new Logger('NetworkConfig'), configurator, responseMsg, amtwsman, clientManager, validator, ciraConfig)
     this.actions[ClientAction.NETWORKCONFIG] = networkConfig
 
-    this.actions[ClientAction.ADMINCTLMODE] = new ACMActivator(new Logger('ACMActivator'), configurator, certManager, helper, responseMsg, amtwsman, clientManager, validator, networkConfig)
-    this.actions[ClientAction.CLIENTCTLMODE] = new CCMActivator(new Logger('CCMActivator'), configurator, responseMsg, amtwsman, clientManager, validator, networkConfig)
+    this.actions[ClientAction.ADMINCTLMODE] = new Activator(new Logger('Activator'), configurator, certManager, helper, responseMsg, amtwsman, clientManager, validator, networkConfig)
+    this.actions[ClientAction.CLIENTCTLMODE] = new Activator(new Logger('Activator'), configurator, certManager, helper, responseMsg, amtwsman, clientManager, validator, networkConfig)
     this.actions[ClientAction.DEACTIVATE] = new Deactivator(new Logger('Deactivator'), responseMsg, amtwsman, clientManager, configurator)
   }
 
