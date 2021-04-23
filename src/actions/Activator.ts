@@ -105,8 +105,7 @@ export class Activator implements IExecutor {
       }
       // return the certificate chain pems and private key
       const certChainPfx = this.certManager.dumpPfx(pfxobj)
-      // this.logger.info(`certChainPfx : ${certChainPfx}`);
-      // Check that provisioning certificate root matches one of the trusted roots from AMT
+      // check that provisioning certificate root matches one of the trusted roots from AMT
       for (const hash in clientMsg.payload.certHashes) {
         if (clientMsg.payload.certHashes[hash].toLowerCase() === certChainPfx.fingerprint.toLowerCase()) {
           return certChainPfx.provisioningCertificateObj
@@ -156,7 +155,7 @@ export class Activator implements IExecutor {
     } else if (wsmanResponse.Header && wsmanResponse.Header.Method === 'AdminSetup') {
       // Response from setupACM call
       if (wsmanResponse.Body.ReturnValue !== 0) {
-        throw new RPSError(`Device ${clientObj.uuid} activation failed. Error while activating the AMT in admin mode.`)
+        throw new RPSError(`Device ${clientObj.uuid} activation failed. Error while activating the AMT device in admin mode.`)
       } else {
         this.logger.debug(`Device ${clientObj.uuid} activated in admin mode.`)
         clientObj.ciraconfig.status = 'activated in admin mode.'
@@ -169,7 +168,7 @@ export class Activator implements IExecutor {
     } else if (wsmanResponse.Header.Method === 'Setup') {
       // Response from setupCCM call
       if (wsmanResponse.Body.ReturnValue !== 0) {
-        throw new RPSError(`Device ${clientObj.uuid} activation failed : Error while activating the AMT device in client mode.`)
+        throw new RPSError(`Device ${clientObj.uuid} activation failed. Error while activating the AMT device in client mode.`)
       } else {
         this.logger.debug(`Device ${clientObj.uuid} activated in client mode.`)
         clientObj.ciraconfig.status = 'activated in client mode.'
