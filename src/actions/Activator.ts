@@ -95,6 +95,7 @@ export class Activator implements IExecutor {
    * @returns {any} returns cert object
    */
   GetProvisioningCertObj (clientMsg: ClientMsg, cert: string, password: string, clientId: string): any {
+    // TODO: Look to change this to return a type
     try {
       // read in cert
       const pfxb64: string = Buffer.from(cert, 'base64').toString('base64')
@@ -123,6 +124,9 @@ export class Activator implements IExecutor {
    * @param {string} message
    */
   async processWSManJsonResponse (message: any, clientId: string): Promise<ClientMsg> {
+    // TODO: Move Header Methods to a model and use as a constant
+    // TODO: Centralize error handling that is repeated
+    // TODO: break out decision content to separate functions
     const clientObj = this.clientManager.getClientObject(clientId)
     const wsmanResponse = message.payload
     // Process the next step in the activation flow based on the response from the client
@@ -136,7 +140,7 @@ export class Activator implements IExecutor {
       clientObj.ClientData.payload.digestRealm = digestRealm
       clientObj.hostname = clientObj.ClientData.payload.hostname
       this.clientManager.setClientObject(clientObj)
-      if (clientObj.ClientData.payload.fwNonce === undefined && clientObj.action === ClientAction.ADMINCTLMODE) {
+      if (clientObj.ClientData.payload.fwNonce == null && clientObj.action === ClientAction.ADMINCTLMODE) {
         await this.amtwsman.batchEnum(clientId, '*IPS_HostBasedSetupService')
       }
     } else if (wsmanResponse.IPS_HostBasedSetupService) {
@@ -306,7 +310,7 @@ export class Activator implements IExecutor {
    * @description Creates the signed string required by AMT
    * @param {ClientObject} clientObj
    */
-  async createSignedString (clientObj: ClientObject): Promise<any> {
+  async createSignedString (clientObj: ClientObject): Promise<void> {
     clientObj.nonce = PasswordHelper.generateNonce()
     const arr: Buffer[] = [clientObj.ClientData.payload.fwNonce, clientObj.nonce]
     clientObj.signature = this.signatureHelper.signString(Buffer.concat(arr), clientObj.certObj.privateKey)
@@ -321,7 +325,7 @@ export class Activator implements IExecutor {
    * @param {ClientObject} clientObj
    * @param {string} amtPassword
    */
-  async saveDeviceInfo (clientObj: ClientObject, amtPassword: string): Promise<any> {
+  async saveDeviceInfo (clientObj: ClientObject, amtPassword: string): Promise<void> {
     if (this.configurator?.amtDeviceRepository) {
       if (clientObj.action === ClientAction.ADMINCTLMODE) {
         await this.configurator.amtDeviceRepository.insert(new AMTDeviceDTO(clientObj.uuid,

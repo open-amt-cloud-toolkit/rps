@@ -126,7 +126,6 @@ describe('processWSManJasonResponse', async () => {
     } catch (error) {
       expect(error.message).toBe(`Device ${activationmsg.payload.uuid} activation failed. Not a valid digest realm.`)
     }
-    // expect(responseMsg.message).toBe(`Device ${activationmsg.payload.uuid} activation failed. Not a valid digest realm.`)
   })
   test('should populate hostname and digest realm after GeneralSettings call', async () => {
     const message = { payload: { AMT_GeneralSettings: { response: { DigestRealm: 'Digest:A4070000000000000000000000000000' } } } }
