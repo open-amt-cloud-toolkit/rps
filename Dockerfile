@@ -3,7 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #*********************************************************************/
 FROM node:14-buster-slim
-
+LABEL license='SPDX-License-Identifier: Apache-2.0' \
+      copyright='Copyright (c) 2021: Intel'
 WORKDIR /rcs-microservice
 
 # Default Ports Used
