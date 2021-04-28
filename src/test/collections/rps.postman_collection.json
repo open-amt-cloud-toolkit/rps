@@ -57,12 +57,11 @@
 							}
 						],
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -120,12 +119,11 @@
 							}
 						],
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains/Sample_Domain",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains/Sample_Domain",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -172,12 +170,11 @@
 							}
 						],
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains/dontexist",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains/dontexist",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -231,12 +228,11 @@
 							"raw": "{\r\n    \"profileName\": \"NewDomain\",\r\n    \"domainSuffix\": \"NewDomain.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -284,12 +280,11 @@
 							}
 						],
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains/newdomain",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains/newdomain",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -341,12 +336,11 @@
 							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -401,12 +395,11 @@
 							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"vprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -457,12 +450,11 @@
 							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"vprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"password\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -513,12 +505,11 @@
 							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"vprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"passwo\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -569,12 +560,11 @@
 							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"vprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"0123456789012345678901234567890123456789\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -625,12 +615,11 @@
 							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"vprodemo.com\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -685,12 +674,11 @@
 							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"vprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -741,12 +729,11 @@
 							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"vprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"wrong\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -799,12 +786,11 @@
 							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"vprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -854,12 +840,11 @@
 							"raw": "{\r\n    \"profileName\": \"vproDemo\",\r\n    \"domainSuffix\": \"vprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -909,12 +894,11 @@
 							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"vprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -964,12 +948,11 @@
 							"raw": "{\r\n    \"profileName\": \"newvprodemo\",\r\n    \"domainSuffix\": \"vprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains/",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains/",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -1021,12 +1004,11 @@
 							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"newvprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -1076,12 +1058,11 @@
 							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"NewDomain.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -1133,12 +1114,11 @@
 							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"newvprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"Intel123!\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -1189,12 +1169,11 @@
 							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"newvprodemo.com\",\r\n    \"provisioningCert\": \"provisioning certificate\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"Intel123!\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -1244,12 +1223,11 @@
 							"raw": "{\r\n    \"profileName\": \"Domain\",\r\n    \"domainSuffix\": \"newDomain.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -1294,12 +1272,11 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains/vprodemo",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains/vprodemo",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -1350,12 +1327,11 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains/vprodemo",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains/vprodemo",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -1401,12 +1377,11 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/domains/newdomain",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains/newdomain",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -1488,12 +1463,11 @@
 							}
 						],
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -1559,12 +1533,11 @@
 							}
 						],
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs/Sample_CIRA_Config",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs/Sample_CIRA_Config",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -1611,12 +1584,11 @@
 							}
 						],
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs/dontexist",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs/dontexist",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -1668,12 +1640,11 @@
 							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.50\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"password\": \"Intel123!\",\r\n    \"commonName\": \"192.168.8.50\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"proxyDetails\": \"\"\r\n}\r\n"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -1728,12 +1699,11 @@
 							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.50\",\r\n    \"username\": \"admin\",\r\n    \"password\": \"Intel123!\",\r\n    \"commonName\": \"192.168.8.50\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\"       \r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -1784,12 +1754,11 @@
 							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.50\",\r\n    \"mpsPort\": 1000,\r\n    \"username\": \"admin\",\r\n    \"password\": \"Intel123!\",\r\n    \"commonName\": \"192.168.8.50\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -1840,12 +1809,11 @@
 							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 50000,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -1896,12 +1864,11 @@
 							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": \"wrong\",\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -1952,12 +1919,11 @@
 							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -2008,12 +1974,11 @@
 							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin user\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -2064,12 +2029,11 @@
 							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin@user\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -2120,12 +2084,11 @@
 							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"adminuser\",\r\n\t\"password\": \"intel1234\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -2176,12 +2139,11 @@
 							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"adminuser\",\r\n\t\"password\": \"Intel@1\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -2232,12 +2194,11 @@
 							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"adminuser\",\r\n\t\"password\": \"0123456789012345678901234567890123456789\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -2300,12 +2261,11 @@
 							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -2360,12 +2320,11 @@
 							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -2416,12 +2375,11 @@
 							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 4,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -2472,12 +2430,11 @@
 							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 401,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -2528,12 +2485,11 @@
 							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": \"FQDN\",\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -2588,12 +2544,11 @@
 							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -2644,12 +2599,11 @@
 							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 5,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -2700,12 +2654,11 @@
 							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": \"mutual\",\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -2763,12 +2716,11 @@
 							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -2818,12 +2770,11 @@
 							"raw": "{\r\n\t\"configName\": \"ciraConfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -2877,12 +2828,11 @@
 							}
 						],
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs/ciraConfig2",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs/ciraConfig2",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -2933,12 +2883,11 @@
 							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 201,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -2989,12 +2938,11 @@
 							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.55\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -3045,12 +2993,11 @@
 							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.55\",\r\n    \"serverAddressFormat\": 3\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -3101,12 +3048,11 @@
 							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"commonName\": \"192.168.8.55\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -3157,12 +3103,11 @@
 							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"password\": \"intel1234\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -3213,12 +3158,11 @@
 							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"password\": \"Intel@1\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -3269,12 +3213,11 @@
 							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"password\": \"0123456789012345678901234567890123456789\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -3325,12 +3268,11 @@
 							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsPort\": 433\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -3381,12 +3323,11 @@
 							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsPort\": 50000\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -3437,12 +3378,11 @@
 							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsPort\": \"wrong\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -3494,12 +3434,11 @@
 							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"username\": \"admin user\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -3557,12 +3496,11 @@
 							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.55\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"password\": \"Intel123!\",\r\n    \"commonName\": \"192.168.8.55\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\"\r\n}\r\n"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -3620,12 +3558,11 @@
 							"raw": "{\r\n    \"configName\": \"ciraConfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.5\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"password\": \"Intel123!\",\r\n    \"commonName\": \"192.168.8.5\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\"\r\n}\r\n"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -3671,12 +3608,11 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs/ciraConfig2",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs/ciraConfig2",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -3727,12 +3663,11 @@
 							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.50\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"password\": \"Intel123!\",\r\n    \"commonName\": \"192.168.8.50\",\r\n    \"serverAddressFormat\": 201,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -3782,12 +3717,11 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs/ciraconfig2",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs/ciraconfig2",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -3860,12 +3794,11 @@
 							}
 						],
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -3934,12 +3867,11 @@
 							}
 						],
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/Sample_Profile",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/Sample_Profile",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -3986,12 +3918,11 @@
 							}
 						],
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/profile1",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/profile1",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -4047,12 +3978,11 @@
 							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -4104,12 +4034,11 @@
 							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"activate\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -4161,12 +4090,11 @@
 							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -4218,12 +4146,11 @@
 							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomPassword\": true,\r\n    \"passwordLength\": 8,\r\n    \"activation\": \"ccmactivate\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -4275,12 +4202,11 @@
 							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"activation\": \"ccmactivate\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -4332,12 +4258,11 @@
 							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": true,\r\n    \"activation\": \"ccmactivate\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -4389,12 +4314,11 @@
 							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": true,\r\n    \"passwordLength\": 6,\r\n    \"activation\": \"ccmactivate\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -4446,12 +4370,11 @@
 							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": true,\r\n    \"passwordLength\": 33,\r\n    \"activation\": \"ccmactivate\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -4503,12 +4426,11 @@
 							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"activation\": \"acmactivate\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -4560,12 +4482,11 @@
 							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123\",\r\n    \"activation\": \"acmactivate\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -4617,12 +4538,11 @@
 							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"activation\": \"acmactivate\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -4674,12 +4594,11 @@
 							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"mebxPasswordLength\": 6,\r\n    \"activation\": \"acmactivate\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -4731,12 +4650,11 @@
 							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"mebxPasswordLength\": 33,\r\n    \"activation\": \"acmactivate\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -4791,12 +4709,11 @@
 							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"]\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -4847,12 +4764,11 @@
 							}
 						],
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/Profile6",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/Profile6",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -4903,12 +4819,11 @@
 							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"activation\": \"acmactivate\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -4960,12 +4875,11 @@
 							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"activate\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -5017,12 +4931,11 @@
 							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -5074,12 +4987,11 @@
 							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": true\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -5134,12 +5046,11 @@
 							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"passwordLength\": 16\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -5193,12 +5104,11 @@
 							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\"    \r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -5253,12 +5163,11 @@
 							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"tags\": [\"tag123\"]\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -5310,12 +5219,11 @@
 							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"acmactivate\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -5370,12 +5278,11 @@
 							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"mebxPasswordLength\": 8,\r\n    \"activation\": \"acmactivate\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -5430,12 +5337,11 @@
 							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"mebxPassword\": \"P@ssw0rd\",\r\n    \"activation\": \"acmactivate\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -5490,12 +5396,11 @@
 							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"P@ssw0rd\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -5541,12 +5446,11 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/profile6",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/profile6",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -5597,12 +5501,11 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/profile6",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/profile6",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -5665,12 +5568,11 @@
 							}
 						],
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/networkconfigs/",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/networkconfigs/",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -5721,12 +5623,11 @@
 							}
 						],
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/networkconfigs/dhcp_enabled",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/networkconfigs/dhcp_enabled",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -5773,12 +5674,11 @@
 							}
 						],
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/networkconfigs/profile1",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/networkconfigs/profile1",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -5834,12 +5734,11 @@
 							"raw": "{\r\n    \"profileName\": \"profile6\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/networkconfigs/",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/networkconfigs/",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -5892,12 +5791,11 @@
 							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"dhcpEnabled\": true\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/networkconfigs/",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/networkconfigs/",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -5948,12 +5846,11 @@
 							}
 						],
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/networkconfigs/Profile6",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/networkconfigs/Profile6",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -6014,12 +5911,11 @@
 							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"dhcpEnabled\": true\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/networkconfigs/",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/networkconfigs/",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -6072,12 +5968,11 @@
 							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"dhcpEnabled\": false\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/networkconfigs/",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/networkconfigs/",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -6123,12 +6018,11 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/networkconfigs/profile6",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/networkconfigs/profile6",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -6179,12 +6073,11 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/networkconfigs/profile6",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/networkconfigs/profile6",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -6235,12 +6128,11 @@
 							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"dhcpEnabled\": false\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/networkconfigs/",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/networkconfigs/",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -6304,12 +6196,11 @@
 							"raw": "{\r\n    \"configName\": \"ciraconfig\",\r\n    \"mpsServerAddress\": \"192.168.8.50\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"password\": \"Intel123!\",\r\n    \"commonName\": \"192.168.8.50\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -6362,12 +6253,11 @@
 							"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n     \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -6419,12 +6309,11 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs/ciraconfig",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs/ciraconfig",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -6483,12 +6372,11 @@
 							"raw": "{\r\n    \"configName\": \"ciraconfig\",\r\n    \"password\": \"P@ssw0rd\"\r\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -6534,12 +6422,11 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/profiles/profile-ciraconfig",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/profile-ciraconfig",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -6586,12 +6473,11 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/ciraconfigs/ciraconfig",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs/ciraconfig",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
 							],
-							"port": "8081",
 							"path": [
 								"api",
 								"v1",
@@ -6639,12 +6525,11 @@
 					}
 				],
 				"url": {
-					"raw": "{{protocol}}://{{host}}:8081/api/v1/admin/version/",
+					"raw": "{{protocol}}://{{host}}/api/v1/admin/version/",
 					"protocol": "{{protocol}}",
 					"host": [
 						"{{host}}"
 					],
-					"port": "8081",
 					"path": [
 						"api",
 						"v1",
