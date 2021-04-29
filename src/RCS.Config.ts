@@ -77,6 +77,8 @@ export interface ClientObject {
   amtPassword?: string
   mebxPassword?: string
   ciraconfig?: CIRAConfigFlow
+  nonce?: any
+  signature?: any
 }
 
 export interface CIRAConfigFlow {
