@@ -2,10 +2,12 @@ openapi: 3.0.0
 info:
   title: Remote Provisioning Server API
   contact: {}
-  version: '1.2'
+  version: '1.3'
 servers:
 - url: http://example.com:8081/api/v1
   variables: {}
+security:
+  - BearerAuth: []
 paths:
   /domains:
     get:
@@ -13,15 +15,6 @@ paths:
       - Domains
       summary: Get All Domains
       operationId: GetAllDomains
-      parameters:
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
       responses:
         200:
           description: 'successful operation'
@@ -50,15 +43,6 @@ paths:
       - Domains
       summary: Create Domain
       operationId: CreateDomain
-      parameters:
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
       requestBody:
         description: ''
         content:
@@ -92,15 +76,6 @@ paths:
       - Domains
       summary: Update Domain Suffix
       operationId: UpdateDomainSuffix
-      parameters:
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
       requestBody:
         description: ''
         content:
@@ -215,15 +190,6 @@ paths:
       - CIRA
       summary: Get All CIRA Configs
       operationId: GetAllCIRAConfigs
-      parameters:
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
       responses:
         200:
           description: 'successful operation'
@@ -252,15 +218,6 @@ paths:
       - CIRA
       summary: Create CIRA Config
       operationId: CreateCIRAConfig
-      parameters:
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
       requestBody:
         description: ''
         content:
@@ -294,15 +251,6 @@ paths:
       - CIRA
       summary: Edit CIRA Config
       operationId: EditCIRAConfig
-      parameters:
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
       requestBody:
         description: ''
         content:
@@ -416,15 +364,6 @@ paths:
       - Profiles
       summary: Get All Profiles
       operationId: GetAllProfiles
-      parameters:
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
       responses:
         200:
           description: 'successful operation'
@@ -453,15 +392,6 @@ paths:
       - Profiles
       summary: Create Profile
       operationId: CreateProfile
-      parameters:
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
       requestBody:
         description: ''
         content:
@@ -495,15 +425,6 @@ paths:
       - Profiles
       summary: Update Profile
       operationId: UpdateProfile
-      parameters:
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
       requestBody:
         description: ''
         content:
@@ -613,15 +534,6 @@ paths:
       - Networks
       summary: Get All Networks
       operationId: GetAllNetworks
-      parameters:
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
       responses:
         200:
           description: 'successful operation'
@@ -650,15 +562,6 @@ paths:
       - Networks
       summary: Create Network Config
       operationId: CreateNetworkConfig
-      parameters:
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
       requestBody:
         description: ''
         content:
@@ -688,15 +591,6 @@ paths:
       - Networks
       summary: Update Network Config
       operationId: UpdateNetworkConfig
-      parameters:
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
       requestBody:
         description: ''
         content:
@@ -806,21 +700,17 @@ paths:
       - Misc
       summary: Get Version
       operationId: GetVersion
-      parameters:
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
       responses:
         200:
           description: 'successful operation'
           headers: {}
       deprecated: false
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     DomainRequest:
       title: DomainRequest
