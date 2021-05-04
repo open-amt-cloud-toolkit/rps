@@ -66,7 +66,6 @@ export class Activator implements IExecutor {
         const amtPassword: string = await this.configurator.profileManager.getAmtPassword(clientObj.ClientData.payload.profile.profileName)
         clientObj.amtPassword = amtPassword
         this.clientManager.setClientObject(clientObj)
-        // await this.saveDeviceInfo(clientObj, amtPassword)
         const data: string = `admin:${clientObj.ClientData.payload.digestRealm}:${amtPassword}`
         const password = SignatureHelper.createMd5Hash(data)
         if (clientObj.action === ClientAction.ADMINCTLMODE) {
@@ -165,7 +164,6 @@ export class Activator implements IExecutor {
         clientObj.ciraconfig.status = 'activated in admin mode.'
         clientObj.activationStatus = true
         this.clientManager.setClientObject(clientObj)
-        await this.saveDeviceInfo(clientObj, clientObj.amtPassword)
         const msg = await this.waitAfterActivation(clientId, clientObj)
         return msg
       }
@@ -178,7 +176,7 @@ export class Activator implements IExecutor {
         clientObj.ciraconfig.status = 'activated in client mode.'
         clientObj.activationStatus = true
         this.clientManager.setClientObject(clientObj)
-        await this.saveDeviceInfo(clientObj, clientObj.amtPassword)
+        await this.saveDeviceInfo(clientObj)
         const msg = await this.waitAfterActivation(clientId, clientObj)
         return msg
       }
@@ -189,7 +187,6 @@ export class Activator implements IExecutor {
       } else {
         this.logger.debug(`Device ${clientObj.uuid} MEBx password updated.`)
         /* Update a device in the repository. */
-        await this.saveDeviceInfo(clientObj, clientObj.amtPassword)
         const msg = await this.waitAfterActivation(clientId, clientObj)
         return msg
       }
@@ -247,6 +244,7 @@ export class Activator implements IExecutor {
 
       clientObj.mebxPassword = mebxPassword
       this.clientManager.setClientObject(clientObj)
+      await this.saveDeviceInfo(clientObj)
       /*  API is only for Admin control mode */
       await this.amtwsman.execute(clientId, 'AMT_SetupAndConfigurationService', 'SetMEBxPassword', { Password: mebxPassword }, null)
     }
@@ -325,7 +323,7 @@ export class Activator implements IExecutor {
    * @param {ClientObject} clientObj
    * @param {string} amtPassword
    */
-  async saveDeviceInfo (clientObj: ClientObject, amtPassword: string): Promise<void> {
+  async saveDeviceInfo (clientObj: ClientObject): Promise<void> {
     if (this.configurator?.amtDeviceRepository) {
       if (clientObj.action === ClientAction.ADMINCTLMODE) {
         await this.configurator.amtDeviceRepository.insert(new AMTDeviceDTO(clientObj.uuid,
@@ -342,7 +340,7 @@ export class Activator implements IExecutor {
           EnvReader.GlobalEnvConfig.mpsusername,
           EnvReader.GlobalEnvConfig.mpspass,
           EnvReader.GlobalEnvConfig.amtusername,
-          amtPassword,
+          clientObj.amtPassword,
           null))
       }
     } else {

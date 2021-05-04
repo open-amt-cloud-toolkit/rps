@@ -72,10 +72,10 @@ export class WSManProcessor {
     const clientObj = this.clientManager.getClientObject(clientId)
     await amtstack.IPS_HostBasedSetupService_AddNextCertInChain(cert, leaf, root, (stack, name, jsonResponse, status) => {
       if (status !== 200) {
-        console.log(`AddNextCertInChain error, status=${status}`)
+        this.logger.error(`AddNextCertInChain error, status=${status}`)
         clientObj.payload = status
       } else if (jsonResponse.Body.ReturnValue !== 0) {
-        console.log(`AddNextCertInChain error: ${jsonResponse.Body.ReturnValue}`)
+        this.logger.error(`AddNextCertInChain error: ${jsonResponse.Body.ReturnValue}`)
         clientObj.payload = jsonResponse
       } else {
         clientObj.payload = jsonResponse
@@ -95,7 +95,7 @@ export class WSManProcessor {
     const amtstack = this.getAmtStack(clientId)
     await amtstack.IPS_HostBasedSetupService_AdminSetup(2, password, nonce, 2, signature, (stack, name, jsonResponse, status) => {
       if (status !== 200) {
-        console.log(`Error, AdminSetup status: ${status}`)
+        this.logger.error(`Error, AdminSetup status: ${status}`)
       } else if (jsonResponse.Body.ReturnValue !== 0) {
         clientObj.payload = jsonResponse
       } else {
@@ -191,7 +191,7 @@ export class WSManProcessor {
       const amtstack = this.getAmtStack(clientId, amtuser, amtpass)
       await amtstack.BatchEnum('', [action], (stack, name, jsonResponse, status) => {
         if (status !== 200) {
-          console.log('Request failed during hardware_info BatchEnum Exec.')
+          this.logger.error('Request failed during hardware_info BatchEnum Exec.')
         } else {
           this.logger.info(`batchEnum request succeeded for clientId: ${clientId}, action:${action}.`)
         }
