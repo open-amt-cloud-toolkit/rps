@@ -3,6 +3,9 @@ info:
   title: Remote Provisioning Server API
   contact: {}
   version: 1.3.0
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
   description: |
     This section is a reference to the RPS API methods available in the Open AMT Cloud Toolkit, and to some commands it provides. 
     Please note when running behind the Kong API proxy the following prefix must be prepended:
@@ -54,7 +57,7 @@ paths:
       - Domains
       summary: Create Domain
       operationId: CreateDomain
-      description: Adds a new domain configuration profile to the database.  The provisioning certificate and certificate password are stored in a secrets manager and are only used when required during activation.  Provisioning certificate must be a base64 string of the Personal Information Exchange (PFX) certificate that includes the entire certificate chain and private key.
+      description: Creates a new domain configuration profile to the database.  The provisioning certificate and certificate password are stored in a secrets manager and are only used when required during activation.  Provisioning certificate must be a base64 string of the Personal Information Exchange (PFX) certificate that includes the entire certificate chain and private key.
       requestBody:
         description: ''
         content:
@@ -672,7 +675,7 @@ paths:
       - Misc
       summary: Get Version
       operationId: GetVersion
-      description: Gets the supported protocol version.  This is used to check compatibility with RPC
+      description: Returns the supported protocol version.  This is used to check compatibility with RPC
       responses:
         200:
           description: 'successful operation'
