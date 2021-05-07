@@ -34,7 +34,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/DomainRequest'
+                  $ref: '#/components/schemas/DomainResponse'
         404:
           description: 'not found'
           content:
@@ -58,7 +58,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DomainRequest'
+              $ref: '#/components/schemas/DomainSubmit'
         required: true
       responses:
         201:
@@ -67,7 +67,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DomainRequest'
+                $ref: '#/components/schemas/DomainResponse'
         400:
           description: 'bad request'
           content:
@@ -91,7 +91,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DomainRequest'
+              $ref: '#/components/schemas/DomainSubmit'
         required: true
       responses:
         200:
@@ -100,7 +100,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DomainRequest'
+                $ref: '#/components/schemas/DomainResponse'
         400:
           description: 'bad request'
           content:
@@ -134,7 +134,7 @@ paths:
           content:
             application/json:
               schema:
-                  $ref: '#/components/schemas/DomainRequest'
+                  $ref: '#/components/schemas/DomainResponse'
         404:
           description: 'not found'
           content:
@@ -193,7 +193,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/CIRAConfigRequest'
+                  $ref: '#/components/schemas/CIRAConfigResponse'
         404:
           description: 'not found'
           content:
@@ -217,7 +217,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CIRAConfigAdd'
+              $ref: '#/components/schemas/CIRAConfigSubmit'
         required: true
       responses:
         201:
@@ -226,7 +226,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CIRAConfigRequest'
+                $ref: '#/components/schemas/CIRAConfigResponse'
         400:
           description: 'bad request'
           content:
@@ -250,7 +250,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CIRAConfigAdd'
+              $ref: '#/components/schemas/CIRAConfigSubmit'
         required: true
       responses:
         200:
@@ -259,7 +259,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CIRAConfigRequest'
+                $ref: '#/components/schemas/CIRAConfigResponse'
         400:
           description: 'bad request'
           content:
@@ -293,7 +293,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CIRAConfigRequest'
+                $ref: '#/components/schemas/CIRAConfigResponse'
         404:
           description: 'not found'
           content:
@@ -351,7 +351,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ProfileRequest'
+                  $ref: '#/components/schemas/ProfileResponse'
         404:
           description: 'not found'
           content:
@@ -375,7 +375,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProfileAdd'
+              $ref: '#/components/schemas/ProfileSubmit'
         required: true
       responses:
         201:
@@ -384,7 +384,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProfileRequest'
+                $ref: '#/components/schemas/ProfileResponse'
         400:
           description: 'bad request'
           content:
@@ -408,7 +408,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProfileAdd'
+              $ref: '#/components/schemas/ProfileSubmit'
         required: true
       responses:
         200:
@@ -417,7 +417,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProfileRequest'
+                $ref: '#/components/schemas/ProfileResponse'
         400:
           description: 'bad request'
           content:
@@ -451,7 +451,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProfileRequest'
+                $ref: '#/components/schemas/ProfileResponse'
         404:
           description: 'not found'
           content:
@@ -509,7 +509,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/NetworkConfigRequest'
+                  $ref: '#/components/schemas/NetworkConfigResponse'
         404:
           description: 'not found'
           content:
@@ -533,7 +533,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NetworkConfigRequest'
+              $ref: '#/components/schemas/NetworkConfigResponse'
         required: true
       responses:
         201:
@@ -542,7 +542,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NetworkConfigRequest'
+                $ref: '#/components/schemas/NetworkConfigResponse'
         400:
           description: 'bad request'
           content:
@@ -605,7 +605,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NetworkConfigRequest'
+                $ref: '#/components/schemas/NetworkConfigResponse'
         404:
           description: 'not found'
           content:
@@ -658,6 +658,10 @@ paths:
         200:
           description: 'successful operation'
           headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionResponse'
       deprecated: false
 components:
   securitySchemes:
@@ -666,8 +670,36 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
-    DomainRequest:
-      title: DomainRequest
+    DomainSubmit:
+      title: DomainSubmit
+      type: object
+      required:
+      - profileName
+      - domainSuffix
+      - provisioningCertStorageFormat
+      - provisioningCert
+      - provisioningCertPassword
+      properties:
+        profileName:
+          type: string
+        domainSuffix:
+          type: string
+        provisioningCertStorageFormat:
+          type: string
+        provisioningCert:
+          type: string
+          format: byte
+        provisioningCertPassword:
+          type: string
+          format: password
+      example:
+        profileName: NewDomain
+        domainSuffix: NewDomain.com
+        provisioningCertStorageFormat: string
+        provisioningCert: U3dhZ2dlciByb2Nrcw==
+        provisioningCertPassword: G@ppm0ym
+    DomainResponse:
+      title: DomainResponse
       type: object
       required:
       - profileName
@@ -684,8 +716,8 @@ components:
         profileName: NewDomain
         domainSuffix: NewDomain.com
         provisioningCertStorageFormat: string
-    CIRAConfigAdd:
-      title: CIRAConfigRequest
+    CIRAConfigSubmit:
+      title: CIRAConfigPost
       required:
       - configName
       - mpsServerAddress
@@ -710,6 +742,7 @@ components:
           type: string
         password:
           type: string
+          format: password
         commonName:
           type: string
         serverAddressFormat:
@@ -720,21 +753,22 @@ components:
           format: int32
         mpsRootCertificate:
           type: string
+          format: byte
         proxyDetails:
           type: string
       example:
         configName: ciraconfig
         mpsServerAddress: 192.168.8.50
-        mpsPort: 1000
-        username: admin
+        mpsPort: 4433
+        username: mps
         password: G@ppm0ym
         commonName: 192.168.8.50
         serverAddressFormat: 3
         authMethod: 2
-        mpsRootCertificate: rootcert
+        mpsRootCertificate: U3dhZ2dlciByb2Nrcw==
         proxyDetails: ''      
-    CIRAConfigRequest:
-      title: CIRAConfigRequest
+    CIRAConfigResponse:
+      title: CIRAConfigResponse
       required:
       - configName
       - mpsServerAddress
@@ -766,20 +800,21 @@ components:
           format: int32
         mpsRootCertificate:
           type: string
+          format: byte
         proxyDetails:
           type: string
       example:
         configName: ciraconfig
         mpsServerAddress: 192.168.8.50
-        mpsPort: 1000
-        username: admin
+        mpsPort: 4433
+        username: mps
         commonName: 192.168.8.50
         serverAddressFormat: 3
         authMethod: 2
-        mpsRootCertificate: rootcert
+        mpsRootCertificate: U3dhZ2dlciByb2Nrcw==
         proxyDetails: ''      
-    ProfileAdd:
-      title: ProfileRequest
+    ProfileSubmit:
+      title: ProfilePost
       required:
       - profileName
       - amtPassword
@@ -799,10 +834,12 @@ components:
           type: string
         amtPassword:
           type: string
+          format: password
         generateRandomPassword:
           type: boolean
         passwordLength:
-          type: number
+          type: integer
+          format: int32
         configurationScript:
           type: string
         activation:
@@ -813,12 +850,16 @@ components:
           type: string
         mebxPassword:
           type: string
+          format: password
         generateRandomMEBxPassword:
           type: boolean
         mebxPasswordLength:
-          type: number
+          type: integer
+          format: int32
         tags:
           type: array
+          items:
+            type: string
       example:
         profileName: profile1
         amtPassword: G@ppm0ym
@@ -832,8 +873,8 @@ components:
         generateRandomMEBxPassword: false
         mebxPasswordLength: null
         tags: [tag1, tag2]
-    ProfileRequest:
-      title: ProfileRequest
+    ProfileResponse:
+      title: ProfileResponse
       required:
       - profileName
       - generateRandomPassword
@@ -852,7 +893,8 @@ components:
         generateRandomPassword:
           type: boolean
         passwordLength:
-          type: number
+          type: integer
+          format: int32
         configurationScript:
           type: string
         activation:
@@ -864,9 +906,12 @@ components:
         generateRandomMEBxPassword:
           type: boolean
         mebxPasswordLength:
-          type: number
+          type: integer
+          format: int32
         tags:
           type: array
+          items:
+            type: string
       example:
         profileName: profile1
         generateRandomPassword: false
@@ -878,8 +923,8 @@ components:
         generateRandomMEBxPassword: false
         mebxPasswordLength: null
         tags: [tag1, tag2]
-    NetworkConfigRequest:
-      title: NetworkConfigRequest
+    NetworkConfigResponse:
+      title: NetworkConfigResponse
       required:
       - profileName
       - dhcpEnabled
@@ -900,6 +945,16 @@ components:
         dhcpEnabled: true
         staticIPShared: false
         ipSyncEnabled: true
+    VersionResponse:
+      title: VersionResponse
+      required:
+        - protocolVersion
+      type: object
+      properties:
+        protocolVersion:
+          type: string
+      example:
+        protocolVersion: 4.0.0
     APIResponse:
       title: APIResponse 
       type: object
