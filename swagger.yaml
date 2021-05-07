@@ -2,9 +2,19 @@ openapi: 3.0.0
 info:
   title: Remote Provisioning Server API
   contact: {}
-  version: '1.3'
+  version: 1.3.0
+  description: |
+    This section is a reference to the RPS API methods available in the Open AMT Cloud Toolkit, and to some commands it provides. 
+    Please note when running behind the Kong API proxy the following prefix must be prepended:
+    * `/rps` for all routes
+
+    GET Domains Example:
+    * Direct connection to RPS: `{{protocol}}://{{host}}/api/v1/admin/domains`
+
+    * Connection to RPS through Kong: `{{protocol}}://{{host}}/rps/api/v1/admin/domains`
+
 servers:
-- url: http://example.com:8081/api/v1
+- url: http://example.com:8081/api/v1/admin
   variables: {}
 security:
   - BearerAuth: []
@@ -117,14 +127,6 @@ paths:
         required: true
         schema:
           type: string
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
       responses:
         200:
           description: 'successful operation'
@@ -159,14 +161,6 @@ paths:
         required: true
         schema:
           type: string
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
       responses:
         204:
           description: 'successful operation'
@@ -223,7 +217,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CIRAConfigRequest'
+              $ref: '#/components/schemas/CIRAConfigAdd'
         required: true
       responses:
         201:
@@ -256,7 +250,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CIRAConfigRequest'
+              $ref: '#/components/schemas/CIRAConfigAdd'
         required: true
       responses:
         200:
@@ -292,14 +286,6 @@ paths:
         required: true
         schema:
           type: string
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
       responses:
         200:
           description: 'successful operation'
@@ -333,14 +319,6 @@ paths:
         required: true
         schema:
           type: string
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
       responses:
         204:
           description: 'successful operation'
@@ -397,7 +375,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProfileRequest'
+              $ref: '#/components/schemas/ProfileAdd'
         required: true
       responses:
         201:
@@ -430,12 +408,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProfileRequest'
+              $ref: '#/components/schemas/ProfileAdd'
         required: true
       responses:
         200:
           description: 'successful operation'
           headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileRequest'
         400:
           description: 'bad request'
           content:
@@ -462,14 +444,6 @@ paths:
         required: true
         schema:
           type: string
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
       responses:
         200:
           description: 'successful operation'
@@ -503,14 +477,6 @@ paths:
         required: true
         schema:
           type: string
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
       responses:
         204:
           description: 'successful operation'
@@ -573,6 +539,10 @@ paths:
         201:
           description: 'successful operation'
           headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetworkConfigRequest'
         400:
           description: 'bad request'
           content:
@@ -586,35 +556,35 @@ paths:
               schema:
                 $ref: '#/components/schemas/APIResponse'
       deprecated: false
-    patch:
-      tags:
-      - Networks
-      summary: Update Network Config
-      operationId: UpdateNetworkConfig
-      requestBody:
-        description: ''
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/NetworkConfigRequest'
-        required: true
-      responses:
-        200:
-          description: 'successful operation'
-          headers: {}
-        400:
-          description: 'bad request'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/APIResponse'
-        500:
-          description: 'internal server error'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/APIResponse'
-      deprecated: false
+    # patch:
+    #   tags:
+    #   - Networks
+    #   summary: Update Network Config
+    #   operationId: UpdateNetworkConfig
+    #   requestBody:
+    #     description: ''
+    #     content:
+    #       application/json:
+    #         schema:
+    #           $ref: '#/components/schemas/NetworkConfigRequest'
+    #     required: true
+    #   responses:
+    #     200:
+    #       description: 'successful operation'
+    #       headers: {}
+    #     400:
+    #       description: 'bad request'
+    #       content:
+    #         application/json:
+    #           schema:
+    #             $ref: '#/components/schemas/APIResponse'
+    #     500:
+    #       description: 'internal server error'
+    #       content:
+    #         application/json:
+    #           schema:
+    #             $ref: '#/components/schemas/APIResponse'
+    #   deprecated: false
   /networkconfigs/{profileName}:
     get:
       tags:
@@ -628,14 +598,6 @@ paths:
         required: true
         schema:
           type: string
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
       responses:
         200:
           description: 'successful operation'
@@ -657,43 +619,35 @@ paths:
               schema:
                 $ref: '#/components/schemas/APIResponse'
       deprecated: false
-    delete:
-      tags:
-      - Networks
-      summary: Remove Network Config
-      operationId: RemoveNetworkConfig
-      parameters:
-      - name: profileName
-        in: path
-        description: Name of profile to delete
-        required: true
-        schema:
-          type: string
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
-      responses:
-        204:
-          description: 'successful operation'
-          headers: {}
-        404:
-          description: 'not found'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/APIResponse'
-        500:
-          description: 'internal server error'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/APIResponse'
-      deprecated: false
+    # delete:
+    #   tags:
+    #   - Networks
+    #   summary: Remove Network Config
+    #   operationId: RemoveNetworkConfig
+    #   parameters:
+    #   - name: profileName
+    #     in: path
+    #     description: Name of profile to delete
+    #     required: true
+    #     schema:
+    #       type: string
+    #   responses:
+    #     204:
+    #       description: 'successful operation'
+    #       headers: {}
+    #     404:
+    #       description: 'not found'
+    #       content:
+    #         application/json:
+    #           schema:
+    #             $ref: '#/components/schemas/APIResponse'
+    #     500:
+    #       description: 'internal server error'
+    #       content:
+    #         application/json:
+    #           schema:
+    #             $ref: '#/components/schemas/APIResponse'
+    #   deprecated: false
   /version:
     get:
       tags:
@@ -718,28 +672,19 @@ components:
       required:
       - profileName
       - domainSuffix
-      - provisioningCert
       - provisioningCertStorageFormat
-      - provisioningCertPassword
       properties:
         profileName:
           type: string
         domainSuffix:
           type: string
-        provisioningCert:
-          type: string
         provisioningCertStorageFormat:
-          type: string
-        provisioningCertPassword:
           type: string
       example:
         profileName: NewDomain
         domainSuffix: NewDomain.com
-        provisioningCert: test
-        provisioningCertStorageFormat: raw
-        provisioningCertPassword: P@ssw0rd
-
-    CIRAConfigRequest:
+        provisioningCertStorageFormat: string
+    CIRAConfigAdd:
       title: CIRAConfigRequest
       required:
       - configName
@@ -778,52 +723,183 @@ components:
         proxyDetails:
           type: string
       example:
-        configName: ciraconfig2
+        configName: ciraconfig
         mpsServerAddress: 192.168.8.50
         mpsPort: 1000
         username: admin
-        password: Intel123!
+        password: G@ppm0ym
         commonName: 192.168.8.50
         serverAddressFormat: 3
         authMethod: 2
         mpsRootCertificate: rootcert
         proxyDetails: ''      
-    ProfileRequest:
+    CIRAConfigRequest:
+      title: CIRAConfigRequest
+      required:
+      - configName
+      - mpsServerAddress
+      - mpsPort
+      - username
+      - commonName
+      - serverAddressFormat
+      - authMethod
+      - mpsRootCertificate
+      - proxyDetails
+      type: object
+      properties:
+        configName:
+          type: string
+        mpsServerAddress:
+          type: string
+        mpsPort:
+          type: integer
+          format: int32
+        username:
+          type: string
+        commonName:
+          type: string
+        serverAddressFormat:
+          type: integer
+          format: int32
+        authMethod:
+          type: integer
+          format: int32
+        mpsRootCertificate:
+          type: string
+        proxyDetails:
+          type: string
+      example:
+        configName: ciraconfig
+        mpsServerAddress: 192.168.8.50
+        mpsPort: 1000
+        username: admin
+        commonName: 192.168.8.50
+        serverAddressFormat: 3
+        authMethod: 2
+        mpsRootCertificate: rootcert
+        proxyDetails: ''      
+    ProfileAdd:
       title: ProfileRequest
       required:
       - profileName
       - amtPassword
-      - mebxPassword
+      - generateRandomPassword
+      - passwordLength
+      - configurationScript
       - activation
+      - ciraConfigName
+      - networkConfigName
+      - mebxPassword
+      - generateRandomMEBxPassword
+      - mebxPasswordLength
+      - tags
       type: object
       properties:
         profileName:
           type: string
         amtPassword:
           type: string
-        mebxPassword:
+        generateRandomPassword:
+          type: boolean
+        passwordLength:
+          type: number
+        configurationScript:
           type: string
         activation:
           type: string
+        ciraConfigName:
+          type: string
+        networkConfigName:
+          type: string
+        mebxPassword:
+          type: string
+        generateRandomMEBxPassword:
+          type: boolean
+        mebxPasswordLength:
+          type: number
+        tags:
+          type: array
       example:
-        profileName: profile6
-        amtPassword: Intel123!
-        mebxPassword: Intel123!
-        activation: activate      
+        profileName: profile1
+        amtPassword: G@ppm0ym
+        generateRandomPassword: false
+        passwordLength: null
+        configurationScript: null
+        activation: acmactivate      
+        ciraConfigName: ciraconfig
+        networkConfigName: dhcp_enabled
+        mebxPassword: G@ppm0ym
+        generateRandomMEBxPassword: false
+        mebxPasswordLength: null
+        tags: [tag1, tag2]
+    ProfileRequest:
+      title: ProfileRequest
+      required:
+      - profileName
+      - generateRandomPassword
+      - passwordLength
+      - configurationScript
+      - activation
+      - ciraConfigName
+      - networkConfigName
+      - generateRandomMEBxPassword
+      - mebxPasswordLength
+      - tags
+      type: object
+      properties:
+        profileName:
+          type: string
+        generateRandomPassword:
+          type: boolean
+        passwordLength:
+          type: number
+        configurationScript:
+          type: string
+        activation:
+          type: string
+        ciraConfigName:
+          type: string
+        networkConfigName:
+          type: string
+        generateRandomMEBxPassword:
+          type: boolean
+        mebxPasswordLength:
+          type: number
+        tags:
+          type: array
+      example:
+        profileName: profile1
+        generateRandomPassword: false
+        passwordLength: null
+        configurationScript: null
+        activation: acmactivate      
+        ciraConfigName: ciraconfig
+        networkConfigName: dhcp_enabled
+        generateRandomMEBxPassword: false
+        mebxPasswordLength: null
+        tags: [tag1, tag2]
     NetworkConfigRequest:
       title: NetworkConfigRequest
       required:
       - profileName
       - dhcpEnabled
+      - staticIPShared
+      - ipSyncEnabled
       type: object
       properties:
         profileName:
           type: string
         dhcpEnabled:
           type: boolean
+        staticIPShared:
+          type: boolean
+        ipSyncEnabled:
+          type: boolean
       example:
-        profileName: profile6
+        profileName: dhcp_enabled
         dhcpEnabled: true
+        staticIPShared: false
+        ipSyncEnabled: true
     APIResponse:
       title: APIResponse 
       type: object
