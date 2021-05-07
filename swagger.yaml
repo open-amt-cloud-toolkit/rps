@@ -736,7 +736,7 @@ components:
         domainSuffix: NewDomain.com
         provisioningCertStorageFormat: string
     CIRAConfigSubmit:
-      title: CIRAConfigPost
+      title: CIRAConfigSubmit
       required:
       - configName
       - mpsServerAddress
@@ -833,7 +833,7 @@ components:
         mpsRootCertificate: U3dhZ2dlciByb2Nrcw==
         proxyDetails: ''      
     ProfileSubmit:
-      title: ProfilePost
+      title: ProfileSubmit
       required:
       - profileName
       - amtPassword
