@@ -25,6 +25,7 @@ paths:
       - Domains
       summary: Get All Domains
       operationId: GetAllDomains
+      description: Retrieves all of the domain configuration profiles stored in the database.  Will not return the provisioning certificate or certificate password to protect the privacy of these assets.
       responses:
         200:
           description: 'successful operation'
@@ -53,6 +54,7 @@ paths:
       - Domains
       summary: Create Domain
       operationId: CreateDomain
+      description: Adds a new domain configuration profile to the database.  The provisioning certificate and certificate password are stored in a secrets manager and are only used when required during activation.  Provisioning certificate must be a base64 string of the Personal Information Exchange (PFX) certificate that includes the entire certificate chain and private key.
       requestBody:
         description: ''
         content:
@@ -86,6 +88,7 @@ paths:
       - Domains
       summary: Update Domain Suffix
       operationId: UpdateDomainSuffix
+      description: Edits an existing domain configuration profile.  The profileName field can not be changed.  The provisioning certificate and certificate password are stored in a secrets manager and are only used when required during activation.  Provisioning certificate must be a base64 string of the Personal Information Exchange (PFX) certificate that includes the entire certificate chain and private key.
       requestBody:
         description: ''
         content:
@@ -120,6 +123,7 @@ paths:
         - Domains
       summary: Get Domain
       operationId: GetDomain
+      description: Retrieves the specific domain configuration profile.
       parameters:
       - name: profileName
         in: path
@@ -154,6 +158,7 @@ paths:
       - Domains
       summary: Remove Domain
       operationId: RemoveDomain
+      description: Removes the specific domain configuration profile
       parameters:
       - name: profileName
         in: path
@@ -184,6 +189,7 @@ paths:
       - CIRA
       summary: Get All CIRA Configs
       operationId: GetAllCIRAConfigs
+      description: Retrieves all of the CIRA configuration profiles from the database.  Will not return the password field to protect the privacy of this asset.
       responses:
         200:
           description: 'successful operation'
@@ -212,6 +218,7 @@ paths:
       - CIRA
       summary: Create CIRA Config
       operationId: CreateCIRAConfig
+      description: Creates a new CIRA configuration profile.  The password is stored in a secrets manager and is only used during configuration to set the MPS credentials in the AMT device.
       requestBody:
         description: ''
         content:
@@ -245,6 +252,7 @@ paths:
       - CIRA
       summary: Edit CIRA Config
       operationId: EditCIRAConfig
+      description: Edits an existing CIRA configuration profile.  The configName can not be changed.  The password is stored in a secrets manager and is only used during configuration to set the MPS credentials in the AMT device.
       requestBody:
         description: ''
         content:
@@ -279,6 +287,7 @@ paths:
       - CIRA
       summary: Get CIRA Config
       operationId: GetCIRAConfig
+      description: Retrieves the specific CIRA configuration profile from the database.  Will not return the password field to protect the privacy of this asset.
       parameters:
       - name: configName
         in: path
@@ -312,6 +321,7 @@ paths:
       - CIRA
       summary: Remove CIRA Config
       operationId: RemoveCIRAConfig
+      description: Removes the specific CIRA configuration profile from the database.
       parameters:
       - name: configName
         in: path
@@ -342,6 +352,7 @@ paths:
       - Profiles
       summary: Get All Profiles
       operationId: GetAllProfiles
+      description: Retrieves all of the AMT configuration profiles from the database.  Will not return the amtPassword or mebxPassword fields to protect the privacy of these assets.
       responses:
         200:
           description: 'successful operation'
@@ -370,6 +381,7 @@ paths:
       - Profiles
       summary: Create Profile
       operationId: CreateProfile
+      description: Creates a new AMT configuration profile.  The amtPassword and mebxPassword are stored in a secrets manager and are only used during activation and configuration, respectively, to set these credentials in the AMT device.
       requestBody:
         description: ''
         content:
@@ -403,6 +415,7 @@ paths:
       - Profiles
       summary: Update Profile
       operationId: UpdateProfile
+      description: Edits an existing AMT configuration profile.  The profileName can not be changed.  The amtPassword and mebxPassword are stored in a secrets manager and are only used during activation and configuration, respectively, to set these credentials in the AMT device.
       requestBody:
         description: ''
         content:
@@ -437,6 +450,7 @@ paths:
       - Profiles
       summary: Get Profile
       operationId: GetProfile
+      description: Retrieves the specific AMT configuration profile from the database.  Will not return the amtPassword or mebxPassword fields to protect the privacy of these assets.
       parameters:
       - name: profileName
         in: path
@@ -470,6 +484,7 @@ paths:
       - Profiles
       summary: Remove Profile
       operationId: RemoveProfile
+      description: Removes the specific AMT configuration profile from the database.
       parameters:
       - name: profileName
         in: path
@@ -500,6 +515,7 @@ paths:
       - Networks
       summary: Get All Networks
       operationId: GetAllNetworks
+      description: Retrieves all of the network configuration profiles from the database.
       responses:
         200:
           description: 'successful operation'
@@ -528,6 +544,7 @@ paths:
       - Networks
       summary: Create Network Config
       operationId: CreateNetworkConfig
+      description: Creates a new network configuration profile.
       requestBody:
         description: ''
         content:
@@ -591,6 +608,7 @@ paths:
       - Networks
       summary: Get Network Config
       operationId: GetNetworkConfig
+      description: Retrieves the specific network configuration profile from the database.
       parameters:
       - name: profileName
         in: path
@@ -654,6 +672,7 @@ paths:
       - Misc
       summary: Get Version
       operationId: GetVersion
+      description: Gets the supported protocol version.  This is used to check compatibility with RPC
       responses:
         200:
           description: 'successful operation'
