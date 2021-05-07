@@ -1,6 +1,62 @@
-<a name="v1.2.0"></a>
-## v1.2.0
+<a name="v1.3.0"></a>
+## [v1.3.0]
 
+### Build
+- bump version in package.json and swagger
+- **deps:** bump express-validator from 6.10.0 to 6.10.1
+- **deps:** bump ws from 7.4.4 to 7.4.5
+- **deps:** bump pg from 8.5.1 to 8.6.0
+- **deps-dev:** bump eslint from 7.24.0 to 7.25.0
+- **deps-dev:** bump [@types](https://github.com/types)/jest from 26.0.22 to 26.0.23
+- **deps-dev:** bump [@types](https://github.com/types)/ws from 7.4.1 to 7.4.2
+- **deps-dev:** bump [@types](https://github.com/types)/node from 14.14.39 to 14.14.41 ([#212](https://github.com/open-amt-cloud-toolkit/rps/issues/212))
+- **deps-dev:** bump ts-jest from 26.5.4 to 26.5.5 ([#213](https://github.com/open-amt-cloud-toolkit/rps/issues/213))
+- **deps-dev:** bump [@types](https://github.com/types)/node from 14.14.37 to 14.14.39
+- **deps-dev:** bump [@types](https://github.com/types)/node from 14.14.41 to 14.14.43
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 4.21.0 to 4.22.0
+- **deps-dev:** bump typescript from 4.2.3 to 4.2.4
+- **deps-dev:** bump eslint-plugin-promise from 4.3.1 to 5.1.0
+- **deps-dev:** bump eslint from 7.23.0 to 7.24.0
+- **deps-dev:** bump sinon from 10.0.0 to 10.0.1
+- **deps-dev:** bump typescript from 4.2.3 to 4.2.4
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 4.20.0 to 4.21.0
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin
+- **deps-dev:** bump [@types](https://github.com/types)/ws from 7.4.0 to 7.4.1
+
+### Ci
+- update API tests
+
+### Docs
+- **swagger:** update auth
+
+### Fix
+- mps registration for metadata
+- **acm:** updated device secret store flow to be more reliable ([#194](https://github.com/open-amt-cloud-toolkit/rps/issues/194))
+- **activator:** saving mebx password in vault
+- **cira:** update cira config to remove existing configurations ([#190](https://github.com/open-amt-cloud-toolkit/rps/issues/190))
+- **cira:** cira config is case insensitive to pull the data from vault ([#217](https://github.com/open-amt-cloud-toolkit/rps/issues/217))
+- **dockerfile:** Update Dockerfile
+- **dockerfile:** added license to dockerfile
+- **domains:** update domain properly sets keys in vault
+- **heartbeat:** slowed heartbeat to every 1 second
+- **postman:** added postman tests to test profile name case insensitivity
+
+### Refactor
+- **BREAKING CHANGE:** remove certs, cors, APIKEY from RPS
+- update  MPS api call
+- **activation:** merged ACM and CCM flows
+- **devmode:** **BREAKING CHANGE:** remove devmode
+- **dockerfile:** removed netcat
+- **heartbeat:** changed heartbeat to 5 second
+- **vault:** **BREAKING CHANGE:** vault is required in all modes
+
+### Test
+- update API test to remove port
+
+
+<a name="v1.2.0"></a>
+## [v1.2.0] - 2021-04-02
 ### Build
 - update dockerfile to node 14-buster-slim
 - **dep:** force latest lodash
@@ -52,12 +108,13 @@
 - add initial jenkinsfile
 
 ### Docs
+- add changelog
 - **api:** add swagger.yaml
 
 ### Feat
-- **activation:** BREAKING CHANGE: added a delay with configurable time after activation ([#167](https://github.com/open-amt-cloud-toolkit/rps/issues/167)) bumps RPC Protocol 4.0.0
-- **api:** BREAKING CHANGE: api responses are changed to structured JSON
-- **api:** BREAKING CHANGE: post api's respomd with appropriate object instead of success message ([#139](https://github.com/open-amt-cloud-toolkit/rps/issues/139))
+- **activation:** added a delay with configurable time after activation ([#167](https://github.com/open-amt-cloud-toolkit/rps/issues/167))
+- **api:** api responses are changed to structured JSON
+- **api:** post api's respomd with appropriate object instead of success message ([#139](https://github.com/open-amt-cloud-toolkit/rps/issues/139))
 - **api:** add input validation to restful api
 - **certs:** use environment variables to store certs for web socket ([#185](https://github.com/open-amt-cloud-toolkit/rps/issues/185))
 - **metadata:** add metadata registration with MPS
@@ -83,6 +140,18 @@
 
 ### Test
 - **api:** added unit tests to update amt profiles
+
+### BREAKING CHANGE
+
+Added heart beats after activation till the delay time completes
+
+now API requests are without payload in object
+
+PATCH now returns updated object and passwordlength properties renamed
+
+APIs are updated to return properties with camelcase
+
+API responses are structured and no longer return string messages
 
 
 <a name="v1.1.0"></a>
@@ -160,5 +229,16 @@
 - **api:** add automated api tests
 
 
-[Unreleased]: https://github.com/open-amt-cloud-toolkit/rps/compare/v1.1.0...HEAD
-[v1.1.0]: https://github.com/open-amt-cloud-toolkit/rps/compare/v1.0.0...v1.1.0
+<a name="v1.0.0"></a>
+## v1.0.0 - 2020-11-20
+### Ci
+- automation for scanning and builds
+
+### Fix
+- **docker:** build times in docker build taking too long
+- **docker:** downgrade node image to 12
+
+### Refactor
+- **docker:** optimize dockerfile
+
+
