@@ -353,7 +353,7 @@ export class Activator implements IExecutor {
       if (profile?.tags != null) {
         tags = profile.tags
       }
-      await got(`${EnvReader.GlobalEnvConfig.mpsServer}/api/v1/metadata`, {
+      await got(`${EnvReader.GlobalEnvConfig.mpsServer}/api/v1/devices`, {
         method: 'POST',
         rejectUnauthorized: false,
         json: {
