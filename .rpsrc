@@ -8,7 +8,7 @@
   "websocketport": 8080,
   "connection_string": "postgresql://postgresadmin:admin123@localhost:5432/rpsdb",
   "cors_origin": "http://localhost:4200",
-  "cors_headers": "Origin, X-Requested-With, Accept, X-RPS-API-Key, Content-Type, csrf-token, authorization",
+  "cors_headers": "Origin, X-Requested-With, Accept, Content-Type, csrf-token, authorization",
   "cors_methods": "*",
   "mps_server": "http://localhost:3000",
   "delay_timer": 12
