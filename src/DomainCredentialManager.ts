@@ -53,8 +53,8 @@ export class DomainCredentialManager implements IDomainCredentialManager {
       if (this.configurator?.secretsManager) {
         certPwd = await this.configurator.secretsManager.getSecretAtPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/${domain.profileName}`)
         this.logger.info('Received CertPwd from vault')
-        domain.provisioningCert = certPwd.data.CERT_KEY
-        domain.provisioningCertPassword = certPwd.data.CERT_PASSWORD_KEY
+        domain.provisioningCert = certPwd.data.CERT
+        domain.provisioningCertPassword = certPwd.data.CERT_PASSWORD
       }
     } else {
       this.logger.warn(`unable to find provisioning cert for profile ${domainSuffix}`)
