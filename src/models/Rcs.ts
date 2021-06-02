@@ -25,8 +25,6 @@ export class VaultConfig {
 }
 export class RCSConfig {
   VaultConfig: VaultConfig
-  mpsusername: string
-  mpspass: string
   amtusername: string
   webport: number
   credentialspath: string
@@ -189,8 +187,6 @@ export class Version {
 }
 
 const recipeRCSConfig = {
-  user: 'mpsusername',
-  password: 'mpspass',
   web_port: 'webport',
   credentials_path: 'credentialspath',
   websocketport: 'WSConfiguration.WebSocketPort',

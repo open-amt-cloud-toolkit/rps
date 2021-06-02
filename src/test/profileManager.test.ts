@@ -16,8 +16,6 @@ const rcsConfig: RCSConfig = {
   WSConfiguration: {
     WebSocketPort: 8080
   },
-  mpsusername: 'admin',
-  mpspass: 'P@ssw0rd',
   amtusername: 'admin',
   VaultConfig: {
     usevault: false,

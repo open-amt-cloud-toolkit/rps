@@ -32,7 +32,7 @@ export class CIRAConfigurator implements IExecutor {
      * @returns {ClientMsg} message to sent to client
      */
   async execute (message: any, clientId: string): Promise<ClientMsg> {
-    let clientObj
+    let clientObj: ClientObject
     try {
       clientObj = this.clientManager.getClientObject(clientId)
       if (message?.payload != null || !clientObj.ciraconfig.policyRuleUserInitiate) {
@@ -55,8 +55,8 @@ export class CIRAConfigurator implements IExecutor {
               InfoFormat: configScript.serverAddressFormat,
               Port: configScript.mpsPort,
               AuthMethod: configScript.authMethod,
-              Username: configScript.username,
-              Password: configScript.password
+              Username: clientObj.uuid,
+              Password: clientObj.mpsPassword
             }
             if (configScript.serverAddressFormat === 3 && configScript.commonName) {
               server.CN = configScript.commonName

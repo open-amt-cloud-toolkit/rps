@@ -7,8 +7,6 @@ export const config: RCSConfig = {
     token: '',
     address: ''
   },
-  mpsusername: 'admin',
-  mpspass: 'P@ssw0rd',
   amtusername: 'admin',
   webport: 8081,
   credentialspath: '../../../MPS_MicroService/private/data.json',

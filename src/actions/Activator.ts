@@ -221,6 +221,9 @@ export class Activator implements IExecutor {
       /* Set MEBx password called after the activation as the API is accessible only with admin user */
         await this.setMEBxPassword(clientId, clientObj)
       }
+      if (clientObj.mpsPassword == null) {
+        await this.setMPSPassword(clientObj)
+      }
       clientObj.action = ClientAction.NETWORKCONFIG
       this.clientManager.setClientObject(clientObj)
       await this.networkConfigurator.execute(null, clientId)
@@ -228,6 +231,18 @@ export class Activator implements IExecutor {
       this.logger.info(`Current Time: ${currentTime} Delay end time : ${clientObj.delayEndTime}`)
       return this.responseMsg.get(clientId, null, 'heartbeat_request', 'heartbeat', '')
     }
+  }
+
+  /**
+   * @description Set password for the MPS server
+   * @param {ClientObject} clientObj
+   */
+  async setMPSPassword (clientObj: ClientObject): Promise<void> {
+    this.logger.info('setting MPS password')
+    /* Get the MPS password */
+    clientObj.mpsPassword = await this.configurator.profileManager.getMPSPassword(clientObj.ClientData.payload.profile.profileName)
+    this.clientManager.setClientObject(clientObj)
+    await this.saveDeviceInfo(clientObj)
   }
 
   /**
@@ -328,8 +343,8 @@ export class Activator implements IExecutor {
       if (clientObj.action === ClientAction.ADMINCTLMODE) {
         await this.configurator.amtDeviceRepository.insert(new AMTDeviceDTO(clientObj.uuid,
           clientObj.hostname,
-          EnvReader.GlobalEnvConfig.mpsusername,
-          EnvReader.GlobalEnvConfig.mpspass,
+          clientObj.uuid,
+          clientObj.mpsPassword,
           EnvReader.GlobalEnvConfig.amtusername,
           clientObj.amtPassword,
           clientObj.mebxPassword
@@ -337,8 +352,8 @@ export class Activator implements IExecutor {
       } else {
         await this.configurator.amtDeviceRepository.insert(new AMTDeviceDTO(clientObj.uuid,
           clientObj.hostname,
-          EnvReader.GlobalEnvConfig.mpsusername,
-          EnvReader.GlobalEnvConfig.mpspass,
+          clientObj.uuid,
+          clientObj.mpsPassword,
           EnvReader.GlobalEnvConfig.amtusername,
           clientObj.amtPassword,
           null))

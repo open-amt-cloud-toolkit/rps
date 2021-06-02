@@ -17,4 +17,5 @@ export interface IProfileManager {
   doesProfileExist: (profileName: string) => Promise<boolean>
   getAmtProfile: (profileName: string) => Promise<AMTConfiguration>
   getMEBxPassword: (profileName: string) => Promise<string>
+  getMPSPassword: (profileName: string) => Promise<string>
 }
