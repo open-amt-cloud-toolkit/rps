@@ -31,7 +31,7 @@ export async function editCiraConfig (req, res): Promise<void> {
       const ciraConfig: CIRAConfig = getUpdatedData(newConfig, oldConfig)
       const mpsPwd = newConfig.password
       if (req.secretsManager) {
-        ciraConfig.password = `${ciraConfig.configName}_CIRA_PROFILE_PASSWORD`
+        ciraConfig.password = 'MPS_PASSWORD'
       }
       // TBD: Need to check the ServerAddressFormat, CommonName and MPSServerAddress if they are not updated.
       // SQL Query > Insert Data
@@ -39,7 +39,6 @@ export async function editCiraConfig (req, res): Promise<void> {
       if (results !== undefined) {
         // update the password in Vault if not null
         if (req.secretsManager && mpsPwd !== null) {
-          await req.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfig.configName}`)
           await req.secretsManager.writeSecretWithKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfig.configName}`, ciraConfig.password, mpsPwd)
           log.info(`MPS password updated in Vault for CIRA Config ${ciraConfig.configName}`)
         }
