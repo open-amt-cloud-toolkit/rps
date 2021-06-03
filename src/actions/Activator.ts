@@ -377,7 +377,7 @@ export class Activator implements IExecutor {
         json: {
           guid: clientObj.uuid,
           hostname: clientObj.hostname,
-          mpsusername: profile.ciraConfigObject.username,
+          mpsusername: clientObj.mpsUsername,
           tags: tags
         }
       })
