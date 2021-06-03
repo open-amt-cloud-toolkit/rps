@@ -65,9 +65,12 @@ export class Activator implements IExecutor {
       if (((clientObj.action === ClientAction.ADMINCTLMODE && clientObj.certObj && clientObj.count > clientObj.certObj.certChain.length) || (clientObj.action === ClientAction.CLIENTCTLMODE)) && !clientObj.activationStatus) {
         const amtPassword: string = await this.configurator.profileManager.getAmtPassword(clientObj.ClientData.payload.profile.profileName)
         clientObj.amtPassword = amtPassword
-        clientObj.mpsPassword = await this.configurator.profileManager.getMPSPassword(clientObj.ClientData.payload.profile.profileName)
-
         this.clientManager.setClientObject(clientObj)
+
+        if (clientObj.mpsUsername == null || clientObj.mpsPassword == null) {
+          await this.setMPSPassword(clientObj)
+        }
+
         const data: string = `admin:${clientObj.ClientData.payload.digestRealm}:${amtPassword}`
         const password = SignatureHelper.createMd5Hash(data)
         if (clientObj.action === ClientAction.ADMINCTLMODE) {
@@ -233,6 +236,19 @@ export class Activator implements IExecutor {
   }
 
   /**
+   * @description Set MPS password for the AMT
+   * @param {string} clientId Id to keep track of connections
+   * @param {ClientObject} clientObj
+   */
+  async setMPSPassword (clientObj: ClientObject): Promise<void> {
+    this.logger.info('setting MPS password')
+
+    clientObj.mpsUsername = await (await this.configurator.profileManager.getCiraConfiguration(clientObj.ClientData.payload.profile.profileName))?.username
+    clientObj.mpsPassword = await this.configurator.profileManager.getMPSPassword(clientObj.ClientData.payload.profile.profileName)
+    this.clientManager.setClientObject(clientObj)
+  }
+
+  /**
    * @description Set MEBx password for the AMT
    * @param {string} clientId Id to keep track of connections
    * @param {ClientObject} clientObj
@@ -330,7 +346,7 @@ export class Activator implements IExecutor {
       if (clientObj.action === ClientAction.ADMINCTLMODE) {
         await this.configurator.amtDeviceRepository.insert(new AMTDeviceDTO(clientObj.uuid,
           clientObj.hostname,
-          clientObj.uuid,
+          clientObj.mpsUsername,
           clientObj.mpsPassword,
           EnvReader.GlobalEnvConfig.amtusername,
           clientObj.amtPassword,
@@ -339,7 +355,7 @@ export class Activator implements IExecutor {
       } else {
         await this.configurator.amtDeviceRepository.insert(new AMTDeviceDTO(clientObj.uuid,
           clientObj.hostname,
-          clientObj.uuid,
+          clientObj.mpsUsername,
           clientObj.mpsPassword,
           EnvReader.GlobalEnvConfig.amtusername,
           clientObj.amtPassword,
@@ -361,6 +377,7 @@ export class Activator implements IExecutor {
         json: {
           guid: clientObj.uuid,
           hostname: clientObj.hostname,
+          mpsusername: profile.ciraConfigObject.username,
           tags: tags
         }
       })

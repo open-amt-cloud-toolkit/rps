@@ -55,7 +55,7 @@ export class CIRAConfigurator implements IExecutor {
               InfoFormat: configScript.serverAddressFormat,
               Port: configScript.mpsPort,
               AuthMethod: configScript.authMethod,
-              Username: 'admin',
+              Username: clientObj.mpsUsername,
               Password: clientObj.mpsPassword
             }
             if (configScript.serverAddressFormat === 3 && configScript.commonName) {

@@ -81,6 +81,7 @@ export interface ClientObject {
   ciraconfig?: CIRAConfigFlow
   nonce?: any
   signature?: any
+  mpsUsername?: string
   mpsPassword?: string
 }
 
