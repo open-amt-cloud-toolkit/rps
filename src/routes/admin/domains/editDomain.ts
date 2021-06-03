@@ -35,8 +35,8 @@ export async function editDomain (req, res): Promise<void> {
       if (req.secretsManager) {
         cert = amtDomain.provisioningCert
         domainPwd = amtDomain.provisioningCertPassword
-        amtDomain.provisioningCert = `${amtDomain.profileName}_CERT_KEY`
-        amtDomain.provisioningCertPassword = `${amtDomain.profileName}_CERT_PASSWORD_KEY`
+        amtDomain.provisioningCert = 'CERT'
+        amtDomain.provisioningCertPassword = 'CERT_PASSWORD'
       }
       // SQL Query > Insert Data
       const results: AMTDomain = await domainsDb.updateDomain(amtDomain)
@@ -45,11 +45,10 @@ export async function editDomain (req, res): Promise<void> {
         if (req.secretsManager && (newDomain.provisioningCert != null || newDomain.provisioningCertPassword != null)) {
           const data = {
             data: {
-              CERT_KEY: cert,
-              CERT_PASSWORD_KEY: domainPwd
+              CERT: cert,
+              CERT_PASSWORD: domainPwd
             }
           }
-          await req.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/${amtDomain.profileName}`)
           await req.secretsManager.writeSecretWithObject(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/${amtDomain.profileName}`, data)
           log.debug(`Updated AMT Domain : ${amtDomain.profileName} in vault`)
         }
