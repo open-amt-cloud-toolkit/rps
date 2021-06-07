@@ -21,7 +21,7 @@
     "express": "^4.17.1",
     "express-promise-router": "^4.1.0",
     "express-validator": "^6.11.1",
-    "express-ws": "^4.0.0",
+    "express-ws": "^5.0.1",
     "got": "^11.8.2",
     "minimist": "^1.2.5",
     "node-forge": "^0.10.0",
