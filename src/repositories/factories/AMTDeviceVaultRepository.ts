@@ -63,7 +63,7 @@ export class AMTDeviceVaultRepository implements IAMTDeviceRepository {
           const amtDevice: AMTDeviceDTO = new AMTDeviceDTO(
             deviceId,
             deviceId,
-	          deviceId,
+            null,
             devicePwds.data.MPS_PASSWORD,
             AMTUserName,
             devicePwds.data.AMT_PASSWORD,
