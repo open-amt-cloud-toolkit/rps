@@ -104,7 +104,7 @@ export class ProfileManager implements IProfileManager {
 
       this.logger.debug(`retrieve CIRA MPS Password for cira config ${ciraConfig.configName}`)
       if (this.configurator?.secretsManager) {
-        ciraConfig.password = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfig.configName}`, `${ciraConfig.configName}_CIRA_PROFILE_PASSWORD`)
+        ciraConfig.password = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfig.configName}`, 'MPS_PASSWORD')
       }
     } else {
       this.logger.debug(`unable to find CIRAConfig for profile ${JSON.stringify(profile)}`)
@@ -153,7 +153,7 @@ export class ProfileManager implements IProfileManager {
       } else {
         this.logger.debug(`found amtPassword for profile ${profileName}`)
         if (this.configurator?.secretsManager) {
-          amtPassword = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${profileName}`, `${profileName}_DEVICE_AMT_PASSWORD`)
+          amtPassword = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${profileName}`, 'AMT_PASSWORD')
         } else {
           amtPassword = profile.amtPassword
         }
@@ -191,7 +191,7 @@ export class ProfileManager implements IProfileManager {
       } else {
         this.logger.debug(`found amtPassword for profile ${profileName}`)
         if (this.configurator?.secretsManager) {
-          mebxPassword = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${profileName}`, `${profileName}_DEVICE_MEBX_PASSWORD`)
+          mebxPassword = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${profileName}`, 'MEBX_PASSWORD')
         } else {
           mebxPassword = profile.mebxPassword
         }

@@ -29,7 +29,7 @@ export async function createCiraConfig (req, res): Promise<void> {
     ciraConfig = req.body
     const mpsPwd = ciraConfig.password
     if (req.secretsManager) {
-      ciraConfig.password = `${ciraConfig.configName}_CIRA_PROFILE_PASSWORD`
+      ciraConfig.password = 'MPS_PASSWORD'
     }
     // SQL Query > Insert Data
     const results: CIRAConfig = await ciraConfigDb.insertCiraConfig(ciraConfig)

@@ -12,11 +12,10 @@ import { EnvReader } from './utils/EnvReader'
 import { RCSConfig, mapConfig } from './models/Rcs'
 import { IConfigurator } from './interfaces/IConfigurator'
 import { parseValue } from './utils/parseEnvValue'
-
+import dot = require('dot-object')
 import routes from './routes'
 import rc = require('rc')
 const log = new Logger('Index')
-import dot = require('dot-object')
 
 // To merge ENV variables. consider after lowercasing ENV since our config keys are lowercase
 process.env = Object.keys(process.env)

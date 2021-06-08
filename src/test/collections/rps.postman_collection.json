@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "edfed698-3449-4224-85ed-cdda98f708ba",
+		"_postman_id": "8b683029-41a5-4e22-a66d-0afce913c698",
 		"name": "RPS API Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -18,25 +18,11 @@
 									"pm.test(\"Status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
-									"var env = pm.environment.get(\"env\");\r",
-									"if (env == 'dev') {\r",
-									"    pm.test(\"Result length should be 1\", function () {\r",
-									"        var jsonData = pm.response.json();\r",
-									"        pm.expect(jsonData.length).to.eql(1);\r",
-									"    });\r",
-									"    pm.test(\"Result 1 should be equal to example\", function () {\r",
-									"        var jsonData = pm.response.json();\r",
-									"        pm.expect(jsonData[0].profileName).to.eql(\"Sample_Domain\")\r",
-									"        pm.expect(jsonData[0].domainSuffix).to.eql(\"sample.com\")\r",
-									"        pm.expect(jsonData[0].provisioningCertStorageFormat).to.eql(\"string\")\r",
-									"    });\r",
-									"} else {\r",
-									"    pm.test(\"Result length should be equal to zero\", function () {\r",
-									"       var jsonData = pm.response.json();\r",
-									"       pm.expect(jsonData.length).to.eql(0)\r",
-									"    });\r",
-									"}\r",
-									""
+									"\r",
+									"pm.test(\"Result length should be equal to zero\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.length).to.eql(0)\r",
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -67,69 +53,6 @@
 								"v1",
 								"admin",
 								"domains"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Domain",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var env = pm.environment.get(\"env\");\r",
-									"if (env == 'dev') {\r",
-									"    pm.test(\"Status code is 200\", function () {\r",
-									"        pm.response.to.have.status(200);\r",
-									"    });\r",
-									"    pm.test(\"Result should be equal to example\", function () {\r",
-									"        var jsonData = pm.response.json();\r",
-									"        pm.expect(jsonData.profileName).to.eql(\"Sample_Domain\")\r",
-									"        pm.expect(jsonData.domainSuffix).to.eql(\"sample.com\")\r",
-									"        pm.expect(jsonData.provisioningCertStorageFormat).to.eql(\"string\")\r",
-									"    });\r",
-									"} else {\r",
-									"    pm.test(\"Status code is 404\", function () {    \r",
-									"    pm.response.to.have.status(404);\r",
-									"    });\r",
-									"    pm.test(\"Request should succeed\", function () {\r",
-									"        var result = pm.response.json();\r",
-									"        pm.expect(result.error).to.eql('Not Found')\r",
-									"    });\r",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!"
-							}
-						],
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains/Sample_Domain",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"domains",
-								"Sample_Domain"
 							]
 						}
 					},
@@ -1408,32 +1331,11 @@
 									"pm.test(\"Status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
-									"var env = pm.environment.get(\"env\");\r",
-									"if (env == 'dev') {\r",
-									"    pm.test(\"Result length should be 1\", function () {\r",
-									"        var jsonData = pm.response.json();\r",
-									"        pm.expect(jsonData.length).to.equal(1);\r",
-									"    });\r",
-									"    pm.test(\"Result 1 should be equal to example\", function () {\r",
-									"        var jsonData = pm.response.json();\r",
-									"        pm.expect(jsonData[0].configName).to.eql(\"Sample_CIRA_Config\")\r",
-									"        pm.expect(jsonData[0].mpsServerAddress).to.eql(\"localhost\")\r",
-									"        pm.expect(jsonData[0].mpsPort).to.eql(\"4433\")\r",
-									"        pm.expect(jsonData[0].username).to.eql(\"admin\")\r",
-									"        pm.expect(jsonData[0].password).to.eql()\r",
-									"        pm.expect(jsonData[0].commonName).to.eql(\"localhost\")\r",
-									"        pm.expect(jsonData[0].serverAddressFormat).to.eql(201)\r",
-									"        pm.expect(jsonData[0].authMethod).to.eql(2)\r",
-									"        pm.expect(jsonData[0].mpsRootCertificate).to.eql(\"rootcert\")\r",
-									"        pm.expect(jsonData[0].proxyDetails).to.eql(\"\")\r",
-									"    });\r",
-									"}\r",
-									"else {\r",
-									"    pm.test(\"Result length should be equal to zero\", function () {\r",
-									"        var jsonData = pm.response.json();\r",
-									"        pm.expect(jsonData.length).to.equal(0);\r",
-									"    });\r",
-									"}"
+									"\r",
+									"pm.test(\"Result length should be equal to zero\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.length).to.equal(0);\r",
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -1473,77 +1375,6 @@
 								"v1",
 								"admin",
 								"ciraconfigs"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get CIRA Config",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var env = pm.environment.get(\"env\");\r",
-									"if (env == 'dev') {\r",
-									"    pm.test(\"Status code is 200\", function () {\r",
-									"        pm.response.to.have.status(200);\r",
-									"    });\r",
-									"    pm.test(\"Result should be equal to example\", function () {\r",
-									"        var jsonData = pm.response.json();\r",
-									"        pm.expect(jsonData.configName).to.eql(\"Sample_CIRA_Config\")\r",
-									"        pm.expect(jsonData.mpsServerAddress).to.eql(\"localhost\")\r",
-									"        pm.expect(jsonData.mpsPort).to.eql(\"4433\")\r",
-									"        pm.expect(jsonData.username).to.eql(\"admin\")\r",
-									"        pm.expect(jsonData.password).to.eql()\r",
-									"        pm.expect(jsonData.commonName).to.eql(\"localhost\")\r",
-									"        pm.expect(jsonData.serverAddressFormat).to.eql(201)\r",
-									"        pm.expect(jsonData.authMethod).to.eql(2)\r",
-									"        pm.expect(jsonData.mpsRootCertificate).to.eql(\"rootcert\")\r",
-									"        pm.expect(jsonData.proxyDetails).to.eql(\"\")\r",
-									"    });\r",
-									"} else {\r",
-									"    pm.test(\"Status code is 404\", function () {    \r",
-									"    pm.response.to.have.status(404);\r",
-									"    });\r",
-									"    pm.test(\"Request should succeed\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"    pm.expect(result.error).to.eql('Not Found')\r",
-									"    pm.expect(result.message).to.eql('CIRA Config Sample_CIRA_Config not found')\r",
-									"    });\r",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!"
-							}
-						],
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs/Sample_CIRA_Config",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"ciraconfigs",
-								"Sample_CIRA_Config"
 							]
 						}
 					},
@@ -3746,34 +3577,13 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {\r",
-									"pm.environment.unset(\"variable_key\");\r",
+									"    pm.environment.unset(\"variable_key\");\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
-									"var env = pm.environment.get(\"env\");\r",
-									"if (env == 'dev') {\r",
-									"    pm.test(\"Result length should be 1\", function () {\r",
-									"        var jsonData = pm.response.json();\r",
-									"        pm.expect(jsonData.length).to.eql(1);\r",
-									"    });\r",
-									"    pm.test(\"Result 1 should be equal to example\", function () {\r",
-									"        var jsonData = pm.response.json();\r",
-									"        pm.expect(jsonData[0].profileName).to.eql(\"Sample_Profile\")\r",
-									"        pm.expect(jsonData[0].generateRandomPassword).to.equal(false)\r",
-									"        pm.expect(jsonData[0].passwordLength).to.eql(8)\r",
-									"        pm.expect(jsonData[0].generateRandomMEBxPassword).to.equal(false)\r",
-									"        pm.expect(jsonData[0].mebxPasswordLength).to.eql(8)\r",
-									"        pm.expect(jsonData[0].amtPassword).to.eql(),\r",
-									"        pm.expect(jsonData[0].mebxPassword).to.eql(),\r",
-									"        pm.expect(jsonData[0].activation).to.equal(\"acmactivate\")\r",
-									"        pm.expect(jsonData[0].ciraConfigName).to.equal(\"Sample_CIRA_Config\") \r",
-									"        pm.expect(jsonData[0].tags.length).to.equal(0)\r",
-									"    });\r",
-									"} else {\r",
-									"    pm.test(\"Result length should be equal to zero\", function () {\r",
-									"        var jsonData = pm.response.json();\r",
-									"        pm.expect(jsonData.length).to.eql(0);\r",
-									"    });\r",
-									"}"
+									"pm.test(\"Result length should be equal to zero\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.length).to.eql(0);\r",
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -3805,79 +3615,6 @@
 								"admin",
 								"profiles",
 								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Profile",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var env = pm.environment.get(\"env\");\r",
-									"if (env == 'dev') {\r",
-									"    pm.test(\"Status code is 200\", function () {    \r",
-									"        pm.response.to.have.status(200);\r",
-									"    });\r",
-									"\r",
-									"   pm.test(\"Result 1 should be equal to example\", function () {\r",
-									"        var jsonData = pm.response.json();\r",
-									"        pm.expect(jsonData.profileName).to.eql(\"Sample_Profile\")\r",
-									"        pm.expect(jsonData.generateRandomPassword).to.equal(false)\r",
-									"        pm.expect(jsonData.passwordLength).to.eql(8)\r",
-									"        pm.expect(jsonData.generateRandomMEBxPassword).to.equal(false)\r",
-									"        pm.expect(jsonData.mebxPasswordLength).to.eql(8)\r",
-									"        pm.expect(jsonData.amtPassword).to.eql(),\r",
-									"        pm.expect(jsonData.mebxPassword).to.eql(),\r",
-									"        pm.expect(jsonData.activation).to.equal(\"acmactivate\")\r",
-									"        pm.expect(jsonData.ciraConfigName).to.equal(\"Sample_CIRA_Config\") \r",
-									"        pm.expect(jsonData.tags.length).to.equal(0)\r",
-									"\r",
-									"    });\r",
-									"} else {\r",
-									"    pm.test(\"Status code is 404\", function () {    \r",
-									"    pm.response.to.have.status(404);\r",
-									"    });\r",
-									"    pm.test(\"Request should succeed\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"    pm.expect(result.error).to.eql('Not Found')\r",
-									"    pm.expect(result.message).to.eql('Profile Sample_Profile not found')\r",
-									"    });\r",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"value": "APIKEYFORRPS123!",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/Sample_Profile",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"profiles",
-								"Sample_Profile"
 							]
 						}
 					},

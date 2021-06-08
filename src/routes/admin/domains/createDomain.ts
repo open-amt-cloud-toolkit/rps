@@ -31,17 +31,20 @@ export async function createDomain (req, res): Promise<void> {
     if (req.secretsManager) {
       cert = amtDomain.provisioningCert
       domainPwd = amtDomain.provisioningCertPassword
-      amtDomain.provisioningCert = `${amtDomain.profileName}_CERT_KEY`
-      amtDomain.provisioningCertPassword = `${amtDomain.profileName}_CERT_PASSWORD_KEY`
+      amtDomain.provisioningCert = 'CERT'
+      amtDomain.provisioningCertPassword = 'CERT_PASSWORD'
     }
     // SQL Query > Insert Data
     const results: AMTDomain = await domainsDb.insertDomain(amtDomain)
     // store the actual cert and password into Vault
     if (results != null) {
       if (req.secretsManager) {
-        const data = { data: { CERT_KEY: '', CERT_PASSWORD_KEY: '' } }
-        data.data.CERT_KEY = cert
-        data.data.CERT_PASSWORD_KEY = domainPwd
+        const data = {
+          data: {
+            CERT: cert,
+            CERT_PASSWORD: domainPwd
+          }
+        }
         await req.secretsManager.writeSecretWithObject(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/${amtDomain.profileName}`, data)
         log.info(`${amtDomain.profileName} provisioing cert & password stored in Vault`)
       }
