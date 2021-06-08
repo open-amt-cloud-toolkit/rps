@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "8b683029-41a5-4e22-a66d-0afce913c698",
+		"_postman_id": "3df9880c-932b-4696-a7be-320bcce2057a",
 		"name": "RPS API Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -1887,7 +1887,7 @@
 									"});\r",
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.\")\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 16.\")\r",
 									"    pm.expect(result.errors[0].param).to.eql(\"password\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
@@ -1912,7 +1912,117 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"adminuser\",\r\n\t\"password\": \"intel1234\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"adminuser\",\r\n\t\"password\": \"intel1234\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\",\r\n    \"generateRandomPassword\": false\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"ciraconfigs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create CIRA Config with no password & generate random password false",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"pm.test(\"Creation should fail\", function () {\r",
+									"    var result = pm.response.json();\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"If generate random password is disabled, password is mandatory\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"generateRandomPassword\")\r",
+									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"adminuser\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\",\r\n    \"generateRandomPassword\": false\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"ciraconfigs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create CIRA Config with  password & generate random password true",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"pm.test(\"Creation should fail\", function () {\r",
+									"    var result = pm.response.json();\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"Either generate Random Password should be enabled with Password Length or should provide password\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"generateRandomPassword\")\r",
+									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"adminuser\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n    \"password\": \"intel@1234\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\",\r\n    \"generateRandomPassword\": true\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -1942,7 +2052,7 @@
 									"});\r",
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.\")\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 16.\")\r",
 									"    pm.expect(result.errors[0].param).to.eql(\"password\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
@@ -1967,7 +2077,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"adminuser\",\r\n\t\"password\": \"Intel@1\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"adminuser\",\r\n\t\"password\": \"Intel@1\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\",\r\n    \"generateRandomPassword\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -1997,7 +2107,7 @@
 									"});\r",
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.\")\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 16.\")\r",
 									"    pm.expect(result.errors[0].param).to.eql(\"password\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
@@ -2022,7 +2132,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"adminuser\",\r\n\t\"password\": \"0123456789012345678901234567890123456789\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"adminuser\",\r\n\t\"password\": \"0123456789012345678901234567890123456789\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\",\r\n    \"generateRandomPassword\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -2035,6 +2145,291 @@
 								"v1",
 								"admin",
 								"ciraconfigs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create CIRA Config with random password and invalid password length",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"pm.test(\"Creation should fail\", function () {\r",
+									"    var result = pm.response.json();\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"Random password length value should range between 8 and 16\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"passwordLength\")\r",
+									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"adminuser\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\",\r\n    \"generateRandomPassword\": true,\r\n    \"passwordLength\": 17\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"ciraconfigs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create CIRA Config with random password and no password length",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"pm.test(\"Creation should fail\", function () {\r",
+									"    var result = pm.response.json();\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"If generate random password is enabled, passwordLength is mandatory\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"generateRandomPassword\")\r",
+									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"adminuser\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\",\r\n    \"generateRandomPassword\": true\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"ciraconfigs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create CIRA Config with random password and password length",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"pm.test(\"Creation should succeed\", function () {\r",
+									"    var result = pm.response.json();\r",
+									"    pm.expect(result.configName).to.eql(\"test\")\r",
+									"    pm.expect(result.mpsServerAddress).to.eql(\"192.168.8.50\"),\r",
+									"\tpm.expect(result.mpsPort).to.eql(4433),\r",
+									"\tpm.expect(result.username).to.eql(\"adminuser\"),\r",
+									"\tpm.expect(result.commonName).to.eql(\"192.168.8.50\"),\r",
+									"\tpm.expect(result.serverAddressFormat).to.eql(3),\r",
+									"\tpm.expect(result.authMethod).to.eql(2),\r",
+									"\tpm.expect(result.mpsRootCertificate).to.eql(\"rootcert\"),\r",
+									"\tpm.expect(result.proxyDetails).to.eql(\"\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\t\"configName\": \"test\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"adminuser\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\",\r\n    \"generateRandomPassword\": true,\r\n    \"passwordLength\": 9\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"ciraconfigs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CIRA Config with password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"Creation should succeed\", function () {\r",
+									"    var result = pm.response.json();\r",
+									"    pm.expect(result.configName).to.eql(\"test\")\r",
+									"    pm.expect(result.mpsServerAddress).to.eql(\"192.168.8.50\"),\r",
+									"\tpm.expect(result.mpsPort).to.eql(4433),\r",
+									"\tpm.expect(result.username).to.eql(\"adminuser\"),\r",
+									"    pm.expect(result.generateRandomPassword).to.eql(false),\r",
+									"    pm.expect(result.passwordLength).to.eql(null),\r",
+									"\tpm.expect(result.commonName).to.eql(\"192.168.8.50\"),\r",
+									"\tpm.expect(result.serverAddressFormat).to.eql(3),\r",
+									"\tpm.expect(result.authMethod).to.eql(2),\r",
+									"\tpm.expect(result.mpsRootCertificate).to.eql(\"rootcert\"),\r",
+									"\tpm.expect(result.proxyDetails).to.eql(\"\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\t\"configName\": \"test\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"adminuser\",\r\n    \"password\": \"Intel@123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\",\r\n    \"generateRandomPassword\": false\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"ciraconfigs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CIRA Config",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {\r",
+									"    pm.response.to.have.status(204);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs/test",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"ciraconfigs",
+								"test"
 							]
 						}
 					},
@@ -2060,12 +2455,12 @@
 									"    pm.expect(result.errors[1].param).to.eql(\"username\")\r",
 									"    pm.expect(result.errors[1].location).to.eql(\"body\")\r",
 									"\r",
-									"    pm.expect(result.errors[2].msg).to.eql(\"MPS password is required\")\r",
-									"    pm.expect(result.errors[2].param).to.eql(\"password\")\r",
+									"    pm.expect(result.errors[2].msg).to.eql(\"MPS user name length should be in between 5 to 16\")\r",
+									"    pm.expect(result.errors[2].param).to.eql(\"username\")\r",
 									"    pm.expect(result.errors[2].location).to.eql(\"body\")\r",
 									"\r",
-									"    pm.expect(result.errors[3].msg).to.eql(\"Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.\")\r",
-									"    pm.expect(result.errors[3].param).to.eql(\"password\")\r",
+									"    pm.expect(result.errors[3].msg).to.eql(\"If generate random password is disabled, password is mandatory\")\r",
+									"    pm.expect(result.errors[3].param).to.eql(\"generateRandomPassword\")\r",
 									"    pm.expect(result.errors[3].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -2089,7 +2484,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\",\r\n    \"generateRandomPassword\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -2544,7 +2939,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\",\r\n    \"generateRandomPassword\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -2598,7 +2993,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n\t\"configName\": \"ciraConfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraConfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\",\r\n    \"generateRandomPassword\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -2711,7 +3106,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 201,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 201,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\",\r\n    \"generateRandomPassword\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -2906,7 +3301,7 @@
 									"});\r",
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.\")\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 16.\")\r",
 									"    pm.expect(result.errors[0].param).to.eql(\"password\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
@@ -2931,7 +3326,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"password\": \"intel1234\"\r\n}"
+							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"password\": \"intel1234\",\r\n    \"generateRandomPassword\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -2961,7 +3356,7 @@
 									"});\r",
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.\")\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 16.\")\r",
 									"    pm.expect(result.errors[0].param).to.eql(\"password\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
@@ -2986,7 +3381,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"password\": \"Intel@1\"\r\n}"
+							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"password\": \"Intel@1\",\r\n    \"generateRandomPassword\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -3016,7 +3411,7 @@
 									"});\r",
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.\")\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 16.\")\r",
 									"    pm.expect(result.errors[0].param).to.eql(\"password\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
@@ -3041,7 +3436,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"password\": \"0123456789012345678901234567890123456789\"\r\n}"
+							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"password\": \"0123456789012345678901234567890123456789\",\r\n    \"generateRandomPassword\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -3237,7 +3632,7 @@
 									"\r",
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"MPS user name accepts letters, numbers, special characters and no spaces\")\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"MPS user name should be alphanumeric\")\r",
 									"    pm.expect(result.errors[0].param).to.eql(\"username\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
@@ -5930,7 +6325,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"configName\": \"ciraconfig\",\r\n    \"mpsServerAddress\": \"192.168.8.50\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"password\": \"Intel123!\",\r\n    \"commonName\": \"192.168.8.50\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\"\r\n}"
+							"raw": "{\r\n    \"configName\": \"ciraconfig\",\r\n    \"mpsServerAddress\": \"192.168.8.50\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"password\": \"Intel123!\",\r\n    \"commonName\": \"192.168.8.50\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\",\r\n    \"generateRandomPassword\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",

@@ -38,12 +38,14 @@ export interface CIRAConfig {
   mpsServerAddress: string
   mpsPort: number
   username: string
-  password: string
+  password?: string
   commonName: string
   serverAddressFormat: number // IPv4 (3), IPv6 (4), FQDN (201)
   authMethod: number // Mutual Auth (1), Username/Password (2) (We only support 2)
   mpsRootCertificate: string // Assumption is Root Cert for MPS. Need to validate.
   proxyDetails: string
+  generateRandomPassword?: boolean
+  passwordLength?: number
 }
 
 export interface RemoteConfig {
