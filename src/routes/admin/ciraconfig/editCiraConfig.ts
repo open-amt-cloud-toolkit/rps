@@ -38,7 +38,7 @@ export async function editCiraConfig (req, res): Promise<void> {
       const results = await ciraConfigDb.updateCiraConfig(ciraConfig)
       if (results !== undefined) {
         // update the password in Vault if not null
-        if (req.secretsManager && mpsPwd !== null) {
+        if (req.secretsManager && !ciraConfig.generateRandomPassword) {
           await req.secretsManager.writeSecretWithKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfig.configName}`, ciraConfig.password, mpsPwd)
           log.info(`MPS password updated in Vault for CIRA Config ${ciraConfig.configName}`)
         }
@@ -57,12 +57,24 @@ export async function editCiraConfig (req, res): Promise<void> {
   }
 }
 
-function getUpdatedData (newConfig: any, oldConfig: CIRAConfig): CIRAConfig {
+const handleGenerateRandomPassword = (newConfig: CIRAConfig, oldConfig: CIRAConfig): CIRAConfig => {
   const config: CIRAConfig = { configName: newConfig.configName } as CIRAConfig
+  if (newConfig.generateRandomPassword) {
+    config.generateRandomPassword = newConfig.generateRandomPassword
+    config.passwordLength = newConfig.passwordLength
+    config.password = null
+  } else {
+    config.generateRandomPassword = newConfig.password == null ? oldConfig.generateRandomPassword : false
+    config.passwordLength = newConfig.password == null ? oldConfig.passwordLength : null
+  }
+  return config
+}
+
+function getUpdatedData (newConfig: CIRAConfig, oldConfig: CIRAConfig): CIRAConfig {
+  const config: CIRAConfig = handleGenerateRandomPassword(newConfig, oldConfig)
   config.mpsServerAddress = newConfig.mpsServerAddress ?? oldConfig.mpsServerAddress
   config.mpsPort = newConfig.mpsPort ?? oldConfig.mpsPort
   config.username = newConfig.username ?? oldConfig.username
-  config.password = newConfig.password ?? oldConfig.password
   config.commonName = newConfig.commonName ?? oldConfig.commonName
   config.serverAddressFormat = newConfig.serverAddressFormat ?? oldConfig.serverAddressFormat
   config.mpsRootCertificate = newConfig.mpsRootCertificate ?? oldConfig.mpsRootCertificate
