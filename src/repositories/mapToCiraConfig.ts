@@ -14,6 +14,8 @@ export function mapToCiraConfig (results): CIRAConfig {
     mpsPort: results.mps_port,
     username: results.user_name,
     password: results.password,
+    generateRandomPassword: results.generate_random_password,
+    passwordLength: results.random_password_length,
     commonName: results.common_name,
     serverAddressFormat: results.server_address_format, // IPv4 (3), IPv6 (4), FQDN (201)
     authMethod: results.auth_method, // Mutual Auth (1), Username/Password (2) (We only support 2)
