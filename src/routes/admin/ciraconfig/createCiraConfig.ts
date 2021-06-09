@@ -29,14 +29,14 @@ export async function createCiraConfig (req, res): Promise<void> {
     ciraConfig = req.body
     const mpsPwd = ciraConfig.password
     if (req.secretsManager) {
-      ciraConfig.password = `${ciraConfig.configName}_CIRA_PROFILE_PASSWORD`
+      ciraConfig.password = 'MPS_PASSWORD'
     }
     // SQL Query > Insert Data
     const results: CIRAConfig = await ciraConfigDb.insertCiraConfig(ciraConfig)
     // CIRA profile inserted  into db successfully.
     if (results != null) {
       // store the password into Vault
-      if (req.secretsManager) {
+      if (req.secretsManager && !ciraConfig.generateRandomPassword) {
         await req.secretsManager.writeSecretWithKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfig.configName}`, ciraConfig.password, mpsPwd)
         log.info(`MPS password stored in Vault for CIRA config : ${ciraConfig.configName}`)
       }
