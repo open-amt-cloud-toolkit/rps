@@ -44,13 +44,42 @@ export const ciraInsertValidator = (): any => {
       .isEmpty()
       .withMessage('MPS user name is required')
       .matches('^[a-zA-Z0-9]+$') // As per AMT SDK, accepts only alphanumeric values
-      .withMessage('MPS user name should be alphanumeric'),
+      .withMessage('MPS user name should be alphanumeric')
+      .isLength({ min: 5, max: 16 })
+      .withMessage('MPS user name length should be in between 5 to 16'),
     check('password')
-      .not()
-      .isEmpty()
-      .withMessage('MPS password is required')
-      .matches('^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9$@$!%*#?&-_~^]{8,32}$')
-      .withMessage('Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
+      .if((value, { req }) => req.body.generateRandomPassword === false)
+      .optional()
+      .matches('^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9$@$!%*#?&-_~^]{8,16}$')
+      .withMessage('Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 16.'),
+    check('passwordLength')
+      .if((value, { req }) => req.body.generateRandomPassword === true)
+      .optional({ nullable: true })
+      .isInt({ min: 8, max: 16 })
+      .withMessage('Random password length value should range between 8 and 16'),
+    check('generateRandomPassword')
+      .optional()
+      .isBoolean()
+      .withMessage('Generate random password must be a boolean true or false')
+      .custom((value, { req }) => {
+        const pwd = req.body.password
+        const pwdLength = req.body.passwordLength
+        if (value === true) {
+          if (pwd != null) {
+            throw new Error('Either generate Random Password should be enabled with Password Length or should provide password')
+          }
+          if (pwdLength == null) {
+            throw new Error('If generate random password is enabled, passwordLength is mandatory')
+          }
+        } else {
+          if (pwd == null) {
+            throw new Error('If generate random password is disabled, password is mandatory')
+          } else if (pwdLength != null) {
+            throw new Error('If generate random password is disabled, passwordLength is not necessary')
+          }
+        }
+        return true
+      }),
     check('commonName')
       .if((value, { req }) => req.body.serverAddressFormat !== 201)
       .optional()
@@ -107,12 +136,33 @@ export const ciraUpdateValidator = (): any => {
       }),
     check('username')
       .optional()
-      .matches('^[a-zA-Z0-9$@$!%*#?&-_~^]+$')
-      .withMessage('MPS user name accepts letters, numbers, special characters and no spaces'),
+      .matches('^[a-zA-Z0-9]+$') // As per AMT SDK, accepts only alphanumeric values
+      .withMessage('MPS user name should be alphanumeric')
+      .isLength({ min: 5, max: 16 })
+      .withMessage('MPS user name length should be in between 5 to 16'),
     check('password')
+      .if((value, { req }) => req.body.generateRandomPassword === false)
       .optional()
-      .matches('^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9$@$!%*#?&-_~^]{8,32}$')
-      .withMessage('Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
+      .matches('^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9$@$!%*#?&-_~^]{8,16}$')
+      .withMessage('Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 16.'),
+    check('passwordLength')
+      .if((value, { req }) => req.body.generateRandomPassword === true)
+      .optional()
+      .isInt({ min: 8, max: 16 })
+      .withMessage('Random password length value should range between 8 and 16'),
+    check('generateRandomPassword')
+      .optional()
+      .isBoolean()
+      .withMessage('Generate random password must be a boolean true or false')
+      .custom((value, { req }) => {
+        const pwdLength = req.body.passwordLength
+        if (value === true) {
+          if (pwdLength == null) {
+            throw new Error('If generate random password is enabled, passwordLength is mandatory')
+          }
+        }
+        return true
+      }),
     check('commonName')
       .if((value, { req }) => req.body.serverAddressFormat !== 201)
       .optional()

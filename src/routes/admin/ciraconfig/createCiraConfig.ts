@@ -36,7 +36,7 @@ export async function createCiraConfig (req, res): Promise<void> {
     // CIRA profile inserted  into db successfully.
     if (results != null) {
       // store the password into Vault
-      if (req.secretsManager) {
+      if (req.secretsManager && !ciraConfig.generateRandomPassword) {
         await req.secretsManager.writeSecretWithKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfig.configName}`, ciraConfig.password, mpsPwd)
         log.info(`MPS password stored in Vault for CIRA config : ${ciraConfig.configName}`)
       }

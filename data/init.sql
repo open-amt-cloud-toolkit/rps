@@ -9,6 +9,8 @@ CREATE TABLE IF NOT EXISTS ciraconfigs(
       mps_port integer,
       user_name varchar(40),
       password varchar(63),
+      generate_random_password BOOLEAN NOT NULL,
+      random_password_length integer,
       common_name varchar(256),
       server_address_format integer, 
       auth_method integer, 
