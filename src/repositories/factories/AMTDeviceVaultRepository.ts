@@ -1,7 +1,7 @@
 /*********************************************************************
  * Copyright (c) Intel Corporation 2020
  * SPDX-License-Identifier: Apache-2.0
- * Description: stores amt device in memory
+ * Description: stores amt device in vault
  * Author: Brian Osburn
  **********************************************************************/
 
@@ -25,9 +25,10 @@ export class AMTDeviceVaultRepository implements IAMTDeviceRepository {
   public async insert (device: AMTDeviceDTO): Promise<boolean> {
     try {
       if (this.configurator?.secretsManager) {
-        const data = { data: { AMT_PASSWORD: null, MEBX_PASSWORD: null } }
+        const data = { data: { AMT_PASSWORD: null, MEBX_PASSWORD: null, MPS_PASSWORD: null } }
         data.data.AMT_PASSWORD = device.amtpass
         data.data.MEBX_PASSWORD = device.mebxpass
+        data.data.MPS_PASSWORD = device.mpspass
         await this.configurator.secretsManager.writeSecretWithObject(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}devices/${device.guid}`, data)
         return true
       } else {
@@ -62,8 +63,8 @@ export class AMTDeviceVaultRepository implements IAMTDeviceRepository {
           const amtDevice: AMTDeviceDTO = new AMTDeviceDTO(
             deviceId,
             deviceId,
-            EnvReader.GlobalEnvConfig.mpsusername,
-            EnvReader.GlobalEnvConfig.mpspass,
+            null,
+            devicePwds.data.MPS_PASSWORD,
             AMTUserName,
             devicePwds.data.AMT_PASSWORD,
             devicePwds.data.MEBX_PASSWORD)

@@ -1,6 +1,4 @@
 {
-  "user": "standalone", //mps username
-  "password": "G@ppm0ym", // mps password
   "web_port": 8081,
   "secrets_path": "secret/data/",
   "vault_address": "http://localhost:8200",

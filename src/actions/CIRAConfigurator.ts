@@ -15,6 +15,8 @@ import { RPSError } from '../utils/RPSError'
 import { mpsserver } from '../utils/constants'
 import { IConfigurator } from '../interfaces/IConfigurator'
 import { AMTUserName } from './../utils/constants'
+import { EnvReader } from '../utils/EnvReader'
+import got from 'got'
 
 export class CIRAConfigurator implements IExecutor {
   constructor (
@@ -32,7 +34,7 @@ export class CIRAConfigurator implements IExecutor {
      * @returns {ClientMsg} message to sent to client
      */
   async execute (message: any, clientId: string): Promise<ClientMsg> {
-    let clientObj
+    let clientObj: ClientObject
     try {
       clientObj = this.clientManager.getClientObject(clientId)
       if (message?.payload != null || !clientObj.ciraconfig.policyRuleUserInitiate) {
@@ -49,14 +51,17 @@ export class CIRAConfigurator implements IExecutor {
             this.logger.debug(`${clientObj.uuid}  Adding trusted root certificate.`)
             clientObj.ciraconfig.addMPSServer = true
             this.clientManager.setClientObject(clientObj)
+
+            await this.setMPSPassword(clientObj)
+
             const configScript: CIRAConfig = clientObj.ClientData.payload.profile.ciraConfigObject
             const server: mpsServer = {
               AccessInfo: configScript.mpsServerAddress,
               InfoFormat: configScript.serverAddressFormat,
               Port: configScript.mpsPort,
               AuthMethod: configScript.authMethod,
-              Username: configScript.username,
-              Password: configScript.password
+              Username: clientObj.mpsUsername,
+              Password: clientObj.mpsPassword
             }
             if (configScript.serverAddressFormat === 3 && configScript.commonName) {
               server.CN = configScript.commonName
@@ -203,6 +208,61 @@ export class CIRAConfigurator implements IExecutor {
         this.logger.debug(`${clientObj.uuid} Deleted existing CIRA Configuration.`)
         clientObj = this.clientManager.getClientObject(clientId)
       }
+    }
+  }
+
+  /**
+   * @description Set MPS password for the AMT
+   * @param {ClientObject} clientObj
+   */
+  async setMPSPassword (clientObj: ClientObject): Promise<void> {
+    this.logger.debug('setting MPS password')
+
+    clientObj.mpsUsername = await (await this.configurator.profileManager.getCiraConfiguration(clientObj.ClientData.payload.profile.profileName))?.username
+    clientObj.mpsPassword = await this.configurator.profileManager.getMPSPassword(clientObj.ClientData.payload.profile.profileName)
+    this.clientManager.setClientObject(clientObj)
+
+    if (clientObj.mpsUsername && clientObj.mpsPassword) {
+      try {
+        if (this.configurator?.secretsManager) {
+          let data: any = await this.configurator.secretsManager.getSecretAtPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}devices/${clientObj.uuid}`)
+
+          if (data != null) {
+            data.data.MPS_PASSWORD = clientObj.mpsPassword
+          } else {
+            data = { data: { MPS_PASSWORD: clientObj.mpsPassword } }
+          }
+
+          await this.configurator.secretsManager.writeSecretWithObject(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}devices/${clientObj.uuid}`, data)
+        } else {
+          throw new Error('secret manager missing')
+        }
+      } catch (error) {
+        this.logger.error(`failed to insert record guid: ${clientObj.uuid}, error: ${JSON.stringify(error)}`)
+        throw new RPSError('Exception writing to vault')
+      }
+
+      try {
+        const profile = await this.configurator.profileManager.getAmtProfile(clientObj.ClientData.payload.profile.profileName)
+        let tags = []
+        if (profile?.tags != null) {
+          tags = profile.tags
+        }
+        await got(`${EnvReader.GlobalEnvConfig.mpsServer}/api/v1/devices`, {
+          method: 'POST',
+          rejectUnauthorized: false,
+          json: {
+            guid: clientObj.uuid,
+            hostname: clientObj.hostname,
+            mpsusername: clientObj.mpsUsername,
+            tags: tags
+          }
+        })
+      } catch (err) {
+        this.logger.warn('unable to register metadata with MPS', err)
+      }
+    } else {
+      throw new RPSError('setMPSPassword: mpsUsername or mpsPassword is null')
     }
   }
 }

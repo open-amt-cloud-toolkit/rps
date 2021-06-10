@@ -58,7 +58,7 @@ export class SecretManagerService implements ISecretManagerService {
     }
   }
 
-  async getSecretAtPath (path: string): Promise<string> {
+  async getSecretAtPath (path: string): Promise<any> {
     try {
       this.logger.info('getting secrets from ' + path)
       const data = await this.vaultClient.read(path)
