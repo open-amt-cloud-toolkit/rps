@@ -66,6 +66,7 @@ export class Activator implements IExecutor {
         const amtPassword: string = await this.configurator.profileManager.getAmtPassword(clientObj.ClientData.payload.profile.profileName)
         clientObj.amtPassword = amtPassword
         this.clientManager.setClientObject(clientObj)
+
         const data: string = `admin:${clientObj.ClientData.payload.digestRealm}:${amtPassword}`
         const password = SignatureHelper.createMd5Hash(data)
         if (clientObj.action === ClientAction.ADMINCTLMODE) {
@@ -328,8 +329,8 @@ export class Activator implements IExecutor {
       if (clientObj.action === ClientAction.ADMINCTLMODE) {
         await this.configurator.amtDeviceRepository.insert(new AMTDeviceDTO(clientObj.uuid,
           clientObj.hostname,
-          EnvReader.GlobalEnvConfig.mpsusername,
-          EnvReader.GlobalEnvConfig.mpspass,
+          clientObj.mpsUsername,
+          clientObj.mpsPassword,
           EnvReader.GlobalEnvConfig.amtusername,
           clientObj.amtPassword,
           clientObj.mebxPassword
@@ -337,8 +338,8 @@ export class Activator implements IExecutor {
       } else {
         await this.configurator.amtDeviceRepository.insert(new AMTDeviceDTO(clientObj.uuid,
           clientObj.hostname,
-          EnvReader.GlobalEnvConfig.mpsusername,
-          EnvReader.GlobalEnvConfig.mpspass,
+          clientObj.mpsUsername,
+          clientObj.mpsPassword,
           EnvReader.GlobalEnvConfig.amtusername,
           clientObj.amtPassword,
           null))
@@ -359,6 +360,7 @@ export class Activator implements IExecutor {
         json: {
           guid: clientObj.uuid,
           hostname: clientObj.hostname,
+          mpsusername: clientObj.mpsUsername,
           tags: tags
         }
       })
