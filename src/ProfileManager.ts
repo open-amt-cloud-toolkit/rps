@@ -209,6 +209,40 @@ export class ProfileManager implements IProfileManager {
   }
 
   /**
+     * @description Retrieves the MPS password set in the configuration or generates a password based on the flag generateRandomPassword
+     * @param {string} profileName profile name of MPS password
+     * @returns {string} returns the MPS password for a given profile
+     */
+  public async getMPSPassword (profileName: string): Promise<string> {
+    const profile: AMTConfiguration = await this.getAmtProfile(profileName)
+    let mpsPassword: string
+
+    if (profile?.ciraConfigObject) {
+      if (profile.ciraConfigObject.generateRandomPassword) {
+        mpsPassword = PasswordHelper.generateRandomPassword(profile.ciraConfigObject.passwordLength)
+
+        if (mpsPassword) {
+          this.logger.debug(`Created random MPS password for ${profile.profileName}`)
+        } else {
+          this.logger.error(`unable to create MPS random password for ${profile.profileName}`)
+        }
+      } else {
+        this.logger.debug('using mps password from cira config')
+        mpsPassword = profile.ciraConfigObject.password
+      }
+    } else {
+      this.logger.warn(`unable to find mpsPassword for profile ${profileName}`)
+    }
+
+    if (mpsPassword) {
+      return mpsPassword
+    }
+
+    this.logger.error('password cannot be blank')
+    throw new Error('password cannot be blank')
+  }
+
+  /**
     * @description Checks if the AMT profile exists or not
     * @param {string} profile
     * @returns {AMTConfiguration} returns AMTConfig object if profile exists otherwise null.
