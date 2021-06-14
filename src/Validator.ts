@@ -7,7 +7,6 @@
 import * as WebSocket from 'ws'
 
 import { IValidator } from './interfaces/IValidator'
-import { ILogger } from './interfaces/ILogger'
 import { ClientMsg, ClientAction, Payload, ClientMethods } from './RCS.Config'
 import { IConfigurator } from './interfaces/IConfigurator'
 import { IClientManager } from './interfaces/IClientManager'
@@ -19,12 +18,13 @@ import { CommandParser } from './CommandParser'
 import { AMTDeviceDTO } from './repositories/dto/AmtDeviceDTO'
 import { VersionChecker } from './VersionChecker'
 import { AMTUserName } from './utils/constants'
+import Logger from './Logger'
 
 export class Validator implements IValidator {
   jsonParser: IClientMessageParser
+  private readonly log: Logger = new Logger('Validator')
 
   constructor (
-    private readonly logger: ILogger,
     private readonly configurator: IConfigurator,
     private readonly clientManager: IClientManager,
     private readonly nodeForge: NodeForge
@@ -47,7 +47,7 @@ export class Validator implements IValidator {
 
         if (msg?.protocolVersion) {
           if (VersionChecker.isCompatible(msg.protocolVersion)) {
-            this.logger.silly(`protocol version supported: ${msg.protocolVersion}`)
+            this.log.silly(`protocol version supported: ${msg.protocolVersion}`)
           } else {
             throw new RPSError(`protocol version NOT supported: ${msg.protocolVersion}`)
           }
@@ -58,7 +58,7 @@ export class Validator implements IValidator {
         }
       }
     } catch (error) {
-      this.logger.error(`${clientId}: Failed to parse client message`)
+      this.log.error(`${clientId}: Failed to parse client message`)
       throw error
     }
     return msg
@@ -118,7 +118,7 @@ export class Validator implements IValidator {
       switch (payload.currentMode) {
         case 1: {
           if (profile.activation === ClientAction.CLIENTCTLMODE) {
-            this.logger.debug(`Device ${payload.uuid} already enabled in client mode.`)
+            this.log.debug(`Device ${payload.uuid} already enabled in client mode.`)
             clientObj.ciraconfig.status = 'already enabled in client mode.'
             clientObj.action = payload.profile.networkConfigObject ? ClientAction.NETWORKCONFIG : ClientAction.CIRACONFIG
           } else {
@@ -128,7 +128,7 @@ export class Validator implements IValidator {
         }
         case 2: {
           if (profile.activation === ClientAction.ADMINCTLMODE) {
-            this.logger.debug(`Device ${payload.uuid} already enabled in admin mode.`)
+            this.log.debug(`Device ${payload.uuid} already enabled in admin mode.`)
             clientObj.ciraconfig.status = 'already enabled in admin mode.'
             clientObj.action = payload.profile.networkConfigObject ? ClientAction.NETWORKCONFIG : ClientAction.CIRACONFIG
           } else {
@@ -140,7 +140,7 @@ export class Validator implements IValidator {
           throw new RPSError(`Device ${payload.uuid} activation failed. It is in unknown mode.`)
         }
       }
-    } else this.logger.debug(`Device ${payload.uuid} is in pre-provisioning mode`)
+    } else this.log.debug(`Device ${payload.uuid} is in pre-provisioning mode`)
 
     if (!clientObj.action) {
       throw new RPSError(`Device ${payload.uuid} activation failed. Failed to get activation mode for the profile :${payload.profile}`)
@@ -165,13 +165,13 @@ export class Validator implements IValidator {
         if (amtDevice?.amtpass) {
           payload.username = AMTUserName
           payload.password = amtDevice.amtpass
-          this.logger.info(`AMT password found for Device ${payload.uuid}`)
+          this.log.info(`AMT password found for Device ${payload.uuid}`)
         } else {
-          this.logger.error(`AMT device DOES NOT exists in repository ${payload.uuid}`)
+          this.log.error(`AMT device DOES NOT exists in repository ${payload.uuid}`)
           throw new RPSError(`AMT device DOES NOT exists in repository ${payload.uuid}`)
         }
       } else {
-        this.logger.error(`Device ${payload.uuid} repository not found`)
+        this.log.error(`Device ${payload.uuid} repository not found`)
         throw new RPSError(`Device ${payload.uuid} repository not found`)
       }
     }
@@ -211,12 +211,12 @@ export class Validator implements IValidator {
         }
         case 1: {
           clientObj.action = ClientAction.DEACTIVATE
-          this.logger.debug(`Device ${payload.uuid} is in client control mode.`)
+          this.log.debug(`Device ${payload.uuid} is in client control mode.`)
           break
         }
         case 2: {
           clientObj.action = ClientAction.DEACTIVATE
-          this.logger.debug(`Device ${payload.uuid} is in admin control mode.`)
+          this.log.debug(`Device ${payload.uuid} is in admin control mode.`)
           break
         }
         default: {
@@ -235,7 +235,7 @@ export class Validator implements IValidator {
     }
 
     if (msg.payload.force) {
-      this.logger.debug('bypassing password check')
+      this.log.debug('bypassing password check')
     } else {
       try {
         let amtDevice: AMTDeviceDTO
@@ -243,18 +243,18 @@ export class Validator implements IValidator {
           amtDevice = await this.configurator.amtDeviceRepository.get(payload.uuid)
 
           if (amtDevice?.amtpass && payload.password && payload.password === amtDevice.amtpass) {
-            this.logger.info(`AMT password matches stored version for Device ${payload.uuid}`)
+            this.log.info(`AMT password matches stored version for Device ${payload.uuid}`)
           } else {
-            this.logger.error(`
+            this.log.error(`
             stored version for Device ${payload.uuid}`)
             throw new RPSError(`AMT password DOES NOT match stored version for Device ${payload.uuid}`)
           }
         } else {
-          this.logger.error(`Device ${payload.uuid} repository not found`)
+          this.log.error(`Device ${payload.uuid} repository not found`)
           throw new RPSError(`Device ${payload.uuid} repository not found`)
         }
       } catch (error) {
-        this.logger.error(`AMT device repo exception: ${error}`)
+        this.log.error(`AMT device repo exception: ${error}`)
         if (error instanceof RPSError) {
           throw new RPSError(`${error.message}`)
         } else {

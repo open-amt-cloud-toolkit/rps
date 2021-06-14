@@ -7,23 +7,22 @@
 
 import { IClientManager } from './interfaces/IClientManager'
 import { ClientObject } from './RCS.Config'
-import { ILogger } from './interfaces/ILogger'
+import Logger from './Logger'
 
 export class ClientManager implements IClientManager {
   clients: ClientObject[]
-  logger: any
 
+  private readonly log: Logger = new Logger('ClientManager')
   private static instance: ClientManager
 
-  private constructor (logger: ILogger) {
-    this.logger = logger
+  private constructor () {
     this.clients = new Array<ClientObject>()
   }
 
   // Single entry to keep track of all client connections
-  static getInstance (logger: any): ClientManager {
+  static getInstance (): ClientManager {
     if (!ClientManager.instance) {
-      ClientManager.instance = new ClientManager(logger)
+      ClientManager.instance = new ClientManager()
     }
     return ClientManager.instance
   }
@@ -49,7 +48,7 @@ export class ClientManager implements IClientManager {
     try {
       index = this.clients.findIndex(x => x.ClientId === ClientId)
     } catch (error) {
-      this.logger.error(`Failed to get a client index: ${error}`)
+      this.log.error(`Failed to get a client index: ${error}`)
       return -1
     }
     return index
@@ -58,9 +57,9 @@ export class ClientManager implements IClientManager {
   addClient (client: ClientObject): void {
     try {
       this.clients.push(client)
-      this.logger.info(`Active clients : ${this.clients.length}`)
+      this.log.info(`Active clients : ${this.clients.length}`)
     } catch (error) {
-      this.logger.error(`Failed to add a client: ${error}`)
+      this.log.error(`Failed to add a client: ${error}`)
     }
   }
 
@@ -68,9 +67,9 @@ export class ClientManager implements IClientManager {
     try {
       const index = this.getClientIndex(clientId)
       this.clients.splice(index, 1)
-      this.logger.info(`Active clients : ${this.clients.length}`)
+      this.log.info(`Active clients : ${this.clients.length}`)
     } catch (error) {
-      this.logger.error(`Failed to remove a client: ${error}`)
+      this.log.error(`Failed to remove a client: ${error}`)
     }
   }
 }

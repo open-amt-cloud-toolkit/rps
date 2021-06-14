@@ -5,7 +5,6 @@
  **********************************************************************/
 import { v4 as uuid } from 'uuid'
 
-import Logger from '../Logger'
 import { config } from './helper/Config'
 import { Validator } from '../Validator'
 import { NodeForge } from '../NodeForge'
@@ -25,11 +24,11 @@ const nodeForge = new NodeForge()
 const helper = new SignatureHelper(nodeForge)
 const certManager = new CertManager(nodeForge)
 const configurator = new Configurator()
-const clientManager = ClientManager.getInstance(new Logger('ClientManager'))
-const responseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'), nodeForge)
-const amtwsman = new WSManProcessor(new Logger('WSManProcessor'), clientManager, responseMsg)
-const validator = new Validator(new Logger('Validator'), configurator, clientManager, nodeForge)
-const dataProcessor = new DataProcessor(new Logger('DataProcessor'), helper, configurator, validator, certManager, clientManager, responseMsg, amtwsman)
+const clientManager = ClientManager.getInstance()
+const responseMsg = new ClientResponseMsg(nodeForge)
+const amtwsman = new WSManProcessor(clientManager, responseMsg)
+const validator = new Validator(configurator, clientManager, nodeForge)
+const dataProcessor = new DataProcessor(helper, configurator, validator, certManager, clientManager, responseMsg, amtwsman)
 
 describe('process client data', () => {
   test('Should return an error with activation message and junk payload', async () => {

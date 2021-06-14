@@ -5,7 +5,6 @@
  **********************************************************************/
 import { v4 as uuid } from 'uuid'
 
-import Logger from '../Logger'
 import { config } from './helper/Config'
 import { NodeForge } from '../NodeForge'
 import { Validator } from '../Validator'
@@ -19,8 +18,8 @@ import { VersionChecker } from '../VersionChecker'
 EnvReader.GlobalEnvConfig = config
 const nodeForge = new NodeForge()
 const configurator: Configurator = new Configurator()
-const clientManager = ClientManager.getInstance(new Logger('ClientManager'))
-const validator = new Validator(new Logger('Validator'), configurator, clientManager, nodeForge)
+const clientManager = ClientManager.getInstance()
+const validator = new Validator(configurator, clientManager, nodeForge)
 let activationmsg
 
 describe('Activation message', () => {

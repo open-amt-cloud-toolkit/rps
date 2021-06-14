@@ -15,6 +15,7 @@ import { parseValue } from './utils/parseEnvValue'
 import dot = require('dot-object')
 import routes from './routes'
 import rc = require('rc')
+
 const log = new Logger('Index')
 
 // To merge ENV variables. consider after lowercasing ENV since our config keys are lowercase
@@ -37,7 +38,7 @@ app.use(express.json())
 
 const configurator: IConfigurator = new Configurator()
 log.silly(`WebSocket Cert Info ${JSON.stringify(EnvReader.GlobalEnvConfig.WSConfiguration)}`)
-const server: WebSocketListener = new WebSocketListener(new Logger('WebSocketListener'), EnvReader.GlobalEnvConfig.WSConfiguration, configurator.clientManager, configurator.dataProcessor)
+const server: WebSocketListener = new WebSocketListener(EnvReader.GlobalEnvConfig.WSConfiguration, configurator.clientManager, configurator.dataProcessor)
 
 app.use('/api/v1', (req, res, next) => {
   if (configurator.secretsManager) {

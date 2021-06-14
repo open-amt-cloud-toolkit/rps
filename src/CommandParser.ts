@@ -8,7 +8,6 @@
 import * as parseArgs from 'minimist'
 import { ClientMsg } from './RCS.Config'
 import Logger from './Logger'
-import { ILogger } from './interfaces/ILogger'
 
 const options = {
   string: ['text', 'password'],
@@ -17,13 +16,13 @@ const options = {
 }
 
 const CommandParser = {
-  logger: new Logger('CommandParser') as ILogger,
+  log: new Logger('CommandParser'),
   parse (msg: ClientMsg): ClientMsg {
     try {
       if (msg?.method?.length > 0) {
         const input: string[] = msg.method.trim().split(' ')
 
-        this.logger.debug(`split input: ${input}`)
+        this.log.debug(`split input: ${input}`)
 
         const args = parseArgs(input, options)
 
@@ -35,26 +34,26 @@ const CommandParser = {
         if (args.t) {
           msg.method = args.t
 
-          this.logger.debug(`parsed method: ${msg.method}`)
+          this.log.debug(`parsed method: ${msg.method}`)
 
           if (args.profile && msg.payload) {
             msg.payload.profile = args.profile
-            this.logger.debug(`parsed profile: ${msg.payload.profile}`)
+            this.log.debug(`parsed profile: ${msg.payload.profile}`)
           }
 
           if (args.password && msg.payload) {
             msg.payload.password = args.password
-            this.logger.debug('parsed password')
+            this.log.debug('parsed password')
           }
 
           if (args.force && msg.payload) {
             msg.payload.force = args.force
-            this.logger.debug(`bypass password check: ${msg.payload.force}`)
+            this.log.debug(`bypass password check: ${msg.payload.force}`)
           }
         }
       }
     } catch (error) {
-      this.logger.error(`parse exception: ${error}`)
+      this.log.error(`parse exception: ${error}`)
     }
 
     return msg

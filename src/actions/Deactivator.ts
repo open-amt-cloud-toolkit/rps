@@ -6,7 +6,7 @@
  **********************************************************************/
 
 import { IExecutor } from '../interfaces/IExecutor'
-import { ILogger } from '../interfaces/ILogger'
+import Logger from '../Logger'
 import { ClientMsg } from '../RCS.Config'
 import { ClientResponseMsg } from '../utils/ClientResponseMsg'
 import { WSManProcessor } from '../WSManProcessor'
@@ -18,8 +18,9 @@ import { EnvReader } from '../utils/EnvReader'
 import got from 'got'
 
 export class Deactivator implements IExecutor {
+  private readonly log: Logger = new Logger('Deactivator')
+
   constructor (
-    private readonly logger: ILogger,
     private readonly responseMsg: ClientResponseMsg,
     private readonly amtwsman: WSManProcessor,
     private readonly clientManager: IClientManager,
@@ -34,7 +35,7 @@ export class Deactivator implements IExecutor {
    */
   async execute (message: any, clientId: string): Promise<ClientMsg> {
     try {
-      this.logger.debug(`deactivator execute message received: ${JSON.stringify(message, null, '\t')}`)
+      this.log.debug(`deactivator execute message received: ${JSON.stringify(message, null, '\t')}`)
 
       const clientObj = this.clientManager.getClientObject(clientId)
 
@@ -48,9 +49,9 @@ export class Deactivator implements IExecutor {
         if (wsmanResponse.Body.ReturnValue !== 0) {
           throw new RPSError(`Device ${clientObj.uuid} deactivation failed`)
         } else {
-          this.logger.debug(`Deleting secret from vault for ${clientObj.uuid}`)
+          this.log.debug(`Deleting secret from vault for ${clientObj.uuid}`)
           await this.configurator.amtDeviceRepository.delete(new AMTDeviceDTO(clientObj.uuid, null, null, null, null, null, null))
-          this.logger.debug(`Deleting metadata from mps for ${clientObj.uuid}`)
+          this.log.debug(`Deleting metadata from mps for ${clientObj.uuid}`)
 
           /* unregister device metadata with MPS */
           try {
@@ -58,7 +59,7 @@ export class Deactivator implements IExecutor {
               method: 'DELETE'
             })
           } catch (err) {
-            this.logger.warn('unable to removed metadata with MPS', err)
+            this.log.warn('unable to removed metadata with MPS', err)
           }
 
           return this.responseMsg.get(clientId, null, 'success', 'success', `Device ${clientObj.uuid} deactivated`)
@@ -69,7 +70,7 @@ export class Deactivator implements IExecutor {
         await this.amtwsman.deactivateACM(clientId)
       }
     } catch (error) {
-      this.logger.error(
+      this.log.error(
         `${clientId} : Failed to deactivate: ${error}`
       )
       if (error instanceof RPSError) {

@@ -8,7 +8,6 @@
 import Logger from './Logger'
 import { ClientMsg, ClientAction } from './RCS.Config'
 import { IConfigurator } from './interfaces/IConfigurator'
-import { ILogger } from './interfaces/ILogger'
 import { ICertManager } from './interfaces/ICertManager'
 import { SignatureHelper } from './utils/SignatureHelper'
 
@@ -27,9 +26,10 @@ import { ISecretManagerService } from './interfaces/ISecretManagerService'
 
 export class ClientActions {
   actions: any
+  private readonly log: Logger = new Logger('Client Actions')
 
   constructor (
-    private readonly logger: ILogger,
+    // private readonly logger: ILogger,
     private readonly configurator: IConfigurator,
     private readonly certManager: ICertManager,
     private readonly helper: SignatureHelper,
@@ -40,15 +40,15 @@ export class ClientActions {
     private readonly secretsManager?: ISecretManagerService) {
     this.actions = {}
 
-    const ciraConfig = new CIRAConfigurator(new Logger('CIRAConfig'), configurator, responseMsg, amtwsman, clientManager)
+    const ciraConfig = new CIRAConfigurator(configurator, responseMsg, amtwsman, clientManager)
     this.actions[ClientAction.CIRACONFIG] = ciraConfig
 
-    const networkConfig = new NetworkConfigurator(new Logger('NetworkConfig'), configurator, responseMsg, amtwsman, clientManager, validator, ciraConfig)
+    const networkConfig = new NetworkConfigurator(configurator, responseMsg, amtwsman, clientManager, validator, ciraConfig)
     this.actions[ClientAction.NETWORKCONFIG] = networkConfig
 
-    this.actions[ClientAction.ADMINCTLMODE] = new Activator(new Logger('Activator'), configurator, certManager, helper, responseMsg, amtwsman, clientManager, validator, networkConfig)
-    this.actions[ClientAction.CLIENTCTLMODE] = new Activator(new Logger('Activator'), configurator, certManager, helper, responseMsg, amtwsman, clientManager, validator, networkConfig)
-    this.actions[ClientAction.DEACTIVATE] = new Deactivator(new Logger('Deactivator'), responseMsg, amtwsman, clientManager, configurator)
+    this.actions[ClientAction.ADMINCTLMODE] = new Activator(configurator, certManager, helper, responseMsg, amtwsman, clientManager, validator, networkConfig)
+    this.actions[ClientAction.CLIENTCTLMODE] = new Activator(configurator, certManager, helper, responseMsg, amtwsman, clientManager, validator, networkConfig)
+    this.actions[ClientAction.DEACTIVATE] = new Deactivator(responseMsg, amtwsman, clientManager, configurator)
   }
 
   /**

@@ -5,13 +5,10 @@
  **********************************************************************/
 
 import { DomainCredentialManager } from '../DomainCredentialManager'
-import { ILogger } from '../interfaces/ILogger'
-import Logger from '../Logger'
 import { AMTDomain } from '../models/Rcs'
 import { DomainsDb } from '../repositories/domains'
 import { IDbCreator } from '../repositories/interfaces/IDbCreator'
 
-const logger: ILogger = new Logger('DomainCredentialManagerTests')
 describe('Domain Credential Manager Tests', () => {
   let creator: IDbCreator
 
@@ -38,7 +35,7 @@ describe('Domain Credential Manager Tests', () => {
     }
   })
   test('retrieve provisioning cert based on domain', async () => {
-    const domainCredentialManager: DomainCredentialManager = new DomainCredentialManager(logger, new DomainsDb(creator))
+    const domainCredentialManager: DomainCredentialManager = new DomainCredentialManager(new DomainsDb(creator))
 
     const expectedProvisioningCert: string = 'd2.pfx'
     const domain: AMTDomain = await domainCredentialManager.getProvisioningCert('d2.com')

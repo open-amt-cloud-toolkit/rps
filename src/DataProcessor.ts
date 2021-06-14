@@ -6,7 +6,6 @@
  **********************************************************************/
 import * as WebSocket from 'ws'
 
-import { ILogger } from './interfaces/ILogger'
 import { IDataProcessor } from './interfaces/IDataProcessor'
 import { IClientManager } from './interfaces/IClientManager'
 import { ClientMsg, ClientAction, ClientMethods } from './RCS.Config'
@@ -22,9 +21,9 @@ import { IValidator } from './interfaces/IValidator'
 
 export class DataProcessor implements IDataProcessor {
   private readonly clientActions: ClientActions
+  private readonly log: Logger = new Logger('DataProcessor')
 
   constructor (
-    private readonly logger: ILogger,
     private readonly signatureHelper: SignatureHelper,
     private readonly configurator: IConfigurator,
     private readonly validator: IValidator,
@@ -33,7 +32,7 @@ export class DataProcessor implements IDataProcessor {
     private readonly responseMsg: ClientResponseMsg,
     private readonly amtwsman: WSManProcessor
   ) {
-    this.clientActions = new ClientActions(new Logger('ClientActions'), configurator, certManager, signatureHelper, responseMsg, amtwsman, clientManager, validator)
+    this.clientActions = new ClientActions(configurator, certManager, signatureHelper, responseMsg, amtwsman, clientManager, validator)
   }
 
   /**
@@ -72,7 +71,7 @@ export class DataProcessor implements IDataProcessor {
         }
       }
     } catch (error) {
-      this.logger.error(`${clientId} : Failed to process data - ${error.message}`)
+      this.log.error(`${clientId} : Failed to process data - ${error.message}`)
       if (error instanceof RPSError) {
         return this.responseMsg.get(clientId, null, 'error', 'failed', error.message)
       } else {
@@ -82,7 +81,7 @@ export class DataProcessor implements IDataProcessor {
   }
 
   async activateDevice (clientMsg: ClientMsg, clientId: string): Promise<ClientMsg> {
-    this.logger.debug(`ProcessData: Parsed Message received from device ${clientMsg.payload.uuid}: ${JSON.stringify(clientMsg, null, '\t')}`)
+    this.log.debug(`ProcessData: Parsed Message received from device ${clientMsg.payload.uuid}: ${JSON.stringify(clientMsg, null, '\t')}`)
 
     await this.validator.validateActivationMsg(clientMsg, clientId) // Validate the activation message payload
 
@@ -97,7 +96,7 @@ export class DataProcessor implements IDataProcessor {
   }
 
   async deactivateDevice (clientMsg: ClientMsg, clientId: string): Promise<void> {
-    this.logger.debug(`ProcessData: Parsed DEACTIVATION Message received from device ${clientMsg.payload.uuid}: ${JSON.stringify(clientMsg, null, '\t')}`)
+    this.log.debug(`ProcessData: Parsed DEACTIVATION Message received from device ${clientMsg.payload.uuid}: ${JSON.stringify(clientMsg, null, '\t')}`)
     await this.validator.validateDeactivationMsg(clientMsg, clientId) // Validate the deactivation message payload
     await this.amtwsman.getWSManResponse(clientId, 'AMT_SetupAndConfigurationService', 'admin')
   }
@@ -113,10 +112,10 @@ export class DataProcessor implements IDataProcessor {
       return this.amtwsman.parseWsManResponseXML(clientMsg.payload, clientId, statusCode)
     } else if (statusCode === '200') {
       clientMsg.payload = this.amtwsman.parseWsManResponseXML(clientMsg.payload, clientId, statusCode)
-      this.logger.debug(`Device ${payload.uuid} wsman response ${statusCode}: ${JSON.stringify(clientMsg.payload, null, '\t')}`)
+      this.log.debug(`Device ${payload.uuid} wsman response ${statusCode}: ${JSON.stringify(clientMsg.payload, null, '\t')}`)
     } else {
       clientMsg.payload = this.amtwsman.parseWsManResponseXML(clientMsg.payload, clientId, statusCode)
-      this.logger.debug(`Device ${payload.uuid} wsman response ${statusCode}: ${JSON.stringify(clientMsg.payload, null, '\t')}`)
+      this.log.debug(`Device ${payload.uuid} wsman response ${statusCode}: ${JSON.stringify(clientMsg.payload, null, '\t')}`)
       if (clientObj.action !== ClientAction.CIRACONFIG) {
         throw new RPSError(`Device ${payload.uuid} activation failed. Bad wsman response from AMT device`)
       }

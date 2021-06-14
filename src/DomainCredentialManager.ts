@@ -6,20 +6,19 @@
  **********************************************************************/
 
 import { IDomainCredentialManager } from './interfaces/IDomainCredentialManager'
-import { ILogger } from './interfaces/ILogger'
 import { IConfigurator } from './interfaces/IConfigurator'
 import { IDomainsDb } from './repositories/interfaces/IDomainsDb'
 import { EnvReader } from './utils/EnvReader'
 import { AMTDomain } from './models/Rcs'
+import Logger from './Logger'
 
 export class DomainCredentialManager implements IDomainCredentialManager {
   private readonly amtDomains: IDomainsDb
-  private readonly logger: ILogger
+  private readonly log: Logger = new Logger('DomainCredentialManager')
   private readonly configurator: IConfigurator = null
 
-  constructor (logger: ILogger, amtDomains: IDomainsDb, configurator?: IConfigurator) {
+  constructor (amtDomains: IDomainsDb, configurator?: IConfigurator) {
     this.amtDomains = amtDomains
-    this.logger = logger
     this.configurator = configurator
   }
 
@@ -34,7 +33,7 @@ export class DomainCredentialManager implements IDomainCredentialManager {
     if (domain?.provisioningCertStorageFormat) {
       format = domain.provisioningCertStorageFormat
     } else {
-      this.logger.warn(`unable to find provisioning cert storage format for profile ${domainSuffix}`)
+      this.log.warn(`unable to find provisioning cert storage format for profile ${domainSuffix}`)
     }
 
     return format
@@ -47,17 +46,17 @@ export class DomainCredentialManager implements IDomainCredentialManager {
      */
   async getProvisioningCert (domainSuffix: string): Promise<AMTDomain> {
     const domain = await this.amtDomains.getDomainByDomainSuffix(domainSuffix)
-    this.logger.info(`domain : ${JSON.stringify(domain)}`)
+    this.log.info(`domain : ${JSON.stringify(domain)}`)
     let certPwd = null
     if (domain?.provisioningCert) {
       if (this.configurator?.secretsManager) {
         certPwd = await this.configurator.secretsManager.getSecretAtPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/${domain.profileName}`)
-        this.logger.info('Received CertPwd from vault')
+        this.log.info('Received CertPwd from vault')
         domain.provisioningCert = certPwd.data.CERT
         domain.provisioningCertPassword = certPwd.data.CERT_PASSWORD
       }
     } else {
-      this.logger.warn(`unable to find provisioning cert for profile ${domainSuffix}`)
+      this.log.warn(`unable to find provisioning cert for profile ${domainSuffix}`)
     }
     return domain
   }

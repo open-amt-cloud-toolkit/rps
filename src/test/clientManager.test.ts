@@ -8,11 +8,8 @@ import { v4 as uuid } from 'uuid'
 import { IClientManager } from '../interfaces/IClientManager'
 import { ClientManager } from '../ClientManager'
 import { ClientObject, ClientAction } from '../RCS.Config'
-import { ILogger } from '../interfaces/ILogger'
-import Logger from '../Logger'
 
-const logger: ILogger = new Logger('ClientManager')
-const clientManager: IClientManager = ClientManager.getInstance(logger)
+const clientManager: IClientManager = ClientManager.getInstance()
 
 describe('Check Client Manager', () => {
   it('should add a client object with action DEACTIVATE', () => {
@@ -58,7 +55,7 @@ describe('Check Client Manager', () => {
     const clientObject1: ClientObject = { ClientId: clientId1, ClientSocket: null }
     clientManager.addClient(clientObject1)
 
-    const newClientManager = ClientManager.getInstance(logger)
+    const newClientManager = ClientManager.getInstance()
     expect(clientManager.clients.length).toEqual(newClientManager.clients.length)
   })
 

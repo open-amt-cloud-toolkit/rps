@@ -5,20 +5,19 @@
  * Author: Brian Osburn
  **********************************************************************/
 
-import { ILogger } from '../../interfaces/ILogger'
 import { AMTDeviceDTO } from '.././dto/AmtDeviceDTO'
 import { IAMTDeviceRepository } from '../interfaces/IAMTDeviceRepository'
 import { IConfigurator } from '../../interfaces/IConfigurator'
 import { EnvReader } from '../../utils/EnvReader'
 import { RPSError } from '../../utils/RPSError'
 import { AMTUserName } from '../../utils/constants'
+import Logger from '../../Logger'
 
 export class AMTDeviceVaultRepository implements IAMTDeviceRepository {
-  private readonly logger: ILogger
+  private readonly log: Logger = new Logger('AMTDeviceVaultRepository')
   private readonly configurator: IConfigurator
 
-  constructor (logger: ILogger, configurator: IConfigurator) {
-    this.logger = logger
+  constructor (configurator: IConfigurator) {
     this.configurator = configurator
   }
 
@@ -35,7 +34,7 @@ export class AMTDeviceVaultRepository implements IAMTDeviceRepository {
         throw new Error('secret manager missing')
       }
     } catch (error) {
-      this.logger.error(`failed to insert record guid: ${device.guid}, error: ${JSON.stringify(error)}`)
+      this.log.error(`failed to insert record guid: ${device.guid}, error: ${JSON.stringify(error)}`)
       throw new RPSError('Exception writing to vault')
     }
   }
@@ -49,7 +48,7 @@ export class AMTDeviceVaultRepository implements IAMTDeviceRepository {
         throw new Error('secret manager missing')
       }
     } catch (error) {
-      this.logger.error(`failed to delete record guid: ${device.guid}, error: ${JSON.stringify(error)}`)
+      this.log.error(`failed to delete record guid: ${device.guid}, error: ${JSON.stringify(error)}`)
       throw new RPSError('Exception deleting from vault')
     }
   }
@@ -58,7 +57,7 @@ export class AMTDeviceVaultRepository implements IAMTDeviceRepository {
     try {
       if (this.configurator?.secretsManager) {
         const devicePwds: any = await this.configurator.secretsManager.getSecretAtPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}devices/${deviceId}`)
-        this.logger.info('devicePwds :' + JSON.stringify(devicePwds))
+        this.log.info('devicePwds :' + JSON.stringify(devicePwds))
         if (devicePwds) {
           const amtDevice: AMTDeviceDTO = new AMTDeviceDTO(
             deviceId,
@@ -68,7 +67,7 @@ export class AMTDeviceVaultRepository implements IAMTDeviceRepository {
             AMTUserName,
             devicePwds.data.AMT_PASSWORD,
             devicePwds.data.MEBX_PASSWORD)
-          this.logger.debug(`found vault amt device: ${deviceId}, ${JSON.stringify(amtDevice)}`)
+          this.log.debug(`found vault amt device: ${deviceId}, ${JSON.stringify(amtDevice)}`)
 
           return amtDevice
         } else {
@@ -78,7 +77,7 @@ export class AMTDeviceVaultRepository implements IAMTDeviceRepository {
         throw new Error('secret manager missing')
       }
     } catch (error) {
-      this.logger.error(`failed to get vault record for device: ${deviceId}, error: ${JSON.stringify(error)}`)
+      this.log.error(`failed to get vault record for device: ${deviceId}, error: ${JSON.stringify(error)}`)
       throw new RPSError(`Exception reading from device: ${deviceId}`)
     }
   }

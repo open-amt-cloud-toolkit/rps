@@ -6,22 +6,21 @@
  **********************************************************************/
 
 import { AMTConfiguration } from './models/Rcs'
-import { ILogger } from './interfaces/ILogger'
 import { IProfileManager } from './interfaces/IProfileManager'
 import { PasswordHelper } from './utils/PasswordHelper'
 import { CIRAConfig } from './RCS.Config'
 import { IConfigurator } from './interfaces/IConfigurator'
 import { IProfilesDb } from './repositories/interfaces/IProfilesDb'
 import { EnvReader } from './utils/EnvReader'
+import Logger from './Logger'
 
 export class ProfileManager implements IProfileManager {
   private readonly amtConfigurations: IProfilesDb
-  private readonly logger: ILogger
+  private readonly log: Logger = new Logger('ProfileManager')
   private readonly configurator: IConfigurator
   private readonly envConfig: any
 
-  constructor (logger: ILogger, configurator: IConfigurator, amtConfigurations: IProfilesDb, config?: any) {
-    this.logger = logger
+  constructor (configurator: IConfigurator, amtConfigurations: IProfilesDb, config?: any) {
     this.configurator = configurator
     // this.amtConfigurations = this.validateAMTPasswords(amtConfigurations, allowGenerateRandomAmtPassowrds);
     this.amtConfigurations = amtConfigurations
@@ -64,7 +63,7 @@ export class ProfileManager implements IProfileManager {
     }
 
     if (profiles.length === 0) {
-      this.logger.error('Warning: No AMT configurations detected.')
+      this.log.error('Warning: No AMT configurations detected.')
     }
 
     return profiles
@@ -80,10 +79,10 @@ export class ProfileManager implements IProfileManager {
     let activation: string
 
     if (profile?.activation) {
-      this.logger.debug(`found activation for profile ${profileName}`)
+      this.log.debug(`found activation for profile ${profileName}`)
       activation = profile.activation
     } else {
-      this.logger.warn(`unable to find activation for profile ${profileName}`)
+      this.log.warn(`unable to find activation for profile ${profileName}`)
     }
 
     return activation
@@ -99,15 +98,15 @@ export class ProfileManager implements IProfileManager {
     let ciraConfig: CIRAConfig
 
     if (profile?.ciraConfigName && profile.ciraConfigObject) {
-      this.logger.debug(`found CIRAConfigObject for profile ${JSON.stringify(profile)}`)
+      this.log.debug(`found CIRAConfigObject for profile ${JSON.stringify(profile)}`)
       ciraConfig = profile.ciraConfigObject
 
-      this.logger.debug(`retrieve CIRA MPS Password for cira config ${ciraConfig.configName}`)
+      this.log.debug(`retrieve CIRA MPS Password for cira config ${ciraConfig.configName}`)
       if (this.configurator?.secretsManager) {
         ciraConfig.password = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfig.configName}`, 'MPS_PASSWORD')
       }
     } else {
-      this.logger.debug(`unable to find CIRAConfig for profile ${JSON.stringify(profile)}`)
+      this.log.debug(`unable to find CIRAConfig for profile ${JSON.stringify(profile)}`)
     }
 
     return ciraConfig
@@ -123,10 +122,10 @@ export class ProfileManager implements IProfileManager {
     let configScript: string
 
     if (profile?.configurationScript) {
-      this.logger.debug(`found configScript for profile ${profileName}`)
+      this.log.debug(`found configScript for profile ${profileName}`)
       configScript = profile.configurationScript
     } else {
-      this.logger.debug(`unable to find configScript for profile ${profileName}`)
+      this.log.debug(`unable to find configScript for profile ${profileName}`)
     }
 
     return configScript
@@ -146,12 +145,12 @@ export class ProfileManager implements IProfileManager {
         amtPassword = PasswordHelper.generateRandomPassword(profile.passwordLength)
 
         if (amtPassword) {
-          this.logger.debug(`Created random password for ${profile.profileName}`)
+          this.log.debug(`Created random password for ${profile.profileName}`)
         } else {
-          this.logger.error(`unable to create a random password for ${profile.profileName}`)
+          this.log.error(`unable to create a random password for ${profile.profileName}`)
         }
       } else {
-        this.logger.debug(`found amtPassword for profile ${profileName}`)
+        this.log.debug(`found amtPassword for profile ${profileName}`)
         if (this.configurator?.secretsManager) {
           amtPassword = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${profileName}`, 'AMT_PASSWORD')
         } else {
@@ -159,14 +158,14 @@ export class ProfileManager implements IProfileManager {
         }
       }
     } else {
-      this.logger.warn(`unable to find amtPassword for profile ${profileName}`)
+      this.log.warn(`unable to find amtPassword for profile ${profileName}`)
     }
 
     if (amtPassword) {
       return amtPassword
     }
 
-    this.logger.error('password cannot be blank')
+    this.log.error('password cannot be blank')
     throw new Error('password cannot be blank')
   }
 
@@ -184,12 +183,12 @@ export class ProfileManager implements IProfileManager {
         mebxPassword = PasswordHelper.generateRandomPassword(profile.mebxPasswordLength)
 
         if (mebxPassword) {
-          this.logger.debug(`Created random MEBx password for ${profile.profileName}`)
+          this.log.debug(`Created random MEBx password for ${profile.profileName}`)
         } else {
-          this.logger.error(`unable to create MEBx random password for ${profile.profileName}`)
+          this.log.error(`unable to create MEBx random password for ${profile.profileName}`)
         }
       } else {
-        this.logger.debug(`found amtPassword for profile ${profileName}`)
+        this.log.debug(`found amtPassword for profile ${profileName}`)
         if (this.configurator?.secretsManager) {
           mebxPassword = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${profileName}`, 'MEBX_PASSWORD')
         } else {
@@ -197,14 +196,14 @@ export class ProfileManager implements IProfileManager {
         }
       }
     } else {
-      this.logger.warn(`unable to find mebxPassword for profile ${profileName}`)
+      this.log.warn(`unable to find mebxPassword for profile ${profileName}`)
     }
 
     if (mebxPassword) {
       return mebxPassword
     }
 
-    this.logger.error('password cannot be blank')
+    this.log.error('password cannot be blank')
     throw new Error('password cannot be blank')
   }
 
@@ -222,23 +221,23 @@ export class ProfileManager implements IProfileManager {
         mpsPassword = PasswordHelper.generateRandomPassword(profile.ciraConfigObject.passwordLength)
 
         if (mpsPassword) {
-          this.logger.debug(`Created random MPS password for ${profile.profileName}`)
+          this.log.debug(`Created random MPS password for ${profile.profileName}`)
         } else {
-          this.logger.error(`unable to create MPS random password for ${profile.profileName}`)
+          this.log.error(`unable to create MPS random password for ${profile.profileName}`)
         }
       } else {
-        this.logger.debug('using mps password from cira config')
+        this.log.debug('using mps password from cira config')
         mpsPassword = profile.ciraConfigObject.password
       }
     } else {
-      this.logger.warn(`unable to find mpsPassword for profile ${profileName}`)
+      this.log.warn(`unable to find mpsPassword for profile ${profileName}`)
     }
 
     if (mpsPassword) {
       return mpsPassword
     }
 
-    this.logger.error('password cannot be blank')
+    this.log.error('password cannot be blank')
     throw new Error('password cannot be blank')
   }
 
@@ -258,13 +257,13 @@ export class ProfileManager implements IProfileManager {
       if (amtProfile.ciraConfigName != null) {
         amtProfile.ciraConfigObject = await this.amtConfigurations.getCiraConfigForProfile(amtProfile.ciraConfigName)
         if (this.configurator?.secretsManager) {
-          if (amtProfile.ciraConfigObject?.password) { amtProfile.ciraConfigObject.password = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${amtProfile.ciraConfigObject.configName}`, amtProfile.ciraConfigObject.password) } else { this.logger.error("The amtProfile CIRAConfigObject doesn't have a password. Check CIRA profile creation.") }
+          if (amtProfile.ciraConfigObject?.password) { amtProfile.ciraConfigObject.password = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${amtProfile.ciraConfigObject.configName}`, amtProfile.ciraConfigObject.password) } else { this.log.error("The amtProfile CIRAConfigObject doesn't have a password. Check CIRA profile creation.") }
         }
       }
-      this.logger.debug('AMT Profile returned from db', JSON.stringify(amtProfile))
+      this.log.debug('AMT Profile returned from db', JSON.stringify(amtProfile))
       return amtProfile
     } catch (error) {
-      this.logger.error(`Failed to get AMT profile: ${error}`)
+      this.log.error(`Failed to get AMT profile: ${error}`)
     }
     return null
   }
@@ -280,7 +279,7 @@ export class ProfileManager implements IProfileManager {
       // this.logger.debug(`found profile ${profileName}`);
       return true
     } else {
-      this.logger.warn(`unable to find profile ${profileName}`)
+      this.log.warn(`unable to find profile ${profileName}`)
       return false
     }
   }

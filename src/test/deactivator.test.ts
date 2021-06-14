@@ -6,7 +6,6 @@
 import { v4 as uuid } from 'uuid'
 
 import { Deactivator } from '../actions/Deactivator'
-import Logger from '../Logger'
 import { NodeForge } from '../NodeForge'
 import { config } from './helper/Config'
 import { ClientResponseMsg } from '../utils/ClientResponseMsg'
@@ -19,10 +18,10 @@ import { EnvReader } from '../utils/EnvReader'
 EnvReader.GlobalEnvConfig = config
 
 const nodeForge = new NodeForge()
-const clientManager = ClientManager.getInstance(new Logger('ClientManager'))
-const responseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'), nodeForge)
-const amtwsman = new WSManProcessor(new Logger('WSManProcessor'), clientManager, responseMsg)
-const deactivate = new Deactivator(new Logger('Deactivator'), responseMsg, amtwsman, clientManager)
+const clientManager = ClientManager.getInstance()
+const responseMsg = new ClientResponseMsg(nodeForge)
+const amtwsman = new WSManProcessor(clientManager, responseMsg)
+const deactivate = new Deactivator(responseMsg, amtwsman, clientManager)
 let clientId, deactivatemsg
 
 beforeAll(() => {

@@ -6,7 +6,7 @@
  **********************************************************************/
 
 import { IExecutor } from '../interfaces/IExecutor'
-import { ILogger } from '../interfaces/ILogger'
+import Logger from '../Logger'
 import { ClientMsg, mpsServer, ClientObject, CIRAConfig } from '../RCS.Config'
 import { ClientResponseMsg } from '../utils/ClientResponseMsg'
 import { WSManProcessor } from '../WSManProcessor'
@@ -19,8 +19,9 @@ import { EnvReader } from '../utils/EnvReader'
 import got from 'got'
 
 export class CIRAConfigurator implements IExecutor {
+  private readonly log: Logger = new Logger('CIRAConfig')
+
   constructor (
-    private readonly logger: ILogger,
     private readonly configurator: IConfigurator,
     private readonly responseMsg: ClientResponseMsg,
     private readonly amtwsman: WSManProcessor,
@@ -48,7 +49,7 @@ export class CIRAConfigurator implements IExecutor {
             const configScript: CIRAConfig = clientObj.ClientData.payload.profile.ciraConfigObject
             await this.amtwsman.execute(clientId, 'AMT_PublicKeyManagementService', 'AddTrustedRootCertificate', { CertificateBlob: configScript.mpsRootCertificate }, null, AMTUserName, clientObj.ClientData.payload.password)
           } else if (clientObj.ciraconfig.addTrustedRootCert && !clientObj.ciraconfig.addMPSServer) {
-            this.logger.debug(`${clientObj.uuid}  Adding trusted root certificate.`)
+            this.log.debug(`${clientObj.uuid}  Adding trusted root certificate.`)
             clientObj.ciraconfig.addMPSServer = true
             this.clientManager.setClientObject(clientObj)
 
@@ -71,10 +72,10 @@ export class CIRAConfigurator implements IExecutor {
             clientObj.ciraconfig.mpsRemoteSAP = true
             this.clientManager.setClientObject(clientObj)
             if (wsmanResponse.Body && wsmanResponse.Body.ReturnValueStr === 'SUCCESS') {
-              this.logger.debug(`${clientObj.uuid}  Management Presence Server (MPS) successfully added.`)
+              this.log.debug(`${clientObj.uuid}  Management Presence Server (MPS) successfully added.`)
               await this.amtwsman.batchEnum(clientId, 'AMT_ManagementPresenceRemoteSAP', AMTUserName, clientObj.ClientData.payload.uuid)
             } else {
-              this.logger.info('AMT_ManagementPresenceRemoteSAP')
+              this.log.info('AMT_ManagementPresenceRemoteSAP')
               throw new RPSError(`Device ${clientObj.uuid} ${clientObj.ciraconfig.status} Failed to add Management Presence Server.`)
             }
           } else if (!clientObj.ciraconfig.addRemoteAccessPolicyRule && clientObj.ciraconfig.addMPSServer) {
@@ -83,7 +84,7 @@ export class CIRAConfigurator implements IExecutor {
               if (result?.responses?.length > 0) {
                 // TBD: Check when there are more than one MPS added to system.
                 const name = wsmanResponse.AMT_ManagementPresenceRemoteSAP.responses[0].Name
-                this.logger.debug(`${clientObj.uuid} : Management Presence Server (MPS) exists.`)
+                this.log.debug(`${clientObj.uuid} : Management Presence Server (MPS) exists.`)
                 const policy = {
                   Trigger: 2, // 2 – Periodic
                   TunnelLifeTime: 0, // 0 means that the tunnel should stay open until it is closed
@@ -94,7 +95,7 @@ export class CIRAConfigurator implements IExecutor {
                 this.clientManager.setClientObject(clientObj)
                 await this.amtwsman.execute(clientId, 'AMT_RemoteAccessService', 'AddRemoteAccessPolicyRule', policy, null, AMTUserName, clientObj.ClientData.payload.password)
               } else {
-                this.logger.info('AMT_RemoteAccessService')
+                this.log.info('AMT_RemoteAccessService')
                 throw new RPSError(`Device ${clientObj.uuid} ${clientObj.ciraconfig.status} Failed to add Management Presence Server.`)
               }
             }
@@ -108,7 +109,7 @@ export class CIRAConfigurator implements IExecutor {
             await this.amtwsman.batchEnum(clientId, '*AMT_EnvironmentDetectionSettingData', AMTUserName, clientObj.ClientData.payload.uuid)
           } else if (clientObj.ciraconfig.getENVSettingData && !clientObj.ciraconfig.setENVSettingDataCIRA) {
             const envSettings = wsmanResponse.AMT_EnvironmentDetectionSettingData.response
-            this.logger.info(`Environment settings : ${JSON.stringify(envSettings, null, '\t')}`)
+            this.log.info(`Environment settings : ${JSON.stringify(envSettings, null, '\t')}`)
             if (envSettings.DetectionStrings === undefined) {
               envSettings.DetectionStrings = 'dummy.com'
             } else if (envSettings.DetectionStrings !== 'dummy.com') {
@@ -125,7 +126,7 @@ export class CIRAConfigurator implements IExecutor {
         }
       }
     } catch (error) {
-      this.logger.error(`${clientId} : Failed to configure CIRA : ${error}`)
+      this.log.error(`${clientId} : Failed to configure CIRA : ${error}`)
       if (error instanceof RPSError) {
         return this.responseMsg.get(clientId, null, 'error', 'failed', error.message)
       } else {
@@ -143,7 +144,7 @@ export class CIRAConfigurator implements IExecutor {
   async delete (clientId: string, clientObj: ClientObject, message: any): Promise<void> {
     const wsmanResponse: any = message?.payload
     if (!clientObj.ciraconfig.policyRuleUserInitiate) {
-      this.logger.debug(`Deleting CIRA Configuration for device ${clientObj.ClientData.payload.uuid}`)
+      this.log.debug(`Deleting CIRA Configuration for device ${clientObj.ClientData.payload.uuid}`)
       clientObj = this.clientManager.getClientObject(clientId)
       clientObj.ciraconfig.policyRuleUserInitiate = true
       this.clientManager.setClientObject(clientObj)
@@ -157,7 +158,7 @@ export class CIRAConfigurator implements IExecutor {
       this.clientManager.setClientObject(clientObj)
       await this.amtwsman.delete(clientId, 'AMT_RemoteAccessPolicyRule', { PolicyRuleName: 'Periodic' }, AMTUserName)
     } else if (!clientObj.ciraconfig.mpsRemoteSAPEnumerate) {
-      this.logger.debug(`${clientObj.uuid}: All policies are removed successfully.`)
+      this.log.debug(`${clientObj.uuid}: All policies are removed successfully.`)
       clientObj.ciraconfig.mpsRemoteSAPEnumerate = true
       this.clientManager.setClientObject(clientObj)
       await this.amtwsman.batchEnum(clientId, 'AMT_ManagementPresenceRemoteSAP')
@@ -168,7 +169,7 @@ export class CIRAConfigurator implements IExecutor {
       if (wsmanResponse?.AMT_ManagementPresenceRemoteSAP.responses.length > 0) {
         const name = wsmanResponse.AMT_ManagementPresenceRemoteSAP.responses[0].Name
         selector = { Name: name }
-        this.logger.debug(`MPS Name : ${name},  selector : ${JSON.stringify(selector, null, '\t')}`)
+        this.log.debug(`MPS Name : ${name},  selector : ${JSON.stringify(selector, null, '\t')}`)
         await this.amtwsman.delete(clientId, 'AMT_ManagementPresenceRemoteSAP', selector, AMTUserName)
         return
       }
@@ -205,7 +206,7 @@ export class CIRAConfigurator implements IExecutor {
       } else {
         clientObj.ciraconfig.setENVSettingData = true
         this.clientManager.setClientObject(clientObj)
-        this.logger.debug(`${clientObj.uuid} Deleted existing CIRA Configuration.`)
+        this.log.debug(`${clientObj.uuid} Deleted existing CIRA Configuration.`)
         clientObj = this.clientManager.getClientObject(clientId)
       }
     }
@@ -216,7 +217,7 @@ export class CIRAConfigurator implements IExecutor {
    * @param {ClientObject} clientObj
    */
   async setMPSPassword (clientObj: ClientObject): Promise<void> {
-    this.logger.debug('setting MPS password')
+    this.log.debug('setting MPS password')
 
     clientObj.mpsUsername = await (await this.configurator.profileManager.getCiraConfiguration(clientObj.ClientData.payload.profile.profileName))?.username
     clientObj.mpsPassword = await this.configurator.profileManager.getMPSPassword(clientObj.ClientData.payload.profile.profileName)
@@ -238,7 +239,7 @@ export class CIRAConfigurator implements IExecutor {
           throw new Error('secret manager missing')
         }
       } catch (error) {
-        this.logger.error(`failed to insert record guid: ${clientObj.uuid}, error: ${JSON.stringify(error)}`)
+        this.log.error(`failed to insert record guid: ${clientObj.uuid}, error: ${JSON.stringify(error)}`)
         throw new RPSError('Exception writing to vault')
       }
 
@@ -259,7 +260,7 @@ export class CIRAConfigurator implements IExecutor {
           }
         })
       } catch (err) {
-        this.logger.warn('unable to register metadata with MPS', err)
+        this.log.warn('unable to register metadata with MPS', err)
       }
     } else {
       throw new RPSError('setMPSPassword: mpsUsername or mpsPassword is null')

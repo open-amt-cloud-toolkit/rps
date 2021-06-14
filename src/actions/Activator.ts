@@ -7,7 +7,7 @@
 
 import { IExecutor } from '../interfaces/IExecutor'
 import { ICertManager } from '../interfaces/ICertManager'
-import { ILogger } from '../interfaces/ILogger'
+import Logger from '../Logger'
 import { SignatureHelper } from '../utils/SignatureHelper'
 import { PasswordHelper } from '../utils/PasswordHelper'
 import { ClientMsg, ClientAction, ClientObject } from '../RCS.Config'
@@ -25,8 +25,9 @@ import { AMTDomain } from '../models/Rcs'
 import got from 'got'
 
 export class Activator implements IExecutor {
+  private readonly log: Logger = new Logger('Activator')
+
   constructor (
-    private readonly logger: ILogger,
     private readonly configurator: IConfigurator,
     private readonly certManager: ICertManager,
     private readonly signatureHelper: SignatureHelper,
@@ -78,7 +79,7 @@ export class Activator implements IExecutor {
         }
       }
     } catch (error) {
-      this.logger.error(`${clientId} : Failed to activate in admin control mode.`)
+      this.log.error(`${clientId} : Failed to activate in admin control mode.`)
       if (error instanceof RPSError) {
         return this.responseMsg.get(clientId, null, 'error', 'failed', error.message)
       } else {
@@ -113,7 +114,7 @@ export class Activator implements IExecutor {
         }
       }
     } catch (error) {
-      this.logger.error(`${clientId} : Failed to get provisioning certificate. Error: ${error}`)
+      this.log.error(`${clientId} : Failed to get provisioning certificate. Error: ${error}`)
       return null
     }
   }
@@ -154,14 +155,14 @@ export class Activator implements IExecutor {
       if (wsmanResponse.Body.ReturnValue !== 0) {
         throw new RPSError(`Device ${clientObj.uuid} activation failed. Error while adding the certificates to AMT.`)
       } else {
-        this.logger.debug(`cert added to AMT device ${clientObj.uuid}`)
+        this.log.debug(`cert added to AMT device ${clientObj.uuid}`)
       }
     } else if (wsmanResponse.Header && wsmanResponse.Header.Method === 'AdminSetup') {
       // Response from setupACM call
       if (wsmanResponse.Body.ReturnValue !== 0) {
         throw new RPSError(`Device ${clientObj.uuid} activation failed. Error while activating the AMT device in admin mode.`)
       } else {
-        this.logger.debug(`Device ${clientObj.uuid} activated in admin mode.`)
+        this.log.debug(`Device ${clientObj.uuid} activated in admin mode.`)
         clientObj.ciraconfig.status = 'activated in admin mode.'
         clientObj.activationStatus = true
         this.clientManager.setClientObject(clientObj)
@@ -173,7 +174,7 @@ export class Activator implements IExecutor {
       if (wsmanResponse.Body.ReturnValue !== 0) {
         throw new RPSError(`Device ${clientObj.uuid} activation failed. Error while activating the AMT device in client mode.`)
       } else {
-        this.logger.debug(`Device ${clientObj.uuid} activated in client mode.`)
+        this.log.debug(`Device ${clientObj.uuid} activated in client mode.`)
         clientObj.ciraconfig.status = 'activated in client mode.'
         clientObj.activationStatus = true
         this.clientManager.setClientObject(clientObj)
@@ -186,7 +187,7 @@ export class Activator implements IExecutor {
       if (wsmanResponse.Body.ReturnValue !== 0) {
         throw new RPSError(`Device ${clientObj.uuid} failed to set MEBx password.`)
       } else {
-        this.logger.debug(`Device ${clientObj.uuid} MEBx password updated.`)
+        this.log.debug(`Device ${clientObj.uuid} MEBx password updated.`)
         /* Update a device in the repository. */
         const msg = await this.waitAfterActivation(clientId, clientObj)
         return msg
@@ -204,15 +205,15 @@ export class Activator implements IExecutor {
    */
   async waitAfterActivation (clientId: string, clientObj: ClientObject): Promise<ClientMsg> {
     if (clientObj.delayEndTime == null) {
-      this.logger.info(`waiting for ${EnvReader.GlobalEnvConfig.delayTimer} seconds after activation`)
+      this.log.info(`waiting for ${EnvReader.GlobalEnvConfig.delayTimer} seconds after activation`)
       const endTime: Date = new Date()
       clientObj.delayEndTime = endTime.setSeconds(endTime.getSeconds() + EnvReader.GlobalEnvConfig.delayTimer)
       this.clientManager.setClientObject(clientObj)
-      this.logger.info(`Delay end time : ${clientObj.delayEndTime}`)
+      this.log.info(`Delay end time : ${clientObj.delayEndTime}`)
     }
     const currentTime = new Date().getTime()
     if (currentTime >= clientObj.delayEndTime) {
-      this.logger.info(`Delay ${EnvReader.GlobalEnvConfig.delayTimer} seconds after activation completed`)
+      this.log.info(`Delay ${EnvReader.GlobalEnvConfig.delayTimer} seconds after activation completed`)
       /* Update the wsman stack username and password */
       if (this.amtwsman.cache[clientId]) {
         this.amtwsman.cache[clientId].wsman.comm.setupCommunication.getUsername = (): string => { return AMTUserName }
@@ -226,7 +227,7 @@ export class Activator implements IExecutor {
       this.clientManager.setClientObject(clientObj)
       await this.networkConfigurator.execute(null, clientId)
     } else {
-      this.logger.info(`Current Time: ${currentTime} Delay end time : ${clientObj.delayEndTime}`)
+      this.log.info(`Current Time: ${currentTime} Delay end time : ${clientObj.delayEndTime}`)
       return this.responseMsg.get(clientId, null, 'heartbeat_request', 'heartbeat', '')
     }
   }
@@ -238,7 +239,7 @@ export class Activator implements IExecutor {
    */
   async setMEBxPassword (clientId: string, clientObj: ClientObject): Promise<void> {
     if (clientObj.action === ClientAction.ADMINCTLMODE) {
-      this.logger.info('setting MEBx password')
+      this.log.info('setting MEBx password')
 
       /* Get the MEBx password */
       const mebxPassword: string = await this.configurator.profileManager.getMEBxPassword(clientObj.ClientData.payload.profile.profileName)
@@ -260,7 +261,7 @@ export class Activator implements IExecutor {
     if (!clientObj.count) {
       clientObj.count = 0
       const amtDomain: AMTDomain = await this.configurator.domainCredentialManager.getProvisioningCert(clientObj.ClientData.payload.fqdn)
-      this.logger.info(`domain : ${JSON.stringify(amtDomain)}`)
+      this.log.info(`domain : ${JSON.stringify(amtDomain)}`)
       // Verify that the certificate path points to a file that exists
       if (!amtDomain.provisioningCert) {
         throw new RPSError(`Device ${clientObj.uuid} activation failed. AMT provisioning certificate not found on server`)
@@ -345,7 +346,7 @@ export class Activator implements IExecutor {
           null))
       }
     } else {
-      this.logger.error('unable to write device')
+      this.log.error('unable to write device')
     }
     /* Register device metadata with MPS */
     try {
@@ -365,7 +366,7 @@ export class Activator implements IExecutor {
         }
       })
     } catch (err) {
-      this.logger.warn('unable to register metadata with MPS', err)
+      this.log.warn('unable to register metadata with MPS', err)
     }
   }
 }

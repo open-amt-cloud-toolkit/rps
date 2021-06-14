@@ -11,17 +11,16 @@ import { WebSocketConfig, ClientObject } from './RCS.Config'
 import { IWebSocketListener } from './interfaces/IWebSocketListener'
 import { IClientManager } from './interfaces/IClientManager'
 import { IDataProcessor } from './interfaces/IDataProcessor'
-import { ILogger } from './interfaces/ILogger'
+import Logger from './Logger'
 
 export class WebSocketListener implements IWebSocketListener {
   clientManager: IClientManager
   dataProcessor: IDataProcessor
   wsServer: WebSocket.Server
   wsConfig: WebSocketConfig
-  logger: ILogger
+  log: Logger = new Logger('WebSocketListener')
 
-  constructor (logger: ILogger, wsConfig: WebSocketConfig, clientManager: IClientManager, dataProcessor: IDataProcessor) {
-    this.logger = logger
+  constructor (wsConfig: WebSocketConfig, clientManager: IClientManager, dataProcessor: IDataProcessor) {
     this.wsConfig = wsConfig
     this.clientManager = clientManager
     this.dataProcessor = dataProcessor
@@ -36,14 +35,14 @@ export class WebSocketListener implements IWebSocketListener {
 
       if (this.wsServer !== null) {
         this.wsServer.on('connection', this.onClientConnected)
-        this.logger.debug(`RPS Microservice socket listening on port: ${this.wsConfig.WebSocketPort} ...!`)
+        this.log.debug(`RPS Microservice socket listening on port: ${this.wsConfig.WebSocketPort} ...!`)
         return true
       } else {
-        this.logger.debug('Failed to start WebSocket server')
+        this.log.debug('Failed to start WebSocket server')
         return false
       }
     } catch (error) {
-      this.logger.error(`Failed to start WebSocket server : ${error}`)
+      this.log.error(`Failed to start WebSocket server : ${error}`)
       return false
     }
   }
@@ -69,9 +68,9 @@ export class WebSocketListener implements IWebSocketListener {
         this.onError(error, clientId)
       })
 
-      this.logger.info(`client : ${clientId} Connection accepted.`)
+      this.log.info(`client : ${clientId} Connection accepted.`)
     } catch (error) {
-      this.logger.error(`Failed on client connection: ${JSON.stringify(error)}`)
+      this.log.error(`Failed on client connection: ${JSON.stringify(error)}`)
     }
   }
 
@@ -82,9 +81,9 @@ export class WebSocketListener implements IWebSocketListener {
   onClientDisconnected (clientId: string): void {
     try {
       this.clientManager.removeClient(clientId)
-      this.logger.info(`Connection ended for client : ${clientId}`)
+      this.log.info(`Connection ended for client : ${clientId}`)
     } catch (error) {
-      this.logger.error(`Failed to close connection : ${error}`)
+      this.log.error(`Failed to close connection : ${error}`)
     }
   }
 
@@ -93,7 +92,7 @@ export class WebSocketListener implements IWebSocketListener {
    * @param {Error} error Websocket error
    */
   onError (error: Error, clientId: string): void {
-    this.logger.error(`${clientId} : ${error.message}`)
+    this.log.error(`${clientId} : ${error.message}`)
   };
 
   /**
@@ -112,7 +111,7 @@ export class WebSocketListener implements IWebSocketListener {
         }
       }
     } catch (error) {
-      this.logger.error(`Failed to process message received from client: ${error}`)
+      this.log.error(`Failed to process message received from client: ${error}`)
     }
   }
 
@@ -125,12 +124,12 @@ export class WebSocketListener implements IWebSocketListener {
   onSendMessage (message: string, clientId: string): void {
     try {
       const index = this.clientManager.getClientIndex(clientId)
-      this.logger.info(`${clientId} : response message sent to device: ${JSON.stringify(message, null, '\t')}`)
+      this.log.info(`${clientId} : response message sent to device: ${JSON.stringify(message, null, '\t')}`)
       if (index > -1) {
         this.clientManager.clients[index].ClientSocket.send(JSON.stringify(message))
       }
     } catch (error) {
-      this.logger.error(`Failed to send message to AMT: ${error}`)
+      this.log.error(`Failed to send message to AMT: ${error}`)
     }
   }
 }

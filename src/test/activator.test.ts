@@ -5,7 +5,6 @@
  **********************************************************************/
 import { v4 as uuid } from 'uuid'
 import { Activator } from '../actions/Activator'
-import Logger from '../Logger'
 import { SignatureHelper } from '../utils/SignatureHelper'
 import { NodeForge } from '../NodeForge'
 import { CertManager } from '../CertManager'
@@ -26,13 +25,13 @@ const nodeForge = new NodeForge()
 const certManager = new CertManager(nodeForge)
 const helper = new SignatureHelper(nodeForge)
 const configurator = new Configurator()
-const clientManager = ClientManager.getInstance(new Logger('ClientManager'))
-const responseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'), nodeForge)
-const amtwsman = new WSManProcessor(new Logger('WSManProcessor'), clientManager, responseMsg)
-const validator = new Validator(new Logger('Validator'), configurator, clientManager, nodeForge)
-const ciraConfig = new CIRAConfigurator(new Logger('CIRAConfig'), configurator, responseMsg, amtwsman, clientManager)
-const networkConfigurator = new NetworkConfigurator(new Logger('NetworkConfig'), configurator, responseMsg, amtwsman, clientManager, validator, ciraConfig)
-const activator = new Activator(new Logger('Activator'), configurator, certManager, helper, responseMsg, amtwsman, clientManager, validator, networkConfigurator)
+const clientManager = ClientManager.getInstance()
+const responseMsg = new ClientResponseMsg(nodeForge)
+const amtwsman = new WSManProcessor(clientManager, responseMsg)
+const validator = new Validator(configurator, clientManager, nodeForge)
+const ciraConfig = new CIRAConfigurator(configurator, responseMsg, amtwsman, clientManager)
+const networkConfigurator = new NetworkConfigurator(configurator, responseMsg, amtwsman, clientManager, validator, ciraConfig)
+const activator = new Activator(configurator, certManager, helper, responseMsg, amtwsman, clientManager, validator, networkConfigurator)
 let clientId, activationmsg
 
 beforeAll(() => {

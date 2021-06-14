@@ -5,14 +5,13 @@
  **********************************************************************/
 import { v4 as uuid } from 'uuid'
 
-import Logger from '../Logger'
 import { NodeForge } from '../NodeForge'
 import { ClientManager } from '../ClientManager'
 import { ClientMsgJsonParser } from '../utils/ClientMsgJsonParser'
 import { RPSError } from '../utils/RPSError'
 
 const nodeForge = new NodeForge()
-const clientManager = ClientManager.getInstance(new Logger('ClientManager'))
+const clientManager = ClientManager.getInstance()
 const jsonParser = new ClientMsgJsonParser(nodeForge)
 
 describe('Parse the message received from client', () => {

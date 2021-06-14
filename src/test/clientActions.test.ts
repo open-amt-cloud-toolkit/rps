@@ -5,7 +5,6 @@
  **********************************************************************/
 import { v4 as uuid } from 'uuid'
 
-import Logger from '../Logger'
 import { NodeForge } from '../NodeForge'
 import { Configurator } from '../Configurator'
 import { ClientActions } from '../ClientActions'
@@ -24,17 +23,17 @@ EnvReader.GlobalEnvConfig = config
 const nodeForge = new NodeForge()
 const certManager = new CertManager(nodeForge)
 const helper = new SignatureHelper(nodeForge)
-const clientManager = ClientManager.getInstance(new Logger('ClientManager'))
-const responseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'), nodeForge)
-const amtwsman = new WSManProcessor(new Logger('WSManProcessor'), clientManager, responseMsg)
+const clientManager = ClientManager.getInstance()
+const responseMsg = new ClientResponseMsg(nodeForge)
+const amtwsman = new WSManProcessor(clientManager, responseMsg)
 const configurator: Configurator = new Configurator()
-const validator = new Validator(new Logger('Validator'), configurator, clientManager, nodeForge)
+const validator = new Validator(configurator, clientManager, nodeForge)
 let clientActions: any
 let activationmsg
 
 describe('Client Actions', () => {
   beforeEach(() => {
-    clientActions = new ClientActions(new Logger('ClientActions'), configurator, certManager, helper, responseMsg, amtwsman, clientManager, validator)
+    clientActions = new ClientActions(configurator, certManager, helper, responseMsg, amtwsman, clientManager, validator)
     activationmsg = {
       method: 'activation',
       apiKey: 'key',

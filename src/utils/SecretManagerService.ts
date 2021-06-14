@@ -5,16 +5,16 @@
  * Author: Ramu Bachala
  **********************************************************************/
 import { ISecretManagerService } from '../interfaces/ISecretManagerService'
-import { ILogger } from '../interfaces/ILogger'
 import { EnvReader } from './EnvReader'
 import nodeVault = require('node-vault')
+import Logger from '../Logger'
 
 export class SecretManagerService implements ISecretManagerService {
   vaultClient: nodeVault.client
-  logger: ILogger
+  private readonly log: Logger = new Logger('SecretManagerService')
 
-  constructor (logger: ILogger, vault?: any) {
-    this.logger = logger
+  constructor (vault?: any) {
+    // this.log = logger
     if (vault) {
       this.vaultClient = vault
       return
@@ -31,42 +31,42 @@ export class SecretManagerService implements ISecretManagerService {
 
   async listSecretsAtPath (path: string): Promise<any> {
     try {
-      this.logger.info('list secret ' + path)
+      this.log.info('list secret ' + path)
       const data = await this.vaultClient.list(path)
-      this.logger.info('got data back from vault ')
-      this.logger.info(JSON.stringify(data))
+      this.log.info('got data back from vault ')
+      this.log.info(JSON.stringify(data))
       // { data: data: { "key": "keyvalue"}}
       return data.data.keys
     } catch (error) {
-      this.logger.error('getSecretFromKey error \r\n')
-      this.logger.error(error)
+      this.log.error('getSecretFromKey error \r\n')
+      this.log.error(error)
       return null
     }
   }
 
   async getSecretFromKey (path: string, key: string): Promise<string> {
     try {
-      this.logger.info('getting secret ' + path + ' ' + key)
+      this.log.info('getting secret ' + path + ' ' + key)
       const data = await this.vaultClient.read(path)
-      this.logger.info('got data back from vault ')
+      this.log.info('got data back from vault ')
       // { data: data: { "key": "keyvalue"}}
       return data.data.data[key]
     } catch (error) {
-      this.logger.error('getSecretFromKey error \r\n')
-      this.logger.error(error)
+      this.log.error('getSecretFromKey error \r\n')
+      this.log.error(error)
       return null
     }
   }
 
   async getSecretAtPath (path: string): Promise<any> {
     try {
-      this.logger.info('getting secrets from ' + path)
+      this.log.info('getting secrets from ' + path)
       const data = await this.vaultClient.read(path)
-      this.logger.info('got data back from vault ')
+      this.log.info('got data back from vault ')
       return data.data
     } catch (error) {
-      this.logger.error('getSecretAtPath error \r\n')
-      this.logger.error(error)
+      this.log.error('getSecretAtPath error \r\n')
+      this.log.error(error)
       return null
     }
   }
@@ -80,22 +80,22 @@ export class SecretManagerService implements ISecretManagerService {
     const data = { data: {} }
     data.data[key] = keyValue
     // this.logger.info('writing:' + JSON.stringify(data))
-    this.logger.info('writing data to vault:')
+    this.log.info('writing data to vault:')
     await this.vaultClient.write(path, data)
-    this.logger.info('Successfully written data to vault')
+    this.log.info('Successfully written data to vault')
   }
 
   async writeSecretWithObject (path: string, data: any): Promise<void> {
-    this.logger.info('writing data to vault:')
+    this.log.info('writing data to vault:')
     await this.vaultClient.write(path, data)
-    this.logger.info('Successfully written data to vault')
+    this.log.info('Successfully written data to vault')
   }
 
   async deleteSecretWithPath (path: string): Promise<void> {
     // to permanently delete the key, we use metadata path
     path = path.replace('/data/', '/metadata/')
-    this.logger.info(`Deleting data from vault:${path}`)
+    this.log.info(`Deleting data from vault:${path}`)
     await this.vaultClient.delete(path)
-    this.logger.info('Successfully Deleted data from vault')
+    this.log.info('Successfully Deleted data from vault')
   }
 }

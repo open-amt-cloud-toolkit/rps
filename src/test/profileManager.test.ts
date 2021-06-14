@@ -5,12 +5,8 @@
 
 import { AMTConfiguration, RCSConfig } from '../models/Rcs'
 import { ProfileManager } from '../ProfileManager'
-import { ILogger } from '../interfaces/ILogger'
-import Logger from '../Logger'
 import { IProfilesDb } from '../repositories/interfaces/IProfilesDb'
 import { CIRAConfig } from '../RCS.Config'
-
-const logger: ILogger = new Logger('ProfileManagerTests')
 
 const rcsConfig: RCSConfig = {
   WSConfiguration: {
@@ -127,21 +123,21 @@ const profileStub: IProfilesDb = {
   }
 }
 test('test if profile exists', () => {
-  const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub)
+  const profileManager: ProfileManager = new ProfileManager(null, profileStub)
 
   const actual = profileManager.doesProfileExist('profile 1')
   expect(actual).toBeTruthy()
 })
 
 test('test if profile exists', async () => {
-  const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub)
+  const profileManager: ProfileManager = new ProfileManager(null, profileStub)
 
   const actual = await profileManager.doesProfileExist('profile 5')
   expect(actual).toBeFalsy()
 })
 
 test('retrieve activation based on profile', async () => {
-  const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub)
+  const profileManager: ProfileManager = new ProfileManager(null, profileStub)
 
   const expected = 'acmactivate'
   const actual = await profileManager.getActivationMode('profile 2')
@@ -149,7 +145,7 @@ test('retrieve activation based on profile', async () => {
 })
 
 test('retrieve activation based on profile', async () => {
-  const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub, rcsConfig)
+  const profileManager: ProfileManager = new ProfileManager(null, profileStub, rcsConfig)
 
   const expected = 'ccmactivate'
   const actual = await profileManager.getActivationMode('profile 1')
@@ -157,14 +153,14 @@ test('retrieve activation based on profile', async () => {
 })
 
 test('retrieve config script', async () => {
-  const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub)
+  const profileManager: ProfileManager = new ProfileManager(null, profileStub)
   const expected = 'sample config script 1'
   const actual = await profileManager.getConfigurationScript('profile 1')
   expect(actual).toEqual(expected)
 })
 
 test('retrieve config script', async () => {
-  const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub, rcsConfig)
+  const profileManager: ProfileManager = new ProfileManager(null, profileStub, rcsConfig)
 
   const expected = 'sample config script 2'
   const actual = await profileManager.getConfigurationScript('profile 2')
@@ -172,7 +168,7 @@ test('retrieve config script', async () => {
 })
 
 test('retrieve configuration for cira', async () => {
-  const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub, rcsConfig)
+  const profileManager: ProfileManager = new ProfileManager(null, profileStub, rcsConfig)
 
   const expected = 'ciraconfig1'
   const actual = await profileManager.getCiraConfiguration('profile 2')
@@ -198,7 +194,7 @@ test('retrieve configuration for cira', async () => {
 // })
 
 test('retrieve amt password', async () => {
-  const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub)
+  const profileManager: ProfileManager = new ProfileManager(null, profileStub)
 
   const expected = '<StrongPassword1!>'
   const profile = 'profile 1'
@@ -208,7 +204,7 @@ test('retrieve amt password', async () => {
 })
 
 test('retrieve amt password auto generated', async () => {
-  const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub, rcsConfig)
+  const profileManager: ProfileManager = new ProfileManager(null, profileStub, rcsConfig)
 
   const profile = 'profile 2'
   const expected = '<StrongPassword2!>'
@@ -272,7 +268,7 @@ test('retrieve amt password auto generated', async () => {
 //     }
 //   ]
 
-//   const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub)
+//   const profileManager: ProfileManager = new ProfileManager(null, profileStub)
 
 //   const actual = profileManager.validateAMTPasswords(amtConfigurations)
 
@@ -324,7 +320,7 @@ test('retrieve amt password auto generated', async () => {
 
 //   ]
 
-//   const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub)
+//   const profileManager: ProfileManager = new ProfileManager(null, profileStub)
 
 //   const activation1 = profileManager.getActivationMode('profile 1')
 //   const activation2 = profileManager.getActivationMode('profile 2')

@@ -9,7 +9,6 @@ import { IProfileManager } from './interfaces/IProfileManager'
 import { IConfigurator } from './interfaces/IConfigurator'
 import { DomainCredentialManager } from './DomainCredentialManager'
 import { ProfileManager } from './ProfileManager'
-import Logger from './Logger'
 import { ISecretManagerService } from './interfaces/ISecretManagerService'
 import { ProfilesDbFactory } from './repositories/factories/ProfilesDbFactory'
 import { DomainsDbFactory } from './repositories/factories/DomainsDbFactory'
@@ -61,19 +60,19 @@ export class Configurator implements IConfigurator {
   }
 
   constructor () {
-    this._secretManager = new SecretManagerService(new Logger('SecretManagerService'))
+    this._secretManager = new SecretManagerService()
     const nodeForge = new NodeForge()
-    this._clientManager = ClientManager.getInstance(new Logger('ClientManager'))
-    const responseMsg: ClientResponseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'), nodeForge)
-    const validator: IValidator = new Validator(new Logger('Validator'), this, this._clientManager, nodeForge)
-    const amtwsman: WSManProcessor = new WSManProcessor(new Logger('WSManProcessor'), this._clientManager, responseMsg)
+    this._clientManager = ClientManager.getInstance()
+    const responseMsg: ClientResponseMsg = new ClientResponseMsg(nodeForge)
+    const validator: IValidator = new Validator(this, this._clientManager, nodeForge)
+    const amtwsman: WSManProcessor = new WSManProcessor(this._clientManager, responseMsg)
     const certManager = new CertManager(nodeForge)
     const helper = new SignatureHelper(nodeForge)
 
-    this._dataProcessor = new DataProcessor(new Logger('DataProcessor'), helper, this, validator, certManager, this._clientManager, responseMsg, amtwsman)
+    this._dataProcessor = new DataProcessor(helper, this, validator, certManager, this._clientManager, responseMsg, amtwsman)
 
     this._amtDeviceRepository = AmtDeviceFactory.getAmtDeviceRepository(this)
-    this._domainCredentialManager = new DomainCredentialManager(new Logger('DomainCredentialManager'), DomainsDbFactory.getDomainsDb(), this)
-    this._profileManager = new ProfileManager(new Logger('ProfileManager'), this, ProfilesDbFactory.getProfilesDb(), EnvReader.GlobalEnvConfig)
+    this._domainCredentialManager = new DomainCredentialManager(DomainsDbFactory.getDomainsDb(), this)
+    this._profileManager = new ProfileManager(this, ProfilesDbFactory.getProfilesDb(), EnvReader.GlobalEnvConfig)
   }
 }
