@@ -5,6 +5,7 @@
  **********************************************************************/
 
 export interface ILogger{
+  name: string
   debug: (log: string, ...params: any[]) => void
   info: (log: string, ...params: any[]) => void
   warn: (log: string, ...params: any[]) => void

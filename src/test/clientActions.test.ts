@@ -28,7 +28,7 @@ const responseMsg = new ClientResponseMsg(nodeForge)
 const amtwsman = new WSManProcessor(clientManager, responseMsg)
 const configurator: Configurator = new Configurator()
 const validator = new Validator(configurator, clientManager, nodeForge)
-let clientActions: any
+let clientActions: ClientActions
 let activationmsg
 
 describe('Client Actions', () => {
