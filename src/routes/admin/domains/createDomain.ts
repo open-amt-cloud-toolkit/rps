@@ -15,8 +15,8 @@ import { RPSError } from '../../../utils/RPSError'
 export async function createDomain (req, res): Promise<void> {
   let domainsDb: IDomainsDb = null
   let amtDomain: AMTDomain = null
-  const log = new Logger('createDomain')
   let cert: any
+  const log = Logger
   let domainPwd: string
   try {
     const errors = validationResult(req)

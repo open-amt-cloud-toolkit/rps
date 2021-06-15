@@ -16,7 +16,7 @@ import {
 import { RPSError } from '../../../utils/RPSError'
 
 export async function createCiraConfig (req, res): Promise<void> {
-  const log = new Logger('createCiraConfig')
+  const log = Logger
   let ciraConfigDb: ICiraConfigDb
   let ciraConfig: CIRAConfig = null
   try {

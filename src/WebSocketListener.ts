@@ -18,7 +18,7 @@ export class WebSocketListener implements IWebSocketListener {
   dataProcessor: IDataProcessor
   wsServer: WebSocket.Server
   wsConfig: WebSocketConfig
-  log: Logger = new Logger('WebSocketListener')
+  log = Logger
 
   constructor (wsConfig: WebSocketConfig, clientManager: IClientManager, dataProcessor: IDataProcessor) {
     this.wsConfig = wsConfig

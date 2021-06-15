@@ -10,8 +10,8 @@ import { ProfilesDbFactory } from '../../../repositories/factories/ProfilesDbFac
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
 
 export async function allProfiles (req, res): Promise<void> {
-  const log = new Logger('allProfiles')
   let profilesDb: IProfilesDb = null
+  const log = Logger
   let results: AMTConfiguration[] = [] as AMTConfiguration[]
   try {
     profilesDb = ProfilesDbFactory.getProfilesDb()

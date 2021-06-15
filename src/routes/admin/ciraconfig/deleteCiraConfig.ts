@@ -11,7 +11,7 @@ import { EnvReader } from '../../../utils/EnvReader'
 import { RPSError } from '../../../utils/RPSError'
 
 export async function deleteCiraConfig (req, res): Promise<void> {
-  const log = new Logger('deleteCiraConfig')
+  const log = Logger
   let ciraConfigDb: ICiraConfigDb = null
   const ciraConfigName: string = req.params.ciraConfigName
   try {

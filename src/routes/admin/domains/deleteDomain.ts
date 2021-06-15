@@ -11,7 +11,7 @@ import { AMTDomain } from '../../../models/Rcs'
 import Logger from '../../../Logger'
 
 export async function deleteDomain (req, res): Promise<void> {
-  const log = new Logger('deleteDomain')
+  const log = Logger
   let domainsDb: IDomainsDb = null
   const { domainName } = req.params
   try {

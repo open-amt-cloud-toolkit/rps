@@ -18,12 +18,12 @@ export class ProfilesDb implements IProfilesDb {
   db: any
   ciraConfigs: CiraConfigDb
   networkConfigs: NetConfigDb
-  log: Logger
+  log = Logger
+
   constructor (dbCreator: IDbCreator) {
     this.db = dbCreator.getDb()
     this.ciraConfigs = new CiraConfigDb(dbCreator)
     this.networkConfigs = new NetConfigDb(dbCreator)
-    this.log = new Logger('ProfilesDb')
   }
 
   /**

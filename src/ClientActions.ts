@@ -23,14 +23,12 @@ import { Deactivator } from './actions/Deactivator'
 import { CIRAConfigurator } from './actions/CIRAConfigurator'
 import { NetworkConfigurator } from './actions/NetworkConfigurator'
 import { ISecretManagerService } from './interfaces/ISecretManagerService'
-import { ILogger } from './interfaces/ILogger'
 
 export class ClientActions {
   actions: any
   log = Logger
 
   constructor (
-    // private readonly logger: ILogger,
     private readonly configurator: IConfigurator,
     private readonly certManager: ICertManager,
     private readonly helper: SignatureHelper,
@@ -40,7 +38,6 @@ export class ClientActions {
     private readonly validator: IValidator,
     private readonly secretsManager?: ISecretManagerService) {
     this.actions = {}
-    this.log.name = 'ClientActions'
     const ciraConfig = new CIRAConfigurator(configurator, responseMsg, amtwsman, clientManager)
     this.actions[ClientAction.CIRACONFIG] = ciraConfig
 

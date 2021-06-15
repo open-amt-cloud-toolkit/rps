@@ -21,7 +21,7 @@ import { IValidator } from './interfaces/IValidator'
 
 export class DataProcessor implements IDataProcessor {
   private readonly clientActions: ClientActions
-  private readonly log: Logger = new Logger('DataProcessor')
+  log = Logger
 
   constructor (
     private readonly signatureHelper: SignatureHelper,
@@ -31,8 +31,8 @@ export class DataProcessor implements IDataProcessor {
     private readonly clientManager: IClientManager,
     private readonly responseMsg: ClientResponseMsg,
     private readonly amtwsman: WSManProcessor
-  ) {
-    this.clientActions = new ClientActions(configurator, certManager, signatureHelper, responseMsg, amtwsman, clientManager, validator)
+    ) {
+      this.clientActions = new ClientActions(configurator, certManager, signatureHelper, responseMsg, amtwsman, clientManager, validator)
   }
 
   /**

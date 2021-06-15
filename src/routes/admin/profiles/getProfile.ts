@@ -10,7 +10,7 @@ import { PROFILE_NOT_FOUND, API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../..
 import { AMTConfiguration } from '../../../models/Rcs'
 
 export async function getProfile (req, res): Promise<void> {
-  const log = new Logger('getProfile')
+  const log = Logger
   let profilesDb: IProfilesDb = null
   const { profileName } = req.params
   try {

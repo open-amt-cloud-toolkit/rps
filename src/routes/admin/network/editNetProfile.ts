@@ -13,7 +13,7 @@ import { validationResult } from 'express-validator'
 import { RPSError } from '../../../utils/RPSError'
 
 export async function editNetProfile (req, res): Promise<void> {
-  const log = new Logger('editNetProfile')
+  const log = Logger
   let profilesDb: INetProfilesDb = null
   let netConfig: NetworkConfig = <NetworkConfig>{}
   try {

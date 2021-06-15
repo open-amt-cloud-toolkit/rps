@@ -22,7 +22,7 @@ import Logger from './Logger'
 
 export class Validator implements IValidator {
   jsonParser: IClientMessageParser
-  private readonly log: Logger = new Logger('Validator')
+  log = Logger
 
   constructor (
     private readonly configurator: IConfigurator,

@@ -19,14 +19,15 @@ import { EnvReader } from '../utils/EnvReader'
 import got from 'got'
 
 export class CIRAConfigurator implements IExecutor {
-  private readonly log: Logger = new Logger('CIRAConfig')
+  log = Logger
 
   constructor (
     private readonly configurator: IConfigurator,
     private readonly responseMsg: ClientResponseMsg,
     private readonly amtwsman: WSManProcessor,
     private readonly clientManager: IClientManager
-  ) { }
+  ) { 
+  }
 
   /**
      * @description configure CIRA

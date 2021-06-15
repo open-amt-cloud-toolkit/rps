@@ -15,8 +15,8 @@ import { RPSError } from '../../../utils/RPSError'
 export async function editDomain (req, res): Promise<void> {
   let domainsDb: IDomainsDb = null
   let amtDomain: AMTDomain = {} as AMTDomain
-  const log = new Logger('editDomain')
   let cert: any
+  const log = Logger
   let domainPwd: string
   const newDomain = req.body
   try {

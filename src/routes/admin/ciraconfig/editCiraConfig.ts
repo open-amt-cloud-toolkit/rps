@@ -13,7 +13,7 @@ import { validationResult } from 'express-validator'
 import { RPSError } from '../../../utils/RPSError'
 
 export async function editCiraConfig (req, res): Promise<void> {
-  const log = new Logger('editCiraConfig')
+  const log = Logger
   let ciraConfigDb: ICiraConfigDb = null
   const newConfig = req.body
   try {

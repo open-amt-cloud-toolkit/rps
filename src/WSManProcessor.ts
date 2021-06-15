@@ -15,7 +15,7 @@ import Logger from './Logger'
 
 export class WSManProcessor {
   cache: any
-  private readonly log: Logger = new Logger('WSManProcessor')
+  log = Logger
 
   constructor (
     private readonly clientManager: IClientManager,

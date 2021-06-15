@@ -14,7 +14,7 @@ import { AMTConfiguration } from '../../../models/Rcs'
 
 export async function createProfile (req, res): Promise<void> {
   let profilesDb: IProfilesDb = null
-  const log = new Logger('createProfile')
+  const log = Logger
   let amtConfig: AMTConfiguration = {} as AMTConfiguration
   try {
     const errors = validationResult(req)

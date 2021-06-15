@@ -25,7 +25,7 @@ import { AMTDomain } from '../models/Rcs'
 import got from 'got'
 
 export class Activator implements IExecutor {
-  private readonly log: Logger = new Logger('Activator')
+  log = Logger
 
   constructor (
     private readonly configurator: IConfigurator,
@@ -36,7 +36,8 @@ export class Activator implements IExecutor {
     private readonly clientManager: IClientManager,
     private readonly validator: IValidator,
     private readonly networkConfigurator: NetworkConfigurator
-  ) { }
+  ) { 
+  }
 
   /**
    * @description Create configuration message to activate AMT in admin control mode

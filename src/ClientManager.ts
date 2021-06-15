@@ -12,7 +12,7 @@ import Logger from './Logger'
 export class ClientManager implements IClientManager {
   clients: ClientObject[]
 
-  private readonly log: Logger = new Logger('ClientManager')
+  log = Logger
   private static instance: ClientManager
 
   private constructor () {

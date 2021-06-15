@@ -10,7 +10,7 @@ import Logger from '../../../Logger'
 import { AMTDomain } from '../../../models/Rcs'
 
 export async function getAllDomains (req, res): Promise<void> {
-  const log = new Logger('getAllDomains')
+  const log = Logger
   let domainsDb: IDomainsDb
   try {
     domainsDb = DomainsDbFactory.getDomainsDb()

@@ -14,8 +14,8 @@ import Logger from './Logger'
 
 export class DomainCredentialManager implements IDomainCredentialManager {
   private readonly amtDomains: IDomainsDb
-  private readonly log: Logger = new Logger('DomainCredentialManager')
   private readonly configurator: IConfigurator = null
+  log = Logger
 
   constructor (amtDomains: IDomainsDb, configurator?: IConfigurator) {
     this.amtDomains = amtDomains

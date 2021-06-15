@@ -14,7 +14,7 @@ import { RPSError } from '../../../utils/RPSError'
 export async function createNetProfile (req, res): Promise<void> {
   let profilesDb: INetProfilesDb = null
   let netConfig: NetworkConfig = {} as NetworkConfig
-  const log = new Logger('createNetProfile')
+  const log = Logger
   try {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {

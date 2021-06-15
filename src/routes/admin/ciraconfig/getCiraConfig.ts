@@ -11,7 +11,7 @@ import { CIRA_CONFIG_NOT_FOUND, API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '.
 
 export async function getCiraConfig (req, res): Promise<void> {
   let ciraConfigDb: ICiraConfigDb = null
-  const log = new Logger('getCiraConfig')
+  const log = Logger
   const ciraConfigName: string = req.params.ciraConfigName
   try {
     ciraConfigDb = CiraConfigDbFactory.getCiraConfigDb()

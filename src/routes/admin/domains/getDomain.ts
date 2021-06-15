@@ -10,7 +10,7 @@ import { AMTDomain } from '../../../models/Rcs'
 import Logger from '../../../Logger'
 
 export async function getDomain (req, res): Promise<void> {
-  const log = new Logger('getDomain')
+  const log = Logger
   let domainsDb: IDomainsDb = null
   const { domainName } = req.params
   try {

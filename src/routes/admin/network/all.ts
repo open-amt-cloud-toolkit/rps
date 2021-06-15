@@ -10,7 +10,7 @@ import { NetConfigDbFactory } from '../../../repositories/factories/NetConfigDbF
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
 
 export async function allProfiles (req, res): Promise<void> {
-  const log = new Logger('allProfiles')
+  const log = Logger
   let profilesDb: INetProfilesDb = null
   try {
     profilesDb = NetConfigDbFactory.getConfigDb()

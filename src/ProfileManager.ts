@@ -16,9 +16,9 @@ import Logger from './Logger'
 
 export class ProfileManager implements IProfileManager {
   private readonly amtConfigurations: IProfilesDb
-  private readonly log: Logger = new Logger('ProfileManager')
   private readonly configurator: IConfigurator
   private readonly envConfig: any
+  log = Logger
 
   constructor (configurator: IConfigurator, amtConfigurations: IProfilesDb, config?: any) {
     this.configurator = configurator

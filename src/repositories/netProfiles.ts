@@ -13,10 +13,10 @@ import Logger from '../Logger'
 
 export class NetConfigDb implements INetProfilesDb {
   db: any
-  log: Logger
+  log = Logger
+
   constructor (dbCreator: IDbCreator) {
     this.db = dbCreator.getDb()
-    this.log = new Logger('NetConfigDb')
   }
 
   /**

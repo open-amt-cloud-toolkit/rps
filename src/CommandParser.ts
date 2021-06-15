@@ -16,7 +16,7 @@ const options = {
 }
 
 const CommandParser = {
-  log: new Logger('CommandParser'),
+  log: Logger,
   parse (msg: ClientMsg): ClientMsg {
     try {
       if (msg?.method?.length > 0) {

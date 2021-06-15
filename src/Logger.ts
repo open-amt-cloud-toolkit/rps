@@ -33,7 +33,7 @@
  })
  
  const Logger: ILogger =  {
-   name:"",
+   name: __filename,
    debug (log: string, ...params: any[]): void {
      logger.debug([this.name + ' - ' + log].concat(params))
    },

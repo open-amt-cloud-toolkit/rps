@@ -10,7 +10,7 @@ import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, NETWORK_CONFIG_NOT_FOUND } from
 import { RPSError } from '../../../utils/RPSError'
 
 export async function deleteNetProfile (req, res): Promise<void> {
-  const log = new Logger('deleteNetProfile')
+  const log = Logger
   let profilesDb: INetProfilesDb = null
   const { profileName } = req.params
   profilesDb = NetConfigDbFactory.getConfigDb()

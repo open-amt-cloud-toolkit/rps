@@ -19,17 +19,17 @@ import { AMTGeneralSettings, AMTEthernetPortSettings } from '../models/WSManResp
 import { AMTUserName } from './../utils/constants'
 
 export class NetworkConfigurator implements IExecutor {
-  private readonly log: Logger = new Logger('NetworkConfig')
+  log = Logger
 
   constructor (
-    // private readonly logger: ILogger,
     private readonly configurator: IConfigurator,
     private readonly responseMsg: ClientResponseMsg,
     private readonly amtwsman: WSManProcessor,
     private readonly clientManager: IClientManager,
     private readonly validator: IValidator,
     private readonly CIRAConfigurator: CIRAConfigurator
-  ) { }
+  ) { 
+  }
 
   /**
    * @description Set wired network configuration on AMT

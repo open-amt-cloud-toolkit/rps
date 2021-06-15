@@ -15,7 +15,7 @@ import { RPSError } from '../../../utils/RPSError'
 
 export async function editProfile (req, res): Promise<void> {
   let profilesDb: IProfilesDb = null
-  const log = new Logger('editProfile')
+  const log = Logger
   const newConfig = req.body
   try {
     const errors = validationResult(req)

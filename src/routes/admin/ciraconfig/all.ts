@@ -11,7 +11,8 @@ import { CIRAConfig } from '../../../RCS.Config'
 
 export async function allCiraConfigs (req, res): Promise<void> {
   let ciraConfigDb: ICiraConfigDb = null
-  const log = new Logger('allCiraConfigs')
+  const log = Logger
+
   try {
     ciraConfigDb = CiraConfigDbFactory.getCiraConfigDb()
     let results: CIRAConfig[] = await ciraConfigDb.getAllCiraConfigs() || [] as CIRAConfig[]

@@ -11,7 +11,7 @@ import Logger from '../Logger'
 
 export class SecretManagerService implements ISecretManagerService {
   vaultClient: nodeVault.client
-  private readonly log: Logger = new Logger('SecretManagerService')
+  log = Logger
 
   constructor (vault?: any) {
     // this.log = logger

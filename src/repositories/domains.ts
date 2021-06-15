@@ -13,10 +13,10 @@ import Logger from '../Logger'
 
 export class DomainsDb implements IDomainsDb {
   db: any
-  log: Logger
+  log = Logger
+
   constructor (dbCreator: IDbCreator) {
     this.db = dbCreator.getDb()
-    this.log = new Logger('DomainsDb')
   }
 
   /**

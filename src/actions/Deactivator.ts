@@ -18,14 +18,15 @@ import { EnvReader } from '../utils/EnvReader'
 import got from 'got'
 
 export class Deactivator implements IExecutor {
-  private readonly log: Logger = new Logger('Deactivator')
+  log = Logger
 
   constructor (
     private readonly responseMsg: ClientResponseMsg,
     private readonly amtwsman: WSManProcessor,
     private readonly clientManager: IClientManager,
     private readonly configurator?: IConfigurator
-  ) {}
+  ) {
+  }
 
   /**
    * @description Create configuration message to deactivate AMT from ACM or CCM

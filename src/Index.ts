@@ -16,7 +16,7 @@ import dot = require('dot-object')
 import routes from './routes'
 import rc = require('rc')
 
-const log = new Logger('Index')
+const log = Logger
 
 // To merge ENV variables. consider after lowercasing ENV since our config keys are lowercase
 process.env = Object.keys(process.env)

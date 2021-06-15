@@ -4,7 +4,7 @@ import { AppVersion, ProtocolVersion } from './constants'
 import Logger from '../Logger'
 
 export class ClientResponseMsg {
-  private readonly log: Logger = new Logger('ClientResponseMsg')
+  log = Logger
   nodeForge: INodeForge
 
   constructor (nodeForge: INodeForge) {

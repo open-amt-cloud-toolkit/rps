@@ -14,8 +14,8 @@ import { AMTUserName } from '../../utils/constants'
 import Logger from '../../Logger'
 
 export class AMTDeviceVaultRepository implements IAMTDeviceRepository {
-  private readonly log: Logger = new Logger('AMTDeviceVaultRepository')
   private readonly configurator: IConfigurator
+  log = Logger
 
   constructor (configurator: IConfigurator) {
     this.configurator = configurator

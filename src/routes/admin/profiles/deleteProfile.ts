@@ -11,7 +11,7 @@ import { PROFILE_NOT_FOUND, API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../..
 import { EnvReader } from '../../../utils/EnvReader'
 
 export async function deleteProfile (req, res): Promise<void> {
-  const log = new Logger('deleteProfile')
+  const log = Logger
   let profilesDb: IProfilesDb = null
   const { profileName } = req.params
   try {

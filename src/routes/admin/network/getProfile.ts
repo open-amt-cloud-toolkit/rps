@@ -9,7 +9,7 @@ import { NetConfigDbFactory } from '../../../repositories/factories/NetConfigDbF
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, NETWORK_CONFIG_NOT_FOUND } from '../../../utils/constants'
 
 export async function getNetProfile (req, res): Promise<void> {
-  const log = new Logger('getNetProfile')
+  const log = Logger
   let profilesDb: INetProfilesDb = null
   const { profileName } = req.params
   try {
