@@ -27,4 +27,7 @@ COPY .rpsrc ./
 RUN npm run compile
 RUN npm prune --production
 
+# set the user to non-root
+USER node
+
 CMD ["node", "./dist/Index.js"]
