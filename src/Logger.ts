@@ -32,8 +32,26 @@
    exitOnError: false
  })
  
+
+ function _getCallerFile() {
+  var originalFunc = Error.prepareStackTrace;
+  var callerfile;
+  try {
+      var err = new Error();
+      var currentfile;
+      Error.prepareStackTrace = function (err, stack) { return stack; };
+      currentfile = (err.stack as any).shift().getFileName();
+      while (err.stack.length) {
+          callerfile = (err.stack as any).shift().getFileName();
+          if(currentfile !== callerfile) break;
+      }
+  } catch (e) {}
+  Error.prepareStackTrace = originalFunc; 
+  return callerfile;
+}
+
  const Logger: ILogger =  {
-   name: __filename,
+   name: _getCallerFile(),
    debug (log: string, ...params: any[]): void {
      logger.debug([this.name + ' - ' + log].concat(params))
    },

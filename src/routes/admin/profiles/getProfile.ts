@@ -10,7 +10,6 @@ import { PROFILE_NOT_FOUND, API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../..
 import { AMTConfiguration } from '../../../models/Rcs'
 
 export async function getProfile (req, res): Promise<void> {
-  const log = Logger
   let profilesDb: IProfilesDb = null
   const { profileName } = req.params
   try {
@@ -25,7 +24,7 @@ export async function getProfile (req, res): Promise<void> {
       res.status(200).json(API_RESPONSE(result)).end()
     }
   } catch (error) {
-    log.error('Failed to get AMT profile : ', error)
+    Logger.error('Failed to get AMT profile : ', error)
     res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`Get AMT profile ${profileName}`))).end()
   }
 }
