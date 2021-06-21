@@ -38,11 +38,11 @@ export async function editCiraConfig (req, res): Promise<void> {
       const results = await ciraConfigDb.updateCiraConfig(ciraConfig)
       if (results !== undefined) {
         if (req.secretsManager) {
-          if (oldConfig.password != null && ciraConfig.generateRandomPassword) {
+          if (ciraConfig.generateRandomPassword) {
             log.debug('Attempting to delete password from vault') // User might be flipping from false to true which we dont know. So try deleting either way.
             await req.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfig.configName}`)
             log.debug('Password deleted from vault')
-          } else if (oldConfig.password !== ciraConfig.password) {
+          } else if (mpsPwd != null) {
             await req.secretsManager.writeSecretWithKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfig.configName}`, ciraConfig.password, mpsPwd)
             log.info(`MPS password updated in Vault for CIRA Config ${ciraConfig.configName}`)
           }
