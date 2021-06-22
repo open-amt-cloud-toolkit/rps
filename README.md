@@ -53,23 +53,29 @@ For detailed documentation about RPS, see the [docs](https://open-amt-cloud-tool
 
 <br>
 
-## Running the API Tests
+## Deploy with Docker and Run API Tests
 
 We leverage [Postman](https://www.postman.com/) and Docker for executing RESTful API tests. Once you have Postman and Docker installed, you can follow the steps below:
 
-1. Build the docker image.
+1. Clone the repo and switch to the `rps` directory.
+
+    ```
+    git clone https://github.com/open-amt-cloud-toolkit/rps.git && cd rps
+    ```
+
+2. Build the docker image.
     ```
     docker build -t rps-microservice:v1 .
     ```
 
-2. Ensure RPS is running in a docker container.
+3. Ensure RPS is running in a docker container.
     ```
-    docker run -d -e RPS_HTTPS=false -e RPS_NODE_ENV=dev -e RPS_USE_VAULT=false  -e RPS_USE_DB_PROFILES=false -e RPS_LOG_LEVEL=silly -p 8081:8081 rps-microservice:v1`
+    docker-compose up -d
     ```
 
-3. Import the test collection located at `./src/test/collections/rps.postman_collection.json`.
+4. Import the test collection located at `./src/test/collections/rps.postman_collection.json`.
 
-4. Run the tests using the Collection Runner in postman. If any of the tests fail, file a github issue here: https://github.com/open-amt-cloud-toolkit/rps/pull/34
+5. Run the tests using the Collection Runner in postman. If any of the tests fail, file a github issue here: https://github.com/open-amt-cloud-toolkit/rps/pull/34
 
 
 
