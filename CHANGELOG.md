@@ -1,3 +1,77 @@
+<a name="v1.4.0"></a>
+## [v1.4.0] - 2021-06-22
+### Build
+- **dep:** bump color-string to 1.5.5
+- **deps:** bump normalize-url from 4.5.0 to 4.5.1
+- **deps:** bump express-validator from 6.10.1 to 6.11.1
+- **deps:** bump hosted-git-info from 2.8.8 to 2.8.9
+- **deps:** bump ws from 7.4.5 to 7.4.6
+- **deps:** bump express-validator from 6.11.1 to 6.12.0 ([#290](https://github.com/open-amt-cloud-toolkit/rps/issues/290))
+- **deps:** bump express-ws from 4.0.0 to 5.0.2 ([#279](https://github.com/open-amt-cloud-toolkit/rps/issues/279))
+- **deps:** bump ws from 7.4.6 to 7.5.0 ([#295](https://github.com/open-amt-cloud-toolkit/rps/issues/295))
+- **deps:** bump glob-parent from 5.1.1 to 5.1.2
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 4.26.0 to 4.26.1 ([#278](https://github.com/open-amt-cloud-toolkit/rps/issues/278))
+- **deps-dev:** bump [@types](https://github.com/types)/node-forge from 0.9.9 to 0.10.0 ([#277](https://github.com/open-amt-cloud-toolkit/rps/issues/277))
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin ([#280](https://github.com/open-amt-cloud-toolkit/rps/issues/280))
+- **deps-dev:** bump [@types](https://github.com/types)/node from 14.17.2 to 14.17.3 ([#281](https://github.com/open-amt-cloud-toolkit/rps/issues/281))
+- **deps-dev:** bump eslint from 7.27.0 to 7.28.0
+- **deps-dev:** bump eslint-plugin-import from 2.23.3 to 2.23.4
+- **deps-dev:** bump eslint-plugin-import from 2.22.1 to 2.23.2
+- **deps-dev:** bump [@types](https://github.com/types)/node from 14.17.1 to 14.17.2
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 4.24.0 to 4.26.0
+- **deps-dev:** bump typescript from 4.2.4 to 4.3.2
+- **deps-dev:** bump ts-jest from 26.5.5 to 26.5.6
+- **deps-dev:** bump [@types](https://github.com/types)/node-forge from 0.9.7 to 0.9.9
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin ([#289](https://github.com/open-amt-cloud-toolkit/rps/issues/289))
+- **deps-dev:** bump [@types](https://github.com/types)/node from 14.17.0 to 14.17.1
+- **deps-dev:** bump [@types](https://github.com/types)/express from 4.17.11 to 4.17.12
+- **deps-dev:** bump eslint-config-standard from 16.0.2 to 16.0.3
+- **deps-dev:** bump sinon from 10.0.1 to 11.1.1
+- **deps-dev:** bump [@types](https://github.com/types)/pg from 7.14.11 to 8.6.0
+- **deps-dev:** bump [@types](https://github.com/types)/node from 14.14.45 to 14.17.0
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 4.22.0 to 4.22.1
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 4.23.0 to 4.24.0
+- **deps-dev:** bump eslint from 7.25.0 to 7.27.0
+- **deps-dev:** bump [@types](https://github.com/types)/node from 14.14.44 to 14.14.45
+- **deps-dev:** bump [@types](https://github.com/types)/ws from 7.4.2 to 7.4.4
+- **deps-dev:** bump [@types](https://github.com/types)/ws from 7.4.4 to 7.4.5
+- **deps-dev:** bump typescript from 4.3.2 to 4.3.4 ([#298](https://github.com/open-amt-cloud-toolkit/rps/issues/298))
+- **deps-dev:** bump [@types](https://github.com/types)/node from 14.14.43 to 14.14.44
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 4.22.1 to 4.23.0
+- **docker:** set user as non root
+- **version:** bump to v1.4.0
+
+### Ci
+- add codeql for code analysis
+- **changelog:** add automation for changelog
+
+### Docs
+- **api:** added license to swagger.yaml ([#242](https://github.com/open-amt-cloud-toolkit/rps/issues/242))
+- **package.json:** filled in additional info
+
+### Feat
+- **api:** cira config will accept static or generates dynamic password ([#283](https://github.com/open-amt-cloud-toolkit/rps/issues/283))
+
+### Fix
+- **api:** delete mps password when random generate password is true in ciraconfig edit ([#293](https://github.com/open-amt-cloud-toolkit/rps/issues/293))
+- **api:** updated mps api for device creation and deletion ([#245](https://github.com/open-amt-cloud-toolkit/rps/issues/245))
+- **swagger:** updated API documentation
+
+### Refactor
+- **cira:** mps username and password are stored in db and vault respectively for each device ([#284](https://github.com/open-amt-cloud-toolkit/rps/issues/284))
+- **logging:** remove file transport for log output
+- **vault:** removed profile name prefixes for key names
+
+### BREAKING CHANGE
+
+DB Schema changes for CIRA config to accept both static
+and dynamic passwords.
+
+Vault KEY names are changed
+
 <a name="v1.3.0"></a>
 ## [v1.3.0]
 
