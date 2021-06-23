@@ -43,6 +43,26 @@ CREATE TABLE IF NOT EXISTS profiles(
       tags text[],
       CONSTRAINT name UNIQUE(profile_name)
     );
+CREATE TABLE IF NOT EXISTS wirelessconfigs(
+      wireless_profile_name citext NOT NULL,
+      authentication_method integer,
+      encryption_method integer,
+      ssid varchar(32),
+      psk_value integer,
+      psk_passphrase varchar(63),
+      linkPolicy int[],
+      creation_date timestamp,
+      created_by varchar(40),
+      CONSTRAINT wirelessprofilename UNIQUE(wireless_profile_name)
+    );
+CREATE TABLE IF NOT EXISTS profiles_wirelessconfigs(
+      wireless_profile_name citext REFERENCES wirelessconfigs(wireless_profile_name),
+      profile_name citext REFERENCES profiles(profile_name),
+      priority integer,
+      creation_date timestamp,
+      created_by varchar(40),
+      CONSTRAINT wirelessprofilepriority UNIQUE(wireless_profile_name, profile_name, priority)
+    );
 CREATE TABLE IF NOT EXISTS domains(
       name citext NOT NULL,
       domain_suffix citext NOT NULL,
@@ -59,6 +79,8 @@ CREATE UNIQUE INDEX lower_cira_config_name_idx ON ciraconfigs ((lower(cira_confi
 CREATE UNIQUE INDEX lower_network_profile_name_idx ON networkconfigs ((lower(network_profile_name)));
 CREATE UNIQUE INDEX lower_profile_name_idx ON profiles ((lower(profile_name)));
 CREATE UNIQUE INDEX lower_name_suffix_idx ON domains ((lower(name)), (lower(domain_suffix)));
+CREATE UNIQUE INDEX lower_wireless_profile_name_idx ON wirelessconfigs ((lower(wireless_profile_name)));
+CREATE UNIQUE INDEX wifi_profile_priority ON profiles_wirelessconfigs((lower(wireless_profile_name)), (lower(profile_name)), priority);
 
 INSERT INTO public.networkconfigs(
   network_profile_name, dhcp_enabled, static_ip_shared, ip_sync_enabled) 

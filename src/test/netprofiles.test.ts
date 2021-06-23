@@ -53,7 +53,7 @@ describe('Network Profile tests', () => {
       rpsError = error
     }
     expect(rpsError).toBeInstanceOf(RPSError)
-    expect(rpsError.message).toEqual('NETWORK Config: profile1 is associated with an AMT Profile.')
+    expect(rpsError.message).toEqual('NETWORK profile: profile1 is associated with an AMT Profile.')
   })
 
   test('delete configuration for network profile no constraint', async () => {
@@ -142,7 +142,7 @@ describe('Network Profile tests', () => {
       rpsError = error
     }
     expect(rpsError).toBeInstanceOf(RPSError)
-    expect(rpsError.message).toEqual('Operation failed for NETWORK Config: profile1. Cannot Update Network settings if its already associated with a profile.')
+    expect(rpsError.message).toEqual('Operation failed for NETWORK profile: profile1. Cannot modify NETWORK settings if its already associated with a profile.')
   })
 
   test("create configuration for network profile doesn't exist", async () => {
@@ -200,7 +200,7 @@ describe('Network Profile tests', () => {
       rpsError = error
     }
     expect(rpsError).toBeInstanceOf(RPSError)
-    expect(rpsError.message).toEqual('NETWORK Config profile11 already exists')
+    expect(rpsError.message).toEqual('NETWORK profile profile11 already exists')
   })
 
   test('get network configs', async () => {

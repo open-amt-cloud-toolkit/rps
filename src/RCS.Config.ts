@@ -16,6 +16,16 @@ export interface NetworkConfig {
   ipSyncEnabled?: boolean
 }
 
+export interface WirelessConfig {
+  profileName: string
+  authenticationMethod: number
+  encryptionMethod: number
+  ssid: string
+  pskValue: number
+  pskPassphrase: string
+  linkPolicy: string[]
+}
+
 /*
 - AddMpServer Method:
 

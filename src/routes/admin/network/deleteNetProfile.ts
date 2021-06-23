@@ -19,7 +19,7 @@ export async function deleteNetProfile (req, res): Promise<void> {
     if (results) {
       res.status(204).end()
     }
-    res.status(404).json(API_RESPONSE(null, 'Not Found', NETWORK_CONFIG_NOT_FOUND(profileName))).end()
+    res.status(404).json(API_RESPONSE(null, 'Not Found', NETWORK_CONFIG_NOT_FOUND('NETWORK', profileName))).end()
   } catch (error) {
     log.error(`Failed to delete network configuration : ${profileName}`, error)
     if (error instanceof RPSError) {
