@@ -19,7 +19,9 @@ import { CommandParser } from './CommandParser'
 import { AMTDeviceDTO } from './repositories/dto/AmtDeviceDTO'
 import { VersionChecker } from './VersionChecker'
 import { AMTUserName } from './utils/constants'
-
+import { EnvReader } from './utils/EnvReader'
+import got from 'got'
+import { AMTConfiguration } from './models/Rcs'
 export class Validator implements IValidator {
   jsonParser: IClientMessageParser
 
@@ -120,6 +122,7 @@ export class Validator implements IValidator {
           if (profile.activation === ClientAction.CLIENTCTLMODE) {
             this.logger.debug(`Device ${payload.uuid} already enabled in client mode.`)
             clientObj.ciraconfig.status = 'already enabled in client mode.'
+            await this.updateTags(payload.uuid, payload.profile)
             clientObj.action = payload.profile.networkConfigObject ? ClientAction.NETWORKCONFIG : ClientAction.CIRACONFIG
           } else {
             throw new RPSError(`Device ${payload.uuid} already enabled in client control mode.`)
@@ -130,6 +133,7 @@ export class Validator implements IValidator {
           if (profile.activation === ClientAction.ADMINCTLMODE) {
             this.logger.debug(`Device ${payload.uuid} already enabled in admin mode.`)
             clientObj.ciraconfig.status = 'already enabled in admin mode.'
+            await this.updateTags(payload.uuid, payload.profile)
             clientObj.action = payload.profile.networkConfigObject ? ClientAction.NETWORKCONFIG : ClientAction.CIRACONFIG
           } else {
             throw new RPSError(`Device ${payload.uuid} already enabled in admin control mode.`)
@@ -287,5 +291,19 @@ export class Validator implements IValidator {
       }
     }
     return isValidRealm
+  }
+
+  async updateTags (uuid: string, profile: AMTConfiguration): Promise<void> {
+    let tags = []
+    if (profile?.tags.length > 0) {
+      tags = profile.tags
+      await got(`${EnvReader.GlobalEnvConfig.mpsServer}/api/v1/devices`, {
+        method: 'PATCH',
+        json: {
+          guid: uuid,
+          tags: tags
+        }
+      })
+    }
   }
 }
