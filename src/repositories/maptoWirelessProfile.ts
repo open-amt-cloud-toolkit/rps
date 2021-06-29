@@ -14,7 +14,7 @@ export function mapToWirelessProfile (results): WirelessConfig {
     ssid: results.ssid,
     pskValue: results.psk_value,
     pskPassphrase: results.psk_passphrase,
-    linkPolicy: results.linkpolicy
+    linkPolicy: results.link_policy
   }
   return config
 }

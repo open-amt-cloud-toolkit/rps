@@ -23,7 +23,7 @@ export class WirelessConfigDb implements IWirelessProfilesDb {
     * @returns {WirelessConfig []} returns an array of WirelessConfig objects
     */
   async getAllProfiles (): Promise<WirelessConfig[]> {
-    const results = await this.db.query('SELECT wireless_profile_name, authentication_method, encryption_method, ssid, psk_value, psk_passphrase, linkPolicy from wirelessconfigs')
+    const results = await this.db.query('SELECT wireless_profile_name, authentication_method, encryption_method, ssid, psk_value, psk_passphrase, link_policy from wirelessconfigs')
     return await Promise.all(results.rows.map(async p => {
       const result = mapToWirelessProfile(p)
       return result
@@ -36,7 +36,7 @@ export class WirelessConfigDb implements IWirelessProfilesDb {
     * @returns {WirelessConfig } WirelessConfig object
     */
   async getProfileByName (configName: string): Promise<WirelessConfig> {
-    const results = await this.db.query('SELECT wireless_profile_name, authentication_method, encryption_method, ssid, psk_value, psk_passphrase, linkPolicy from wirelessconfigs WHERE wireless_profile_name = $1', [configName])
+    const results = await this.db.query('SELECT wireless_profile_name, authentication_method, encryption_method, ssid, psk_value, psk_passphrase, link_policy from wirelessconfigs WHERE wireless_profile_name = $1', [configName])
     let wirelessConfig: WirelessConfig = null
     if (results.rowCount > 0) {
       wirelessConfig = mapToWirelessProfile(results.rows[0])
@@ -78,7 +78,7 @@ export class WirelessConfigDb implements IWirelessProfilesDb {
   async insertProfile (wirelessConfig: WirelessConfig): Promise<WirelessConfig> {
     try {
       const date = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
-      const results = await this.db.query('INSERT INTO wirelessconfigs(wireless_profile_name, authentication_method, encryption_method, ssid, psk_value, psk_passphrase, linkPolicy, creation_date) ' +
+      const results = await this.db.query('INSERT INTO wirelessconfigs(wireless_profile_name, authentication_method, encryption_method, ssid, psk_value, psk_passphrase, link_policy, creation_date) ' +
          'values($1, $2, $3, $4, $5, $6, $7, $8)',
       [
         wirelessConfig.profileName,
@@ -115,7 +115,7 @@ export class WirelessConfigDb implements IWirelessProfilesDb {
       if (profiles.rowCount > 0) {
         throw new RPSError(NETWORK_UPDATE_ERROR('Wireless', wirelessConfig.profileName))
       }
-      const results = await this.db.query('UPDATE wirelessconfigs SET authentication_method=$2, encryption_method=$3, ssid=$4, psk_value=$5, psk_passphrase=$6, linkPolicy=$7 where wireless_profile_name=$1',
+      const results = await this.db.query('UPDATE wirelessconfigs SET authentication_method=$2, encryption_method=$3, ssid=$4, psk_value=$5, psk_passphrase=$6, link_policy=$7 where wireless_profile_name=$1',
         [
           wirelessConfig.profileName,
           wirelessConfig.authenticationMethod,

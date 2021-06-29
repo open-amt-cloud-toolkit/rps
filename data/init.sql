@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS wirelessconfigs(
       ssid varchar(32),
       psk_value integer,
       psk_passphrase varchar(63),
-      linkPolicy int[],
+      link_policy int[],
       creation_date timestamp,
       created_by varchar(40),
       CONSTRAINT wirelessprofilename UNIQUE(wireless_profile_name)
