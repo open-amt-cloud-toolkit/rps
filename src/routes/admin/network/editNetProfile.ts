@@ -29,7 +29,7 @@ export async function editNetProfile (req, res): Promise<void> {
     profilesDb = NetConfigDbFactory.getConfigDb()
     const config: NetworkConfig = await profilesDb.getProfileByName(netConfig.profileName)
     if (config == null) {
-      res.status(404).json(API_RESPONSE(null, 'Not Found', NETWORK_CONFIG_NOT_FOUND(netConfig.profileName))).end()
+      res.status(404).json(API_RESPONSE(null, 'Not Found', NETWORK_CONFIG_NOT_FOUND('NETWORK', netConfig.profileName))).end()
     } else {
       // SQL Query > Insert Data
       const results: NetworkConfig = await profilesDb.updateProfile(netConfig)

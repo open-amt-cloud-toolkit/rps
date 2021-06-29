@@ -3,13 +3,36 @@
   "version": "1.4.0",
   "description": "Containerized RPS service for activating and configuring Intel&reg; AMT devices",
   "homepage": "https://github.com/open-amt-cloud-toolkit/rps",
-  "contributors": [{"name": "Matt C. Primrose", "email": "matt.c.primrose@intel.com"},{"name": "Michael Johanson", "email": "michael.johanson@intel.com"},{"name": "Madhavi Losetty", "email": "madhavi.losetty@intel.com"},{"name": "Brian Osburn", "email": "brian.j.osburn@intel.com"},{"name": "Mudit Vats", "email": "mudit.vats@intel.com"}],
+  "contributors": [
+    {
+      "name": "Matt C. Primrose",
+      "email": "matt.c.primrose@intel.com"
+    },
+    {
+      "name": "Michael Johanson",
+      "email": "michael.johanson@intel.com"
+    },
+    {
+      "name": "Madhavi Losetty",
+      "email": "madhavi.losetty@intel.com"
+    },
+    {
+      "name": "Brian Osburn",
+      "email": "brian.j.osburn@intel.com"
+    },
+    {
+      "name": "Mudit Vats",
+      "email": "mudit.vats@intel.com"
+    }
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/open-amt-cloud-toolkit/rps.git"
   },
   "license": "Apache-2.0",
-  "engines": {"node": ">=12.0.0"},
+  "engines": {
+    "node": ">=12.0.0"
+  },
   "main": "index.js",
   "scripts": {
     "compile": "tsc",
