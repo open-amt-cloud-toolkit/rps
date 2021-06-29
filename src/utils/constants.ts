@@ -27,11 +27,11 @@ export const CIRA_CONFIG_INSERTION_FAILED = (ciraConfig: string): string => `CIR
 export const CIRA_CONFIG_INSERTION_FAILED_DUPLICATE = (ciraConfig: string): string => `CIRA Config ${ciraConfig} already exists.`
 
 // Network configs REST API
-export const NETWORK_CONFIG_NOT_FOUND = (networkConfig: string): string => `NETWORK Config ${networkConfig} not found`
-export const NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT = (networkConfig: string): string => `NETWORK Config: ${networkConfig} is associated with an AMT Profile.`
-export const NETWORK_CONFIG_ERROR = (networkConfig: string): string => `Operation failed for NETWORK Config: ${networkConfig}`
-export const NETWORK_UPDATE_ERROR = (networkConfig: string): string => `Operation failed for NETWORK Config: ${networkConfig}. Cannot Update Network settings if its already associated with a profile.`
-export const NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE = (networkConfig: string): string => `NETWORK Config ${networkConfig} already exists`
+export const NETWORK_CONFIG_NOT_FOUND = (type: string, config: string): string => `${type} profile ${config} not found`
+export const NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT = (type: string, config: string): string => `${type} profile: ${config} is associated with an AMT Profile.`
+export const NETWORK_CONFIG_ERROR = (type: string, config: string): string => `Operation failed for ${type} profile: ${config}`
+export const NETWORK_UPDATE_ERROR = (type: string, config: string): string => `Operation failed for ${type} profile: ${config}. Cannot modify ${type} settings if its already associated with a profile.`
+export const NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE = (type: string, config: string): string => `${type} profile ${config} already exists`
 
 // Domain REST API
 export const DOMAIN_NOT_FOUND = (domain: string): string => `Domain ${domain} not found`
