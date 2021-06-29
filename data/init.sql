@@ -29,7 +29,6 @@ CREATE TABLE IF NOT EXISTS profiles(
       profile_name citext NOT NULL,
       activation varchar(20) NOT NULL,
       amt_password varchar(40),
-      configuration_script text,
       cira_config_name citext REFERENCES ciraconfigs(cira_config_name),
       generate_random_password BOOLEAN NOT NULL,
       random_password_characters varchar(100),
