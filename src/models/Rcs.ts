@@ -45,7 +45,6 @@ export class AMTConfiguration {
   generateRandomPassword?: boolean
   passwordLength?: number
   randomPasswordCharacters?: string
-  configurationScript?: string
   ciraConfigName?: string
   activation: string
   networkConfigName?: string

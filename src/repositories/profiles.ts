@@ -31,7 +31,7 @@ export class ProfilesDb implements IProfilesDb {
    * @returns {AMTConfiguration[]} returns an array of AMT profile objects
    */
   async getAllProfiles (): Promise<AMTConfiguration[]> {
-    const results = await this.db.query('SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, generate_random_password as GenerateRandomPassword, configuration_script as ConfigurationScript, cira_config_name as ciraConfigName, random_password_length as passwordLength, network_profile_name as NetworkProfileName,mebx_password as MEBxPassword, generate_random_mebx_password as GenerateRandomMEBxPassword, random_mebx_password_length as mebxPasswordLength, tags FROM profiles')
+    const results = await this.db.query('SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, generate_random_password as GenerateRandomPassword, cira_config_name as ciraConfigName, random_password_length as passwordLength, network_profile_name as NetworkProfileName,mebx_password as MEBxPassword, generate_random_mebx_password as GenerateRandomMEBxPassword, random_mebx_password_length as mebxPasswordLength, tags FROM profiles')
     return await Promise.all(results.rows.map(async p => {
       const result = mapToProfile(p)
       return result
@@ -44,7 +44,7 @@ export class ProfilesDb implements IProfilesDb {
    * @returns {AMTConfiguration} AMT Profile object
    */
   async getProfileByName (profileName: string): Promise<AMTConfiguration> {
-    const results = await this.db.query('SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, generate_random_password as GenerateRandomPassword, configuration_script as ConfigurationScript, cira_config_name as ciraConfigName, random_password_length as passwordLength, network_profile_name as NetworkProfileName, mebx_password as MEBxPassword, generate_random_mebx_password as GenerateRandomMEBxPassword, random_mebx_password_length as  mebxPasswordLength, tags FROM profiles WHERE profile_name = $1', [profileName])
+    const results = await this.db.query('SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, generate_random_password as GenerateRandomPassword, cira_config_name as ciraConfigName, random_password_length as passwordLength, network_profile_name as NetworkProfileName, mebx_password as MEBxPassword, generate_random_mebx_password as GenerateRandomMEBxPassword, random_mebx_password_length as  mebxPasswordLength, tags FROM profiles WHERE profile_name = $1', [profileName])
     let amtProfile: AMTConfiguration = null
     if (results.rowCount > 0) {
       amtProfile = mapToProfile(results.rows[0])
@@ -90,13 +90,12 @@ export class ProfilesDb implements IProfilesDb {
    */
   async insertProfile (amtConfig: AMTConfiguration): Promise<AMTConfiguration> {
     try {
-      const results = await this.db.query('INSERT INTO profiles(profile_name, activation, amt_password, configuration_script, cira_config_name, generate_random_password, random_password_characters, random_password_length, network_profile_name, mebx_password, generate_random_mebx_password, random_mebx_password_length,tags) ' +
-        'values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)',
+      const results = await this.db.query('INSERT INTO profiles(profile_name, activation, amt_password, cira_config_name, generate_random_password, random_password_characters, random_password_length, network_profile_name, mebx_password, generate_random_mebx_password, random_mebx_password_length,tags) ' +
+        'values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)',
       [
         amtConfig.profileName,
         amtConfig.activation,
         amtConfig.amtPassword,
-        amtConfig.configurationScript,
         amtConfig.ciraConfigName,
         amtConfig.generateRandomPassword,
         amtConfig.randomPasswordCharacters,
@@ -135,12 +134,11 @@ export class ProfilesDb implements IProfilesDb {
    */
   async updateProfile (amtConfig: AMTConfiguration): Promise<AMTConfiguration> {
     try {
-      const results = await this.db.query('UPDATE profiles SET activation=$2, amt_password=$3, configuration_script=$4, cira_config_name=$5, generate_random_password=$6, random_password_characters=$7, random_password_length=$8, network_profile_name=$9, mebx_password=$10, generate_random_mebx_password=$11, random_mebx_password_length=$12, tags=$13 WHERE profile_name=$1',
+      const results = await this.db.query('UPDATE profiles SET activation=$2, amt_password=$3, cira_config_name=$4, generate_random_password=$5, random_password_characters=$6, random_password_length=$7, network_profile_name=$8, mebx_password=$9, generate_random_mebx_password=$10, random_mebx_password_length=$11, tags=$12 WHERE profile_name=$1',
         [
           amtConfig.profileName,
           amtConfig.activation,
           amtConfig.amtPassword,
-          amtConfig.configurationScript,
           amtConfig.ciraConfigName,
           amtConfig.generateRandomPassword,
           amtConfig.randomPasswordCharacters,

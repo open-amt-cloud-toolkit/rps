@@ -13,7 +13,6 @@ export function mapToProfile (results): AMTConfiguration {
     generateRandomPassword: results.generaterandompassword,
     passwordLength: results.passwordlength,
     randomPasswordCharacters: results.randompasswordcharacters,
-    configurationScript: results.configurationscript,
     activation: results.activation,
     ciraConfigName: results.ciraconfigname,
     networkConfigName: results.networkprofilename,
