@@ -25,7 +25,7 @@ export async function editCiraConfig (req, res): Promise<void> {
     ciraConfigDb = CiraConfigDbFactory.getCiraConfigDb()
     const oldConfig: CIRAConfig = await ciraConfigDb.getCiraConfigByName(newConfig.configName)
     if (oldConfig == null) {
-      log.info('Not found : ', newConfig.configName)
+      log.debug('Not found : ', newConfig.configName)
       res.status(404).json(API_RESPONSE(null, 'Not Found', CIRA_CONFIG_NOT_FOUND(newConfig.configName))).end()
     } else {
       const ciraConfig: CIRAConfig = getUpdatedData(newConfig, oldConfig)
@@ -39,17 +39,17 @@ export async function editCiraConfig (req, res): Promise<void> {
       if (results !== undefined) {
         if (req.secretsManager) {
           if (ciraConfig.generateRandomPassword) {
-            log.debug('Attempting to delete password from vault') // User might be flipping from false to true which we dont know. So try deleting either way.
+            log.verbose('Attempting to delete password from vault') // User might be flipping from false to true which we dont know. So try deleting either way.
             await req.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfig.configName}`)
             log.debug('Password deleted from vault')
           }
           if (mpsPwd != null) {
             await req.secretsManager.writeSecretWithKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfig.configName}`, ciraConfig.password, mpsPwd)
-            log.info(`MPS password updated in Vault for CIRA Config ${ciraConfig.configName}`)
+            log.debug(`MPS password updated in Vault for CIRA Config ${ciraConfig.configName}`)
           }
         }
       }
-      log.info(`Updated CIRA config profile : ${ciraConfig.configName}`)
+      log.verbose(`Updated CIRA config profile : ${ciraConfig.configName}`)
       delete results.password
       res.status(200).json(results).end()
     }

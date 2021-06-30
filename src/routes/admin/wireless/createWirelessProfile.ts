@@ -32,9 +32,9 @@ export async function createWirelessProfile (req, res): Promise<void> {
     // store the password into Vault
     if (req.secretsManager) {
       await req.secretsManager.writeSecretWithKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}Wireless/${wirelessConfig.profileName}`, wirelessConfig.pskPassphrase, passphrase)
-      log.info(`pskPassphrase stored in Vault for wireless profile: ${wirelessConfig.profileName}`)
+      log.debug(`pskPassphrase stored in Vault for wireless profile: ${wirelessConfig.profileName}`)
     }
-    log.info(`Created wireless profile : ${wirelessConfig.profileName}`)
+    log.verbose(`Created wireless profile : ${wirelessConfig.profileName}`)
     delete results.pskPassphrase
     res.status(201).json(results).end()
   } catch (error) {

@@ -204,15 +204,15 @@ export class Activator implements IExecutor {
    */
   async waitAfterActivation (clientId: string, clientObj: ClientObject): Promise<ClientMsg> {
     if (clientObj.delayEndTime == null) {
-      this.logger.info(`waiting for ${EnvReader.GlobalEnvConfig.delayTimer} seconds after activation`)
+      this.logger.debug(`waiting for ${EnvReader.GlobalEnvConfig.delayTimer} seconds after activation`)
       const endTime: Date = new Date()
       clientObj.delayEndTime = endTime.setSeconds(endTime.getSeconds() + EnvReader.GlobalEnvConfig.delayTimer)
       this.clientManager.setClientObject(clientObj)
-      this.logger.info(`Delay end time : ${clientObj.delayEndTime}`)
+      this.logger.debug(`Delay end time : ${clientObj.delayEndTime}`)
     }
     const currentTime = new Date().getTime()
     if (currentTime >= clientObj.delayEndTime) {
-      this.logger.info(`Delay ${EnvReader.GlobalEnvConfig.delayTimer} seconds after activation completed`)
+      this.logger.debug(`Delay ${EnvReader.GlobalEnvConfig.delayTimer} seconds after activation completed`)
       /* Update the wsman stack username and password */
       if (this.amtwsman.cache[clientId]) {
         this.amtwsman.cache[clientId].wsman.comm.setupCommunication.getUsername = (): string => { return AMTUserName }
@@ -226,7 +226,7 @@ export class Activator implements IExecutor {
       this.clientManager.setClientObject(clientObj)
       await this.networkConfigurator.execute(null, clientId)
     } else {
-      this.logger.info(`Current Time: ${currentTime} Delay end time : ${clientObj.delayEndTime}`)
+      this.logger.debug(`Current Time: ${currentTime} Delay end time : ${clientObj.delayEndTime}`)
       return this.responseMsg.get(clientId, null, 'heartbeat_request', 'heartbeat', '')
     }
   }
@@ -238,7 +238,7 @@ export class Activator implements IExecutor {
    */
   async setMEBxPassword (clientId: string, clientObj: ClientObject): Promise<void> {
     if (clientObj.action === ClientAction.ADMINCTLMODE) {
-      this.logger.info('setting MEBx password')
+      this.logger.debug('setting MEBx password')
 
       /* Get the MEBx password */
       const mebxPassword: string = await this.configurator.profileManager.getMEBxPassword(clientObj.ClientData.payload.profile.profileName)
@@ -260,7 +260,7 @@ export class Activator implements IExecutor {
     if (!clientObj.count) {
       clientObj.count = 0
       const amtDomain: AMTDomain = await this.configurator.domainCredentialManager.getProvisioningCert(clientObj.ClientData.payload.fqdn)
-      this.logger.info(`domain : ${JSON.stringify(amtDomain)}`)
+      this.logger.debug(`domain : ${JSON.stringify(amtDomain)}`)
       // Verify that the certificate path points to a file that exists
       if (!amtDomain.provisioningCert) {
         throw new RPSError(`Device ${clientObj.uuid} activation failed. AMT provisioning certificate not found on server`)
@@ -364,7 +364,7 @@ export class Activator implements IExecutor {
         }
       })
     } catch (err) {
-      this.logger.warn('unable to register metadata with MPS', err)
+      this.logger.error('unable to register metadata with MPS', err)
     }
   }
 }

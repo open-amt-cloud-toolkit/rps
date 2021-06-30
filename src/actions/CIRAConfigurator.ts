@@ -74,7 +74,7 @@ export class CIRAConfigurator implements IExecutor {
               this.logger.debug(`${clientObj.uuid}  Management Presence Server (MPS) successfully added.`)
               await this.amtwsman.batchEnum(clientId, 'AMT_ManagementPresenceRemoteSAP', AMTUserName, clientObj.ClientData.payload.uuid)
             } else {
-              this.logger.info('AMT_ManagementPresenceRemoteSAP')
+              this.logger.error('AMT_ManagementPresenceRemoteSAP')
               throw new RPSError(`Device ${clientObj.uuid} ${clientObj.ciraconfig.status} Failed to add Management Presence Server.`)
             }
           } else if (!clientObj.ciraconfig.addRemoteAccessPolicyRule && clientObj.ciraconfig.addMPSServer) {
@@ -94,7 +94,7 @@ export class CIRAConfigurator implements IExecutor {
                 this.clientManager.setClientObject(clientObj)
                 await this.amtwsman.execute(clientId, 'AMT_RemoteAccessService', 'AddRemoteAccessPolicyRule', policy, null, AMTUserName, clientObj.ClientData.payload.password)
               } else {
-                this.logger.info('AMT_RemoteAccessService')
+                this.logger.error('AMT_RemoteAccessService')
                 throw new RPSError(`Device ${clientObj.uuid} ${clientObj.ciraconfig.status} Failed to add Management Presence Server.`)
               }
             }
@@ -108,7 +108,7 @@ export class CIRAConfigurator implements IExecutor {
             await this.amtwsman.batchEnum(clientId, '*AMT_EnvironmentDetectionSettingData', AMTUserName, clientObj.ClientData.payload.uuid)
           } else if (clientObj.ciraconfig.getENVSettingData && !clientObj.ciraconfig.setENVSettingDataCIRA) {
             const envSettings = wsmanResponse.AMT_EnvironmentDetectionSettingData.response
-            this.logger.info(`Environment settings : ${JSON.stringify(envSettings, null, '\t')}`)
+            this.logger.debug(`Environment settings : ${JSON.stringify(envSettings, null, '\t')}`)
             if (envSettings.DetectionStrings === undefined) {
               envSettings.DetectionStrings = 'dummy.com'
             } else if (envSettings.DetectionStrings !== 'dummy.com') {
@@ -258,7 +258,7 @@ export class CIRAConfigurator implements IExecutor {
           }
         })
       } catch (err) {
-        this.logger.warn('unable to register metadata with MPS', err)
+        this.logger.error('unable to register metadata with MPS', err)
       }
     } else {
       throw new RPSError('setMPSPassword: mpsUsername or mpsPassword is null')

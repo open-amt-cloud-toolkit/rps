@@ -64,7 +64,7 @@ export class ProfileManager implements IProfileManager {
     }
 
     if (profiles.length === 0) {
-      this.logger.error('Warning: No AMT configurations detected.')
+      this.logger.error('Error: No AMT configurations detected.')
     }
 
     return profiles
@@ -83,7 +83,7 @@ export class ProfileManager implements IProfileManager {
       this.logger.debug(`found activation for profile ${profileName}`)
       activation = profile.activation
     } else {
-      this.logger.warn(`unable to find activation for profile ${profileName}`)
+      this.logger.error(`unable to find activation for profile ${profileName}`)
     }
 
     return activation
@@ -140,7 +140,7 @@ export class ProfileManager implements IProfileManager {
         }
       }
     } else {
-      this.logger.warn(`unable to find amtPassword for profile ${profileName}`)
+      this.logger.error(`unable to find amtPassword for profile ${profileName}`)
     }
 
     if (amtPassword) {
@@ -178,7 +178,7 @@ export class ProfileManager implements IProfileManager {
         }
       }
     } else {
-      this.logger.warn(`unable to find mebxPassword for profile ${profileName}`)
+      this.logger.error(`unable to find mebxPassword for profile ${profileName}`)
     }
 
     if (mebxPassword) {
@@ -212,7 +212,7 @@ export class ProfileManager implements IProfileManager {
         mpsPassword = profile.ciraConfigObject.password
       }
     } else {
-      this.logger.warn(`unable to find mpsPassword for profile ${profileName}`)
+      this.logger.error(`unable to find mpsPassword for profile ${profileName}`)
     }
 
     if (mpsPassword) {
@@ -261,7 +261,7 @@ export class ProfileManager implements IProfileManager {
       // this.logger.debug(`found profile ${profileName}`);
       return true
     } else {
-      this.logger.warn(`unable to find profile ${profileName}`)
+      this.logger.error(`unable to find profile ${profileName}`)
       return false
     }
   }
