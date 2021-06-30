@@ -99,7 +99,7 @@ export class ProfileManager implements IProfileManager {
     let ciraConfig: CIRAConfig
 
     if (profile?.ciraConfigName && profile.ciraConfigObject) {
-      this.logger.debug(`found CIRAConfigObject for profile ${JSON.stringify(profile)}`)
+      this.logger.debug(`found CIRAConfigObject for profile: ${profile.profileName}`)
       ciraConfig = profile.ciraConfigObject
 
       this.logger.debug(`retrieve CIRA MPS Password for cira config ${ciraConfig.configName}`)
@@ -107,7 +107,7 @@ export class ProfileManager implements IProfileManager {
         ciraConfig.password = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfig.configName}`, 'MPS_PASSWORD')
       }
     } else {
-      this.logger.debug(`unable to find CIRAConfig for profile ${JSON.stringify(profile)}`)
+      this.logger.debug(`unable to find CIRAConfig for profile ${profile.profileName}`)
     }
 
     return ciraConfig
@@ -242,7 +242,7 @@ export class ProfileManager implements IProfileManager {
           if (amtProfile.ciraConfigObject?.password) { amtProfile.ciraConfigObject.password = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${amtProfile.ciraConfigObject.configName}`, amtProfile.ciraConfigObject.password) } else { this.logger.error("The amtProfile CIRAConfigObject doesn't have a password. Check CIRA profile creation.") }
         }
       }
-      this.logger.debug('AMT Profile returned from db', JSON.stringify(amtProfile))
+      this.logger.debug(`AMT Profile returned from db: ${amtProfile.profileName}`)
       return amtProfile
     } catch (error) {
       this.logger.error(`Failed to get AMT profile: ${error}`)
