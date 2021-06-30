@@ -20,7 +20,7 @@ export async function deleteWirelessProfile (req, res): Promise<void> {
       if (req.secretsManager) {
         await req.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}Wireless/${profileName}`)
       }
-      log.info(`Deleted wireless profile : ${profileName}`)
+      log.verbose(`Deleted wireless profile : ${profileName}`)
       res.status(204).end()
     } else {
       res.status(404).json(API_RESPONSE(null, 'Not Found', NETWORK_CONFIG_NOT_FOUND('Wireless', profileName))).end()

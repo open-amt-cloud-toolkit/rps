@@ -114,7 +114,7 @@ export class WSManProcessor {
     const amtstack = this.getAmtStack(clientId)
     await amtstack.IPS_HostBasedSetupService_Setup(2, password, null, null, null, null, (stack, name, jsonResponse, status) => {
       if (status !== 200) {
-        this.logger.debug(`Failed to activate in client control mode.status: ${status}`)
+        this.logger.error(`Failed to activate in client control mode.status: ${status}`)
       } else if (jsonResponse.Body.ReturnValue !== 0) {
         clientObj.payload = jsonResponse
       } else {
@@ -193,7 +193,7 @@ export class WSManProcessor {
         if (status !== 200) {
           this.logger.error('Request failed during hardware_info BatchEnum Exec.')
         } else {
-          this.logger.info(`batchEnum request succeeded for clientId: ${clientId}, action:${action}.`)
+          this.logger.debug(`batchEnum request succeeded for clientId: ${clientId}, action:${action}.`)
         }
         clientObj.payload = jsonResponse
       })
@@ -220,7 +220,7 @@ export class WSManProcessor {
         if (status !== 200) {
           this.logger.error(`Get request failed during get for clientId: ${clientId}, action:${action}.`)
         } else {
-          this.logger.info(`Get request succeeded for clientId: ${clientId}, action:${action}.`)
+          this.logger.debug(`Get request succeeded for clientId: ${clientId}, action:${action}.`)
         }
         clientObj.payload = jsonResponse
         this.logger.debug(`get request for clientId: ${clientId}, action:${action}, status: ${status} response: ${JSON.stringify(jsonResponse, null, '\t')}`)
@@ -245,7 +245,7 @@ export class WSManProcessor {
         if (status !== 200) {
           this.logger.error(`Put request failed during put for clientId: ${clientId}, action:${action}.`)
         } else {
-          this.logger.info(`Put request succeeded for clientId: ${clientId}, action:${action}.`)
+          this.logger.debug(`Put request succeeded for clientId: ${clientId}, action:${action}.`)
         }
         clientObj.payload = jsonResponse
       }, 0, 1, obj)
@@ -266,9 +266,9 @@ export class WSManProcessor {
       const amtstack = this.getAmtStack(clientId, amtuser, amtpass)
       await amtstack.Delete(action, deleteObj, (stack, name, jsonResponse, status) => {
         if (status !== 200) {
-          this.logger.error(`Delete request failed during delete for clientId: ${clientId}, action:${action}.`)
+          this.logger.warn(`Delete request failed during delete for clientId: ${clientId}, action:${action}.`)
         } else {
-          this.logger.info(`Delete request succeeded for clientId: ${clientId}, action:${action}.`)
+          this.logger.debug(`Delete request succeeded for clientId: ${clientId}, action:${action}.`)
         }
         clientObj.payload = jsonResponse
       })
@@ -291,7 +291,7 @@ export class WSManProcessor {
         if (status !== 200) {
           this.logger.error(`Execute request failed during execute for clientId: ${clientId}, action:${name}.`)
         } else {
-          this.logger.info(`Execute request succeeded for clientId: ${clientId}, action:${name}.`)
+          this.logger.debug(`Execute request succeeded for clientId: ${clientId}, action:${name}.`)
         }
         clientObj.payload = jsonResponse
       }, null, 0, selectors)

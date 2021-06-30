@@ -27,7 +27,7 @@ export async function editProfile (req, res): Promise<void> {
     const oldConfig: AMTConfiguration = await profilesDb.getProfileByName(newConfig.profileName)
 
     if (oldConfig == null) {
-      log.info(`Not found: ${newConfig.profileName}`)
+      log.debug(`Not found: ${newConfig.profileName}`)
       res.status(404).json(API_RESPONSE(null, 'Not Found', PROFILE_NOT_FOUND(newConfig.profileName))).end()
     } else {
       const amtConfig: AMTConfiguration = getUpdatedData(newConfig, oldConfig)
@@ -68,7 +68,7 @@ export async function editProfile (req, res): Promise<void> {
           }
           await req.secretsManager.writeSecretWithObject(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${amtConfig.profileName}`, data)
         }
-        log.info(`Updated AMT profile: ${newConfig.profileName}`)
+        log.verbose(`Updated AMT profile: ${newConfig.profileName}`)
         delete results.amtPassword
         delete results.mebxPassword
         res.status(200).json(results).end()

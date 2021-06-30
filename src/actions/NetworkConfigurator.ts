@@ -75,7 +75,7 @@ export class NetworkConfigurator implements IExecutor {
                 // response.PrimaryDNS = "192.168.1.1";
                 // response.SecondaryDNS = "192.168.1.1";
               }
-              this.logger.info(`Updated Network configuration to set on device :  ${JSON.stringify(response, null, '\t')}`)
+              this.logger.debug(`Updated Network configuration to set on device :  ${JSON.stringify(response, null, '\t')}`)
               await this.amtwsman.put(clientId, 'AMT_EthernetPortSettings', response)
               clientObj.ciraconfig.setEthernetPortSettings = true
               this.clientManager.setClientObject(clientObj)
@@ -102,7 +102,7 @@ export class NetworkConfigurator implements IExecutor {
           }
         }
       } else {
-        this.logger.info(JSON.stringify(clientObj.ClientData.payload.profile.networkConfigObject, null, '\t'))
+        this.logger.debug(JSON.stringify(clientObj.ClientData.payload.profile.networkConfigObject, null, '\t'))
         const payload: any = clientObj.ClientData.payload
         if (payload.profile.networkConfigObject) {
           this.logger.debug(`Setting Network configuration : ${JSON.stringify(payload.profile.networkConfigObject, null, '\t')} for device : ${payload.uuid}`)

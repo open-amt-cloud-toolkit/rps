@@ -46,9 +46,9 @@ export async function createDomain (req, res): Promise<void> {
           }
         }
         await req.secretsManager.writeSecretWithObject(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/${amtDomain.profileName}`, data)
-        log.info(`${amtDomain.profileName} provisioing cert & password stored in Vault`)
+        log.debug(`${amtDomain.profileName} provisioing cert & password stored in Vault`)
       }
-      log.info(`Created Domain : ${amtDomain.profileName}`)
+      log.verbose(`Created Domain : ${amtDomain.profileName}`)
       delete results.provisioningCert
       delete results.provisioningCertPassword
       res.status(201).json(results).end()

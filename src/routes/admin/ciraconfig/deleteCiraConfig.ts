@@ -21,10 +21,10 @@ export async function deleteCiraConfig (req, res): Promise<void> {
       if (req.secretsManager) {
         await req.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfigName}`)
       }
-      log.info(`Deleted CIRA config profile : ${ciraConfigName}`)
+      log.verbose(`Deleted CIRA config profile : ${ciraConfigName}`)
       res.status(204).end()
     } else {
-      log.info(`Not found : ${ciraConfigName}`)
+      log.debug(`Not found : ${ciraConfigName}`)
       res.status(404).json(API_RESPONSE(null, 'Not Found', CIRA_CONFIG_NOT_FOUND(ciraConfigName))).end()
     }
   } catch (error) {

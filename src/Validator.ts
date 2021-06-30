@@ -169,7 +169,7 @@ export class Validator implements IValidator {
         if (amtDevice?.amtpass) {
           payload.username = AMTUserName
           payload.password = amtDevice.amtpass
-          this.logger.info(`AMT password found for Device ${payload.uuid}`)
+          this.logger.debug(`AMT password found for Device ${payload.uuid}`)
         } else {
           this.logger.error(`AMT device DOES NOT exists in repository ${payload.uuid}`)
           throw new RPSError(`AMT device DOES NOT exists in repository ${payload.uuid}`)
@@ -247,7 +247,7 @@ export class Validator implements IValidator {
           amtDevice = await this.configurator.amtDeviceRepository.get(payload.uuid)
 
           if (amtDevice?.amtpass && payload.password && payload.password === amtDevice.amtpass) {
-            this.logger.info(`AMT password matches stored version for Device ${payload.uuid}`)
+            this.logger.debug(`AMT password matches stored version for Device ${payload.uuid}`)
           } else {
             this.logger.error(`
             stored version for Device ${payload.uuid}`)
