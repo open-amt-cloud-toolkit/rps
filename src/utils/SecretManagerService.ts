@@ -34,7 +34,6 @@ export class SecretManagerService implements ISecretManagerService {
       this.logger.verbose('list secret ' + path)
       const data = await this.vaultClient.list(path)
       this.logger.debug(`got data back from vault at path: ${path}`)
-      this.logger.debug(JSON.stringify(data))
       // { data: data: { "key": "keyvalue"}}
       return data.data.keys
     } catch (error) {
