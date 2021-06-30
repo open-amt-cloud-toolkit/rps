@@ -11,7 +11,6 @@ import { CIRAConfig } from '../RCS.Config'
 export interface IProfileManager {
   validateAMTPasswords: (list: AMTConfiguration[]) => AMTConfiguration[]
   getActivationMode: (profileName: string) => Promise<string>
-  getConfigurationScript: (profileName: string) => Promise<string>
   getCiraConfiguration: (profileName: string) => Promise<CIRAConfig>
   getAmtPassword: (profileName: string) => Promise<string>
   doesProfileExist: (profileName: string) => Promise<boolean>

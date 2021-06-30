@@ -114,25 +114,6 @@ export class ProfileManager implements IProfileManager {
   }
 
   /**
-   * @description Retrieves configuration script for a given profile
-   * @param {string} profile of config script
-   * @returns {string} returns the config script for a given profile
-   */
-  public async getConfigurationScript (profileName: string): Promise<string> {
-    const profile = await this.getAmtProfile(profileName)
-    let configScript: string
-
-    if (profile?.configurationScript) {
-      this.logger.debug(`found configScript for profile ${profileName}`)
-      configScript = profile.configurationScript
-    } else {
-      this.logger.debug(`unable to find configScript for profile ${profileName}`)
-    }
-
-    return configScript
-  }
-
-  /**
    * @description Retrieves the amt password set in the configuration or generates a password based on the flag GenerateRandomPassword
    * @param {string} profileName profile name of amt password
    * @returns {string} returns the amt password for a given profile
