@@ -34,8 +34,6 @@ export class Deactivator implements IExecutor {
    */
   async execute (message: any, clientId: string): Promise<ClientMsg> {
     try {
-      this.logger.verbose(`deactivator execute message received: ${JSON.stringify(message, null, '\t')}`)
-
       const clientObj = this.clientManager.getClientObject(clientId)
 
       const wsmanResponse = message.payload
