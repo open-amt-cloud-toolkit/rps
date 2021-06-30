@@ -356,7 +356,6 @@ export class Activator implements IExecutor {
       }
       await got(`${EnvReader.GlobalEnvConfig.mpsServer}/api/v1/devices`, {
         method: 'POST',
-        rejectUnauthorized: false,
         json: {
           guid: clientObj.uuid,
           hostname: clientObj.hostname,

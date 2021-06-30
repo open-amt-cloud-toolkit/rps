@@ -68,7 +68,6 @@ const amtConfigurations: AMTConfiguration[] = [
     generateRandomMEBxPassword: false,
     mebxPasswordLength: 8,
     randomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
-    configurationScript: 'sample config script 1',
     activation: 'ccmactivate',
     ciraConfigName: 'ciraconfig1',
     ciraConfigObject: ciraConfigurations[0]
@@ -82,7 +81,6 @@ const amtConfigurations: AMTConfiguration[] = [
     generateRandomMEBxPassword: false,
     mebxPasswordLength: 8,
     randomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
-    configurationScript: 'sample config script 2',
     activation: 'acmactivate',
     ciraConfigName: 'ciraconfig1',
     ciraConfigObject: ciraConfigurations[0]
@@ -156,21 +154,6 @@ test('retrieve activation based on profile', async () => {
   expect(actual).toEqual(expected)
 })
 
-test('retrieve config script', async () => {
-  const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub)
-  const expected = 'sample config script 1'
-  const actual = await profileManager.getConfigurationScript('profile 1')
-  expect(actual).toEqual(expected)
-})
-
-test('retrieve config script', async () => {
-  const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub, rcsConfig)
-
-  const expected = 'sample config script 2'
-  const actual = await profileManager.getConfigurationScript('profile 2')
-  expect(actual).toEqual(expected)
-})
-
 test('retrieve configuration for cira', async () => {
   const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub, rcsConfig)
 
@@ -178,24 +161,6 @@ test('retrieve configuration for cira', async () => {
   const actual = await profileManager.getCiraConfiguration('profile 2')
   expect(actual.configName).toEqual(expected)
 })
-
-// test('delete configuration for cira', async () => {
-//   const ciraConfigDb = new CiraConfigFileStorageDb(AMTConfigurations, CIRAConfigurations, new Logger('AMTConfigDb'))
-//   let rpsError = null
-//   try {
-//     await ciraConfigDb.deleteCiraConfigByName('ciraconfig1')
-//   } catch (error) {
-//     rpsError = error
-//   }
-//   expect(rpsError).toBeInstanceOf(RPSError)
-//   expect(rpsError.message).toEqual('CIRA Config: ciraconfig1 associated with an AMT profile')
-// })
-
-// test('delete configuration for cira not associated with a profile', async () => {
-//   const ciraConfigDb = new CiraConfigFileStorageDb(AMTConfigurations, CIRAConfigurations, new Logger('CIRAConfigDb'))
-//   const actual = await ciraConfigDb.deleteCiraConfigByName('ciraconfig2')
-//   expect(actual).toEqual(true)
-// })
 
 test('retrieve amt password', async () => {
   const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub)
@@ -215,120 +180,3 @@ test('retrieve amt password auto generated', async () => {
   const actual = await profileManager.getAmtPassword(profile)
   expect(actual).not.toBe(expected)
 })
-
-// test('validate password', () => {
-//   const CIRAConfigurations = [{
-//     configName: 'ciraconfig1',
-//     mpsServerAddress: 'localhost',
-//     mpsPort: 4433,
-//     username: 'admin',
-//     password: 'P@ssw0rd',
-//     commonName: 'localhost',
-//     serverAddressFormat: 201, // IPv4 (3), IPv6 (4), FQDN (201)
-//     authMethod: 2, // Mutual Auth (1), Username/Password (2) (We only support 2)
-//     mpsRootCertificate: 'rootcert', // Assumption is Root Cert for MPS. Need to validate.
-//     proxyDetails: ''
-//   }]
-
-//   const amtConfigurations = [
-//     {
-//       profileName: 'profile 1',
-//       amtPassword: '<StrongPassword1!>',
-//       mebxPassword: '<StrongPassword1!>',
-//       generateRandomPassword: false,
-//       passwordLength: 8,
-//       generateRandomMEBxPassword: false,
-//       mebxPasswordLength: 8,
-//       randomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
-//       configurationScript: 'sample config script 1',
-//       activation: 'ccmactivate',
-//       ciraConfigName: 'ciraconfig1'
-//     },
-//     {
-//       profileName: 'profile 2',
-//       amtPassword: '<StrongPassword>',
-//       mebxPassword: '<StrongPassword1!>',
-//       generateRandomPassword: false,
-//       passwordLength: 8,
-//       generateRandomMEBxPassword: false,
-//       mebxPasswordLength: 8,
-//       randomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
-//       configurationScript: 'sample config script 2',
-//       activation: 'acmactivate',
-//       ciraConfigName: 'ciraconfig1'
-//     },
-//     {
-//       profileName: 'profile 3',
-//       amtPassword: '<StrongPassword2!>',
-//       mebxPassword: '<StrongPassword1!>',
-//       generateRandomPassword: true,
-//       passwordLength: 8,
-//       generateRandomMEBxPassword: false,
-//       mebxPasswordLength: 8,
-//       randomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
-//       configurationScript: 'sample config script 3',
-//       activation: 'acmactivate',
-//       ciraConfigName: 'ciraconfig1'
-//     }
-//   ]
-
-//   const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub)
-
-//   const actual = profileManager.validateAMTPasswords(amtConfigurations)
-
-//   expect(actual.length).toBe(3)
-//   expect(actual[0].profileName).toBe('profile 1')
-//   expect(actual[1].profileName).toBe('profile 2')
-// })
-
-// test('validate password with bad amt passwords', () => {
-//   const CIRAConfigurations = [{
-//     configName: 'ciraconfig1',
-//     mpsServerAddress: 'localhost',
-//     mpsPort: 4433,
-//     username: 'admin',
-//     password: 'P@ssw0rd',
-//     commonName: 'localhost',
-//     serverAddressFormat: 201, // IPv4 (3), IPv6 (4), FQDN (201)
-//     authMethod: 2, // Mutual Auth (1), Username/Password (2) (We only support 2)
-//     mpsRootCertificate: 'rootcert', // Assumption is Root Cert for MPS. Need to validate.
-//     proxyDetails: ''
-//   }]
-//   const amtConfigurations = [
-//     {
-//       profileName: 'profile 1',
-//       amtPassword: 'password1',
-//       mebxPassword: 'password1',
-//       generateRandomPassword: false,
-//       passwordLength: 8,
-//       generateRandomMEBxPassword: false,
-//       mebxPasswordLength: 8,
-//       randomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
-//       configurationScript: 'sample config script 1',
-//       activation: 'ccmactivate',
-//       ciraConfigName: 'ciraconfig1'
-//     },
-//     {
-//       profileName: 'profile 2',
-//       amtPassword: 'password2',
-//       mebxPassword: 'password2',
-//       generateRandomPassword: false,
-//       passwordLength: 8,
-//       generateRandomMEBxPassword: false,
-//       mebxPasswordLength: 8,
-//       randomPasswordCharacters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()',
-//       configurationScript: 'sample config script 2',
-//       activation: 'acmactivate',
-//       ciraConfigName: 'ciraconfig1'
-//     }
-
-//   ]
-
-//   const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub)
-
-//   const activation1 = profileManager.getActivationMode('profile 1')
-//   const activation2 = profileManager.getActivationMode('profile 2')
-
-//   expect(activation1).toBeDefined()
-//   expect(activation2).toBeDefined()
-// })

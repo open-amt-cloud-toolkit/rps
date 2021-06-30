@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "3df9880c-932b-4696-a7be-320bcce2057a",
+		"_postman_id": "a7ff05a9-3dbf-41f7-bf46-b1bc19d3e14f",
 		"name": "RPS API Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -5784,7 +5784,7 @@
 									"pm.test(\"Get NETWORK config request should fail\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.error).to.eql('Not Found')\r",
-									"    pm.expect(jsonData.message).to.eql('NETWORK Config profile1 not found')\r",
+									"    pm.expect(jsonData.message).to.eql('NETWORK profile profile1 not found')\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -6007,7 +6007,7 @@
 									"pm.test(\"Creation should not succeed if exists\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.error).to.eql('Unique key violation')\r",
-									"    pm.expect(jsonData.message).to.eql('NETWORK Config profile6 already exists')\r",
+									"    pm.expect(jsonData.message).to.eql('NETWORK profile profile6 already exists')\r",
 									"});\r",
 									"postman.setNextRequest(\"Create CIRA Config\")"
 								],
@@ -6616,6 +6616,876 @@
 								"admin",
 								"ciraconfigs",
 								"ciraconfig"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Wireless",
+			"item": [
+				{
+					"name": "All profiles",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.environment.unset(\"variable_key\");\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"Result length should be equal to zero\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.length).to.eql(0);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"wirelessconfigs",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "A Specific Profile doesn't exists",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {\r",
+									"    pm.environment.unset(\"variable_key\");\r",
+									"    pm.response.to.have.status(404);\r",
+									"});\r",
+									"pm.test(\"Result should contain an error and message\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.error).to.eql(\"Not Found\");\r",
+									"    pm.expect(jsonData.message).to.eql(\"Wireless profile sampleProfile not found\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs/sampleProfile",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"wirelessconfigs",
+								"sampleProfile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Profile with invalid auth method",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.environment.unset(\"variable_key\");\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"pm.test(\"Result should contain an error and message\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.errors[0].msg).to.eql(\"Authentication method should be either 4(WPA PSK) or 6(WPA2 PSK)\");\r",
+									"    pm.expect(jsonData.errors[0].param).to.eql(\"authenticationMethod\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"profileName\": \"P1\",\r\n    \"authenticationMethod\": 10,\r\n    \"encryptionMethod\": 4,\r\n    \"ssid\": \"test\",\r\n    \"pskPassphrase\": \"Intel@123\",\r\n    \"linkPolicy\": [14,16]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"wirelessconfigs",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Profile with invalid encryption method",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.environment.unset(\"variable_key\");\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"pm.test(\"Result should contain an error and message\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.errors[0].msg).to.eql(\"Encryption method should be either 3(TKIP) or 4(CCMP)\");\r",
+									"    pm.expect(jsonData.errors[0].param).to.eql(\"encryptionMethod\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"profileName\": \"P1\",\r\n    \"authenticationMethod\": 4,\r\n    \"encryptionMethod\": 6,\r\n    \"ssid\": \"test\",\r\n    \"priority\": 1,\r\n    \"pskPassphrase\": \"Intel@123\",\r\n    \"linkPolicy\": [14,16]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"wirelessconfigs",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Profile with SSID length greater than 32",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.environment.unset(\"variable_key\");\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"pm.test(\"Result should contain an error and message\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.errors[0].msg).to.eql(\"Maximum length is 32\");\r",
+									"    pm.expect(jsonData.errors[0].param).to.eql(\"ssid\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"profileName\": \"P1\",\r\n    \"authenticationMethod\": 4,\r\n    \"encryptionMethod\": 4,\r\n    \"ssid\": \"wirelessProfile1234512345123456789\",\r\n    \"priority\": 1,\r\n    \"pskPassphrase\": \"Intel@123\",\r\n    \"linkPolicy\": [14,16]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"wirelessconfigs",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Profile with psk pass phrase less than 8",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.environment.unset(\"variable_key\");\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"pm.test(\"Result should contain an error and message\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.errors[0].msg).to.eql(\"PSK Passphrase length should be greater than or equal to 8 and less than or equal to 63\");\r",
+									"    pm.expect(jsonData.errors[0].param).to.eql(\"pskPassphrase\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"profileName\": \"P1\",\r\n    \"authenticationMethod\": 4,\r\n    \"encryptionMethod\": 4,\r\n    \"ssid\": \"test\",\r\n    \"priority\": 1,\r\n    \"pskPassphrase\": \"Inte123\",\r\n    \"linkPolicy\": [14,16]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"wirelessconfigs",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Profile with psk pass phrase greater than 63",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.environment.unset(\"variable_key\");\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"pm.test(\"Result should contain an error and message\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.errors[0].msg).to.eql(\"PSK Passphrase length should be greater than or equal to 8 and less than or equal to 63\");\r",
+									"    pm.expect(jsonData.errors[0].param).to.eql(\"pskPassphrase\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"profileName\": \"P1\",\r\n    \"authenticationMethod\": 4,\r\n    \"encryptionMethod\": 4,\r\n    \"ssid\": \"test\",\r\n    \"priority\": 1,\r\n    \"pskPassphrase\": \"Intel@123!Intel@123!Intel@123!Intel@123!Intel@123!Intel@123!Intel@123!Intel@123!\",\r\n    \"linkPolicy\": [14,16]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"wirelessconfigs",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.environment.unset(\"variable_key\");\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"pm.test(\"Request should return profile just created\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.profileName).to.eql(\"P1\");\r",
+									"    pm.expect(jsonData.authenticationMethod).to.eql(4);\r",
+									"    pm.expect(jsonData.encryptionMethod).to.eql(4);\r",
+									"    pm.expect(jsonData.ssid).to.eql(\"test\");\r",
+									"    pm.expect(jsonData.linkPolicy.length).to.eql(2);\r",
+									"    pm.expect(jsonData.linkPolicy[0]).to.eql(14);\r",
+									"    pm.expect(jsonData.linkPolicy[1]).to.eql(16);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"profileName\": \"P1\",\r\n    \"authenticationMethod\": 4,\r\n    \"encryptionMethod\": 4,\r\n    \"ssid\": \"test\",\r\n    \"pskPassphrase\": \"Intel@123\",\r\n    \"linkPolicy\": [14,16]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"wirelessconfigs",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "A Specific Profile doesn't exists Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.environment.unset(\"variable_key\");\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"Result should wifi profile\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.profileName).to.eql(\"P1\");\r",
+									"    pm.expect(jsonData.authenticationMethod).to.eql(4);\r",
+									"    pm.expect(jsonData.encryptionMethod).to.eql(4);\r",
+									"    pm.expect(jsonData.ssid).to.eql(\"test\");\r",
+									"    pm.expect(jsonData.linkPolicy.length).to.eql(2);\r",
+									"    pm.expect(jsonData.linkPolicy[0]).to.eql(14);\r",
+									"    pm.expect(jsonData.linkPolicy[1]).to.eql(16);\r",
+									"    pm.expect(jsonData.pskPassphrase).to.eql();\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs/P1",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"wirelessconfigs",
+								"P1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.environment.unset(\"variable_key\");\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"Request should return profile just created\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.profileName).to.eql(\"P1\");\r",
+									"    pm.expect(jsonData.authenticationMethod).to.eql(4);\r",
+									"    pm.expect(jsonData.encryptionMethod).to.eql(4);\r",
+									"    pm.expect(jsonData.ssid).to.eql(\"test1\");\r",
+									"    pm.expect(jsonData.linkPolicy.length).to.eql(2);\r",
+									"    pm.expect(jsonData.linkPolicy[0]).to.eql(14);\r",
+									"    pm.expect(jsonData.linkPolicy[1]).to.eql(16);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"profileName\": \"P1\",\r\n    \"authenticationMethod\": 4,\r\n    \"encryptionMethod\": 4,\r\n    \"ssid\": \"test1\",\r\n    \"pskPassphrase\": \"Intel@123!\",\r\n    \"linkPolicy\": [14,16]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"wirelessconfigs",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update profile with invalid encryption method",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.environment.unset(\"variable_key\");\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"pm.test(\"Result should contain an error and message\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.errors[0].msg).to.eql(\"Encryption method should be either 3(TKIP) or 4(CCMP)\");\r",
+									"    pm.expect(jsonData.errors[0].param).to.eql(\"encryptionMethod\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"profileName\": \"P1\",\r\n    \"authenticationMethod\": 4,\r\n    \"encryptionMethod\": 6,\r\n    \"ssid\": \"test\",\r\n    \"priority\": 1,\r\n    \"pskPassphrase\": \"Intel@123\",\r\n    \"linkPolicy\": [14,16]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"wirelessconfigs",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update profile with invalid auth method",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.environment.unset(\"variable_key\");\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"pm.test(\"Result should contain an error and message\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.errors[0].msg).to.eql(\"Authentication method should be either 4(WPA PSK) or 6(WPA2 PSK)\");\r",
+									"    pm.expect(jsonData.errors[0].param).to.eql(\"authenticationMethod\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"profileName\": \"P1\",\r\n    \"authenticationMethod\": 10,\r\n    \"encryptionMethod\": 4,\r\n    \"ssid\": \"test\",\r\n    \"priority\": 1,\r\n    \"pskPassphrase\": \"Intel@123\",\r\n    \"linkPolicy\": [14,16]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"wirelessconfigs",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update profile with SSID length greater than 32",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.environment.unset(\"variable_key\");\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"pm.test(\"Result should contain an error and message\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.errors[0].msg).to.eql(\"Maximum length is 32\");\r",
+									"    pm.expect(jsonData.errors[0].param).to.eql(\"ssid\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"profileName\": \"P1\",\r\n    \"authenticationMethod\": 4,\r\n    \"encryptionMethod\": 4,\r\n    \"ssid\": \"wirelessProfile1234512345123456789\",\r\n    \"priority\": 1,\r\n    \"pskPassphrase\": \"Intel@123\",\r\n    \"linkPolicy\": [14,16]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"wirelessconfigs",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update profile with psk pass phrase less than 8",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.environment.unset(\"variable_key\");\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"pm.test(\"Result should contain an error and message\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.errors[0].msg).to.eql(\"PSK Passphrase length should be greater than or equal to 8 and less than or equal to 63\");\r",
+									"    pm.expect(jsonData.errors[0].param).to.eql(\"pskPassphrase\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"profileName\": \"P1\",\r\n    \"authenticationMethod\": 4,\r\n    \"encryptionMethod\": 4,\r\n    \"ssid\": \"test\",\r\n    \"priority\": 1,\r\n    \"pskPassphrase\": \"Inte123\",\r\n    \"linkPolicy\": [14,16]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"wirelessconfigs",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update profile with psk pass phrase greater than 63",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.environment.unset(\"variable_key\");\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"pm.test(\"Result should contain an error and message\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.errors[0].msg).to.eql(\"PSK Passphrase length should be greater than or equal to 8 and less than or equal to 63\");\r",
+									"    pm.expect(jsonData.errors[0].param).to.eql(\"pskPassphrase\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"profileName\": \"P1\",\r\n    \"authenticationMethod\": 4,\r\n    \"encryptionMethod\": 4,\r\n    \"ssid\": \"test\",\r\n    \"priority\": 1,\r\n    \"pskPassphrase\": \"Intel@123!Intel@123!Intel@123!Intel@123!Intel@123!Intel@123!Intel@123!Intel@123!\",\r\n    \"linkPolicy\": [14,16]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"wirelessconfigs",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update profile that does not exits",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {\r",
+									"    pm.environment.unset(\"variable_key\");\r",
+									"    pm.response.to.have.status(404);\r",
+									"});\r",
+									"pm.test(\"Result should contain an error and message\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.error).to.eql(\"Not Found\");\r",
+									"    pm.expect(jsonData.message).to.eql(\"Wireless profile P12 not found\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"profileName\": \"P12\",\r\n    \"authenticationMethod\": 4,\r\n    \"encryptionMethod\": 4,\r\n    \"ssid\": \"test\",\r\n    \"priority\": 1,\r\n    \"pskPassphrase\": \"Intel@123\",\r\n    \"linkPolicy\": [14,16]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"wirelessconfigs",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {\r",
+									"    pm.environment.unset(\"variable_key\");\r",
+									"    pm.response.to.have.status(204);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs/P1",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"wirelessconfigs",
+								"P1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Profile that doesn't exists",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {\r",
+									"    pm.environment.unset(\"variable_key\");\r",
+									"    pm.response.to.have.status(404);\r",
+									"});\r",
+									"pm.test(\"Result should wifi profile\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.error).to.eql(\"Not Found\");\r",
+									"    pm.expect(jsonData.message).to.eql(\"Wireless profile P11 not found\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs/P11",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"wirelessconfigs",
+								"P11"
 							]
 						}
 					},

@@ -842,7 +842,6 @@ components:
       - amtPassword
       - generateRandomPassword
       - passwordLength
-      - configurationScript
       - activation
       - ciraConfigName
       - networkConfigName
@@ -862,8 +861,6 @@ components:
         passwordLength:
           type: integer
           format: int32
-        configurationScript:
-          type: string
         activation:
           type: string
         ciraConfigName:
@@ -887,7 +884,6 @@ components:
         amtPassword: G@ppm0ym
         generateRandomPassword: false
         passwordLength: null
-        configurationScript: null
         activation: acmactivate      
         ciraConfigName: ciraconfig
         networkConfigName: dhcp_enabled
@@ -901,7 +897,6 @@ components:
       - profileName
       - generateRandomPassword
       - passwordLength
-      - configurationScript
       - activation
       - ciraConfigName
       - networkConfigName
@@ -917,8 +912,6 @@ components:
         passwordLength:
           type: integer
           format: int32
-        configurationScript:
-          type: string
         activation:
           type: string
         ciraConfigName:
@@ -938,7 +931,6 @@ components:
         profileName: profile1
         generateRandomPassword: false
         passwordLength: null
-        configurationScript: null
         activation: acmactivate      
         ciraConfigName: ciraconfig
         networkConfigName: dhcp_enabled

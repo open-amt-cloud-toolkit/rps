@@ -9,7 +9,6 @@
       "generateRandomMEBxPassword": false,
       "mebxPasswordLength": 8,
       "randomPasswordCharacters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()",
-      "configurationScript": "sample config script 1",
       "activation": "acmactivate",
       "ciraConfigName": "ciraconfig1"
     },
@@ -22,7 +21,6 @@
       "generateRandomMEBxPassword": false,
       "mebxPasswordLength": 8,
       "randomPasswordCharacters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()",
-      "configurationScript": "sample config script 2",
       "activation": "ccmactivate",
       "ciraConfigName": "ciraconfig1"
     },
@@ -32,7 +30,6 @@
       "generateRandomPassword": false,
       "passwordLength": 8,
       "randomPasswordCharacters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()",
-      "configurationScript": null,
       "activation": "invalid",
       "ciraConfigName": "ciraconfig1"
     },
@@ -42,7 +39,6 @@
       "generateRandomPassword": false,
       "passwordLength": 8,
       "randomPasswordCharacters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()",
-      "configurationScript": null,
       "activation": "",
       "ciraConfigName": "ciraconfig1"
     }

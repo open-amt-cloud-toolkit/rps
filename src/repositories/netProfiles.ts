@@ -53,7 +53,7 @@ export class NetConfigDb implements INetProfilesDb {
   async deleteProfileByName (configName: string): Promise<boolean> {
     const profiles = await this.db.query('SELECT profile_name as ProfileName FROM profiles WHERE network_profile_name = $1', [configName])
     if (profiles.rowCount > 0) {
-      throw NETWORK_UPDATE_ERROR(configName)
+      throw NETWORK_UPDATE_ERROR('NETWORK', configName)
     }
     try {
       const results = await this.db.query('DELETE FROM networkconfigs WHERE network_profile_name = $1', [configName])
@@ -65,7 +65,7 @@ export class NetConfigDb implements INetProfilesDb {
     } catch (error) {
       this.log.error(`Failed to delete network configuration : ${configName}`, error)
       if (error.code === '23503') { // foreign key violation
-        throw new RPSError(NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT(configName))
+        throw new RPSError(NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT('NETWORK', configName))
       }
       throw new RPSError(API_UNEXPECTED_EXCEPTION(`Delete network configuration : ${configName}`))
     }
@@ -93,9 +93,9 @@ export class NetConfigDb implements INetProfilesDb {
       return null
     } catch (error) {
       if (error.code === '23505') { // Unique key violation
-        throw new RPSError(NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE(netConfig.profileName), 'Unique key violation')
+        throw new RPSError(NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE('NETWORK', netConfig.profileName), 'Unique key violation')
       }
-      throw new RPSError(NETWORK_CONFIG_ERROR(netConfig.profileName)
+      throw new RPSError(NETWORK_CONFIG_ERROR('NETWORK', netConfig.profileName)
       )
     }
   }
@@ -108,7 +108,7 @@ export class NetConfigDb implements INetProfilesDb {
   async updateProfile (netConfig: NetworkConfig): Promise<NetworkConfig> {
     const profiles = await this.db.query('SELECT profile_name as ProfileName FROM profiles WHERE network_profile_name = $1', [netConfig.profileName])
     if (profiles.rowCount > 0) {
-      throw new RPSError(NETWORK_UPDATE_ERROR(netConfig.profileName))
+      throw new RPSError(NETWORK_UPDATE_ERROR('NETWORK', netConfig.profileName))
     }
     const results = await this.db.query('UPDATE networkconfigs SET dhcp_enabled=$2, static_ip_shared=$3, ip_sync_enabled=$4 where network_profile_name=$1',
       [
