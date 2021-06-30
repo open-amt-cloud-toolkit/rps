@@ -58,7 +58,6 @@ export class AMTDeviceVaultRepository implements IAMTDeviceRepository {
     try {
       if (this.configurator?.secretsManager) {
         const devicePwds: any = await this.configurator.secretsManager.getSecretAtPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}devices/${deviceId}`)
-        this.logger.info('devicePwds :' + JSON.stringify(devicePwds))
         if (devicePwds) {
           const amtDevice: AMTDeviceDTO = new AMTDeviceDTO(
             deviceId,
@@ -68,7 +67,7 @@ export class AMTDeviceVaultRepository implements IAMTDeviceRepository {
             AMTUserName,
             devicePwds.data.AMT_PASSWORD,
             devicePwds.data.MEBX_PASSWORD)
-          this.logger.debug(`found vault amt device: ${deviceId}, ${JSON.stringify(amtDevice)}`)
+          this.logger.debug(`found vault amt device: ${deviceId}`)
 
           return amtDevice
         } else {

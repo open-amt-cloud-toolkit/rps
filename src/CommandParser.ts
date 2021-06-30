@@ -22,9 +22,6 @@ const CommandParser = {
     try {
       if (msg?.method?.length > 0) {
         const input: string[] = msg.method.trim().split(' ')
-
-        this.logger.debug(`split input: ${input}`)
-
         const args = parseArgs(input, options)
 
         // TODO: text mode is assumed right now, switch shouldn't be used for method going forward
@@ -35,21 +32,21 @@ const CommandParser = {
         if (args.t) {
           msg.method = args.t
 
-          this.logger.debug(`parsed method: ${msg.method}`)
+          this.logger.silly(`parsed method: ${msg.method}`)
 
           if (args.profile && msg.payload) {
             msg.payload.profile = args.profile
-            this.logger.debug(`parsed profile: ${msg.payload.profile}`)
+            this.logger.silly(`parsed profile: ${msg.payload.profile}`)
           }
 
           if (args.password && msg.payload) {
             msg.payload.password = args.password
-            this.logger.debug('parsed password')
+            this.logger.silly('parsed password')
           }
 
           if (args.force && msg.payload) {
             msg.payload.force = args.force
-            this.logger.debug(`bypass password check: ${msg.payload.force}`)
+            this.logger.silly(`bypass password check: ${msg.payload.force}`)
           }
         }
       }

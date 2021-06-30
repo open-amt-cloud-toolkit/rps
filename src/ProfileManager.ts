@@ -64,7 +64,7 @@ export class ProfileManager implements IProfileManager {
     }
 
     if (profiles.length === 0) {
-      this.logger.error('Warning: No AMT configurations detected.')
+      this.logger.error('Error: No AMT configurations detected.')
     }
 
     return profiles
@@ -83,7 +83,7 @@ export class ProfileManager implements IProfileManager {
       this.logger.debug(`found activation for profile ${profileName}`)
       activation = profile.activation
     } else {
-      this.logger.warn(`unable to find activation for profile ${profileName}`)
+      this.logger.error(`unable to find activation for profile ${profileName}`)
     }
 
     return activation
@@ -99,7 +99,7 @@ export class ProfileManager implements IProfileManager {
     let ciraConfig: CIRAConfig
 
     if (profile?.ciraConfigName && profile.ciraConfigObject) {
-      this.logger.debug(`found CIRAConfigObject for profile ${JSON.stringify(profile)}`)
+      this.logger.debug(`found CIRAConfigObject for profile: ${profile.profileName}`)
       ciraConfig = profile.ciraConfigObject
 
       this.logger.debug(`retrieve CIRA MPS Password for cira config ${ciraConfig.configName}`)
@@ -107,7 +107,7 @@ export class ProfileManager implements IProfileManager {
         ciraConfig.password = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfig.configName}`, 'MPS_PASSWORD')
       }
     } else {
-      this.logger.debug(`unable to find CIRAConfig for profile ${JSON.stringify(profile)}`)
+      this.logger.debug(`unable to find CIRAConfig for profile ${profile.profileName}`)
     }
 
     return ciraConfig
@@ -140,7 +140,7 @@ export class ProfileManager implements IProfileManager {
         }
       }
     } else {
-      this.logger.warn(`unable to find amtPassword for profile ${profileName}`)
+      this.logger.error(`unable to find amtPassword for profile ${profileName}`)
     }
 
     if (amtPassword) {
@@ -178,7 +178,7 @@ export class ProfileManager implements IProfileManager {
         }
       }
     } else {
-      this.logger.warn(`unable to find mebxPassword for profile ${profileName}`)
+      this.logger.error(`unable to find mebxPassword for profile ${profileName}`)
     }
 
     if (mebxPassword) {
@@ -212,7 +212,7 @@ export class ProfileManager implements IProfileManager {
         mpsPassword = profile.ciraConfigObject.password
       }
     } else {
-      this.logger.warn(`unable to find mpsPassword for profile ${profileName}`)
+      this.logger.error(`unable to find mpsPassword for profile ${profileName}`)
     }
 
     if (mpsPassword) {
@@ -239,10 +239,10 @@ export class ProfileManager implements IProfileManager {
       if (amtProfile.ciraConfigName != null) {
         amtProfile.ciraConfigObject = await this.amtConfigurations.getCiraConfigForProfile(amtProfile.ciraConfigName)
         if (this.configurator?.secretsManager) {
-          if (amtProfile.ciraConfigObject?.password) { amtProfile.ciraConfigObject.password = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${amtProfile.ciraConfigObject.configName}`, amtProfile.ciraConfigObject.password) } else { this.logger.error("The amtProfile CIRAConfigObject doesn't have a password. Check CIRA profile creation.") }
+          if (amtProfile.ciraConfigObject?.password) { amtProfile.ciraConfigObject.password = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${amtProfile.ciraConfigObject.configName}`, 'MPS_PASSWORD') } else { this.logger.error("The amtProfile CIRAConfigObject doesn't have a password. Check CIRA profile creation.") }
         }
       }
-      this.logger.debug('AMT Profile returned from db', JSON.stringify(amtProfile))
+      this.logger.debug(`AMT Profile returned from db: ${amtProfile.profileName}`)
       return amtProfile
     } catch (error) {
       this.logger.error(`Failed to get AMT profile: ${error}`)
@@ -261,7 +261,7 @@ export class ProfileManager implements IProfileManager {
       // this.logger.debug(`found profile ${profileName}`);
       return true
     } else {
-      this.logger.warn(`unable to find profile ${profileName}`)
+      this.logger.error(`unable to find profile ${profileName}`)
       return false
     }
   }

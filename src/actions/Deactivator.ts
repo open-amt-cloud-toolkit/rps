@@ -34,8 +34,6 @@ export class Deactivator implements IExecutor {
    */
   async execute (message: any, clientId: string): Promise<ClientMsg> {
     try {
-      this.logger.debug(`deactivator execute message received: ${JSON.stringify(message, null, '\t')}`)
-
       const clientObj = this.clientManager.getClientObject(clientId)
 
       const wsmanResponse = message.payload
@@ -58,7 +56,7 @@ export class Deactivator implements IExecutor {
               method: 'DELETE'
             })
           } catch (err) {
-            this.logger.warn('unable to removed metadata with MPS', err)
+            this.logger.error('unable to removed metadata with MPS', err)
           }
 
           return this.responseMsg.get(clientId, null, 'success', 'success', `Device ${clientObj.uuid} deactivated`)

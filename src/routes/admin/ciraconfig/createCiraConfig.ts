@@ -38,9 +38,9 @@ export async function createCiraConfig (req, res): Promise<void> {
       // store the password into Vault
       if (req.secretsManager && !ciraConfig.generateRandomPassword) {
         await req.secretsManager.writeSecretWithKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfig.configName}`, ciraConfig.password, mpsPwd)
-        log.info(`MPS password stored in Vault for CIRA config : ${ciraConfig.configName}`)
+        log.debug(`MPS password stored in Vault for CIRA config : ${ciraConfig.configName}`)
       }
-      log.info(`Created CIRA config : ${ciraConfig.configName}`)
+      log.verbose(`Created CIRA config : ${ciraConfig.configName}`)
       delete results.password
       res.status(201).json(results).end()
     }

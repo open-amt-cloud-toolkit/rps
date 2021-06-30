@@ -20,10 +20,10 @@ export async function getDomain (req, res): Promise<void> {
       // Return null. Check Security objectives around returning passwords.
       delete result.provisioningCertPassword
       delete result.provisioningCert
-      log.info(`Domain : ${JSON.stringify(result)}`)
+      log.verbose(`Domain : ${JSON.stringify(result)}`)
       res.status(200).json(API_RESPONSE(result)).end()
     } else {
-      log.info(`Not found : ${domainName}`)
+      log.debug(`Not found : ${domainName}`)
       res.status(404).json(API_RESPONSE(null, 'Not Found', DOMAIN_NOT_FOUND(domainName))).end()
     }
   } catch (error) {
