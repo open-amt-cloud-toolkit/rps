@@ -13,16 +13,19 @@ import { PROFILE_INSERTION_FAILED_DUPLICATE, PROFILE_INSERTION_CIRA_CONSTRAINT, 
 import { NetConfigDb } from './netProfiles'
 import Logger from '../Logger'
 import { RPSError } from '../utils/RPSError'
+import { ProfilesWifiConfigsDb } from './profileWifiConfigs'
 
 export class ProfilesDb implements IProfilesDb {
   db: any
   ciraConfigs: CiraConfigDb
   networkConfigs: NetConfigDb
+  wifiConfigs: ProfilesWifiConfigsDb
   log: Logger
   constructor (dbCreator: IDbCreator) {
     this.db = dbCreator.getDb()
     this.ciraConfigs = new CiraConfigDb(dbCreator)
     this.networkConfigs = new NetConfigDb(dbCreator)
+    this.wifiConfigs = new ProfilesWifiConfigsDb(dbCreator)
     this.log = new Logger('ProfilesDb')
   }
 
@@ -31,11 +34,18 @@ export class ProfilesDb implements IProfilesDb {
    * @returns {AMTConfiguration[]} returns an array of AMT profile objects
    */
   async getAllProfiles (): Promise<AMTConfiguration[]> {
-    const results = await this.db.query('SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, generate_random_password as GenerateRandomPassword, cira_config_name as ciraConfigName, random_password_length as passwordLength, network_profile_name as NetworkProfileName,mebx_password as MEBxPassword, generate_random_mebx_password as GenerateRandomMEBxPassword, random_mebx_password_length as mebxPasswordLength, tags FROM profiles')
-    return await Promise.all(results.rows.map(async p => {
-      const result = mapToProfile(p)
+    const results = await this.db.query('SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, generate_random_password as GenerateRandomPassword, cira_config_name as ciraConfigName, random_password_length as passwordLength, network_profile_name as NetworkProfileName,mebx_password as MEBxPassword, generate_random_mebx_password as GenerateRandomMEBxPassword, random_mebx_password_length as mebxPasswordLength, tags, dhcp_enabled FROM profiles')
+    const allProfiles: AMTConfiguration[] = await Promise.all(results.rows.map(async profile => {
+      let result: AMTConfiguration = null
+      result = mapToProfile(profile)
+      if (result.dhcpEnabled) {
+        result.wifiConfigs = await this.wifiConfigs.getProfileWifiConfigs(result.profileName)
+      }
+      delete result.amtPassword
+      delete result.mebxPassword
       return result
     }))
+    return allProfiles
   }
 
   /**
@@ -44,10 +54,15 @@ export class ProfilesDb implements IProfilesDb {
    * @returns {AMTConfiguration} AMT Profile object
    */
   async getProfileByName (profileName: string): Promise<AMTConfiguration> {
-    const results = await this.db.query('SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, generate_random_password as GenerateRandomPassword, cira_config_name as ciraConfigName, random_password_length as passwordLength, network_profile_name as NetworkProfileName, mebx_password as MEBxPassword, generate_random_mebx_password as GenerateRandomMEBxPassword, random_mebx_password_length as  mebxPasswordLength, tags FROM profiles WHERE profile_name = $1', [profileName])
+    const results = await this.db.query('SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, generate_random_password as GenerateRandomPassword, cira_config_name as ciraConfigName, random_password_length as passwordLength, network_profile_name as NetworkProfileName, mebx_password as MEBxPassword, generate_random_mebx_password as GenerateRandomMEBxPassword, random_mebx_password_length as  mebxPasswordLength, tags, dhcp_enabled FROM profiles WHERE profile_name = $1', [profileName])
     let amtProfile: AMTConfiguration = null
     if (results.rowCount > 0) {
       amtProfile = mapToProfile(results.rows[0])
+      if (amtProfile.dhcpEnabled) {
+        amtProfile.wifiConfigs = await this.wifiConfigs.getProfileWifiConfigs(profileName)
+      }
+      delete amtProfile.amtPassword
+      delete amtProfile.mebxPassword
     }
     return amtProfile
   }
@@ -76,9 +91,11 @@ export class ProfilesDb implements IProfilesDb {
    * @returns {boolean} Return true on successful deletion
    */
   async deleteProfileByName (profileName: string): Promise<boolean> {
-    const results = await this.db.query('DELETE FROM profiles WHERE profile_name = $1', [profileName])
-    if (results.rowCount > 0) {
-      return true
+    if (this.wifiConfigs.deleteProfileWifiConfigs(profileName)) {
+      const results = await this.db.query('DELETE FROM profiles WHERE profile_name = $1', [profileName])
+      if (results.rowCount > 0) {
+        return true
+      }
     }
     return false
   }
@@ -90,8 +107,8 @@ export class ProfilesDb implements IProfilesDb {
    */
   async insertProfile (amtConfig: AMTConfiguration): Promise<AMTConfiguration> {
     try {
-      const results = await this.db.query('INSERT INTO profiles(profile_name, activation, amt_password, cira_config_name, generate_random_password, random_password_characters, random_password_length, network_profile_name, mebx_password, generate_random_mebx_password, random_mebx_password_length,tags) ' +
-        'values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)',
+      const results = await this.db.query('INSERT INTO profiles(profile_name, activation, amt_password, cira_config_name, generate_random_password, random_password_characters, random_password_length, network_profile_name, mebx_password, generate_random_mebx_password, random_mebx_password_length, tags, dhcp_enabled) ' +
+        'values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)',
       [
         amtConfig.profileName,
         amtConfig.activation,
@@ -104,9 +121,13 @@ export class ProfilesDb implements IProfilesDb {
         amtConfig.mebxPassword,
         amtConfig.generateRandomMEBxPassword,
         amtConfig.mebxPasswordLength,
-        amtConfig.tags
+        amtConfig.tags,
+        amtConfig.dhcpEnabled
       ])
       if (results.rowCount > 0) {
+        if (amtConfig.wifiConfigs?.length > 0) {
+          await this.wifiConfigs.createProfileWifiConfigs(amtConfig.wifiConfigs, amtConfig.profileName)
+        }
         const profile = await this.getProfileByName(amtConfig.profileName)
         return profile
       }
@@ -134,7 +155,7 @@ export class ProfilesDb implements IProfilesDb {
    */
   async updateProfile (amtConfig: AMTConfiguration): Promise<AMTConfiguration> {
     try {
-      const results = await this.db.query('UPDATE profiles SET activation=$2, amt_password=$3, cira_config_name=$4, generate_random_password=$5, random_password_characters=$6, random_password_length=$7, network_profile_name=$8, mebx_password=$9, generate_random_mebx_password=$10, random_mebx_password_length=$11, tags=$12 WHERE profile_name=$1',
+      const results = await this.db.query('UPDATE profiles SET activation=$2, amt_password=$3, cira_config_name=$4, generate_random_password=$5, random_password_characters=$6, random_password_length=$7, network_profile_name=$8, mebx_password=$9, generate_random_mebx_password=$10, random_mebx_password_length=$11, tags=$12, dhcp_enabled=$13 WHERE profile_name=$1',
         [
           amtConfig.profileName,
           amtConfig.activation,
@@ -147,9 +168,13 @@ export class ProfilesDb implements IProfilesDb {
           amtConfig.mebxPassword,
           amtConfig.generateRandomMEBxPassword,
           amtConfig.mebxPasswordLength,
-          amtConfig.tags
+          amtConfig.tags,
+          amtConfig.dhcpEnabled
         ])
       if (results.rowCount > 0) {
+        if (amtConfig.wifiConfigs?.length > 0) {
+          await this.wifiConfigs.createProfileWifiConfigs(amtConfig.wifiConfigs, amtConfig.profileName)
+        }
         const profile = await this.getProfileByName(amtConfig.profileName)
         return profile
       }

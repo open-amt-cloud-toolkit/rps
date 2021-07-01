@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "a7ff05a9-3dbf-41f7-bf46-b1bc19d3e14f",
+		"_postman_id": "43161dac-9140-425b-9e4c-40a9a0aa2a42",
 		"name": "RPS API Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -4838,7 +4838,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"]\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -4948,7 +4948,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"activation\": \"acmactivate\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"activation\": \"acmactivate\",\r\n    \"dhcpEnabled\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -6282,344 +6282,1888 @@
 			"name": "Integration",
 			"item": [
 				{
-					"name": "Create CIRA Config",
-					"event": [
+					"name": "AMT - CIRA Profiles",
+					"item": [
 						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 201\", function () {\r",
-									"    pm.response.to.have.status(201);\r",
-									"});\r",
-									"pm.test(\"Creation should succeed\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"     pm.expect(result.configName).to.eql(\"ciraconfig\")\r",
-									"    pm.expect(result.mpsServerAddress).to.eql(\"192.168.8.50\"),\r",
-									"\tpm.expect(result.mpsPort).to.eql(4433),\r",
-									"\tpm.expect(result.username).to.eql(\"admin\"),\r",
-									"\tpm.expect(result.password).to.eql(),\r",
-									"\tpm.expect(result.commonName).to.eql(\"192.168.8.50\"),\r",
-									"\tpm.expect(result.serverAddressFormat).to.eql(3),\r",
-									"\tpm.expect(result.authMethod).to.eql(2),\r",
-									"\tpm.expect(result.mpsRootCertificate).to.eql(\"rootcert\"),\r",
-									"\tpm.expect(result.proxyDetails).to.eql(\"\")\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"configName\": \"ciraconfig\",\r\n    \"mpsServerAddress\": \"192.168.8.50\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"password\": \"Intel123!\",\r\n    \"commonName\": \"192.168.8.50\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\",\r\n    \"generateRandomPassword\": false\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
+							"name": "Create CIRA Config",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 201\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
+											"});\r",
+											"pm.test(\"Creation should succeed\", function () {\r",
+											"    var result = pm.response.json();\r",
+											"     pm.expect(result.configName).to.eql(\"ciraconfig\")\r",
+											"    pm.expect(result.mpsServerAddress).to.eql(\"192.168.8.50\"),\r",
+											"\tpm.expect(result.mpsPort).to.eql(4433),\r",
+											"\tpm.expect(result.username).to.eql(\"admin\"),\r",
+											"\tpm.expect(result.password).to.eql(),\r",
+											"\tpm.expect(result.commonName).to.eql(\"192.168.8.50\"),\r",
+											"\tpm.expect(result.serverAddressFormat).to.eql(3),\r",
+											"\tpm.expect(result.authMethod).to.eql(2),\r",
+											"\tpm.expect(result.mpsRootCertificate).to.eql(\"rootcert\"),\r",
+											"\tpm.expect(result.proxyDetails).to.eql(\"\")\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
 							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"ciraconfigs"
-							]
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"type": "text",
+										"value": "APIKEYFORRPS123!"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"configName\": \"ciraconfig\",\r\n    \"mpsServerAddress\": \"192.168.8.50\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"password\": \"Intel123!\",\r\n    \"commonName\": \"192.168.8.50\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\",\r\n    \"generateRandomPassword\": false\r\n}"
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"ciraconfigs"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 201\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
+											"});\r",
+											"pm.test(\"Creation should succeed\", function () {\r",
+											"    var result = pm.response.json();\r",
+											"    pm.expect(result.profileName).to.eql(\"profile-ciraconfig\"),\r",
+											"    pm.expect(result.amtPassword).to.eql(),\r",
+											"    pm.expect(result.mebxPassword).to.eql(),\r",
+											"    pm.expect(result.activation).to.eql(\"acmactivate\"),\r",
+											"    pm.expect(result.ciraConfigName).to.eql(\"ciraconfig\")\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"type": "text",
+										"value": "APIKEYFORRPS123!"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n     \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\",\r\n    \"dhcpEnabled\": false\r\n}"
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Remove CIRA Config associated with profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Deletion should fail\", function () {\r",
+											"    var result = pm.response.json();\r",
+											"    pm.expect(result.error).to.eql(\"CIRA Config: ciraconfig associated with an AMT profile\")\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"type": "text",
+										"value": "APIKEYFORRPS123!"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs/ciraconfig",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"ciraconfigs",
+										"ciraconfig"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update CIRA Config",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"pm.test(\"Update should succeed\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.configName).to.eql(\"ciraconfig\")\r",
+											"    pm.expect(jsonData.mpsServerAddress).to.equal(\"192.168.8.50\")\r",
+											"    pm.expect(jsonData.mpsPort).to.eql(4433)\r",
+											"    pm.expect(jsonData.username).to.equal(\"admin\")\r",
+											"    pm.expect(jsonData.password).to.equal()\r",
+											"    pm.expect(jsonData.commonName).to.eql(\"192.168.8.50\")\r",
+											"    pm.expect(jsonData.serverAddressFormat).to.equal(3)    \r",
+											"    pm.expect(jsonData.mpsRootCertificate).to.equal(\"rootcert\")\r",
+											"    pm.expect(jsonData.proxyDetails).to.equal(\"\")\r",
+											"    pm.expect(jsonData.authMethod).to.equal(2)\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"type": "text",
+										"value": "APIKEYFORRPS123!"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"configName\": \"ciraconfig\",\r\n    \"password\": \"P@ssw0rd\"\r\n}"
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"ciraconfigs"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Remove Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 204\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"type": "text",
+										"value": "APIKEYFORRPS123!"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/profile-ciraconfig",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										"profile-ciraconfig"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Remove CIRA Config",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"type": "text",
+										"value": "APIKEYFORRPS123!"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs/ciraconfig",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"ciraconfigs",
+										"ciraconfig"
+									]
+								}
+							},
+							"response": []
 						}
-					},
-					"response": []
+					]
 				},
 				{
-					"name": "Create Profile",
-					"event": [
+					"name": "AMT - WIFI Profiles",
+					"item": [
 						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 201\", function () {\r",
-									"    pm.response.to.have.status(201);\r",
-									"});\r",
-									"pm.test(\"Creation should succeed\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"    pm.expect(result.profileName).to.eql(\"profile-ciraconfig\"),\r",
-									"    pm.expect(result.amtPassword).to.eql(),\r",
-									"    pm.expect(result.mebxPassword).to.eql(),\r",
-									"    pm.expect(result.activation).to.eql(\"acmactivate\"),\r",
-									"    pm.expect(result.ciraConfigName).to.eql(\"ciraconfig\")\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n     \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\"\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
+							"name": "Create Wireless Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 201\", function () {\r",
+											"    pm.environment.unset(\"variable_key\");\r",
+											"    pm.response.to.have.status(201);\r",
+											"});\r",
+											"pm.test(\"Request should return profile just created\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.profileName).to.eql(\"home\");\r",
+											"    pm.expect(jsonData.authenticationMethod).to.eql(4);\r",
+											"    pm.expect(jsonData.encryptionMethod).to.eql(4);\r",
+											"    pm.expect(jsonData.ssid).to.eql(\"test\");\r",
+											"    pm.expect(jsonData.linkPolicy.length).to.eql(2);\r",
+											"    pm.expect(jsonData.linkPolicy[0]).to.eql(14);\r",
+											"    pm.expect(jsonData.linkPolicy[1]).to.eql(16);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
 							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"profiles",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Remove CIRA Config associated with profile",
-					"event": [
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"home\",\r\n    \"authenticationMethod\": 4,\r\n    \"encryptionMethod\": 4,\r\n    \"ssid\": \"test\",\r\n    \"pskPassphrase\": \"Intel@123\",\r\n    \"linkPolicy\": [14,16]\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"wirelessconfigs",
+										""
+									]
+								}
+							},
+							"response": []
+						},
 						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.response.to.have.status(400);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Deletion should fail\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"    pm.expect(result.error).to.eql(\"CIRA Config: ciraconfig associated with an AMT profile\")\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs/ciraconfig",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
+							"name": "Create Wireless Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 201\", function () {\r",
+											"    pm.environment.unset(\"variable_key\");\r",
+											"    pm.response.to.have.status(201);\r",
+											"});\r",
+											"pm.test(\"Request should return profile just created\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.profileName).to.eql(\"office\");\r",
+											"    pm.expect(jsonData.authenticationMethod).to.eql(4);\r",
+											"    pm.expect(jsonData.encryptionMethod).to.eql(4);\r",
+											"    pm.expect(jsonData.ssid).to.eql(\"admin\");\r",
+											"    pm.expect(jsonData.linkPolicy.length).to.eql(2);\r",
+											"    pm.expect(jsonData.linkPolicy[0]).to.eql(14);\r",
+											"    pm.expect(jsonData.linkPolicy[1]).to.eql(16);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
 							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"ciraconfigs",
-								"ciraconfig"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update CIRA Config",
-					"event": [
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"office\",\r\n    \"authenticationMethod\": 4,\r\n    \"encryptionMethod\": 4,\r\n    \"ssid\": \"admin\",\r\n    \"pskPassphrase\": \"Intel@123\",\r\n    \"linkPolicy\": [14,16]\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"wirelessconfigs",
+										""
+									]
+								}
+							},
+							"response": []
+						},
 						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"pm.test(\"Update should succeed\", function () {\r",
-									"    var jsonData = pm.response.json();\r",
-									"    pm.expect(jsonData.configName).to.eql(\"ciraconfig\")\r",
-									"    pm.expect(jsonData.mpsServerAddress).to.equal(\"192.168.8.50\")\r",
-									"    pm.expect(jsonData.mpsPort).to.eql(4433)\r",
-									"    pm.expect(jsonData.username).to.equal(\"admin\")\r",
-									"    pm.expect(jsonData.password).to.equal()\r",
-									"    pm.expect(jsonData.commonName).to.eql(\"192.168.8.50\")\r",
-									"    pm.expect(jsonData.serverAddressFormat).to.equal(3)    \r",
-									"    pm.expect(jsonData.mpsRootCertificate).to.equal(\"rootcert\")\r",
-									"    pm.expect(jsonData.proxyDetails).to.equal(\"\")\r",
-									"    pm.expect(jsonData.authMethod).to.equal(2)\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"configName\": \"ciraconfig\",\r\n    \"password\": \"P@ssw0rd\"\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
+							"name": "Create AMT profile with duplicate priority for wifiConfig",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"pm.test(\"Creation should fail\", function () {\r",
+											"    var result = pm.response.json();\r",
+											"    pm.expect(result.errors[0].msg).to.eql(\"wifi config priority should be unique\"),\r",
+											"    pm.expect(result.errors[0].param).to.eql(\"wifiConfigs\")\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
 							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"ciraconfigs"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Remove Profile",
-					"event": [
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"value": "APIKEYFORRPS123!",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										""
+									]
+								}
+							},
+							"response": []
+						},
 						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 204\", function () {\r",
-									"    pm.response.to.have.status(204);\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/profile-ciraconfig",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
+							"name": "Create AMT profile with DHCP enabled false and Wifi configs",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"pm.test(\"Creation should fail\", function () {\r",
+											"    var result = pm.response.json();\r",
+											"    pm.expect(result.errors[0].msg).to.eql(\"Wifi supports only DHCP in AMT\"),\r",
+											"    pm.expect(result.errors[0].param).to.eql(\"wifiConfigs\")\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
 							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"profiles",
-								"profile-ciraconfig"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Remove CIRA Config",
-					"event": [
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"value": "APIKEYFORRPS123!",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										""
+									]
+								}
+							},
+							"response": []
+						},
 						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.response.to.have.status(204);\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs/ciraconfig",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
+							"name": "Create AMT profile with priority greater than 255 for wifiConfig",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"pm.test(\"Creation should fail\", function () {\r",
+											"    var result = pm.response.json();\r",
+											"    pm.expect(result.errors[0].msg).to.eql(\"wifi config priority should be an integer and between 1 and 255\"),\r",
+											"    pm.expect(result.errors[0].param).to.eql(\"wifiConfigs\")\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
 							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"ciraconfigs",
-								"ciraconfig"
-							]
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"value": "APIKEYFORRPS123!",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 355,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create AMT profile with priority less than 1 for wifiConfig",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"pm.test(\"Creation should fail\", function () {\r",
+											"    var result = pm.response.json();\r",
+											"    pm.expect(result.errors[0].msg).to.eql(\"wifi config priority should be an integer and between 1 and 255\"),\r",
+											"    pm.expect(result.errors[0].param).to.eql(\"wifiConfigs\")\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"value": "APIKEYFORRPS123!",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": -1,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create AMT profile with wifiConfigs and without DHCP enabled",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"pm.test(\"Creation should fail\", function () {\r",
+											"    var result = pm.response.json();\r",
+											"    pm.expect(result.errors[0].msg).to.eql(\"Invalid value\"),\r",
+											"    pm.expect(result.errors[0].param).to.eql(\"dhcpEnabled\")\r",
+											"\r",
+											"    pm.expect(result.errors[1].msg).to.eql(\"DHCP enabled must be a boolean\"),\r",
+											"    pm.expect(result.errors[1].param).to.eql(\"dhcpEnabled\")\r",
+											"\r",
+											"    pm.expect(result.errors[2].msg).to.eql(\"Wifi supports only DHCP in AMT\"),\r",
+											"    pm.expect(result.errors[2].param).to.eql(\"wifiConfigs\")\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"value": "APIKEYFORRPS123!",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create AMT Profile with wifiConfigs that does not exist in db",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"pm.test(\"Creation should fail\", function () {\r",
+											"    var result = pm.response.json();\r",
+											"    pm.expect(result.errors[0].msg).to.eql(\"wifi configs home2,test does not exists in db\"),\r",
+											"    pm.expect(result.errors[0].param).to.eql(\"wifiConfigs\")\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"value": "APIKEYFORRPS123!",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"test\"\r\n        }\r\n    ]\r\n}"
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create AMT Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 201\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
+											"});\r",
+											"pm.test(\"Creation should succeed\", function () {\r",
+											"    var result = pm.response.json();\r",
+											"    pm.expect(result.profileName).to.eql(\"wifi-profile\"),\r",
+											"    pm.expect(result.amtPassword).to.eql(),\r",
+											"    pm.expect(result.mebxPassword).to.eql(),\r",
+											"    pm.expect(result.activation).to.eql(\"ccmactivate\")\r",
+											"    pm.expect(result.tags.length).to.equal(1)\r",
+											"    pm.expect(result.dhcpEnabled).to.equal(true)\r",
+											"    pm.expect(result.wifiConfigs.length).to.equal(2)\r",
+											"    pm.expect(result.wifiConfigs[0].priority).to.equal(1)\r",
+											"    pm.expect(result.wifiConfigs[0].profileName).to.equal(\"home\")\r",
+											"    pm.expect(result.wifiConfigs[1].priority).to.equal(2)\r",
+											"    pm.expect(result.wifiConfigs[1].profileName).to.equal(\"office\")\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"value": "APIKEYFORRPS123!",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "GET AMT Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"pm.test(\"Result should succeed\", function () {\r",
+											"    var result = pm.response.json();\r",
+											"    pm.expect(result.profileName).to.eql(\"wifi-profile\"),\r",
+											"    pm.expect(result.amtPassword).to.eql(),\r",
+											"    pm.expect(result.mebxPassword).to.eql(),\r",
+											"    pm.expect(result.activation).to.eql(\"ccmactivate\")\r",
+											"    pm.expect(result.tags.length).to.equal(1)\r",
+											"    pm.expect(result.dhcpEnabled).to.equal(true)\r",
+											"    pm.expect(result.wifiConfigs.length).to.equal(2)\r",
+											"    pm.expect(result.wifiConfigs[0].priority).to.equal(1)\r",
+											"    pm.expect(result.wifiConfigs[0].profileName).to.equal(\"home\")\r",
+											"    pm.expect(result.wifiConfigs[1].priority).to.equal(2)\r",
+											"    pm.expect(result.wifiConfigs[1].profileName).to.equal(\"office\")\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/wifi-profile",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										"wifi-profile"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update AMT Profile with wifiConfigs that does not exist in db",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"pm.test(\"Creation should fail\", function () {\r",
+											"    var result = pm.response.json();\r",
+											"    pm.expect(result.errors[0].msg).to.eql(\"wifi configs test does not exists in db\"),\r",
+											"    pm.expect(result.errors[0].param).to.eql(\"wifiConfigs\")\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"value": "APIKEYFORRPS123!",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"test\"\r\n        }\r\n    ]\r\n}"
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create AMT profile with duplicate priority for wifiConfig",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"pm.test(\"Creation should fail\", function () {\r",
+											"    var result = pm.response.json();\r",
+											"    pm.expect(result.errors[0].msg).to.eql(\"wifi config priority should be unique\"),\r",
+											"    pm.expect(result.errors[0].param).to.eql(\"wifiConfigs\")\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"value": "APIKEYFORRPS123!",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create AMT profile with DHCP enabled false and Wifi configs",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"pm.test(\"Creation should fail\", function () {\r",
+											"    var result = pm.response.json();\r",
+											"    pm.expect(result.errors[0].msg).to.eql(\"Wifi supports only DHCP in AMT\"),\r",
+											"    pm.expect(result.errors[0].param).to.eql(\"wifiConfigs\")\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"value": "APIKEYFORRPS123!",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create AMT profile with priority greater than 255 for wifiConfig",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"pm.test(\"Creation should fail\", function () {\r",
+											"    var result = pm.response.json();\r",
+											"    pm.expect(result.errors[0].msg).to.eql(\"wifi config priority should be an integer and between 1 and 255\"),\r",
+											"    pm.expect(result.errors[0].param).to.eql(\"wifiConfigs\")\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"value": "APIKEYFORRPS123!",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 355,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create AMT profile with priority less than 1 for wifiConfig",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"pm.test(\"Creation should fail\", function () {\r",
+											"    var result = pm.response.json();\r",
+											"    pm.expect(result.errors[0].msg).to.eql(\"wifi config priority should be an integer and between 1 and 255\"),\r",
+											"    pm.expect(result.errors[0].param).to.eql(\"wifiConfigs\")\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"value": "APIKEYFORRPS123!",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": -1,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update AMT Profile - DHCP enabled to false",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"pm.test(\"Creation should succeed\", function () {\r",
+											"    var result = pm.response.json();\r",
+											"    pm.expect(result.profileName).to.eql(\"wifi-profile\"),\r",
+											"    pm.expect(result.amtPassword).to.eql(),\r",
+											"    pm.expect(result.mebxPassword).to.eql(),\r",
+											"    pm.expect(result.activation).to.eql(\"ccmactivate\")\r",
+											"    pm.expect(result.tags.length).to.equal(1)\r",
+											"    pm.expect(result.dhcpEnabled).to.equal(false)\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"value": "APIKEYFORRPS123!",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false\r\n}"
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update AMT Profile - with wificonfigs and without DHCP enabled",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"pm.test(\"Creation should fail\", function () {\r",
+											"    var result = pm.response.json();\r",
+											"    pm.expect(result.errors[0].msg).to.eql(\"DHCP enabled should be true\");\r",
+											"    pm.expect(result.errors[0].param).to.eql(\"wifiConfigs\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"value": "APIKEYFORRPS123!",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n     \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update AMT Profile - DHCP enabled to true",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"pm.test(\"Creation should succeed\", function () {\r",
+											"    var result = pm.response.json();\r",
+											"    pm.expect(result.profileName).to.eql(\"wifi-profile\"),\r",
+											"    pm.expect(result.amtPassword).to.eql(),\r",
+											"    pm.expect(result.mebxPassword).to.eql(),\r",
+											"    pm.expect(result.activation).to.eql(\"ccmactivate\")\r",
+											"    pm.expect(result.tags.length).to.equal(1)\r",
+											"    pm.expect(result.dhcpEnabled).to.equal(true)\r",
+											"    pm.expect(result.wifiConfigs.length).to.equal(2)\r",
+											"    pm.expect(result.wifiConfigs[0].priority).to.equal(1)\r",
+											"    pm.expect(result.wifiConfigs[0].profileName).to.equal(\"home\")\r",
+											"    pm.expect(result.wifiConfigs[1].priority).to.equal(2)\r",
+											"    pm.expect(result.wifiConfigs[1].profileName).to.equal(\"office\")\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"value": "APIKEYFORRPS123!",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Wireless Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 201\", function () {\r",
+											"    pm.environment.unset(\"variable_key\");\r",
+											"    pm.response.to.have.status(201);\r",
+											"});\r",
+											"pm.test(\"Request should return profile just created\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.profileName).to.eql(\"business\");\r",
+											"    pm.expect(jsonData.authenticationMethod).to.eql(4);\r",
+											"    pm.expect(jsonData.encryptionMethod).to.eql(4);\r",
+											"    pm.expect(jsonData.ssid).to.eql(\"admin\");\r",
+											"    pm.expect(jsonData.linkPolicy.length).to.eql(2);\r",
+											"    pm.expect(jsonData.linkPolicy[0]).to.eql(14);\r",
+											"    pm.expect(jsonData.linkPolicy[1]).to.eql(16);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"business\",\r\n    \"authenticationMethod\": 4,\r\n    \"encryptionMethod\": 4,\r\n    \"ssid\": \"admin\",\r\n    \"pskPassphrase\": \"Intel@123\",\r\n    \"linkPolicy\": [14,16]\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"wirelessconfigs",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update AMT Profile - append wifi configs",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"pm.test(\"Creation should succeed\", function () {\r",
+											"    var result = pm.response.json();\r",
+											"    pm.expect(result.profileName).to.eql(\"wifi-profile\"),\r",
+											"    pm.expect(result.amtPassword).to.eql(),\r",
+											"    pm.expect(result.mebxPassword).to.eql(),\r",
+											"    pm.expect(result.activation).to.eql(\"ccmactivate\")\r",
+											"    pm.expect(result.tags.length).to.equal(1)\r",
+											"    pm.expect(result.dhcpEnabled).to.equal(true)\r",
+											"    pm.expect(result.wifiConfigs.length).to.equal(3)\r",
+											"    pm.expect(result.wifiConfigs[0].priority).to.equal(1)\r",
+											"    pm.expect(result.wifiConfigs[0].profileName).to.equal(\"home\")\r",
+											"    pm.expect(result.wifiConfigs[1].priority).to.equal(2)\r",
+											"    pm.expect(result.wifiConfigs[1].profileName).to.equal(\"office\")\r",
+											"    pm.expect(result.wifiConfigs[2].priority).to.equal(3)\r",
+											"    pm.expect(result.wifiConfigs[2].profileName).to.equal(\"business\")\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"value": "APIKEYFORRPS123!",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        },\r\n        {\r\n            \"priority\": 3,\r\n            \"profileName\": \"business\"\r\n        }\r\n    ]\r\n}"
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create AMT Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 201\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
+											"});\r",
+											"pm.test(\"Creation should succeed\", function () {\r",
+											"    var result = pm.response.json();\r",
+											"    pm.expect(result.profileName).to.eql(\"wifi-profile2\"),\r",
+											"    pm.expect(result.generateRandomPassword).to.eql(true),\r",
+											"    pm.expect(result.passwordLength).to.eql(10),\r",
+											"    pm.expect(result.generateRandomMEBxPassword).to.eql(true),\r",
+											"    pm.expect(result.mebxPasswordLength).to.eql(12),\r",
+											"    pm.expect(result.activation).to.eql(\"acmactivate\")\r",
+											"    pm.expect(result.tags.length).to.equal(2)\r",
+											"    pm.expect(result.wifiConfigs.length).to.equal(3)\r",
+											"    pm.expect(result.wifiConfigs[0].priority).to.equal(1)\r",
+											"    pm.expect(result.wifiConfigs[0].profileName).to.equal(\"home\")\r",
+											"    pm.expect(result.wifiConfigs[1].priority).to.equal(2)\r",
+											"    pm.expect(result.wifiConfigs[1].profileName).to.equal(\"office\")\r",
+											"     pm.expect(result.wifiConfigs[2].priority).to.equal(3)\r",
+											"    pm.expect(result.wifiConfigs[2].profileName).to.equal(\"business\")\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"value": "APIKEYFORRPS123!",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"wifi-profile2\",\r\n    \"generateRandomPassword\": true,\r\n    \"passwordLength\": 10,\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"mebxPasswordLength\": 12,\r\n    \"activation\": \"acmactivate\",\r\n    \"tags\": [\"acm\", \"random password\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        },\r\n        {\r\n            \"priority\": 3,\r\n            \"profileName\": \"business\"\r\n        }\r\n    ]\r\n}"
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "GET ALL AMT Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Result should contain two profiles\", function () {\r",
+											"    var result = pm.response.json();\r",
+											"     pm.expect(result.length).to.equal(2)\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Profile one\", function () {\r",
+											"    var result = pm.response.json();\r",
+											"    pm.expect(result[0].profileName).to.eql(\"wifi-profile\"),\r",
+											"    pm.expect(result[0].amtPassword).to.eql(),\r",
+											"    pm.expect(result[0].mebxPassword).to.eql(),\r",
+											"    pm.expect(result[0].activation).to.eql(\"ccmactivate\")\r",
+											"    pm.expect(result[0].tags.length).to.equal(1)\r",
+											"    pm.expect(result[0].wifiConfigs.length).to.equal(3)\r",
+											"    pm.expect(result[0].wifiConfigs[0].priority).to.equal(1)\r",
+											"    pm.expect(result[0].wifiConfigs[0].profileName).to.equal(\"home\")\r",
+											"    pm.expect(result[0].wifiConfigs[1].priority).to.equal(2)\r",
+											"    pm.expect(result[0].wifiConfigs[1].profileName).to.equal(\"office\")\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Profile two\", function () {\r",
+											"    var result = pm.response.json();\r",
+											"    pm.expect(result[1].profileName).to.eql(\"wifi-profile2\"),\r",
+											"    pm.expect(result[1].generateRandomPassword).to.eql(true),\r",
+											"    pm.expect(result[1].passwordLength).to.eql(10),\r",
+											"    pm.expect(result[1].generateRandomMEBxPassword).to.eql(true),\r",
+											"    pm.expect(result[1].mebxPasswordLength).to.eql(12),\r",
+											"    pm.expect(result[1].activation).to.eql(\"acmactivate\")\r",
+											"    pm.expect(result[1].tags.length).to.equal(2)\r",
+											"    pm.expect(result[1].wifiConfigs.length).to.equal(3)\r",
+											"    pm.expect(result[1].wifiConfigs[0].priority).to.equal(1)\r",
+											"    pm.expect(result[1].wifiConfigs[0].profileName).to.equal(\"home\")\r",
+											"    pm.expect(result[1].wifiConfigs[1].priority).to.equal(2)\r",
+											"    pm.expect(result[1].wifiConfigs[1].profileName).to.equal(\"office\")\r",
+											"    pm.expect(result[1].wifiConfigs[2].priority).to.equal(3)\r",
+											"    pm.expect(result[1].wifiConfigs[2].profileName).to.equal(\"business\")\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Remove Wireless Profile associated with AMT Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"pm.test(\"Creation should succeed\", function () {\r",
+											"    var result = pm.response.json();\r",
+											"    pm.expect(result.error).to.eql(\"Operation failed for Wireless profile: office. Cannot modify Wireless settings if its already associated with a profile.\")\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"type": "text",
+										"value": "APIKEYFORRPS123!"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs/office",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"wirelessconfigs",
+										"office"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Remove Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 204\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"type": "text",
+										"value": "APIKEYFORRPS123!"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/wifi-profile2",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										"wifi-profile2"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Remove Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 204\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"type": "text",
+										"value": "APIKEYFORRPS123!"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/wifi-profile",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										"wifi-profile"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Wireless Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 204\", function () {\r",
+											"    pm.environment.unset(\"variable_key\");\r",
+											"    pm.response.to.have.status(204);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs/home",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"wirelessconfigs",
+										"home"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Wireless Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 204\", function () {\r",
+											"    pm.environment.unset(\"variable_key\");\r",
+											"    pm.response.to.have.status(204);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs/office",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"wirelessconfigs",
+										"office"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Wireless Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 204\", function () {\r",
+											"    pm.environment.unset(\"variable_key\");\r",
+											"    pm.response.to.have.status(204);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs/business",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"wirelessconfigs",
+										"business"
+									]
+								}
+							},
+							"response": []
 						}
-					},
-					"response": []
+					]
 				}
 			]
 		},

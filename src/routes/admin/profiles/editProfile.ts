@@ -10,8 +10,10 @@ import Logger from '../../../Logger'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, PROFILE_NOT_FOUND } from '../../../utils/constants'
 import { validationResult } from 'express-validator'
 import { AMTConfiguration } from '../../../models/Rcs'
-import { ClientAction } from '../../../RCS.Config'
+import { ClientAction, ProfileWifiConfigs } from '../../../RCS.Config'
 import { RPSError } from '../../../utils/RPSError'
+import { IProfileWifiConfigsDb } from '../../../repositories/interfaces/IProfileWifiConfigsDb'
+import { ProfileWifiConfigsDbFactory } from '../../../repositories/factories/ProfileWifiConfigsDbFactory'
 
 export async function editProfile (req, res): Promise<void> {
   let profilesDb: IProfilesDb = null
@@ -24,13 +26,15 @@ export async function editProfile (req, res): Promise<void> {
       return
     }
     profilesDb = ProfilesDbFactory.getProfilesDb()
+    const profileWifiConfigsDb: IProfileWifiConfigsDb = ProfileWifiConfigsDbFactory.getProfileWifiConfigsDb()
     const oldConfig: AMTConfiguration = await profilesDb.getProfileByName(newConfig.profileName)
 
     if (oldConfig == null) {
       log.debug(`Not found: ${newConfig.profileName}`)
       res.status(404).json(API_RESPONSE(null, 'Not Found', PROFILE_NOT_FOUND(newConfig.profileName))).end()
     } else {
-      const amtConfig: AMTConfiguration = getUpdatedData(newConfig, oldConfig)
+      const amtConfig: AMTConfiguration = await getUpdatedData(newConfig, oldConfig)
+      amtConfig.wifiConfigs = await handleWifiConfigs(newConfig, oldConfig, profileWifiConfigsDb)
       // Assigning value key value for AMT Random Password and MEBx Random Password to store in database
       const amtPwdBefore = amtConfig.amtPassword
       const mebxPwdBefore = amtConfig.mebxPassword
@@ -130,7 +134,18 @@ export const handleGenerateRandomMEBxPassword = (amtConfig: AMTConfiguration, ne
   return amtConfig
 }
 
-export const getUpdatedData = (newConfig: any, oldConfig: AMTConfiguration): AMTConfiguration => {
+export const handleWifiConfigs = async (newConfig: AMTConfiguration, oldConfig: AMTConfiguration, profileWifiConfigsDb: IProfileWifiConfigsDb): Promise<ProfileWifiConfigs[]> => {
+  let wifiConfigs: ProfileWifiConfigs[] = null
+  if (oldConfig.dhcpEnabled && !newConfig.dhcpEnabled) {
+    await profileWifiConfigsDb.deleteProfileWifiConfigs(newConfig.profileName)
+  } else if ((oldConfig.dhcpEnabled && newConfig.dhcpEnabled) || (!oldConfig.dhcpEnabled && newConfig.dhcpEnabled)) {
+    await profileWifiConfigsDb.deleteProfileWifiConfigs(newConfig.profileName)
+    wifiConfigs = newConfig.wifiConfigs
+  }
+  return wifiConfigs
+}
+
+export const getUpdatedData = async (newConfig: any, oldConfig: AMTConfiguration): Promise<AMTConfiguration> => {
   let amtConfig: AMTConfiguration = { profileName: newConfig.profileName } as AMTConfiguration
   amtConfig = handleAMTPassword(amtConfig, newConfig, oldConfig)
   amtConfig = handleMEBxPassword(amtConfig, newConfig, oldConfig)
@@ -145,5 +160,6 @@ export const getUpdatedData = (newConfig: any, oldConfig: AMTConfiguration): AMT
   amtConfig.ciraConfigName = newConfig.ciraConfigName ?? oldConfig.ciraConfigName
   amtConfig.networkConfigName = newConfig.networkConfigName ?? oldConfig.networkConfigName
   amtConfig.tags = newConfig.tags ?? oldConfig.tags
+  amtConfig.dhcpEnabled = newConfig.dhcpEnabled ?? oldConfig.dhcpEnabled
   return amtConfig
 }
