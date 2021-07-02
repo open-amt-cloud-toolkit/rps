@@ -26,6 +26,11 @@ export interface WirelessConfig {
   linkPolicy: string[]
 }
 
+export interface ProfileWifiConfigs {
+  priority: number
+  profileName: string
+}
+
 /*
 - AddMpServer Method:
 
