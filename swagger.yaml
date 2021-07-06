@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Remote Provisioning Server API
   contact: {}
-  version: 1.3.0
+  version: 2.0.0
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
@@ -349,6 +349,169 @@ paths:
               schema:
                 $ref: '#/components/schemas/APIResponse'
       deprecated: false
+  /api/v1/wirelessconfigs:
+    get:
+      tags:
+      - Wireless
+      summary: Get All Wireless Configs
+      operationId: GetAllWirelessConfigs
+      description: Retrieves all of the Wireless configuration profiles from the database.  Will not return the password field to protect the privacy of this asset.
+      responses:
+        200:
+          description: 'successful operation'
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WirelessConfigResponse'
+        404:
+          description: 'not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        500:
+          description: 'internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+      deprecated: false
+    post:
+      tags:
+      - Wireless
+      summary: Create Wireless Config
+      operationId: CreateWirelessConfig
+      description: Creates a new Wireless configuration profile.  The PSK passphrase is stored in a secrets manager and is only used during configuration to set the Wi-Fi credentials in the AMT device.
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WirelessConfigSubmit'
+        required: true
+      responses:
+        201:
+          description: 'successful operation'
+          headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WirelessConfigResponse'
+        400:
+          description: 'bad request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        500:
+          description: 'internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+      deprecated: false
+    patch:
+      tags:
+      - Wireless
+      summary: Edit Wireless Config
+      operationId: EditWirelessConfig
+      description: Edits an existing Wireless configuration profile.  The profileName can not be changed.  The password is stored in a secrets manager and is only used during configuration to set the Wi-Fi credentials in the AMT device.
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WirelessConfigSubmit'
+        required: true
+      responses:
+        200:
+          description: 'successful operation'
+          headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WirelessConfigResponse'
+        400:
+          description: 'bad request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        500:
+          description: 'internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+      deprecated: false  
+  /api/v1/wirelessconfigs/{configName}:
+    get:
+      tags:
+      - Wireless
+      summary: Get Wireless Config
+      operationId: GetWirelessConfig
+      description: Retrieves the specific Wireless configuration profile from the database.  Will not return the password field to protect the privacy of this asset.
+      parameters:
+      - name: configName
+        in: path
+        description: Name of Wireless config to return
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: 'successful operation'
+          headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WirelessConfigResponse'
+        404:
+          description: 'not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        500:
+          description: 'internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+      deprecated: false
+    delete:
+      tags:
+      - Wireless
+      summary: Remove Wireless Config
+      operationId: RemoveWirelessConfig
+      description: Removes the specific Wireless configuration profile from the database.
+      parameters:
+      - name: configName
+        in: path
+        description: Name of Wireless config to return
+        required: true
+        schema:
+          type: string
+      responses:
+        204:
+          description: 'successful operation'
+          headers: {}
+        404:
+          description: 'not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        500:
+          description: 'internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+      deprecated: false
   /api/v1/profiles:
     get:
       tags:
@@ -512,164 +675,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/APIResponse'
       deprecated: false
-  /api/v1/networkconfigs:
-    get:
-      tags:
-      - Networks
-      summary: Get All Networks
-      operationId: GetAllNetworks
-      description: Retrieves all of the network configuration profiles from the database.
-      responses:
-        200:
-          description: 'successful operation'
-          headers: {}
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/NetworkConfigResponse'
-        404:
-          description: 'not found'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/APIResponse'
-        500:
-          description: 'internal server error'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/APIResponse'
-      deprecated: false
-    post:
-      tags:
-      - Networks
-      summary: Create Network Config
-      operationId: CreateNetworkConfig
-      description: Creates a new network configuration profile.
-      requestBody:
-        description: ''
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/NetworkConfigResponse'
-        required: true
-      responses:
-        201:
-          description: 'successful operation'
-          headers: {}
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NetworkConfigResponse'
-        400:
-          description: 'bad request'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/APIResponse'
-        500:
-          description: 'internal server error'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/APIResponse'
-      deprecated: false
-    # patch:
-    #   tags:
-    #   - Networks
-    #   summary: Update Network Config
-    #   operationId: UpdateNetworkConfig
-    #   requestBody:
-    #     description: ''
-    #     content:
-    #       application/json:
-    #         schema:
-    #           $ref: '#/components/schemas/NetworkConfigRequest'
-    #     required: true
-    #   responses:
-    #     200:
-    #       description: 'successful operation'
-    #       headers: {}
-    #     400:
-    #       description: 'bad request'
-    #       content:
-    #         application/json:
-    #           schema:
-    #             $ref: '#/components/schemas/APIResponse'
-    #     500:
-    #       description: 'internal server error'
-    #       content:
-    #         application/json:
-    #           schema:
-    #             $ref: '#/components/schemas/APIResponse'
-    #   deprecated: false
-  /api/v1/networkconfigs/{profileName}:
-    get:
-      tags:
-      - Networks
-      summary: Get Network Config
-      operationId: GetNetworkConfig
-      description: Retrieves the specific network configuration profile from the database.
-      parameters:
-      - name: profileName
-        in: path
-        description: Name of network config to return
-        required: true
-        schema:
-          type: string
-      responses:
-        200:
-          description: 'successful operation'
-          headers: {}
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NetworkConfigResponse'
-        404:
-          description: 'not found'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/APIResponse'
-        500:
-          description: 'internal server error'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/APIResponse'
-      deprecated: false
-    # delete:
-    #   tags:
-    #   - Networks
-    #   summary: Remove Network Config
-    #   operationId: RemoveNetworkConfig
-    #   parameters:
-    #   - name: profileName
-    #     in: path
-    #     description: Name of profile to delete
-    #     required: true
-    #     schema:
-    #       type: string
-    #   responses:
-    #     204:
-    #       description: 'successful operation'
-    #       headers: {}
-    #     404:
-    #       description: 'not found'
-    #       content:
-    #         application/json:
-    #           schema:
-    #             $ref: '#/components/schemas/APIResponse'
-    #     500:
-    #       description: 'internal server error'
-    #       content:
-    #         application/json:
-    #           schema:
-    #             $ref: '#/components/schemas/APIResponse'
-    #   deprecated: false
-  /api/v1/version:
+  /version:
     get:
       tags:
       - Misc
@@ -849,6 +855,7 @@ components:
       - generateRandomMEBxPassword
       - mebxPasswordLength
       - tags
+      - dhcpEnabled
       type: object
       properties:
         profileName:
@@ -879,6 +886,12 @@ components:
           type: array
           items:
             type: string
+        dhcpEnabled:
+          type: boolean
+        wifiConfigs:
+          type: array
+          items:
+            type: object
       example:
         profileName: profile1
         amtPassword: G@ppm0ym
@@ -891,6 +904,17 @@ components:
         generateRandomMEBxPassword: false
         mebxPasswordLength: null
         tags: [tag1, tag2]
+        dhcpEnabled: true
+        wifiConfigs: [
+          {
+              priority: 1,
+              profileName: "home"
+          },
+          {
+              priority: 2,
+              profileName: "office"
+          }
+        ]
     ProfileResponse:
       title: ProfileResponse
       required:
@@ -927,38 +951,94 @@ components:
           type: array
           items:
             type: string
+        dhcpEnabled:
+          type: boolean
+        wifiConfigs:
+          type: array
+          items:
+            type: object
       example:
         profileName: profile1
         generateRandomPassword: false
         passwordLength: null
+        configurationScript: null
         activation: acmactivate      
         ciraConfigName: ciraconfig
         networkConfigName: dhcp_enabled
         generateRandomMEBxPassword: false
         mebxPasswordLength: null
         tags: [tag1, tag2]
-    NetworkConfigResponse:
-      title: NetworkConfigResponse
+        dhcpEnabled: true
+        wifiConfigs: [
+          {
+              priority: 1,
+              profileName: "home"
+          },
+          {
+              priority: 2,
+              profileName: "office"
+          }
+        ]
+    WirelessConfigSubmit:
+      title: WirelessConfigSubmit
       required:
       - profileName
-      - dhcpEnabled
-      - staticIPShared
-      - ipSyncEnabled
+      - authenticationMethod
+      - encryptionMethod
+      - ssid
+      - pskPassphrase
+      - linkPolicy
       type: object
       properties:
         profileName:
           type: string
-        dhcpEnabled:
-          type: boolean
-        staticIPShared:
-          type: boolean
-        ipSyncEnabled:
-          type: boolean
+        authenticationMethod:
+          type: integer
+        encryptionMethod:
+          type: integer
+        ssid:
+          type: string
+        pskPassphrase:
+          type: string
+        linkPolicy:
+          type: array
+          items:
+            type: integer
       example:
-        profileName: dhcp_enabled
-        dhcpEnabled: true
-        staticIPShared: false
-        ipSyncEnabled: true
+        profileName: homeWifiConfig
+        authenticationMethod: 4
+        encryptionMethod: 4
+        ssid: home
+        pskPassphrase: P@ssw0rd
+        linkPolicy: [14, 16]
+    WirelessConfigResponse:
+      title: WirelessConfigResponse
+      required:
+      - profileName
+      - authenticationMethod
+      - encryptionMethod
+      - ssid
+      - linkPolicy
+      type: object
+      properties:
+        profileName:
+          type: string
+        authenticationMethod:
+          type: integer
+        encryptionMethod:
+          type: integer
+        ssid:
+          type: string
+        linkPolicy:
+          type: array
+          items:
+            type: integer
+      example:
+        profileName: homeWifiConfig
+        authenticationMethod: 4
+        encryptionMethod: 4
+        ssid: home
+        linkPolicy: [14, 16]
     VersionResponse:
       title: VersionResponse
       required:
@@ -981,8 +1061,8 @@ components:
 tags:
 - name: Domains
 - name: CIRA
+- name: Wireless
 - name: Profiles
-- name: Networks
 - name: Integration
 - name: Misc
   description: ''
