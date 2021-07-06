@@ -121,10 +121,6 @@ export class WirelessConfigDb implements IWirelessProfilesDb {
     */
   async updateProfile (wirelessConfig: WirelessConfig): Promise<WirelessConfig> {
     try {
-      const profiles = await this.db.query('SELECT profile_name as ProfileName FROM profiles WHERE network_profile_name = $1', [wirelessConfig.profileName])
-      if (profiles.rowCount > 0) {
-        throw new RPSError(NETWORK_UPDATE_ERROR('Wireless', wirelessConfig.profileName))
-      }
       const results = await this.db.query('UPDATE wirelessconfigs SET authentication_method=$2, encryption_method=$3, ssid=$4, psk_value=$5, psk_passphrase=$6, link_policy=$7 where wireless_profile_name=$1',
         [
           wirelessConfig.profileName,

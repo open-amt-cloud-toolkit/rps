@@ -203,7 +203,6 @@ test('test getUpdatedData when static passwords are changed to random', async ()
     generateRandomPassword: true,
     mebxPassword: null,
     mebxPasswordLength: 8,
-    networkConfigName: undefined,
     passwordLength: 10
   }
   const result: AMTConfiguration = await getUpdatedData(newConfig, oldConfig)
@@ -234,7 +233,6 @@ test('test getUpdatedData when random passwords are changed to static', async ()
     generateRandomPassword: false,
     mebxPassword: 'P@ssw0rd',
     mebxPasswordLength: null,
-    networkConfigName: undefined,
     passwordLength: null,
     tags: undefined
   }
@@ -262,7 +260,6 @@ test('test getUpdatedData when activation messaged changed from acmactivate to c
     generateRandomPassword: undefined,
     mebxPassword: null,
     mebxPasswordLength: null,
-    networkConfigName: undefined,
     passwordLength: undefined
   }
   const result: AMTConfiguration = await getUpdatedData(newConfig, oldConfig)

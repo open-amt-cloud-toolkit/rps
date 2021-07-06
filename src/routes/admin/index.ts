@@ -9,14 +9,12 @@ import domains from './domains/index'
 import profiles from './profiles/index'
 import ciraConfigs from './ciraconfig/index'
 import version from './version/index'
-import networkconfigs from './network/index'
 import wirelessconfigs from './wireless/index'
 const adminRouter: Router = Router()
 
 adminRouter.use('/domains', domains)
 adminRouter.use('/profiles', profiles)
 adminRouter.use('/ciraconfigs', ciraConfigs)
-adminRouter.use('/networkconfigs', networkconfigs)
 adminRouter.use('/wirelessconfigs', wirelessconfigs)
 adminRouter.use('/version', version)
 adminRouter.get('/', (req, res) => {
