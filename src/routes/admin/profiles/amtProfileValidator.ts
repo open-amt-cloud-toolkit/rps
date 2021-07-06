@@ -4,7 +4,9 @@
  * Author : Madhavi Losetty
  **********************************************************************/
 import { check } from 'express-validator'
-import { ClientAction } from '../../../RCS.Config'
+import { WirelessConfigDbFactory } from '../../../repositories/factories/WirelessConfigDbFactory'
+import { IWirelessProfilesDb } from '../../../repositories/interfaces/IWirelessProfilesDB'
+import { ClientAction, ProfileWifiConfigs } from '../../../RCS.Config'
 
 export const amtProfileValidator = (): any => {
   return [
@@ -104,9 +106,46 @@ export const amtProfileValidator = (): any => {
         return true
       }),
     check('ciraConfigName').optional(),
-    check('networkConfigName').optional(),
-    check('tags').optional({ nullable: true }).isArray()
+    check('tags').optional({ nullable: true }).isArray(),
+    check('dhcpEnabled')
+      .not()
+      .isEmpty()
+      .isBoolean()
+      .withMessage('DHCP enabled must be a boolean'),
+    check('wifiConfigs')
+      .optional({ nullable: true })
+      .isArray()
+      .custom(async (value, { req }) => {
+        if (!req.body.dhcpEnabled && value?.length > 0) {
+          throw new Error('Wifi supports only DHCP in AMT')
+        }
+        const priorities = new Set(value.map((config: ProfileWifiConfigs) => {
+          if (Number.isInteger(config.priority) && (config.priority < 1 || config.priority > 255)) {
+            throw new Error('wifi config priority should be an integer and between 1 and 255')
+          }
+          return config.priority
+        }))
+        if ([...priorities].length !== value.length) {
+          throw new Error('wifi config priority should be unique')
+        }
+        const wifiConfigs = await validatewifiConfigs(value)
+        if (wifiConfigs.length > 0) {
+          throw new Error(`wifi configs ${wifiConfigs.toString()} does not exists in db`)
+        }
+      })
   ]
+}
+
+const validatewifiConfigs = async (value: any): Promise<string[]> => {
+  const profilesDb: IWirelessProfilesDb = WirelessConfigDbFactory.getConfigDb()
+  const wifiConfigNames = []
+  for (const config of value) {
+    const iswifiExist = await profilesDb.checkProfileExits(config.profileName)
+    if (!iswifiExist) {
+      wifiConfigNames.push(config.profileName)
+    }
+  }
+  return wifiConfigNames
 }
 
 export const profileUpdateValidator = (): any => {
@@ -191,7 +230,33 @@ export const profileUpdateValidator = (): any => {
         return true
       }),
     check('ciraConfigName').optional(),
-    check('networkConfigName').optional(),
-    check('tags').optional({ nullable: true }).isArray()
+    check('tags').optional({ nullable: true }).isArray(),
+    check('dhcpEnabled')
+      .optional()
+      .isBoolean()
+      .withMessage('DHCP enabled must be a boolean'),
+    check('wifiConfigs')
+      .optional({ nullable: true })
+      .isArray()
+      .custom(async (value, { req }) => {
+        if (value?.length > 0 && req.body.dhcpEnabled == null) {
+          throw new Error('DHCP enabled should be true')
+        } else if (!req.body.dhcpEnabled && value?.length > 0) {
+          throw new Error('Wifi supports only DHCP in AMT')
+        }
+        const priorities = new Set(value.map((config: ProfileWifiConfigs) => {
+          if (Number.isInteger(config.priority) && (config.priority < 1 || config.priority > 255)) {
+            throw new Error('wifi config priority should be an integer and between 1 and 255')
+          }
+          return config.priority
+        }))
+        if ([...priorities].length !== value.length) {
+          throw new Error('wifi config priority should be unique')
+        }
+        const wifiConfigs = await validatewifiConfigs(value)
+        if (wifiConfigs.length > 0) {
+          throw new Error(`wifi configs ${wifiConfigs.toString()} does not exists in db`)
+        }
+      })
   ]
 }

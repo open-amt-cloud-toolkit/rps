@@ -179,7 +179,7 @@ test('test getUpdatedData when the request body when activation changed', () => 
   expect(result).toEqual(expected)
 })
 
-test('test getUpdatedData when static passwords are changed to random', () => {
+test('test getUpdatedData when static passwords are changed to random', async () => {
   const newConfig: AMTConfiguration = {
     profileName: 'acm',
     activation: 'acmactivate',
@@ -203,14 +203,13 @@ test('test getUpdatedData when static passwords are changed to random', () => {
     generateRandomPassword: true,
     mebxPassword: null,
     mebxPasswordLength: 8,
-    networkConfigName: undefined,
     passwordLength: 10
   }
-  const result: AMTConfiguration = getUpdatedData(newConfig, oldConfig)
+  const result: AMTConfiguration = await getUpdatedData(newConfig, oldConfig)
   expect(result).toEqual(amtConfig)
 })
 
-test('test getUpdatedData when random passwords are changed to static', () => {
+test('test getUpdatedData when random passwords are changed to static', async () => {
   const newConfig: AMTConfiguration = {
     profileName: 'acm',
     activation: 'acmactivate',
@@ -234,15 +233,14 @@ test('test getUpdatedData when random passwords are changed to static', () => {
     generateRandomPassword: false,
     mebxPassword: 'P@ssw0rd',
     mebxPasswordLength: null,
-    networkConfigName: undefined,
     passwordLength: null,
     tags: undefined
   }
-  const result: AMTConfiguration = getUpdatedData(newConfig, oldConfig)
+  const result: AMTConfiguration = await getUpdatedData(newConfig, oldConfig)
   expect(result).toEqual(amtConfig)
 })
 
-test('test getUpdatedData when activation messaged changed from acmactivate to ccmactivate', () => {
+test('test getUpdatedData when activation messaged changed from acmactivate to ccmactivate', async () => {
   const newConfig: AMTConfiguration = {
     profileName: 'acm',
     activation: 'ccmactivate'
@@ -262,9 +260,8 @@ test('test getUpdatedData when activation messaged changed from acmactivate to c
     generateRandomPassword: undefined,
     mebxPassword: null,
     mebxPasswordLength: null,
-    networkConfigName: undefined,
     passwordLength: undefined
   }
-  const result: AMTConfiguration = getUpdatedData(newConfig, oldConfig)
+  const result: AMTConfiguration = await getUpdatedData(newConfig, oldConfig)
   expect(result).toEqual(amtConfig)
 })

@@ -7,7 +7,7 @@
 import { AMTConfiguration } from '../models/Rcs'
 
 export function mapToProfile (results): AMTConfiguration {
-  return {
+  const config: AMTConfiguration = {
     profileName: results.profilename,
     amtPassword: results.amtpassword,
     generateRandomPassword: results.generaterandompassword,
@@ -15,10 +15,11 @@ export function mapToProfile (results): AMTConfiguration {
     randomPasswordCharacters: results.randompasswordcharacters,
     activation: results.activation,
     ciraConfigName: results.ciraconfigname,
-    networkConfigName: results.networkprofilename,
     mebxPassword: results.mebxpassword,
     generateRandomMEBxPassword: results.generaterandommebxpassword,
     mebxPasswordLength: results.mebxpasswordlength,
-    tags: results.tags
-  } as AMTConfiguration
+    tags: results.tags,
+    dhcpEnabled: results.dhcp_enabled
+  }
+  return config
 }

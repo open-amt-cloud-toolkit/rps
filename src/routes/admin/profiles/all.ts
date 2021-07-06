@@ -17,11 +17,6 @@ export async function allProfiles (req, res): Promise<void> {
     profilesDb = ProfilesDbFactory.getProfilesDb()
     results = await profilesDb.getAllProfiles()
     if (results.length >= 0) {
-      results = results.map((result: AMTConfiguration) => {
-        delete result.amtPassword
-        delete result.mebxPassword
-        return result
-      })
       res.status(200).json(API_RESPONSE(results)).end()
     }
   } catch (error) {

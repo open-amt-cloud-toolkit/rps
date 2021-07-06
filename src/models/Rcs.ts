@@ -4,7 +4,7 @@
 * Description: Constants
 **********************************************************************/
 
-import { CIRAConfig, NetworkConfig, WebSocketConfig } from '../RCS.Config'
+import { CIRAConfig, ProfileWifiConfigs, WebSocketConfig } from '../RCS.Config'
 
 export class ProvisioningCertObj {
   certChain: string[]
@@ -47,13 +47,13 @@ export class AMTConfiguration {
   randomPasswordCharacters?: string
   ciraConfigName?: string
   activation: string
-  networkConfigName?: string
-  networkConfigObject?: NetworkConfig
   mebxPassword?: string
   generateRandomMEBxPassword?: boolean
   mebxPasswordLength?: number
   ciraConfigObject?: CIRAConfig
   tags?: string[]
+  dhcpEnabled?: boolean
+  wifiConfigs?: ProfileWifiConfigs[]
 }
 
 export class AMTDomain {

@@ -19,9 +19,6 @@ export async function getProfile (req, res): Promise<void> {
     if (result == null) {
       res.status(404).json(API_RESPONSE(null, 'Not Found', PROFILE_NOT_FOUND(profileName))).end()
     } else {
-      // Return null. Check Security objectives around returning passwords.
-      delete result.amtPassword
-      delete result.mebxPassword
       res.status(200).json(API_RESPONSE(result)).end()
     }
   } catch (error) {

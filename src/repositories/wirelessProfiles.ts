@@ -24,10 +24,7 @@ export class WirelessConfigDb implements IWirelessProfilesDb {
     */
   async getAllProfiles (): Promise<WirelessConfig[]> {
     const results = await this.db.query('SELECT wireless_profile_name, authentication_method, encryption_method, ssid, psk_value, psk_passphrase, link_policy from wirelessconfigs')
-    return await Promise.all(results.rows.map(async p => {
-      const result = mapToWirelessProfile(p)
-      return result
-    }))
+    return results.rows.map(profile => mapToWirelessProfile(profile))
   }
 
   /**
@@ -45,6 +42,19 @@ export class WirelessConfigDb implements IWirelessProfilesDb {
   }
 
   /**
+    * @description Get wireless profile exists in DB by wifinames
+    * @param {string} profileNames
+    * @returns {string[]}
+    */
+  async checkProfileExits (configName: string): Promise<boolean> {
+    const results = await this.db.query('SELECT * from wirelessconfigs WHERE wireless_profile_name = $1', [configName])
+    if (results.rowCount > 0) {
+      return true
+    }
+    return false
+  }
+
+  /**
     * @description Delete Wireless profile from DB by name
     * @param {string} configName
     * @returns {boolean} Return true on successful deletion
@@ -52,7 +62,7 @@ export class WirelessConfigDb implements IWirelessProfilesDb {
   async deleteProfileByName (configName: string): Promise<boolean> {
     const profiles = await this.db.query('SELECT wireless_profile_name as ProfileName FROM profiles_wirelessconfigs WHERE wireless_profile_name = $1', [configName])
     if (profiles.rowCount > 0) {
-      throw NETWORK_UPDATE_ERROR('Wireless', configName)
+      throw new RPSError(NETWORK_UPDATE_ERROR('Wireless', configName))
     }
     try {
       const results = await this.db.query('DELETE FROM wirelessconfigs WHERE wireless_profile_name = $1', [configName])
@@ -111,10 +121,6 @@ export class WirelessConfigDb implements IWirelessProfilesDb {
     */
   async updateProfile (wirelessConfig: WirelessConfig): Promise<WirelessConfig> {
     try {
-      const profiles = await this.db.query('SELECT profile_name as ProfileName FROM profiles WHERE network_profile_name = $1', [wirelessConfig.profileName])
-      if (profiles.rowCount > 0) {
-        throw new RPSError(NETWORK_UPDATE_ERROR('Wireless', wirelessConfig.profileName))
-      }
       const results = await this.db.query('UPDATE wirelessconfigs SET authentication_method=$2, encryption_method=$3, ssid=$4, psk_value=$5, psk_passphrase=$6, link_policy=$7 where wireless_profile_name=$1',
         [
           wirelessConfig.profileName,
