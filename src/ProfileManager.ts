@@ -231,10 +231,6 @@ export class ProfileManager implements IProfileManager {
   public async getAmtProfile (profile: string): Promise<AMTConfiguration> {
     try {
       const amtProfile: AMTConfiguration = await this.amtConfigurations.getProfileByName(profile)
-      // If the Network Config associated with profile, retrieves from DB
-      if (amtProfile.networkConfigName != null) {
-        amtProfile.networkConfigObject = await this.amtConfigurations.getNetworkConfigForProfile(amtProfile.networkConfigName)
-      }
       // If the CIRA Config associated with profile, retrieves from DB
       if (amtProfile.ciraConfigName != null) {
         amtProfile.ciraConfigObject = await this.amtConfigurations.getCiraConfigForProfile(amtProfile.ciraConfigName)

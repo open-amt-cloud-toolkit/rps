@@ -86,14 +86,6 @@ const amtConfigurations: AMTConfiguration[] = [
     ciraConfigObject: ciraConfigurations[0]
   }
 ]
-const netConfigurations = [
-  {
-    profileName: 'netprofile1',
-    dhcpEnabled: true,
-    staticIPShared: true,
-    ipSyncEnabled: true
-  }
-]
 const profileStub: IProfilesDb = {
   getProfileByName: async (name) => {
     return amtConfigurations.find(c => c.profileName === name)
@@ -103,9 +95,6 @@ const profileStub: IProfilesDb = {
   },
   getCiraConfigForProfile: async (ciraConfigName) => {
     return ciraConfigurations.find(c => c.configName === ciraConfigName)
-  },
-  getNetworkConfigForProfile: async (networkConfigName) => {
-    return netConfigurations.find(c => c.profileName === networkConfigName)
   },
   deleteProfileByName: async (profileName) => {
     return true

@@ -9,13 +9,6 @@ import { AMTConfiguration, AMTDomain } from './models/Rcs'
 export interface WebSocketConfig {
   WebSocketPort: number
 }
-export interface NetworkConfig {
-  profileName: string
-  dhcpEnabled: boolean
-  staticIPShared?: boolean
-  ipSyncEnabled?: boolean
-}
-
 export interface WirelessConfig {
   profileName: string
   authenticationMethod: number
