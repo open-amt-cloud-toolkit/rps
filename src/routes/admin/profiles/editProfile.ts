@@ -158,7 +158,6 @@ export const getUpdatedData = async (newConfig: any, oldConfig: AMTConfiguration
     amtConfig.mebxPassword = null
   }
   amtConfig.ciraConfigName = newConfig.ciraConfigName ?? oldConfig.ciraConfigName
-  amtConfig.networkConfigName = newConfig.networkConfigName ?? oldConfig.networkConfigName
   amtConfig.tags = newConfig.tags ?? oldConfig.tags
   amtConfig.dhcpEnabled = newConfig.dhcpEnabled ?? oldConfig.dhcpEnabled
   return amtConfig

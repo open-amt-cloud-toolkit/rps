@@ -5,12 +5,11 @@
  **********************************************************************/
 import { IDbCreator } from './interfaces/IDbCreator'
 import { IProfilesDb } from './interfaces/IProfilesDb'
-import { CIRAConfig, NetworkConfig } from '../RCS.Config'
+import { CIRAConfig } from '../RCS.Config'
 import { mapToProfile } from './mapToProfile'
 import { AMTConfiguration } from '../models/Rcs'
 import { CiraConfigDb } from './ciraConfigs'
-import { PROFILE_INSERTION_FAILED_DUPLICATE, PROFILE_INSERTION_CIRA_CONSTRAINT, API_UNEXPECTED_EXCEPTION, PROFILE_INSERTION_NETWORK_CONSTRAINT } from '../utils/constants'
-import { NetConfigDb } from './netProfiles'
+import { PROFILE_INSERTION_FAILED_DUPLICATE, PROFILE_INSERTION_CIRA_CONSTRAINT, API_UNEXPECTED_EXCEPTION } from '../utils/constants'
 import Logger from '../Logger'
 import { RPSError } from '../utils/RPSError'
 import { ProfilesWifiConfigsDb } from './profileWifiConfigs'
@@ -18,13 +17,11 @@ import { ProfilesWifiConfigsDb } from './profileWifiConfigs'
 export class ProfilesDb implements IProfilesDb {
   db: any
   ciraConfigs: CiraConfigDb
-  networkConfigs: NetConfigDb
   wifiConfigs: ProfilesWifiConfigsDb
   log: Logger
   constructor (dbCreator: IDbCreator) {
     this.db = dbCreator.getDb()
     this.ciraConfigs = new CiraConfigDb(dbCreator)
-    this.networkConfigs = new NetConfigDb(dbCreator)
     this.wifiConfigs = new ProfilesWifiConfigsDb(dbCreator)
     this.log = new Logger('ProfilesDb')
   }
@@ -34,7 +31,7 @@ export class ProfilesDb implements IProfilesDb {
    * @returns {AMTConfiguration[]} returns an array of AMT profile objects
    */
   async getAllProfiles (): Promise<AMTConfiguration[]> {
-    const results = await this.db.query('SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, generate_random_password as GenerateRandomPassword, cira_config_name as ciraConfigName, random_password_length as passwordLength, network_profile_name as NetworkProfileName,mebx_password as MEBxPassword, generate_random_mebx_password as GenerateRandomMEBxPassword, random_mebx_password_length as mebxPasswordLength, tags, dhcp_enabled FROM profiles')
+    const results = await this.db.query('SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, generate_random_password as GenerateRandomPassword, cira_config_name as ciraConfigName, random_password_length as passwordLength,mebx_password as MEBxPassword, generate_random_mebx_password as GenerateRandomMEBxPassword, random_mebx_password_length as mebxPasswordLength, tags, dhcp_enabled FROM profiles')
     const allProfiles: AMTConfiguration[] = await Promise.all(results.rows.map(async profile => {
       let result: AMTConfiguration = null
       result = mapToProfile(profile)
@@ -54,7 +51,7 @@ export class ProfilesDb implements IProfilesDb {
    * @returns {AMTConfiguration} AMT Profile object
    */
   async getProfileByName (profileName: string): Promise<AMTConfiguration> {
-    const results = await this.db.query('SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, generate_random_password as GenerateRandomPassword, cira_config_name as ciraConfigName, random_password_length as passwordLength, network_profile_name as NetworkProfileName, mebx_password as MEBxPassword, generate_random_mebx_password as GenerateRandomMEBxPassword, random_mebx_password_length as  mebxPasswordLength, tags, dhcp_enabled FROM profiles WHERE profile_name = $1', [profileName])
+    const results = await this.db.query('SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, generate_random_password as GenerateRandomPassword, cira_config_name as ciraConfigName, random_password_length as passwordLength, mebx_password as MEBxPassword, generate_random_mebx_password as GenerateRandomMEBxPassword, random_mebx_password_length as  mebxPasswordLength, tags, dhcp_enabled FROM profiles WHERE profile_name = $1', [profileName])
     let amtProfile: AMTConfiguration = null
     if (results.rowCount > 0) {
       amtProfile = mapToProfile(results.rows[0])
@@ -74,15 +71,6 @@ export class ProfilesDb implements IProfilesDb {
    */
   async getCiraConfigForProfile (configName: string): Promise<CIRAConfig> {
     return await this.ciraConfigs.getCiraConfigByName(configName)
-  }
-
-  /**
-   * @description Get Network config from DB by name
-   * @param {string} NetworkConfigName
-   * @returns {NetworkConfig} Network config object
-   */
-  async getNetworkConfigForProfile (NetworkConfigName: string): Promise<NetworkConfig> {
-    return await this.networkConfigs.getProfileByName(NetworkConfigName)
   }
 
   /**
@@ -107,8 +95,8 @@ export class ProfilesDb implements IProfilesDb {
    */
   async insertProfile (amtConfig: AMTConfiguration): Promise<AMTConfiguration> {
     try {
-      const results = await this.db.query('INSERT INTO profiles(profile_name, activation, amt_password, cira_config_name, generate_random_password, random_password_characters, random_password_length, network_profile_name, mebx_password, generate_random_mebx_password, random_mebx_password_length, tags, dhcp_enabled) ' +
-        'values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)',
+      const results = await this.db.query('INSERT INTO profiles(profile_name, activation, amt_password, cira_config_name, generate_random_password, random_password_characters, random_password_length, mebx_password, generate_random_mebx_password, random_mebx_password_length, tags, dhcp_enabled) ' +
+        'values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)',
       [
         amtConfig.profileName,
         amtConfig.activation,
@@ -117,7 +105,6 @@ export class ProfilesDb implements IProfilesDb {
         amtConfig.generateRandomPassword,
         amtConfig.randomPasswordCharacters,
         amtConfig.passwordLength,
-        amtConfig.networkConfigName,
         amtConfig.mebxPassword,
         amtConfig.generateRandomMEBxPassword,
         amtConfig.mebxPasswordLength,
@@ -140,8 +127,6 @@ export class ProfilesDb implements IProfilesDb {
       if (error.code === '23503') { // Unique key violation
         if (error.message.includes('profiles_cira_config_name_fkey')) {
           throw new RPSError(PROFILE_INSERTION_CIRA_CONSTRAINT(amtConfig.ciraConfigName), 'Foreign key constraint violation')
-        } else {
-          throw new RPSError(PROFILE_INSERTION_NETWORK_CONSTRAINT(amtConfig.networkConfigName), 'Foreign key constraint violation')
         }
       }
       throw new RPSError(API_UNEXPECTED_EXCEPTION(amtConfig.profileName))
@@ -155,7 +140,7 @@ export class ProfilesDb implements IProfilesDb {
    */
   async updateProfile (amtConfig: AMTConfiguration): Promise<AMTConfiguration> {
     try {
-      const results = await this.db.query('UPDATE profiles SET activation=$2, amt_password=$3, cira_config_name=$4, generate_random_password=$5, random_password_characters=$6, random_password_length=$7, network_profile_name=$8, mebx_password=$9, generate_random_mebx_password=$10, random_mebx_password_length=$11, tags=$12, dhcp_enabled=$13 WHERE profile_name=$1',
+      const results = await this.db.query('UPDATE profiles SET activation=$2, amt_password=$3, cira_config_name=$4, generate_random_password=$5, random_password_characters=$6, random_password_length=$7, mebx_password=$8, generate_random_mebx_password=$9, random_mebx_password_length=$10, tags=$11, dhcp_enabled=$12 WHERE profile_name=$1',
         [
           amtConfig.profileName,
           amtConfig.activation,
@@ -164,7 +149,6 @@ export class ProfilesDb implements IProfilesDb {
           amtConfig.generateRandomPassword,
           amtConfig.randomPasswordCharacters,
           amtConfig.passwordLength,
-          amtConfig.networkConfigName,
           amtConfig.mebxPassword,
           amtConfig.generateRandomMEBxPassword,
           amtConfig.mebxPasswordLength,
@@ -184,8 +168,6 @@ export class ProfilesDb implements IProfilesDb {
       if (error.code === '23503') { // Foreign key constraint violation
         if (error.message.includes('profiles_cira_config_name_fkey')) {
           throw new RPSError(PROFILE_INSERTION_CIRA_CONSTRAINT(amtConfig.ciraConfigName), 'Foreign key constraint violation')
-        } else {
-          throw new RPSError(PROFILE_INSERTION_NETWORK_CONSTRAINT(amtConfig.networkConfigName), 'Foreign key constraint violation')
         }
       }
       throw new RPSError(API_UNEXPECTED_EXCEPTION(amtConfig.profileName))

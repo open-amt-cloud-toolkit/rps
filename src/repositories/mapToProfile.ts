@@ -15,7 +15,6 @@ export function mapToProfile (results): AMTConfiguration {
     randomPasswordCharacters: results.randompasswordcharacters,
     activation: results.activation,
     ciraConfigName: results.ciraconfigname,
-    networkConfigName: results.networkprofilename,
     mebxPassword: results.mebxpassword,
     generateRandomMEBxPassword: results.generaterandommebxpassword,
     mebxPasswordLength: results.mebxpasswordlength,
