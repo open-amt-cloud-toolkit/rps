@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "43161dac-9140-425b-9e4c-40a9a0aa2a42",
+		"_postman_id": "c1b88ca9-81ea-4cc6-9771-44235709c77d",
 		"name": "RPS API Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -5821,6 +5821,119 @@
 							"response": []
 						},
 						{
+							"name": "Create Profile with CIRA config that doesn't exist",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"pm.test(\"Creation should fail when ciraconfig does not exist\", function () {\r",
+											"    var result = pm.response.json();\r",
+											"    pm.expect(result.error).to.eql(\"Foreign key constraint violation\"),\r",
+											"    pm.expect(result.message).to.eql(\"Referenced config nociraconfig doesn't exist\")\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"type": "text",
+										"value": "APIKEYFORRPS123!",
+										"disabled": true
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n     \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"nociraconfig\",\r\n    \"dhcpEnabled\": true\r\n}"
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Profile with CIRA config and DHCP disabled",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"pm.test(\"Creation should fail when DHCP is disabled and CIRA config name is given\", function () {\r",
+											"    var result = pm.response.json();\r",
+											"    pm.expect(result.errors[0].msg).to.eql(\"CIRA cannot be configured if DHCP is disabled\"),\r",
+											"    pm.expect(result.errors[0].param).to.eql(\"ciraConfigName\"),\r",
+											"    pm.expect(result.errors[0].value).to.eql(\"ciraconfig\")\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"type": "text",
+										"value": "APIKEYFORRPS123!",
+										"disabled": true
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n     \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\",\r\n    \"dhcpEnabled\": false\r\n}"
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "Create Profile",
 							"event": [
 								{
@@ -5860,7 +5973,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n     \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\",\r\n    \"dhcpEnabled\": false\r\n}"
+									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n     \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\",\r\n    \"dhcpEnabled\": true\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5994,6 +6107,63 @@
 										"v1",
 										"admin",
 										"ciraconfigs"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Profile with CIRA config and DHCP disabled",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"pm.test(\"Creation should fail when DHCP is disabled and CIRA config name is given\", function () {\r",
+											"    var result = pm.response.json();\r",
+											"    pm.expect(result.errors[0].msg).to.eql(\"CIRA cannot be configured if DHCP is disabled\"),\r",
+											"    pm.expect(result.errors[0].param).to.eql(\"ciraConfigName\"),\r",
+											"    pm.expect(result.errors[0].value).to.eql(\"ciraconfig\")\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"type": "text",
+										"value": "APIKEYFORRPS123!",
+										"disabled": true
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n     \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\",\r\n    \"dhcpEnabled\": false\r\n}"
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										""
 									]
 								}
 							},
@@ -8020,6 +8190,56 @@
 									"    pm.expect(jsonData.linkPolicy.length).to.eql(2);\r",
 									"    pm.expect(jsonData.linkPolicy[0]).to.eql(14);\r",
 									"    pm.expect(jsonData.linkPolicy[1]).to.eql(16);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"profileName\": \"P1\",\r\n    \"authenticationMethod\": 4,\r\n    \"encryptionMethod\": 4,\r\n    \"ssid\": \"test\",\r\n    \"pskPassphrase\": \"Intel@123\",\r\n    \"linkPolicy\": [14,16]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"wirelessconfigs",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Duplicate Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.environment.unset(\"variable_key\");\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"pm.test(\"Request should return an error message\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.error).to.eql(\"Unique key violation\");\r",
+									"    pm.expect(jsonData.message).to.eql(\"Wireless profile P1 already exists\");\r",
 									"});"
 								],
 								"type": "text/javascript"
