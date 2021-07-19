@@ -105,7 +105,14 @@ export const amtProfileValidator = (): any => {
         }
         return true
       }),
-    check('ciraConfigName').optional(),
+    check('ciraConfigName')
+      .optional()
+      .custom((value, { req }) => {
+        if (!req.body.dhcpEnabled) {
+          throw new Error('CIRA cannot be configured if DHCP is disabled')
+        }
+        return true
+      }),
     check('tags').optional({ nullable: true }).isArray(),
     check('dhcpEnabled')
       .not()
@@ -229,7 +236,14 @@ export const profileUpdateValidator = (): any => {
         }
         return true
       }),
-    check('ciraConfigName').optional(),
+    check('ciraConfigName')
+      .optional()
+      .custom((value, { req }) => {
+        if (!req.body.dhcpEnabled) {
+          throw new Error('CIRA cannot be configured if DHCP is disabled')
+        }
+        return true
+      }),
     check('tags').optional({ nullable: true }).isArray(),
     check('dhcpEnabled')
       .optional()
