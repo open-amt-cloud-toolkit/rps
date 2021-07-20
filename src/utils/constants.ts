@@ -53,3 +53,11 @@ export const API_RESPONSE = (data?: any, error?: string, message?: string): apiR
   }
   return response
 }
+
+// Network Configurator
+
+export const WIFIENDPOINT = {
+  __parameterType: 'reference',
+  __resourceUri: 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_WiFiEndpoint',
+  Name: 'WiFi Endpoint 0'
+}

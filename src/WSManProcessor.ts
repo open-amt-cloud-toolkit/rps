@@ -123,6 +123,38 @@ export class WSManProcessor {
     })
   }
 
+  /**
+  * @description To activate AMT in client control mode
+  * @param {string} clientId
+  * @param {any} password
+  */
+  async addWifiConfig (clientId: string, wifiEndpoint: any, wifiEndpointSettings: any): Promise<void> {
+    const clientObj = this.clientManager.getClientObject(clientId)
+    const amtstack = this.getAmtStack(clientId)
+    await amtstack.AMT_WiFiPortConfigurationService_AddWiFiSettings(wifiEndpoint, wifiEndpointSettings, null, null, null, (stack, name, jsonResponse, status) => {
+      if (status === 200) {
+        clientObj.payload = jsonResponse
+        this.logger.debug('Wifi profile successfully added.')
+      } else {
+        this.logger.error('Failed to add wifi profile.')
+      }
+    })
+  }
+
+  async setWiFiPort (clientId: string, value: number): Promise<void> {
+    const clientObj = this.clientManager.getClientObject(clientId)
+    const amtstack = this.getAmtStack(clientId)
+    await amtstack.CIM_WiFiPort_RequestStateChange(value, null, async () => {
+      await amtstack.Get('CIM_WiFiPort', (stack, name, jsonResponse, status) => {
+        if (status === 200) {
+          clientObj.payload = jsonResponse
+        } else {
+          this.logger.error(`Failed to fully unconfigure AMT, status ${status}`)
+        }
+      })
+    })
+  }
+
   async deactivateACM (clientId: string): Promise<void> {
     const clientObj = this.clientManager.getClientObject(clientId)
     const amtstack = this.getAmtStack(clientId)
@@ -163,7 +195,7 @@ export class WSManProcessor {
           clientObj.socketConn.write = (data: any): void => {
             const wsmanJsonPayload: ClientMsg = this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
             this.logger.debug(`ClientResponseMsg: Message sending to device ${payload.uuid}: ${JSON.stringify(wsmanJsonPayload, null, '\t')}`)
-            clientObj.ClientSocket.send(JSON.stringify(wsmanJsonPayload))
+            clientObj.ClientSocket?.send(JSON.stringify(wsmanJsonPayload))
           }
           return clientObj.socketConn
         }
