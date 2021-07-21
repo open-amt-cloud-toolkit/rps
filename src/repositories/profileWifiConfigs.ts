@@ -25,7 +25,7 @@ export class ProfilesWifiConfigsDb implements IProfileWifiConfigsDb {
    * @returns {ProfileWifiConfigs[]} Return an array of wifi configs
    */
   async getProfileWifiConfigs (profileName: string): Promise<ProfileWifiConfigs[]> {
-    const results = await this.db.query('SELECT priority, wireless_profile_name FROM profiles_wirelessconfigs WHERE profile_name = $1', [profileName])
+    const results = await this.db.query('SELECT priority, wireless_profile_name FROM profiles_wirelessconfigs WHERE profile_name = $1 ORDER BY priority', [profileName])
     return results.rows.map(profile => mapToProfileWifiConfigs(profile))
   }
 

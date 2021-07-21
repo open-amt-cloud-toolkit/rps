@@ -56,7 +56,7 @@ export class WebSocketListener implements IWebSocketListener {
     try {
       const clientId = uuid()
 
-      const client: ClientObject = { ClientId: clientId, ClientSocket: ws, ciraconfig: {} }
+      const client: ClientObject = { ClientId: clientId, ClientSocket: ws, ciraconfig: {}, network: {} }
       this.clientManager.addClient(client)
 
       ws.on('message', async (data: WebSocket.Data) => {

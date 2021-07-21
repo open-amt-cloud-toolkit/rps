@@ -5,6 +5,7 @@
  **********************************************************************/
 import * as WebSocket from 'ws'
 import { AMTConfiguration, AMTDomain } from './models/Rcs'
+import { AMTEthernetPortSettings } from './models/WSManResponse'
 
 export interface WebSocketConfig {
   WebSocketPort: number
@@ -91,6 +92,7 @@ export interface ClientObject {
   signature?: any
   mpsUsername?: string
   mpsPassword?: string
+  network?: NetworkConfigFlow
 }
 
 export interface CIRAConfigFlow {
@@ -112,7 +114,18 @@ export interface CIRAConfigFlow {
   setENVSettingData?: boolean
   getENVSettingDataCIRA?: boolean
   setENVSettingDataCIRA?: boolean
+}
+
+export interface NetworkConfigFlow {
+  getWiFiPortCapabilities?: boolean
+  WiFiPortCapabilities?: any
+  isWiFiConfigsDeleted?: boolean
+  getGeneralSettings?: boolean
   setEthernetPortSettings?: boolean
+  ethernetSettingsWifiObj?: AMTEthernetPortSettings
+  setWiFiPort?: boolean
+  setWiFiPortResponse?: boolean
+  count?: number
 }
 
 export interface mpsServer {

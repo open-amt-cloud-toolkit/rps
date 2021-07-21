@@ -108,7 +108,7 @@ export class Activator implements IExecutor {
       const certChainPfx = this.certManager.dumpPfx(pfxobj)
       // check that provisioning certificate root matches one of the trusted roots from AMT
       for (const hash in clientMsg.payload.certHashes) {
-        if (clientMsg.payload.certHashes[hash].toLowerCase() === certChainPfx.fingerprint.toLowerCase()) {
+        if (clientMsg.payload.certHashes[hash]?.toLowerCase() === certChainPfx.fingerprint?.toLowerCase()) {
           return certChainPfx.provisioningCertificateObj
         }
       }
