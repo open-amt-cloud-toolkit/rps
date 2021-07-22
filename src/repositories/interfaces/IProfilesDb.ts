@@ -7,7 +7,8 @@ import { AMTConfiguration } from '../../models/Rcs'
 import { CIRAConfig } from '../../RCS.Config'
 
 export interface IProfilesDb {
-  getAllProfiles: () => Promise<AMTConfiguration[]>
+  getCount: () => Promise<number>
+  getAllProfiles: (limit: number, offset: number) => Promise<AMTConfiguration[]>
   getProfileByName: (profileName: string) => Promise<AMTConfiguration>
   getCiraConfigForProfile: (ciraConfigName: string) => Promise<CIRAConfig>
   deleteProfileByName: (profileName: string) => Promise<boolean>

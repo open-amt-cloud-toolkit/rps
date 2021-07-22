@@ -56,6 +56,11 @@ export class AMTConfiguration {
   wifiConfigs?: ProfileWifiConfigs[]
 }
 
+export class DataWithCount {
+  data: any[]
+  totalCount: number
+}
+
 export class AMTDomain {
   profileName: string
   domainSuffix: string

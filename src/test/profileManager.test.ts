@@ -87,10 +87,13 @@ const amtConfigurations: AMTConfiguration[] = [
   }
 ]
 const profileStub: IProfilesDb = {
+  getCount: async () => {
+    return 2
+  },
   getProfileByName: async (name) => {
     return amtConfigurations.find(c => c.profileName === name)
   },
-  getAllProfiles: async () => {
+  getAllProfiles: async (top, skip) => {
     return amtConfigurations
   },
   getCiraConfigForProfile: async (ciraConfigName) => {
