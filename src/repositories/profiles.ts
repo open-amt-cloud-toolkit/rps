@@ -9,7 +9,7 @@ import { CIRAConfig } from '../RCS.Config'
 import { mapToProfile } from './mapToProfile'
 import { AMTConfiguration } from '../models/Rcs'
 import { CiraConfigDb } from './ciraConfigs'
-import { PROFILE_INSERTION_FAILED_DUPLICATE, PROFILE_INSERTION_CIRA_CONSTRAINT, API_UNEXPECTED_EXCEPTION } from '../utils/constants'
+import { PROFILE_INSERTION_FAILED_DUPLICATE, PROFILE_INSERTION_CIRA_CONSTRAINT, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP } from '../utils/constants'
 import Logger from '../Logger'
 import { RPSError } from '../utils/RPSError'
 import { ProfilesWifiConfigsDb } from './profileWifiConfigs'
@@ -27,11 +27,26 @@ export class ProfilesDb implements IProfilesDb {
   }
 
   /**
-   * @description Get all AMT Profiles from DB
-   * @returns {AMTConfiguration[]} returns an array of AMT profile objects
+   * @description Get count of all profiles from DB
+   * @returns {number}
    */
-  async getAllProfiles (): Promise<AMTConfiguration[]> {
-    const results = await this.db.query('SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, generate_random_password as GenerateRandomPassword, cira_config_name as ciraConfigName, random_password_length as passwordLength,mebx_password as MEBxPassword, generate_random_mebx_password as GenerateRandomMEBxPassword, random_mebx_password_length as mebxPasswordLength, tags, dhcp_enabled FROM profiles')
+  async getCount (): Promise<number> {
+    const result = await this.db.query('SELECT count(*) OVER() AS total_count FROM profiles', [])
+    let count = 0
+    if (result != null) {
+      count = Number(result?.rows[0]?.total_count)
+    }
+    return count
+  }
+
+  /**
+   * @description Get all AMT Profiles from DB
+   * @param {number} top
+   * @param {number} skip
+   * @returns {Pagination} returns an array of AMT profiles from DB
+   */
+  async getAllProfiles (top: number = DEFAULT_TOP, skip: number = DEFAULT_SKIP): Promise<AMTConfiguration[]> {
+    const results = await this.db.query('SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, generate_random_password as GenerateRandomPassword, cira_config_name as ciraConfigName, random_password_length as passwordLength,mebx_password as MEBxPassword, generate_random_mebx_password as GenerateRandomMEBxPassword, random_mebx_password_length as mebxPasswordLength, tags, dhcp_enabled FROM profiles ORDER BY profile_name LIMIT $1 OFFSET $2', [top, skip])
     const allProfiles: AMTConfiguration[] = await Promise.all(results.rows.map(async profile => {
       let result: AMTConfiguration = null
       result = mapToProfile(profile)

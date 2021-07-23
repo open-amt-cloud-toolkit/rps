@@ -7,10 +7,9 @@ import { IDbCreator } from './interfaces/IDbCreator'
 import { ICiraConfigDb } from './interfaces/ICiraConfigDb'
 import { CIRAConfig } from '../RCS.Config'
 import { mapToCiraConfig } from './mapToCiraConfig'
-import { CIRA_CONFIG_DELETION_FAILED_CONSTRAINT, API_UNEXPECTED_EXCEPTION, CIRA_CONFIG_INSERTION_FAILED_DUPLICATE } from '../utils/constants'
+import { CIRA_CONFIG_DELETION_FAILED_CONSTRAINT, API_UNEXPECTED_EXCEPTION, CIRA_CONFIG_INSERTION_FAILED_DUPLICATE, DEFAULT_TOP, DEFAULT_SKIP } from '../utils/constants'
 import { RPSError } from '../utils/RPSError'
 import Logger from '../Logger'
-
 export class CiraConfigDb implements ICiraConfigDb {
   db: any
   log: Logger
@@ -20,11 +19,26 @@ export class CiraConfigDb implements ICiraConfigDb {
   }
 
   /**
-   * @description Get all CIRA config from DB
-   * @returns {CIRAConfig[]} returns an array of CIRA config objects
+   * @description Get count of all CIRA configs from DB
+   * @returns {number}
    */
-  async getAllCiraConfigs (): Promise<CIRAConfig[]> {
-    const results = await this.db.query('SELECT cira_config_name, mps_server_address, mps_port, user_name, password, generate_random_password, random_password_length, common_name, server_address_format, auth_method, mps_root_certificate, proxydetails from ciraconfigs')
+  async getCount (): Promise<number> {
+    const result = await this.db.query('SELECT count(*) OVER() AS total_count FROM ciraconfigs', [])
+    let count = 0
+    if (result != null) {
+      count = Number(result?.rows[0]?.total_count)
+    }
+    return count
+  }
+
+  /**
+   * @description Get all CIRA config from DB
+   * @param {number} top
+   * @param {number} skip
+   * @returns {Pagination} returns an array of CIRA config objects from DB
+   */
+  async getAllCiraConfigs (top: number = DEFAULT_TOP, skip: number = DEFAULT_SKIP): Promise<CIRAConfig[]> {
+    const results = await this.db.query('SELECT cira_config_name, mps_server_address, mps_port, user_name, password, generate_random_password, random_password_length, common_name, server_address_format, auth_method, mps_root_certificate, proxydetails from ciraconfigs ORDER BY cira_config_name LIMIT $1 OFFSET $2', [top, skip])
     return await Promise.all(results.rows.map(async (p) => {
       const result = mapToCiraConfig(p)
       return result

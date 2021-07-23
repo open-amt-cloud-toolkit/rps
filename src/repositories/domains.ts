@@ -6,7 +6,7 @@
 import { IDbCreator } from './interfaces/IDbCreator'
 import { IDomainsDb } from './interfaces/IDomainsDb'
 import { mapToDomain } from './mapToDomain'
-import { DUPLICATE_DOMAIN_FAILED, API_UNEXPECTED_EXCEPTION } from '../utils/constants'
+import { DUPLICATE_DOMAIN_FAILED, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP } from '../utils/constants'
 import { AMTDomain } from '../models/Rcs'
 import { RPSError } from '../utils/RPSError'
 import Logger from '../Logger'
@@ -20,13 +20,28 @@ export class DomainsDb implements IDomainsDb {
   }
 
   /**
-   * @description Get all Domains from DB
-   * @returns {AMTDomain[]} returns an array of AMT Domain objects
+   * @description Get count of all domains from DB
+   * @returns {number}
    */
-  async getAllDomains (): Promise<AMTDomain[]> {
-    const results = await this.db.query('SELECT name as Name, domain_suffix as DomainSuffix, provisioning_cert as ProvisioningCert, provisioning_cert_storage_format as ProvisioningCertStorageFormat, provisioning_cert_key as ProvisioningCertPassword FROM domains')
-    return await Promise.all(results.rows.map(async p => {
-      const result = mapToDomain(p)
+  async getCount (): Promise<number> {
+    const result = await this.db.query('SELECT count(*) OVER() AS total_count FROM domains', [])
+    let count = 0
+    if (result != null) {
+      count = Number(result?.rows[0]?.total_count)
+    }
+    return count
+  }
+
+  /**
+   * @description Get all Domains from DB
+   * @param {number} top
+   * @param {number} skip
+   * @returns {AMTDomain[]} returns an array of AMT Domain objects from DB
+   */
+  async getAllDomains (top: number = DEFAULT_TOP, skip: number = DEFAULT_SKIP): Promise<AMTDomain[]> {
+    const results = await this.db.query('SELECT name as Name, domain_suffix as DomainSuffix, provisioning_cert as ProvisioningCert, provisioning_cert_storage_format as ProvisioningCertStorageFormat, provisioning_cert_key as ProvisioningCertPassword FROM domains ORDER BY name LIMIT $1 OFFSET $2', [top, skip])
+    return await Promise.all(results.rows.map(async profile => {
+      const result = mapToDomain(profile)
       return result
     }))
   }

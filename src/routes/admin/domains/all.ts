@@ -7,21 +7,39 @@ import { IDomainsDb } from '../../../repositories/interfaces/IDomainsDb'
 import { DomainsDbFactory } from '../../../repositories/factories/DomainsDbFactory'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
 import Logger from '../../../Logger'
-import { AMTDomain } from '../../../models/Rcs'
+import { AMTDomain, DataWithCount } from '../../../models/Rcs'
+import { validationResult } from 'express-validator'
 
 export async function getAllDomains (req, res): Promise<void> {
   const log = new Logger('getAllDomains')
   let domainsDb: IDomainsDb
+  const top = req.query.$top
+  const skip = req.query.$skip
+  const count = req.query.$count
   try {
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+      res.status(400).json({ errors: errors.array() })
+      return
+    }
     domainsDb = DomainsDbFactory.getDomainsDb()
-    let results: AMTDomain[] = await domainsDb.getAllDomains()
-    if (results.length >= 0) {
-      results = results.map((result: AMTDomain) => {
+    let domains: AMTDomain[] = await domainsDb.getAllDomains(top, skip)
+    if (domains.length >= 0) {
+      domains = domains.map((result: AMTDomain) => {
         delete result.provisioningCert
         delete result.provisioningCertPassword
         return result
       })
-      res.status(200).json(API_RESPONSE(results)).end()
+    }
+    if (count == null || count === 'false' || count === '0') {
+      res.status(200).json(API_RESPONSE(domains)).end()
+    } else {
+      const count: number = await domainsDb.getCount()
+      const dataWithCount: DataWithCount = {
+        data: domains,
+        totalCount: count
+      }
+      res.status(200).json(API_RESPONSE(dataWithCount)).end()
     }
   } catch (error) {
     log.error('Failed to get all the AMT Domains :', error)

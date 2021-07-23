@@ -61,3 +61,8 @@ export const WIFIENDPOINT = {
   __resourceUri: 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_WiFiEndpoint',
   Name: 'WiFi Endpoint 0'
 }
+
+// Default limit and offset for api pagination
+
+export const DEFAULT_TOP = 25
+export const DEFAULT_SKIP = 0

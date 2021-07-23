@@ -5,7 +5,8 @@
  **********************************************************************/
 import { AMTDomain } from '../../models/Rcs'
 export interface IDomainsDb {
-  getAllDomains: () => Promise<AMTDomain[]>
+  getCount: () => Promise<number>
+  getAllDomains: (limit: number, offset: number) => Promise<AMTDomain[]>
   getDomainByName: (domainName: string) => Promise<AMTDomain>
   getDomainByDomainSuffix: (domainSuffix: string) => Promise<AMTDomain>
   insertDomain: (amtDomain: AMTDomain) => Promise<AMTDomain>

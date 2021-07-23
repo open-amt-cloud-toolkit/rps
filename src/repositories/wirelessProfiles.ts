@@ -5,7 +5,7 @@
 import { IDbCreator } from './interfaces/IDbCreator'
 import { WirelessConfig } from '../RCS.Config'
 import { IWirelessProfilesDb } from './interfaces/IWirelessProfilesDB'
-import { API_UNEXPECTED_EXCEPTION, NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT, NETWORK_CONFIG_ERROR, NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE, NETWORK_UPDATE_ERROR } from '../utils/constants'
+import { API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP, NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT, NETWORK_CONFIG_ERROR, NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE, NETWORK_UPDATE_ERROR } from '../utils/constants'
 import { mapToWirelessProfile } from './maptoWirelessProfile'
 import { RPSError } from '../utils/RPSError'
 import Logger from '../Logger'
@@ -19,11 +19,26 @@ export class WirelessConfigDb implements IWirelessProfilesDb {
   }
 
   /**
+   * @description Get count of all wifiConfigs from DB
+   * @returns {number}
+   */
+  async getCount (): Promise<number> {
+    const result = await this.db.query('SELECT count(*) OVER() AS total_count FROM wirelessconfigs', [])
+    let count = 0
+    if (result != null) {
+      count = Number(result?.rows[0]?.total_count)
+    }
+    return count
+  }
+
+  /**
     * @description Get all wireless profiles from DB
+    * @param {number} top
+    * @param {number} skip
     * @returns {WirelessConfig []} returns an array of WirelessConfig objects
-    */
-  async getAllProfiles (): Promise<WirelessConfig[]> {
-    const results = await this.db.query('SELECT wireless_profile_name, authentication_method, encryption_method, ssid, psk_value, psk_passphrase, link_policy from wirelessconfigs')
+  */
+  async getAllProfiles (top: number = DEFAULT_TOP, skip: number = DEFAULT_SKIP): Promise<WirelessConfig[]> {
+    const results = await this.db.query('SELECT wireless_profile_name, authentication_method, encryption_method, ssid, psk_value, psk_passphrase, link_policy, count(*) OVER() AS total_count from wirelessconfigs ORDER BY wireless_profile_name LIMIT $1 OFFSET $2', [top, skip])
     return results.rows.map(profile => mapToWirelessProfile(profile))
   }
 

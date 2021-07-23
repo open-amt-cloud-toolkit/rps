@@ -5,7 +5,8 @@
 import { WirelessConfig } from '../../RCS.Config'
 
 export interface IWirelessProfilesDb {
-  getAllProfiles: () => Promise<WirelessConfig[]>
+  getCount: () => Promise<number>
+  getAllProfiles: (limit: number, offset: number) => Promise<WirelessConfig[]>
   getProfileByName: (profileName: string) => Promise<WirelessConfig>
   checkProfileExits: (configName: string) => Promise<boolean>
   deleteProfileByName: (profileName: string) => Promise<boolean>
