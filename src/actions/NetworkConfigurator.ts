@@ -39,10 +39,10 @@ export class NetworkConfigurator implements IExecutor {
    * @returns {ClientMsg} message to sent to client
    */
   async execute (message: any, clientId: string): Promise<ClientMsg> {
+    let clientObj: ClientObject
     try {
       await this.processWSManJsonResponses(message, clientId)
-
-      const clientObj: ClientObject = this.clientManager.getClientObject(clientId)
+      clientObj = this.clientManager.getClientObject(clientId)
       const payload: any = clientObj.ClientData.payload
       if (!clientObj.network?.getWiFiPortCapabilities) {
         // gets all the existing wifi profiles from the device
@@ -63,10 +63,11 @@ export class NetworkConfigurator implements IExecutor {
     } catch (error) {
       this.logger.error(`${clientId} : Failed to configure network settings : ${error}`)
       if (error instanceof RPSError) {
-        return this.responseMsg.get(clientId, null, 'error', 'failed', error.message)
+        clientObj.status.Activation = error.message
       } else {
-        return this.responseMsg.get(clientId, null, 'error', 'failed', 'Failed to configure network settings')
+        clientObj.status.Activation = 'Failed to configure network settings'
       }
+      return this.responseMsg.get(clientId, null, 'error', 'failed', JSON.stringify(clientObj.status))
     }
   }
 
@@ -231,7 +232,7 @@ export class NetworkConfigurator implements IExecutor {
 
   async callCIRAConfig (clientId: string, clientObj: ClientObject, status: string, message: any): Promise<void> {
     this.logger.debug(`Device ${clientObj.uuid} ${status} with the profile : ${clientObj.ClientData.payload.profile.profileName}`)
-    clientObj.ciraconfig.status += `${status}.`
+    clientObj.status.Network = `${status}.`
     clientObj.action = ClientAction.CIRACONFIG
     this.clientManager.setClientObject(clientObj)
     await this.CIRAConfigurator.execute(message, clientId)

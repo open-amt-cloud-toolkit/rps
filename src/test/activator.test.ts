@@ -84,7 +84,8 @@ beforeAll(() => {
     ClientSocket: null,
     ClientData: activationmsg,
     ciraconfig: {},
-    network: {}
+    network: {},
+    status: {}
   })
 })
 
@@ -95,7 +96,7 @@ describe('execute function', () => {
     clientManager.setClientObject(clientObj)
     const clientMsg = { payload: null }
     const responseMsg = await activator.execute(clientMsg, clientId)
-    expect(responseMsg.message).toEqual(`Device ${activationmsg.payload.uuid} activation failed. Missing/invalid WSMan response payload.`)
+    expect(responseMsg.message).toEqual(`{"Activation":"Device ${activationmsg.payload.uuid} activation failed. Missing/invalid WSMan response payload."}`)
   })
 })
 
@@ -179,7 +180,6 @@ describe('processWSManJasonResponse', () => {
   test('should throw an error if setting the MEBx password fails', async () => {
     const message = { payload: { Header: { Method: 'SetMEBxPassword' }, Body: { ReturnValue: 1 } } }
     const clientObj = clientManager.getClientObject(clientId)
-    clientObj.ciraconfig = { status: null }
     try {
       await activator.processWSManJsonResponse(message, clientId)
     } catch (error) {
@@ -189,7 +189,6 @@ describe('processWSManJasonResponse', () => {
   test('should thow an error if receives an invalid response', async () => {
     const message = { payload: { Header: { Method: 'badrequest' }, Body: { ReturnValue: 0 } } }
     const clientObj = clientManager.getClientObject(clientId)
-    clientObj.ciraconfig = { status: null }
     try {
       await activator.processWSManJsonResponse(message, clientId)
     } catch (error) {
