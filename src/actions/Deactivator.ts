@@ -7,7 +7,7 @@
 
 import { IExecutor } from '../interfaces/IExecutor'
 import { ILogger } from '../interfaces/ILogger'
-import { ClientMsg } from '../RCS.Config'
+import { ClientMsg, ClientObject } from '../RCS.Config'
 import { ClientResponseMsg } from '../utils/ClientResponseMsg'
 import { WSManProcessor } from '../WSManProcessor'
 import { IClientManager } from '../interfaces/IClientManager'
@@ -33,8 +33,9 @@ export class Deactivator implements IExecutor {
    * @returns {RCSMessage} message to sent to client
    */
   async execute (message: any, clientId: string): Promise<ClientMsg> {
+    let clientObj: ClientObject
     try {
-      const clientObj = this.clientManager.getClientObject(clientId)
+      clientObj = this.clientManager.getClientObject(clientId)
 
       const wsmanResponse = message.payload
 
@@ -58,8 +59,8 @@ export class Deactivator implements IExecutor {
           } catch (err) {
             this.logger.error('unable to removed metadata with MPS', err)
           }
-
-          return this.responseMsg.get(clientId, null, 'success', 'success', `Device ${clientObj.uuid} deactivated`)
+          clientObj.status.Deactivation = `Device ${clientObj.uuid} deactivated`
+          return this.responseMsg.get(clientId, null, 'success', 'success', JSON.stringify(clientObj.status))
         }
       } else {
         clientObj.ClientData.payload = wsmanResponse
@@ -71,10 +72,11 @@ export class Deactivator implements IExecutor {
         `${clientId} : Failed to deactivate: ${error}`
       )
       if (error instanceof RPSError) {
-        return this.responseMsg.get(clientId, null, 'error', 'failed', error.message)
+        clientObj.status.Deactivation = error.message
       } else {
-        return this.responseMsg.get(clientId, null, 'error', 'failed', 'failed to deactivate')
+        clientObj.status.Deactivation = 'Failed to deactivate'
       }
+      return this.responseMsg.get(clientId, null, 'error', 'failed', JSON.stringify(clientObj.status))
     }
   }
 }

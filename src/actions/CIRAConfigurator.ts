@@ -75,7 +75,7 @@ export class CIRAConfigurator implements IExecutor {
               await this.amtwsman.batchEnum(clientId, 'AMT_ManagementPresenceRemoteSAP', AMTUserName, clientObj.ClientData.payload.uuid)
             } else {
               this.logger.error('AMT_ManagementPresenceRemoteSAP')
-              throw new RPSError(`Device ${clientObj.uuid} ${clientObj.ciraconfig.status} Failed to add Management Presence Server.`)
+              throw new RPSError(`Device ${clientObj.uuid} Failed to add Management Presence Server.`)
             }
           } else if (!clientObj.ciraconfig.addRemoteAccessPolicyRule && clientObj.ciraconfig.addMPSServer) {
             const result = wsmanResponse.AMT_ManagementPresenceRemoteSAP
@@ -95,7 +95,7 @@ export class CIRAConfigurator implements IExecutor {
                 await this.amtwsman.execute(clientId, 'AMT_RemoteAccessService', 'AddRemoteAccessPolicyRule', policy, null, AMTUserName, clientObj.ClientData.payload.password)
               } else {
                 this.logger.error('AMT_RemoteAccessService')
-                throw new RPSError(`Device ${clientObj.uuid} ${clientObj.ciraconfig.status} Failed to add Management Presence Server.`)
+                throw new RPSError(`Device ${clientObj.uuid} Failed to add Management Presence Server.`)
               }
             }
           } else if (!clientObj.ciraconfig.userInitConnectionService && clientObj.ciraconfig.addRemoteAccessPolicyRule) {
@@ -118,19 +118,21 @@ export class CIRAConfigurator implements IExecutor {
             this.clientManager.setClientObject(clientObj)
             await this.amtwsman.put(clientId, 'AMT_EnvironmentDetectionSettingData', envSettings, AMTUserName, clientObj.ClientData.payload.password)
           } else if (clientObj.ciraconfig.setENVSettingDataCIRA) {
-            return this.responseMsg.get(clientId, null, 'success', 'success', `Device ${clientObj.uuid} ${clientObj.ciraconfig.status} CIRA Configured.`)
+            clientObj.status.CIRAConnection = 'Configured'
+            return this.responseMsg.get(clientId, null, 'success', 'success', JSON.stringify(clientObj.status))
           }
         } else if (clientObj.ciraconfig.setENVSettingData) {
-          return this.responseMsg.get(clientId, null, 'success', 'success', `Device ${clientObj.uuid} ${clientObj.ciraconfig.status}`)
+          return this.responseMsg.get(clientId, null, 'success', 'success', JSON.stringify(clientObj.status))
         }
       }
     } catch (error) {
       this.logger.error(`${clientId} : Failed to configure CIRA : ${error}`)
       if (error instanceof RPSError) {
-        return this.responseMsg.get(clientId, null, 'error', 'failed', error.message)
+        clientObj.status.CIRAConnection = error.message
       } else {
-        return this.responseMsg.get(clientId, null, 'error', 'failed', `${clientObj.ciraconfig.status} Failed to configure CIRA `)
+        clientObj.status.CIRAConnection = 'Failed to configure CIRA'
       }
+      return this.responseMsg.get(clientId, null, 'error', 'failed', JSON.stringify(clientObj.status))
     }
   }
 

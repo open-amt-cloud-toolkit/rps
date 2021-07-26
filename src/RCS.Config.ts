@@ -64,12 +64,19 @@ export interface RemoteConfig {
   AMTConfigurations: AMTConfiguration[]
   AMTDomains: AMTDomain[]
 }
-export interface SocketConnection{
+export interface SocketConnection {
   socket: WebSocket
   state: number
   onStateChange?: Function
   close?: Function
   write?: Function
+}
+
+export interface Status {
+  Activation?: string
+  Network?: string
+  CIRAConnection?: string
+  Deactivation?: string
 }
 export interface ClientObject {
   ClientId: string
@@ -93,10 +100,10 @@ export interface ClientObject {
   mpsUsername?: string
   mpsPassword?: string
   network?: NetworkConfigFlow
+  status?: Status
 }
 
 export interface CIRAConfigFlow {
-  status?: string
   policyRuleUserInitiate?: boolean
   policyRuleAlert?: boolean
   policyRulePeriodic?: boolean
