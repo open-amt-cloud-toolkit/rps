@@ -9,6 +9,7 @@ import { DOMAIN_NOT_FOUND, API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../
 import { EnvReader } from '../../../utils/EnvReader'
 import { AMTDomain } from '../../../models/Rcs'
 import Logger from '../../../Logger'
+import { MqttProvider } from '../../../utils/MqttProvider'
 
 export async function deleteDomain (req, res): Promise<void> {
   const log = new Logger('deleteDomain')
@@ -18,6 +19,7 @@ export async function deleteDomain (req, res): Promise<void> {
     domainsDb = DomainsDbFactory.getDomainsDb()
     const domain: AMTDomain = await domainsDb.getDomainByName(domainName)
     if (domain == null) {
+      MqttProvider.publishEvent('fail', ['deleteDomain'], `Domain Not Found : ${domainName}`)
       res.status(404).json(API_RESPONSE(null, 'Not Found', DOMAIN_NOT_FOUND(domainName))).end()
     } else {
       const results = await domainsDb.deleteDomainByName(domainName)
@@ -25,10 +27,12 @@ export async function deleteDomain (req, res): Promise<void> {
         if (req.secretsManager) {
           await req.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/${domain.profileName}`)
         }
+        MqttProvider.publishEvent('success', ['deleteDomain'], `Domain Deleted : ${domainName}`)
         res.status(204).end()
       }
     }
   } catch (error) {
+    MqttProvider.publishEvent('fail', ['deleteDomain'], `Failed to delete domain : ${domainName}`)
     log.error(`Failed to delete AMT Domain : ${domainName}`, error)
     res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(domainName))).end()
   }

@@ -9,5 +9,6 @@
   "cors_headers": "Origin, X-Requested-With, Accept, Content-Type, csrf-token, authorization",
   "cors_methods": "*",
   "mps_server": "http://localhost:3000",
-  "delay_timer": 12
+  "delay_timer": 12,
+  "mqtt_address": ""
 }

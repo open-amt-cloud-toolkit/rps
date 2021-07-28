@@ -35,6 +35,7 @@ export class RCSConfig {
   corsMethods: string
   mpsServer: string
   delayTimer: number
+  mqttAddress?: string
   constructor () {
     this.VaultConfig = new VaultConfig()
   }
@@ -206,9 +207,20 @@ const recipeRCSConfig = {
   cors_methods: 'corsMethods',
   cors_allow_credentials: 'corsAllowCredentials',
   mps_server: 'mpsServer',
-  delay_timer: 'delayTimer'
+  delay_timer: 'delayTimer',
+  mqtt_address: 'mqttAddress'
 }
 
 export function mapConfig (src, dot): RCSConfig {
   return dot.transform(recipeRCSConfig, src) as RCSConfig
+}
+
+export type eventType = 'request' | 'success' | 'fail'
+
+export interface OpenAMTEvent {
+  type: eventType
+  message: string
+  methods: string[]
+  guid: string
+  timestamp: number
 }

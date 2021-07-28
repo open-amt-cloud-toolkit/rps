@@ -11,6 +11,7 @@ import Logger from '../../../Logger'
 import { validationResult } from 'express-validator'
 import { RPSError } from '../../../utils/RPSError'
 import { EnvReader } from '../../../utils/EnvReader'
+import { MqttProvider } from '../../../utils/MqttProvider'
 
 export async function editWirelessProfile (req, res): Promise<void> {
   const log = new Logger('editNetProfile')
@@ -18,12 +19,14 @@ export async function editWirelessProfile (req, res): Promise<void> {
   try {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
+      MqttProvider.publishEvent('fail', ['editWirelessProfiles'], `Failed to update wireless profile : ${req.body.profileName}`)
       res.status(400).json({ errors: errors.array() })
       return
     }
     wirelessDb = WirelessConfigDbFactory.getConfigDb()
     let config: WirelessConfig = await wirelessDb.getProfileByName(req.body.profileName)
     if (config == null) {
+      MqttProvider.publishEvent('fail', ['editWirelessProfiles'], `Wireless Profile Not Found : ${req.body.profileName}`)
       res.status(404).json(API_RESPONSE(null, 'Not Found', NETWORK_CONFIG_NOT_FOUND('Wireless', req.body.profileName))).end()
     } else {
       const passphrase = req.body.pskPassphrase
@@ -41,9 +44,11 @@ export async function editWirelessProfile (req, res): Promise<void> {
       }
       delete results.pskPassphrase
       delete results.pskValue
+      MqttProvider.publishEvent('success', ['editWirelessProfiles'], `Updated Wireless Profile : ${config.profileName}`)
       res.status(200).json(results).end()
     }
   } catch (error) {
+    MqttProvider.publishEvent('fail', ['editWirelessProfiles'], `Failed to update wireless profile : ${req.body.profileName}`)
     log.error(`Failed to edit network configuration : ${req.body.profileName}`, error)
     if (error instanceof RPSError) {
       res.status(400).json(API_RESPONSE(null, error.message)).end()

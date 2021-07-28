@@ -10,6 +10,7 @@ import { WirelessConfig } from '../../../RCS.Config'
 import Logger from '../../../Logger'
 import { RPSError } from '../../../utils/RPSError'
 import { EnvReader } from '../../../utils/EnvReader'
+import { MqttProvider } from '../../../utils/MqttProvider'
 
 export async function createWirelessProfile (req, res): Promise<void> {
   let profilesDb: IWirelessProfilesDb = null
@@ -18,6 +19,7 @@ export async function createWirelessProfile (req, res): Promise<void> {
   try {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
+      MqttProvider.publishEvent('fail', ['createWirelessProfiles'], `Failed to create wireless profile : ${wirelessConfig.profileName}`)
       res.status(400).json({ errors: errors.array() })
       return
     }
@@ -36,8 +38,10 @@ export async function createWirelessProfile (req, res): Promise<void> {
     }
     log.verbose(`Created wireless profile : ${wirelessConfig.profileName}`)
     delete results.pskPassphrase
+    MqttProvider.publishEvent('success', ['createWirelessProfiles'], `Created wireless profile : ${wirelessConfig.profileName}`)
     res.status(201).json(results).end()
   } catch (error) {
+    MqttProvider.publishEvent('fail', ['createWirelessProfiles'], `Failed to create wireless profile : ${wirelessConfig.profileName}`)
     log.error(`Failed to create a wireless profile : ${wirelessConfig.profileName}`, error)
     if (error instanceof RPSError) {
       res.status(400).json(API_RESPONSE(null, error.name, error.message)).end()

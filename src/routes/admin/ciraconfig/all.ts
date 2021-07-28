@@ -10,6 +10,7 @@ import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants
 import { CIRAConfig } from '../../../RCS.Config'
 import { DataWithCount } from '../../../models/Rcs'
 import { validationResult } from 'express-validator'
+import { MqttProvider } from '../../../utils/MqttProvider'
 
 export async function allCiraConfigs (req, res): Promise<void> {
   let ciraConfigDb: ICiraConfigDb = null
@@ -20,6 +21,7 @@ export async function allCiraConfigs (req, res): Promise<void> {
   try {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
+      MqttProvider.publishEvent('fail', ['allCiraConfigs'], 'Failed to get all the CIRA config profiles')
       res.status(400).json({ errors: errors.array() })
       return
     }
@@ -32,6 +34,7 @@ export async function allCiraConfigs (req, res): Promise<void> {
       })
     }
     if (count == null || count === 'false' || count === '0') {
+      MqttProvider.publishEvent('success', ['allCiraConfigs'], 'No configs to send')
       res.status(200).json(API_RESPONSE(ciraConfigs)).end()
     } else {
       const count: number = await ciraConfigDb.getCount()
@@ -39,9 +42,11 @@ export async function allCiraConfigs (req, res): Promise<void> {
         data: ciraConfigs,
         totalCount: count
       }
+      MqttProvider.publishEvent('success', ['allCiraConfigs'], 'Sent all configs successfully')
       res.status(200).json(API_RESPONSE(dataWithCount)).end()
     }
   } catch (error) {
+    MqttProvider.publishEvent('fail', ['allCiraConfigs'], 'Failed to get all the CIRA config profiles')
     log.error('Failed to get all the CIRA config profiles :', error)
     res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION('Get all CIRA config profiles'))).end()
   }

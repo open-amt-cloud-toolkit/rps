@@ -9,6 +9,7 @@ import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants
 import Logger from '../../../Logger'
 import { AMTDomain, DataWithCount } from '../../../models/Rcs'
 import { validationResult } from 'express-validator'
+import { MqttProvider } from '../../../utils/MqttProvider'
 
 export async function getAllDomains (req, res): Promise<void> {
   const log = new Logger('getAllDomains')
@@ -19,6 +20,7 @@ export async function getAllDomains (req, res): Promise<void> {
   try {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
+      MqttProvider.publishEvent('fail', ['getAllDomains'], 'Failed to get all domains')
       res.status(400).json({ errors: errors.array() })
       return
     }
@@ -32,6 +34,7 @@ export async function getAllDomains (req, res): Promise<void> {
       })
     }
     if (count == null || count === 'false' || count === '0') {
+      MqttProvider.publishEvent('success', ['getAllDomains'], 'No domains to get')
       res.status(200).json(API_RESPONSE(domains)).end()
     } else {
       const count: number = await domainsDb.getCount()
@@ -39,9 +42,11 @@ export async function getAllDomains (req, res): Promise<void> {
         data: domains,
         totalCount: count
       }
+      MqttProvider.publishEvent('success', ['getAllDomains'], 'Sent all domains')
       res.status(200).json(API_RESPONSE(dataWithCount)).end()
     }
   } catch (error) {
+    MqttProvider.publishEvent('fail', ['getAllDomains'], 'Failed to get all domains')
     log.error('Failed to get all the AMT Domains :', error)
     res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION('GET all Domains'))).end()
   }

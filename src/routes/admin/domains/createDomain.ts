@@ -11,6 +11,7 @@ import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
 import { RPSError } from '../../../utils/RPSError'
+import { MqttProvider } from '../../../utils/MqttProvider'
 
 export async function createDomain (req, res): Promise<void> {
   let domainsDb: IDomainsDb = null
@@ -21,6 +22,7 @@ export async function createDomain (req, res): Promise<void> {
   try {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
+      MqttProvider.publishEvent('fail', ['createDomain'], 'Failed to create Domain')
       res.status(400).json({ errors: errors.array() })
       return
     }
@@ -51,9 +53,11 @@ export async function createDomain (req, res): Promise<void> {
       log.verbose(`Created Domain : ${amtDomain.profileName}`)
       delete results.provisioningCert
       delete results.provisioningCertPassword
+      MqttProvider.publishEvent('success', ['createDomain'], `Created Domain : ${amtDomain.profileName}`)
       res.status(201).json(results).end()
     }
   } catch (error) {
+    MqttProvider.publishEvent('fail', ['createDomain'], `Failed to create a AMT Domain : ${amtDomain.profileName}`)
     log.error(`Failed to create a AMT Domain : ${amtDomain.profileName}`, error)
     if (error instanceof RPSError) {
       res.status(400).json(API_RESPONSE(null, error.name, error.message)).end()
