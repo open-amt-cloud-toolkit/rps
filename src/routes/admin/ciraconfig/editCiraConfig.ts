@@ -11,6 +11,7 @@ import Logger from '../../../Logger'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, CIRA_CONFIG_NOT_FOUND } from '../../../utils/constants'
 import { validationResult } from 'express-validator'
 import { RPSError } from '../../../utils/RPSError'
+import { MqttProvider } from '../../../utils/MqttProvider'
 
 export async function editCiraConfig (req, res): Promise<void> {
   const log = new Logger('editCiraConfig')
@@ -26,6 +27,7 @@ export async function editCiraConfig (req, res): Promise<void> {
     const oldConfig: CIRAConfig = await ciraConfigDb.getCiraConfigByName(newConfig.configName)
     if (oldConfig == null) {
       log.debug('Not found : ', newConfig.configName)
+      MqttProvider.publishEvent('fail', ['editCiraConfig'], `CIRA config "${newConfig.ConfigName}" not found`)
       res.status(404).json(API_RESPONSE(null, 'Not Found', CIRA_CONFIG_NOT_FOUND(newConfig.configName))).end()
     } else {
       const ciraConfig: CIRAConfig = getUpdatedData(newConfig, oldConfig)
@@ -49,11 +51,13 @@ export async function editCiraConfig (req, res): Promise<void> {
           }
         }
       }
+      MqttProvider.publishEvent('success', ['editCiraConfig'], `Updated CIRA config profile : ${ciraConfig.configName}`)
       log.verbose(`Updated CIRA config profile : ${ciraConfig.configName}`)
       delete results.password
       res.status(200).json(results).end()
     }
   } catch (error) {
+    MqttProvider.publishEvent('fail', ['editCiraConfig'], `Failed to update CIRA config : ${newConfig.ConfigName}`)
     log.error(`Failed to update CIRA config : ${newConfig.ConfigName}`, error)
     if (error instanceof RPSError) {
       res.status(400).json(API_RESPONSE(null, error.name, error.message)).end()

@@ -20,6 +20,7 @@ import { AMTUserName, WIFIENDPOINT } from './../utils/constants'
 import { AMTConfiguration } from '../models/Rcs'
 import { IWirelessProfilesDb } from '../repositories/interfaces/IWirelessProfilesDB'
 import { WirelessConfigDbFactory } from '../repositories/factories/WirelessConfigDbFactory'
+import { MqttProvider } from '../utils/MqttProvider'
 
 export class NetworkConfigurator implements IExecutor {
   constructor (
@@ -61,6 +62,7 @@ export class NetworkConfigurator implements IExecutor {
         await this.addWifiConfigs(clientObj, clientId, payload.profile.wifiConfigs)
       }
     } catch (error) {
+      MqttProvider.publishEvent('fail', ['NetworkConfigurator'], 'Failed to configure network settings', clientObj.uuid)
       this.logger.error(`${clientId} : Failed to configure network settings : ${error}`)
       if (error instanceof RPSError) {
         clientObj.status.Activation = error.message
@@ -233,6 +235,7 @@ export class NetworkConfigurator implements IExecutor {
   async callCIRAConfig (clientId: string, clientObj: ClientObject, status: string, message: any): Promise<void> {
     this.logger.debug(`Device ${clientObj.uuid} ${status} with the profile : ${clientObj.ClientData.payload.profile.profileName}`)
     clientObj.status.Network = `${status}.`
+    MqttProvider.publishEvent('success', ['NetworkConfigurator'], `Status : ${status}`, clientObj.uuid)
     clientObj.action = ClientAction.CIRACONFIG
     this.clientManager.setClientObject(clientObj)
     await this.CIRAConfigurator.execute(message, clientId)

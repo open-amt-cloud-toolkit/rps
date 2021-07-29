@@ -14,6 +14,7 @@ import { ClientAction, ProfileWifiConfigs } from '../../../RCS.Config'
 import { RPSError } from '../../../utils/RPSError'
 import { IProfileWifiConfigsDb } from '../../../repositories/interfaces/IProfileWifiConfigsDb'
 import { ProfileWifiConfigsDbFactory } from '../../../repositories/factories/ProfileWifiConfigsDbFactory'
+import { MqttProvider } from '../../../utils/MqttProvider'
 
 export async function editProfile (req, res): Promise<void> {
   let profilesDb: IProfilesDb = null
@@ -22,6 +23,7 @@ export async function editProfile (req, res): Promise<void> {
   try {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
+      MqttProvider.publishEvent('fail', ['editProfile'], `Failed to update profile : ${newConfig.profileName}`)
       res.status(400).json({ errors: errors.array() })
       return
     }
@@ -30,6 +32,7 @@ export async function editProfile (req, res): Promise<void> {
     const oldConfig: AMTConfiguration = await profilesDb.getProfileByName(newConfig.profileName)
 
     if (oldConfig == null) {
+      MqttProvider.publishEvent('fail', ['editProfile'], `Profile Not Found : ${newConfig.profileName}`)
       log.debug(`Not found: ${newConfig.profileName}`)
       res.status(404).json(API_RESPONSE(null, 'Not Found', PROFILE_NOT_FOUND(newConfig.profileName))).end()
     } else {
@@ -75,10 +78,12 @@ export async function editProfile (req, res): Promise<void> {
         log.verbose(`Updated AMT profile: ${newConfig.profileName}`)
         delete results.amtPassword
         delete results.mebxPassword
+        MqttProvider.publishEvent('success', ['editProfile'], `Updated Profile : ${newConfig.profileName}`)
         res.status(200).json(results).end()
       }
     }
   } catch (error) {
+    MqttProvider.publishEvent('fail', ['editProfile'], `Failed to update profile : ${newConfig.profileName}`)
     log.error(`Failed to update AMT profile: ${newConfig.profileName}`, error)
     if (error instanceof RPSError) {
       res.status(400).json(API_RESPONSE(null, error.name, error.message)).end()

@@ -17,6 +17,7 @@ import { IConfigurator } from '../interfaces/IConfigurator'
 import { AMTUserName } from './../utils/constants'
 import { EnvReader } from '../utils/EnvReader'
 import got from 'got'
+import { MqttProvider } from '../utils/MqttProvider'
 
 export class CIRAConfigurator implements IExecutor {
   constructor (
@@ -71,9 +72,11 @@ export class CIRAConfigurator implements IExecutor {
             clientObj.ciraconfig.mpsRemoteSAP = true
             this.clientManager.setClientObject(clientObj)
             if (wsmanResponse.Body && wsmanResponse.Body.ReturnValueStr === 'SUCCESS') {
+              MqttProvider.publishEvent('success', ['CIRAConfigurator'], 'Management Presence Server (MPS) successfully added', clientObj.uuid)
               this.logger.debug(`${clientObj.uuid}  Management Presence Server (MPS) successfully added.`)
               await this.amtwsman.batchEnum(clientId, 'AMT_ManagementPresenceRemoteSAP', AMTUserName, clientObj.ClientData.payload.uuid)
             } else {
+              MqttProvider.publishEvent('fail', ['CIRAConfigurator'], 'Failed to add Management Presence Server', clientObj.uuid)
               this.logger.error('AMT_ManagementPresenceRemoteSAP')
               throw new RPSError(`Device ${clientObj.uuid} Failed to add Management Presence Server.`)
             }
@@ -94,6 +97,7 @@ export class CIRAConfigurator implements IExecutor {
                 this.clientManager.setClientObject(clientObj)
                 await this.amtwsman.execute(clientId, 'AMT_RemoteAccessService', 'AddRemoteAccessPolicyRule', policy, null, AMTUserName, clientObj.ClientData.payload.password)
               } else {
+                MqttProvider.publishEvent('fail', ['CIRAConfigurator'], 'Failed to add Management Presence Server', clientObj.uuid)
                 this.logger.error('AMT_RemoteAccessService')
                 throw new RPSError(`Device ${clientObj.uuid} Failed to add Management Presence Server.`)
               }
@@ -119,9 +123,11 @@ export class CIRAConfigurator implements IExecutor {
             await this.amtwsman.put(clientId, 'AMT_EnvironmentDetectionSettingData', envSettings, AMTUserName, clientObj.ClientData.payload.password)
           } else if (clientObj.ciraconfig.setENVSettingDataCIRA) {
             clientObj.status.CIRAConnection = 'Configured'
+            MqttProvider.publishEvent('success', ['CIRAConfigurator'], 'CIRA Configured', clientObj.uuid)
             return this.responseMsg.get(clientId, null, 'success', 'success', JSON.stringify(clientObj.status))
           }
         } else if (clientObj.ciraconfig.setENVSettingData) {
+          MqttProvider.publishEvent('success', ['CIRAConfigurator'], 'CIRA Configured', clientObj.uuid)
           return this.responseMsg.get(clientId, null, 'success', 'success', JSON.stringify(clientObj.status))
         }
       }
@@ -132,6 +138,7 @@ export class CIRAConfigurator implements IExecutor {
       } else {
         clientObj.status.CIRAConnection = 'Failed to configure CIRA'
       }
+      MqttProvider.publishEvent('fail', ['CIRAConfigurator'], 'Failed to configure CIRA', clientObj.uuid)
       return this.responseMsg.get(clientId, null, 'error', 'failed', JSON.stringify(clientObj.status))
     }
   }
@@ -237,9 +244,11 @@ export class CIRAConfigurator implements IExecutor {
 
           await this.configurator.secretsManager.writeSecretWithObject(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}devices/${clientObj.uuid}`, data)
         } else {
+          MqttProvider.publishEvent('fail', ['CIRAConfigurator'], 'Secret Manager Missing', clientObj.uuid)
           throw new Error('secret manager missing')
         }
       } catch (error) {
+        MqttProvider.publishEvent('fail', ['CIRAConfigurator'], 'Exception writing to vault', clientObj.uuid)
         this.logger.error(`failed to insert record guid: ${clientObj.uuid}, error: ${JSON.stringify(error)}`)
         throw new RPSError('Exception writing to vault')
       }
@@ -263,6 +272,7 @@ export class CIRAConfigurator implements IExecutor {
         this.logger.error('unable to register metadata with MPS', err)
       }
     } else {
+      MqttProvider.publishEvent('fail', ['CIRAConfigurator'], 'mpsUsername or mpsPassword is null', clientObj.uuid)
       throw new RPSError('setMPSPassword: mpsUsername or mpsPassword is null')
     }
   }

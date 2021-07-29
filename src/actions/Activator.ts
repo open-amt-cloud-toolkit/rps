@@ -23,6 +23,7 @@ import { NetworkConfigurator } from './NetworkConfigurator'
 import { AMTUserName } from '../utils/constants'
 import { AMTDomain } from '../models/Rcs'
 import got from 'got'
+import { MqttProvider } from '../utils/MqttProvider'
 
 export class Activator implements IExecutor {
   constructor (
@@ -49,6 +50,7 @@ export class Activator implements IExecutor {
       clientObj = this.clientManager.getClientObject(clientId)
       const wsmanResponse = message.payload
       if (!clientObj.activationStatus && !wsmanResponse) {
+        MqttProvider.publishEvent('fail', ['Activator', 'execute'], 'Missing/invalid WSMan response payload', clientObj.uuid)
         throw new RPSError(`Device ${clientObj.uuid} activation failed. Missing/invalid WSMan response payload.`)
       } else if (clientObj.activationStatus) {
         const msg = await this.waitAfterActivation(clientId, clientObj)
@@ -79,6 +81,7 @@ export class Activator implements IExecutor {
         }
       }
     } catch (error) {
+      MqttProvider.publishEvent('fail', ['Activator'], 'Failed to activate', clientObj.uuid)
       this.logger.error(`${clientId} : Failed to activate.`)
       if (error instanceof RPSError) {
         clientObj.status.Activation = error.message
@@ -265,15 +268,18 @@ export class Activator implements IExecutor {
       this.logger.debug(`domain : ${JSON.stringify(amtDomain)}`)
       // Verify that the certificate path points to a file that exists
       if (!amtDomain.provisioningCert) {
+        MqttProvider.publishEvent('fail', ['Activator'], 'Failed to activate. AMT provisioning certificate not found on server', clientObj.uuid)
         throw new RPSError(`Device ${clientObj.uuid} activation failed. AMT provisioning certificate not found on server`)
       }
       clientObj.certObj = this.GetProvisioningCertObj(clientObj.ClientData, amtDomain.provisioningCert, amtDomain.provisioningCertPassword, clientId)
       if (clientObj.certObj) {
         // Check if we got an error while getting the provisioning cert object
         if (clientObj.certObj.errorText) {
+          MqttProvider.publishEvent('fail', ['Activator'], 'Failed to activate', clientObj.uuid)
           throw new RPSError(clientObj.certObj.errorText)
         }
       } else {
+        MqttProvider.publishEvent('fail', ['Activator'], 'Failed to activate. Provisioning certificate doesn\'t match any trusted certificates from AMT', clientObj.uuid)
         throw new RPSError(`Device ${clientObj.uuid} activation failed. Provisioning certificate doesn't match any trusted certificates from AMT`)
       }
     }
@@ -317,6 +323,7 @@ export class Activator implements IExecutor {
     clientObj.signature = this.signatureHelper.signString(Buffer.concat(arr), clientObj.certObj.privateKey)
     this.clientManager.setClientObject(clientObj)
     if (clientObj.signature.errorText) {
+      MqttProvider.publishEvent('fail', ['Activator'], 'Failed to activate', clientObj.uuid)
       throw new RPSError(clientObj.signature.errorText)
     }
   }
@@ -347,6 +354,7 @@ export class Activator implements IExecutor {
           null))
       }
     } else {
+      MqttProvider.publishEvent('fail', ['Activator'], 'Unable to write device', clientObj.uuid)
       this.logger.error('unable to write device')
     }
     /* Register device metadata with MPS */
@@ -366,6 +374,7 @@ export class Activator implements IExecutor {
         }
       })
     } catch (err) {
+      MqttProvider.publishEvent('fail', ['Activator'], 'unable to register metadata with MPS', clientObj.uuid)
       this.logger.error('unable to register metadata with MPS', err)
     }
   }

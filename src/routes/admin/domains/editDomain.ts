@@ -11,6 +11,7 @@ import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, DOMAIN_NOT_FOUND } from '../../../utils/constants'
 import { RPSError } from '../../../utils/RPSError'
+import { MqttProvider } from '../../../utils/MqttProvider'
 
 export async function editDomain (req, res): Promise<void> {
   let domainsDb: IDomainsDb = null
@@ -22,12 +23,14 @@ export async function editDomain (req, res): Promise<void> {
   try {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
+      MqttProvider.publishEvent('fail', ['editDomain'], `Failed to edit domain : ${newDomain.profileName}`)
       res.status(400).json({ errors: errors.array() })
       return
     }
     domainsDb = DomainsDbFactory.getDomainsDb()
     const oldDomain: AMTDomain = await domainsDb.getDomainByName(newDomain.profileName)
     if (oldDomain == null) {
+      MqttProvider.publishEvent('fail', ['editDomain'], `Domain Not Found : ${newDomain.profileName}`)
       res.status(404).json(API_RESPONSE(null, 'Not Found', DOMAIN_NOT_FOUND(newDomain.profileName))).end()
     } else {
       amtDomain = getUpdatedData(newDomain, oldDomain)
@@ -54,10 +57,12 @@ export async function editDomain (req, res): Promise<void> {
         }
         delete results.provisioningCert
         delete results.provisioningCertPassword
+        MqttProvider.publishEvent('success', ['editDomain'], `Domain Updated : ${amtDomain.profileName}`)
         res.status(200).json(results).end()
       }
     }
   } catch (error) {
+    MqttProvider.publishEvent('fail', ['editDomain'], `Failed to update domain : ${amtDomain.profileName}`)
     log.error(`Failed to update AMT Domain : ${amtDomain.profileName}`, error)
     if (error instanceof RPSError) {
       res.status(400).json(API_RESPONSE(null, error.name, error.message)).end()

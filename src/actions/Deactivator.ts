@@ -16,6 +16,7 @@ import { AMTDeviceDTO } from '../repositories/dto/AmtDeviceDTO'
 import { IConfigurator } from '../interfaces/IConfigurator'
 import { EnvReader } from '../utils/EnvReader'
 import got from 'got'
+import { MqttProvider } from '../utils/MqttProvider'
 
 export class Deactivator implements IExecutor {
   constructor (
@@ -57,8 +58,10 @@ export class Deactivator implements IExecutor {
               method: 'DELETE'
             })
           } catch (err) {
+            MqttProvider.publishEvent('fail', ['Deactivator'], 'unable to removed metadata with MPS', clientObj.uuid)
             this.logger.error('unable to removed metadata with MPS', err)
           }
+          MqttProvider.publishEvent('success', ['Deactivator'], 'Device deactivated', clientObj.uuid)
           clientObj.status.Deactivation = `Device ${clientObj.uuid} deactivated`
           return this.responseMsg.get(clientId, null, 'success', 'success', JSON.stringify(clientObj.status))
         }
@@ -76,6 +79,7 @@ export class Deactivator implements IExecutor {
       } else {
         clientObj.status.Deactivation = 'Failed to deactivate'
       }
+      MqttProvider.publishEvent('fail', ['Deactivator'], 'Failed to deactivate', clientObj.uuid)
       return this.responseMsg.get(clientId, null, 'error', 'failed', JSON.stringify(clientObj.status))
     }
   }
