@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Remote Provisioning Server API
   contact: {}
-  version: 2.0.0
+  version: 1.5.0
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
@@ -17,6 +17,9 @@ info:
     * Connection to RPS through Kong: `{{protocol}}://{{host}}/rps/api/v1/admin/domains`
 
 servers:
+# Added by API Auto Mocking Plugin
+- description: SwaggerHub API Auto Mocking
+  url: https://virtserver.swaggerhub.com/rbheopenamt/rps/1.5.0
 - url: http://example.com:8081/api/v1/admin
   variables: {}
 security:
@@ -28,17 +31,35 @@ paths:
       - Domains
       summary: Get All Domains
       operationId: GetAllDomains
-      description: Retrieves all of the domain configuration profiles stored in the database.  Will not return the provisioning certificate or certificate password to protect the privacy of these assets.
+      description: Retrieves all of the domain configuration profiles stored in the database.  Will not return the provisioning certificate or certificate password to protect the privacy of these assets
+      parameters:
+        - in: query
+          name: $skip
+          schema:
+            type: integer
+          description: The number of items to skip before starting to collect the result set
+        - in: query
+          name: $top
+          schema:
+            type: integer
+          description: The number of items to return
+        - in: query
+          name: $count
+          schema:
+            type: boolean
+          description: The total number of domains to return
       responses:
         200:
           description: 'successful operation'
           headers: {}
           content:
             application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/DomainResponse'
+                schema:
+                  oneOf:
+                    - type: array
+                      items:
+                        $ref: '#/components/schemas/DomainResponse'
+                    - $ref: '#/components/schemas/CountDomainResponse'
         404:
           description: 'not found'
           content:
@@ -192,7 +213,23 @@ paths:
       - CIRA
       summary: Get All CIRA Configs
       operationId: GetAllCIRAConfigs
-      description: Retrieves all of the CIRA configuration profiles from the database.  Will not return the password field to protect the privacy of this asset.
+      description: Retrieves all of the CIRA configuration profiles from the database.  Will not return the password field to protect the privacy of this asset
+      parameters:
+        - in: query
+          name: $skip
+          schema:
+            type: integer
+          description: The number of items to skip before starting to collect the result set
+        - in: query
+          name: $top
+          schema:
+            type: integer
+          description: The number of items to return
+        - in: query
+          name: $count
+          schema:
+            type: boolean
+          description: The total number of CIRA configs to return
       responses:
         200:
           description: 'successful operation'
@@ -200,9 +237,11 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/CIRAConfigResponse'
+                oneOf:
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/CIRAConfigResponse'
+                  - $ref: '#/components/schemas/CountCIRAResponse'
         404:
           description: 'not found'
           content:
@@ -356,6 +395,22 @@ paths:
       summary: Get All Wireless Configs
       operationId: GetAllWirelessConfigs
       description: Retrieves all of the Wireless configuration profiles from the database.  Will not return the password field to protect the privacy of this asset.
+      parameters:
+        - in: query
+          name: $skip
+          schema:
+            type: integer
+          description: The number of items to skip before starting to collect the result set
+        - in: query
+          name: $top
+          schema:
+            type: integer
+          description: The number of items to return
+        - in: query
+          name: $count
+          schema:
+            type: boolean
+          description: The total number of wireless configs to return
       responses:
         200:
           description: 'successful operation'
@@ -363,9 +418,11 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/WirelessConfigResponse'
+                oneOf:
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/WirelessConfigResponse'
+                  - $ref: '#/components/schemas/CountWirelessResponse'
         404:
           description: 'not found'
           content:
@@ -386,7 +443,7 @@ paths:
       operationId: CreateWirelessConfig
       description: Creates a new Wireless configuration profile.  The PSK passphrase is stored in a secrets manager and is only used during configuration to set the Wi-Fi credentials in the AMT device.
       requestBody:
-        description: ''
+        description: 'authenticationMethod valid values: 4 - WPA PSK, 6 - WPA2 PSK.  encryptionMethod valid values: 3 - TKIP, 4 - CCMP'
         content:
           application/json:
             schema:
@@ -519,6 +576,22 @@ paths:
       summary: Get All Profiles
       operationId: GetAllProfiles
       description: Retrieves all of the AMT configuration profiles from the database.  Will not return the amtPassword or mebxPassword fields to protect the privacy of these assets.
+      parameters:
+        - in: query
+          name: $skip
+          schema:
+            type: integer
+          description: The number of items to skip before starting to collect the result set
+        - in: query
+          name: $top
+          schema:
+            type: integer
+          description: The number of items to return
+        - in: query
+          name: $count
+          schema:
+            type: boolean
+          description: The total number of profiles to return
       responses:
         200:
           description: 'successful operation'
@@ -526,9 +599,11 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ProfileResponse'
+                oneOf:
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/ProfileResponse'
+                  - $ref: '#/components/schemas/CountProfileResponse'
         404:
           description: 'not found'
           content:
@@ -856,6 +931,7 @@ components:
       - mebxPasswordLength
       - tags
       - dhcpEnabled
+      - wifiConfigs
       type: object
       properties:
         profileName:
@@ -927,6 +1003,8 @@ components:
       - generateRandomMEBxPassword
       - mebxPasswordLength
       - tags
+      - dhcpEnabled
+      - wifiConfigs
       type: object
       properties:
         profileName:
@@ -1049,6 +1127,46 @@ components:
           type: string
       example:
         protocolVersion: 4.0.0
+    CountDomainResponse:
+      title: CountDomainResponse
+      type: object 
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/DomainResponse'  
+        totalCount:
+          type: integer
+    CountCIRAResponse:
+      title: CountCIRAResponse
+      type: object 
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/CIRAConfigResponse'  
+        totalCount:
+          type: integer
+    CountProfileResponse:
+      title: CountProfileResponse
+      type: object 
+      properties:
+        data:
+          type: array
+          items:
+             $ref: '#/components/schemas/ProfileResponse'
+        totalCount:
+          type: integer
+    CountWirelessResponse:
+      title: CountWirelessResponse
+      type: object 
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/WirelessConfigResponse'
+        totalCount:
+          type: integer
     APIResponse:
       title: APIResponse 
       type: object
