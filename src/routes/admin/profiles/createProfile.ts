@@ -29,27 +29,18 @@ export async function createProfile (req, res): Promise<void> {
     const pwdBefore = amtConfig.amtPassword
     const mebxPwdBefore = amtConfig.mebxPassword
     if (req.secretsManager) {
-      if (!amtConfig.generateRandomPassword) {
-        amtConfig.amtPassword = 'AMT_PASSWORD'
-      }
-      if (!amtConfig.generateRandomMEBxPassword) {
-        amtConfig.mebxPassword = 'MEBX_PASSWORD'
-      }
+      amtConfig.amtPassword = 'AMT_PASSWORD'
+      amtConfig.mebxPassword = 'MEBX_PASSWORD'
     }
     const results: AMTConfiguration = await profilesDb.insertProfile(amtConfig)
     if (results != null) {
       // profile inserted  into db successfully.
-      if (req.secretsManager && (!amtConfig.generateRandomPassword || !amtConfig.generateRandomMEBxPassword)) {
+      if (req.secretsManager) {
         // store the passwords in Vault
         const data = { data: { AMT_PASSWORD: '', MEBX_PASSWORD: '' } }
-        if (!amtConfig.generateRandomPassword) {
-          data.data.AMT_PASSWORD = pwdBefore
-          log.debug('AMT Password written to vault')
-        }
-        if (!amtConfig.generateRandomMEBxPassword) {
-          data.data.MEBX_PASSWORD = mebxPwdBefore
-          log.debug('MEBX Password written to vault')
-        }
+        data.data.AMT_PASSWORD = pwdBefore
+        data.data.MEBX_PASSWORD = mebxPwdBefore
+        log.debug('AMT and MEBX Passwords written to vault')
         await req.secretsManager.writeSecretWithObject(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${amtConfig.profileName}`, data)
       }
       delete results.amtPassword

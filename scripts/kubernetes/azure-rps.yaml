@@ -19,9 +19,6 @@ data:
       profile_name varchar(40),
       activation varchar(20),
       amt_password varchar(40),
-      generate_random_password varchar(40),
-      random_password_characters varchar(100),
-      random_password_length integer,
       creation_date timestamp,
       created_by varchar(40),
       CONSTRAINT name UNIQUE(profile_name)

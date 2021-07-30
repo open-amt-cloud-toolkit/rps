@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "c465e9ad-bc07-48de-aa1a-9bc250f1bda0",
+		"_postman_id": "7a87666b-0c57-4924-a20c-6682dab53e16",
 		"name": "RPS API Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -979,10 +979,10 @@
 									"pm.test(\"Request should fail with invalid query string\", function () {\r",
 									"    var errors = pm.response.json().errors;\r",
 									"    pm.expect(errors[0].param).to.equal('$top');\r",
-									"    pm.expect(errors[0].msg).to.equal('The number of items to return should be an integer');\r",
+									"    pm.expect(errors[0].msg).to.equal('The number of items to return should be a positive integer');\r",
 									"\r",
 									"    pm.expect(errors[1].param).to.equal('$skip');\r",
-									"    pm.expect(errors[1].msg).to.equal('The number of items to skip before starting to collect the result set should be an integer');\r",
+									"    pm.expect(errors[1].msg).to.equal('The number of items to skip before starting to collect the result set should be a positive integer');\r",
 									"    \r",
 									"    pm.expect(errors[2].param).to.equal('$count');\r",
 									"    pm.expect(errors[2].msg).to.equal('To return total number of records in result set should be boolean');\r",
@@ -3473,9 +3473,9 @@
 									"pm.test(\"Request should fail with invalid query string\", function () {\r",
 									"    var errors = pm.response.json().errors;\r",
 									"    pm.expect(errors[0].param).to.equal('$top');\r",
-									"    pm.expect(errors[0].msg).to.equal('The number of items to return should be an integer');\r",
+									"    pm.expect(errors[0].msg).to.equal('The number of items to return should be a positive integer');\r",
 									"    pm.expect(errors[1].param).to.equal('$skip');\r",
-									"    pm.expect(errors[1].msg).to.equal('The number of items to skip before starting to collect the result set should be an integer');\r",
+									"    pm.expect(errors[1].msg).to.equal('The number of items to skip before starting to collect the result set should be a positive integer');\r",
 									"    pm.expect(errors[2].param).to.equal('$count');\r",
 									"    pm.expect(errors[2].msg).to.equal('To return total number of records in result set should be boolean');\r",
 									"});"
@@ -4827,9 +4827,13 @@
 									"});\r",
 									"pm.test(\"Creation should fail when activation is valid\", function () {\r",
 									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Either generateRandomPassword should be enabled with amtPassword or should provide amtPassword\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"activation\")\r",
+									"     pm.expect(result.errors[0].msg).to.eql(\"Invalid value\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"amtPassword\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
+									"\r",
+									"    pm.expect(result.errors[1].msg).to.eql(\"AMT password is required field should contains at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.\")\r",
+									"    pm.expect(result.errors[1].param).to.eql(\"amtPassword\")\r",
+									"    pm.expect(result.errors[1].location).to.eql(\"body\")\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -4853,64 +4857,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\"\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"profiles",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create ccmactivate with amtPassword and generate random password",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.response.to.have.status(400);\r",
-									"});\r",
-									"pm.test(\"Creation should fail when payload contains both amtPassword and generate random password\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Either generate Random AMT Password should be enabled with Password Length or should provide AMT Password\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"generateRandomPassword\")\r",
-									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomPassword\": true,\r\n    \"passwordLength\": 8,\r\n    \"activation\": \"ccmactivate\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"dhcpEnabled\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -4967,178 +4914,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"activation\": \"ccmactivate\"\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"profiles",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create ccmactivate with generate random password but no length",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.response.to.have.status(400);\r",
-									"});\r",
-									"pm.test(\"Creation should fail when payload contains generate random password without password length\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"If generate random AMT password is enabled, passwordLength is mandatory\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"generateRandomPassword\")\r",
-									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": true,\r\n    \"activation\": \"ccmactivate\"\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"profiles",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create ccmactivate with generate random password and length < 8",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.response.to.have.status(400);\r",
-									"});\r",
-									"pm.test(\"Creation should fail when payload conatins generate random password and password length less than 8\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Random AMT password length value should range between 8 and 32\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"passwordLength\")\r",
-									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": true,\r\n    \"passwordLength\": 6,\r\n    \"activation\": \"ccmactivate\"\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"profiles",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create ccmactivate with generate random password and length > 32",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.response.to.have.status(400);\r",
-									"});\r",
-									"pm.test(\"Creation should fail when payload conatins generate random password and password length greater than 32\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Random AMT password length value should range between 8 and 32\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"passwordLength\")\r",
-									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": true,\r\n    \"passwordLength\": 33,\r\n    \"activation\": \"ccmactivate\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"dhcpEnabled\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5169,7 +4945,7 @@
 									"});\r",
 									"pm.test(\"Creation should fail when payload contains acmactivate but no mebxPassword\", function () {\r",
 									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Either generateRandomMEBxPassword should be enabled with mebxPasswordLength or should provide mebxPassword\")\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"MEBx Password is required for acmactivate\")\r",
 									"    pm.expect(result.errors[0].param).to.eql(\"activation\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
@@ -5195,7 +4971,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"activation\": \"acmactivate\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"activation\": \"acmactivate\",\r\n    \"dhcpEnabled\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5252,178 +5028,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123\",\r\n    \"activation\": \"acmactivate\"\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"profiles",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create acmactivate with generate mebx random password but no length",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.response.to.have.status(400);\r",
-									"});\r",
-									"pm.test(\"Creation should fail when payload contains generate mebx random password but no password length\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"If generate random MEBx password is enabled, mebxPasswordLength is mandatory\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"generateRandomMEBxPassword\")\r",
-									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"activation\": \"acmactivate\"\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"profiles",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create acmactivate with generate mebx random password and length < 8",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.response.to.have.status(400);\r",
-									"});\r",
-									"pm.test(\"Creation should fail when payload contains generate mebx random password and length less than 8\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Random MEBx password length value should range between 8 and 32\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"mebxPasswordLength\")\r",
-									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"mebxPasswordLength\": 6,\r\n    \"activation\": \"acmactivate\"\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"profiles",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create acmactivate with generate mebx random password but no length Copy 2",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.response.to.have.status(400);\r",
-									"});\r",
-									"pm.test(\"Creation should fail when payload contains generate mebx random password and length greater than 8\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Random MEBx password length value should range between 8 and 32\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"mebxPasswordLength\")\r",
-									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"mebxPasswordLength\": 33,\r\n    \"activation\": \"acmactivate\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123\",\r\n    \"activation\": \"acmactivate\",\r\n    \"dhcpEnabled\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5483,7 +5088,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5633,10 +5238,10 @@
 									"pm.test(\"Request should fail with invalid query string\", function () {\r",
 									"    var errors = pm.response.json().errors;\r",
 									"    pm.expect(errors[0].param).to.equal('$top');\r",
-									"    pm.expect(errors[0].msg).to.equal('The number of items to return should be an integer');\r",
+									"    pm.expect(errors[0].msg).to.equal('The number of items to return should be a positive integer');\r",
 									"\r",
 									"    pm.expect(errors[1].param).to.equal('$skip');\r",
-									"    pm.expect(errors[1].msg).to.equal('The number of items to skip before starting to collect the result set should be an integer');\r",
+									"    pm.expect(errors[1].msg).to.equal('The number of items to skip before starting to collect the result set should be a positive integer');\r",
 									"    \r",
 									"    pm.expect(errors[2].param).to.equal('$count');\r",
 									"    pm.expect(errors[2].msg).to.equal('To return total number of records in result set should be boolean');\r",
@@ -5855,7 +5460,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"activation\": \"acmactivate\",\r\n    \"dhcpEnabled\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"acmactivate\",\r\n    \"dhcpEnabled\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5969,124 +5574,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123\"\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"profiles",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update profile with generate random password but no password length",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.response.to.have.status(400);\r",
-									"});\r",
-									"pm.test(\"Creation should fail when payload contains generate random password but no password length\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"If generate random AMT password is enabled, passwordLength is mandatory\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"generateRandomPassword\")\r",
-									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": true\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"profiles",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update profile with generate random password and length",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"pm.test(\"Update should succeed\", function () {\r",
-									"    var jsonData = pm.response.json();\r",
-									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
-									"    pm.expect(jsonData.generateRandomPassword).to.equal(true)\r",
-									"    pm.expect(jsonData.passwordLength).to.eql(16)\r",
-									"    pm.expect(jsonData.generateRandomMEBxPassword).to.equal(false)\r",
-									"    pm.expect(jsonData.mebxPasswordLength).to.eql(null)\r",
-									"    pm.expect(jsonData.activation).to.equal(\"ccmactivate\")\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"passwordLength\": 16\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -6119,9 +5607,10 @@
 									"pm.test(\"Result 1 should be equal to example\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
-									"    pm.expect(jsonData.generateRandomMEBxPassword).to.equal(false)\r",
-									"    pm.expect(jsonData.mebxPasswordLength).to.eql(null)\r",
 									"    pm.expect(jsonData.activation).to.equal(\"ccmactivate\")    \r",
+									"    pm.expect(jsonData.ciraConfigName).to.equal(null)    \r",
+									"    pm.expect(jsonData.dhcpEnabled).to.equal(false)    \r",
+									"    pm.expect(jsonData.tags.length).to.equal(1)  \r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -6178,8 +5667,8 @@
 									"pm.test(\"Result 1 should be equal to example\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
-									"    pm.expect(jsonData.generateRandomMEBxPassword).to.equal(false)\r",
-									"    pm.expect(jsonData.mebxPasswordLength).to.eql(null)\r",
+									"    pm.expect(jsonData.dhcpEnabled).to.equal(false)\r",
+									"    pm.expect(jsonData.ciraConfigName).to.eql(null)\r",
 									"    pm.expect(jsonData.activation).to.equal(\"ccmactivate\")\r",
 									"    pm.expect(jsonData.tags.length).to.equal(1)    \r",
 									"});"
@@ -6236,7 +5725,7 @@
 									"});\r",
 									"pm.test(\"Creation should fail when payload contains acmactivate without mebx password\", function () {\r",
 									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Either generateRandomMEBxPassword should be enabled with mebxPasswordLength or should provide mebxPassword\")\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"MEBx Password is required for acmactivate\")\r",
 									"    pm.expect(result.errors[0].param).to.eql(\"activation\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
@@ -6282,66 +5771,6 @@
 					"response": []
 				},
 				{
-					"name": "Update Profile with generate random mebx password and length",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"pm.test(\"Result 1 should be equal to example\", function () {\r",
-									"    var jsonData = pm.response.json();\r",
-									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
-									"    pm.expect(jsonData.generateRandomPassword).to.equal(true)\r",
-									"    pm.expect(jsonData.passwordLength).to.eql(16)\r",
-									"    pm.expect(jsonData.generateRandomMEBxPassword).to.equal(true)\r",
-									"    pm.expect(jsonData.mebxPasswordLength).to.eql(8)\r",
-									"    pm.expect(jsonData.activation).to.equal(\"acmactivate\")    \r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"mebxPasswordLength\": 8,\r\n    \"activation\": \"acmactivate\"\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"profiles",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "Update Profile with static mebx password",
 					"event": [
 						{
@@ -6354,11 +5783,10 @@
 									"pm.test(\"Result 1 should be equal to example\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
-									"    pm.expect(jsonData.generateRandomPassword).to.equal(true)\r",
-									"    pm.expect(jsonData.passwordLength).to.eql(16)\r",
-									"    pm.expect(jsonData.generateRandomMEBxPassword).to.equal(false)\r",
-									"    pm.expect(jsonData.mebxPasswordLength).to.eql(null)\r",
-									"    pm.expect(jsonData.activation).to.equal(\"acmactivate\")    \r",
+									"    pm.expect(jsonData.activation).to.equal(\"acmactivate\") \r",
+									"    pm.expect(jsonData.dhcpEnabled).to.equal(false)\r",
+									"    pm.expect(jsonData.ciraConfigName).to.eql(null)  \r",
+									"    pm.expect(jsonData.tags.length).to.equal(1)     \r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -6414,11 +5842,10 @@
 									"pm.test(\"Update should succeed\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
-									"    pm.expect(jsonData.generateRandomPassword).to.equal(false)\r",
-									"    pm.expect(jsonData.passwordLength).to.eql(null)\r",
-									"    pm.expect(jsonData.generateRandomMEBxPassword).to.equal(false)\r",
-									"    pm.expect(jsonData.mebxPasswordLength).to.eql(null)\r",
 									"    pm.expect(jsonData.activation).to.equal(\"acmactivate\")    \r",
+									"    pm.expect(jsonData.tags.length).to.equal(1)    \r",
+									"    pm.expect(jsonData.dhcpEnabled).to.equal(false)\r",
+									"    pm.expect(jsonData.ciraConfigName).to.eql(null)  \r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -6676,7 +6103,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n     \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"nociraconfig\",\r\n    \"dhcpEnabled\": true\r\n}"
+									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n     \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"nociraconfig\",\r\n    \"dhcpEnabled\": true\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -6733,7 +6160,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n     \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\",\r\n    \"dhcpEnabled\": false\r\n}"
+									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n     \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\",\r\n    \"dhcpEnabled\": false\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -6792,7 +6219,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n     \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\",\r\n    \"dhcpEnabled\": true\r\n}"
+									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n     \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\",\r\n    \"dhcpEnabled\": true\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -6969,7 +6396,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n     \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\",\r\n    \"dhcpEnabled\": false\r\n}"
+									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n     \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\",\r\n    \"dhcpEnabled\": false\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -7098,7 +6525,7 @@
 					"name": "AMT - WIFI Profiles",
 					"item": [
 						{
-							"name": "Create Wireless Profile",
+							"name": "Create Wireless Profile(home)",
 							"event": [
 								{
 									"listen": "test",
@@ -7153,7 +6580,7 @@
 							"response": []
 						},
 						{
-							"name": "Create Wireless Profile",
+							"name": "Create Wireless Profile(office)",
 							"event": [
 								{
 									"listen": "test",
@@ -7244,7 +6671,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -7300,7 +6727,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -7356,7 +6783,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 355,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 355,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -7412,7 +6839,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": -1,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": -1,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -7474,7 +6901,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -7530,7 +6957,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"test\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"test\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -7595,7 +7022,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"P@ssw0rd\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"P@ssw0rd\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"acm\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"P@ssw0rd\",\r\n    \"mebxPassword\": \"P@ssw0rd\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"acm\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -7700,7 +7127,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"test\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"test\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -7756,7 +7183,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -7812,7 +7239,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -7868,7 +7295,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 355,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 355,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -7924,7 +7351,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": -1,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": -1,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -7984,7 +7411,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n   \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -8040,7 +7467,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n     \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n     \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -8105,7 +7532,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -8227,7 +7654,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        },\r\n        {\r\n            \"priority\": 3,\r\n            \"profileName\": \"business\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        },\r\n        {\r\n            \"priority\": 3,\r\n            \"profileName\": \"business\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -8259,10 +7686,6 @@
 											"pm.test(\"Creation should succeed\", function () {\r",
 											"    var result = pm.response.json();\r",
 											"    pm.expect(result.profileName).to.eql(\"wifi-profile2\"),\r",
-											"    pm.expect(result.generateRandomPassword).to.eql(true),\r",
-											"    pm.expect(result.passwordLength).to.eql(10),\r",
-											"    pm.expect(result.generateRandomMEBxPassword).to.eql(true),\r",
-											"    pm.expect(result.mebxPasswordLength).to.eql(12),\r",
 											"    pm.expect(result.activation).to.eql(\"acmactivate\")\r",
 											"    pm.expect(result.tags.length).to.equal(2)\r",
 											"    pm.expect(result.wifiConfigs.length).to.equal(3)\r",
@@ -8295,7 +7718,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile2\",\r\n    \"generateRandomPassword\": true,\r\n    \"passwordLength\": 10,\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"mebxPasswordLength\": 12,\r\n    \"activation\": \"acmactivate\",\r\n    \"tags\": [\"acm\", \"random password\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        },\r\n        {\r\n            \"priority\": 3,\r\n            \"profileName\": \"business\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile2\",\r\n    \"activation\": \"acmactivate\",\r\n    \"amtPassword\": \"P@ssw0rd\",\r\n    \"mebxPassword\": \"P@ssw0rd\",\r\n    \"tags\": [\"acm\", \"random password\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        },\r\n        {\r\n            \"priority\": 3,\r\n            \"profileName\": \"business\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -8347,10 +7770,6 @@
 											"pm.test(\"Profile two\", function () {\r",
 											"    var result = pm.response.json();\r",
 											"    pm.expect(result[1].profileName).to.eql(\"wifi-profile2\"),\r",
-											"    pm.expect(result[1].generateRandomPassword).to.eql(true),\r",
-											"    pm.expect(result[1].passwordLength).to.eql(10),\r",
-											"    pm.expect(result[1].generateRandomMEBxPassword).to.eql(true),\r",
-											"    pm.expect(result[1].mebxPasswordLength).to.eql(12),\r",
 											"    pm.expect(result[1].activation).to.eql(\"acmactivate\")\r",
 											"    pm.expect(result[1].tags.length).to.equal(2)\r",
 											"    pm.expect(result[1].wifiConfigs.length).to.equal(3)\r",
@@ -9204,10 +8623,10 @@
 									"pm.test(\"Request should fail with invalid query string\", function () {\r",
 									"    var errors = pm.response.json().errors;\r",
 									"    pm.expect(errors[0].param).to.equal('$top');\r",
-									"    pm.expect(errors[0].msg).to.equal('The number of items to return should be an integer');\r",
+									"    pm.expect(errors[0].msg).to.equal('The number of items to return should be a positive integer');\r",
 									"\r",
 									"    pm.expect(errors[1].param).to.equal('$skip');\r",
-									"    pm.expect(errors[1].msg).to.equal('The number of items to skip before starting to collect the result set should be an integer');\r",
+									"    pm.expect(errors[1].msg).to.equal('The number of items to skip before starting to collect the result set should be a positive integer');\r",
 									"    \r",
 									"    pm.expect(errors[2].param).to.equal('$count');\r",
 									"    pm.expect(errors[2].msg).to.equal('To return total number of records in result set should be boolean');\r",
