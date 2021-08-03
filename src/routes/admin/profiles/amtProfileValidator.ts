@@ -106,7 +106,7 @@ export const amtProfileValidator = (): any => {
         return true
       }),
     check('ciraConfigName')
-      .optional()
+      .optional({ nullable: true })
       .custom((value, { req }) => {
         if (!req.body.dhcpEnabled) {
           throw new Error('CIRA cannot be configured if DHCP is disabled')
@@ -237,7 +237,7 @@ export const profileUpdateValidator = (): any => {
         return true
       }),
     check('ciraConfigName')
-      .optional()
+      .optional({ nullable: true })
       .custom((value, { req }) => {
         if (!req.body.dhcpEnabled) {
           throw new Error('CIRA cannot be configured if DHCP is disabled')
