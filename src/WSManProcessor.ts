@@ -12,6 +12,7 @@ import { IClientManager } from './interfaces/IClientManager'
 import WSComm = require('./amt-libraries/amt-wsman-comm')
 import WSMan = require('./amt-libraries/amt-wsman')
 import AMT = require('./amt-libraries/amt')
+import { INodeForge } from './interfaces/INodeForge'
 
 export class WSManProcessor {
   cache: any
@@ -19,7 +20,8 @@ export class WSManProcessor {
   constructor (
     private readonly logger: ILogger,
     private readonly clientManager: IClientManager,
-    private readonly responseMsg: ResponseMessage
+    private readonly responseMsg: ResponseMessage,
+    private readonly nodeForge: INodeForge
   ) {
     this.cache = {}
   }
@@ -201,8 +203,27 @@ export class WSManProcessor {
         }
         const wsmanUsername: string = username || payload.username
         const wsmanPassword: string = password || payload.password
-        const wsstack = WSMan(WSComm, payload.uuid, 16992, wsmanUsername, wsmanPassword, 0, null, SetupCommunication)
+        let wsstack
+        if (parseInt(clientObj.ClientData.payload.ver) >= 14) {
+          let joinCertChain = ''
+          clientObj.certObj.certChain.forEach((cert) => {
+            cert = cert.trim()
+            joinCertChain = joinCertChain.concat('-----BEGIN CERTIFICATE-----\r\n')
+            joinCertChain = joinCertChain.concat(cert)
+            joinCertChain = joinCertChain.concat('\r\n-----END CERTIFICATE-----\r\n')
+          })
+          this.logger.silly(joinCertChain)
+          const privateKey = this.nodeForge.privateKeyToPem(clientObj.certObj.privateKey)
+          wsstack = WSMan(WSComm, payload.uuid, 16993, wsmanUsername, wsmanPassword, 1, { cert: joinCertChain, key: privateKey }, SetupCommunication)
+        } else {
+          wsstack = WSMan(WSComm, payload.uuid, 16992, wsmanUsername, wsmanPassword, 0, null, SetupCommunication)
+        }
         this.cache[clientId] = new AMT(wsstack)
+        if (clientObj.socketConn?.onStateChange && clientObj.readyState == null) {
+          clientObj.readyState = 2
+          this.clientManager.setClientObject(clientObj)
+          clientObj.socketConn.onStateChange(clientObj.ClientSocket, clientObj.readyState)
+        }
       } else {
         this.logger.debug(`getAmtStack: clientId: ${clientId}, communication was already setup`)
       }
@@ -235,6 +256,7 @@ export class WSManProcessor {
         clientObj.socketConn.onStateChange(clientObj.ClientSocket, clientObj.readyState)
       }
     } catch (error) {
+      this.logger.error(`${clientId} : Failed to get the wsman for ${error}`)
       this.logger.error(`${clientId} : Failed to get the wsman for ${action}`)
     }
   }

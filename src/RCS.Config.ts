@@ -196,8 +196,9 @@ export enum ClientMethods{
   RESPONSE = 'response',
   ACTIVATION = 'activate',
   DEACTIVATION = 'deactivate',
-  CIRACONFIG= 'ciraconfig',
-  HEARTBEAT='heartbeat_response'
+  CIRACONFIG = 'ciraconfig',
+  HEARTBEAT ='heartbeat_response',
+  SECURECONFIGRESPONSE ='secure_config_response'
 }
 
 export interface apiResponse {

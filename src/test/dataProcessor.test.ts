@@ -27,7 +27,7 @@ const certManager = new CertManager(nodeForge)
 const configurator = new Configurator()
 const clientManager = ClientManager.getInstance(new Logger('ClientManager'))
 const responseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'), nodeForge)
-const amtwsman = new WSManProcessor(new Logger('WSManProcessor'), clientManager, responseMsg)
+const amtwsman = new WSManProcessor(new Logger('WSManProcessor'), clientManager, responseMsg, nodeForge)
 const validator = new Validator(new Logger('Validator'), configurator, clientManager, nodeForge)
 const dataProcessor = new DataProcessor(new Logger('DataProcessor'), helper, configurator, validator, certManager, clientManager, responseMsg, amtwsman)
 

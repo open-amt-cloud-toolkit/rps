@@ -11,4 +11,5 @@ export interface ICertManager {
   dumpPfx: (pfxobj: any) => any
   sortCertificate: (intermediate: CertificateObject, root: CertificateObject) => boolean
   convertPfxToObject: (pfxb64: string, passphrase: string) => any
+  getCertHashSha256: (cert: any) => any
 }

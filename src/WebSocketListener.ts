@@ -103,7 +103,7 @@ export class WebSocketListener implements IWebSocketListener {
    */
   async onMessageReceived (message: WebSocket.Data, clientId: string): Promise<void> {
     try {
-      // this.logger.debug(`Message from client ${clientId}: ${JSON.stringify(message, null, "\t")}`);
+      this.logger.debug(`Message from client ${clientId}: ${JSON.stringify(message, null, '\t')}`)
       let responseMsg: any
       if (this.dataProcessor) {
         responseMsg = await this.dataProcessor.processData(message, clientId)

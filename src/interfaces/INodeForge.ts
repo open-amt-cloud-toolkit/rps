@@ -4,7 +4,6 @@
  * Description: Interface to abstract forge package functionality
  * Author: Brian Osburn
  **********************************************************************/
-
 export interface INodeForge {
   pkiOidsCertBag: string
   pkcs8ShroudedKeyBag: string
@@ -15,6 +14,7 @@ export interface INodeForge {
   asn1FromDer: (input: any, strict?: boolean) => any
   getBags: (pkcs12Pfx: any, filter: any) => any
   pkiCertificateToPem: (cert: any, maxline?: number) => string
+  pkiCertificateFromPem: (cert: string, computeHash?: boolean, strict?: boolean) => any
   asn1ToDer: (obj: any) => any
   pkiCertificateToAsn1: (cert: any) => any
   sha256Create: () => any

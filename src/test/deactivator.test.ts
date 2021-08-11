@@ -21,7 +21,7 @@ EnvReader.GlobalEnvConfig = config
 const nodeForge = new NodeForge()
 const clientManager = ClientManager.getInstance(new Logger('ClientManager'))
 const responseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'), nodeForge)
-const amtwsman = new WSManProcessor(new Logger('WSManProcessor'), clientManager, responseMsg)
+const amtwsman = new WSManProcessor(new Logger('WSManProcessor'), clientManager, responseMsg, nodeForge)
 const deactivate = new Deactivator(new Logger('Deactivator'), responseMsg, amtwsman, clientManager)
 let clientId, deactivatemsg
 

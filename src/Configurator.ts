@@ -66,7 +66,7 @@ export class Configurator implements IConfigurator {
     this._clientManager = ClientManager.getInstance(new Logger('ClientManager'))
     const responseMsg: ClientResponseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'), nodeForge)
     const validator: IValidator = new Validator(new Logger('Validator'), this, this._clientManager, nodeForge)
-    const amtwsman: WSManProcessor = new WSManProcessor(new Logger('WSManProcessor'), this._clientManager, responseMsg)
+    const amtwsman: WSManProcessor = new WSManProcessor(new Logger('WSManProcessor'), this._clientManager, responseMsg, nodeForge)
     const certManager = new CertManager(nodeForge)
     const helper = new SignatureHelper(nodeForge)
 

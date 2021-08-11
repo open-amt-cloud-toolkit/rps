@@ -7,7 +7,7 @@
 import { ICertManager } from './interfaces/ICertManager'
 import { CertificateObject, ProvisioningCertObj } from './models/Rcs'
 import { INodeForge } from './interfaces/INodeForge'
-
+import * as crypto from 'crypto'
 export class CertManager implements ICertManager {
   private readonly nodeForge: INodeForge
 
@@ -137,5 +137,26 @@ export class CertManager implements ICertManager {
       pfxOut.keys.push(cert.key)
     }
     return pfxOut
+  }
+
+  // Return the SHA256 hash of the certificate, return hex
+  getCertHashSha256 (cert: any): any {
+    try {
+      const md = this.nodeForge.sha256Create()
+      cert = `-----BEGIN CERTIFICATE-----\r\n${cert}\r\n-----END CERTIFICATE-----\r\n`
+      md.update(this.nodeForge.asn1ToDer(this.nodeForge.pkiCertificateToAsn1(this.nodeForge.pkiCertificateFromPem(cert))).getBytes())
+      // md.update(this.nodeForge.asn1ToDer(this.nodeForge.pkiCertificateToAsn1(cert)).getBytes())
+      return md.digest().toHex()
+    } catch (ex) {
+      // If this is not an RSA certificate, hash the raw PKCS7 out of the PEM file
+      const x1: number = cert.indexOf('-----BEGIN CERTIFICATE-----')
+      const x2: number = cert.indexOf('-----END CERTIFICATE-----')
+      if ((x1 >= 0) && (x2 > x1)) {
+        return crypto.createHash('sha256').update(Buffer.from(cert.substring(x1 + 27, x2), 'base64')).digest('hex')
+      } else {
+        console.log('ERROR: Unable to decode certificate.')
+        return null
+      }
+    }
   }
 }

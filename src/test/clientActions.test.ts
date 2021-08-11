@@ -26,7 +26,7 @@ const certManager = new CertManager(nodeForge)
 const helper = new SignatureHelper(nodeForge)
 const clientManager = ClientManager.getInstance(new Logger('ClientManager'))
 const responseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'), nodeForge)
-const amtwsman = new WSManProcessor(new Logger('WSManProcessor'), clientManager, responseMsg)
+const amtwsman = new WSManProcessor(new Logger('WSManProcessor'), clientManager, responseMsg, nodeForge)
 const configurator: Configurator = new Configurator()
 const validator = new Validator(new Logger('Validator'), configurator, clientManager, nodeForge)
 let clientActions: any

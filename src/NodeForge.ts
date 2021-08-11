@@ -35,6 +35,10 @@ export class NodeForge implements INodeForge {
     return forge.pki.certificateToPem(cert, maxline)
   }
 
+  pkiCertificateFromPem (cert: string, computeHash?: boolean, strict?: boolean): forge.pki.Certificate {
+    return forge.pki.certificateFromPem(cert, computeHash, strict)
+  }
+
   asn1ToDer (obj: forge.asn1.Asn1): forge.util.ByteStringBuffer {
     return forge.asn1.toDer(obj)
   }

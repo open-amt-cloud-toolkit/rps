@@ -9,7 +9,7 @@ import * as WebSocket from 'ws'
 import { ILogger } from './interfaces/ILogger'
 import { IDataProcessor } from './interfaces/IDataProcessor'
 import { IClientManager } from './interfaces/IClientManager'
-import { ClientMsg, ClientAction, ClientMethods } from './RCS.Config'
+import { ClientMsg, ClientAction, ClientMethods, ClientObject } from './RCS.Config'
 import { ClientActions } from './ClientActions'
 import { ICertManager } from './interfaces/ICertManager'
 import { SignatureHelper } from './utils/SignatureHelper'
@@ -19,6 +19,8 @@ import { RPSError } from './utils/RPSError'
 import { WSManProcessor } from './WSManProcessor'
 import { ClientResponseMsg } from './utils/ClientResponseMsg'
 import { IValidator } from './interfaces/IValidator'
+import { AMTDomain } from './models/Rcs'
+// import { MqttProvider } from './utils/MqttProvider'
 
 export class DataProcessor implements IDataProcessor {
   private readonly clientActions: ClientActions
@@ -54,6 +56,9 @@ export class DataProcessor implements IDataProcessor {
 
       switch (clientMsg.method) {
         case ClientMethods.ACTIVATION: {
+          return await this.checkSecuredHostBasedConfiguration(clientMsg, clientId)
+        }
+        case ClientMethods.SECURECONFIGRESPONSE: {
           return await this.activateDevice(clientMsg, clientId)
         }
         case ClientMethods.DEACTIVATION: {
@@ -81,14 +86,25 @@ export class DataProcessor implements IDataProcessor {
     }
   }
 
-  async activateDevice (clientMsg: ClientMsg, clientId: string): Promise<ClientMsg> {
+  async checkSecuredHostBasedConfiguration (clientMsg: ClientMsg, clientId: string): Promise<ClientMsg> {
     this.logger.debug(`ProcessData: Parsed Message received from device ${clientMsg.payload.uuid}: ${JSON.stringify(clientMsg, null, '\t')}`)
 
     await this.validator.validateActivationMsg(clientMsg, clientId) // Validate the activation message payload
-
-    // Makes the first wsman call
     const clientObj = this.clientManager.getClientObject(clientId)
-    if ((clientObj.action === ClientAction.ADMINCTLMODE || clientObj.action === ClientAction.CLIENTCTLMODE) && !clientMsg.payload.digestRealm) {
+    if (parseInt(clientObj.ClientData.payload.ver) >= 14) {
+      return await this.getAcmCertChain(clientMsg, clientId)
+    } else {
+      return await this.activateDevice(clientMsg, clientId)
+    }
+  }
+
+  async activateDevice (clientMsg: ClientMsg, clientId: string): Promise<ClientMsg> {
+    const clientObj: ClientObject = this.clientManager.getClientObject(clientId)
+    if (clientMsg.method === ClientMethods.SECURECONFIGRESPONSE && clientMsg.status === 'failed') {
+      throw new RPSError(`Device ${clientObj.uuid} failed to establish a secured host based configuration`)
+    } else if ((clientObj.action === ClientAction.ADMINCTLMODE || clientObj.action === ClientAction.CLIENTCTLMODE) && !clientObj.ClientData.payload.digestRealm) {
+      // Makes the first wsman call
+      await this.amtwsman.batchEnum(clientId, '*AMT_GeneralSettings')
       await this.amtwsman.batchEnum(clientId, '*AMT_GeneralSettings')
     } else {
       const response = await this.clientActions.buildResponseMessage(clientMsg, clientId)
@@ -133,5 +149,45 @@ export class DataProcessor implements IDataProcessor {
       await new Promise(resolve => setTimeout(resolve, 5000)) // TODO: make configurable rate if required by customers
       return this.responseMsg.get(clientId, null, 'heartbeat_request', 'heartbeat', '')
     }
+  }
+
+  async getAcmCertChain (clientMsg: ClientMsg, clientId: string): Promise<ClientMsg> {
+    const payload = {
+      algorithm: 'SHA256',
+      hash: null
+    }
+    try {
+      const clientObj = this.clientManager.getClientObject(clientId)
+      const amtDomain: AMTDomain = await this.configurator.domainCredentialManager.getProvisioningCert(clientObj.ClientData.payload.fqdn)
+      // this.logger.debug(`domain : ${JSON.stringify(amtDomain)}`)
+      // Verify that the certificate path points to a file that exists
+      // if (!amtDomain.provisioningCert) {
+      //   // MqttProvider.publishEvent('fail', ['Activator'], 'Failed to activate. AMT provisioning certificate not found on server', clientObj.uuid)
+      //   throw new RPSError(`Device ${clientObj.uuid} activation failed. AMT provisioning certificate not found on server`)
+      // }
+      // read in cert
+      const pfxb64: string = Buffer.from(amtDomain.provisioningCert, 'base64').toString('base64')
+      // convert the certificate pfx to an object
+      const pfxobj = this.certManager.convertPfxToObject(pfxb64, amtDomain.provisioningCertPassword)
+      if (pfxobj.errorText) {
+        return pfxobj
+      }
+      // return the certificate chain pems and private key
+      const certChainPfx = this.certManager.dumpPfx(pfxobj)
+      // check that provisioning certificate root matches one of the trusted roots from AMT
+      for (const hash in clientMsg.payload.certHashes) {
+        if (clientMsg.payload.certHashes[hash]?.toLowerCase() === certChainPfx.fingerprint?.toLowerCase()) {
+          clientObj.certObj = certChainPfx.provisioningCertificateObj
+          this.clientManager.setClientObject(clientObj)
+        }
+      }
+      if (clientObj.certObj != null) {
+        payload.hash = this.certManager.getCertHashSha256(clientObj.certObj.certChain[0])
+      }
+    } catch (error) {
+      this.logger.error(`${clientId} : Failed to get provisioning certificate. Error: ${error}`)
+      return null
+    }
+    return this.responseMsg.get(clientId, JSON.stringify(payload), 'secure_config_request', 'cool', 'hello')
   }
 }

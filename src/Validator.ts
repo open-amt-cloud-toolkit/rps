@@ -211,7 +211,9 @@ export class Validator implements IValidator {
     if (payload.currentMode >= 0) {
       switch (payload.currentMode) {
         case 0: {
-          throw new RPSError(`Device ${payload.uuid} is in pre-provisioning mode.`)
+          clientObj.action = ClientAction.DEACTIVATE
+          break
+          // throw new RPSError(`Device ${payload.uuid} is in pre-provisioning mode.`)
         }
         case 1: {
           clientObj.action = ClientAction.DEACTIVATE
