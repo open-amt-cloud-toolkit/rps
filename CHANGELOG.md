@@ -1,3 +1,79 @@
+<a name="v1.5.0"></a>
+## [v1.5.0] - 2021-08-12
+### Build
+- **deps:** bump express-validator from 6.12.0 to 6.12.1
+- **deps:** bump node-vault from 0.9.21 to 0.9.22
+- **deps:** bump ws from 7.5.0 to 7.5.1
+- **deps:** bump ws from 7.5.1 to 7.5.2 ([#321](https://github.com/open-amt-cloud-toolkit/rps/issues/321))
+- **deps:** bump ws from 7.5.2 to 7.5.3
+- **deps:** bump pg from 8.6.0 to 8.7.1
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 4.26.1 to 4.27.0
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 4.28.4 to 4.28.5
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin
+- **deps-dev:** bump sinon from 11.1.1 to 11.1.2
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 4.28.2 to 4.28.4
+- **deps-dev:** bump [@types](https://github.com/types)/ws from 7.4.6 to 7.4.7
+- **deps-dev:** bump [@types](https://github.com/types)/node-forge from 0.10.0 to 0.10.2
+- **deps-dev:** bump [@types](https://github.com/types)/express from 4.17.12 to 4.17.13
+- **deps-dev:** bump eslint from 7.31.0 to 7.32.0
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin
+- **deps-dev:** bump [@types](https://github.com/types)/pg from 8.6.0 to 8.6.1
+- **deps-dev:** bump eslint from 7.30.0 to 7.31.0 ([#340](https://github.com/open-amt-cloud-toolkit/rps/issues/340))
+- **deps-dev:** bump nodemon from 2.0.9 to 2.0.12
+- **deps-dev:** bump [@types](https://github.com/types)/jest from 26.0.23 to 26.0.24 ([#328](https://github.com/open-amt-cloud-toolkit/rps/issues/328))
+- **deps-dev:** bump [@types](https://github.com/types)/body-parser from 1.19.0 to 1.19.1 ([#331](https://github.com/open-amt-cloud-toolkit/rps/issues/331))
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin ([#325](https://github.com/open-amt-cloud-toolkit/rps/issues/325))
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 4.28.5 to 4.29.1 ([#367](https://github.com/open-amt-cloud-toolkit/rps/issues/367))
+- **deps-dev:** bump [@types](https://github.com/types)/ws from 7.4.5 to 7.4.6 ([#324](https://github.com/open-amt-cloud-toolkit/rps/issues/324))
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 4.28.1 to 4.28.2 ([#326](https://github.com/open-amt-cloud-toolkit/rps/issues/326))
+- **deps-dev:** bump eslint from 7.29.0 to 7.30.0
+- **deps-dev:** bump typescript from 4.3.4 to 4.3.5
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 4.27.0 to 4.28.1
+- **deps-dev:** bump nodemon from 2.0.8 to 2.0.9
+- **deps-dev:** bump nodemon from 2.0.7 to 2.0.8
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin ([#311](https://github.com/open-amt-cloud-toolkit/rps/issues/311))
+- **deps-dev:** bump eslint-plugin-import from 2.23.4 to 2.24.0 ([#366](https://github.com/open-amt-cloud-toolkit/rps/issues/366))
+- **deps-dev:** bump eslint from 7.28.0 to 7.29.0
+- **deps-dev:** bump [@types](https://github.com/types)/node from 14.17.3 to 14.17.4
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin ([#368](https://github.com/open-amt-cloud-toolkit/rps/issues/368))
+- **version:** bump to v1.5.0
+
+### Docs
+- update copyright label
+- **api:** updated api documentation ([#319](https://github.com/open-amt-cloud-toolkit/rps/issues/319))
+- **readme:** docker change
+- **readme:** update to v1.4.0
+- **security:** added SECURITY.md file
+- **security:** added security.md file
+
+### Feat
+- **actions:** added wifi configuration on the amt device ([#333](https://github.com/open-amt-cloud-toolkit/rps/issues/333))
+- **api:** add pagination following odata spec ([#348](https://github.com/open-amt-cloud-toolkit/rps/issues/348))
+- **api:** integrated wifi configurations with AMT profile ([#318](https://github.com/open-amt-cloud-toolkit/rps/issues/318))
+- **api:** added new wifi api ([#307](https://github.com/open-amt-cloud-toolkit/rps/issues/307))
+- **mqtt:** Adds event logging to rps
+
+### Fix
+- db script has duplicate wireless config tables ([#327](https://github.com/open-amt-cloud-toolkit/rps/issues/327))
+- **activation:** updated client response message to json ([#352](https://github.com/open-amt-cloud-toolkit/rps/issues/352))
+- **api:** ciraconfigname accepts null values now
+- **api:** removed network config
+- **db:** updated db mappings ([#336](https://github.com/open-amt-cloud-toolkit/rps/issues/336))
+- **docs:** updated swagger documentation as per latest api changes
+
+### Refactor
+- **db:** removed unused configuration script from profiles ([#312](https://github.com/open-amt-cloud-toolkit/rps/issues/312))
+- **logging:** changed vault key to be hard coded
+- **logging:** removed key logging
+- **logging:** removed vault log statement
+- **logging:** removed logging sensitive data
+- **logging:** updated log messages
+
+### BREAKING CHANGE
+
+removed configuration_script column from profiles db
+
 <a name="v1.4.0"></a>
 ## [v1.4.0] - 2021-06-22
 ### Build
