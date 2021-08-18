@@ -38,7 +38,7 @@ export class CiraConfigDb implements ICiraConfigDb {
    * @returns {Pagination} returns an array of CIRA config objects from DB
    */
   async getAllCiraConfigs (top: number = DEFAULT_TOP, skip: number = DEFAULT_SKIP): Promise<CIRAConfig[]> {
-    const results = await this.db.query('SELECT cira_config_name, mps_server_address, mps_port, user_name, password, generate_random_password, random_password_length, common_name, server_address_format, auth_method, mps_root_certificate, proxydetails from ciraconfigs ORDER BY cira_config_name LIMIT $1 OFFSET $2', [top, skip])
+    const results = await this.db.query('SELECT cira_config_name, mps_server_address, mps_port, user_name, password, common_name, server_address_format, auth_method, mps_root_certificate, proxydetails from ciraconfigs ORDER BY cira_config_name LIMIT $1 OFFSET $2', [top, skip])
     return await Promise.all(results.rows.map(async (p) => {
       const result = mapToCiraConfig(p)
       return result
@@ -52,7 +52,7 @@ export class CiraConfigDb implements ICiraConfigDb {
    * @returns {CIRAConfig} CIRA config object
    */
   async getCiraConfigByName (configName: string): Promise<CIRAConfig> {
-    const results = await this.db.query('SELECT cira_config_name, mps_server_address, mps_port, user_name, password, generate_random_password, random_password_length, common_name, server_address_format, auth_method, mps_root_certificate, proxydetails FROM ciraconfigs WHERE cira_config_name = $1', [configName])
+    const results = await this.db.query('SELECT cira_config_name, mps_server_address, mps_port, user_name, password, common_name, server_address_format, auth_method, mps_root_certificate, proxydetails FROM ciraconfigs WHERE cira_config_name = $1', [configName])
     let ciraConfig: CIRAConfig = null
     if (results.rowCount > 0) {
       ciraConfig = mapToCiraConfig(results.rows[0])
@@ -89,16 +89,14 @@ export class CiraConfigDb implements ICiraConfigDb {
    */
   async insertCiraConfig (ciraConfig: CIRAConfig): Promise<CIRAConfig> {
     try {
-      const results = await this.db.query('INSERT INTO ciraconfigs(cira_config_name, mps_server_address, mps_port, user_name, password, generate_random_password, random_password_length, common_name, server_address_format, auth_method, mps_root_certificate, proxydetails) ' +
-        'values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)',
+      const results = await this.db.query('INSERT INTO ciraconfigs(cira_config_name, mps_server_address, mps_port, user_name, password, common_name, server_address_format, auth_method, mps_root_certificate, proxydetails) ' +
+        'values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)',
       [
         ciraConfig.configName,
         ciraConfig.mpsServerAddress,
         ciraConfig.mpsPort,
         ciraConfig.username,
         ciraConfig.password,
-        ciraConfig.generateRandomPassword,
-        ciraConfig.passwordLength,
         ciraConfig.commonName,
         ciraConfig.serverAddressFormat,
         ciraConfig.authMethod,
@@ -126,15 +124,13 @@ export class CiraConfigDb implements ICiraConfigDb {
    */
   async updateCiraConfig (ciraConfig: CIRAConfig): Promise<CIRAConfig> {
     try {
-      const results = await this.db.query('UPDATE ciraconfigs SET mps_server_address=$2, mps_port=$3, user_name=$4, password=$5, generate_random_password=$6, random_password_length=$7, common_name=$8, server_address_format=$9, auth_method=$10, mps_root_certificate=$11, proxydetails=$12 where cira_config_name=$1',
+      const results = await this.db.query('UPDATE ciraconfigs SET mps_server_address=$2, mps_port=$3, user_name=$4, password=$5, common_name=$6, server_address_format=$7, auth_method=$8, mps_root_certificate=$9, proxydetails=$10 where cira_config_name=$1',
         [
           ciraConfig.configName,
           ciraConfig.mpsServerAddress,
           ciraConfig.mpsPort,
           ciraConfig.username,
           ciraConfig.password,
-          ciraConfig.generateRandomPassword,
-          ciraConfig.passwordLength,
           ciraConfig.commonName,
           ciraConfig.serverAddressFormat,
           ciraConfig.authMethod,

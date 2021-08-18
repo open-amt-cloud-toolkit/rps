@@ -921,14 +921,10 @@ components:
       required:
       - profileName
       - amtPassword
-      - generateRandomPassword
-      - passwordLength
       - activation
       - ciraConfigName
       - networkConfigName
       - mebxPassword
-      - generateRandomMEBxPassword
-      - mebxPasswordLength
       - tags
       - dhcpEnabled
       - wifiConfigs
@@ -939,11 +935,6 @@ components:
         amtPassword:
           type: string
           format: password
-        generateRandomPassword:
-          type: boolean
-        passwordLength:
-          type: integer
-          format: int32
         activation:
           type: string
         ciraConfigName:
@@ -953,11 +944,6 @@ components:
         mebxPassword:
           type: string
           format: password
-        generateRandomMEBxPassword:
-          type: boolean
-        mebxPasswordLength:
-          type: integer
-          format: int32
         tags:
           type: array
           items:
@@ -971,14 +957,10 @@ components:
       example:
         profileName: profile1
         amtPassword: G@ppm0ym
-        generateRandomPassword: false
-        passwordLength: null
         activation: acmactivate      
         ciraConfigName: ciraconfig
         networkConfigName: dhcp_enabled
         mebxPassword: G@ppm0ym
-        generateRandomMEBxPassword: false
-        mebxPasswordLength: null
         tags: [tag1, tag2]
         dhcpEnabled: true
         wifiConfigs: [
@@ -995,13 +977,9 @@ components:
       title: ProfileResponse
       required:
       - profileName
-      - generateRandomPassword
-      - passwordLength
       - activation
       - ciraConfigName
       - networkConfigName
-      - generateRandomMEBxPassword
-      - mebxPasswordLength
       - tags
       - dhcpEnabled
       - wifiConfigs
@@ -1009,22 +987,12 @@ components:
       properties:
         profileName:
           type: string
-        generateRandomPassword:
-          type: boolean
-        passwordLength:
-          type: integer
-          format: int32
         activation:
           type: string
         ciraConfigName:
           type: string
         networkConfigName:
           type: string
-        generateRandomMEBxPassword:
-          type: boolean
-        mebxPasswordLength:
-          type: integer
-          format: int32
         tags:
           type: array
           items:
@@ -1037,14 +1005,10 @@ components:
             type: object
       example:
         profileName: profile1
-        generateRandomPassword: false
-        passwordLength: null
         configurationScript: null
         activation: acmactivate      
         ciraConfigName: ciraconfig
         networkConfigName: dhcp_enabled
-        generateRandomMEBxPassword: false
-        mebxPasswordLength: null
         tags: [tag1, tag2]
         dhcpEnabled: true
         wifiConfigs: [

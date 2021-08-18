@@ -53,8 +53,8 @@ export interface CIRAConfig {
   authMethod: number // Mutual Auth (1), Username/Password (2) (We only support 2)
   mpsRootCertificate: string // Assumption is Root Cert for MPS. Need to validate.
   proxyDetails: string
-  generateRandomPassword?: boolean
-  passwordLength?: number
+  /** Flag to regenerate a random password when editing a cira config */
+  regeneratePassword?: boolean //
 }
 
 export interface RemoteConfig {

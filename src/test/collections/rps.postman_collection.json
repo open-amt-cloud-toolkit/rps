@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "c465e9ad-bc07-48de-aa1a-9bc250f1bda0",
+		"_postman_id": "e4078ce9-3419-4f7a-9faa-406aa3653243",
 		"name": "RPS API Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -979,10 +979,10 @@
 									"pm.test(\"Request should fail with invalid query string\", function () {\r",
 									"    var errors = pm.response.json().errors;\r",
 									"    pm.expect(errors[0].param).to.equal('$top');\r",
-									"    pm.expect(errors[0].msg).to.equal('The number of items to return should be an integer');\r",
+									"    pm.expect(errors[0].msg).to.equal('The number of items to return should be a positive integer');\r",
 									"\r",
 									"    pm.expect(errors[1].param).to.equal('$skip');\r",
-									"    pm.expect(errors[1].msg).to.equal('The number of items to skip before starting to collect the result set should be an integer');\r",
+									"    pm.expect(errors[1].msg).to.equal('The number of items to skip before starting to collect the result set should be a positive integer');\r",
 									"    \r",
 									"    pm.expect(errors[2].param).to.equal('$count');\r",
 									"    pm.expect(errors[2].msg).to.equal('To return total number of records in result set should be boolean');\r",
@@ -1756,7 +1756,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.50\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"password\": \"Intel123!\",\r\n    \"commonName\": \"192.168.8.50\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"proxyDetails\": \"\"\r\n}\r\n"
+							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.50\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"commonName\": \"192.168.8.50\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"proxyDetails\": \"\"\r\n}\r\n"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -1816,7 +1816,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.50\",\r\n    \"username\": \"admin\",\r\n    \"password\": \"Intel123!\",\r\n    \"commonName\": \"192.168.8.50\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\"       \r\n}"
+							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.50\",\r\n    \"username\": \"admin\",\r\n    \"commonName\": \"192.168.8.50\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\"       \r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -1872,7 +1872,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.50\",\r\n    \"mpsPort\": 1000,\r\n    \"username\": \"admin\",\r\n    \"password\": \"Intel123!\",\r\n    \"commonName\": \"192.168.8.50\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\"\r\n}"
+							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.50\",\r\n    \"mpsPort\": 1000,\r\n    \"username\": \"admin\",\r\n    \"commonName\": \"192.168.8.50\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -1928,7 +1928,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 50000,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 50000,\r\n\t\"username\": \"admin\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -1984,7 +1984,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": \"wrong\",\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": \"wrong\",\r\n\t\"username\": \"admin\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -2040,7 +2040,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -2096,7 +2096,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin user\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin user\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -2152,7 +2152,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin@user\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin@user\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -2171,399 +2171,7 @@
 					"response": []
 				},
 				{
-					"name": "Create CIRA Config with invalid MPS password",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.response.to.have.status(400);\r",
-									"});\r",
-									"pm.test(\"Creation should fail\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 16.\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"password\")\r",
-									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"adminuser\",\r\n\t\"password\": \"intel1234\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\",\r\n    \"generateRandomPassword\": false\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"ciraconfigs"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create CIRA Config with no password & generate random password false",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.response.to.have.status(400);\r",
-									"});\r",
-									"pm.test(\"Creation should fail\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"If generate random password is disabled, password is mandatory\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"generateRandomPassword\")\r",
-									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"adminuser\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\",\r\n    \"generateRandomPassword\": false\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"ciraconfigs"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create CIRA Config with  password & generate random password true",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.response.to.have.status(400);\r",
-									"});\r",
-									"pm.test(\"Creation should fail\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Either generate Random Password should be enabled with Password Length or should provide password\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"generateRandomPassword\")\r",
-									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"adminuser\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n    \"password\": \"intel@1234\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\",\r\n    \"generateRandomPassword\": true\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"ciraconfigs"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create CIRA Config with MPS password length less than 8",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.response.to.have.status(400);\r",
-									"});\r",
-									"pm.test(\"Creation should fail\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 16.\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"password\")\r",
-									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"adminuser\",\r\n\t\"password\": \"Intel@1\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\",\r\n    \"generateRandomPassword\": false\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"ciraconfigs"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create CIRA Config with MPS password length greater than 32",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.response.to.have.status(400);\r",
-									"});\r",
-									"pm.test(\"Creation should fail\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 16.\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"password\")\r",
-									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"adminuser\",\r\n\t\"password\": \"0123456789012345678901234567890123456789\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\",\r\n    \"generateRandomPassword\": false\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"ciraconfigs"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create CIRA Config with random password and invalid password length",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.response.to.have.status(400);\r",
-									"});\r",
-									"pm.test(\"Creation should fail\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Random password length value should range between 8 and 16\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"passwordLength\")\r",
-									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"adminuser\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\",\r\n    \"generateRandomPassword\": true,\r\n    \"passwordLength\": 17\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"ciraconfigs"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create CIRA Config with random password and no password length",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.response.to.have.status(400);\r",
-									"});\r",
-									"pm.test(\"Creation should fail\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"If generate random password is enabled, passwordLength is mandatory\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"generateRandomPassword\")\r",
-									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"adminuser\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\",\r\n    \"generateRandomPassword\": true\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"ciraconfigs"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create CIRA Config with random password and password length",
+					"name": "Create CIRA Config with random password",
 					"event": [
 						{
 							"listen": "test",
@@ -2606,7 +2214,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n\t\"configName\": \"test\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"adminuser\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\",\r\n    \"generateRandomPassword\": true,\r\n    \"passwordLength\": 9\r\n}"
+							"raw": "{\r\n\t\"configName\": \"test\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"adminuser\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -2625,71 +2233,7 @@
 					"response": []
 				},
 				{
-					"name": "CIRA Config with password",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 201\", function () {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"pm.test(\"Creation should succeed\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"    pm.expect(result.configName).to.eql(\"test\")\r",
-									"    pm.expect(result.mpsServerAddress).to.eql(\"192.168.8.50\"),\r",
-									"\tpm.expect(result.mpsPort).to.eql(4433),\r",
-									"\tpm.expect(result.username).to.eql(\"adminuser\"),\r",
-									"    pm.expect(result.generateRandomPassword).to.eql(false),\r",
-									"    pm.expect(result.passwordLength).to.eql(null),\r",
-									"\tpm.expect(result.commonName).to.eql(\"192.168.8.50\"),\r",
-									"\tpm.expect(result.serverAddressFormat).to.eql(3),\r",
-									"\tpm.expect(result.authMethod).to.eql(2),\r",
-									"\tpm.expect(result.mpsRootCertificate).to.eql(\"rootcert\"),\r",
-									"\tpm.expect(result.proxyDetails).to.eql(\"\")\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n\t\"configName\": \"test\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"adminuser\",\r\n    \"password\": \"Intel@123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\",\r\n    \"generateRandomPassword\": false\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"ciraconfigs"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create CIRA Config without MPS username and password",
+					"name": "Create CIRA Config without MPS username",
 					"event": [
 						{
 							"listen": "test",
@@ -2711,10 +2255,6 @@
 									"    pm.expect(result.errors[2].msg).to.eql(\"MPS user name length should be in between 5 to 16\")\r",
 									"    pm.expect(result.errors[2].param).to.eql(\"username\")\r",
 									"    pm.expect(result.errors[2].location).to.eql(\"body\")\r",
-									"\r",
-									"    pm.expect(result.errors[3].msg).to.eql(\"If generate random password is disabled, password is mandatory\")\r",
-									"    pm.expect(result.errors[3].param).to.eql(\"generateRandomPassword\")\r",
-									"    pm.expect(result.errors[3].location).to.eql(\"body\")\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -2738,7 +2278,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\",\r\n    \"generateRandomPassword\": false\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -2798,7 +2338,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -2854,7 +2394,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 4,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 4,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -2910,7 +2450,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 401,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 401,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -2966,7 +2506,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": \"FQDN\",\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": \"FQDN\",\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -3026,7 +2566,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -3082,7 +2622,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 5,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 5,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -3138,7 +2678,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": \"mutual\",\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": \"mutual\",\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -3201,7 +2741,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\",\r\n    \"generateRandomPassword\": false\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -3256,7 +2796,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n\t\"configName\": \"ciraConfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\",\r\n    \"generateRandomPassword\": false\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraConfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -3371,7 +2911,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"password\": \"Intel123!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 201,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\",\r\n    \"generateRandomPassword\": false\r\n}"
+							"raw": "{\r\n\t\"configName\": \"ciraconfig2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 201,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -3473,9 +3013,9 @@
 									"pm.test(\"Request should fail with invalid query string\", function () {\r",
 									"    var errors = pm.response.json().errors;\r",
 									"    pm.expect(errors[0].param).to.equal('$top');\r",
-									"    pm.expect(errors[0].msg).to.equal('The number of items to return should be an integer');\r",
+									"    pm.expect(errors[0].msg).to.equal('The number of items to return should be a positive integer');\r",
 									"    pm.expect(errors[1].param).to.equal('$skip');\r",
-									"    pm.expect(errors[1].msg).to.equal('The number of items to skip before starting to collect the result set should be an integer');\r",
+									"    pm.expect(errors[1].msg).to.equal('The number of items to skip before starting to collect the result set should be a positive integer');\r",
 									"    pm.expect(errors[2].param).to.equal('$count');\r",
 									"    pm.expect(errors[2].msg).to.equal('To return total number of records in result set should be boolean');\r",
 									"});"
@@ -3908,174 +3448,6 @@
 					"response": []
 				},
 				{
-					"name": "Edit CIRA Config with invalid MPS password",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.response.to.have.status(400);\r",
-									"});\r",
-									"pm.test(\"Creation should fail\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 16.\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"password\")\r",
-									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"password\": \"intel1234\",\r\n    \"generateRandomPassword\": false\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"ciraconfigs"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Edit CIRA Config with MPS password length less than 8",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.response.to.have.status(400);\r",
-									"});\r",
-									"pm.test(\"Creation should fail\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 16.\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"password\")\r",
-									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"password\": \"Intel@1\",\r\n    \"generateRandomPassword\": false\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"ciraconfigs"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Edit CIRA Config with MPS password length greater than 32",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.response.to.have.status(400);\r",
-									"});\r",
-									"pm.test(\"Creation should fail\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 16.\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"password\")\r",
-									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"password\": \"0123456789012345678901234567890123456789\",\r\n    \"generateRandomPassword\": false\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"ciraconfigs"
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "Edit CIRA Config with invalid MPS port less than 1024",
 					"event": [
 						{
@@ -4316,7 +3688,6 @@
 									"        pm.expect(jsonData.mpsServerAddress).to.eql(\"192.168.8.55\")\r",
 									"        pm.expect(jsonData.mpsPort).to.eql(4433)\r",
 									"        pm.expect(jsonData.username).to.eql(\"admin\")\r",
-									"        pm.expect(jsonData.password).to.eql()\r",
 									"        pm.expect(jsonData.commonName).to.eql(\"192.168.8.55\")\r",
 									"        pm.expect(jsonData.serverAddressFormat).to.eql(3)\r",
 									"        pm.expect(jsonData.authMethod).to.eql(2)\r",
@@ -4345,7 +3716,69 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.55\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"password\": \"Intel123!\",\r\n    \"commonName\": \"192.168.8.55\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\"\r\n}\r\n"
+							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.55\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"commonName\": \"192.168.8.55\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\",\r\n    \"regeneratePassword\": false\r\n}\r\n"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"ciraconfigs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Edit CIRA Config with Regenerate Password On",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									" pm.test(\"Result should be equal to example\", function () {\r",
+									"        var jsonData = pm.response.json();\r",
+									"        pm.expect(jsonData.configName).to.eql(\"ciraconfig2\")\r",
+									"        pm.expect(jsonData.mpsServerAddress).to.eql(\"192.168.8.55\")\r",
+									"        pm.expect(jsonData.mpsPort).to.eql(4433)\r",
+									"        pm.expect(jsonData.username).to.eql(\"admin\")\r",
+									"        pm.expect(jsonData.commonName).to.eql(\"192.168.8.55\")\r",
+									"        pm.expect(jsonData.serverAddressFormat).to.eql(3)\r",
+									"        pm.expect(jsonData.authMethod).to.eql(2)\r",
+									"        pm.expect(jsonData.mpsRootCertificate).to.eql(\"rootcert\")\r",
+									"        pm.expect(jsonData.proxyDetails).to.eql(\"\")\r",
+									"    });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.55\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"commonName\": \"192.168.8.55\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\",\r\n    \"regeneratePassword\": true\r\n}\r\n"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -4379,7 +3812,6 @@
 									"        pm.expect(jsonData.mpsServerAddress).to.eql(\"192.168.8.5\")\r",
 									"        pm.expect(jsonData.mpsPort).to.eql(4433)\r",
 									"        pm.expect(jsonData.username).to.eql(\"admin\")\r",
-									"        pm.expect(jsonData.password).to.eql()\r",
 									"        pm.expect(jsonData.commonName).to.eql(\"192.168.8.5\")\r",
 									"        pm.expect(jsonData.serverAddressFormat).to.eql(3)\r",
 									"        pm.expect(jsonData.authMethod).to.eql(2)\r",
@@ -4408,7 +3840,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"configName\": \"ciraConfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.5\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"password\": \"Intel123!\",\r\n    \"commonName\": \"192.168.8.5\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\"\r\n}\r\n"
+							"raw": "{\r\n    \"configName\": \"ciraConfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.5\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"commonName\": \"192.168.8.5\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\"\r\n}\r\n"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -4515,7 +3947,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.50\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"password\": \"Intel123!\",\r\n    \"commonName\": \"192.168.8.50\",\r\n    \"serverAddressFormat\": 201,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\"\r\n}"
+							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.50\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"commonName\": \"192.168.8.50\",\r\n    \"serverAddressFormat\": 201,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -4827,9 +4259,13 @@
 									"});\r",
 									"pm.test(\"Creation should fail when activation is valid\", function () {\r",
 									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Either generateRandomPassword should be enabled with amtPassword or should provide amtPassword\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"activation\")\r",
+									"     pm.expect(result.errors[0].msg).to.eql(\"Invalid value\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"amtPassword\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
+									"\r",
+									"    pm.expect(result.errors[1].msg).to.eql(\"AMT password is required field should contains at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.\")\r",
+									"    pm.expect(result.errors[1].param).to.eql(\"amtPassword\")\r",
+									"    pm.expect(result.errors[1].location).to.eql(\"body\")\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -4853,64 +4289,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\"\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"profiles",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create ccmactivate with amtPassword and generate random password",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.response.to.have.status(400);\r",
-									"});\r",
-									"pm.test(\"Creation should fail when payload contains both amtPassword and generate random password\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Either generate Random AMT Password should be enabled with Password Length or should provide AMT Password\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"generateRandomPassword\")\r",
-									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomPassword\": true,\r\n    \"passwordLength\": 8,\r\n    \"activation\": \"ccmactivate\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"dhcpEnabled\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -4967,178 +4346,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"activation\": \"ccmactivate\"\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"profiles",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create ccmactivate with generate random password but no length",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.response.to.have.status(400);\r",
-									"});\r",
-									"pm.test(\"Creation should fail when payload contains generate random password without password length\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"If generate random AMT password is enabled, passwordLength is mandatory\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"generateRandomPassword\")\r",
-									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": true,\r\n    \"activation\": \"ccmactivate\"\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"profiles",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create ccmactivate with generate random password and length < 8",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.response.to.have.status(400);\r",
-									"});\r",
-									"pm.test(\"Creation should fail when payload conatins generate random password and password length less than 8\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Random AMT password length value should range between 8 and 32\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"passwordLength\")\r",
-									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": true,\r\n    \"passwordLength\": 6,\r\n    \"activation\": \"ccmactivate\"\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"profiles",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create ccmactivate with generate random password and length > 32",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.response.to.have.status(400);\r",
-									"});\r",
-									"pm.test(\"Creation should fail when payload conatins generate random password and password length greater than 32\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Random AMT password length value should range between 8 and 32\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"passwordLength\")\r",
-									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": true,\r\n    \"passwordLength\": 33,\r\n    \"activation\": \"ccmactivate\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"dhcpEnabled\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5169,7 +4377,7 @@
 									"});\r",
 									"pm.test(\"Creation should fail when payload contains acmactivate but no mebxPassword\", function () {\r",
 									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Either generateRandomMEBxPassword should be enabled with mebxPasswordLength or should provide mebxPassword\")\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"MEBx Password is required for acmactivate\")\r",
 									"    pm.expect(result.errors[0].param).to.eql(\"activation\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
@@ -5195,7 +4403,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"activation\": \"acmactivate\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"activation\": \"acmactivate\",\r\n    \"dhcpEnabled\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5252,178 +4460,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123\",\r\n    \"activation\": \"acmactivate\"\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"profiles",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create acmactivate with generate mebx random password but no length",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.response.to.have.status(400);\r",
-									"});\r",
-									"pm.test(\"Creation should fail when payload contains generate mebx random password but no password length\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"If generate random MEBx password is enabled, mebxPasswordLength is mandatory\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"generateRandomMEBxPassword\")\r",
-									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"activation\": \"acmactivate\"\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"profiles",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create acmactivate with generate mebx random password and length < 8",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.response.to.have.status(400);\r",
-									"});\r",
-									"pm.test(\"Creation should fail when payload contains generate mebx random password and length less than 8\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Random MEBx password length value should range between 8 and 32\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"mebxPasswordLength\")\r",
-									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"mebxPasswordLength\": 6,\r\n    \"activation\": \"acmactivate\"\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"profiles",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create acmactivate with generate mebx random password but no length Copy 2",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.response.to.have.status(400);\r",
-									"});\r",
-									"pm.test(\"Creation should fail when payload contains generate mebx random password and length greater than 8\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Random MEBx password length value should range between 8 and 32\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"mebxPasswordLength\")\r",
-									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"mebxPasswordLength\": 33,\r\n    \"activation\": \"acmactivate\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123\",\r\n    \"activation\": \"acmactivate\",\r\n    \"dhcpEnabled\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5483,7 +4520,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5633,10 +4670,10 @@
 									"pm.test(\"Request should fail with invalid query string\", function () {\r",
 									"    var errors = pm.response.json().errors;\r",
 									"    pm.expect(errors[0].param).to.equal('$top');\r",
-									"    pm.expect(errors[0].msg).to.equal('The number of items to return should be an integer');\r",
+									"    pm.expect(errors[0].msg).to.equal('The number of items to return should be a positive integer');\r",
 									"\r",
 									"    pm.expect(errors[1].param).to.equal('$skip');\r",
-									"    pm.expect(errors[1].msg).to.equal('The number of items to skip before starting to collect the result set should be an integer');\r",
+									"    pm.expect(errors[1].msg).to.equal('The number of items to skip before starting to collect the result set should be a positive integer');\r",
 									"    \r",
 									"    pm.expect(errors[2].param).to.equal('$count');\r",
 									"    pm.expect(errors[2].msg).to.equal('To return total number of records in result set should be boolean');\r",
@@ -5855,7 +4892,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"activation\": \"acmactivate\",\r\n    \"dhcpEnabled\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"acmactivate\",\r\n    \"dhcpEnabled\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5969,124 +5006,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123\"\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"profiles",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update profile with generate random password but no password length",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.response.to.have.status(400);\r",
-									"});\r",
-									"pm.test(\"Creation should fail when payload contains generate random password but no password length\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"If generate random AMT password is enabled, passwordLength is mandatory\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"generateRandomPassword\")\r",
-									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": true\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"profiles",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update profile with generate random password and length",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"pm.test(\"Update should succeed\", function () {\r",
-									"    var jsonData = pm.response.json();\r",
-									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
-									"    pm.expect(jsonData.generateRandomPassword).to.equal(true)\r",
-									"    pm.expect(jsonData.passwordLength).to.eql(16)\r",
-									"    pm.expect(jsonData.generateRandomMEBxPassword).to.equal(false)\r",
-									"    pm.expect(jsonData.mebxPasswordLength).to.eql(null)\r",
-									"    pm.expect(jsonData.activation).to.equal(\"ccmactivate\")\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"passwordLength\": 16\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -6119,9 +5039,10 @@
 									"pm.test(\"Result 1 should be equal to example\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
-									"    pm.expect(jsonData.generateRandomMEBxPassword).to.equal(false)\r",
-									"    pm.expect(jsonData.mebxPasswordLength).to.eql(null)\r",
 									"    pm.expect(jsonData.activation).to.equal(\"ccmactivate\")    \r",
+									"    pm.expect(jsonData.ciraConfigName).to.equal(null)    \r",
+									"    pm.expect(jsonData.dhcpEnabled).to.equal(false)    \r",
+									"    pm.expect(jsonData.tags.length).to.equal(1)  \r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -6178,8 +5099,8 @@
 									"pm.test(\"Result 1 should be equal to example\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
-									"    pm.expect(jsonData.generateRandomMEBxPassword).to.equal(false)\r",
-									"    pm.expect(jsonData.mebxPasswordLength).to.eql(null)\r",
+									"    pm.expect(jsonData.dhcpEnabled).to.equal(false)\r",
+									"    pm.expect(jsonData.ciraConfigName).to.eql(null)\r",
 									"    pm.expect(jsonData.activation).to.equal(\"ccmactivate\")\r",
 									"    pm.expect(jsonData.tags.length).to.equal(1)    \r",
 									"});"
@@ -6236,7 +5157,7 @@
 									"});\r",
 									"pm.test(\"Creation should fail when payload contains acmactivate without mebx password\", function () {\r",
 									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Either generateRandomMEBxPassword should be enabled with mebxPasswordLength or should provide mebxPassword\")\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"MEBx Password is required for acmactivate\")\r",
 									"    pm.expect(result.errors[0].param).to.eql(\"activation\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
@@ -6282,66 +5203,6 @@
 					"response": []
 				},
 				{
-					"name": "Update Profile with generate random mebx password and length",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"pm.test(\"Result 1 should be equal to example\", function () {\r",
-									"    var jsonData = pm.response.json();\r",
-									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
-									"    pm.expect(jsonData.generateRandomPassword).to.equal(true)\r",
-									"    pm.expect(jsonData.passwordLength).to.eql(16)\r",
-									"    pm.expect(jsonData.generateRandomMEBxPassword).to.equal(true)\r",
-									"    pm.expect(jsonData.mebxPasswordLength).to.eql(8)\r",
-									"    pm.expect(jsonData.activation).to.equal(\"acmactivate\")    \r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"mebxPasswordLength\": 8,\r\n    \"activation\": \"acmactivate\"\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"profiles",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "Update Profile with static mebx password",
 					"event": [
 						{
@@ -6354,11 +5215,10 @@
 									"pm.test(\"Result 1 should be equal to example\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
-									"    pm.expect(jsonData.generateRandomPassword).to.equal(true)\r",
-									"    pm.expect(jsonData.passwordLength).to.eql(16)\r",
-									"    pm.expect(jsonData.generateRandomMEBxPassword).to.equal(false)\r",
-									"    pm.expect(jsonData.mebxPasswordLength).to.eql(null)\r",
-									"    pm.expect(jsonData.activation).to.equal(\"acmactivate\")    \r",
+									"    pm.expect(jsonData.activation).to.equal(\"acmactivate\") \r",
+									"    pm.expect(jsonData.dhcpEnabled).to.equal(false)\r",
+									"    pm.expect(jsonData.ciraConfigName).to.eql(null)  \r",
+									"    pm.expect(jsonData.tags.length).to.equal(1)     \r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -6414,11 +5274,10 @@
 									"pm.test(\"Update should succeed\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
-									"    pm.expect(jsonData.generateRandomPassword).to.equal(false)\r",
-									"    pm.expect(jsonData.passwordLength).to.eql(null)\r",
-									"    pm.expect(jsonData.generateRandomMEBxPassword).to.equal(false)\r",
-									"    pm.expect(jsonData.mebxPasswordLength).to.eql(null)\r",
 									"    pm.expect(jsonData.activation).to.equal(\"acmactivate\")    \r",
+									"    pm.expect(jsonData.tags.length).to.equal(1)    \r",
+									"    pm.expect(jsonData.dhcpEnabled).to.equal(false)\r",
+									"    pm.expect(jsonData.ciraConfigName).to.eql(null)  \r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -6588,11 +5447,10 @@
 											"});\r",
 											"pm.test(\"Creation should succeed\", function () {\r",
 											"    var result = pm.response.json();\r",
-											"     pm.expect(result.configName).to.eql(\"ciraconfig\")\r",
+											"    pm.expect(result.configName).to.eql(\"ciraconfig\")\r",
 											"    pm.expect(result.mpsServerAddress).to.eql(\"192.168.8.50\"),\r",
 											"\tpm.expect(result.mpsPort).to.eql(4433),\r",
 											"\tpm.expect(result.username).to.eql(\"admin\"),\r",
-											"\tpm.expect(result.password).to.eql(),\r",
 											"\tpm.expect(result.commonName).to.eql(\"192.168.8.50\"),\r",
 											"\tpm.expect(result.serverAddressFormat).to.eql(3),\r",
 											"\tpm.expect(result.authMethod).to.eql(2),\r",
@@ -6621,7 +5479,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"configName\": \"ciraconfig\",\r\n    \"mpsServerAddress\": \"192.168.8.50\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"password\": \"Intel123!\",\r\n    \"commonName\": \"192.168.8.50\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\",\r\n    \"generateRandomPassword\": false\r\n}"
+									"raw": "{\r\n    \"configName\": \"ciraconfig\",\r\n    \"mpsServerAddress\": \"192.168.8.50\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"commonName\": \"192.168.8.50\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\"\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -6676,7 +5534,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n     \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"nociraconfig\",\r\n    \"dhcpEnabled\": true\r\n}"
+									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n     \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"nociraconfig\",\r\n    \"dhcpEnabled\": true\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -6733,7 +5591,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n     \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\",\r\n    \"dhcpEnabled\": false\r\n}"
+									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n     \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\",\r\n    \"dhcpEnabled\": false\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -6792,7 +5650,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n     \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\",\r\n    \"dhcpEnabled\": true\r\n}"
+									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n     \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\",\r\n    \"dhcpEnabled\": true\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -6884,7 +5742,6 @@
 											"    pm.expect(jsonData.mpsServerAddress).to.equal(\"192.168.8.50\")\r",
 											"    pm.expect(jsonData.mpsPort).to.eql(4433)\r",
 											"    pm.expect(jsonData.username).to.equal(\"admin\")\r",
-											"    pm.expect(jsonData.password).to.equal()\r",
 											"    pm.expect(jsonData.commonName).to.eql(\"192.168.8.50\")\r",
 											"    pm.expect(jsonData.serverAddressFormat).to.equal(3)    \r",
 											"    pm.expect(jsonData.mpsRootCertificate).to.equal(\"rootcert\")\r",
@@ -6913,7 +5770,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"configName\": \"ciraconfig\",\r\n    \"password\": \"P@ssw0rd\"\r\n}"
+									"raw": "{\r\n    \"configName\": \"ciraconfig\",\r\n    \"regeneratePassword\": true\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -6969,7 +5826,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n     \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\",\r\n    \"dhcpEnabled\": false\r\n}"
+									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n     \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\",\r\n    \"dhcpEnabled\": false\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -7098,7 +5955,7 @@
 					"name": "AMT - WIFI Profiles",
 					"item": [
 						{
-							"name": "Create Wireless Profile",
+							"name": "Create Wireless Profile(home)",
 							"event": [
 								{
 									"listen": "test",
@@ -7153,7 +6010,7 @@
 							"response": []
 						},
 						{
-							"name": "Create Wireless Profile",
+							"name": "Create Wireless Profile(office)",
 							"event": [
 								{
 									"listen": "test",
@@ -7244,7 +6101,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -7300,7 +6157,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -7356,7 +6213,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 355,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 355,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -7412,7 +6269,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": -1,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": -1,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -7474,7 +6331,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -7530,7 +6387,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"test\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"test\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -7595,7 +6452,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"P@ssw0rd\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"P@ssw0rd\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"acm\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"P@ssw0rd\",\r\n    \"mebxPassword\": \"P@ssw0rd\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"acm\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -7700,7 +6557,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"test\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"test\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -7756,7 +6613,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -7812,7 +6669,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -7868,7 +6725,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 355,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 355,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -7924,7 +6781,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": -1,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": -1,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -7984,7 +6841,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n   \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -8040,7 +6897,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n     \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n     \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -8105,7 +6962,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"mebxPasswordLength\": null,\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -8227,7 +7084,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"generateRandomPassword\": false,\r\n    \"passwordLength\": null,\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        },\r\n        {\r\n            \"priority\": 3,\r\n            \"profileName\": \"business\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        },\r\n        {\r\n            \"priority\": 3,\r\n            \"profileName\": \"business\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -8259,10 +7116,6 @@
 											"pm.test(\"Creation should succeed\", function () {\r",
 											"    var result = pm.response.json();\r",
 											"    pm.expect(result.profileName).to.eql(\"wifi-profile2\"),\r",
-											"    pm.expect(result.generateRandomPassword).to.eql(true),\r",
-											"    pm.expect(result.passwordLength).to.eql(10),\r",
-											"    pm.expect(result.generateRandomMEBxPassword).to.eql(true),\r",
-											"    pm.expect(result.mebxPasswordLength).to.eql(12),\r",
 											"    pm.expect(result.activation).to.eql(\"acmactivate\")\r",
 											"    pm.expect(result.tags.length).to.equal(2)\r",
 											"    pm.expect(result.wifiConfigs.length).to.equal(3)\r",
@@ -8295,7 +7148,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile2\",\r\n    \"generateRandomPassword\": true,\r\n    \"passwordLength\": 10,\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"mebxPasswordLength\": 12,\r\n    \"activation\": \"acmactivate\",\r\n    \"tags\": [\"acm\", \"random password\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        },\r\n        {\r\n            \"priority\": 3,\r\n            \"profileName\": \"business\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile2\",\r\n    \"activation\": \"acmactivate\",\r\n    \"amtPassword\": \"P@ssw0rd\",\r\n    \"mebxPassword\": \"P@ssw0rd\",\r\n    \"tags\": [\"acm\", \"random password\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        },\r\n        {\r\n            \"priority\": 3,\r\n            \"profileName\": \"business\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -8347,10 +7200,6 @@
 											"pm.test(\"Profile two\", function () {\r",
 											"    var result = pm.response.json();\r",
 											"    pm.expect(result[1].profileName).to.eql(\"wifi-profile2\"),\r",
-											"    pm.expect(result[1].generateRandomPassword).to.eql(true),\r",
-											"    pm.expect(result[1].passwordLength).to.eql(10),\r",
-											"    pm.expect(result[1].generateRandomMEBxPassword).to.eql(true),\r",
-											"    pm.expect(result[1].mebxPasswordLength).to.eql(12),\r",
 											"    pm.expect(result[1].activation).to.eql(\"acmactivate\")\r",
 											"    pm.expect(result[1].tags.length).to.equal(2)\r",
 											"    pm.expect(result[1].wifiConfigs.length).to.equal(3)\r",
@@ -9204,10 +8053,10 @@
 									"pm.test(\"Request should fail with invalid query string\", function () {\r",
 									"    var errors = pm.response.json().errors;\r",
 									"    pm.expect(errors[0].param).to.equal('$top');\r",
-									"    pm.expect(errors[0].msg).to.equal('The number of items to return should be an integer');\r",
+									"    pm.expect(errors[0].msg).to.equal('The number of items to return should be a positive integer');\r",
 									"\r",
 									"    pm.expect(errors[1].param).to.equal('$skip');\r",
-									"    pm.expect(errors[1].msg).to.equal('The number of items to skip before starting to collect the result set should be an integer');\r",
+									"    pm.expect(errors[1].msg).to.equal('The number of items to skip before starting to collect the result set should be a positive integer');\r",
 									"    \r",
 									"    pm.expect(errors[2].param).to.equal('$count');\r",
 									"    pm.expect(errors[2].msg).to.equal('To return total number of records in result set should be boolean');\r",
