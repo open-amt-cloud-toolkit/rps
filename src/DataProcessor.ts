@@ -105,7 +105,6 @@ export class DataProcessor implements IDataProcessor {
     } else if ((clientObj.action === ClientAction.ADMINCTLMODE || clientObj.action === ClientAction.CLIENTCTLMODE) && !clientObj.ClientData.payload.digestRealm) {
       // Makes the first wsman call
       await this.amtwsman.batchEnum(clientId, '*AMT_GeneralSettings')
-      await this.amtwsman.batchEnum(clientId, '*AMT_GeneralSettings')
     } else {
       const response = await this.clientActions.buildResponseMessage(clientMsg, clientId)
       return response
@@ -123,7 +122,7 @@ export class DataProcessor implements IDataProcessor {
     const payload = clientObj.ClientData.payload
     // this.logger.debug(`ProcessData: Parsed Message received from device ${payload.uuid}, clientId: ${clientId}: ${JSON.stringify(clientMsg, null, "\t")}`);
     const msg = clientMsg.payload.split('\r\n')
-    const statusCode = msg[0].substr(9, 3).trim()
+    const statusCode = msg[0]?.substr(9, 3).trim()
 
     if (statusCode === '401') {
       return this.amtwsman.parseWsManResponseXML(clientMsg.payload, clientId, statusCode)
@@ -133,11 +132,13 @@ export class DataProcessor implements IDataProcessor {
     } else {
       clientMsg.payload = this.amtwsman.parseWsManResponseXML(clientMsg.payload, clientId, statusCode)
       this.logger.debug(`Device ${payload.uuid} wsman response ${statusCode}: ${JSON.stringify(clientMsg.payload, null, '\t')}`)
-      if (clientObj.action !== ClientAction.CIRACONFIG) {
-        throw new RPSError(`Device ${payload.uuid} activation failed. Bad wsman response from AMT device`)
-      }
+      // if (clientObj.action !== ClientAction.CIRACONFIG) {
+      //   throw new RPSError(`Device ${payload.uuid} activation failed. Bad wsman response from AMT device`)
+      // }
     }
-    return await this.clientActions.buildResponseMessage(clientMsg, clientId)
+    if (clientMsg.payload != null) {
+      return await this.clientActions.buildResponseMessage(clientMsg, clientId)
+    }
   }
 
   async heartbeat (clientMsg: ClientMsg, clientId: string): Promise<ClientMsg> {
@@ -174,14 +175,21 @@ export class DataProcessor implements IDataProcessor {
       }
       // return the certificate chain pems and private key
       const certChainPfx = this.certManager.dumpPfx(pfxobj)
+      this.logger.info('certChainPfx', certChainPfx)
       // check that provisioning certificate root matches one of the trusted roots from AMT
       for (const hash in clientMsg.payload.certHashes) {
+        this.logger.info('Finger Print', clientMsg.payload.certHashes[hash]?.toLowerCase(), certChainPfx.fingerprint?.toLowerCase())
         if (clientMsg.payload.certHashes[hash]?.toLowerCase() === certChainPfx.fingerprint?.toLowerCase()) {
+          this.logger.info('match')
           clientObj.certObj = certChainPfx.provisioningCertificateObj
           this.clientManager.setClientObject(clientObj)
+        } else {
+          this.logger.info('does not match')
         }
       }
+      this.logger.info('certObject', clientObj.certObj)
       if (clientObj.certObj != null) {
+        this.logger.info('certchain 0', clientObj.certObj.certChain[0])
         payload.hash = this.certManager.getCertHashSha256(clientObj.certObj.certChain[0])
       }
     } catch (error) {

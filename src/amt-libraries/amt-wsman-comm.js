@@ -233,7 +233,11 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, setupCo
                     var ser = new SerialTunnel();
 
                     // let's chain up the TLSSocket <-> SerialTunnel <-> WS 
-                    ser.forwardwrite = function (msg) { try { obj.cirasocket.write(msg); } catch (ex) { } }; // TLS ---> WS
+                    ser.forwardwrite = function (msg) {
+                         try { 
+                             console.log("***************msg************", msg)
+                             obj.cirasocket.write(msg); 
+                            } catch (ex) { } }; // TLS ---> WS
 
                     // When WS return something, update SerialTunnel buffer
                     obj.cirasocket.onData = function (ciraconn, data) { if (data.length > 0) { try { ser.updateBuffer(Buffer.from(data, 'binary')); } catch (e) { } } }; // WS ---> TLS
@@ -243,8 +247,13 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, setupCo
                         if (state == 0) { obj.xxOnSocketClosed(); }
                         if (state == 2) {
                             // TLSSocket to encapsulate TLS communication, which then tunneled via SerialTunnel an then wrapped through WS
-                            var options = { socket: ser, ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE, rejectUnauthorized: false };
-                            if (obj.xtlsMethod == 1) { options.secureProtocol = 'TLSv1_method'; }
+                            var options = { 
+                                socket: ser, 
+                                // ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', 
+                                secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE, 
+                                rejectUnauthorized: false 
+                            };
+                            // if (obj.xtlsMethod == 1) { options.secureProtocol = 'TLSv1_method'; }
                             if (obj.xtlsoptions) {
                                 if (obj.xtlsoptions.ca) { options.ca = obj.xtlsoptions.ca; }
                                 if (obj.xtlsoptions.cert) { options.cert = obj.xtlsoptions.cert; }
@@ -335,10 +344,11 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, setupCo
 
     // NODE.js specific private method
     obj.xxOnSocketConnected = function () {
-        try{
-            let asn1 = require('node-forge').asn1;
-        let pki = require('node-forge').pki;
-        let atob = require("atob");
+        try {
+            console.log("TLS negotiation done*********************************************************")
+          let asn1 = require('node-forge').asn1;
+          let pki = require('node-forge').pki;
+          let atob = require("atob");
         if (obj.socket == null) return;
         // check TLS certificate for webrelay and direct only
         if (obj.xtls == 1) {

@@ -8,6 +8,7 @@ import { ICertManager } from './interfaces/ICertManager'
 import { CertificateObject, ProvisioningCertObj } from './models/Rcs'
 import { INodeForge } from './interfaces/INodeForge'
 import * as crypto from 'crypto'
+import * as forge from 'node-forge'
 export class CertManager implements ICertManager {
   private readonly nodeForge: INodeForge
 
@@ -136,6 +137,7 @@ export class CertManager implements ICertManager {
       const cert: any = bags[this.nodeForge.pkcs8ShroudedKeyBag][i]
       pfxOut.keys.push(cert.key)
     }
+    console.log(pfxOut)
     return pfxOut
   }
 
@@ -158,5 +160,78 @@ export class CertManager implements ICertManager {
         return null
       }
     }
+  }
+
+  loadPfxCertificate (pfxb64: string, passphrase: string): any {
+    const certObj = { certs: [], keys: [] }
+    const pfx = forge.pkcs12.pkcs12FromAsn1(forge.asn1.fromDer(forge.util.decode64(pfxb64)), true, passphrase)
+
+    // Get the certs from certbags
+    let bags = pfx.getBags({ bagType: forge.pki.oids.certBag })
+    for (let i = 0; i < bags[forge.pki.oids.certBag].length; i++) {
+      certObj.certs.push(bags[forge.pki.oids.certBag][i].cert)
+    }
+
+    // Get shrouded key from key bags
+    bags = pfx.getBags({ bagType: forge.pki.oids.pkcs8ShroudedKeyBag })
+    for (let i = 0; i < bags[forge.pki.oids.pkcs8ShroudedKeyBag].length; i++) {
+      certObj.keys.push(bags[forge.pki.oids.pkcs8ShroudedKeyBag][i].key)
+    }
+
+    console.log(certObj)
+
+    // Reorder the certificates from leaf to root.
+    const orderedCerts = []
+    const or = []
+    let currenthash = null
+    let orderingError = false
+    while (orderingError && orderedCerts.length < certObj.certs.length) {
+      orderingError = true
+      certObj.certs.forEach(cert => {
+        if (((currenthash == null) && (cert.subject.hash === cert.issuer.hash)) || ((cert.issuer.hash === currenthash) && (cert.subject.hash !== cert.issuer.hash))) {
+          currenthash = cert.subject.hash
+          orderedCerts.unshift(Buffer.from(forge.asn1.toDer(forge.pki.certificateToAsn1(cert)).data, 'binary').toString('base64'))
+          or.unshift(cert)
+          orderingError = false
+        }
+      })
+    }
+    certObj.certs = or
+    console.log(certObj)
+    // Check that the certificate and private key match
+    if ((this.compareArrays(certObj.certs[0].publicKey.n.data, certObj.keys[0].n.data)) || (this.compareArrays(certObj.certs[0].publicKey.e.data, certObj.keys[0].e.data))) {
+      console.log('Intel AMT activation certificate provided with a mismatching private key.')
+    }
+
+    // Check if the right OU or OID is present for Intel AMT activation
+    let validActivationCert = false
+    for (const k in certObj.certs[0].extensions) {
+      if (certObj.certs[0].extensions[k]['2.16.840.1.113741.1.2.3']) {
+        validActivationCert = true
+      }
+    }
+    const orgName = certObj.certs[0].subject.getField('OU')
+    if ((orgName != null) && (orgName.value === 'Intel(R) Client Setup Certificate')) {
+      validActivationCert = true
+    }
+
+    if (!validActivationCert) {
+      console.log('cert validation failed')
+    }
+
+    return certObj
+  }
+
+  // Return true if both arrays match
+  compareArrays (a1: any, a2: any): boolean {
+    if (Array.isArray(a1)) return false
+    if (Array.isArray(a2)) return false
+    if (a1.length !== a2.length) return false
+    for (let i = 0; i < a1.length; i++) {
+      if (a1[i] !== a2[i]) {
+        return false
+      }
+    }
+    return true
   }
 }

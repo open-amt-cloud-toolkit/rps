@@ -41,21 +41,22 @@ export class WSManProcessor {
       amtstack.wsman.comm.socketHeader = null
       amtstack.wsman.comm.socketData = ''
 
-      amtstack.wsman.comm.xxOnSocketData(wsManResponseXML)
-      if (statusCode === '401') {
-        amtstack.wsman.comm.xxOnSocketConnected()
-        if (clientObj.payload) {
-          const payload = clientObj.payload
-          clientObj.payload = null
-          return this.responseMsg.get(clientId, payload, 'wsman', 'ok', 'alls good!')
-        }
-      } else {
-        if (clientObj.payload) {
-          const response = clientObj.payload
-          clientObj.payload = null
-          return response
-        }
+      amtstack.wsman.comm.cirasocket.onData(null, wsManResponseXML)
+      // amtstack.wsman.comm.xxOnSocketData(wsManResponseXML)
+      // if (statusCode === '401') {
+      //   amtstack.wsman.comm.xxOnSocketConnected()
+      //   if (clientObj.payload) {
+      //     const payload = clientObj.payload
+      //     clientObj.payload = null
+      //     return this.responseMsg.get(clientId, payload, 'wsman', 'ok', 'alls good!')
+      //   }
+      // } else {
+      if (clientObj.payload) {
+        const response = clientObj.payload
+        clientObj.payload = null
+        return response
       }
+      // }
     } catch {
       this.logger.error(`${clientId} : Failed to parse response data`)
     }
@@ -219,11 +220,6 @@ export class WSManProcessor {
           wsstack = WSMan(WSComm, payload.uuid, 16992, wsmanUsername, wsmanPassword, 0, null, SetupCommunication)
         }
         this.cache[clientId] = new AMT(wsstack)
-        if (clientObj.socketConn?.onStateChange && clientObj.readyState == null) {
-          clientObj.readyState = 2
-          this.clientManager.setClientObject(clientObj)
-          clientObj.socketConn.onStateChange(clientObj.ClientSocket, clientObj.readyState)
-        }
       } else {
         this.logger.debug(`getAmtStack: clientId: ${clientId}, communication was already setup`)
       }
