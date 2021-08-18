@@ -61,7 +61,7 @@
     "rc": "^1.2.8",
     "request": "^2.88.2",
     "winston": "^3.3.3",
-    "ws": "^7.5.3"
+    "ws": "^8.1.0"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.1",
