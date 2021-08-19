@@ -46,7 +46,7 @@ export class ProfilesDb implements IProfilesDb {
    * @returns {Pagination} returns an array of AMT profiles from DB
    */
   async getAllProfiles (top: number = DEFAULT_TOP, skip: number = DEFAULT_SKIP): Promise<AMTConfiguration[]> {
-    const results = await this.db.query('SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, generate_random_password as GenerateRandomPassword, cira_config_name as ciraConfigName, random_password_length as passwordLength,mebx_password as MEBxPassword, generate_random_mebx_password as GenerateRandomMEBxPassword, random_mebx_password_length as mebxPasswordLength, tags, dhcp_enabled FROM profiles ORDER BY profile_name LIMIT $1 OFFSET $2', [top, skip])
+    const results = await this.db.query('SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, cira_config_name as ciraConfigName, mebx_password as MEBxPassword, tags, dhcp_enabled FROM profiles ORDER BY profile_name LIMIT $1 OFFSET $2', [top, skip])
     const allProfiles: AMTConfiguration[] = await Promise.all(results.rows.map(async profile => {
       let result: AMTConfiguration = null
       result = mapToProfile(profile)
@@ -66,7 +66,7 @@ export class ProfilesDb implements IProfilesDb {
    * @returns {AMTConfiguration} AMT Profile object
    */
   async getProfileByName (profileName: string): Promise<AMTConfiguration> {
-    const results = await this.db.query('SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, generate_random_password as GenerateRandomPassword, cira_config_name as ciraConfigName, random_password_length as passwordLength, mebx_password as MEBxPassword, generate_random_mebx_password as GenerateRandomMEBxPassword, random_mebx_password_length as  mebxPasswordLength, tags, dhcp_enabled FROM profiles WHERE profile_name = $1', [profileName])
+    const results = await this.db.query('SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, cira_config_name as ciraConfigName, mebx_password as MEBxPassword, tags, dhcp_enabled FROM profiles WHERE profile_name = $1', [profileName])
     let amtProfile: AMTConfiguration = null
     if (results.rowCount > 0) {
       amtProfile = mapToProfile(results.rows[0])
@@ -110,19 +110,14 @@ export class ProfilesDb implements IProfilesDb {
    */
   async insertProfile (amtConfig: AMTConfiguration): Promise<AMTConfiguration> {
     try {
-      const results = await this.db.query('INSERT INTO profiles(profile_name, activation, amt_password, cira_config_name, generate_random_password, random_password_characters, random_password_length, mebx_password, generate_random_mebx_password, random_mebx_password_length, tags, dhcp_enabled) ' +
-        'values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)',
+      const results = await this.db.query('INSERT INTO profiles(profile_name, activation, amt_password, cira_config_name, mebx_password, tags, dhcp_enabled) ' +
+        'values($1, $2, $3, $4, $5, $6, $7)',
       [
         amtConfig.profileName,
         amtConfig.activation,
         amtConfig.amtPassword,
         amtConfig.ciraConfigName,
-        amtConfig.generateRandomPassword,
-        amtConfig.randomPasswordCharacters,
-        amtConfig.passwordLength,
         amtConfig.mebxPassword,
-        amtConfig.generateRandomMEBxPassword,
-        amtConfig.mebxPasswordLength,
         amtConfig.tags,
         amtConfig.dhcpEnabled
       ])
@@ -155,18 +150,13 @@ export class ProfilesDb implements IProfilesDb {
    */
   async updateProfile (amtConfig: AMTConfiguration): Promise<AMTConfiguration> {
     try {
-      const results = await this.db.query('UPDATE profiles SET activation=$2, amt_password=$3, cira_config_name=$4, generate_random_password=$5, random_password_characters=$6, random_password_length=$7, mebx_password=$8, generate_random_mebx_password=$9, random_mebx_password_length=$10, tags=$11, dhcp_enabled=$12 WHERE profile_name=$1',
+      const results = await this.db.query('UPDATE profiles SET activation=$2, amt_password=$3, cira_config_name=$4, mebx_password=$5, tags=$6, dhcp_enabled=$7 WHERE profile_name=$1',
         [
           amtConfig.profileName,
           amtConfig.activation,
           amtConfig.amtPassword,
           amtConfig.ciraConfigName,
-          amtConfig.generateRandomPassword,
-          amtConfig.randomPasswordCharacters,
-          amtConfig.passwordLength,
           amtConfig.mebxPassword,
-          amtConfig.generateRandomMEBxPassword,
-          amtConfig.mebxPasswordLength,
           amtConfig.tags,
           amtConfig.dhcpEnabled
         ])

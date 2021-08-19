@@ -24,10 +24,8 @@ export async function deleteProfile (req, res): Promise<void> {
     } else {
       const results: boolean = await profilesDb.deleteProfileByName(profileName)
       if (results) {
-        if (!profile.generateRandomPassword || !profile.generateRandomMEBxPassword) {
-          if (req.secretsManager) {
-            await req.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${profile.profileName}`)
-          }
+        if (req.secretsManager) {
+          await req.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${profile.profileName}`)
         }
         MqttProvider.publishEvent('success', ['deleteProfile'], `Deleted Profile : ${profileName}`)
         res.status(204).end()

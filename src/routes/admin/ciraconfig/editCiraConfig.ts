@@ -8,15 +8,16 @@ import { CiraConfigDbFactory } from '../../../repositories/factories/CiraConfigD
 import { CIRAConfig } from '../../../RCS.Config'
 import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
-import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, CIRA_CONFIG_NOT_FOUND } from '../../../utils/constants'
+import { AMTRandomPasswordLength, API_RESPONSE, API_UNEXPECTED_EXCEPTION, CIRA_CONFIG_NOT_FOUND } from '../../../utils/constants'
 import { validationResult } from 'express-validator'
 import { RPSError } from '../../../utils/RPSError'
 import { MqttProvider } from '../../../utils/MqttProvider'
+import { PasswordHelper } from '../../../utils/PasswordHelper'
 
 export async function editCiraConfig (req, res): Promise<void> {
   const log = new Logger('editCiraConfig')
   let ciraConfigDb: ICiraConfigDb = null
-  const newConfig = req.body
+  const newConfig: CIRAConfig = req.body
   try {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
@@ -27,11 +28,11 @@ export async function editCiraConfig (req, res): Promise<void> {
     const oldConfig: CIRAConfig = await ciraConfigDb.getCiraConfigByName(newConfig.configName)
     if (oldConfig == null) {
       log.debug('Not found : ', newConfig.configName)
-      MqttProvider.publishEvent('fail', ['editCiraConfig'], `CIRA config "${newConfig.ConfigName}" not found`)
+      MqttProvider.publishEvent('fail', ['editCiraConfig'], `CIRA config "${newConfig.configName}" not found`)
       res.status(404).json(API_RESPONSE(null, 'Not Found', CIRA_CONFIG_NOT_FOUND(newConfig.configName))).end()
     } else {
       const ciraConfig: CIRAConfig = getUpdatedData(newConfig, oldConfig)
-      const mpsPwd = newConfig.password
+      const mpsPwd = newConfig.regeneratePassword ? PasswordHelper.generateRandomPassword(AMTRandomPasswordLength) : newConfig.password
       if (req.secretsManager) {
         ciraConfig.password = 'MPS_PASSWORD'
       }
@@ -40,11 +41,6 @@ export async function editCiraConfig (req, res): Promise<void> {
       const results = await ciraConfigDb.updateCiraConfig(ciraConfig)
       if (results !== undefined) {
         if (req.secretsManager) {
-          if (ciraConfig.generateRandomPassword) {
-            log.verbose('Attempting to delete password from vault') // User might be flipping from false to true which we dont know. So try deleting either way.
-            await req.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfig.configName}`)
-            log.debug('Password deleted from vault')
-          }
           if (mpsPwd != null) {
             await req.secretsManager.writeSecretWithKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfig.configName}`, ciraConfig.password, mpsPwd)
             log.debug(`MPS password updated in Vault for CIRA Config ${ciraConfig.configName}`)
@@ -57,34 +53,22 @@ export async function editCiraConfig (req, res): Promise<void> {
       res.status(200).json(results).end()
     }
   } catch (error) {
-    MqttProvider.publishEvent('fail', ['editCiraConfig'], `Failed to update CIRA config : ${newConfig.ConfigName}`)
-    log.error(`Failed to update CIRA config : ${newConfig.ConfigName}`, error)
+    MqttProvider.publishEvent('fail', ['editCiraConfig'], `Failed to update CIRA config : ${newConfig.configName}`)
+    log.error(`Failed to update CIRA config : ${newConfig.configName}`, error)
     if (error instanceof RPSError) {
       res.status(400).json(API_RESPONSE(null, error.name, error.message)).end()
     } else {
-      res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`UPDATE ${newConfig.ConfigName}`))).end()
+      res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`UPDATE ${newConfig.configName}`))).end()
     }
   }
 }
 
-const handleGenerateRandomPassword = (newConfig: CIRAConfig, oldConfig: CIRAConfig): CIRAConfig => {
-  const config: CIRAConfig = { configName: newConfig.configName } as CIRAConfig
-  if (newConfig.generateRandomPassword) {
-    config.generateRandomPassword = newConfig.generateRandomPassword
-    config.passwordLength = newConfig.passwordLength
-    config.password = null
-  } else {
-    config.generateRandomPassword = newConfig.password == null ? oldConfig.generateRandomPassword : false
-    config.passwordLength = newConfig.password == null ? oldConfig.passwordLength : null
-  }
-  return config
-}
-
 function getUpdatedData (newConfig: CIRAConfig, oldConfig: CIRAConfig): CIRAConfig {
-  const config: CIRAConfig = handleGenerateRandomPassword(newConfig, oldConfig)
+  const config: CIRAConfig = { configName: newConfig.configName } as CIRAConfig
   config.mpsServerAddress = newConfig.mpsServerAddress ?? oldConfig.mpsServerAddress
   config.mpsPort = newConfig.mpsPort ?? oldConfig.mpsPort
   config.username = newConfig.username ?? oldConfig.username
+  config.password = newConfig.password ?? oldConfig.password
   config.commonName = newConfig.commonName ?? oldConfig.commonName
   config.serverAddressFormat = newConfig.serverAddressFormat ?? oldConfig.serverAddressFormat
   config.mpsRootCertificate = newConfig.mpsRootCertificate ?? oldConfig.mpsRootCertificate

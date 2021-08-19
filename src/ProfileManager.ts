@@ -13,6 +13,7 @@ import { CIRAConfig } from './RCS.Config'
 import { IConfigurator } from './interfaces/IConfigurator'
 import { IProfilesDb } from './repositories/interfaces/IProfilesDb'
 import { EnvReader } from './utils/EnvReader'
+import { AMTRandomPasswordLength } from './utils/constants'
 
 export class ProfileManager implements IProfileManager {
   private readonly amtConfigurations: IProfilesDb
@@ -23,51 +24,8 @@ export class ProfileManager implements IProfileManager {
   constructor (logger: ILogger, configurator: IConfigurator, amtConfigurations: IProfilesDb, config?: any) {
     this.logger = logger
     this.configurator = configurator
-    // this.amtConfigurations = this.validateAMTPasswords(amtConfigurations, allowGenerateRandomAmtPassowrds);
     this.amtConfigurations = amtConfigurations
     this.envConfig = config // This is all Env config stuff
-  }
-
-  /**
-   * @description Checks the AMT passwords in the rcsConfig and rejects any configurations that don't meet AMT password standard
-   * @param {AMTConfiguration[]} list
-   * @returns {AMTConfiguration[]} returns amtconfig object if profile exists otherwise null.
-   */
-  public validateAMTPasswords (list: AMTConfiguration[]): AMTConfiguration[] {
-    const profiles: AMTConfiguration[] = []
-
-    for (let x = 0; x < list.length; x++) {
-      const config = list[x]
-
-      // TODO: took password validation out for now. with Vault can only validate at insertion time which is done prior by an admin.
-
-      // if (config.GenerateRandomPassword === true) {
-      //     if (allowGenerateRandomAmtPassowrds === true) {
-      //         this.logger.debug(`using random passwords for profile ${config.ProfileName}`);
-      //         profiles.push(config);
-      //     }
-      //     else {
-      //         this.logger.warn(`dropping profile ${config.ProfileName}, random passwords are not allowed`);
-      //     }
-      // } else {
-      //     if (PasswordHelper.passwordCheck(config.AMTPassword)) {
-      //         this.logger.debug("amt password check passed for profile: " + config.ProfileName + ".");
-      //         profiles.push(config);
-      //     }
-      //     else {
-      //         this.logger.warn("Detected bad AMT password for profile: " + config.ProfileName + ".");
-      //         this.logger.warn("Removing " + config.ProfileName + " profile from list of available AMT profiles.");
-      //     }
-      // }
-
-      profiles.push(config)
-    }
-
-    if (profiles.length === 0) {
-      this.logger.error('Error: No AMT configurations detected.')
-    }
-
-    return profiles
   }
 
   /**
@@ -114,68 +72,41 @@ export class ProfileManager implements IProfileManager {
   }
 
   /**
-   * @description Retrieves the amt password set in the configuration or generates a password based on the flag GenerateRandomPassword
+   * @description Retrieves the amt password set in the configuration
    * @param {string} profileName profile name of amt password
    * @returns {string} returns the amt password for a given profile
    */
   public async getAmtPassword (profileName: string): Promise<string> {
     const profile = await this.getAmtProfile(profileName)
     let amtPassword: string
-
     if (profile) {
-      if (profile.generateRandomPassword) {
-        amtPassword = PasswordHelper.generateRandomPassword(profile.passwordLength)
-
-        if (amtPassword) {
-          this.logger.debug(`Created random password for ${profile.profileName}`)
-        } else {
-          this.logger.error(`unable to create a random password for ${profile.profileName}`)
-        }
+      if (this.configurator?.secretsManager) {
+        amtPassword = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${profileName}`, 'AMT_PASSWORD')
       } else {
-        this.logger.debug(`found amtPassword for profile ${profileName}`)
-        if (this.configurator?.secretsManager) {
-          amtPassword = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${profileName}`, 'AMT_PASSWORD')
-        } else {
-          amtPassword = profile.amtPassword
-        }
+        amtPassword = profile.amtPassword
       }
+      this.logger.debug(`found amtPassword for profile ${profileName}`)
+      return amtPassword
     } else {
       this.logger.error(`unable to find amtPassword for profile ${profileName}`)
+      throw new Error('password cannot be blank')
     }
-
-    if (amtPassword) {
-      return amtPassword
-    }
-
-    this.logger.error('password cannot be blank')
-    throw new Error('password cannot be blank')
   }
 
   /**
-     * @description Retrieves the amt password set in the configuration or generates a password based on the flag GenerateRandomPassword
-     * @param {string} profileName profile name of amt password
-     * @returns {string} returns the amt password for a given profile
-     */
+    * @description Retrieves the amt password set in the configuration
+    * @param {string} profileName profile name of amt password
+    * @returns {string} returns the amt password for a given profile
+   */
   public async getMEBxPassword (profileName: string): Promise<string> {
     const profile: AMTConfiguration = await this.getAmtProfile(profileName)
     let mebxPassword: string
-
     if (profile) {
-      if (profile.generateRandomMEBxPassword) {
-        mebxPassword = PasswordHelper.generateRandomPassword(profile.mebxPasswordLength)
-
-        if (mebxPassword) {
-          this.logger.debug(`Created random MEBx password for ${profile.profileName}`)
-        } else {
-          this.logger.error(`unable to create MEBx random password for ${profile.profileName}`)
-        }
+      this.logger.debug(`found amtPassword for profile ${profileName}`)
+      if (this.configurator?.secretsManager) {
+        mebxPassword = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${profileName}`, 'MEBX_PASSWORD')
       } else {
-        this.logger.debug(`found amtPassword for profile ${profileName}`)
-        if (this.configurator?.secretsManager) {
-          mebxPassword = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${profileName}`, 'MEBX_PASSWORD')
-        } else {
-          mebxPassword = profile.mebxPassword
-        }
+        mebxPassword = profile.mebxPassword
       }
     } else {
       this.logger.error(`unable to find mebxPassword for profile ${profileName}`)
@@ -184,13 +115,13 @@ export class ProfileManager implements IProfileManager {
     if (mebxPassword) {
       return mebxPassword
     }
-
     this.logger.error('password cannot be blank')
     throw new Error('password cannot be blank')
   }
 
   /**
-     * @description Retrieves the MPS password set in the configuration or generates a password based on the flag generateRandomPassword
+     * @description generates a random password unless custom-ui is used which
+     * includes an MPS password
      * @param {string} profileName profile name of MPS password
      * @returns {string} returns the MPS password for a given profile
      */
@@ -199,8 +130,8 @@ export class ProfileManager implements IProfileManager {
     let mpsPassword: string
 
     if (profile?.ciraConfigObject) {
-      if (profile.ciraConfigObject.generateRandomPassword) {
-        mpsPassword = PasswordHelper.generateRandomPassword(profile.ciraConfigObject.passwordLength)
+      if (!profile.ciraConfigObject.password) {
+        mpsPassword = PasswordHelper.generateRandomPassword(AMTRandomPasswordLength)
 
         if (mpsPassword) {
           this.logger.debug(`Created random MPS password for ${profile.profileName}`)
@@ -235,7 +166,11 @@ export class ProfileManager implements IProfileManager {
       if (amtProfile.ciraConfigName != null) {
         amtProfile.ciraConfigObject = await this.amtConfigurations.getCiraConfigForProfile(amtProfile.ciraConfigName)
         if (this.configurator?.secretsManager) {
-          if (amtProfile.ciraConfigObject?.password) { amtProfile.ciraConfigObject.password = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${amtProfile.ciraConfigObject.configName}`, 'MPS_PASSWORD') } else { this.logger.error("The amtProfile CIRAConfigObject doesn't have a password. Check CIRA profile creation.") }
+          if (amtProfile.ciraConfigObject?.password) {
+            amtProfile.ciraConfigObject.password = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${amtProfile.ciraConfigObject.configName}`, 'MPS_PASSWORD')
+          } else {
+            this.logger.error("The amtProfile CIRAConfigObject doesn't have a password. Check CIRA profile creation.")
+          }
         }
       }
       this.logger.debug(`AMT Profile returned from db: ${amtProfile.profileName}`)

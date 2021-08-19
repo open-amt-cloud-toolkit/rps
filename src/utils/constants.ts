@@ -6,6 +6,7 @@
 import { apiResponse } from '../RCS.Config'
 
 export const AMTRandomPasswordChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()'
+export const AMTRandomPasswordLength = 16
 
 export const AppVersion = '1.2.0'
 export const ProtocolVersion = '4.0.0'

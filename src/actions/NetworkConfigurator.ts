@@ -278,9 +278,9 @@ export class NetworkConfigurator implements IExecutor {
    */
   async deleteWiFiConfigs (clientObj: ClientObject, clientId: string): Promise<void> {
     let wifiEndpoints: WiFiEndPointSettings[] = clientObj.network?.WiFiPortCapabilities
-    if (wifiEndpoints?.length > 0) {
-      await this.amtwsman.delete(clientId, 'CIM_WiFiEndpointSettings', { InstanceID: wifiEndpoints[0].InstanceID })
-      wifiEndpoints = wifiEndpoints.slice(1)
+    if (wifiEndpoints?.length > 1) {
+      await this.amtwsman.delete(clientId, 'CIM_WiFiEndpointSettings', { InstanceID: wifiEndpoints[1].InstanceID })
+      wifiEndpoints = wifiEndpoints.slice(2)
       clientObj.network.WiFiPortCapabilities = wifiEndpoints
       this.clientManager.setClientObject(clientObj)
     } else {

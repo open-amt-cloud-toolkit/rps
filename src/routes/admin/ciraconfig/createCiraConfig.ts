@@ -9,9 +9,11 @@ import { CiraConfigDbFactory } from '../../../repositories/factories/CiraConfigD
 import { CIRAConfig } from '../../../RCS.Config'
 import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
+import { PasswordHelper } from '../../../utils/PasswordHelper'
 import {
   API_UNEXPECTED_EXCEPTION,
-  API_RESPONSE
+  API_RESPONSE,
+  AMTRandomPasswordLength
 } from '../../../utils/constants'
 import { RPSError } from '../../../utils/RPSError'
 import { MqttProvider } from '../../../utils/MqttProvider'
@@ -29,7 +31,7 @@ export async function createCiraConfig (req, res): Promise<void> {
     }
     ciraConfigDb = CiraConfigDbFactory.getCiraConfigDb()
     ciraConfig = req.body
-    const mpsPwd = ciraConfig.password
+    const mpsPwd = ciraConfig.password ?? PasswordHelper.generateRandomPassword(AMTRandomPasswordLength)
     if (req.secretsManager) {
       ciraConfig.password = 'MPS_PASSWORD'
     }
@@ -38,7 +40,7 @@ export async function createCiraConfig (req, res): Promise<void> {
     // CIRA profile inserted  into db successfully.
     if (results != null) {
       // store the password into Vault
-      if (req.secretsManager && !ciraConfig.generateRandomPassword) {
+      if (req.secretsManager && ciraConfig.password) {
         await req.secretsManager.writeSecretWithKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfig.configName}`, ciraConfig.password, mpsPwd)
         log.debug(`MPS password stored in Vault for CIRA config : ${ciraConfig.configName}`)
       }
