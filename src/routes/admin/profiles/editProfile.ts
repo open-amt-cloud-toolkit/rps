@@ -103,7 +103,7 @@ export const getUpdatedData = async (newConfig: any, oldConfig: AMTConfiguration
   if (amtConfig.activation === ClientAction.CLIENTCTLMODE) {
     amtConfig.mebxPassword = null
   }
-  amtConfig.ciraConfigName = newConfig.ciraConfigName ?? oldConfig.ciraConfigName
+  amtConfig.ciraConfigName = newConfig.ciraConfigName
   amtConfig.tags = newConfig.tags ?? oldConfig.tags
   amtConfig.dhcpEnabled = newConfig.dhcpEnabled ?? oldConfig.dhcpEnabled
   return amtConfig
