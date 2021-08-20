@@ -70,12 +70,8 @@ beforeAll(() => {
       client: 'PPC',
       profile: {
         profileName: 'acm',
-        generateRandomPassword: false,
-        passwordLength: null,
         activation: 'acmactivate',
         ciraConfigName: 'config1',
-        generateRandomMEBxPassword: false,
-        mebxPasswordLength: null,
         tags: ['acm'],
         dhcpEnabled: true,
         wifiConfigs: [
