@@ -43,7 +43,8 @@ const ciraConfigurations: CIRAConfig[] = [{
   serverAddressFormat: 201, // IPv4 (3), IPv6 (4), FQDN (201)
   authMethod: 2, // Mutual Auth (1), Username/Password (2) (We only support 2)
   mpsRootCertificate: 'rootcert', // Assumption is Root Cert for MPS. Need to validate.
-  proxyDetails: ''
+  proxyDetails: '',
+  tenantId: ''
 },
 {
   configName: 'ciraconfig2',
@@ -55,7 +56,8 @@ const ciraConfigurations: CIRAConfig[] = [{
   serverAddressFormat: 201, // IPv4 (3), IPv6 (4), FQDN (201)
   authMethod: 2, // Mutual Auth (1), Username/Password (2) (We only support 2)
   mpsRootCertificate: 'rootcert', // Assumption is Root Cert for MPS. Need to validate.
-  proxyDetails: ''
+  proxyDetails: '',
+  tenantId: ''
 }]
 
 const amtConfigurations: AMTConfiguration[] = [
@@ -65,7 +67,8 @@ const amtConfigurations: AMTConfiguration[] = [
     mebxPassword: 'P@ssw0rd',
     activation: 'ccmactivate',
     ciraConfigName: 'ciraconfig1',
-    ciraConfigObject: ciraConfigurations[0]
+    ciraConfigObject: ciraConfigurations[0],
+    tenantId: ''
   },
   {
     profileName: 'profile 2',
@@ -73,7 +76,8 @@ const amtConfigurations: AMTConfiguration[] = [
     mebxPassword: 'P@ssw0rd',
     activation: 'acmactivate',
     ciraConfigName: 'ciraconfig1',
-    ciraConfigObject: ciraConfigurations[0]
+    ciraConfigObject: ciraConfigurations[0],
+    tenantId: ''
   }
 ]
 const profileStub: IProfilesDb = {

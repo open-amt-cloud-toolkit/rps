@@ -20,6 +20,7 @@ export async function editDomain (req, res): Promise<void> {
   let cert: any
   let domainPwd: string
   const newDomain = req.body
+  newDomain.tenantId = req.tenantId
   try {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
@@ -78,6 +79,6 @@ function getUpdatedData (newDomain: any, oldDomain: AMTDomain): AMTDomain {
   amtDomain.provisioningCert = newDomain.provisioningCert ?? oldDomain.provisioningCert
   amtDomain.provisioningCertStorageFormat = newDomain.provisioningCertStorageFormat ?? oldDomain.provisioningCertStorageFormat
   amtDomain.provisioningCertPassword = newDomain.provisioningCertPassword ?? oldDomain.provisioningCertPassword
-
+  amtDomain.tenantId = newDomain.tenantId ?? oldDomain.tenantId
   return amtDomain
 }

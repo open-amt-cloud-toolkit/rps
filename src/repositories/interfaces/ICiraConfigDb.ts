@@ -6,10 +6,10 @@
 import { CIRAConfig } from '../../RCS.Config'
 
 export interface ICiraConfigDb {
-  getCount: () => Promise<number>
-  getAllCiraConfigs: (limit: number, offset: number) => Promise<CIRAConfig[]>
-  getCiraConfigByName: (configName) => Promise<CIRAConfig>
-  deleteCiraConfigByName: (configName) => Promise<boolean>
+  getCount: (tenantId?: string) => Promise<number>
+  getAllCiraConfigs: (limit: number, offset: number, tenantId?: string) => Promise<CIRAConfig[]>
+  getCiraConfigByName: (configName, tenantId?: string) => Promise<CIRAConfig>
+  deleteCiraConfigByName: (configName, tenantId?: string) => Promise<boolean>
   insertCiraConfig: (ciraConfig) => Promise<CIRAConfig>
   updateCiraConfig: (ciraConfig) => Promise<CIRAConfig>
 }

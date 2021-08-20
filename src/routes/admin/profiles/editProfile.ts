@@ -20,6 +20,7 @@ export async function editProfile (req, res): Promise<void> {
   let profilesDb: IProfilesDb = null
   const log = new Logger('editProfile')
   const newConfig = req.body
+  newConfig.tenantId = req.tenantId
   try {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
@@ -106,5 +107,6 @@ export const getUpdatedData = async (newConfig: any, oldConfig: AMTConfiguration
   amtConfig.ciraConfigName = newConfig.ciraConfigName
   amtConfig.tags = newConfig.tags ?? oldConfig.tags
   amtConfig.dhcpEnabled = newConfig.dhcpEnabled ?? oldConfig.dhcpEnabled
+  amtConfig.tenantId = newConfig.tenantId ?? oldConfig.tenantId
   return amtConfig
 }

@@ -1,6 +1,6 @@
 
 /*********************************************************************
- * Copyright (c) Intel Corporation 2019
+ * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
  * Author : Ramu Bachala
  **********************************************************************/
@@ -19,6 +19,7 @@ export function mapToCiraConfig (results): CIRAConfig {
     authMethod: results.auth_method, // Mutual Auth (1), Username/Password (2) (We only support 2)
     mpsRootCertificate: results.mps_root_certificate, // Assumption is Root Cert for MPS. Need to validate.
     proxyDetails: results.proxydetails,
+    tenantId: results.tenant_id,
     regeneratePassword: results.regeneratePassword
   }
   return config

@@ -8,7 +8,12 @@ import adminRouter from './admin/index'
 import { Router } from 'express'
 const router: Router = Router()
 
-router.use('/admin', adminRouter)
+const tenantMiddleware = (req, res, next): void => {
+  req.tenantId = ''
+  req.next()
+}
+
+router.use('/admin', tenantMiddleware, adminRouter)
 
 router.get('/', (req, res) => {
   res.status(200).json({ message: 'Connected!' })

@@ -16,7 +16,8 @@ import { MqttProvider } from '../../../utils/MqttProvider'
 export async function createProfile (req, res): Promise<void> {
   let profilesDb: IProfilesDb = null
   const log = new Logger('createProfile')
-  let amtConfig: AMTConfiguration = {} as AMTConfiguration
+  const amtConfig: AMTConfiguration = req.body
+  amtConfig.tenantId = req.tenantId
   try {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
@@ -24,7 +25,6 @@ export async function createProfile (req, res): Promise<void> {
       res.status(400).json({ errors: errors.array() })
       return
     }
-    amtConfig = req.body
     profilesDb = ProfilesDbFactory.getProfilesDb()
     const pwdBefore = amtConfig.amtPassword
     const mebxPwdBefore = amtConfig.mebxPassword
