@@ -23,88 +23,22 @@ export const amtProfileValidator = (): any => {
       .isIn([ClientAction.ADMINCTLMODE, ClientAction.CLIENTCTLMODE])
       .withMessage('Activation accepts either acmactivate(admin control activation) or ccmactivate(client control mode activation)')
       .custom((value, { req }) => {
-        const pwd = req.body.amtPassword
-        const randomPwd = req.body.generateRandomPassword
-        if ((pwd == null && randomPwd == null)) {
-          throw new Error('Either generateRandomPassword should be enabled with amtPassword or should provide amtPassword')
-        }
         if (value === ClientAction.ADMINCTLMODE) {
-          const mebxPwd = req.body.mebxPassword
-          const mebxRandomPwd = req.body.generateRandomMEBxPassword
-          if ((mebxPwd == null && mebxRandomPwd == null)) {
-            throw new Error('Either generateRandomMEBxPassword should be enabled with mebxPasswordLength or should provide mebxPassword')
+          if ((req.body.mebxPassword == null)) {
+            throw new Error('MEBx Password is required for acmactivate')
           }
         }
         return true
       }),
     check('amtPassword')
-      .if((value, { req }) => req.body.generateRandomPassword === false)
-      .optional()
+      .not()
+      .isEmpty()
       .matches('^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9$@$!%*#?&-_~^]{8,32}$')
       .withMessage('AMT password is required field should contains at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
-    check('passwordLength')
-      .if((value, { req }) => req.body.generateRandomPassword === true)
-      .optional({ nullable: true })
-      .isInt({ min: 8, max: 32 })
-      .withMessage('Random AMT password length value should range between 8 and 32'),
-    check('generateRandomPassword')
-      .optional()
-      .isBoolean()
-      .withMessage('Generate random AMT password must be a boolean true or false')
-      .custom((value, { req }) => {
-        const pwd = req.body.amtPassword
-        const pwdLength = req.body.passwordLength
-        if (value === true) {
-          if (pwd != null) {
-            throw new Error('Either generate Random AMT Password should be enabled with Password Length or should provide AMT Password')
-          }
-          if (pwdLength == null) {
-            throw new Error('If generate random AMT password is enabled, passwordLength is mandatory')
-          }
-        } else {
-          if (pwd == null) {
-            throw new Error('If generate random AMT password is disabled, amtPassword is mandatory')
-          } else if (pwdLength != null) {
-            throw new Error('If generate random AMT password is disabled, passwordLength is not necessary')
-          }
-        }
-        return true
-      }),
     check('mebxPassword')
-      .if((value, { req }) => req.body.generateRandomMEBxPassword === false)
       .optional({ nullable: true })
       .matches('^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9$@$!%*#?&-_~^]{8,32}$')
       .withMessage('MEBx password is required field should contains at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
-    check('mebxPasswordLength')
-      .if((value, { req }) => req.body.generateRandomMEBxPassword === true)
-      .optional({ nullable: true })
-      .isInt({ min: 8, max: 32 })
-      .withMessage('Random MEBx password length value should range between 8 and 32'),
-    check('generateRandomMEBxPassword')
-      .isBoolean()
-      .withMessage('Generate random MEBx password must be a boolean true or false')
-      .custom((value, { req }) => {
-        const pwd = req.body.mebxPassword
-        const pwdLength = req.body.mebxPasswordLength
-        const activationMode = req.body.activation
-        if (activationMode === ClientAction.ADMINCTLMODE) {
-          if (value === true) {
-            if (pwd != null) {
-              throw new Error('Either generate MEBx password should be enabled with random MEBx password length or should provide MEBx password, but not both')
-            }
-            if (pwdLength == null) {
-              throw new Error('If generate random MEBx password is enabled, mebxPasswordLength is mandatory')
-            }
-          } else {
-            if (pwd == null) {
-              throw new Error('If generate random MEBx password is disabled, amtPassword is mandatory')
-            } else if (pwdLength != null) {
-              throw new Error('If generate random MEBx password is disabled, mebxPasswordLength is not necessary')
-            }
-          }
-        }
-        return true
-      }),
     check('ciraConfigName')
       .optional({ nullable: true })
       .custom((value, { req }) => {
@@ -169,73 +103,20 @@ export const profileUpdateValidator = (): any => {
       .withMessage('Activation accepts either acmactivate(admin control activation) or ccmactivate(client control mode activation)')
       .custom((value, { req }) => {
         if (value === ClientAction.ADMINCTLMODE) {
-          const mebxPwd = req.body.mebxPassword
-          const mebxRandomPwd = req.body.generateRandomMEBxPassword
-          if ((mebxPwd == null && mebxRandomPwd == null)) {
-            throw new Error('Either generateRandomMEBxPassword should be enabled with mebxPasswordLength or should provide mebxPassword')
+          if (req.body.mebxPassword == null) {
+            throw new Error('MEBx Password is required for acmactivate')
           }
         }
         return true
       }),
     check('amtPassword')
-      .if((value, { req }) => req.body.generateRandomPassword === false)
-      .optional()
+      .optional({ nullable: true })
       .matches('^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9$@$!%*#?&-_~^]{8,32}$')
       .withMessage('AMT password is required field should contains at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
-    check('passwordLength')
-      .if((value, { req }) => req.body.generateRandomPassword === true)
-      .optional()
-      .isInt({ min: 8, max: 32 })
-      .withMessage('Random AMT password length value should range between 8 and 32'),
-    check('generateRandomPassword')
-      .optional()
-      .isBoolean()
-      .withMessage('Generate random AMT password must be a boolean true or false')
-      .custom((value, { req }) => {
-        const pwdLength = req.body.passwordLength
-        if (value === true) {
-          if (pwdLength == null) {
-            throw new Error('If generate random AMT password is enabled, passwordLength is mandatory')
-          }
-        }
-        return true
-      }),
     check('mebxPassword')
-      .if((value, { req }) => req.body.generateRandomMEBxPassword === false)
       .optional({ nullable: true })
       .matches('^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9$@$!%*#?&-_~^]{8,32}$')
       .withMessage('MEBx password is required field should contains at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
-    check('mebxPasswordLength')
-      .if((value, { req }) => req.body.generateRandomMEBxPassword === true)
-      .optional()
-      .isInt({ min: 8, max: 32 })
-      .withMessage('Random MEBx password length value should range between 8 and 32'),
-    check('generateRandomMEBxPassword')
-      .optional()
-      .isBoolean()
-      .withMessage('Generate random MEBx password must be a boolean true or false')
-      .custom((value, { req }) => {
-        const pwd = req.body.mebxPassword
-        const pwdLength = req.body.mebxPasswordLength
-        const activationMode = req.body.activation
-        if (activationMode === ClientAction.ADMINCTLMODE) {
-          if (value === true) {
-            if (pwd != null) {
-              throw new Error('Either generate MEBx password should be enabled with random MEBx password length or should provide MEBx password, but not both')
-            }
-            if (pwdLength == null) {
-              throw new Error('If generate random MEBx password is enabled, mebxPasswordLength is mandatory')
-            }
-          } else {
-            if (pwd == null) {
-              throw new Error('If generate random MEBx password is disabled, amtPassword is mandatory')
-            } else if (pwdLength != null) {
-              throw new Error('If generate random MEBx password is disabled, mebxPasswordLength is not necessary')
-            }
-          }
-        }
-        return true
-      }),
     check('ciraConfigName')
       .optional({ nullable: true })
       .custom((value, { req }) => {
