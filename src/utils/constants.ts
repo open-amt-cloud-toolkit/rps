@@ -20,6 +20,7 @@ export const PROFILE_NOT_FOUND = (profileName: string): string => `Profile ${pro
 export const PROFILE_INSERTION_FAILED_DUPLICATE = (profileName: string): string => `AMT profile ${profileName} already exists`
 export const PROFILE_INSERTION_CIRA_CONSTRAINT = (config: string): string => `Referenced config ${config} doesn't exist`
 export const PROFILE_INSERTION_NETWORK_CONSTRAINT = (config: string): string => `Referenced network ${config} doesn't exist`
+export const PROFILE_INSERTION_GENERIC_CONSTRAINT = (name: string): string => `Referenced constraint ${name} doesn't exist`
 
 // CIRA REST API
 export const CIRA_CONFIG_NOT_FOUND = (ciraConfig: string): string => `CIRA Config ${ciraConfig} not found`

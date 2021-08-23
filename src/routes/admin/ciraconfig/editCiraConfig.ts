@@ -18,6 +18,7 @@ export async function editCiraConfig (req, res): Promise<void> {
   const log = new Logger('editCiraConfig')
   let ciraConfigDb: ICiraConfigDb = null
   const newConfig: CIRAConfig = req.body
+  newConfig.tenantId = req.tenantId
   try {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
@@ -74,5 +75,6 @@ function getUpdatedData (newConfig: CIRAConfig, oldConfig: CIRAConfig): CIRAConf
   config.mpsRootCertificate = newConfig.mpsRootCertificate ?? oldConfig.mpsRootCertificate
   config.proxyDetails = newConfig.proxyDetails ?? oldConfig.proxyDetails
   config.authMethod = newConfig.authMethod ?? oldConfig.authMethod
+  config.tenantId = newConfig.tenantId ?? oldConfig.tenantId
   return config
 }

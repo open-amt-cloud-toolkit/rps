@@ -14,7 +14,8 @@ export function mapToProfile (results): AMTConfiguration {
     ciraConfigName: results.ciraconfigname,
     mebxPassword: results.mebxpassword,
     tags: results.tags,
-    dhcpEnabled: results.dhcp_enabled
+    dhcpEnabled: results.dhcp_enabled,
+    tenantId: results.tenant_id
   }
   return config
 }

@@ -18,11 +18,13 @@ export interface WirelessConfig {
   pskValue: number
   pskPassphrase: string
   linkPolicy: string[]
+  tenantId: string
 }
 
 export interface ProfileWifiConfigs {
   priority: number
   profileName: string
+  tenantId: string
 }
 
 /*
@@ -53,8 +55,9 @@ export interface CIRAConfig {
   authMethod: number // Mutual Auth (1), Username/Password (2) (We only support 2)
   mpsRootCertificate: string // Assumption is Root Cert for MPS. Need to validate.
   proxyDetails: string
+  tenantId: string
   /** Flag to regenerate a random password when editing a cira config */
-  regeneratePassword?: boolean //
+  regeneratePassword?: boolean
 }
 
 export interface RemoteConfig {

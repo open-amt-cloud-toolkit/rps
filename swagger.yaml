@@ -809,6 +809,8 @@ components:
       - domainSuffix
       - provisioningCertStorageFormat
       properties:
+        tenantId:
+          type: string
         profileName:
           type: string
         domainSuffix:
@@ -816,6 +818,7 @@ components:
         provisioningCertStorageFormat:
           type: string
       example:
+        tenantId: ''
         profileName: NewDomain
         domainSuffix: NewDomain.com
         provisioningCertStorageFormat: string
@@ -906,6 +909,8 @@ components:
           format: byte
         proxyDetails:
           type: string
+        tenantId:
+          type: string
       example:
         configName: ciraconfig
         mpsServerAddress: 192.168.8.50
@@ -915,7 +920,8 @@ components:
         serverAddressFormat: 3
         authMethod: 2
         mpsRootCertificate: U3dhZ2dlciByb2Nrcw==
-        proxyDetails: ''      
+        proxyDetails: '' 
+        tenantId: ''     
     ProfileSubmit:
       title: ProfileSubmit
       required:
@@ -999,6 +1005,8 @@ components:
             type: string
         dhcpEnabled:
           type: boolean
+        tenantId:
+          type: string
         wifiConfigs:
           type: array
           items:
@@ -1009,6 +1017,7 @@ components:
         activation: acmactivate      
         ciraConfigName: ciraconfig
         networkConfigName: dhcp_enabled
+        tenantId: ""
         tags: [tag1, tag2]
         dhcpEnabled: true
         wifiConfigs: [
@@ -1075,11 +1084,14 @@ components:
           type: array
           items:
             type: integer
+        tenantId:
+          type: string
       example:
         profileName: homeWifiConfig
         authenticationMethod: 4
         encryptionMethod: 4
         ssid: home
+        tenantId: ""
         linkPolicy: [14, 16]
     VersionResponse:
       title: VersionResponse

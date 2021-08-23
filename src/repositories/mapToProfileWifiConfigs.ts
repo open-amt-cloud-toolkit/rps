@@ -7,7 +7,8 @@ import { ProfileWifiConfigs } from '../RCS.Config'
 export function mapToProfileWifiConfigs (results): ProfileWifiConfigs {
   const config: ProfileWifiConfigs = {
     priority: results.priority,
-    profileName: results.wireless_profile_name
+    profileName: results.wireless_profile_name,
+    tenantId: results.tenant_id
   }
   return config
 }
