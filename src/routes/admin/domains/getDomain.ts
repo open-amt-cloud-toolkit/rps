@@ -16,7 +16,7 @@ export async function getDomain (req, res): Promise<void> {
   const { domainName } = req.params
   try {
     domainsDb = DomainsDbFactory.getDomainsDb()
-    const result: AMTDomain = await domainsDb.getDomainByName(domainName)
+    const result: AMTDomain = await domainsDb.getByName(domainName)
     if (result !== null) {
       // Return null. Check Security objectives around returning passwords.
       delete result.provisioningCertPassword

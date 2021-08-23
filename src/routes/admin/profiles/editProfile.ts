@@ -30,7 +30,7 @@ export async function editProfile (req, res): Promise<void> {
     }
     profilesDb = ProfilesDbFactory.getProfilesDb()
     const profileWifiConfigsDb: IProfileWifiConfigsDb = ProfileWifiConfigsDbFactory.getProfileWifiConfigsDb()
-    const oldConfig: AMTConfiguration = await profilesDb.getProfileByName(newConfig.profileName)
+    const oldConfig: AMTConfiguration = await profilesDb.getByName(newConfig.profileName)
 
     if (oldConfig == null) {
       MqttProvider.publishEvent('fail', ['editProfile'], `Profile Not Found : ${newConfig.profileName}`)
@@ -49,7 +49,7 @@ export async function editProfile (req, res): Promise<void> {
         amtConfig.mebxPassword = 'MEBX_PASSWORD'
       }
       // SQL Query > Insert Data
-      const results = await profilesDb.updateProfile(amtConfig)
+      const results = await profilesDb.update(amtConfig)
       if (results) {
         // profile inserted  into db successfully. insert the secret into vault
         if (oldConfig.amtPassword !== null || oldConfig.mebxPassword !== null) {

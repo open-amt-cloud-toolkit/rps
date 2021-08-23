@@ -32,7 +32,7 @@ export async function createProfile (req, res): Promise<void> {
       amtConfig.amtPassword = 'AMT_PASSWORD'
       amtConfig.mebxPassword = 'MEBX_PASSWORD'
     }
-    const results: AMTConfiguration = await profilesDb.insertProfile(amtConfig)
+    const results: AMTConfiguration = await profilesDb.insert(amtConfig)
     if (results != null) {
       // profile inserted  into db successfully.
       if (req.secretsManager) {

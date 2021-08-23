@@ -40,7 +40,7 @@ export class WirelessConfigDb implements IWirelessProfilesDb {
     * @param {number} skip
     * @returns {WirelessConfig []} returns an array of WirelessConfig objects
   */
-  async getAllProfiles (top: number = DEFAULT_TOP, skip: number = DEFAULT_SKIP, tenantId: string = ''): Promise<WirelessConfig[]> {
+  async get (top: number = DEFAULT_TOP, skip: number = DEFAULT_SKIP, tenantId: string = ''): Promise<WirelessConfig[]> {
     const results = await this.db.query(`
     SELECT wireless_profile_name, authentication_method, encryption_method, ssid, psk_value, psk_passphrase, link_policy, count(*) OVER() AS total_count, tenant_id 
     FROM wirelessconfigs 
@@ -55,7 +55,7 @@ export class WirelessConfigDb implements IWirelessProfilesDb {
     * @param {string} profileName
     * @returns {WirelessConfig } WirelessConfig object
     */
-  async getProfileByName (configName: string, tenantId: string = ''): Promise<WirelessConfig> {
+  async getByName (configName: string, tenantId: string = ''): Promise<WirelessConfig> {
     const results = await this.db.query(`
     SELECT wireless_profile_name, authentication_method, encryption_method, ssid, psk_value, psk_passphrase, link_policy, tenant_id
     FROM wirelessconfigs 
@@ -88,7 +88,7 @@ export class WirelessConfigDb implements IWirelessProfilesDb {
     * @param {string} configName
     * @returns {boolean} Return true on successful deletion
     */
-  async deleteProfileByName (configName: string, tenantId = ''): Promise<boolean> {
+  async delete (configName: string, tenantId = ''): Promise<boolean> {
     const profiles = await this.db.query(`
     SELECT wireless_profile_name as ProfileName 
     FROM profiles_wirelessconfigs 
@@ -120,7 +120,7 @@ export class WirelessConfigDb implements IWirelessProfilesDb {
     * @param {WirelessConfig } wirelessConfig
     * @returns {WirelessConfig } Returns WirelessConfig object
     */
-  async insertProfile (wirelessConfig: WirelessConfig): Promise<WirelessConfig> {
+  async insert (wirelessConfig: WirelessConfig): Promise<WirelessConfig> {
     try {
       const date = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
       const results = await this.db.query(`
@@ -139,7 +139,7 @@ export class WirelessConfigDb implements IWirelessProfilesDb {
         wirelessConfig.tenantId
       ])
       if (results?.rowCount > 0) {
-        const profile = await this.getProfileByName(wirelessConfig.profileName)
+        const profile = await this.getByName(wirelessConfig.profileName)
         return profile
       }
       return null
@@ -157,7 +157,7 @@ export class WirelessConfigDb implements IWirelessProfilesDb {
     * @param {WirelessConfig } wirelessConfig
     * @returns {boolean} Returns wirelessConfig object
     */
-  async updateProfile (wirelessConfig: WirelessConfig): Promise<WirelessConfig> {
+  async update (wirelessConfig: WirelessConfig): Promise<WirelessConfig> {
     try {
       const results = await this.db.query(`
       UPDATE wirelessconfigs 
@@ -174,7 +174,7 @@ export class WirelessConfigDb implements IWirelessProfilesDb {
         wirelessConfig.tenantId
       ])
       if (results?.rowCount > 0) {
-        const profile = await this.getProfileByName(wirelessConfig.profileName)
+        const profile = await this.getByName(wirelessConfig.profileName)
         return profile
       }
       return null

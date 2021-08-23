@@ -5,13 +5,8 @@
  **********************************************************************/
 import { AMTConfiguration } from '../../models/Rcs'
 import { CIRAConfig } from '../../RCS.Config'
+import { IDB } from './IDb'
 
-export interface IProfilesDb {
-  getCount: (tenantId?: string) => Promise<number>
-  getAllProfiles: (limit: number, offset: number, tenantId?: string) => Promise<AMTConfiguration[]>
-  getProfileByName: (profileName: string, tenantId?: string) => Promise<AMTConfiguration>
+export interface IProfilesDb extends IDB<AMTConfiguration> {
   getCiraConfigForProfile: (ciraConfigName: string, tenantId?: string) => Promise<CIRAConfig>
-  deleteProfileByName: (profileName: string, tenantId?: string) => Promise<boolean>
-  insertProfile: (amtConfig: AMTConfiguration) => Promise<AMTConfiguration>
-  updateProfile: (amtConfig: AMTConfiguration) => Promise<AMTConfiguration>
 }

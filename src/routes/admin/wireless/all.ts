@@ -25,7 +25,7 @@ export async function allProfiles (req, res): Promise<void> {
       return
     }
     profilesDb = WirelessConfigDbFactory.getConfigDb()
-    let wirelessConfigs: WirelessConfig[] = await profilesDb.getAllProfiles(top, skip)
+    let wirelessConfigs: WirelessConfig[] = await profilesDb.get(top, skip)
     if (wirelessConfigs.length >= 0) {
       wirelessConfigs = wirelessConfigs.map((result: WirelessConfig) => {
         delete result.pskPassphrase

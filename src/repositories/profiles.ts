@@ -47,7 +47,7 @@ export class ProfilesDb implements IProfilesDb {
    * @param {number} skip
    * @returns {Pagination} returns an array of AMT profiles from DB
    */
-  async getAllProfiles (top: number = DEFAULT_TOP, skip: number = DEFAULT_SKIP, tenantId: string = ''): Promise<AMTConfiguration[]> {
+  async get (top: number = DEFAULT_TOP, skip: number = DEFAULT_SKIP, tenantId: string = ''): Promise<AMTConfiguration[]> {
     const results = await this.db.query(`SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, cira_config_name as ciraConfigName, mebx_password as MEBxPassword, tags, dhcp_enabled, tenant_id
     FROM profiles 
     WHERE tenant_id = $3
@@ -71,7 +71,7 @@ export class ProfilesDb implements IProfilesDb {
    * @param {string} profileName
    * @returns {AMTConfiguration} AMT Profile object
    */
-  async getProfileByName (profileName: string, tenantId: string = ''): Promise<AMTConfiguration> {
+  async getByName (profileName: string, tenantId: string = ''): Promise<AMTConfiguration> {
     const results = await this.db.query(`
     SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, cira_config_name as ciraConfigName, mebx_password as MEBxPassword, tags, dhcp_enabled, tenant_id
     FROM profiles 
@@ -94,7 +94,7 @@ export class ProfilesDb implements IProfilesDb {
    * @returns {CIRAConfig} CIRA config object
    */
   async getCiraConfigForProfile (configName: string): Promise<CIRAConfig> {
-    return await this.ciraConfigs.getCiraConfigByName(configName)
+    return await this.ciraConfigs.getByName(configName)
   }
 
   /**
@@ -102,7 +102,7 @@ export class ProfilesDb implements IProfilesDb {
    * @param {string} profileName
    * @returns {boolean} Return true on successful deletion
    */
-  async deleteProfileByName (profileName: string, tenantId: string = ''): Promise<boolean> {
+  async delete (profileName: string, tenantId: string = ''): Promise<boolean> {
     if (this.wifiConfigs.deleteProfileWifiConfigs(profileName)) {
       const results = await this.db.query(`
       DELETE 
@@ -120,7 +120,7 @@ export class ProfilesDb implements IProfilesDb {
    * @param {AMTConfiguration} amtConfig
    * @returns {boolean} Returns amtConfig object
    */
-  async insertProfile (amtConfig: AMTConfiguration): Promise<AMTConfiguration> {
+  async insert (amtConfig: AMTConfiguration): Promise<AMTConfiguration> {
     try {
       const results = await this.db.query(`INSERT INTO profiles(profile_name, activation, amt_password, cira_config_name, mebx_password, tags, dhcp_enabled, tenant_id)
         values($1, $2, $3, $4, $5, $6, $7, $8)`,
@@ -138,7 +138,7 @@ export class ProfilesDb implements IProfilesDb {
         if (amtConfig.wifiConfigs?.length > 0) {
           await this.wifiConfigs.createProfileWifiConfigs(amtConfig.wifiConfigs, amtConfig.profileName, amtConfig.tenantId)
         }
-        const profile = await this.getProfileByName(amtConfig.profileName)
+        const profile = await this.getByName(amtConfig.profileName)
         return profile
       }
       return null
@@ -160,7 +160,7 @@ export class ProfilesDb implements IProfilesDb {
    * @param {AMTConfiguration} amtConfig
    * @returns {AMTConfiguration} Returns amtConfig object
    */
-  async updateProfile (amtConfig: AMTConfiguration): Promise<AMTConfiguration> {
+  async update (amtConfig: AMTConfiguration): Promise<AMTConfiguration> {
     try {
       const results = await this.db.query(`
       UPDATE profiles 
@@ -180,7 +180,7 @@ export class ProfilesDb implements IProfilesDb {
         if (amtConfig.wifiConfigs?.length > 0) {
           await this.wifiConfigs.createProfileWifiConfigs(amtConfig.wifiConfigs, amtConfig.profileName)
         }
-        const profile = await this.getProfileByName(amtConfig.profileName)
+        const profile = await this.getByName(amtConfig.profileName)
         return profile
       }
       return null

@@ -4,12 +4,7 @@
  * Author : Ramu Bachala
  **********************************************************************/
 import { AMTDomain } from '../../models/Rcs'
-export interface IDomainsDb {
-  getCount: (tenantId?: string) => Promise<number>
-  getAllDomains: (limit: number, offset: number, tenantId?: string) => Promise<AMTDomain[]>
-  getDomainByName: (domainName: string, tenantId?: string) => Promise<AMTDomain>
+import { IDB } from './IDb'
+export interface IDomainsDb extends IDB<AMTDomain> {
   getDomainByDomainSuffix: (domainSuffix: string, tenantId?: string) => Promise<AMTDomain>
-  insertDomain: (amtDomain: AMTDomain) => Promise<AMTDomain>
-  updateDomain: (amtDomain: AMTDomain) => Promise<AMTDomain>
-  deleteDomainByName: (domainName: string, tenantId?: string) => Promise<boolean>
 }

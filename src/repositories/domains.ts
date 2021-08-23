@@ -42,7 +42,7 @@ export class DomainsDb implements IDomainsDb {
    * @param {number} skip
    * @returns {AMTDomain[]} returns an array of AMT Domain objects from DB
    */
-  async getAllDomains (top: number = DEFAULT_TOP, skip: number = DEFAULT_SKIP, tenantId: string = ''): Promise<AMTDomain[]> {
+  async get (top: number = DEFAULT_TOP, skip: number = DEFAULT_SKIP, tenantId: string = ''): Promise<AMTDomain[]> {
     const results = await this.db.query(`
     SELECT name as Name, domain_suffix as DomainSuffix, provisioning_cert as ProvisioningCert, provisioning_cert_storage_format as ProvisioningCertStorageFormat, provisioning_cert_key as ProvisioningCertPassword, tenant_id
     FROM domains 
@@ -77,7 +77,7 @@ export class DomainsDb implements IDomainsDb {
    * @param {string} domainName
    * @returns {AMTDomain} Domain object
    */
-  async getDomainByName (domainName: string, tenantId: string = ''): Promise<AMTDomain> {
+  async getByName (domainName: string, tenantId: string = ''): Promise<AMTDomain> {
     const results = await this.db.query(`
     SELECT name as Name, domain_suffix as DomainSuffix, provisioning_cert as ProvisioningCert, provisioning_cert_storage_format as ProvisioningCertStorageFormat, provisioning_cert_key as ProvisioningCertPassword, tenant_id 
     FROM domains 
@@ -94,7 +94,7 @@ export class DomainsDb implements IDomainsDb {
    * @param {string} domainName
    * @returns {boolean} Return true on successful deletion
    */
-  async deleteDomainByName (domainName: string, tenantId: string = ''): Promise<boolean> {
+  async delete (domainName: string, tenantId: string = ''): Promise<boolean> {
     const results = await this.db.query(`
     DELETE 
     FROM domains 
@@ -110,7 +110,7 @@ export class DomainsDb implements IDomainsDb {
    * @param {AMTDomain} amtDomain
    * @returns {AMTDomain} Returns amtDomain object
    */
-  async insertDomain (amtDomain: AMTDomain): Promise<AMTDomain> {
+  async insert (amtDomain: AMTDomain): Promise<AMTDomain> {
     try {
       const results = await this.db.query(`
       INSERT INTO domains(name, domain_suffix, provisioning_cert, provisioning_cert_storage_format, provisioning_cert_key, tenant_id)
@@ -124,7 +124,7 @@ export class DomainsDb implements IDomainsDb {
         amtDomain.tenantId
       ])
       if (results.rowCount > 0) {
-        const domain = await this.getDomainByName(amtDomain.profileName)
+        const domain = await this.getByName(amtDomain.profileName)
         return domain
       }
       return null
@@ -142,7 +142,7 @@ export class DomainsDb implements IDomainsDb {
    * @param {AMTDomain} amtDomain object
    * @returns {AMTDomain} Returns amtDomain object
    */
-  async updateDomain (amtDomain: AMTDomain): Promise <AMTDomain> {
+  async update (amtDomain: AMTDomain): Promise <AMTDomain> {
     try {
       const results = await this.db.query(`
       UPDATE domains 
@@ -157,7 +157,7 @@ export class DomainsDb implements IDomainsDb {
         amtDomain.tenantId
       ])
       if (results.rowCount > 0) {
-        const domain = await this.getDomainByName(amtDomain.profileName)
+        const domain = await this.getByName(amtDomain.profileName)
         return domain
       }
       return null

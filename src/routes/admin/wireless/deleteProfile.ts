@@ -16,7 +16,7 @@ export async function deleteWirelessProfile (req, res): Promise<void> {
   const { profileName } = req.params
   wirelessDb = WirelessConfigDbFactory.getConfigDb()
   try {
-    const results: boolean = await wirelessDb.deleteProfileByName(profileName)
+    const results: boolean = await wirelessDb.delete(profileName)
     if (results) {
       if (req.secretsManager) {
         await req.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}Wireless/${profileName}`)

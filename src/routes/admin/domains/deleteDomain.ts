@@ -17,12 +17,12 @@ export async function deleteDomain (req, res): Promise<void> {
   const { domainName } = req.params
   try {
     domainsDb = DomainsDbFactory.getDomainsDb()
-    const domain: AMTDomain = await domainsDb.getDomainByName(domainName)
+    const domain: AMTDomain = await domainsDb.getByName(domainName)
     if (domain == null) {
       MqttProvider.publishEvent('fail', ['deleteDomain'], `Domain Not Found : ${domainName}`)
       res.status(404).json(API_RESPONSE(null, 'Not Found', DOMAIN_NOT_FOUND(domainName))).end()
     } else {
-      const results = await domainsDb.deleteDomainByName(domainName)
+      const results = await domainsDb.delete(domainName)
       if (results) {
         if (req.secretsManager) {
           await req.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/${domain.profileName}`)

@@ -24,7 +24,7 @@ export async function editWirelessProfile (req, res): Promise<void> {
       return
     }
     wirelessDb = WirelessConfigDbFactory.getConfigDb()
-    let config: WirelessConfig = await wirelessDb.getProfileByName(req.body.profileName)
+    let config: WirelessConfig = await wirelessDb.getByName(req.body.profileName)
     if (config == null) {
       MqttProvider.publishEvent('fail', ['editWirelessProfiles'], `Wireless Profile Not Found : ${req.body.profileName}`)
       res.status(404).json(API_RESPONSE(null, 'Not Found', NETWORK_CONFIG_NOT_FOUND('Wireless', req.body.profileName))).end()
@@ -37,7 +37,7 @@ export async function editWirelessProfile (req, res): Promise<void> {
         config = { ...config, ...req.body }
       }
 
-      const results: WirelessConfig = await wirelessDb.updateProfile(config)
+      const results: WirelessConfig = await wirelessDb.update(config)
       if (req.secretsManager && passphrase) {
         await req.secretsManager.writeSecretWithKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}Wireless/${config.profileName}`, config.pskPassphrase, passphrase)
         log.debug(`pskPassphrase stored in Vault for wireless profile: ${config.profileName}`)

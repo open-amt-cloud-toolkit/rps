@@ -26,7 +26,7 @@ export async function editCiraConfig (req, res): Promise<void> {
       return
     }
     ciraConfigDb = CiraConfigDbFactory.getCiraConfigDb()
-    const oldConfig: CIRAConfig = await ciraConfigDb.getCiraConfigByName(newConfig.configName)
+    const oldConfig: CIRAConfig = await ciraConfigDb.getByName(newConfig.configName)
     if (oldConfig == null) {
       log.debug('Not found : ', newConfig.configName)
       MqttProvider.publishEvent('fail', ['editCiraConfig'], `CIRA config "${newConfig.configName}" not found`)
@@ -39,7 +39,7 @@ export async function editCiraConfig (req, res): Promise<void> {
       }
       // TBD: Need to check the ServerAddressFormat, CommonName and MPSServerAddress if they are not updated.
       // SQL Query > Insert Data
-      const results = await ciraConfigDb.updateCiraConfig(ciraConfig)
+      const results = await ciraConfigDb.update(ciraConfig)
       if (results !== undefined) {
         if (req.secretsManager) {
           if (mpsPwd != null) {
