@@ -20,6 +20,7 @@ export async function editDomain (req, res): Promise<void> {
   let cert: any
   let domainPwd: string
   const newDomain = req.body
+  newDomain.tenantId = req.tenantId
   try {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
@@ -28,7 +29,7 @@ export async function editDomain (req, res): Promise<void> {
       return
     }
     domainsDb = DomainsDbFactory.getDomainsDb()
-    const oldDomain: AMTDomain = await domainsDb.getDomainByName(newDomain.profileName)
+    const oldDomain: AMTDomain = await domainsDb.getByName(newDomain.profileName)
     if (oldDomain == null) {
       MqttProvider.publishEvent('fail', ['editDomain'], `Domain Not Found : ${newDomain.profileName}`)
       res.status(404).json(API_RESPONSE(null, 'Not Found', DOMAIN_NOT_FOUND(newDomain.profileName))).end()
@@ -42,7 +43,7 @@ export async function editDomain (req, res): Promise<void> {
         amtDomain.provisioningCertPassword = 'CERT_PASSWORD'
       }
       // SQL Query > Insert Data
-      const results: AMTDomain = await domainsDb.updateDomain(amtDomain)
+      const results: AMTDomain = await domainsDb.update(amtDomain)
       if (results) {
         // Delete the previous values of cert and password in vault and store the updated values
         if (req.secretsManager && (newDomain.provisioningCert != null || newDomain.provisioningCertPassword != null)) {
@@ -78,6 +79,6 @@ function getUpdatedData (newDomain: any, oldDomain: AMTDomain): AMTDomain {
   amtDomain.provisioningCert = newDomain.provisioningCert ?? oldDomain.provisioningCert
   amtDomain.provisioningCertStorageFormat = newDomain.provisioningCertStorageFormat ?? oldDomain.provisioningCertStorageFormat
   amtDomain.provisioningCertPassword = newDomain.provisioningCertPassword ?? oldDomain.provisioningCertPassword
-
+  amtDomain.tenantId = newDomain.tenantId ?? oldDomain.tenantId
   return amtDomain
 }

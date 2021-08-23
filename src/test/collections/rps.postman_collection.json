@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "e4078ce9-3419-4f7a-9faa-406aa3653243",
+		"_postman_id": "f98e5712-a4fb-4f92-9a91-3e63f15f96c1",
 		"name": "RPS API Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -5509,8 +5509,8 @@
 											"});\r",
 											"pm.test(\"Creation should fail when ciraconfig does not exist\", function () {\r",
 											"    var result = pm.response.json();\r",
-											"    pm.expect(result.error).to.eql(\"Foreign key constraint violation\"),\r",
-											"    pm.expect(result.message).to.eql(\"Referenced config nociraconfig doesn't exist\")\r",
+											"    pm.expect(result.error).to.contain(\"Foreign key constraint violation\"),\r",
+											"    pm.expect(result.message).to.eql(\"Referenced constraint nociraconfig doesn't exist\")\r",
 											"});"
 										],
 										"type": "text/javascript"
@@ -8689,6 +8689,36 @@
 				}
 			},
 			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZW5hbnRJZCI6IiIsImlzcyI6IjlFbVJKVGJJaUliNGJJZVNzbWdjV0lqclI2SHlFVHFjIiwiZXhwIjoxNjI5NTY3MzU5fQ.wHL2z2ldeCr2GY87c5TXFF89AxkshucKNipkJv_ignA",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
 		}
 	]
 }

@@ -25,7 +25,7 @@ export async function getAllDomains (req, res): Promise<void> {
       return
     }
     domainsDb = DomainsDbFactory.getDomainsDb()
-    let domains: AMTDomain[] = await domainsDb.getAllDomains(top, skip)
+    let domains: AMTDomain[] = await domainsDb.get(top, skip)
     if (domains.length >= 0) {
       domains = domains.map((result: AMTDomain) => {
         delete result.provisioningCert

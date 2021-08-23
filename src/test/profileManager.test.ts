@@ -43,7 +43,8 @@ const ciraConfigurations: CIRAConfig[] = [{
   serverAddressFormat: 201, // IPv4 (3), IPv6 (4), FQDN (201)
   authMethod: 2, // Mutual Auth (1), Username/Password (2) (We only support 2)
   mpsRootCertificate: 'rootcert', // Assumption is Root Cert for MPS. Need to validate.
-  proxyDetails: ''
+  proxyDetails: '',
+  tenantId: ''
 },
 {
   configName: 'ciraconfig2',
@@ -55,7 +56,8 @@ const ciraConfigurations: CIRAConfig[] = [{
   serverAddressFormat: 201, // IPv4 (3), IPv6 (4), FQDN (201)
   authMethod: 2, // Mutual Auth (1), Username/Password (2) (We only support 2)
   mpsRootCertificate: 'rootcert', // Assumption is Root Cert for MPS. Need to validate.
-  proxyDetails: ''
+  proxyDetails: '',
+  tenantId: ''
 }]
 
 const amtConfigurations: AMTConfiguration[] = [
@@ -65,7 +67,8 @@ const amtConfigurations: AMTConfiguration[] = [
     mebxPassword: 'P@ssw0rd',
     activation: 'ccmactivate',
     ciraConfigName: 'ciraconfig1',
-    ciraConfigObject: ciraConfigurations[0]
+    ciraConfigObject: ciraConfigurations[0],
+    tenantId: ''
   },
   {
     profileName: 'profile 2',
@@ -73,30 +76,31 @@ const amtConfigurations: AMTConfiguration[] = [
     mebxPassword: 'P@ssw0rd',
     activation: 'acmactivate',
     ciraConfigName: 'ciraconfig1',
-    ciraConfigObject: ciraConfigurations[0]
+    ciraConfigObject: ciraConfigurations[0],
+    tenantId: ''
   }
 ]
 const profileStub: IProfilesDb = {
   getCount: async () => {
     return 2
   },
-  getProfileByName: async (name) => {
+  getByName: async (name) => {
     return amtConfigurations.find(c => c.profileName === name)
   },
-  getAllProfiles: async (top, skip) => {
+  get: async (top, skip) => {
     return amtConfigurations
   },
   getCiraConfigForProfile: async (ciraConfigName) => {
     return ciraConfigurations.find(c => c.configName === ciraConfigName)
   },
-  deleteProfileByName: async (profileName) => {
+  delete: async (profileName) => {
     return true
   },
-  insertProfile: async (amtConfig: AMTConfiguration) => {
+  insert: async (amtConfig: AMTConfiguration) => {
     amtConfigurations.push(amtConfig)
     return amtConfig
   },
-  updateProfile: async (amtConfig) => {
+  update: async (amtConfig) => {
     const index = amtConfigurations.findIndex((item): boolean => item.profileName === amtConfig.profileName)
     if (index >= 0) {
       amtConfigurations.splice(index, 1)

@@ -14,7 +14,8 @@ import { MqttProvider } from '../../../utils/MqttProvider'
 
 export async function createWirelessProfile (req, res): Promise<void> {
   let profilesDb: IWirelessProfilesDb = null
-  let wirelessConfig: WirelessConfig = {} as WirelessConfig
+  const wirelessConfig: WirelessConfig = req.body
+  wirelessConfig.tenantId = req.tenantId
   const log = new Logger('createWirelessProfile')
   try {
     const errors = validationResult(req)
@@ -23,14 +24,13 @@ export async function createWirelessProfile (req, res): Promise<void> {
       res.status(400).json({ errors: errors.array() })
       return
     }
-    wirelessConfig = req.body
     const passphrase = wirelessConfig.pskPassphrase
     if (req.secretsManager) {
       wirelessConfig.pskPassphrase = 'pskPassphrase'
     }
 
     profilesDb = WirelessConfigDbFactory.getConfigDb()
-    const results: WirelessConfig = await profilesDb.insertProfile(wirelessConfig)
+    const results: WirelessConfig = await profilesDb.insert(wirelessConfig)
     // store the password into Vault
     if (req.secretsManager) {
       await req.secretsManager.writeSecretWithKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}Wireless/${wirelessConfig.profileName}`, wirelessConfig.pskPassphrase, passphrase)

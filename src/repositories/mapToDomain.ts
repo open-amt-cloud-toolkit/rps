@@ -13,7 +13,8 @@ export function mapToDomain (result): AMTDomain {
     domainSuffix: result.domainsuffix,
     provisioningCert: result.provisioningcert,
     provisioningCertStorageFormat: result.provisioningcertstorageformat,
-    provisioningCertPassword: result.provisioningcertpassword
+    provisioningCertPassword: result.provisioningcertpassword,
+    tenantId: result.tenant_id
   }
   return domain
 }

@@ -17,7 +17,7 @@ export async function deleteCiraConfig (req, res): Promise<void> {
   const ciraConfigName: string = req.params.ciraConfigName
   try {
     ciraConfigDb = CiraConfigDbFactory.getCiraConfigDb()
-    const result: boolean = await ciraConfigDb.deleteCiraConfigByName(ciraConfigName)
+    const result: boolean = await ciraConfigDb.delete(ciraConfigName)
     if (result) {
       if (req.secretsManager) {
         await req.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfigName}`)

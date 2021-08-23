@@ -21,22 +21,23 @@ import { MqttProvider } from '../../../utils/MqttProvider'
 export async function createCiraConfig (req, res): Promise<void> {
   const log = new Logger('createCiraConfig')
   let ciraConfigDb: ICiraConfigDb
-  let ciraConfig: CIRAConfig = null
+  const ciraConfig: CIRAConfig = req.body
+  ciraConfig.tenantId = req.tenantId
+
   try {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
-      MqttProvider.publishEvent('fail', ['createCiraConfig'], `Failed to create CIRA config ${req.body?.configName}`)
+      MqttProvider.publishEvent('fail', ['createCiraConfig'], `Failed to create CIRA config ${ciraConfig.configName}`)
       res.status(400).json({ errors: errors.array() })
       return
     }
     ciraConfigDb = CiraConfigDbFactory.getCiraConfigDb()
-    ciraConfig = req.body
     const mpsPwd = ciraConfig.password ?? PasswordHelper.generateRandomPassword(AMTRandomPasswordLength)
     if (req.secretsManager) {
       ciraConfig.password = 'MPS_PASSWORD'
     }
     // SQL Query > Insert Data
-    const results: CIRAConfig = await ciraConfigDb.insertCiraConfig(ciraConfig)
+    const results: CIRAConfig = await ciraConfigDb.insert(ciraConfig)
     // CIRA profile inserted  into db successfully.
     if (results != null) {
       // store the password into Vault

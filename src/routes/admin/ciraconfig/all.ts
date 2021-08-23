@@ -26,7 +26,7 @@ export async function allCiraConfigs (req, res): Promise<void> {
       return
     }
     ciraConfigDb = CiraConfigDbFactory.getCiraConfigDb()
-    let ciraConfigs: CIRAConfig[] = await ciraConfigDb.getAllCiraConfigs(top, skip) || [] as CIRAConfig[]
+    let ciraConfigs: CIRAConfig[] = await ciraConfigDb.get(top, skip) || [] as CIRAConfig[]
     if (ciraConfigs.length >= 0) {
       ciraConfigs = ciraConfigs.map((result: CIRAConfig) => {
         delete result.password

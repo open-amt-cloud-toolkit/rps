@@ -50,6 +50,7 @@ export class AMTConfiguration {
   tags?: string[]
   dhcpEnabled?: boolean
   wifiConfigs?: ProfileWifiConfigs[]
+  tenantId: string
 }
 
 export class DataWithCount {
@@ -63,6 +64,7 @@ export class AMTDomain {
   provisioningCert: string
   provisioningCertStorageFormat: string
   provisioningCertPassword: string
+  tenantId: string
 }
 
 export class WSMessage {

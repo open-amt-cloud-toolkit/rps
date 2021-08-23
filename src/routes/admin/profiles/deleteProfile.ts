@@ -17,12 +17,12 @@ export async function deleteProfile (req, res): Promise<void> {
   const { profileName } = req.params
   try {
     profilesDb = ProfilesDbFactory.getProfilesDb()
-    const profile: AMTConfiguration = await profilesDb.getProfileByName(profileName)
+    const profile: AMTConfiguration = await profilesDb.getByName(profileName)
     if (profile == null) {
       MqttProvider.publishEvent('fail', ['deleteProfile'], `Profile Not Found : ${profileName}`)
       res.status(404).json(API_RESPONSE(null, 'Not Found', PROFILE_NOT_FOUND(profileName))).end()
     } else {
-      const results: boolean = await profilesDb.deleteProfileByName(profileName)
+      const results: boolean = await profilesDb.delete(profileName)
       if (results) {
         if (req.secretsManager) {
           await req.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${profile.profileName}`)

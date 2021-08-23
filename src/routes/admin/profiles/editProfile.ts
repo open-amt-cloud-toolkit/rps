@@ -20,6 +20,7 @@ export async function editProfile (req, res): Promise<void> {
   let profilesDb: IProfilesDb = null
   const log = new Logger('editProfile')
   const newConfig = req.body
+  newConfig.tenantId = req.tenantId
   try {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
@@ -29,7 +30,7 @@ export async function editProfile (req, res): Promise<void> {
     }
     profilesDb = ProfilesDbFactory.getProfilesDb()
     const profileWifiConfigsDb: IProfileWifiConfigsDb = ProfileWifiConfigsDbFactory.getProfileWifiConfigsDb()
-    const oldConfig: AMTConfiguration = await profilesDb.getProfileByName(newConfig.profileName)
+    const oldConfig: AMTConfiguration = await profilesDb.getByName(newConfig.profileName)
 
     if (oldConfig == null) {
       MqttProvider.publishEvent('fail', ['editProfile'], `Profile Not Found : ${newConfig.profileName}`)
@@ -48,7 +49,7 @@ export async function editProfile (req, res): Promise<void> {
         amtConfig.mebxPassword = 'MEBX_PASSWORD'
       }
       // SQL Query > Insert Data
-      const results = await profilesDb.updateProfile(amtConfig)
+      const results = await profilesDb.update(amtConfig)
       if (results) {
         // profile inserted  into db successfully. insert the secret into vault
         if (oldConfig.amtPassword !== null || oldConfig.mebxPassword !== null) {
@@ -103,8 +104,9 @@ export const getUpdatedData = async (newConfig: any, oldConfig: AMTConfiguration
   if (amtConfig.activation === ClientAction.CLIENTCTLMODE) {
     amtConfig.mebxPassword = null
   }
-  amtConfig.ciraConfigName = newConfig.ciraConfigName ?? oldConfig.ciraConfigName
+  amtConfig.ciraConfigName = newConfig.ciraConfigName
   amtConfig.tags = newConfig.tags ?? oldConfig.tags
   amtConfig.dhcpEnabled = newConfig.dhcpEnabled ?? oldConfig.dhcpEnabled
+  amtConfig.tenantId = newConfig.tenantId ?? oldConfig.tenantId
   return amtConfig
 }
