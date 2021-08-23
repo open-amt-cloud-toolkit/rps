@@ -4,12 +4,7 @@
  * Author : Ramu Bachala
  **********************************************************************/
 import { CIRAConfig } from '../../RCS.Config'
+import { IDB } from './IDb'
 
-export interface ICiraConfigDb {
-  getCount: (tenantId?: string) => Promise<number>
-  getAllCiraConfigs: (limit: number, offset: number, tenantId?: string) => Promise<CIRAConfig[]>
-  getCiraConfigByName: (configName, tenantId?: string) => Promise<CIRAConfig>
-  deleteCiraConfigByName: (configName, tenantId?: string) => Promise<boolean>
-  insertCiraConfig: (ciraConfig) => Promise<CIRAConfig>
-  updateCiraConfig: (ciraConfig) => Promise<CIRAConfig>
+export interface ICiraConfigDb extends IDB<CIRAConfig> {
 }

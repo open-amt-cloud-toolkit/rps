@@ -84,23 +84,23 @@ const profileStub: IProfilesDb = {
   getCount: async () => {
     return 2
   },
-  getProfileByName: async (name) => {
+  getByName: async (name) => {
     return amtConfigurations.find(c => c.profileName === name)
   },
-  getAllProfiles: async (top, skip) => {
+  get: async (top, skip) => {
     return amtConfigurations
   },
   getCiraConfigForProfile: async (ciraConfigName) => {
     return ciraConfigurations.find(c => c.configName === ciraConfigName)
   },
-  deleteProfileByName: async (profileName) => {
+  delete: async (profileName) => {
     return true
   },
-  insertProfile: async (amtConfig: AMTConfiguration) => {
+  insert: async (amtConfig: AMTConfiguration) => {
     amtConfigurations.push(amtConfig)
     return amtConfig
   },
-  updateProfile: async (amtConfig) => {
+  update: async (amtConfig) => {
     const index = amtConfigurations.findIndex((item): boolean => item.profileName === amtConfig.profileName)
     if (index >= 0) {
       amtConfigurations.splice(index, 1)

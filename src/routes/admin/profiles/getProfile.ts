@@ -16,7 +16,7 @@ export async function getProfile (req, res): Promise<void> {
   const { profileName } = req.params
   try {
     profilesDb = ProfilesDbFactory.getProfilesDb()
-    const result: AMTConfiguration = await profilesDb.getProfileByName(profileName)
+    const result: AMTConfiguration = await profilesDb.getByName(profileName)
     if (result == null) {
       MqttProvider.publishEvent('fail', ['getProfile'], `Profile Not Found : ${profileName}`)
       res.status(404).json(API_RESPONSE(null, 'Not Found', PROFILE_NOT_FOUND(profileName))).end()

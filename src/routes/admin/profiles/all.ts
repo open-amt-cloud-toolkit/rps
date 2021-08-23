@@ -26,7 +26,7 @@ export async function allProfiles (req, res): Promise<void> {
       return
     }
     profilesDb = ProfilesDbFactory.getProfilesDb()
-    amtConfigs = await profilesDb.getAllProfiles(top, skip)
+    amtConfigs = await profilesDb.get(top, skip)
     if (count == null || count === 'false' || count === '0') {
       MqttProvider.publishEvent('success', ['allProfiles'], 'No profiles to get')
       res.status(200).json(API_RESPONSE(amtConfigs)).end()

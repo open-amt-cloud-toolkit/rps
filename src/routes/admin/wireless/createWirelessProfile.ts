@@ -30,7 +30,7 @@ export async function createWirelessProfile (req, res): Promise<void> {
     }
 
     profilesDb = WirelessConfigDbFactory.getConfigDb()
-    const results: WirelessConfig = await profilesDb.insertProfile(wirelessConfig)
+    const results: WirelessConfig = await profilesDb.insert(wirelessConfig)
     // store the password into Vault
     if (req.secretsManager) {
       await req.secretsManager.writeSecretWithKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}Wireless/${wirelessConfig.profileName}`, wirelessConfig.pskPassphrase, passphrase)

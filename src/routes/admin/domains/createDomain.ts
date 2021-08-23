@@ -38,7 +38,7 @@ export async function createDomain (req, res): Promise<void> {
       amtDomain.provisioningCertPassword = 'CERT_PASSWORD'
     }
     // SQL Query > Insert Data
-    const results: AMTDomain = await domainsDb.insertDomain(amtDomain)
+    const results: AMTDomain = await domainsDb.insert(amtDomain)
     // store the actual cert and password into Vault
     if (results != null) {
       if (req.secretsManager) {

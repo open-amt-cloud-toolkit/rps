@@ -251,7 +251,7 @@ export class NetworkConfigurator implements IExecutor {
     if (clientObj.network.count <= wifiConfigs.length - 1) {
       const wifiProfilesDb: IWirelessProfilesDb = WirelessConfigDbFactory.getConfigDb()
       // Get WiFi profile information based on the profile name.
-      const wifiConfig = await wifiProfilesDb.getProfileByName(wifiConfigs[clientObj.network.count].profileName)
+      const wifiConfig = await wifiProfilesDb.getByName(wifiConfigs[clientObj.network.count].profileName)
       // Add  WiFi profile information to WiFi endpoint settings object
       const wifiEndpointSettings = {
         __parameterType: 'instance',

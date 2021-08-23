@@ -37,7 +37,7 @@ export async function createCiraConfig (req, res): Promise<void> {
       ciraConfig.password = 'MPS_PASSWORD'
     }
     // SQL Query > Insert Data
-    const results: CIRAConfig = await ciraConfigDb.insertCiraConfig(ciraConfig)
+    const results: CIRAConfig = await ciraConfigDb.insert(ciraConfig)
     // CIRA profile inserted  into db successfully.
     if (results != null) {
       // store the password into Vault

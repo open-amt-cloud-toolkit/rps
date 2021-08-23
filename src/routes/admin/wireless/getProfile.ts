@@ -14,7 +14,7 @@ export async function getWirelessProfile (req, res): Promise<void> {
   const { profileName } = req.params
   try {
     profilesDb = WirelessConfigDbFactory.getConfigDb()
-    const result = await profilesDb.getProfileByName(profileName)
+    const result = await profilesDb.getByName(profileName)
     if (result == null) {
       MqttProvider.publishEvent('fail', ['getWirelessProfiles'], `Wireless Profile Not Found : ${profileName}`)
       res.status(404).json(API_RESPONSE(null, 'Not Found', NETWORK_CONFIG_NOT_FOUND('Wireless', profileName))).end()

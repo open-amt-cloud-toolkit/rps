@@ -39,7 +39,7 @@ export class CiraConfigDb implements ICiraConfigDb {
    * @param {number} skip
    * @returns {Pagination} returns an array of CIRA config objects from DB
    */
-  async getAllCiraConfigs (top: number = DEFAULT_TOP, skip: number = DEFAULT_SKIP, tenantId: string = ''): Promise<CIRAConfig[]> {
+  async get (top: number = DEFAULT_TOP, skip: number = DEFAULT_SKIP, tenantId: string = ''): Promise<CIRAConfig[]> {
     const results = await this.db.query(`SELECT cira_config_name, mps_server_address, mps_port, user_name, password, common_name, server_address_format, auth_method, mps_root_certificate, proxydetails, tenant_id 
     FROM ciraconfigs 
     WHERE tenant_id = $3
@@ -57,7 +57,7 @@ export class CiraConfigDb implements ICiraConfigDb {
    * @param {string} configName
    * @returns {CIRAConfig} CIRA config object
    */
-  async getCiraConfigByName (configName: string, tenantId: string = ''): Promise<CIRAConfig> {
+  async getByName (configName: string, tenantId: string = ''): Promise<CIRAConfig> {
     const results = await this.db.query(`
     SELECT cira_config_name, mps_server_address, mps_port, user_name, password, common_name, server_address_format, auth_method, mps_root_certificate, proxydetails, tenant_id 
     FROM ciraconfigs 
@@ -74,7 +74,7 @@ export class CiraConfigDb implements ICiraConfigDb {
    * @param {string} ciraConfigName
    * @returns {boolean} Return true on successful deletion
    */
-  async deleteCiraConfigByName (ciraConfigName: string, tenantId: string = ''): Promise<boolean> {
+  async delete (ciraConfigName: string, tenantId: string = ''): Promise<boolean> {
     try {
       const results = await this.db.query(`
       DELETE FROM ciraconfigs 
@@ -98,7 +98,7 @@ export class CiraConfigDb implements ICiraConfigDb {
    * @param {CIRAConfig} ciraConfig
    * @returns {CIRAConfig} Returns cira config object
    */
-  async insertCiraConfig (ciraConfig: CIRAConfig): Promise<CIRAConfig> {
+  async insert (ciraConfig: CIRAConfig): Promise<CIRAConfig> {
     try {
       const results = await this.db.query(`INSERT INTO ciraconfigs(cira_config_name, mps_server_address, mps_port, user_name, password, common_name, server_address_format, auth_method, mps_root_certificate, proxydetails, tenant_id)
         values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
@@ -116,7 +116,7 @@ export class CiraConfigDb implements ICiraConfigDb {
         ciraConfig.tenantId
       ])
       if (results.rowCount > 0) {
-        const config = await this.getCiraConfigByName(ciraConfig.configName)
+        const config = await this.getByName(ciraConfig.configName)
         return config
       }
       return null
@@ -134,7 +134,7 @@ export class CiraConfigDb implements ICiraConfigDb {
    * @param {CIRAConfig} ciraConfig object
    * @returns {CIRAConfig} Returns cira config object
    */
-  async updateCiraConfig (ciraConfig: CIRAConfig): Promise<CIRAConfig> {
+  async update (ciraConfig: CIRAConfig): Promise<CIRAConfig> {
     try {
       const results = await this.db.query(`
       UPDATE ciraconfigs 
@@ -154,7 +154,7 @@ export class CiraConfigDb implements ICiraConfigDb {
         ciraConfig.tenantId
       ])
       if (results.rowCount > 0) {
-        const config = await this.getCiraConfigByName(ciraConfig.configName)
+        const config = await this.getByName(ciraConfig.configName)
         return config
       }
       return null
