@@ -265,7 +265,8 @@ export class CIRAConfigurator implements IExecutor {
             guid: clientObj.uuid,
             hostname: clientObj.hostname,
             mpsusername: clientObj.mpsUsername,
-            tags: tags
+            tags: tags,
+            tenantId: profile.tenantId
           }
         })
       } catch (err) {
