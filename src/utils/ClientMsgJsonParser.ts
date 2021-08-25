@@ -58,7 +58,9 @@ export class ClientMsgJsonParser implements IClientMessageParser {
       throw new RPSError(`Failed to parse client message payload. ${error.message}`)
     }
     if (payload.client && payload.ver && payload.build && payload.uuid) {
-      payload.uuid = this.getUUID(payload.uuid)
+      if (Array.isArray(payload.uuid)) {
+        payload.uuid = this.getUUID(payload.uuid)
+      }
     } else {
       throw new RPSError('Invalid payload from client')
     }
