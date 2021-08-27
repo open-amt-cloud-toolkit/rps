@@ -76,10 +76,9 @@ export interface SocketConnection {
 }
 
 export interface Status {
-  Activation?: string
+  Status?: string
   Network?: string
   CIRAConnection?: string
-  Deactivation?: string
 }
 export interface ClientObject {
   ClientId: string

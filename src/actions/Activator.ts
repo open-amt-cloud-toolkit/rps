@@ -81,12 +81,12 @@ export class Activator implements IExecutor {
         }
       }
     } catch (error) {
+      this.logger.error(`${clientId} : Failed to activate - ${error}`)
       MqttProvider.publishEvent('fail', ['Activator'], 'Failed to activate', clientObj.uuid)
-      this.logger.error(`${clientId} : Failed to activate.`)
       if (error instanceof RPSError) {
-        clientObj.status.Activation = error.message
+        clientObj.status.Status = error.message
       } else {
-        clientObj.status.Activation = 'Failed to activate the device'
+        clientObj.status.Status = 'Failed'
       }
       return this.responseMsg.get(clientId, null, 'error', 'failed', JSON.stringify(clientObj.status))
     }
@@ -167,7 +167,7 @@ export class Activator implements IExecutor {
         throw new RPSError(`Device ${clientObj.uuid} activation failed. Error while activating the AMT device in admin mode.`)
       } else {
         this.logger.debug(`Device ${clientObj.uuid} activated in admin mode.`)
-        clientObj.status.Activation = 'activated in admin mode.'
+        clientObj.status.Status = 'Admin control mode'
         clientObj.activationStatus = true
         this.clientManager.setClientObject(clientObj)
         const msg = await this.waitAfterActivation(clientId, clientObj)
@@ -179,7 +179,7 @@ export class Activator implements IExecutor {
         throw new RPSError(`Device ${clientObj.uuid} activation failed. Error while activating the AMT device in client mode.`)
       } else {
         this.logger.debug(`Device ${clientObj.uuid} activated in client mode.`)
-        clientObj.status.Activation = 'activated in client mode.'
+        clientObj.status.Status = 'Client control mode'
         clientObj.activationStatus = true
         this.clientManager.setClientObject(clientObj)
         await this.saveDeviceInfo(clientObj)

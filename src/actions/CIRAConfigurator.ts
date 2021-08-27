@@ -136,7 +136,7 @@ export class CIRAConfigurator implements IExecutor {
       if (error instanceof RPSError) {
         clientObj.status.CIRAConnection = error.message
       } else {
-        clientObj.status.CIRAConnection = 'Failed to configure CIRA'
+        clientObj.status.CIRAConnection = 'Failed'
       }
       MqttProvider.publishEvent('fail', ['CIRAConfigurator'], 'Failed to configure CIRA', clientObj.uuid)
       return this.responseMsg.get(clientId, null, 'error', 'failed', JSON.stringify(clientObj.status))
@@ -213,6 +213,7 @@ export class CIRAConfigurator implements IExecutor {
         await this.amtwsman.put(clientId, 'AMT_EnvironmentDetectionSettingData', envSettings, AMTUserName)
       } else {
         clientObj.ciraconfig.setENVSettingData = true
+        clientObj.status.CIRAConnection = 'Unconfigured'
         this.clientManager.setClientObject(clientObj)
         this.logger.debug(`${clientObj.uuid} Deleted existing CIRA Configuration.`)
         clientObj = this.clientManager.getClientObject(clientId)
