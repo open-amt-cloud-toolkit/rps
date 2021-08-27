@@ -121,7 +121,7 @@ export class Validator implements IValidator {
         case 1: {
           if (profile.activation === ClientAction.CLIENTCTLMODE) {
             this.logger.debug(`Device ${payload.uuid} already enabled in client mode.`)
-            clientObj.status.Activation = 'already enabled in client mode.'
+            clientObj.status.Status = 'already enabled in client mode.'
             await this.updateTags(payload.uuid, payload.profile)
             clientObj.action = ClientAction.NETWORKCONFIG
           } else {
@@ -132,7 +132,7 @@ export class Validator implements IValidator {
         case 2: {
           if (profile.activation === ClientAction.ADMINCTLMODE) {
             this.logger.debug(`Device ${payload.uuid} already enabled in admin mode.`)
-            clientObj.status.Activation = 'already enabled in admin mode.'
+            clientObj.status.Status = 'already enabled in admin mode.'
             await this.updateTags(payload.uuid, payload.profile)
             clientObj.action = ClientAction.NETWORKCONFIG
           } else {

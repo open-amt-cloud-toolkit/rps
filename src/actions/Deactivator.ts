@@ -62,7 +62,7 @@ export class Deactivator implements IExecutor {
             this.logger.error('unable to removed metadata with MPS', err)
           }
           MqttProvider.publishEvent('success', ['Deactivator'], 'Device deactivated', clientObj.uuid)
-          clientObj.status.Deactivation = `Device ${clientObj.uuid} deactivated`
+          clientObj.status.Status = 'Deactivated'
           return this.responseMsg.get(clientId, null, 'success', 'success', JSON.stringify(clientObj.status))
         }
       } else {
@@ -71,13 +71,11 @@ export class Deactivator implements IExecutor {
         await this.amtwsman.deactivateACM(clientId)
       }
     } catch (error) {
-      this.logger.error(
-        `${clientId} : Failed to deactivate: ${error}`
-      )
+      this.logger.error(`${clientId} : Failed to deactivate: ${error}`)
       if (error instanceof RPSError) {
-        clientObj.status.Deactivation = error.message
+        clientObj.status.Status = error.message
       } else {
-        clientObj.status.Deactivation = 'Failed to deactivate'
+        clientObj.status.Status = 'Failed'
       }
       MqttProvider.publishEvent('fail', ['Deactivator'], 'Failed to deactivate', clientObj.uuid)
       return this.responseMsg.get(clientId, null, 'error', 'failed', JSON.stringify(clientObj.status))

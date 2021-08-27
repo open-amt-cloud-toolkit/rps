@@ -148,7 +148,7 @@ describe('Parse the get and set of AMT Ethernet Port Settings response received 
     ipSyncEnabledFalse.Body.IpSyncEnabled = false
     const message = { payload: ipSyncEnabledFalse }
     await networkConfigurator.processEthernetPortSettings(message, clientId)
-    expect(clientObj.status.Network).toBe('network configuration failed.')
+    expect(clientObj.status.Network).toBe('Failed.')
     expect(clientObj.action).toBe(ClientAction.CIRACONFIG)
     expect(clientObj.network.setEthernetPortSettings).toBe(true)
   })
@@ -161,7 +161,7 @@ describe('Parse the get and set of AMT Ethernet Port Settings response received 
     sharedStaticIpTrue.Body.SharedStaticIp = true
     const message = { payload: sharedStaticIpTrue }
     await networkConfigurator.processEthernetPortSettings(message, clientId)
-    expect(clientObj.status.Network).toBe('ethernet settings are updated.')
+    expect(clientObj.status.Network).toBe('Ethernet Configured.')
     expect(clientObj.action).toBe(ClientAction.CIRACONFIG)
     expect(clientObj.network.setEthernetPortSettings).toBe(true)
   })
@@ -172,7 +172,7 @@ describe('Parse the get and set of AMT Ethernet Port Settings response received 
     activationmsg.payload.profile.wificonfigs = []
     const message = { payload: AMTEthernetPortSettingsResponse }
     await networkConfigurator.processEthernetPortSettings(message, clientId)
-    expect(clientObj.status.Network).toBe('ethernet settings are updated.')
+    expect(clientObj.status.Network).toBe('Ethernet Configured.')
     expect(clientObj.action).toBe(ClientAction.CIRACONFIG)
     expect(clientObj.network.setEthernetPortSettings).toBe(true)
   })
@@ -191,7 +191,7 @@ describe('Parse the get and set of AMT Ethernet Port Settings response received 
       }
     ]
     await networkConfigurator.processEthernetPortSettings(message, clientId)
-    expect(clientObj.status.Network).toBe('ethernet settings are updated. No wireless interface.')
+    expect(clientObj.status.Network).toBe('Ethernet Configured. WiFi Failed.')
     expect(clientObj.action).toBe(ClientAction.CIRACONFIG)
     expect(clientObj.network.setEthernetPortSettings).toBe(true)
   })
@@ -214,7 +214,7 @@ describe('Parse the WiFi port response received from AMT', () => {
     zeroEnabledState.Body.EnabledState = 0
     const message = { payload: zeroEnabledState }
     await networkConfigurator.processWiFiPortResponse(message, clientId)
-    expect(clientObj.status.Network).toBe('ethernet settings are updated. Failed to enable WiFi.')
+    expect(clientObj.status.Network).toBe('Ethernet Configured. WiFi Failed.')
     expect(clientObj.action).toBe(ClientAction.CIRACONFIG)
     expect(clientObj.network.setEthernetPortSettings).toBe(true)
   })
@@ -238,7 +238,7 @@ describe('Parse the WiFi Endpoint Settings response received from AMT', () => {
     AddWiFiSettingsResponse.Body.ReturnValue = 0
     const message = { payload: AddWiFiSettingsResponse }
     await networkConfigurator.processWiFiEndpointSettings(message, clientId)
-    expect(clientObj.status.Network).toBe('ethernet and wifi settings are updated.')
+    expect(clientObj.status.Network).toBe('Ethernet & WiFi configured.')
     expect(clientObj.action).toBe(ClientAction.CIRACONFIG)
   })
 })

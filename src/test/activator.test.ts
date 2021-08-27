@@ -96,7 +96,7 @@ describe('execute function', () => {
     clientManager.setClientObject(clientObj)
     const clientMsg = { payload: null }
     const responseMsg = await activator.execute(clientMsg, clientId)
-    expect(responseMsg.message).toEqual(`{"Activation":"Device ${activationmsg.payload.uuid} activation failed. Missing/invalid WSMan response payload."}`)
+    expect(responseMsg.message).toEqual(`{"Status":"Device ${activationmsg.payload.uuid} activation failed. Missing/invalid WSMan response payload."}`)
   })
 })
 
