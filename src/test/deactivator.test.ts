@@ -63,6 +63,6 @@ describe('deactivate from admin control mode', () => {
 
     const clientMsg = { payload: null }
     const deactivateMsg = await deactivate.execute(clientMsg, clientId)
-    expect(deactivateMsg.message).toEqual(`{"Deactivation":"Device ${deactivatemsg.payload.uuid} deactivate failed : Missing/invalid WSMan response payload."}`)
+    expect(deactivateMsg.message).toEqual(`{"Status":"Device ${deactivatemsg.payload.uuid} deactivate failed : Missing/invalid WSMan response payload."}`)
   })
 })

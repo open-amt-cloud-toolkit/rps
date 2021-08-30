@@ -12,7 +12,6 @@ import { IConfigurator } from '../interfaces/IConfigurator'
 import { ClientResponseMsg } from '../utils/ClientResponseMsg'
 import { WSManProcessor } from '../WSManProcessor'
 import { IClientManager } from '../interfaces/IClientManager'
-import { RPSError } from '../utils/RPSError'
 import { IValidator } from '../interfaces/IValidator'
 import { CIRAConfigurator } from './CIRAConfigurator'
 import { AMTGeneralSettings, AMTEthernetPortSettings, AddWiFiSettingsResponse, CIM_WiFiPortResponse, WiFiEndPointSettings } from '../models/WSManResponse'
@@ -21,6 +20,7 @@ import { AMTConfiguration } from '../models/Rcs'
 import { IWirelessProfilesDb } from '../repositories/interfaces/IWirelessProfilesDB'
 import { WirelessConfigDbFactory } from '../repositories/factories/WirelessConfigDbFactory'
 import { MqttProvider } from '../utils/MqttProvider'
+import { RPSError } from '../utils/RPSError'
 
 export class NetworkConfigurator implements IExecutor {
   constructor (
@@ -62,12 +62,12 @@ export class NetworkConfigurator implements IExecutor {
         await this.addWifiConfigs(clientObj, clientId, payload.profile.wifiConfigs)
       }
     } catch (error) {
-      MqttProvider.publishEvent('fail', ['NetworkConfigurator'], 'Failed to configure network settings', clientObj.uuid)
       this.logger.error(`${clientId} : Failed to configure network settings : ${error}`)
+      MqttProvider.publishEvent('fail', ['NetworkConfigurator'], 'Failed', clientObj.uuid)
       if (error instanceof RPSError) {
-        clientObj.status.Activation = error.message
+        clientObj.status.Network = error.message
       } else {
-        clientObj.status.Activation = 'Failed to configure network settings'
+        clientObj.status.Network = 'Failed'
       }
       return this.responseMsg.get(clientId, null, 'error', 'failed', JSON.stringify(clientObj.status))
     }
@@ -110,7 +110,7 @@ export class NetworkConfigurator implements IExecutor {
      The actual state of the element is represented by EnabledState. */
     // EnabledState is an integer enumeration that indicates the enabled and disabled states of an element. It can also indicate the transitions between these requested states.
     if (wsmanResponse.Body.EnabledState !== 32769 || wsmanResponse.Body.RequestedState !== 32769) {
-      await this.callCIRAConfig(clientId, clientObj, 'ethernet settings are updated. Failed to enable WiFi', wsmanResponse)
+      await this.callCIRAConfig(clientId, clientObj, 'Ethernet Configured. WiFi Failed', wsmanResponse)
     } else {
       clientObj.network.setWiFiPortResponse = true
       clientObj.network.count = 0
@@ -132,10 +132,10 @@ export class NetworkConfigurator implements IExecutor {
       // If ReturnValue is not zero in response to add WiFi setttings, then move to CIRA config.
       // ReturnValueMap={0, 1, 2, 3, 4, .., 32768..65535}
       // Values={Completed with No Error, Not Supported, Failed, Invalid Parameter, Invalid Reference, Method Reserved, Vendor Specific}
-      await this.callCIRAConfig(clientId, clientObj, 'ethernet settings are updated. Failed to configure WiFi settings', wsmanResponse)
+      await this.callCIRAConfig(clientId, clientObj, 'Ethernet Configured. WiFi Failed', wsmanResponse)
     } else if (clientObj.network.count >= payload.profile.wifiConfigs.length - 1) {
       // If all wiFi configs are added, then move to CIRA config.
-      await this.callCIRAConfig(clientId, clientObj, 'ethernet and wifi settings are updated', wsmanResponse)
+      await this.callCIRAConfig(clientId, clientObj, 'Ethernet & WiFi configured', wsmanResponse)
     } else {
       this.logger.debug(`Device ${clientObj.uuid} add WiFi Settings ${response.Body?.ReturnValue}}`)
     }
@@ -213,17 +213,19 @@ export class NetworkConfigurator implements IExecutor {
       const payload: any = clientObj.ClientData.payload
       if (!response.IpSyncEnabled) {
         // If the IpSyncEnabled is not set to true in the response to the put request of ethernet port settings, then it is considered as failed and move to CIRA config.
-        await this.callCIRAConfig(clientId, clientObj, 'network configuration failed', message)
+        this.logger.debug(`Device ${clientObj.uuid} Failed to set IpSyncEnabled to true `)
+        await this.callCIRAConfig(clientId, clientObj, 'Failed', message)
       } else if (response.SharedStaticIp && response.IpSyncEnabled) {
         // If the IpSyncEnabled is true and SharedStaticIp is true in the response to the put request of ethernet port settings, then move to CIRA config.
-        await this.callCIRAConfig(clientId, clientObj, 'ethernet settings are updated', message)
+        await this.callCIRAConfig(clientId, clientObj, 'Ethernet Configured', message)
       } else if (response.DHCPEnabled && response.IpSyncEnabled) {
         // If the IpSyncEnabled, DHCPEnabled is true and profile has no wifi configs
         if (payload.profile.wifiConfigs.length === 0) {
-          await this.callCIRAConfig(clientId, clientObj, 'ethernet settings are updated', message)
+          await this.callCIRAConfig(clientId, clientObj, 'Ethernet Configured', message)
         } else if (clientObj.network.ethernetSettingsWifiObj == null && payload.profile.wifiConfigs.length > 0) {
           // If the IpSyncEnabled, DHCPEnabled is true and profile has wifi configs but no wifi capabilities
-          await this.callCIRAConfig(clientId, clientObj, 'ethernet settings are updated. No wireless interface', message)
+          this.logger.debug(`Device ${clientObj.uuid} Ethernet Configured. No wireless interface`)
+          await this.callCIRAConfig(clientId, clientObj, 'Ethernet Configured. WiFi Failed', message)
         }
       }
       // Set the flag that ethernet port settings is updated.
