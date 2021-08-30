@@ -1,7 +1,6 @@
 /*********************************************************************
- * Copyright (c) Intel Corporation 2019
+ * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
- * Author : Ramu Bachala
  **********************************************************************/
 import { ICiraConfigDb } from '../../../interfaces/database/ICiraConfigDb'
 import { CiraConfigDbFactory } from '../../../repositories/factories/CiraConfigDbFactory'
@@ -9,7 +8,6 @@ import { CIRAConfig } from '../../../RCS.Config'
 import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
 import { AMTRandomPasswordLength, API_RESPONSE, API_UNEXPECTED_EXCEPTION, CIRA_CONFIG_NOT_FOUND } from '../../../utils/constants'
-import { validationResult } from 'express-validator'
 import { RPSError } from '../../../utils/RPSError'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { PasswordHelper } from '../../../utils/PasswordHelper'
@@ -20,11 +18,6 @@ export async function editCiraConfig (req, res): Promise<void> {
   const newConfig: CIRAConfig = req.body
   newConfig.tenantId = req.tenantId
   try {
-    const errors = validationResult(req)
-    if (!errors.isEmpty()) {
-      res.status(400).json({ errors: errors.array() })
-      return
-    }
     ciraConfigDb = CiraConfigDbFactory.getCiraConfigDb()
     const oldConfig: CIRAConfig = await ciraConfigDb.getByName(newConfig.configName)
     if (oldConfig == null) {

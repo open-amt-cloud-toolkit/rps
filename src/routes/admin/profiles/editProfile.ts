@@ -1,14 +1,12 @@
 /*********************************************************************
- * Copyright (c) Intel Corporation 2019
+ * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
- * Author : Ramu Bachala
  **********************************************************************/
 import { IProfilesDb } from '../../../interfaces/database/IProfilesDb'
 import { ProfilesDbFactory } from '../../../repositories/factories/ProfilesDbFactory'
 import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, PROFILE_NOT_FOUND } from '../../../utils/constants'
-import { validationResult } from 'express-validator'
 import { AMTConfiguration } from '../../../models/Rcs'
 import { ClientAction, ProfileWifiConfigs } from '../../../RCS.Config'
 import { RPSError } from '../../../utils/RPSError'
@@ -22,12 +20,6 @@ export async function editProfile (req, res): Promise<void> {
   const newConfig = req.body
   newConfig.tenantId = req.tenantId
   try {
-    const errors = validationResult(req)
-    if (!errors.isEmpty()) {
-      MqttProvider.publishEvent('fail', ['editProfile'], `Failed to update profile : ${newConfig.profileName}`)
-      res.status(400).json({ errors: errors.array() })
-      return
-    }
     profilesDb = ProfilesDbFactory.getProfilesDb()
     const profileWifiConfigsDb: IProfileWifiConfigsDb = ProfileWifiConfigsDbFactory.getProfileWifiConfigsDb()
     const oldConfig: AMTConfiguration = await profilesDb.getByName(newConfig.profileName)
