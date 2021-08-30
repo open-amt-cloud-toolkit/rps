@@ -11,8 +11,9 @@ import Logger from '../../../Logger'
 import { RPSError } from '../../../utils/RPSError'
 import { EnvReader } from '../../../utils/EnvReader'
 import { MqttProvider } from '../../../utils/MqttProvider'
+import { Request, Response } from 'express'
 
-export async function editWirelessProfile (req, res): Promise<void> {
+export async function editWirelessProfile (req: Request, res: Response): Promise<void> {
   const log = new Logger('editNetProfile')
   let wirelessDb: IWirelessProfilesDb = null
   try {

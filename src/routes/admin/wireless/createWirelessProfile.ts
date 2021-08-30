@@ -10,8 +10,9 @@ import Logger from '../../../Logger'
 import { RPSError } from '../../../utils/RPSError'
 import { EnvReader } from '../../../utils/EnvReader'
 import { MqttProvider } from '../../../utils/MqttProvider'
+import { Request, Response } from 'express'
 
-export async function createWirelessProfile (req, res): Promise<void> {
+export async function createWirelessProfile (req: Request, res: Response): Promise<void> {
   let profilesDb: IWirelessProfilesDb = null
   const wirelessConfig: WirelessConfig = req.body
   wirelessConfig.tenantId = req.tenantId

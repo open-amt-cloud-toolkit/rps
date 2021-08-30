@@ -1,11 +1,11 @@
 /*********************************************************************
- * Copyright (c) Intel Corporation 2019
+ * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
- * Author : Ramu Bachala
  **********************************************************************/
 // ./routes/index.js
 import adminRouter from './admin/index'
-import { Router } from 'express'
+import { Router, Request, Response } from 'express'
+
 const router: Router = Router()
 
 const tenantMiddleware = (req, res, next): void => {
@@ -15,7 +15,7 @@ const tenantMiddleware = (req, res, next): void => {
 
 router.use('/admin', tenantMiddleware, adminRouter)
 
-router.get('/', (req, res) => {
+router.get('/', (req: Request, res: Response) => {
   res.status(200).json({ message: 'Connected!' })
 })
 

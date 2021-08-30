@@ -9,8 +9,9 @@ import { CIRAConfig } from '../../../RCS.Config'
 import Logger from '../../../Logger'
 import { CIRA_CONFIG_NOT_FOUND, API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../../utils/constants'
 import { MqttProvider } from '../../../utils/MqttProvider'
+import { Request, Response } from 'express'
 
-export async function getCiraConfig (req, res): Promise<void> {
+export async function getCiraConfig (req: Request, res: Response): Promise<void> {
   let ciraConfigDb: ICiraConfigDb = null
   const log = new Logger('getCiraConfig')
   const ciraConfigName: string = req.params.ciraConfigName

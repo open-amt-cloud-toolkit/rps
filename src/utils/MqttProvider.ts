@@ -8,7 +8,7 @@
 
 import * as url from 'url'
 import { RCSConfig, eventType, OpenAMTEvent } from '../models/Rcs'
-import { MqttClient, connect } from 'mqtt'
+import { MqttClient, connect, IClientOptions } from 'mqtt'
 import Logger from '../Logger'
 const log: Logger = new Logger('MqttProvider')
 
@@ -18,7 +18,7 @@ export class MqttProvider {
   mqttUrl: url.URL
   baseUrl: string
   port: number
-  options: any
+  options: IClientOptions
 
   // A global instance of the MqttProvider to be accessed across rps
   static instance: MqttProvider

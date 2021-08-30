@@ -10,12 +10,13 @@ import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants
 import { CIRAConfig } from '../../../RCS.Config'
 import { DataWithCount } from '../../../models/Rcs'
 import { MqttProvider } from '../../../utils/MqttProvider'
+import { Request, Response } from 'express'
 
-export async function allCiraConfigs (req, res): Promise<void> {
+export async function allCiraConfigs (req: Request, res: Response): Promise<void> {
   let ciraConfigDb: ICiraConfigDb = null
   const log = new Logger('allCiraConfigs')
-  const top = req.query.$top
-  const skip = req.query.$skip
+  const top = Number(req.query.$top)
+  const skip = Number(req.query.$skip)
   const includeCount = req.query.$count
   try {
     ciraConfigDb = CiraConfigDbFactory.getCiraConfigDb()

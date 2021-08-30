@@ -9,8 +9,9 @@ import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, NETWORK_CONFIG_NOT_FOUND } from
 import { RPSError } from '../../../utils/RPSError'
 import { EnvReader } from '../../../utils/EnvReader'
 import { MqttProvider } from '../../../utils/MqttProvider'
+import { Request, Response } from 'express'
 
-export async function deleteWirelessProfile (req, res): Promise<void> {
+export async function deleteWirelessProfile (req: Request, res: Response): Promise<void> {
   const log = new Logger('deleteWirelessProfile')
   let wirelessDb: IWirelessProfilesDb = null
   const { profileName } = req.params

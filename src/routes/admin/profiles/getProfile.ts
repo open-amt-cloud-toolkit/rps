@@ -9,8 +9,9 @@ import { ProfilesDbFactory } from '../../../repositories/factories/ProfilesDbFac
 import { PROFILE_NOT_FOUND, API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../../utils/constants'
 import { AMTConfiguration } from '../../../models/Rcs'
 import { MqttProvider } from '../../../utils/MqttProvider'
+import { Request, Response } from 'express'
 
-export async function getProfile (req, res): Promise<void> {
+export async function getProfile (req: Request, res: Response): Promise<void> {
   const log = new Logger('getProfile')
   let profilesDb: IProfilesDb = null
   const { profileName } = req.params
