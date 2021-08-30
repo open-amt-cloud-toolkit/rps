@@ -17,7 +17,7 @@ export async function allProfiles (req, res): Promise<void> {
   let amtConfigs: AMTConfiguration[] = [] as AMTConfiguration[]
   const top = req.query.$top
   const skip = req.query.$skip
-  const count = req.query.$count
+  const includeCount = req.query.$count
   try {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
@@ -27,8 +27,7 @@ export async function allProfiles (req, res): Promise<void> {
     }
     profilesDb = ProfilesDbFactory.getProfilesDb()
     amtConfigs = await profilesDb.get(top, skip)
-    if (count == null || count === 'false' || count === '0') {
-      MqttProvider.publishEvent('success', ['allProfiles'], 'No profiles to get')
+    if (includeCount == null || includeCount === 'false') {
       res.status(200).json(API_RESPONSE(amtConfigs)).end()
     } else {
       const count: number = await profilesDb.getCount()
@@ -36,9 +35,9 @@ export async function allProfiles (req, res): Promise<void> {
         data: amtConfigs,
         totalCount: count
       }
-      MqttProvider.publishEvent('success', ['allProfiles'], 'Sent all profiles')
       res.status(200).json(API_RESPONSE(dataWithCount)).end()
     }
+    MqttProvider.publishEvent('success', ['allProfiles'], 'Sent profiles')
   } catch (error) {
     MqttProvider.publishEvent('fail', ['allProfiles'], 'Failed to get all profiles')
     log.error('Failed to get all the AMT Profiles :', error)
