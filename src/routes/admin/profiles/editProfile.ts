@@ -13,8 +13,9 @@ import { RPSError } from '../../../utils/RPSError'
 import { IProfileWifiConfigsDb } from '../../../interfaces/database/IProfileWifiConfigsDb'
 import { ProfileWifiConfigsDbFactory } from '../../../repositories/factories/ProfileWifiConfigsDbFactory'
 import { MqttProvider } from '../../../utils/MqttProvider'
+import { Request, Response } from 'express'
 
-export async function editProfile (req, res): Promise<void> {
+export async function editProfile (req: Request, res: Response): Promise<void> {
   let profilesDb: IProfilesDb = null
   const log = new Logger('editProfile')
   const newConfig = req.body

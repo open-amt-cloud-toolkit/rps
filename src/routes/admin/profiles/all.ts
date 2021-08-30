@@ -9,13 +9,14 @@ import { IProfilesDb } from '../../../interfaces/database/IProfilesDb'
 import { ProfilesDbFactory } from '../../../repositories/factories/ProfilesDbFactory'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
 import { MqttProvider } from '../../../utils/MqttProvider'
+import { Request, Response } from 'express'
 
-export async function allProfiles (req, res): Promise<void> {
+export async function allProfiles (req: Request, res: Response): Promise<void> {
   const log = new Logger('allProfiles')
   let profilesDb: IProfilesDb = null
   let amtConfigs: AMTConfiguration[] = [] as AMTConfiguration[]
-  const top = req.query.$top
-  const skip = req.query.$skip
+  const top = Number(req.query.$top)
+  const skip = Number(req.query.$skip)
   const includeCount = req.query.$count
   try {
     profilesDb = ProfilesDbFactory.getProfilesDb()

@@ -16,8 +16,9 @@ import {
 } from '../../../utils/constants'
 import { RPSError } from '../../../utils/RPSError'
 import { MqttProvider } from '../../../utils/MqttProvider'
+import { Request, Response } from 'express'
 
-export async function createCiraConfig (req, res): Promise<void> {
+export async function createCiraConfig (req: Request, res: Response): Promise<void> {
   const log = new Logger('createCiraConfig')
   let ciraConfigDb: ICiraConfigDb
   const ciraConfig: CIRAConfig = req.body

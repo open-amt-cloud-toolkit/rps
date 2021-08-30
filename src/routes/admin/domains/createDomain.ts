@@ -10,8 +10,9 @@ import Logger from '../../../Logger'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
 import { RPSError } from '../../../utils/RPSError'
 import { MqttProvider } from '../../../utils/MqttProvider'
+import { Request, Response } from 'express'
 
-export async function createDomain (req, res): Promise<void> {
+export async function createDomain (req: Request, res: Response): Promise<void> {
   let domainsDb: IDomainsDb = null
   const amtDomain: AMTDomain = req.body
   amtDomain.tenantId = req.tenantId

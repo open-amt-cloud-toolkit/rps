@@ -8,12 +8,13 @@ import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants
 import Logger from '../../../Logger'
 import { AMTDomain, DataWithCount } from '../../../models/Rcs'
 import { MqttProvider } from '../../../utils/MqttProvider'
+import { Request, Response } from 'express'
 
-export async function getAllDomains (req, res): Promise<void> {
+export async function getAllDomains (req: Request, res: Response): Promise<void> {
   const log = new Logger('getAllDomains')
   let domainsDb: IDomainsDb
-  const top = req.query.$top
-  const skip = req.query.$skip
+  const top = Number(req.query.$top)
+  const skip = Number(req.query.$skip)
   const includeCount = req.query.$count
   try {
     domainsDb = DomainsDbFactory.getDomainsDb()

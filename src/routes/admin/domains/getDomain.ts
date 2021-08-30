@@ -9,8 +9,9 @@ import { DOMAIN_NOT_FOUND, API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../
 import { AMTDomain } from '../../../models/Rcs'
 import Logger from '../../../Logger'
 import { MqttProvider } from '../../../utils/MqttProvider'
+import { Request, Response } from 'express'
 
-export async function getDomain (req, res): Promise<void> {
+export async function getDomain (req: Request, res: Response): Promise<void> {
   const log = new Logger('getDomain')
   let domainsDb: IDomainsDb = null
   const { domainName } = req.params

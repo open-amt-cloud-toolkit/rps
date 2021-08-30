@@ -11,8 +11,9 @@ import { AMTRandomPasswordLength, API_RESPONSE, API_UNEXPECTED_EXCEPTION, CIRA_C
 import { RPSError } from '../../../utils/RPSError'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { PasswordHelper } from '../../../utils/PasswordHelper'
+import { Request, Response } from 'express'
 
-export async function editCiraConfig (req, res): Promise<void> {
+export async function editCiraConfig (req: Request, res: Response): Promise<void> {
   const log = new Logger('editCiraConfig')
   let ciraConfigDb: ICiraConfigDb = null
   const newConfig: CIRAConfig = req.body

@@ -11,8 +11,9 @@ import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants
 import { RPSError } from '../../../utils/RPSError'
 import { AMTConfiguration } from '../../../models/Rcs'
 import { MqttProvider } from '../../../utils/MqttProvider'
+import { Request, Response } from 'express'
 
-export async function createProfile (req, res): Promise<void> {
+export async function createProfile (req: Request, res: Response): Promise<void> {
   let profilesDb: IProfilesDb = null
   const log = new Logger('createProfile')
   const amtConfig: AMTConfiguration = req.body

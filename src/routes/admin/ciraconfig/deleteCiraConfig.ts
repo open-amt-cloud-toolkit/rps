@@ -9,8 +9,9 @@ import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, CIRA_CONFIG_NOT_FOUND } from '.
 import { EnvReader } from '../../../utils/EnvReader'
 import { RPSError } from '../../../utils/RPSError'
 import { MqttProvider } from '../../../utils/MqttProvider'
+import { Request, Response } from 'express'
 
-export async function deleteCiraConfig (req, res): Promise<void> {
+export async function deleteCiraConfig (req: Request, res: Response): Promise<void> {
   const log = new Logger('deleteCiraConfig')
   let ciraConfigDb: ICiraConfigDb = null
   const ciraConfigName: string = req.params.ciraConfigName

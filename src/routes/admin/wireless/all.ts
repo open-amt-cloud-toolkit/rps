@@ -9,12 +9,13 @@ import { WirelessConfigDbFactory } from '../../../repositories/factories/Wireles
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
 import { DataWithCount } from '../../../models/Rcs'
 import { MqttProvider } from '../../../utils/MqttProvider'
+import { Request, Response } from 'express'
 
-export async function allProfiles (req, res): Promise<void> {
+export async function allProfiles (req: Request, res: Response): Promise<void> {
   const log = new Logger('allProfiles')
   let profilesDb: IWirelessProfilesDb = null
-  const top = req.query.$top
-  const skip = req.query.$skip
+  const top = Number(req.query.$top)
+  const skip = Number(req.query.$skip)
   const includeCount = req.query.$count
   try {
     profilesDb = WirelessConfigDbFactory.getConfigDb()
