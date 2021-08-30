@@ -5682,7 +5682,7 @@
 											"\r",
 											"pm.test(\"Deletion should fail\", function () {\r",
 											"    var result = pm.response.json();\r",
-											"    pm.expect(result.error).to.eql(\"CIRA Config: ciraconfig associated with an AMT profile\")\r",
+											"    pm.expect(result.error).to.eql(\"Foreign key violation\")\r",
 											"});\r",
 											""
 										],
@@ -7245,9 +7245,9 @@
 											"pm.test(\"Status code is 400\", function () {\r",
 											"    pm.response.to.have.status(400);\r",
 											"});\r",
-											"pm.test(\"Creation should succeed\", function () {\r",
+											"pm.test(\"deletion should fail\", function () {\r",
 											"    var result = pm.response.json();\r",
-											"    pm.expect(result.error).to.eql(\"Operation failed for Wireless profile: office. Cannot modify Wireless settings if its already associated with a profile.\")\r",
+											"    pm.expect(result.error).to.eql(\"Foreign key violation\")\r",
 											"});"
 										],
 										"type": "text/javascript"

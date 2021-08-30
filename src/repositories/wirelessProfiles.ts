@@ -94,7 +94,7 @@ export class WirelessConfigDb implements IWirelessProfilesDb {
     FROM profiles_wirelessconfigs 
     WHERE wireless_profile_name = $1 and tenant_id = $2`, [configName, tenantId])
     if (profiles.rowCount > 0) {
-      throw new RPSError(NETWORK_UPDATE_ERROR('Wireless', configName))
+      throw new RPSError(NETWORK_UPDATE_ERROR('Wireless', configName), 'Foreign key violation')
     }
     try {
       const results = await this.db.query(`

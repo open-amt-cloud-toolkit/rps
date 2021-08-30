@@ -34,7 +34,7 @@ export async function deleteCiraConfig (req, res): Promise<void> {
     MqttProvider.publishEvent('fail', ['deleteCiraConfig'], `Failed to delete CIRA config : ${ciraConfigName}`)
     log.error(`Failed to delete CIRA config profile : ${ciraConfigName}`, error)
     if (error instanceof RPSError) {
-      res.status(400).json(API_RESPONSE(null, error.message)).end()
+      res.status(400).json(API_RESPONSE(null, error.name, error.message)).end()
     } else {
       res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`DELETE ${ciraConfigName}`))).end()
     }
