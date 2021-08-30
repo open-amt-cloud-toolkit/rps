@@ -1,17 +1,17 @@
 /*********************************************************************
- * Copyright (c) Intel Corporation 2019
+ * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
- * Author : Ramu Bachala
  **********************************************************************/
-import { ICiraConfigDb } from '../../../repositories/interfaces/ICiraConfigDb'
+import { ICiraConfigDb } from '../../../interfaces/database/ICiraConfigDb'
 import { CiraConfigDbFactory } from '../../../repositories/factories/CiraConfigDbFactory'
 import Logger from '../../../Logger'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, CIRA_CONFIG_NOT_FOUND } from '../../../utils/constants'
 import { EnvReader } from '../../../utils/EnvReader'
 import { RPSError } from '../../../utils/RPSError'
 import { MqttProvider } from '../../../utils/MqttProvider'
+import { Request, Response } from 'express'
 
-export async function deleteCiraConfig (req, res): Promise<void> {
+export async function deleteCiraConfig (req: Request, res: Response): Promise<void> {
   const log = new Logger('deleteCiraConfig')
   let ciraConfigDb: ICiraConfigDb = null
   const ciraConfigName: string = req.params.ciraConfigName

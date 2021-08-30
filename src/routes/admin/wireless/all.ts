@@ -4,26 +4,20 @@
 **********************************************************************/
 import Logger from '../../../Logger'
 import { WirelessConfig } from '../../../RCS.Config'
-import { IWirelessProfilesDb } from '../../../repositories/interfaces/IWirelessProfilesDB'
+import { IWirelessProfilesDb } from '../../../interfaces/database/IWirelessProfilesDB'
 import { WirelessConfigDbFactory } from '../../../repositories/factories/WirelessConfigDbFactory'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
 import { DataWithCount } from '../../../models/Rcs'
-import { validationResult } from 'express-validator'
 import { MqttProvider } from '../../../utils/MqttProvider'
+import { Request, Response } from 'express'
 
-export async function allProfiles (req, res): Promise<void> {
+export async function allProfiles (req: Request, res: Response): Promise<void> {
   const log = new Logger('allProfiles')
   let profilesDb: IWirelessProfilesDb = null
-  const top = req.query.$top
-  const skip = req.query.$skip
+  const top = Number(req.query.$top)
+  const skip = Number(req.query.$skip)
   const includeCount = req.query.$count
   try {
-    const errors = validationResult(req)
-    if (!errors.isEmpty()) {
-      MqttProvider.publishEvent('fail', ['allWirelessProfiles'], 'Failed to get all wireless profiles')
-      res.status(400).json({ errors: errors.array() })
-      return
-    }
     profilesDb = WirelessConfigDbFactory.getConfigDb()
     let wirelessConfigs: WirelessConfig[] = await profilesDb.get(top, skip)
     if (wirelessConfigs.length >= 0) {

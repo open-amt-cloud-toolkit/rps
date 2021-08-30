@@ -4,7 +4,7 @@
  * Author : Brian Osburn
  **********************************************************************/
 
-import { IAMTDeviceRepository } from '../interfaces/IAMTDeviceRepository'
+import { IAMTDeviceRepository } from '../../interfaces/database/IAMTDeviceRepository'
 import { AMTDeviceVaultRepository } from './AMTDeviceVaultRepository'
 import { IConfigurator } from '../../interfaces/IConfigurator'
 import Logger from '../../Logger'

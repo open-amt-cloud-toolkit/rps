@@ -1,19 +1,18 @@
 /*********************************************************************
- * Copyright (c) Intel Corporation 2019
+ * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
- * Author : Ramu Bachala
  **********************************************************************/
-import { validationResult } from 'express-validator'
 import { AMTDomain } from '../../../models/Rcs'
-import { IDomainsDb } from '../../../repositories/interfaces/IDomainsDb'
+import { IDomainsDb } from '../../../interfaces/database/IDomainsDb'
 import { DomainsDbFactory } from '../../../repositories/factories/DomainsDbFactory'
 import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, DOMAIN_NOT_FOUND } from '../../../utils/constants'
 import { RPSError } from '../../../utils/RPSError'
 import { MqttProvider } from '../../../utils/MqttProvider'
+import { Request, Response } from 'express'
 
-export async function editDomain (req, res): Promise<void> {
+export async function editDomain (req: Request, res: Response): Promise<void> {
   let domainsDb: IDomainsDb = null
   let amtDomain: AMTDomain = {} as AMTDomain
   const log = new Logger('editDomain')
@@ -22,12 +21,6 @@ export async function editDomain (req, res): Promise<void> {
   const newDomain = req.body
   newDomain.tenantId = req.tenantId
   try {
-    const errors = validationResult(req)
-    if (!errors.isEmpty()) {
-      MqttProvider.publishEvent('fail', ['editDomain'], `Failed to edit domain : ${newDomain.profileName}`)
-      res.status(400).json({ errors: errors.array() })
-      return
-    }
     domainsDb = DomainsDbFactory.getDomainsDb()
     const oldDomain: AMTDomain = await domainsDb.getByName(newDomain.profileName)
     if (oldDomain == null) {

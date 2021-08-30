@@ -2,8 +2,7 @@
  * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
-import { validationResult } from 'express-validator'
-import { IWirelessProfilesDb } from '../../../repositories/interfaces/IWirelessProfilesDB'
+import { IWirelessProfilesDb } from '../../../interfaces/database/IWirelessProfilesDB'
 import { WirelessConfigDbFactory } from '../../../repositories/factories/WirelessConfigDbFactory'
 import { API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../../utils/constants'
 import { WirelessConfig } from '../../../RCS.Config'
@@ -11,19 +10,14 @@ import Logger from '../../../Logger'
 import { RPSError } from '../../../utils/RPSError'
 import { EnvReader } from '../../../utils/EnvReader'
 import { MqttProvider } from '../../../utils/MqttProvider'
+import { Request, Response } from 'express'
 
-export async function createWirelessProfile (req, res): Promise<void> {
+export async function createWirelessProfile (req: Request, res: Response): Promise<void> {
   let profilesDb: IWirelessProfilesDb = null
   const wirelessConfig: WirelessConfig = req.body
   wirelessConfig.tenantId = req.tenantId
   const log = new Logger('createWirelessProfile')
   try {
-    const errors = validationResult(req)
-    if (!errors.isEmpty()) {
-      MqttProvider.publishEvent('fail', ['createWirelessProfiles'], `Failed to create wireless profile : ${wirelessConfig.profileName}`)
-      res.status(400).json({ errors: errors.array() })
-      return
-    }
     const passphrase = wirelessConfig.pskPassphrase
     if (req.secretsManager) {
       wirelessConfig.pskPassphrase = 'pskPassphrase'

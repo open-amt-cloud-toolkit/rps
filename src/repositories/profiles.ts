@@ -2,8 +2,8 @@
  * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
-import { IDbCreator } from './interfaces/IDbCreator'
-import { IProfilesDb } from './interfaces/IProfilesDb'
+import { IDbCreator } from '../interfaces/database/IDbCreator'
+import { IProfilesDb } from '../interfaces/database/IProfilesDb'
 import { CIRAConfig } from '../RCS.Config'
 import { mapToProfile } from './mapToProfile'
 import { AMTConfiguration } from '../models/Rcs'

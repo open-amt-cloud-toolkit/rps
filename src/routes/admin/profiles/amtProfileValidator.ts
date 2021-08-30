@@ -5,7 +5,7 @@
  **********************************************************************/
 import { check } from 'express-validator'
 import { WirelessConfigDbFactory } from '../../../repositories/factories/WirelessConfigDbFactory'
-import { IWirelessProfilesDb } from '../../../repositories/interfaces/IWirelessProfilesDB'
+import { IWirelessProfilesDb } from '../../../interfaces/database/IWirelessProfilesDB'
 import { ClientAction, ProfileWifiConfigs } from '../../../RCS.Config'
 
 export const amtProfileValidator = (): any => {

@@ -3,8 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  * Author : Ramu Bachala
  **********************************************************************/
-import { validationResult } from 'express-validator'
-import { IProfilesDb } from '../../../repositories/interfaces/IProfilesDb'
+import { IProfilesDb } from '../../../interfaces/database/IProfilesDb'
 import { ProfilesDbFactory } from '../../../repositories/factories/ProfilesDbFactory'
 import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
@@ -12,19 +11,14 @@ import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants
 import { RPSError } from '../../../utils/RPSError'
 import { AMTConfiguration } from '../../../models/Rcs'
 import { MqttProvider } from '../../../utils/MqttProvider'
+import { Request, Response } from 'express'
 
-export async function createProfile (req, res): Promise<void> {
+export async function createProfile (req: Request, res: Response): Promise<void> {
   let profilesDb: IProfilesDb = null
   const log = new Logger('createProfile')
   const amtConfig: AMTConfiguration = req.body
   amtConfig.tenantId = req.tenantId
   try {
-    const errors = validationResult(req)
-    if (!errors.isEmpty()) {
-      MqttProvider.publishEvent('fail', ['createProfile'], `Failed to create profile : ${amtConfig.profileName}`)
-      res.status(400).json({ errors: errors.array() })
-      return
-    }
     profilesDb = ProfilesDbFactory.getProfilesDb()
     const pwdBefore = amtConfig.amtPassword
     const mebxPwdBefore = amtConfig.mebxPassword

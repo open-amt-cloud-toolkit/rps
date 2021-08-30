@@ -3,8 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  * Author : Ramu Bachala
  **********************************************************************/
-import { validationResult } from 'express-validator'
-import { ICiraConfigDb } from '../../../repositories/interfaces/ICiraConfigDb'
+import { ICiraConfigDb } from '../../../interfaces/database/ICiraConfigDb'
 import { CiraConfigDbFactory } from '../../../repositories/factories/CiraConfigDbFactory'
 import { CIRAConfig } from '../../../RCS.Config'
 import { EnvReader } from '../../../utils/EnvReader'
@@ -17,20 +16,15 @@ import {
 } from '../../../utils/constants'
 import { RPSError } from '../../../utils/RPSError'
 import { MqttProvider } from '../../../utils/MqttProvider'
+import { Request, Response } from 'express'
 
-export async function createCiraConfig (req, res): Promise<void> {
+export async function createCiraConfig (req: Request, res: Response): Promise<void> {
   const log = new Logger('createCiraConfig')
   let ciraConfigDb: ICiraConfigDb
   const ciraConfig: CIRAConfig = req.body
   ciraConfig.tenantId = req.tenantId
 
   try {
-    const errors = validationResult(req)
-    if (!errors.isEmpty()) {
-      MqttProvider.publishEvent('fail', ['createCiraConfig'], `Failed to create CIRA config ${ciraConfig.configName}`)
-      res.status(400).json({ errors: errors.array() })
-      return
-    }
     ciraConfigDb = CiraConfigDbFactory.getCiraConfigDb()
     const mpsPwd = ciraConfig.password ?? PasswordHelper.generateRandomPassword(AMTRandomPasswordLength)
     if (req.secretsManager) {

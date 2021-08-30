@@ -8,7 +8,7 @@
 import { IDomainCredentialManager } from './IDomainCredentialManager'
 import { IProfileManager } from './IProfileManager'
 import { ISecretManagerService } from './ISecretManagerService'
-import { IAMTDeviceRepository } from '../repositories/interfaces/IAMTDeviceRepository'
+import { IAMTDeviceRepository } from './database/IAMTDeviceRepository'
 import { IClientManager } from './IClientManager'
 import { IDataProcessor } from './IDataProcessor'
 

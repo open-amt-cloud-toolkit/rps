@@ -11,7 +11,7 @@ import { IProfileManager } from './interfaces/IProfileManager'
 import { PasswordHelper } from './utils/PasswordHelper'
 import { CIRAConfig } from './RCS.Config'
 import { IConfigurator } from './interfaces/IConfigurator'
-import { IProfilesDb } from './repositories/interfaces/IProfilesDb'
+import { IProfilesDb } from './interfaces/database/IProfilesDb'
 import { EnvReader } from './utils/EnvReader'
 import { AMTRandomPasswordLength } from './utils/constants'
 

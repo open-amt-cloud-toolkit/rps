@@ -4,8 +4,8 @@
  * Author : Ramu Bachala
  **********************************************************************/
 import { DbCreatorFactory } from './DbCreatorFactory'
-import { IDbCreator } from '../interfaces/IDbCreator'
-import { ICiraConfigDb } from '../interfaces/ICiraConfigDb'
+import { IDbCreator } from '../../interfaces/database/IDbCreator'
+import { ICiraConfigDb } from '../../interfaces/database/ICiraConfigDb'
 import { CiraConfigDb } from '../ciraConfigs'
 import { EnvReader } from '../../utils/EnvReader'
 

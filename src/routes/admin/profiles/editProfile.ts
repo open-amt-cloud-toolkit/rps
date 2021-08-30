@@ -1,33 +1,26 @@
 /*********************************************************************
- * Copyright (c) Intel Corporation 2019
+ * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
- * Author : Ramu Bachala
  **********************************************************************/
-import { IProfilesDb } from '../../../repositories/interfaces/IProfilesDb'
+import { IProfilesDb } from '../../../interfaces/database/IProfilesDb'
 import { ProfilesDbFactory } from '../../../repositories/factories/ProfilesDbFactory'
 import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, PROFILE_NOT_FOUND } from '../../../utils/constants'
-import { validationResult } from 'express-validator'
 import { AMTConfiguration } from '../../../models/Rcs'
 import { ClientAction, ProfileWifiConfigs } from '../../../RCS.Config'
 import { RPSError } from '../../../utils/RPSError'
-import { IProfileWifiConfigsDb } from '../../../repositories/interfaces/IProfileWifiConfigsDb'
+import { IProfileWifiConfigsDb } from '../../../interfaces/database/IProfileWifiConfigsDb'
 import { ProfileWifiConfigsDbFactory } from '../../../repositories/factories/ProfileWifiConfigsDbFactory'
 import { MqttProvider } from '../../../utils/MqttProvider'
+import { Request, Response } from 'express'
 
-export async function editProfile (req, res): Promise<void> {
+export async function editProfile (req: Request, res: Response): Promise<void> {
   let profilesDb: IProfilesDb = null
   const log = new Logger('editProfile')
   const newConfig = req.body
   newConfig.tenantId = req.tenantId
   try {
-    const errors = validationResult(req)
-    if (!errors.isEmpty()) {
-      MqttProvider.publishEvent('fail', ['editProfile'], `Failed to update profile : ${newConfig.profileName}`)
-      res.status(400).json({ errors: errors.array() })
-      return
-    }
     profilesDb = ProfilesDbFactory.getProfilesDb()
     const profileWifiConfigsDb: IProfileWifiConfigsDb = ProfileWifiConfigsDbFactory.getProfileWifiConfigsDb()
     const oldConfig: AMTConfiguration = await profilesDb.getByName(newConfig.profileName)

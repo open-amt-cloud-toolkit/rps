@@ -7,7 +7,7 @@ import { AMTConfiguration, RCSConfig } from '../models/Rcs'
 import { ProfileManager } from '../ProfileManager'
 import { ILogger } from '../interfaces/ILogger'
 import Logger from '../Logger'
-import { IProfilesDb } from '../repositories/interfaces/IProfilesDb'
+import { IProfilesDb } from '../interfaces/database/IProfilesDb'
 import { CIRAConfig } from '../RCS.Config'
 
 const logger: ILogger = new Logger('ProfileManagerTests')

@@ -1,14 +1,12 @@
 /*********************************************************************
- * Copyright (c) Intel Corporation 2019
+ * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
  * Description: check protocol version of received messages
- * Author : Brian Osburn
  **********************************************************************/
 
 import { RPSError } from './utils/RPSError'
 import { ProtocolVersion } from './utils/constants'
 import { Version } from './models/Rcs'
-// TODO: REMOVE THIS
 const VersionChecker = {
   currentVersion: null as Version,
   setCurrentVersion (currentVersion: string): void {

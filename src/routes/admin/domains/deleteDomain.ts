@@ -3,15 +3,16 @@
  * SPDX-License-Identifier: Apache-2.0
  * Author : Ramu Bachala
  **********************************************************************/
-import { IDomainsDb } from '../../../repositories/interfaces/IDomainsDb'
+import { IDomainsDb } from '../../../interfaces/database/IDomainsDb'
 import { DomainsDbFactory } from '../../../repositories/factories/DomainsDbFactory'
 import { DOMAIN_NOT_FOUND, API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../../utils/constants'
 import { EnvReader } from '../../../utils/EnvReader'
 import { AMTDomain } from '../../../models/Rcs'
 import Logger from '../../../Logger'
 import { MqttProvider } from '../../../utils/MqttProvider'
+import { Request, Response } from 'express'
 
-export async function deleteDomain (req, res): Promise<void> {
+export async function deleteDomain (req: Request, res: Response): Promise<void> {
   const log = new Logger('deleteDomain')
   let domainsDb: IDomainsDb = null
   const { domainName } = req.params

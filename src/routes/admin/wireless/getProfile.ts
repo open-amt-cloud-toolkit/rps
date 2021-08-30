@@ -3,12 +3,13 @@
 * SPDX-License-Identifier: Apache-2.0
 **********************************************************************/
 import Logger from '../../../Logger'
-import { IWirelessProfilesDb } from '../../../repositories/interfaces/IWirelessProfilesDB'
+import { Request, Response } from 'express'
+import { IWirelessProfilesDb } from '../../../interfaces/database/IWirelessProfilesDB'
 import { WirelessConfigDbFactory } from '../../../repositories/factories/WirelessConfigDbFactory'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, NETWORK_CONFIG_NOT_FOUND } from '../../../utils/constants'
 import { MqttProvider } from '../../../utils/MqttProvider'
 
-export async function getWirelessProfile (req, res): Promise<void> {
+export async function getWirelessProfile (req: Request, res: Response): Promise<void> {
   const log = new Logger('getWirelessProfile')
   let profilesDb: IWirelessProfilesDb = null
   const { profileName } = req.params
