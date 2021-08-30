@@ -8,7 +8,6 @@ import { WirelessConfigDbFactory } from '../../../repositories/factories/Wireles
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, NETWORK_CONFIG_NOT_FOUND } from '../../../utils/constants'
 import { WirelessConfig } from '../../../RCS.Config'
 import Logger from '../../../Logger'
-import { validationResult } from 'express-validator'
 import { RPSError } from '../../../utils/RPSError'
 import { EnvReader } from '../../../utils/EnvReader'
 import { MqttProvider } from '../../../utils/MqttProvider'
@@ -17,12 +16,6 @@ export async function editWirelessProfile (req, res): Promise<void> {
   const log = new Logger('editNetProfile')
   let wirelessDb: IWirelessProfilesDb = null
   try {
-    const errors = validationResult(req)
-    if (!errors.isEmpty()) {
-      MqttProvider.publishEvent('fail', ['editWirelessProfiles'], `Failed to update wireless profile : ${req.body.profileName}`)
-      res.status(400).json({ errors: errors.array() })
-      return
-    }
     wirelessDb = WirelessConfigDbFactory.getConfigDb()
     let config: WirelessConfig = await wirelessDb.getByName(req.body.profileName)
     if (config == null) {

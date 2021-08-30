@@ -9,7 +9,6 @@ import Logger from '../../../Logger'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
 import { CIRAConfig } from '../../../RCS.Config'
 import { DataWithCount } from '../../../models/Rcs'
-import { validationResult } from 'express-validator'
 import { MqttProvider } from '../../../utils/MqttProvider'
 
 export async function allCiraConfigs (req, res): Promise<void> {
@@ -19,12 +18,6 @@ export async function allCiraConfigs (req, res): Promise<void> {
   const skip = req.query.$skip
   const includeCount = req.query.$count
   try {
-    const errors = validationResult(req)
-    if (!errors.isEmpty()) {
-      MqttProvider.publishEvent('fail', ['allCiraConfigs'], 'Failed to get all the CIRA config profiles')
-      res.status(400).json({ errors: errors.array() })
-      return
-    }
     ciraConfigDb = CiraConfigDbFactory.getCiraConfigDb()
     let ciraConfigs: CIRAConfig[] = await ciraConfigDb.get(top, skip) || [] as CIRAConfig[]
     if (ciraConfigs.length >= 0) {

@@ -1,9 +1,7 @@
 /*********************************************************************
- * Copyright (c) Intel Corporation 2019
+ * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
- * Author : Ramu Bachala
  **********************************************************************/
-import { validationResult } from 'express-validator'
 import { AMTDomain } from '../../../models/Rcs'
 import { IDomainsDb } from '../../../interfaces/database/IDomainsDb'
 import { DomainsDbFactory } from '../../../repositories/factories/DomainsDbFactory'
@@ -21,13 +19,6 @@ export async function createDomain (req, res): Promise<void> {
   let cert: any
   let domainPwd: string
   try {
-    const errors = validationResult(req)
-    if (!errors.isEmpty()) {
-      // TODO: add name
-      MqttProvider.publishEvent('fail', ['createDomain'], `Failed to create Domain ${amtDomain.profileName}`)
-      res.status(400).json({ errors: errors.array() })
-      return
-    }
     domainsDb = DomainsDbFactory.getDomainsDb()
 
     // store the cert and password key in database
@@ -49,7 +40,7 @@ export async function createDomain (req, res): Promise<void> {
           }
         }
         await req.secretsManager.writeSecretWithObject(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/${amtDomain.profileName}`, data)
-        log.debug(`${amtDomain.profileName} provisioing cert & password stored in Vault`)
+        log.debug(`${amtDomain.profileName} provisioning cert & password stored in Vault`)
       }
       log.verbose(`Created Domain : ${amtDomain.profileName}`)
       delete results.provisioningCert

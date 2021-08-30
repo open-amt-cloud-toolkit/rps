@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  * Author : Ramu Bachala
  **********************************************************************/
-import { validationResult } from 'express-validator'
 import { IProfilesDb } from '../../../interfaces/database/IProfilesDb'
 import { ProfilesDbFactory } from '../../../repositories/factories/ProfilesDbFactory'
 import { EnvReader } from '../../../utils/EnvReader'
@@ -19,12 +18,6 @@ export async function createProfile (req, res): Promise<void> {
   const amtConfig: AMTConfiguration = req.body
   amtConfig.tenantId = req.tenantId
   try {
-    const errors = validationResult(req)
-    if (!errors.isEmpty()) {
-      MqttProvider.publishEvent('fail', ['createProfile'], `Failed to create profile : ${amtConfig.profileName}`)
-      res.status(400).json({ errors: errors.array() })
-      return
-    }
     profilesDb = ProfilesDbFactory.getProfilesDb()
     const pwdBefore = amtConfig.amtPassword
     const mebxPwdBefore = amtConfig.mebxPassword

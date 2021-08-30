@@ -1,14 +1,12 @@
 /*********************************************************************
- * Copyright (c) Intel Corporation 2019
+ * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
- * Author : Ramu Bachala
  **********************************************************************/
 import { IDomainsDb } from '../../../interfaces/database/IDomainsDb'
 import { DomainsDbFactory } from '../../../repositories/factories/DomainsDbFactory'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
 import Logger from '../../../Logger'
 import { AMTDomain, DataWithCount } from '../../../models/Rcs'
-import { validationResult } from 'express-validator'
 import { MqttProvider } from '../../../utils/MqttProvider'
 
 export async function getAllDomains (req, res): Promise<void> {
@@ -18,12 +16,6 @@ export async function getAllDomains (req, res): Promise<void> {
   const skip = req.query.$skip
   const includeCount = req.query.$count
   try {
-    const errors = validationResult(req)
-    if (!errors.isEmpty()) {
-      MqttProvider.publishEvent('fail', ['getAllDomains'], 'Failed to get all domains')
-      res.status(400).json({ errors: errors.array() })
-      return
-    }
     domainsDb = DomainsDbFactory.getDomainsDb()
     let domains: AMTDomain[] = await domainsDb.get(top, skip)
     if (domains.length >= 0) {

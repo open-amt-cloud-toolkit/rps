@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  * Author : Ramu Bachala
  **********************************************************************/
-import { validationResult } from 'express-validator'
 import { ICiraConfigDb } from '../../../interfaces/database/ICiraConfigDb'
 import { CiraConfigDbFactory } from '../../../repositories/factories/CiraConfigDbFactory'
 import { CIRAConfig } from '../../../RCS.Config'
@@ -25,12 +24,6 @@ export async function createCiraConfig (req, res): Promise<void> {
   ciraConfig.tenantId = req.tenantId
 
   try {
-    const errors = validationResult(req)
-    if (!errors.isEmpty()) {
-      MqttProvider.publishEvent('fail', ['createCiraConfig'], `Failed to create CIRA config ${ciraConfig.configName}`)
-      res.status(400).json({ errors: errors.array() })
-      return
-    }
     ciraConfigDb = CiraConfigDbFactory.getCiraConfigDb()
     const mpsPwd = ciraConfig.password ?? PasswordHelper.generateRandomPassword(AMTRandomPasswordLength)
     if (req.secretsManager) {
