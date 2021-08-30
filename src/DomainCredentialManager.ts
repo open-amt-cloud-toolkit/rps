@@ -8,7 +8,7 @@
 import { IDomainCredentialManager } from './interfaces/IDomainCredentialManager'
 import { ILogger } from './interfaces/ILogger'
 import { IConfigurator } from './interfaces/IConfigurator'
-import { IDomainsDb } from './repositories/interfaces/IDomainsDb'
+import { IDomainsDb } from './interfaces/database/IDomainsDb'
 import { EnvReader } from './utils/EnvReader'
 import { AMTDomain } from './models/Rcs'
 

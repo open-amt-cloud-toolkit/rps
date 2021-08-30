@@ -4,7 +4,7 @@
 **********************************************************************/
 import Logger from '../../../Logger'
 import { WirelessConfig } from '../../../RCS.Config'
-import { IWirelessProfilesDb } from '../../../repositories/interfaces/IWirelessProfilesDB'
+import { IWirelessProfilesDb } from '../../../interfaces/database/IWirelessProfilesDB'
 import { WirelessConfigDbFactory } from '../../../repositories/factories/WirelessConfigDbFactory'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
 import { DataWithCount } from '../../../models/Rcs'

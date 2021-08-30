@@ -2,8 +2,8 @@
  * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
-import { IDbCreator } from './interfaces/IDbCreator'
-import { IProfileWifiConfigsDb } from './interfaces/IProfileWifiConfigsDb'
+import { IDbCreator } from '../interfaces/database/IDbCreator'
+import { IProfileWifiConfigsDb } from '../interfaces/database/IProfileWifiConfigsDb'
 import { ProfileWifiConfigs } from '../RCS.Config'
 import { mapToProfileWifiConfigs } from './mapToProfileWifiConfigs'
 import { API_UNEXPECTED_EXCEPTION } from '../utils/constants'

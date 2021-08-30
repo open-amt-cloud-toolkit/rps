@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 import { DbCreatorFactory } from './DbCreatorFactory'
-import { IDbCreator } from '.././interfaces/IDbCreator'
+import { IDbCreator } from '../../interfaces/database/IDbCreator'
 import { EnvReader } from '../../utils/EnvReader'
-import { IProfileWifiConfigsDb } from '../interfaces/IProfileWifiConfigsDb'
+import { IProfileWifiConfigsDb } from '../../interfaces/database/IProfileWifiConfigsDb'
 import { ProfilesWifiConfigsDb } from '../profileWifiConfigs'
 
 export interface IProfileWifiConfigsDbFactory {

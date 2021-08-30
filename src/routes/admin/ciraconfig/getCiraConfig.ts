@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  * Author : Ramu Bachala
  **********************************************************************/
-import { ICiraConfigDb } from '../../../repositories/interfaces/ICiraConfigDb'
+import { ICiraConfigDb } from '../../../interfaces/database/ICiraConfigDb'
 import { CiraConfigDbFactory } from '../../../repositories/factories/CiraConfigDbFactory'
 import { CIRAConfig } from '../../../RCS.Config'
 import Logger from '../../../Logger'

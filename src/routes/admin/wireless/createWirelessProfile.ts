@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 import { validationResult } from 'express-validator'
-import { IWirelessProfilesDb } from '../../../repositories/interfaces/IWirelessProfilesDB'
+import { IWirelessProfilesDb } from '../../../interfaces/database/IWirelessProfilesDB'
 import { WirelessConfigDbFactory } from '../../../repositories/factories/WirelessConfigDbFactory'
 import { API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../../utils/constants'
 import { WirelessConfig } from '../../../RCS.Config'

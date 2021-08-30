@@ -2,8 +2,8 @@
  * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
-import { IDbCreator } from './interfaces/IDbCreator'
-import { ICiraConfigDb } from './interfaces/ICiraConfigDb'
+import { IDbCreator } from '../interfaces/database/IDbCreator'
+import { ICiraConfigDb } from '../interfaces/database/ICiraConfigDb'
 import { CIRAConfig } from '../RCS.Config'
 import { mapToCiraConfig } from './mapToCiraConfig'
 import { CIRA_CONFIG_DELETION_FAILED_CONSTRAINT, API_UNEXPECTED_EXCEPTION, CIRA_CONFIG_INSERTION_FAILED_DUPLICATE, DEFAULT_TOP, DEFAULT_SKIP } from '../utils/constants'

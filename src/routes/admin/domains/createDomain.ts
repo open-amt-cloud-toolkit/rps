@@ -5,7 +5,7 @@
  **********************************************************************/
 import { validationResult } from 'express-validator'
 import { AMTDomain } from '../../../models/Rcs'
-import { IDomainsDb } from '../../../repositories/interfaces/IDomainsDb'
+import { IDomainsDb } from '../../../interfaces/database/IDomainsDb'
 import { DomainsDbFactory } from '../../../repositories/factories/DomainsDbFactory'
 import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'

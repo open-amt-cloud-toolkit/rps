@@ -2,9 +2,9 @@
  * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
-import { IDbCreator } from './interfaces/IDbCreator'
+import { IDbCreator } from '../interfaces/database/IDbCreator'
 import { WirelessConfig } from '../RCS.Config'
-import { IWirelessProfilesDb } from './interfaces/IWirelessProfilesDB'
+import { IWirelessProfilesDb } from '../interfaces/database/IWirelessProfilesDB'
 import { API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP, NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT, NETWORK_CONFIG_ERROR, NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE, NETWORK_UPDATE_ERROR } from '../utils/constants'
 import { mapToWirelessProfile } from './maptoWirelessProfile'
 import { RPSError } from '../utils/RPSError'

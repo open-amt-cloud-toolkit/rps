@@ -9,7 +9,7 @@ import { ILogger } from '../interfaces/ILogger'
 import Logger from '../Logger'
 import { AMTDomain } from '../models/Rcs'
 import { DomainsDb } from '../repositories/domains'
-import { IDbCreator } from '../repositories/interfaces/IDbCreator'
+import { IDbCreator } from '../interfaces/database/IDbCreator'
 
 const logger: ILogger = new Logger('DomainCredentialManagerTests')
 describe('Domain Credential Manager Tests', () => {
