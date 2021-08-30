@@ -4,9 +4,9 @@
  * Author : Ramu Bachala
  **********************************************************************/
 import { DbCreatorFactory } from './DbCreatorFactory'
-import { IDbCreator } from '../interfaces/IDbCreator'
+import { IDbCreator } from '../../interfaces/database/IDbCreator'
 import { EnvReader } from '../../utils/EnvReader'
-import { IDomainsDb } from '../interfaces/IDomainsDb'
+import { IDomainsDb } from '../../interfaces/database/IDomainsDb'
 import { DomainsDb } from '../domains'
 
 export interface IDomainsDbFactory {

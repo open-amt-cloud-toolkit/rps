@@ -4,7 +4,7 @@
  * Author : Ramu Bachala
  **********************************************************************/
 import { validationResult } from 'express-validator'
-import { ICiraConfigDb } from '../../../repositories/interfaces/ICiraConfigDb'
+import { ICiraConfigDb } from '../../../interfaces/database/ICiraConfigDb'
 import { CiraConfigDbFactory } from '../../../repositories/factories/CiraConfigDbFactory'
 import { CIRAConfig } from '../../../RCS.Config'
 import { EnvReader } from '../../../utils/EnvReader'

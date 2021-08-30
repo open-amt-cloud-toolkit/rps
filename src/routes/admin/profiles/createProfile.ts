@@ -4,7 +4,7 @@
  * Author : Ramu Bachala
  **********************************************************************/
 import { validationResult } from 'express-validator'
-import { IProfilesDb } from '../../../repositories/interfaces/IProfilesDb'
+import { IProfilesDb } from '../../../interfaces/database/IProfilesDb'
 import { ProfilesDbFactory } from '../../../repositories/factories/ProfilesDbFactory'
 import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'

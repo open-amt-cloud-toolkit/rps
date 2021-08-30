@@ -4,8 +4,8 @@
  * Author : Ramu Bachala
  **********************************************************************/
 import { DbCreatorFactory } from './DbCreatorFactory'
-import { IDbCreator } from '../interfaces/IDbCreator'
-import { IProfilesDb } from '../interfaces/IProfilesDb'
+import { IDbCreator } from '../../interfaces/database/IDbCreator'
+import { IProfilesDb } from '../../interfaces/database/IProfilesDb'
 import { ProfilesDb } from '../profiles'
 import { EnvReader } from '../../utils/EnvReader'
 

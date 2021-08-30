@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  * Author : Ramu Bachala
  **********************************************************************/
-import { IProfilesDb } from '../../../repositories/interfaces/IProfilesDb'
+import { IProfilesDb } from '../../../interfaces/database/IProfilesDb'
 import { ProfilesDbFactory } from '../../../repositories/factories/ProfilesDbFactory'
 import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
@@ -12,7 +12,7 @@ import { validationResult } from 'express-validator'
 import { AMTConfiguration } from '../../../models/Rcs'
 import { ClientAction, ProfileWifiConfigs } from '../../../RCS.Config'
 import { RPSError } from '../../../utils/RPSError'
-import { IProfileWifiConfigsDb } from '../../../repositories/interfaces/IProfileWifiConfigsDb'
+import { IProfileWifiConfigsDb } from '../../../interfaces/database/IProfileWifiConfigsDb'
 import { ProfileWifiConfigsDbFactory } from '../../../repositories/factories/ProfileWifiConfigsDbFactory'
 import { MqttProvider } from '../../../utils/MqttProvider'
 

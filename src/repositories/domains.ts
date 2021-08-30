@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  * Author : Ramu Bachala
  **********************************************************************/
-import { IDbCreator } from './interfaces/IDbCreator'
-import { IDomainsDb } from './interfaces/IDomainsDb'
+import { IDbCreator } from '../interfaces/database//IDbCreator'
+import { IDomainsDb } from '../interfaces/database//IDomainsDb'
 import { mapToDomain } from './mapToDomain'
 import { DUPLICATE_DOMAIN_FAILED, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP } from '../utils/constants'
 import { AMTDomain } from '../models/Rcs'

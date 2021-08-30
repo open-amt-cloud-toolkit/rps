@@ -7,7 +7,7 @@
 
 import { ILogger } from '../../interfaces/ILogger'
 import { AMTDeviceDTO } from '.././dto/AmtDeviceDTO'
-import { IAMTDeviceRepository } from '../interfaces/IAMTDeviceRepository'
+import { IAMTDeviceRepository } from '../../interfaces/database/IAMTDeviceRepository'
 import { IConfigurator } from '../../interfaces/IConfigurator'
 import { EnvReader } from '../../utils/EnvReader'
 import { RPSError } from '../../utils/RPSError'

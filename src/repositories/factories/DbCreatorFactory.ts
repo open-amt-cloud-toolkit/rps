@@ -1,4 +1,4 @@
-import { IDbCreator } from '../interfaces/IDbCreator'
+import { IDbCreator } from '../../interfaces/database/IDbCreator'
 import { RCSConfig } from '../../models/Rcs'
 import { PostgresDbCreator } from './PostgresDbCreator'
 export class DbCreatorFactory {

@@ -4,7 +4,7 @@
  * Author : Ramu Bachala
  **********************************************************************/
 import Logger from '../../../Logger'
-import { IProfilesDb } from '../../../repositories/interfaces/IProfilesDb'
+import { IProfilesDb } from '../../../interfaces/database/IProfilesDb'
 import { ProfilesDbFactory } from '../../../repositories/factories/ProfilesDbFactory'
 import { PROFILE_NOT_FOUND, API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../../utils/constants'
 import { AMTConfiguration } from '../../../models/Rcs'

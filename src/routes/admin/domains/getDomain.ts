@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  * Author : Ramu Bachala
  **********************************************************************/
-import { IDomainsDb } from '../../../repositories/interfaces/IDomainsDb'
+import { IDomainsDb } from '../../../interfaces/database/IDomainsDb'
 import { DomainsDbFactory } from '../../../repositories/factories/DomainsDbFactory'
 import { DOMAIN_NOT_FOUND, API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../../utils/constants'
 import { AMTDomain } from '../../../models/Rcs'

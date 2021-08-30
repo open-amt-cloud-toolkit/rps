@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  * Author : Ramu Bachala
  **********************************************************************/
-import { IDbCreator } from '../interfaces/IDbCreator'
+import { IDbCreator } from '../../interfaces/database/IDbCreator'
 import { PostgresDb } from '../../db'
 import { RCSConfig } from '../../models/Rcs'
 export class PostgresDbCreator implements IDbCreator {
