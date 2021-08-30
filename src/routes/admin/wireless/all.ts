@@ -16,7 +16,7 @@ export async function allProfiles (req, res): Promise<void> {
   let profilesDb: IWirelessProfilesDb = null
   const top = req.query.$top
   const skip = req.query.$skip
-  const count = req.query.$count
+  const includeCount = req.query.$count
   try {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
@@ -32,8 +32,7 @@ export async function allProfiles (req, res): Promise<void> {
         return result
       })
     }
-    if (count == null || count === 'false' || count === '0') {
-      MqttProvider.publishEvent('success', ['allWirelessProfiles'], 'No wireless profiles to get')
+    if (includeCount == null || includeCount === 'false') {
       res.status(200).json(API_RESPONSE(wirelessConfigs)).end()
     } else {
       const count: number = await profilesDb.getCount()
@@ -41,9 +40,9 @@ export async function allProfiles (req, res): Promise<void> {
         data: wirelessConfigs,
         totalCount: count
       }
-      MqttProvider.publishEvent('success', ['allWirelessProfiles'], 'Sent all wireless profiles')
       res.status(200).json(API_RESPONSE(dataWithCount)).end()
     }
+    MqttProvider.publishEvent('success', ['allWirelessProfiles'], 'Sent wireless profiles')
   } catch (error) {
     MqttProvider.publishEvent('fail', ['allWirelessProfiles'], 'Failed to get all wireless profiles')
     log.error('Failed to get all network profiles :', error)

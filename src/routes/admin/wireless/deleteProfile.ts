@@ -32,7 +32,7 @@ export async function deleteWirelessProfile (req, res): Promise<void> {
     MqttProvider.publishEvent('fail', ['deleteWirelessProfiles'], `Failed to delete wireless profile : ${profileName}`)
     log.error(`Failed to delete wireless profile : ${profileName}`, error)
     if (error instanceof RPSError) {
-      res.status(400).json(API_RESPONSE(null, error.message)).end()
+      res.status(400).json(API_RESPONSE(null, error.name, error.message)).end()
     } else {
       res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`Delete wireless profile ${profileName}`))).end()
     }

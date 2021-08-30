@@ -16,7 +16,7 @@ export async function getAllDomains (req, res): Promise<void> {
   let domainsDb: IDomainsDb
   const top = req.query.$top
   const skip = req.query.$skip
-  const count = req.query.$count
+  const includeCount = req.query.$count
   try {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
@@ -33,8 +33,7 @@ export async function getAllDomains (req, res): Promise<void> {
         return result
       })
     }
-    if (count == null || count === 'false' || count === '0') {
-      MqttProvider.publishEvent('success', ['getAllDomains'], 'No domains to get')
+    if (includeCount == null || includeCount === 'false') {
       res.status(200).json(API_RESPONSE(domains)).end()
     } else {
       const count: number = await domainsDb.getCount()
@@ -42,9 +41,9 @@ export async function getAllDomains (req, res): Promise<void> {
         data: domains,
         totalCount: count
       }
-      MqttProvider.publishEvent('success', ['getAllDomains'], 'Sent all domains')
       res.status(200).json(API_RESPONSE(dataWithCount)).end()
     }
+    MqttProvider.publishEvent('success', ['getAllDomains'], 'Sent domains')
   } catch (error) {
     MqttProvider.publishEvent('fail', ['getAllDomains'], 'Failed to get all domains')
     log.error('Failed to get all the AMT Domains :', error)

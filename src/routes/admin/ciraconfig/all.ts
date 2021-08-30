@@ -17,7 +17,7 @@ export async function allCiraConfigs (req, res): Promise<void> {
   const log = new Logger('allCiraConfigs')
   const top = req.query.$top
   const skip = req.query.$skip
-  const count = req.query.$count
+  const includeCount = req.query.$count
   try {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
@@ -33,8 +33,7 @@ export async function allCiraConfigs (req, res): Promise<void> {
         return result
       })
     }
-    if (count == null || count === 'false' || count === '0') {
-      MqttProvider.publishEvent('success', ['allCiraConfigs'], 'No configs to send')
+    if (includeCount == null || includeCount === 'false') {
       res.status(200).json(API_RESPONSE(ciraConfigs)).end()
     } else {
       const count: number = await ciraConfigDb.getCount()
@@ -42,9 +41,9 @@ export async function allCiraConfigs (req, res): Promise<void> {
         data: ciraConfigs,
         totalCount: count
       }
-      MqttProvider.publishEvent('success', ['allCiraConfigs'], 'Sent all configs successfully')
       res.status(200).json(API_RESPONSE(dataWithCount)).end()
     }
+    MqttProvider.publishEvent('success', ['allCiraConfigs'], 'Sent configs')
   } catch (error) {
     MqttProvider.publishEvent('fail', ['allCiraConfigs'], 'Failed to get all the CIRA config profiles')
     log.error('Failed to get all the CIRA config profiles :', error)
