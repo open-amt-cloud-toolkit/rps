@@ -72,29 +72,40 @@ export class ProfileManager implements IProfileManager {
   }
 
   /**
-   * @description Retrieves the amt password set in the configuration
+   * @description Retrieves the amt password set in the configuration or generates non static password
    * @param {string} profileName profile name of amt password
    * @returns {string} returns the amt password for a given profile
    */
   public async getAmtPassword (profileName: string): Promise<string> {
-    const profile = await this.getAmtProfile(profileName)
+    const profile: AMTConfiguration = await this.getAmtProfile(profileName)
     let amtPassword: string
     if (profile) {
-      if (this.configurator?.secretsManager) {
+      if (profile.generateRandomPassword) {
+        amtPassword = PasswordHelper.generateRandomPassword(AMTRandomPasswordLength)
+
+        if (amtPassword) {
+          this.logger.debug(`Created random password for ${profile.profileName}`)
+        } else {
+          this.logger.error(`unable to create a random password for ${profile.profileName}`)
+        }
+      } else if (this.configurator?.secretsManager) {
         amtPassword = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${profileName}`, 'AMT_PASSWORD')
       } else {
         amtPassword = profile.amtPassword
       }
       this.logger.debug(`found amtPassword for profile ${profileName}`)
+      if (!amtPassword) {
+        this.logger.error('password cannot be blank')
+        throw new Error('password cannot be blank')
+      }
       return amtPassword
     } else {
       this.logger.error(`unable to find amtPassword for profile ${profileName}`)
-      throw new Error('password cannot be blank')
     }
   }
 
   /**
-    * @description Retrieves the amt password set in the configuration
+    * @description Retrieves the amt password set in the configuration or generates a nonstatic password
     * @param {string} profileName profile name of amt password
     * @returns {string} returns the amt password for a given profile
    */
@@ -102,21 +113,29 @@ export class ProfileManager implements IProfileManager {
     const profile: AMTConfiguration = await this.getAmtProfile(profileName)
     let mebxPassword: string
     if (profile) {
-      this.logger.debug(`found amtPassword for profile ${profileName}`)
-      if (this.configurator?.secretsManager) {
+      if (profile.generateRandomMEBxPassword) {
+        mebxPassword = PasswordHelper.generateRandomPassword(AMTRandomPasswordLength)
+        
+        if (mebxPassword) {
+          this.logger.debug(`Created random MEBx password for ${profile.profileName}`)
+        } else {
+          this.logger.error(`unable to create MEBx random password for ${profile.profileName}`)
+        }
+      } else if (this.configurator?.secretsManager) {
         mebxPassword = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${profileName}`, 'MEBX_PASSWORD')
       } else {
-        mebxPassword = profile.mebxPassword
+        mebxPassword = profile.mebxPassword 
       }
+
+      this.logger.debug(`found amtPassword for profile ${profileName}`)
+      if (!mebxPassword) {
+        this.logger.error('mebx password cannot be blank')
+        throw new Error('mebx password cannot be blank')
+      }
+      return mebxPassword
     } else {
       this.logger.error(`unable to find mebxPassword for profile ${profileName}`)
     }
-
-    if (mebxPassword) {
-      return mebxPassword
-    }
-    this.logger.error('password cannot be blank')
-    throw new Error('password cannot be blank')
   }
 
   /**

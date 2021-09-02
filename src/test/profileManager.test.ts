@@ -65,6 +65,8 @@ const amtConfigurations: AMTConfiguration[] = [
     profileName: 'profile 1',
     amtPassword: '<StrongPassword1!>',
     mebxPassword: 'P@ssw0rd',
+    generateRandomPassword: false,
+    generateRandomMEBxPassword: false,
     activation: 'ccmactivate',
     ciraConfigName: 'ciraconfig1',
     ciraConfigObject: ciraConfigurations[0],
@@ -74,6 +76,8 @@ const amtConfigurations: AMTConfiguration[] = [
     profileName: 'profile 2',
     amtPassword: '<StrongPassword2!>',
     mebxPassword: 'P@ssw0rd',
+    generateRandomPassword: false,
+    generateRandomMEBxPassword: false,
     activation: 'acmactivate',
     ciraConfigName: 'ciraconfig1',
     ciraConfigObject: ciraConfigurations[0],
@@ -156,4 +160,13 @@ test('retrieve amt password', async () => {
   const actual = await profileManager.getAmtPassword(profile)
 
   expect(actual).toEqual(expected)
+})
+
+test('retrieve amt password auto generated', async () => {
+  const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub, rcsConfig)
+
+  const profile = 'profile 2'
+  const expected = '<StrongPassword2!>'
+  const actual = await profileManager.getAmtPassword(profile)
+  expect(actual).not.toBe(expected)
 })

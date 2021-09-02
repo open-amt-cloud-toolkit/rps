@@ -48,7 +48,7 @@ export class ProfilesDb implements IProfilesDb {
    * @returns {Pagination} returns an array of AMT profiles from DB
    */
   async get (top: number = DEFAULT_TOP, skip: number = DEFAULT_SKIP, tenantId: string = ''): Promise<AMTConfiguration[]> {
-    const results = await this.db.query(`SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, cira_config_name as ciraConfigName, mebx_password as MEBxPassword, tags, dhcp_enabled, tenant_id
+    const results = await this.db.query(`SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, generate_random_password as GenerateRandomPassword, cira_config_name as ciraConfigName, mebx_password as MEBxPassword, generate_random_mebx_password as GenerateRandomMEBxPassword, tags, dhcp_enabled, tenant_id
     FROM profiles 
     WHERE tenant_id = $3
     ORDER BY profile_name 
@@ -73,7 +73,7 @@ export class ProfilesDb implements IProfilesDb {
    */
   async getByName (profileName: string, tenantId: string = ''): Promise<AMTConfiguration> {
     const results = await this.db.query(`
-    SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, cira_config_name as ciraConfigName, mebx_password as MEBxPassword, tags, dhcp_enabled, tenant_id
+    SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, generate_random_password as GenerateRandomPassword, cira_config_name as ciraConfigName, mebx_password as MEBxPassword, generate_random_mebx_password as GenerateRandomMEBxPassword, tags, dhcp_enabled, tenant_id
     FROM profiles 
     WHERE profile_name = $1 and tenant_id = $2`, [profileName, tenantId])
     let amtProfile: AMTConfiguration = null
@@ -122,14 +122,16 @@ export class ProfilesDb implements IProfilesDb {
    */
   async insert (amtConfig: AMTConfiguration): Promise<AMTConfiguration> {
     try {
-      const results = await this.db.query(`INSERT INTO profiles(profile_name, activation, amt_password, cira_config_name, mebx_password, tags, dhcp_enabled, tenant_id)
-        values($1, $2, $3, $4, $5, $6, $7, $8)`,
+      const results = await this.db.query(`INSERT INTO profiles(profile_name, activation, amt_password, generate_random_password, cira_config_name, mebx_password, generate_random_mebx_password, tags, dhcp_enabled, tenant_id)
+        values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
       [
         amtConfig.profileName,
         amtConfig.activation,
         amtConfig.amtPassword,
+        amtConfig.generateRandomPassword,
         amtConfig.ciraConfigName,
         amtConfig.mebxPassword,
+        amtConfig.generateRandomMEBxPassword,
         amtConfig.tags,
         amtConfig.dhcpEnabled,
         amtConfig.tenantId
@@ -164,14 +166,16 @@ export class ProfilesDb implements IProfilesDb {
     try {
       const results = await this.db.query(`
       UPDATE profiles 
-      SET activation=$2, amt_password=$3, cira_config_name=$4, mebx_password=$5, tags=$6, dhcp_enabled=$7 
-      WHERE profile_name=$1 and tenant_id = $8`,
+      SET activation=$2, amt_password=$3, generate_random_password=$4 cira_config_name=$5, mebx_password=$6, generate_random_mebx_password=$7 tags=$8, dhcp_enabled=$9 
+      WHERE profile_name=$1 and tenant_id = $10`,
       [
         amtConfig.profileName,
         amtConfig.activation,
         amtConfig.amtPassword,
+        amtConfig.generateRandomPassword,
         amtConfig.ciraConfigName,
         amtConfig.mebxPassword,
+        amtConfig.generateRandomMEBxPassword,
         amtConfig.tags,
         amtConfig.dhcpEnabled,
         amtConfig.tenantId
