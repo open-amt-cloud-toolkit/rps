@@ -17,10 +17,10 @@ import { CIRAConfigurator } from './CIRAConfigurator'
 import { AMTGeneralSettings, AMTEthernetPortSettings, AddWiFiSettingsResponse, CIM_WiFiPortResponse, WiFiEndPointSettings } from '../models/WSManResponse'
 import { AMTUserName, WIFIENDPOINT } from './../utils/constants'
 import { AMTConfiguration } from '../models/Rcs'
-import { IWirelessProfilesDb } from '../interfaces/database/IWirelessProfilesDB'
-import { WirelessConfigDbFactory } from '../repositories/factories/WirelessConfigDbFactory'
 import { MqttProvider } from '../utils/MqttProvider'
 import { RPSError } from '../utils/RPSError'
+import { DbCreatorFactory } from '../repositories/factories/DbCreatorFactory'
+import { EnvReader } from '../utils/EnvReader'
 
 export class NetworkConfigurator implements IExecutor {
   constructor (
@@ -251,9 +251,11 @@ export class NetworkConfigurator implements IExecutor {
    */
   async addWifiConfigs (clientObj: ClientObject, clientId: string, wifiConfigs: ProfileWifiConfigs[]): Promise<void> {
     if (clientObj.network.count <= wifiConfigs.length - 1) {
-      const wifiProfilesDb: IWirelessProfilesDb = WirelessConfigDbFactory.getConfigDb()
+      // TODO: Don't love it
+      const dbf = new DbCreatorFactory(EnvReader.GlobalEnvConfig)
+      const db = await dbf.getDb()
       // Get WiFi profile information based on the profile name.
-      const wifiConfig = await wifiProfilesDb.getByName(wifiConfigs[clientObj.network.count].profileName)
+      const wifiConfig = await db.wirelessProfiles.getByName(wifiConfigs[clientObj.network.count].profileName)
       // Add  WiFi profile information to WiFi endpoint settings object
       const wifiEndpointSettings = {
         __parameterType: 'instance',

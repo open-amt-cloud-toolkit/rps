@@ -7,7 +7,7 @@ import { AMTConfiguration, RCSConfig } from '../models/Rcs'
 import { ProfileManager } from '../ProfileManager'
 import { ILogger } from '../interfaces/ILogger'
 import Logger from '../Logger'
-import { IProfilesDb } from '../interfaces/database/IProfilesDb'
+import { IProfilesTable } from '../interfaces/database/IProfilesDb'
 import { CIRAConfig } from '../RCS.Config'
 
 const logger: ILogger = new Logger('ProfileManagerTests')
@@ -29,6 +29,7 @@ const rcsConfig: RCSConfig = {
   corsMethods: '*',
   corsOrigin: '*',
   mpsServer: 'https://localhost:3000',
+  dbProvider: 'postgres',
   connectionString: 'postgresql://postgresadmin:admin123@localhost:5432/rpsdb',
   delayTimer: 12
 }
@@ -80,7 +81,7 @@ const amtConfigurations: AMTConfiguration[] = [
     tenantId: ''
   }
 ]
-const profileStub: IProfilesDb = {
+const profileStub: IProfilesTable = {
   getCount: async () => {
     return 2
   },

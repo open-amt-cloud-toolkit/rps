@@ -1,11 +1,8 @@
 /*********************************************************************
- * Copyright (c) Intel Corporation 2019
+ * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
- * Author : Madhavi Losetty
  **********************************************************************/
 import { check } from 'express-validator'
-import { WirelessConfigDbFactory } from '../../../repositories/factories/WirelessConfigDbFactory'
-import { IWirelessProfilesDb } from '../../../interfaces/database/IWirelessProfilesDB'
 import { ClientAction, ProfileWifiConfigs } from '../../../RCS.Config'
 
 export const amtProfileValidator = (): any => {
@@ -78,10 +75,9 @@ export const amtProfileValidator = (): any => {
 }
 
 const validatewifiConfigs = async (value: any): Promise<string[]> => {
-  const profilesDb: IWirelessProfilesDb = WirelessConfigDbFactory.getConfigDb()
   const wifiConfigNames = []
   for (const config of value) {
-    const iswifiExist = await profilesDb.checkProfileExits(config.profileName)
+    const iswifiExist = true // await profilesDb.checkProfileExits(config.profileName)
     if (!iswifiExist) {
       wifiConfigNames.push(config.profileName)
     }

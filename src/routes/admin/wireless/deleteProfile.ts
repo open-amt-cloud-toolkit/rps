@@ -3,8 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 import Logger from '../../../Logger'
-import { IWirelessProfilesDb } from '../../../interfaces/database/IWirelessProfilesDB'
-import { WirelessConfigDbFactory } from '../../../repositories/factories/WirelessConfigDbFactory'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, NETWORK_CONFIG_NOT_FOUND } from '../../../utils/constants'
 import { RPSError } from '../../../utils/RPSError'
 import { EnvReader } from '../../../utils/EnvReader'
@@ -13,11 +11,9 @@ import { Request, Response } from 'express'
 
 export async function deleteWirelessProfile (req: Request, res: Response): Promise<void> {
   const log = new Logger('deleteWirelessProfile')
-  let wirelessDb: IWirelessProfilesDb = null
   const { profileName } = req.params
-  wirelessDb = WirelessConfigDbFactory.getConfigDb()
   try {
-    const results: boolean = await wirelessDb.delete(profileName)
+    const results: boolean = await req.db.wirelessProfiles.delete(profileName)
     if (results) {
       if (req.secretsManager) {
         await req.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}Wireless/${profileName}`)

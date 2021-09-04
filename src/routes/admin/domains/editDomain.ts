@@ -3,8 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 import { AMTDomain } from '../../../models/Rcs'
-import { IDomainsDb } from '../../../interfaces/database/IDomainsDb'
-import { DomainsDbFactory } from '../../../repositories/factories/DomainsDbFactory'
 import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, DOMAIN_NOT_FOUND } from '../../../utils/constants'
@@ -13,7 +11,6 @@ import { MqttProvider } from '../../../utils/MqttProvider'
 import { Request, Response } from 'express'
 
 export async function editDomain (req: Request, res: Response): Promise<void> {
-  let domainsDb: IDomainsDb = null
   let amtDomain: AMTDomain = {} as AMTDomain
   const log = new Logger('editDomain')
   let cert: any
@@ -21,8 +18,7 @@ export async function editDomain (req: Request, res: Response): Promise<void> {
   const newDomain = req.body
   newDomain.tenantId = req.tenantId
   try {
-    domainsDb = DomainsDbFactory.getDomainsDb()
-    const oldDomain: AMTDomain = await domainsDb.getByName(newDomain.profileName)
+    const oldDomain: AMTDomain = await req.db.domains.getByName(newDomain.profileName)
     if (oldDomain == null) {
       MqttProvider.publishEvent('fail', ['editDomain'], `Domain Not Found : ${newDomain.profileName}`)
       res.status(404).json(API_RESPONSE(null, 'Not Found', DOMAIN_NOT_FOUND(newDomain.profileName))).end()
@@ -36,7 +32,7 @@ export async function editDomain (req: Request, res: Response): Promise<void> {
         amtDomain.provisioningCertPassword = 'CERT_PASSWORD'
       }
       // SQL Query > Insert Data
-      const results: AMTDomain = await domainsDb.update(amtDomain)
+      const results: AMTDomain = await req.db.domains.update(amtDomain)
       if (results) {
         // Delete the previous values of cert and password in vault and store the updated values
         if (req.secretsManager && (newDomain.provisioningCert != null || newDomain.provisioningCertPassword != null)) {

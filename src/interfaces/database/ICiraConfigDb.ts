@@ -4,7 +4,7 @@
  * Author : Ramu Bachala
  **********************************************************************/
 import { CIRAConfig } from '../../RCS.Config'
-import { IDB } from './IDb'
+import { ITable } from './ITable'
 
-export interface ICiraConfigDb extends IDB<CIRAConfig> {
+export interface ICiraConfigTable extends ITable<CIRAConfig> {
 }

@@ -11,17 +11,17 @@ import { IProfileManager } from './interfaces/IProfileManager'
 import { PasswordHelper } from './utils/PasswordHelper'
 import { CIRAConfig } from './RCS.Config'
 import { IConfigurator } from './interfaces/IConfigurator'
-import { IProfilesDb } from './interfaces/database/IProfilesDb'
+import { IProfilesTable } from './interfaces/database/IProfilesDb'
 import { EnvReader } from './utils/EnvReader'
 import { AMTRandomPasswordLength } from './utils/constants'
 
 export class ProfileManager implements IProfileManager {
-  private readonly amtConfigurations: IProfilesDb
+  private readonly amtConfigurations: IProfilesTable
   private readonly logger: ILogger
   private readonly configurator: IConfigurator
   private readonly envConfig: any
 
-  constructor (logger: ILogger, configurator: IConfigurator, amtConfigurations: IProfilesDb, config?: any) {
+  constructor (logger: ILogger, configurator: IConfigurator, amtConfigurations: IProfilesTable, config?: any) {
     this.logger = logger
     this.configurator = configurator
     this.amtConfigurations = amtConfigurations

@@ -18,5 +18,6 @@ export const config: RCSConfig = {
   WSConfiguration: {
     WebSocketPort: 8080
   },
+  dbProvider: 'postgres',
   connectionString: 'postgresql://postgresadmin:admin123@localhost:5432/rpsdb'
 }

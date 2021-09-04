@@ -1,30 +1,25 @@
 /*********************************************************************
- * Copyright (c) Intel Corporation 2019
+ * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
- * Author : Ramu Bachala
  **********************************************************************/
 import Logger from '../../../Logger'
 import { AMTConfiguration, DataWithCount } from '../../../models/Rcs'
-import { IProfilesDb } from '../../../interfaces/database/IProfilesDb'
-import { ProfilesDbFactory } from '../../../repositories/factories/ProfilesDbFactory'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { Request, Response } from 'express'
 
 export async function allProfiles (req: Request, res: Response): Promise<void> {
   const log = new Logger('allProfiles')
-  let profilesDb: IProfilesDb = null
   let amtConfigs: AMTConfiguration[] = [] as AMTConfiguration[]
   const top = Number(req.query.$top)
   const skip = Number(req.query.$skip)
   const includeCount = req.query.$count
   try {
-    profilesDb = ProfilesDbFactory.getProfilesDb()
-    amtConfigs = await profilesDb.get(top, skip)
+    amtConfigs = await req.db.profiles.get(top, skip)
     if (includeCount == null || includeCount === 'false') {
       res.status(200).json(API_RESPONSE(amtConfigs)).end()
     } else {
-      const count: number = await profilesDb.getCount()
+      const count: number = await req.db.profiles.getCount()
       const dataWithCount: DataWithCount = {
         data: amtConfigs,
         totalCount: count

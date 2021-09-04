@@ -1,21 +1,19 @@
 /*********************************************************************
- * Copyright (c) Intel Corporation 2019
+ * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
- * Author : Ramu Bachala
  **********************************************************************/
-import { IDbCreator } from '../interfaces/database//IDbCreator'
-import { IDomainsDb } from '../interfaces/database//IDomainsDb'
-import { mapToDomain } from './mapToDomain'
-import { DUPLICATE_DOMAIN_FAILED, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP } from '../utils/constants'
-import { AMTDomain } from '../models/Rcs'
-import { RPSError } from '../utils/RPSError'
-import Logger from '../Logger'
+import { IDomainsTable } from '../../../interfaces/database/IDomainsDb'
+import { DUPLICATE_DOMAIN_FAILED, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP } from '../../../utils/constants'
+import { AMTDomain } from '../../../models/Rcs'
+import { RPSError } from '../../../utils/RPSError'
+import Logger from '../../../Logger'
+import PostgresDb from '..'
 
-export class DomainsDb implements IDomainsDb {
-  db: any
+export class DomainsTable implements IDomainsTable {
+  db: PostgresDb
   log: Logger
-  constructor (dbCreator: IDbCreator) {
-    this.db = dbCreator.getDb()
+  constructor (db: PostgresDb) {
+    this.db = db
     this.log = new Logger('DomainsDb')
   }
 
@@ -24,7 +22,7 @@ export class DomainsDb implements IDomainsDb {
    * @returns {number}
    */
   async getCount (tenantId: string = ''): Promise<number> {
-    const result = await this.db.query(`
+    const result = await this.db.query<{total_count: number}>(`
     SELECT count(*) OVER() AS total_count 
     FROM domains
     WHERE tenant_id = $1
@@ -43,16 +41,20 @@ export class DomainsDb implements IDomainsDb {
    * @returns {AMTDomain[]} returns an array of AMT Domain objects from DB
    */
   async get (top: number = DEFAULT_TOP, skip: number = DEFAULT_SKIP, tenantId: string = ''): Promise<AMTDomain[]> {
-    const results = await this.db.query(`
-    SELECT name as Name, domain_suffix as DomainSuffix, provisioning_cert as ProvisioningCert, provisioning_cert_storage_format as ProvisioningCertStorageFormat, provisioning_cert_key as ProvisioningCertPassword, tenant_id
+    const results = await this.db.query<AMTDomain>(`
+    SELECT 
+      name as "profileName", 
+      domain_suffix as "domainSuffix", 
+      provisioning_cert as "provisioningCert", 
+      provisioning_cert_storage_format as "provisioningCertStorageFormat",
+      provisioning_cert_key as "provisioningCertPassword", 
+      tenant_id as "tenantId"
     FROM domains 
     WHERE tenant_id = $3
     ORDER BY name 
     LIMIT $1 OFFSET $2`, [top, skip, tenantId])
-    return await Promise.all(results.rows.map(async profile => {
-      const result = mapToDomain(profile)
-      return result
-    }))
+
+    return results.rows
   }
 
   /**
@@ -61,15 +63,18 @@ export class DomainsDb implements IDomainsDb {
    * @returns {AMTDomain} Domain object
    */
   async getDomainByDomainSuffix (domainSuffix: string, tenantId: string = ''): Promise<AMTDomain> {
-    const results = await this.db.query(`
-    SELECT name as Name, domain_suffix as DomainSuffix, provisioning_cert as ProvisioningCert, provisioning_cert_storage_format as ProvisioningCertStorageFormat, provisioning_cert_key as ProvisioningCertPassword, tenant_id 
+    const results = await this.db.query<AMTDomain>(`
+    SELECT 
+      name as "profileName", 
+      domain_suffix as "domainSuffix", 
+      provisioning_cert as "provisioningCert", 
+      provisioning_cert_storage_format as "provisioningCertStorageFormat", 
+      provisioning_cert_key as "provisioningCertPassword", 
+      tenant_id as "tenantId"
     FROM domains 
     WHERE domain_suffix = $1 and tenant_id = $2`, [domainSuffix, tenantId])
-    let domain: AMTDomain = null
-    if (results.rowCount > 0) {
-      domain = mapToDomain(results.rows[0])
-    }
-    return domain
+
+    return results.rowCount > 0 ? results.rows[0] : null
   }
 
   /**
@@ -78,15 +83,18 @@ export class DomainsDb implements IDomainsDb {
    * @returns {AMTDomain} Domain object
    */
   async getByName (domainName: string, tenantId: string = ''): Promise<AMTDomain> {
-    const results = await this.db.query(`
-    SELECT name as Name, domain_suffix as DomainSuffix, provisioning_cert as ProvisioningCert, provisioning_cert_storage_format as ProvisioningCertStorageFormat, provisioning_cert_key as ProvisioningCertPassword, tenant_id 
+    const results = await this.db.query<AMTDomain>(`
+    SELECT 
+      name as "profileName", 
+      domain_suffix as "domainSuffix", 
+      provisioning_cert as "provisioningCert", 
+      provisioning_cert_storage_format as "provisioningCertStorageFormat", 
+      provisioning_cert_key as "provisioningCertPassword", 
+      tenant_id as "tenantId"
     FROM domains 
     WHERE Name = $1 and tenant_id = $2`, [domainName, tenantId])
-    let domain: AMTDomain = null
-    if (results.rowCount > 0) {
-      domain = mapToDomain(results.rows[0])
-    }
-    return domain
+
+    return results.rowCount > 0 ? results.rows[0] : null
   }
 
   /**
@@ -99,10 +107,8 @@ export class DomainsDb implements IDomainsDb {
     DELETE 
     FROM domains 
     WHERE Name = $1 and tenant_id = $2`, [domainName, tenantId])
-    if (results.rowCount > 0) {
-      return true
-    }
-    return false
+
+    return results.rowCount > 0
   }
 
   /**
