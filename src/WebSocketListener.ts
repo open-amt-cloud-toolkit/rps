@@ -59,8 +59,10 @@ export class WebSocketListener implements IWebSocketListener {
       const client: ClientObject = { ClientId: clientId, ClientSocket: ws, ciraconfig: {}, network: {}, status: {} }
       this.clientManager.addClient(client)
 
-      ws.on('message', async (data: WebSocket.Data) => {
-        await this.onMessageReceived(data, clientId)
+      ws.on('message', async (data: WebSocket.Data, isBinary: boolean) => {
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string
+        const message = isBinary ? data : data.toString()
+        await this.onMessageReceived(message, clientId)
       })
       ws.on('close', () => {
         this.onClientDisconnected(clientId)
