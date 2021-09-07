@@ -49,7 +49,7 @@ export class ProfilesTable implements IProfilesTable {
       tags as "tags", 
       dhcp_enabled as "dhcpEnabled", 
       p.tenant_id as "tenantId",
-      json_agg(json_build_object('profileName',wc.wireless_profile_name, 'priority', wc.priority)) as "wifiConfigs"
+      COALESCE(json_agg(json_build_object('profileName',wc.wireless_profile_name, 'priority', wc.priority)) FILTER (WHERE wc.wireless_profile_name IS NOT NULL), '[]') AS "wifiConfigs" 
     FROM profiles p
     LEFT JOIN profiles_wirelessconfigs wc ON wc.profile_name = p.profile_name AND wc.tenant_id = p.tenant_id
     WHERE p.tenant_id = $3
@@ -79,7 +79,7 @@ export class ProfilesTable implements IProfilesTable {
       tags as "tags", 
       dhcp_enabled as "dhcpEnabled", 
       p.tenant_id as "tenantId",
-      json_agg(json_build_object('profileName',wc.wireless_profile_name, 'priority', wc.priority)) as "wifiConfigs"
+      COALESCE(json_agg(json_build_object('profileName',wc.wireless_profile_name, 'priority', wc.priority)) FILTER (WHERE wc.wireless_profile_name IS NOT NULL), '[]') AS "wifiConfigs" 
     FROM profiles p
     LEFT JOIN profiles_wirelessconfigs wc ON wc.profile_name = p.profile_name AND wc.tenant_id = p.tenant_id
     WHERE p.profile_name = $1 and p.tenant_id = $2
