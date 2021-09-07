@@ -269,18 +269,23 @@ export class WSManProcessor {
     }
   }
 
-  async put (clientId: string, action: string, obj: any, amtuser?: string, amtpass?: string): Promise<void> {
+  async put (clientId: string, action: string, obj: any, amtuser?: string, amtpass?: string, noselectors: boolean = false): Promise<void> {
     const clientObj: ClientObject = this.clientManager.getClientObject(clientId)
     try {
       const amtstack = this.getAmtStack(clientId, amtuser, amtpass)
-      await amtstack.Put(action, obj, (stack, name, jsonResponse, status) => {
+      const callback = (stack, name, jsonResponse, status): void => {
         if (status !== 200) {
           this.logger.error(`Put request failed during put for clientId: ${clientId}, action:${action}.`)
         } else {
           this.logger.debug(`Put request succeeded for clientId: ${clientId}, action:${action}.`)
         }
         clientObj.payload = jsonResponse
-      }, 0, 1, obj)
+      }
+      if (noselectors) {
+        await amtstack.Put(action, obj, callback)
+      } else {
+        await amtstack.Put(action, obj, callback, 0, 1, obj)
+      }
       if (clientObj.socketConn?.onStateChange && clientObj.readyState == null) {
         this.logger.debug('updating ready state')
         clientObj.readyState = 2
