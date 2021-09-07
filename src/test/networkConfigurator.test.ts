@@ -238,7 +238,7 @@ describe('Parse the WiFi Endpoint Settings response received from AMT', () => {
     AddWiFiSettingsResponse.Body.ReturnValue = 0
     const message = { payload: AddWiFiSettingsResponse }
     await networkConfigurator.processWiFiEndpointSettings(message, clientId)
-    expect(clientObj.status.Network).toBe('Ethernet & WiFi configured.')
+    expect(clientObj.status.Network).toBe('Ethernet Configured. WiFi Failed.')
     expect(clientObj.action).toBe(ClientAction.CIRACONFIG)
   })
 })

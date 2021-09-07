@@ -134,6 +134,7 @@ export interface NetworkConfigFlow {
   ethernetSettingsWifiObj?: AMTEthernetPortSettings
   setWiFiPort?: boolean
   setWiFiPortResponse?: boolean
+  getWiFiPortConfigurationService?: boolean
   count?: number
 }
 

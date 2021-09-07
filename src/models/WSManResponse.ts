@@ -162,3 +162,27 @@ export interface CIM_WiFiPortResponse {
     SystemName: string
   }
 }
+
+export interface AMT_WiFiPortConfigurationServiceResponse {
+  CreationClassName: string
+  ElementName: string
+  EnabledState: number
+  HealthState: number
+  LastConnectedSsidUnderMeControl: string
+  Name: string
+  NoHostCsmeSoftwarePolicy: number
+  RequestedState: number
+  SystemCreationClassName: string
+  SystemName: string
+  UEFIWiFiProfileShareEnabled: boolean
+  localProfileSynchronizationEnabled: number
+}
+
+export interface AMT_WiFiPortConfigurationService {
+  response: AMT_WiFiPortConfigurationServiceResponse
+  responses: {
+    Header: Header
+    Body: AMT_WiFiPortConfigurationServiceResponse
+  }
+  status: number
+}
