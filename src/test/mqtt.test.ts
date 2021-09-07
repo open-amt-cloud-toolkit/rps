@@ -23,6 +23,7 @@ describe('MQTT Turned ON Tests', () => {
     corsMethods: '*',
     corsOrigin: '*',
     mpsServer: 'https://localhost:3000',
+    dbProvider: 'postgres',
     connectionString: 'postgresql://postgresadmin:admin123@localhost:5432/rpsdb',
     delayTimer: 12,
     mqttAddress: 'mqtt://127.0.0.1:8883'
@@ -127,6 +128,7 @@ describe('MQTT Turned OFF Tests', () => {
     corsMethods: '*',
     corsOrigin: '*',
     mpsServer: 'https://localhost:3000',
+    dbProvider: 'postgres',
     connectionString: 'postgresql://postgresadmin:admin123@localhost:5432/rpsdb',
     delayTimer: 12,
     mqttAddress: 'mqtt://127.0.0.1:8883'

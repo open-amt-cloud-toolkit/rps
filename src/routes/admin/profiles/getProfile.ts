@@ -4,8 +4,6 @@
  * Author : Ramu Bachala
  **********************************************************************/
 import Logger from '../../../Logger'
-import { IProfilesDb } from '../../../interfaces/database/IProfilesDb'
-import { ProfilesDbFactory } from '../../../repositories/factories/ProfilesDbFactory'
 import { PROFILE_NOT_FOUND, API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../../utils/constants'
 import { AMTConfiguration } from '../../../models/Rcs'
 import { MqttProvider } from '../../../utils/MqttProvider'
@@ -13,11 +11,9 @@ import { Request, Response } from 'express'
 
 export async function getProfile (req: Request, res: Response): Promise<void> {
   const log = new Logger('getProfile')
-  let profilesDb: IProfilesDb = null
   const { profileName } = req.params
   try {
-    profilesDb = ProfilesDbFactory.getProfilesDb()
-    const result: AMTConfiguration = await profilesDb.getByName(profileName)
+    const result: AMTConfiguration = await req.db.profiles.getByName(profileName)
     if (result == null) {
       MqttProvider.publishEvent('fail', ['getProfile'], `Profile Not Found : ${profileName}`)
       res.status(404).json(API_RESPONSE(null, 'Not Found', PROFILE_NOT_FOUND(profileName))).end()

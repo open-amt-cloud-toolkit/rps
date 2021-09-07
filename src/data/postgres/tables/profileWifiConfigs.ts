@@ -2,20 +2,19 @@
  * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
-import { IDbCreator } from '../interfaces/database/IDbCreator'
-import { IProfileWifiConfigsDb } from '../interfaces/database/IProfileWifiConfigsDb'
-import { ProfileWifiConfigs } from '../RCS.Config'
-import { mapToProfileWifiConfigs } from './mapToProfileWifiConfigs'
-import { API_UNEXPECTED_EXCEPTION } from '../utils/constants'
-import Logger from '../Logger'
-import { RPSError } from '../utils/RPSError'
+import { IProfilesWifiConfigsTable } from '../../../interfaces/database/IProfileWifiConfigsDb'
+import { ProfileWifiConfigs } from '../../../RCS.Config'
+import { API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
+import Logger from '../../../Logger'
+import { RPSError } from '../../../utils/RPSError'
 import * as format from 'pg-format'
+import PostgresDb from '..'
 
-export class ProfilesWifiConfigsDb implements IProfileWifiConfigsDb {
-  db: any
+export class ProfilesWifiConfigsTable implements IProfilesWifiConfigsTable {
+  db: PostgresDb
   log: Logger
-  constructor (dbCreator: IDbCreator) {
-    this.db = dbCreator.getDb()
+  constructor (db: PostgresDb) {
+    this.db = db
     this.log = new Logger('ProfilesDb')
   }
 
@@ -25,12 +24,14 @@ export class ProfilesWifiConfigsDb implements IProfileWifiConfigsDb {
    * @returns {ProfileWifiConfigs[]} Return an array of wifi configs
    */
   async getProfileWifiConfigs (profileName: string, tenantId: string = ''): Promise<ProfileWifiConfigs[]> {
-    const results = await this.db.query(`
-    SELECT priority, wireless_profile_name 
+    const results = await this.db.query<ProfileWifiConfigs>(`
+    SELECT 
+      priority as "priority", 
+      wireless_profile_name as "profileName"
     FROM profiles_wirelessconfigs 
     WHERE profile_name = $1 and tenant_id = $2
     ORDER BY priority`, [profileName, tenantId])
-    return results.rows.map(profile => mapToProfileWifiConfigs(profile))
+    return results.rows
   }
 
   /**
@@ -47,10 +48,8 @@ export class ProfilesWifiConfigsDb implements IProfileWifiConfigsDb {
       INSERT INTO 
       profiles_wirelessconfigs (wireless_profile_name, profile_name, priority, tenant_id) 
       VALUES %L`, configs))
-      if (wifiProfilesQueryResults.rowCount > 0) {
-        return true
-      }
-      return false
+
+      return wifiProfilesQueryResults.rowCount > 0
     } catch (error) {
       if (error.code === '23503') {
         throw new RPSError(error.detail, 'Foreign key constraint violation')
@@ -69,9 +68,7 @@ export class ProfilesWifiConfigsDb implements IProfileWifiConfigsDb {
     DELETE 
     FROM profiles_wirelessconfigs 
     WHERE profile_name = $1 and tenant_id = $2`, [profileName, tenantId])
-    if (deleteProfileWifiResults.rowCount >= 0) {
-      return true
-    }
-    return false
+
+    return deleteProfileWifiResults.rowCount >= 0 // TODO: is this right?
   }
 }
