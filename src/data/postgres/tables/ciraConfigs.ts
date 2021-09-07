@@ -2,18 +2,17 @@
  * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
-import { IDbCreator } from '../interfaces/database/IDbCreator'
-import { ICiraConfigDb } from '../interfaces/database/ICiraConfigDb'
-import { CIRAConfig } from '../RCS.Config'
-import { mapToCiraConfig } from './mapToCiraConfig'
-import { CIRA_CONFIG_DELETION_FAILED_CONSTRAINT, API_UNEXPECTED_EXCEPTION, CIRA_CONFIG_INSERTION_FAILED_DUPLICATE, DEFAULT_TOP, DEFAULT_SKIP } from '../utils/constants'
-import { RPSError } from '../utils/RPSError'
-import Logger from '../Logger'
-export class CiraConfigDb implements ICiraConfigDb {
-  db: any
+import { ICiraConfigTable } from '../../../interfaces/database/ICiraConfigDb'
+import { CIRAConfig } from '../../../RCS.Config'
+import { CIRA_CONFIG_DELETION_FAILED_CONSTRAINT, API_UNEXPECTED_EXCEPTION, CIRA_CONFIG_INSERTION_FAILED_DUPLICATE, DEFAULT_TOP, DEFAULT_SKIP } from '../../../utils/constants'
+import { RPSError } from '../../../utils/RPSError'
+import Logger from '../../../Logger'
+import PostgresDb from '..'
+export class CiraConfigTable implements ICiraConfigTable {
+  db: PostgresDb
   log: Logger
-  constructor (dbCreator: IDbCreator) {
-    this.db = dbCreator.getDb()
+  constructor (db: PostgresDb) {
+    this.db = db
     this.log = new Logger('CiraConfigDb')
   }
 
@@ -22,7 +21,7 @@ export class CiraConfigDb implements ICiraConfigDb {
    * @returns {number}
    */
   async getCount (tenantId: string = ''): Promise<number> {
-    const result = await this.db.query(`
+    const result = await this.db.query<{total_count: number}>(`
     SELECT count(*) OVER() AS total_count 
     FROM ciraconfigs
     WHERE tenant_id = $1`, [tenantId])
@@ -40,16 +39,23 @@ export class CiraConfigDb implements ICiraConfigDb {
    * @returns {Pagination} returns an array of CIRA config objects from DB
    */
   async get (top: number = DEFAULT_TOP, skip: number = DEFAULT_SKIP, tenantId: string = ''): Promise<CIRAConfig[]> {
-    const results = await this.db.query(`SELECT cira_config_name, mps_server_address, mps_port, user_name, password, common_name, server_address_format, auth_method, mps_root_certificate, proxydetails, tenant_id 
+    const results = await this.db.query<CIRAConfig>(`SELECT 
+      cira_config_name as "configName", 
+      mps_server_address as "mpsServerAddress", 
+      mps_port as "mpsPort", 
+      user_name as "username", 
+      password as "password", 
+      common_name as "commonName", 
+      server_address_format as "serverAddressFormat", 
+      auth_method as "authMethod", 
+      mps_root_certificate as "mpsRootCertificate", 
+      proxydetails as "proxyDetails", 
+      tenant_id  as "tenantId"
     FROM ciraconfigs 
     WHERE tenant_id = $3
     ORDER BY cira_config_name 
     LIMIT $1 OFFSET $2`, [top, skip, tenantId])
-    return await Promise.all(results.rows.map(async (p) => {
-      const result = mapToCiraConfig(p)
-      return result
-    }
-    ))
+    return results.rows
   }
 
   /**
@@ -58,15 +64,23 @@ export class CiraConfigDb implements ICiraConfigDb {
    * @returns {CIRAConfig} CIRA config object
    */
   async getByName (configName: string, tenantId: string = ''): Promise<CIRAConfig> {
-    const results = await this.db.query(`
-    SELECT cira_config_name, mps_server_address, mps_port, user_name, password, common_name, server_address_format, auth_method, mps_root_certificate, proxydetails, tenant_id 
+    const results = await this.db.query<CIRAConfig>(`
+    SELECT 
+      cira_config_name as "configName", 
+      mps_server_address as "mpsServerAddress", 
+      mps_port as "mpsPort", 
+      user_name as "username", 
+      password as "password", 
+      common_name as "commonName", 
+      server_address_format as "serverAddressFormat", 
+      auth_method as "authMethod", 
+      mps_root_certificate as "mpsRootCertificate", 
+      proxydetails as "proxyDetails", 
+      tenant_id as "tenantId"
     FROM ciraconfigs 
     WHERE cira_config_name = $1 and tenant_id = $2`, [configName, tenantId])
-    let ciraConfig: CIRAConfig = null
-    if (results.rowCount > 0) {
-      ciraConfig = mapToCiraConfig(results.rows[0])
-    }
-    return ciraConfig
+
+    return results.rows.length > 0 ? results.rows[0] : null
   }
 
   /**
@@ -78,12 +92,9 @@ export class CiraConfigDb implements ICiraConfigDb {
     try {
       const results = await this.db.query(`
       DELETE FROM ciraconfigs 
-      WHERE cira_config_name = $1 and tenant_id = $2`, [ciraConfigName, tenantId])
-      if (results.rowCount > 0) {
-        return true
-      } else {
-        return false
-      }
+      WHERE cira_config_name = $1 AND tenant_id = $2`, [ciraConfigName, tenantId])
+
+      return results.rowCount > 0
     } catch (error) {
       this.log.error(`Failed to delete CIRA config : ${ciraConfigName}`, error)
       if (error.code === '23503') { // foreign key violation
@@ -116,8 +127,7 @@ export class CiraConfigDb implements ICiraConfigDb {
         ciraConfig.tenantId
       ])
       if (results.rowCount > 0) {
-        const config = await this.getByName(ciraConfig.configName)
-        return config
+        return await this.getByName(ciraConfig.configName)
       }
       return null
     } catch (error) {
@@ -154,8 +164,7 @@ export class CiraConfigDb implements ICiraConfigDb {
         ciraConfig.tenantId
       ])
       if (results.rowCount > 0) {
-        const config = await this.getByName(ciraConfig.configName)
-        return config
+        return await this.getByName(ciraConfig.configName)
       }
       return null
     } catch (error) {

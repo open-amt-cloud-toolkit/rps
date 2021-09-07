@@ -1,10 +1,7 @@
 /*********************************************************************
- * Copyright (c) Intel Corporation 2019
+ * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
- * Author : Ramu Bachala
  **********************************************************************/
-import { ICiraConfigDb } from '../../../interfaces/database/ICiraConfigDb'
-import { CiraConfigDbFactory } from '../../../repositories/factories/CiraConfigDbFactory'
 import { CIRAConfig } from '../../../RCS.Config'
 import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
@@ -20,18 +17,16 @@ import { Request, Response } from 'express'
 
 export async function createCiraConfig (req: Request, res: Response): Promise<void> {
   const log = new Logger('createCiraConfig')
-  let ciraConfigDb: ICiraConfigDb
   const ciraConfig: CIRAConfig = req.body
   ciraConfig.tenantId = req.tenantId
 
   try {
-    ciraConfigDb = CiraConfigDbFactory.getCiraConfigDb()
     const mpsPwd = ciraConfig.password ?? PasswordHelper.generateRandomPassword(AMTRandomPasswordLength)
     if (req.secretsManager) {
       ciraConfig.password = 'MPS_PASSWORD'
     }
     // SQL Query > Insert Data
-    const results: CIRAConfig = await ciraConfigDb.insert(ciraConfig)
+    const results: CIRAConfig = await req.db.ciraConfigs.insert(ciraConfig)
     // CIRA profile inserted  into db successfully.
     if (results != null) {
       // store the password into Vault

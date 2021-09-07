@@ -4,18 +4,14 @@
 **********************************************************************/
 import Logger from '../../../Logger'
 import { Request, Response } from 'express'
-import { IWirelessProfilesDb } from '../../../interfaces/database/IWirelessProfilesDB'
-import { WirelessConfigDbFactory } from '../../../repositories/factories/WirelessConfigDbFactory'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, NETWORK_CONFIG_NOT_FOUND } from '../../../utils/constants'
 import { MqttProvider } from '../../../utils/MqttProvider'
 
 export async function getWirelessProfile (req: Request, res: Response): Promise<void> {
   const log = new Logger('getWirelessProfile')
-  let profilesDb: IWirelessProfilesDb = null
   const { profileName } = req.params
   try {
-    profilesDb = WirelessConfigDbFactory.getConfigDb()
-    const result = await profilesDb.getByName(profileName)
+    const result = await req.db.wirelessProfiles.getByName(profileName)
     if (result == null) {
       MqttProvider.publishEvent('fail', ['getWirelessProfiles'], `Wireless Profile Not Found : ${profileName}`)
       res.status(404).json(API_RESPONSE(null, 'Not Found', NETWORK_CONFIG_NOT_FOUND('Wireless', profileName))).end()

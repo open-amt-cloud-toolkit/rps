@@ -11,9 +11,6 @@ import { IConfigurator } from './interfaces/IConfigurator'
 import { ILogger } from './interfaces/ILogger'
 import { ICertManager } from './interfaces/ICertManager'
 import { SignatureHelper } from './utils/SignatureHelper'
-
-// import { ACMActivator } from './actions/ACMActivator'
-// import { CCMActivator } from './actions/CCMActivator'
 import { Activator } from './actions/Activator'
 import { ClientResponseMsg } from './utils/ClientResponseMsg'
 import { WSManProcessor } from './WSManProcessor'
@@ -23,7 +20,6 @@ import { RPSError } from './utils/RPSError'
 import { Deactivator } from './actions/Deactivator'
 import { CIRAConfigurator } from './actions/CIRAConfigurator'
 import { NetworkConfigurator } from './actions/NetworkConfigurator'
-import { ISecretManagerService } from './interfaces/ISecretManagerService'
 
 export class ClientActions {
   actions: any
@@ -36,8 +32,7 @@ export class ClientActions {
     private readonly responseMsg: ClientResponseMsg,
     private readonly amtwsman: WSManProcessor,
     private readonly clientManager: IClientManager,
-    private readonly validator: IValidator,
-    private readonly secretsManager?: ISecretManagerService) {
+    private readonly validator: IValidator) {
     this.actions = {}
 
     const ciraConfig = new CIRAConfigurator(new Logger('CIRAConfig'), configurator, responseMsg, amtwsman, clientManager)

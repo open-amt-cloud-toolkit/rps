@@ -2,8 +2,6 @@
  * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
-import { ICiraConfigDb } from '../../../interfaces/database/ICiraConfigDb'
-import { CiraConfigDbFactory } from '../../../repositories/factories/CiraConfigDbFactory'
 import Logger from '../../../Logger'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, CIRA_CONFIG_NOT_FOUND } from '../../../utils/constants'
 import { EnvReader } from '../../../utils/EnvReader'
@@ -13,11 +11,9 @@ import { Request, Response } from 'express'
 
 export async function deleteCiraConfig (req: Request, res: Response): Promise<void> {
   const log = new Logger('deleteCiraConfig')
-  let ciraConfigDb: ICiraConfigDb = null
   const ciraConfigName: string = req.params.ciraConfigName
   try {
-    ciraConfigDb = CiraConfigDbFactory.getCiraConfigDb()
-    const result: boolean = await ciraConfigDb.delete(ciraConfigName)
+    const result: boolean = await req.db.ciraConfigs.delete(ciraConfigName)
     if (result) {
       if (req.secretsManager) {
         await req.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfigName}`)

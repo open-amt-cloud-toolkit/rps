@@ -2,26 +2,19 @@
  * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
-import { IDbCreator } from '../interfaces/database/IDbCreator'
-import { IProfilesDb } from '../interfaces/database/IProfilesDb'
-import { CIRAConfig } from '../RCS.Config'
-import { mapToProfile } from './mapToProfile'
-import { AMTConfiguration } from '../models/Rcs'
-import { CiraConfigDb } from './ciraConfigs'
-import { PROFILE_INSERTION_FAILED_DUPLICATE, PROFILE_INSERTION_CIRA_CONSTRAINT, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP, PROFILE_INSERTION_GENERIC_CONSTRAINT } from '../utils/constants'
-import Logger from '../Logger'
-import { RPSError } from '../utils/RPSError'
-import { ProfilesWifiConfigsDb } from './profileWifiConfigs'
+import { IProfilesTable } from '../../../interfaces/database/IProfilesDb'
+import { CIRAConfig } from '../../../RCS.Config'
+import { AMTConfiguration } from '../../../models/Rcs'
+import { PROFILE_INSERTION_FAILED_DUPLICATE, PROFILE_INSERTION_CIRA_CONSTRAINT, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP, PROFILE_INSERTION_GENERIC_CONSTRAINT } from '../../../utils/constants'
+import Logger from '../../../Logger'
+import { RPSError } from '../../../utils/RPSError'
+import PostgresDb from '..'
 
-export class ProfilesDb implements IProfilesDb {
-  db: any
-  ciraConfigs: CiraConfigDb
-  wifiConfigs: ProfilesWifiConfigsDb
+export class ProfilesTable implements IProfilesTable {
+  db: PostgresDb
   log: Logger
-  constructor (dbCreator: IDbCreator) {
-    this.db = dbCreator.getDb()
-    this.ciraConfigs = new CiraConfigDb(dbCreator)
-    this.wifiConfigs = new ProfilesWifiConfigsDb(dbCreator)
+  constructor (db: PostgresDb) {
+    this.db = db
     this.log = new Logger('ProfilesDb')
   }
 
@@ -30,7 +23,7 @@ export class ProfilesDb implements IProfilesDb {
    * @returns {number}
    */
   async getCount (tenantId: string = ''): Promise<number> {
-    const result = await this.db.query(`
+    const result = await this.db.query<{total_count: number}>(`
     SELECT count(*) OVER() AS total_count 
     FROM profiles
     WHERE tenant_id = $1`, [tenantId])
@@ -48,22 +41,28 @@ export class ProfilesDb implements IProfilesDb {
    * @returns {Pagination} returns an array of AMT profiles from DB
    */
   async get (top: number = DEFAULT_TOP, skip: number = DEFAULT_SKIP, tenantId: string = ''): Promise<AMTConfiguration[]> {
-    const results = await this.db.query(`SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, cira_config_name as ciraConfigName, mebx_password as MEBxPassword, tags, dhcp_enabled, tenant_id
-    FROM profiles 
-    WHERE tenant_id = $3
-    ORDER BY profile_name 
+    const results = await this.db.query<AMTConfiguration>(`
+    SELECT 
+      p.profile_name as "profileName", 
+      activation as "activation", 
+      cira_config_name as "ciraConfigName", 
+      tags as "tags", 
+      dhcp_enabled as "dhcpEnabled", 
+      p.tenant_id as "tenantId",
+      json_agg(json_build_object('profileName',wc.wireless_profile_name, 'priority', wc.priority)) as "wifiConfigs"
+    FROM profiles p
+    LEFT JOIN profiles_wirelessconfigs wc ON wc.profile_name = p.profile_name AND wc.tenant_id = p.tenant_id
+    WHERE p.tenant_id = $3
+    GROUP BY p.profile_name
+    ,activation
+    ,cira_config_name
+    ,tags
+    ,dhcp_enabled
+    ,p.tenant_id
+    ORDER BY p.profile_name 
     LIMIT $1 OFFSET $2`, [top, skip, tenantId])
-    const allProfiles: AMTConfiguration[] = await Promise.all(results.rows.map(async profile => {
-      let result: AMTConfiguration = null
-      result = mapToProfile(profile)
-      if (result.dhcpEnabled) {
-        result.wifiConfigs = await this.wifiConfigs.getProfileWifiConfigs(result.profileName)
-      }
-      delete result.amtPassword
-      delete result.mebxPassword
-      return result
-    }))
-    return allProfiles
+
+    return results.rows
   }
 
   /**
@@ -72,20 +71,28 @@ export class ProfilesDb implements IProfilesDb {
    * @returns {AMTConfiguration} AMT Profile object
    */
   async getByName (profileName: string, tenantId: string = ''): Promise<AMTConfiguration> {
-    const results = await this.db.query(`
-    SELECT profile_name as ProfileName, activation as Activation, amt_password as AMTPassword, cira_config_name as ciraConfigName, mebx_password as MEBxPassword, tags, dhcp_enabled, tenant_id
-    FROM profiles 
-    WHERE profile_name = $1 and tenant_id = $2`, [profileName, tenantId])
-    let amtProfile: AMTConfiguration = null
-    if (results.rowCount > 0) {
-      amtProfile = mapToProfile(results.rows[0])
-      if (amtProfile.dhcpEnabled) {
-        amtProfile.wifiConfigs = await this.wifiConfigs.getProfileWifiConfigs(profileName)
-      }
-      delete amtProfile.amtPassword
-      delete amtProfile.mebxPassword
-    }
-    return amtProfile
+    const results = await this.db.query<AMTConfiguration>(`
+    SELECT 
+      p.profile_name as "profileName", 
+      activation as "activation", 
+      cira_config_name as "ciraConfigName", 
+      tags as "tags", 
+      dhcp_enabled as "dhcpEnabled", 
+      p.tenant_id as "tenantId",
+      json_agg(json_build_object('profileName',wc.wireless_profile_name, 'priority', wc.priority)) as "wifiConfigs"
+    FROM profiles p
+    LEFT JOIN profiles_wirelessconfigs wc ON wc.profile_name = p.profile_name AND wc.tenant_id = p.tenant_id
+    WHERE p.profile_name = $1 and p.tenant_id = $2
+    GROUP BY 
+      p.profile_name,
+      activation,
+      cira_config_name,
+      tags,
+      dhcp_enabled,
+      p.tenant_id
+    `, [profileName, tenantId])
+
+    return results.rowCount > 0 ? results.rows[0] : null
   }
 
   /**
@@ -94,7 +101,7 @@ export class ProfilesDb implements IProfilesDb {
    * @returns {CIRAConfig} CIRA config object
    */
   async getCiraConfigForProfile (configName: string): Promise<CIRAConfig> {
-    return await this.ciraConfigs.getByName(configName)
+    return await this.db.ciraConfigs.getByName(configName)
   }
 
   /**
@@ -103,7 +110,7 @@ export class ProfilesDb implements IProfilesDb {
    * @returns {boolean} Return true on successful deletion
    */
   async delete (profileName: string, tenantId: string = ''): Promise<boolean> {
-    if (this.wifiConfigs.deleteProfileWifiConfigs(profileName)) {
+    if (this.db.profileWirelessConfigs.deleteProfileWifiConfigs(profileName)) {
       const results = await this.db.query(`
       DELETE 
       FROM profiles 
@@ -134,17 +141,21 @@ export class ProfilesDb implements IProfilesDb {
         amtConfig.dhcpEnabled,
         amtConfig.tenantId
       ])
-      if (results.rowCount > 0) {
-        if (amtConfig.wifiConfigs?.length > 0) {
-          await this.wifiConfigs.createProfileWifiConfigs(amtConfig.wifiConfigs, amtConfig.profileName, amtConfig.tenantId)
-        }
-        const profile = await this.getByName(amtConfig.profileName)
-        return profile
+
+      if (results.rowCount === 0) {
+        return null
       }
-      return null
+
+      if (amtConfig.wifiConfigs?.length > 0) {
+        await this.db.profileWirelessConfigs.createProfileWifiConfigs(amtConfig.wifiConfigs, amtConfig.profileName, amtConfig.tenantId)
+      }
+
+      return await this.getByName(amtConfig.profileName)
     } catch (error) {
       this.log.error(`Failed to insert AMT profile: ${amtConfig.profileName}`, error)
-      console.log(error.code)
+      if (error instanceof RPSError) {
+        throw error
+      }
       if (error.code === '23505') { // Unique key violation
         throw new RPSError(PROFILE_INSERTION_FAILED_DUPLICATE(amtConfig.profileName), 'Unique key violation')
       }
@@ -178,10 +189,9 @@ export class ProfilesDb implements IProfilesDb {
       ])
       if (results.rowCount > 0) {
         if (amtConfig.wifiConfigs?.length > 0) {
-          await this.wifiConfigs.createProfileWifiConfigs(amtConfig.wifiConfigs, amtConfig.profileName)
+          await this.db.profileWirelessConfigs.createProfileWifiConfigs(amtConfig.wifiConfigs, amtConfig.profileName)
         }
-        const profile = await this.getByName(amtConfig.profileName)
-        return profile
+        return await this.getByName(amtConfig.profileName)
       }
       return null
     } catch (error) {

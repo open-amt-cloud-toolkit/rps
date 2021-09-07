@@ -4,8 +4,6 @@
 **********************************************************************/
 import Logger from '../../../Logger'
 import { WirelessConfig } from '../../../RCS.Config'
-import { IWirelessProfilesDb } from '../../../interfaces/database/IWirelessProfilesDB'
-import { WirelessConfigDbFactory } from '../../../repositories/factories/WirelessConfigDbFactory'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
 import { DataWithCount } from '../../../models/Rcs'
 import { MqttProvider } from '../../../utils/MqttProvider'
@@ -13,13 +11,11 @@ import { Request, Response } from 'express'
 
 export async function allProfiles (req: Request, res: Response): Promise<void> {
   const log = new Logger('allProfiles')
-  let profilesDb: IWirelessProfilesDb = null
   const top = Number(req.query.$top)
   const skip = Number(req.query.$skip)
   const includeCount = req.query.$count
   try {
-    profilesDb = WirelessConfigDbFactory.getConfigDb()
-    let wirelessConfigs: WirelessConfig[] = await profilesDb.get(top, skip)
+    let wirelessConfigs: WirelessConfig[] = await req.db.wirelessProfiles.get(top, skip)
     if (wirelessConfigs.length >= 0) {
       wirelessConfigs = wirelessConfigs.map((result: WirelessConfig) => {
         delete result.pskPassphrase
@@ -29,7 +25,7 @@ export async function allProfiles (req: Request, res: Response): Promise<void> {
     if (includeCount == null || includeCount === 'false') {
       res.status(200).json(API_RESPONSE(wirelessConfigs)).end()
     } else {
-      const count: number = await profilesDb.getCount()
+      const count: number = await req.db.wirelessProfiles.getCount()
       const dataWithCount: DataWithCount = {
         data: wirelessConfigs,
         totalCount: count

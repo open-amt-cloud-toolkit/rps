@@ -1,10 +1,7 @@
 /*********************************************************************
- * Copyright (c) Intel Corporation 2019
+ * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
- * Author : Ramu Bachala
  **********************************************************************/
-import { IDomainsDb } from '../../../interfaces/database/IDomainsDb'
-import { DomainsDbFactory } from '../../../repositories/factories/DomainsDbFactory'
 import { DOMAIN_NOT_FOUND, API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../../utils/constants'
 import { AMTDomain } from '../../../models/Rcs'
 import Logger from '../../../Logger'
@@ -13,11 +10,9 @@ import { Request, Response } from 'express'
 
 export async function getDomain (req: Request, res: Response): Promise<void> {
   const log = new Logger('getDomain')
-  let domainsDb: IDomainsDb = null
   const { domainName } = req.params
   try {
-    domainsDb = DomainsDbFactory.getDomainsDb()
-    const result: AMTDomain = await domainsDb.getByName(domainName)
+    const result: AMTDomain = await req.db.domains.getByName(domainName)
     if (result !== null) {
       // Return null. Check Security objectives around returning passwords.
       delete result.provisioningCertPassword

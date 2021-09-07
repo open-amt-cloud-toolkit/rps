@@ -1,10 +1,7 @@
 /*********************************************************************
- * Copyright (c) Intel Corporation 2019
+ * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
- * Author : Ramu Bachala
  **********************************************************************/
-import { IDomainsDb } from '../../../interfaces/database/IDomainsDb'
-import { DomainsDbFactory } from '../../../repositories/factories/DomainsDbFactory'
 import { DOMAIN_NOT_FOUND, API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../../utils/constants'
 import { EnvReader } from '../../../utils/EnvReader'
 import { AMTDomain } from '../../../models/Rcs'
@@ -14,16 +11,14 @@ import { Request, Response } from 'express'
 
 export async function deleteDomain (req: Request, res: Response): Promise<void> {
   const log = new Logger('deleteDomain')
-  let domainsDb: IDomainsDb = null
   const { domainName } = req.params
   try {
-    domainsDb = DomainsDbFactory.getDomainsDb()
-    const domain: AMTDomain = await domainsDb.getByName(domainName)
+    const domain: AMTDomain = await req.db.domains.getByName(domainName)
     if (domain == null) {
       MqttProvider.publishEvent('fail', ['deleteDomain'], `Domain Not Found : ${domainName}`)
       res.status(404).json(API_RESPONSE(null, 'Not Found', DOMAIN_NOT_FOUND(domainName))).end()
     } else {
-      const results = await domainsDb.delete(domainName)
+      const results = await req.db.domains.delete(domainName)
       if (results) {
         if (req.secretsManager) {
           await req.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/${domain.profileName}`)
