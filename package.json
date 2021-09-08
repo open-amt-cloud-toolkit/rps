@@ -1,6 +1,6 @@
 {
-  "name": "rcs_microservice",
-  "version": "1.5.0",
+  "name": "@open-amt-cloud-toolkit/rps",
+  "version": "2.0.0",
   "description": "Containerized RPS service for activating and configuring Intel&reg; AMT devices",
   "homepage": "https://github.com/open-amt-cloud-toolkit/rps",
   "contributors": [
