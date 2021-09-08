@@ -21,7 +21,7 @@ export async function editWirelessProfile (req: Request, res: Response): Promise
       const passphrase = req.body.pskPassphrase
       if (passphrase) {
         config = { ...config, ...req.body }
-        config.pskPassphrase = 'pskPassphrase'
+        config.pskPassphrase = 'PSK_PASSPHRASE'
       } else {
         config = { ...config, ...req.body }
       }
