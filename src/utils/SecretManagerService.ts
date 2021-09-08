@@ -29,20 +29,6 @@ export class SecretManagerService implements ISecretManagerService {
     this.vaultClient = nodeVault(options)
   }
 
-  async listSecretsAtPath (path: string): Promise<any> {
-    try {
-      this.logger.verbose('list secret ' + path)
-      const data = await this.vaultClient.list(path)
-      this.logger.debug(`got data back from vault at path: ${path}`)
-      // { data: data: { "key": "keyvalue"}}
-      return data.data.keys
-    } catch (error) {
-      this.logger.error('getSecretFromKey error \r\n')
-      this.logger.error(error)
-      return null
-    }
-  }
-
   async getSecretFromKey (path: string, key: string): Promise<string> {
     try {
       this.logger.verbose(`getting secret from vault: ${path}, ${key}`)
@@ -68,11 +54,6 @@ export class SecretManagerService implements ISecretManagerService {
       this.logger.error(error)
       return null
     }
-  }
-
-  async readJsonFromKey (path: string, key: string): Promise<string> {
-    const data = await this.getSecretFromKey(path, key)
-    return (data ? JSON.parse(data) : null)
   }
 
   async writeSecretWithKey (path: string, key: string, keyValue: any): Promise<void> {
