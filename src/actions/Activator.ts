@@ -170,6 +170,7 @@ export class Activator implements IExecutor {
         clientObj.status.Status = 'Admin control mode'
         clientObj.activationStatus = true
         this.clientManager.setClientObject(clientObj)
+        await this.saveDeviceInfo(clientObj)
         const msg = await this.waitAfterActivation(clientId, clientObj)
         return msg
       }
