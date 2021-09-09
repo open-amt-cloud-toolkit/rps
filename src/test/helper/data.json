@@ -3,26 +3,32 @@
     {
       "profileName": "profile1",
       "amtPassword": "P@ssw0rd",
+      "generateRandomPassword": false,
       "mebxPassword": "P@ssw0rd",
+      "generateRandomMEBxPassword": false,
       "activation": "acmactivate",
       "ciraConfigName": "ciraconfig1"
     },
     {
       "profileName": "profile2",
       "amtPassword": "P@ssw0rd",
+      "generateRandomPassword": false,
       "mebxPassword": "P@ssw0rd",
+      "generateRandomMEBxPassword": false,
       "activation": "ccmactivate",
       "ciraConfigName": "ciraconfig1"
     },
     {
       "profileName": "profile3",
       "amtPassword": "P@ssw0rd",
+      "generateRandomPassword": false,
       "activation": "invalid",
       "ciraConfigName": "ciraconfig1"
     },
     {
       "profileName": "profile4",
       "amtPassword": "P@ssw0rd",
+      "generateRandomPassword": false,
       "activation": "",
       "ciraConfigName": "ciraconfig1"
     }
