@@ -181,7 +181,7 @@ export class ProfilesTable implements IProfilesTable {
     try {
       const results = await this.db.query(`
       UPDATE profiles 
-      SET activation=$2, amt_password=$3, generate_random_password=$4 cira_config_name=$5, mebx_password=$6, generate_random_mebx_password=$7 tags=$8, dhcp_enabled=$9 
+      SET activation=$2, amt_password=$3, generate_random_password=$4, cira_config_name=$5, mebx_password=$6, generate_random_mebx_password=$7, tags=$8, dhcp_enabled=$9 
       WHERE profile_name=$1 and tenant_id = $10`,
       [
         amtConfig.profileName,
