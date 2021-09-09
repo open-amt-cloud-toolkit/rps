@@ -45,7 +45,9 @@ export class ProfilesTable implements IProfilesTable {
     SELECT 
       p.profile_name as "profileName", 
       activation as "activation", 
-      cira_config_name as "ciraConfigName", 
+      cira_config_name as "ciraConfigName",
+      generate_random_password as "generateRandomPassword",
+      generate_random_mebx_password as "generateRandomMEBxPassword",
       tags as "tags", 
       dhcp_enabled as "dhcpEnabled", 
       p.tenant_id as "tenantId",
@@ -76,6 +78,8 @@ export class ProfilesTable implements IProfilesTable {
       p.profile_name as "profileName", 
       activation as "activation", 
       cira_config_name as "ciraConfigName", 
+      generate_random_password as "generateRandomPassword",
+      generate_random_mebx_password as "generateRandomMEBxPassword",
       tags as "tags", 
       dhcp_enabled as "dhcpEnabled", 
       p.tenant_id as "tenantId",
@@ -129,14 +133,16 @@ export class ProfilesTable implements IProfilesTable {
    */
   async insert (amtConfig: AMTConfiguration): Promise<AMTConfiguration> {
     try {
-      const results = await this.db.query(`INSERT INTO profiles(profile_name, activation, amt_password, cira_config_name, mebx_password, tags, dhcp_enabled, tenant_id)
-        values($1, $2, $3, $4, $5, $6, $7, $8)`,
+      const results = await this.db.query(`INSERT INTO profiles(profile_name, activation, amt_password, generate_random_password, cira_config_name, mebx_password, generate_random_mebx_password, tags, dhcp_enabled, tenant_id)
+        values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
       [
         amtConfig.profileName,
         amtConfig.activation,
         amtConfig.amtPassword,
+        amtConfig.generateRandomPassword,
         amtConfig.ciraConfigName,
         amtConfig.mebxPassword,
+        amtConfig.generateRandomMEBxPassword,
         amtConfig.tags,
         amtConfig.dhcpEnabled,
         amtConfig.tenantId
@@ -175,14 +181,16 @@ export class ProfilesTable implements IProfilesTable {
     try {
       const results = await this.db.query(`
       UPDATE profiles 
-      SET activation=$2, amt_password=$3, cira_config_name=$4, mebx_password=$5, tags=$6, dhcp_enabled=$7 
-      WHERE profile_name=$1 and tenant_id = $8`,
+      SET activation=$2, amt_password=$3, generate_random_password=$4 cira_config_name=$5, mebx_password=$6, generate_random_mebx_password=$7 tags=$8, dhcp_enabled=$9 
+      WHERE profile_name=$1 and tenant_id = $10`,
       [
         amtConfig.profileName,
         amtConfig.activation,
         amtConfig.amtPassword,
+        amtConfig.generateRandomPassword,
         amtConfig.ciraConfigName,
         amtConfig.mebxPassword,
+        amtConfig.generateRandomMEBxPassword,
         amtConfig.tags,
         amtConfig.dhcpEnabled,
         amtConfig.tenantId
