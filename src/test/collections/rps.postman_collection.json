@@ -4263,8 +4263,8 @@
 									"    pm.expect(result.errors[0].param).to.eql(\"activation\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"\r",
-									"    pm.expect(result.errors[1].msg).to.eql(\"AMT password is required field should contains at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.\")\r",
-									"    pm.expect(result.errors[1].param).to.eql(\"amtPassword\")\r",
+									"    pm.expect(result.errors[1].msg).to.eql(\"If generate random AMT password is disabled, amtPassword is mandatory\")\r",
+									"    pm.expect(result.errors[1].param).to.eql(\"generateRandomPassword\")\r",
 									"    pm.expect(result.errors[1].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -5183,7 +5183,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"acmactivate\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"acmactivate\",\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5650,7 +5650,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\",\r\n    \"dhcpEnabled\": true\r\n}"
+									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\",\r\n    \"dhcpEnabled\": true"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
