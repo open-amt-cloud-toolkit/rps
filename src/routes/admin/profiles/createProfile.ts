@@ -21,7 +21,7 @@ export async function createProfile (req: Request, res: Response): Promise<void>
       if (!amtConfig.generateRandomPassword) {
         amtConfig.amtPassword = 'AMT_PASSWORD'
       }
-      if (!amtConfig.generateRandomMEBxPassword) {
+      if (!amtConfig.generateRandomMEBxPassword && amtConfig.activation === 'acmactivate') {
         amtConfig.mebxPassword = 'MEBX_PASSWORD'
       }
     }

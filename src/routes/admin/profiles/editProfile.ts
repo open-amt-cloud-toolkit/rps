@@ -35,7 +35,7 @@ export async function editProfile (req: Request, res: Response): Promise<void> {
           amtConfig.amtPassword = 'AMT_PASSWORD'
         }
         // store the MEBX password key into db
-        if (!amtConfig.generateRandomMEBxPassword) {
+        if (!amtConfig.generateRandomMEBxPassword && amtConfig.activation === 'acmactivate') {
           amtConfig.mebxPassword = 'MEBX_PASSWORD'
         }
       }

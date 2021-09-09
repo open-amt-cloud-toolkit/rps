@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "9235c8e4-0ab3-4ff3-bfb9-03d76b9b414b",
+		"_postman_id": "d2663acd-e2f9-4332-a522-5bb653697038",
 		"name": "RPS API Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -4171,7 +4171,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRanodomMEBxPassword\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -4228,7 +4228,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"activate\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"activate\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRanodomMEBxPassword\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -4259,7 +4259,7 @@
 									"});\r",
 									"pm.test(\"Creation should fail when activation is valid\", function () {\r",
 									"    var result = pm.response.json();\r",
-									"     pm.expect(result.errors[0].msg).to.eql(\"Either generateRandomPassword should be enabled with amtPassword or should provide amtPassword\")\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"Either generateRandomPassword should be enabled or provide amtPassword\")\r",
 									"    pm.expect(result.errors[0].param).to.eql(\"activation\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"\r",
@@ -4289,7 +4289,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": false,\r\n    \"generateRanodomMEBxPassword\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -4346,7 +4346,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": false,\r\n    \"generateRanodomMEBxPassword\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -4403,7 +4403,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"activation\": \"acmactivate\",\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"activation\": \"acmactivate\",\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": false,\r\n    \"generateRanodomMEBxPassword\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -4460,7 +4460,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123\",\r\n    \"activation\": \"acmactivate\",\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123\",\r\n    \"activation\": \"acmactivate\",\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": false,\r\n    \"generateRanodomMEBxPassword\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5006,7 +5006,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"amtPassword\": \"Intel123\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5032,17 +5032,15 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 200\", function () {\r",
-									"    pm.response.to.have.status(200);\r",
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Result 1 should be equal to example\", function () {\r",
-									"    var jsonData = pm.response.json();\r",
-									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
-									"    pm.expect(jsonData.activation).to.equal(\"ccmactivate\")    \r",
-									"    pm.expect(jsonData.ciraConfigName).to.equal(null)    \r",
-									"    pm.expect(jsonData.dhcpEnabled).to.equal(false)    \r",
-									"    pm.expect(jsonData.tags.length).to.equal(1)  \r",
+									"pm.test(\"Request fail\", function () {\r",
+									"     var result = pm.response.json();\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"Either generateRandomPassword should be enabled or provide amtPassword\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"activation\")\r",
+									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -5066,7 +5064,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": false    \r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false    \r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5126,7 +5124,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"tags\": [\"tag123\"],\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag123\"],\r\n    \"generateRandomPassword\": true,\r\n    \"generateRanodomMEBxPassword\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5157,9 +5155,13 @@
 									"});\r",
 									"pm.test(\"Creation should fail when payload contains acmactivate without mebx password\", function () {\r",
 									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"MEBx Password is required for acmactivate\")\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"Either generateRandomPassword should be enabled or provide amtPassword\")\r",
 									"    pm.expect(result.errors[0].param).to.eql(\"activation\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
+									"\r",
+									"    pm.expect(result.errors[1].msg).to.eql(\"If generate random AMT password is disabled, amtPassword is mandatory\")\r",
+									"    pm.expect(result.errors[1].param).to.eql(\"generateRandomPassword\")\r",
+									"    pm.expect(result.errors[1].location).to.eql(\"body\")\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -5183,7 +5185,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"acmactivate\",\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"acmactivate\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRanodomMEBxPassword\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5242,7 +5244,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"mebxPassword\": \"P@ssw0rd\",\r\n    \"activation\": \"acmactivate\",\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"mebxPassword\": \"P@ssw0rd\",\r\n    \"activation\": \"acmactivate\",\r\n    \"generateRandomPassword\": true,\r\n    \"generateRanodomMEBxPassword\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5301,7 +5303,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"P@ssw0rd\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"acmactivate\",\r\n    \"mebxPassword\": \"P@ssw0rd\",\r\n    \"amtPassword\": \"P@ssw0rd\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRanodomMEBxPassword\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -6452,7 +6454,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"P@ssw0rd\",\r\n    \"mebxPassword\": \"P@ssw0rd\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"acm\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"P@ssw0rd\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"acm\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
