@@ -115,7 +115,7 @@ export class ProfileManager implements IProfileManager {
     if (profile) {
       if (profile.generateRandomMEBxPassword) {
         mebxPassword = PasswordHelper.generateRandomPassword(AMTRandomPasswordLength)
-        
+
         if (mebxPassword) {
           this.logger.debug(`Created random MEBx password for ${profile.profileName}`)
         } else {
@@ -124,7 +124,7 @@ export class ProfileManager implements IProfileManager {
       } else if (this.configurator?.secretsManager) {
         mebxPassword = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${profileName}`, 'MEBX_PASSWORD')
       } else {
-        mebxPassword = profile.mebxPassword 
+        mebxPassword = profile.mebxPassword
       }
 
       this.logger.debug(`found amtPassword for profile ${profileName}`)
