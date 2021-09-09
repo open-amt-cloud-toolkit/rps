@@ -4171,7 +4171,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRanodomMEBxPassword\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -4228,7 +4228,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"activate\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRanodomMEBxPassword\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"activate\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -4289,7 +4289,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": false,\r\n    \"generateRanodomMEBxPassword\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -4346,7 +4346,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": false,\r\n    \"generateRanodomMEBxPassword\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -4403,7 +4403,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"activation\": \"acmactivate\",\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": false,\r\n    \"generateRanodomMEBxPassword\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"activation\": \"acmactivate\",\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -4460,7 +4460,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123\",\r\n    \"activation\": \"acmactivate\",\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": false,\r\n    \"generateRanodomMEBxPassword\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123\",\r\n    \"activation\": \"acmactivate\",\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -4892,7 +4892,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": true,\r\n    \"generateRanodomMEBxPassword\": true,\r\n    \"activation\": \"acmactivate\",\r\n    \"dhcpEnabled\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"activation\": \"acmactivate\",\r\n    \"dhcpEnabled\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -4949,7 +4949,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"activate\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRanodomMEBxPassword\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"activate\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5006,7 +5006,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRanodomMEBxPassword\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"Intel123\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5066,7 +5066,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRanodomMEBxPassword\": false    \r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false    \r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5126,7 +5126,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"tags\": [\"tag123\"],\r\n    \"generateRandomPassword\": false,\r\n    \"generateRanodomMEBxPassword\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"tags\": [\"tag123\"],\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5183,7 +5183,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"acmactivate\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRanodomMEBxPassword\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"acmactivate\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5242,7 +5242,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"mebxPassword\": \"P@ssw0rd\",\r\n    \"activation\": \"acmactivate\",\r\n    \"generateRandomPassword\": true,\r\n    \"generateRanodomMEBxPassword\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"mebxPassword\": \"P@ssw0rd\",\r\n    \"activation\": \"acmactivate\",\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5301,7 +5301,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"P@ssw0rd\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRanodomMEBxPassword\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"amtPassword\": \"P@ssw0rd\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5534,7 +5534,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"generateRandomPassword\": true,\r\n    \"generateRanodomMEBxPassword\": true,\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"nociraconfig\",\r\n    \"dhcpEnabled\": true\r\n}"
+									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"nociraconfig\",\r\n    \"dhcpEnabled\": true\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5591,7 +5591,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"generateRandomPassword\": true,\r\n    \"generateRanodomMEBxPassword\": true,\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\",\r\n    \"dhcpEnabled\": false\r\n}"
+									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\",\r\n    \"dhcpEnabled\": false\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5650,7 +5650,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRanodomMEBxPassword\": false,\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\",\r\n    \"dhcpEnabled\": true\r\n}"
+									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\",\r\n    \"dhcpEnabled\": true\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5826,7 +5826,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"generateRandomPassword\": true,\r\n    \"generateRanodomMEBxPassword\": true,\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\",\r\n    \"dhcpEnabled\": false\r\n}"
+									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\",\r\n    \"dhcpEnabled\": false\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
