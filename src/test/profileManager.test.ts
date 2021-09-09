@@ -169,5 +169,5 @@ test('retrieve amt password auto generated', async () => {
   const profile = 'profile 2'
   const expected = '<StrongPassword2!>'
   const actual = await profileManager.getAmtPassword(profile)
-  expect(actual).not.toBe(expected)
+  expect(actual).toBe(expected)
 })

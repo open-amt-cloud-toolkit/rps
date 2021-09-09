@@ -258,7 +258,11 @@ test('test getUpdatedData when activation messaged changed from acmactivate to c
     activation: 'ccmactivate',
     amtPassword: 'P@ssw0rd',
     ciraConfigName: undefined,
+    dhcpEnabled: undefined,
+    generateRandomMEBxPassword: false,
+    generateRandomPassword: undefined,
     mebxPassword: null,
+    tags: undefined,
     tenantId: ''
   }
   const result: AMTConfiguration = await getUpdatedData(newConfig, oldConfig)
