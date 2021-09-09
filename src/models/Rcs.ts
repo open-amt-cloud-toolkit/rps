@@ -29,6 +29,7 @@ export class RCSConfig {
   webport: number
   credentialspath: string
   WSConfiguration: WebSocketConfig
+  dbProvider: string
   connectionString: string
   corsOrigin: string
   corsHeaders: string
@@ -197,6 +198,7 @@ const recipeRCSConfig = {
   vault_address: 'VaultConfig.address',
   vault_token: 'VaultConfig.token',
   secrets_path: 'VaultConfig.SecretsPath',
+  db_provider: 'dbProvider',
   connection_string: 'connectionString',
   amt_domains: 'AMTDomains',
   amt_configurations: 'AMTConfigurations',

@@ -2,28 +2,22 @@
  * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
-import { IProfilesDb } from '../../../interfaces/database/IProfilesDb'
-import { ProfilesDbFactory } from '../../../repositories/factories/ProfilesDbFactory'
 import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, PROFILE_NOT_FOUND } from '../../../utils/constants'
 import { AMTConfiguration } from '../../../models/Rcs'
 import { ClientAction, ProfileWifiConfigs } from '../../../RCS.Config'
 import { RPSError } from '../../../utils/RPSError'
-import { IProfileWifiConfigsDb } from '../../../interfaces/database/IProfileWifiConfigsDb'
-import { ProfileWifiConfigsDbFactory } from '../../../repositories/factories/ProfileWifiConfigsDbFactory'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { Request, Response } from 'express'
+import { IProfilesWifiConfigsTable } from '../../../interfaces/database/IProfileWifiConfigsDb'
 
 export async function editProfile (req: Request, res: Response): Promise<void> {
-  let profilesDb: IProfilesDb = null
   const log = new Logger('editProfile')
   const newConfig = req.body
   newConfig.tenantId = req.tenantId
   try {
-    profilesDb = ProfilesDbFactory.getProfilesDb()
-    const profileWifiConfigsDb: IProfileWifiConfigsDb = ProfileWifiConfigsDbFactory.getProfileWifiConfigsDb()
-    const oldConfig: AMTConfiguration = await profilesDb.getByName(newConfig.profileName)
+    const oldConfig: AMTConfiguration = await req.db.profiles.getByName(newConfig.profileName)
 
     if (oldConfig == null) {
       MqttProvider.publishEvent('fail', ['editProfile'], `Profile Not Found : ${newConfig.profileName}`)
@@ -31,7 +25,7 @@ export async function editProfile (req: Request, res: Response): Promise<void> {
       res.status(404).json(API_RESPONSE(null, 'Not Found', PROFILE_NOT_FOUND(newConfig.profileName))).end()
     } else {
       const amtConfig: AMTConfiguration = await getUpdatedData(newConfig, oldConfig)
-      amtConfig.wifiConfigs = await handleWifiConfigs(newConfig, oldConfig, profileWifiConfigsDb)
+      amtConfig.wifiConfigs = await handleWifiConfigs(newConfig, oldConfig, req.db.profileWirelessConfigs)
       // Assigning value key value for AMT Random Password and MEBx Random Password to store in database
       const amtPwdBefore = amtConfig.amtPassword
       const mebxPwdBefore = amtConfig.mebxPassword
@@ -46,7 +40,7 @@ export async function editProfile (req: Request, res: Response): Promise<void> {
         }
       }
       // SQL Query > Insert Data
-      const results = await profilesDb.update(amtConfig)
+      const results = await req.db.profiles.update(amtConfig)
       if (results) {
         // profile inserted  into db successfully. insert the secret into vault
         if (oldConfig.amtPassword !== null || oldConfig.mebxPassword !== null) {
@@ -127,7 +121,7 @@ export const handleGenerateRandomMEBxPassword = (amtConfig: AMTConfiguration, ne
   return amtConfig
 }
 
-export const handleWifiConfigs = async (newConfig: AMTConfiguration, oldConfig: AMTConfiguration, profileWifiConfigsDb: IProfileWifiConfigsDb): Promise<ProfileWifiConfigs[]> => {
+export const handleWifiConfigs = async (newConfig: AMTConfiguration, oldConfig: AMTConfiguration, profileWifiConfigsDb: IProfilesWifiConfigsTable): Promise<ProfileWifiConfigs[]> => {
   let wifiConfigs: ProfileWifiConfigs[] = null
   if (oldConfig.dhcpEnabled && !newConfig.dhcpEnabled) {
     await profileWifiConfigsDb.deleteProfileWifiConfigs(newConfig.profileName)

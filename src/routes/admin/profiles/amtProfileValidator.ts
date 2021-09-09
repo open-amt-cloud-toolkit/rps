@@ -1,14 +1,12 @@
 /*********************************************************************
- * Copyright (c) Intel Corporation 2019
+ * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
- * Author : Madhavi Losetty
  **********************************************************************/
-import { check } from 'express-validator'
-import { WirelessConfigDbFactory } from '../../../repositories/factories/WirelessConfigDbFactory'
-import { IWirelessProfilesDb } from '../../../interfaces/database/IWirelessProfilesDB'
+import { Request } from 'express'
+import { check, ValidationChain } from 'express-validator'
 import { ClientAction, ProfileWifiConfigs } from '../../../RCS.Config'
 
-export const amtProfileValidator = (): any => {
+export const amtProfileValidator = (): ValidationChain[] => {
   return [
     check('profileName')
       .not()
@@ -112,7 +110,7 @@ export const amtProfileValidator = (): any => {
         if ([...priorities].length !== value.length) {
           throw new Error('wifi config priority should be unique')
         }
-        const wifiConfigs = await validatewifiConfigs(value)
+        const wifiConfigs = await validatewifiConfigs(value, req as Request)
         if (wifiConfigs.length > 0) {
           throw new Error(`wifi configs ${wifiConfigs.toString()} does not exists in db`)
         }
@@ -120,11 +118,10 @@ export const amtProfileValidator = (): any => {
   ]
 }
 
-const validatewifiConfigs = async (value: any): Promise<string[]> => {
-  const profilesDb: IWirelessProfilesDb = WirelessConfigDbFactory.getConfigDb()
+const validatewifiConfigs = async (value: any, req: Request): Promise<string[]> => {
   const wifiConfigNames = []
   for (const config of value) {
-    const iswifiExist = await profilesDb.checkProfileExits(config.profileName)
+    const iswifiExist = await req.db.wirelessProfiles.checkProfileExits(config.profileName)
     if (!iswifiExist) {
       wifiConfigNames.push(config.profileName)
     }
@@ -224,7 +221,7 @@ export const profileUpdateValidator = (): any => {
         if ([...priorities].length !== value.length) {
           throw new Error('wifi config priority should be unique')
         }
-        const wifiConfigs = await validatewifiConfigs(value)
+        const wifiConfigs = await validatewifiConfigs(value, req as Request)
         if (wifiConfigs.length > 0) {
           throw new Error(`wifi configs ${wifiConfigs.toString()} does not exists in db`)
         }

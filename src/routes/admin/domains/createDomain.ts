@@ -3,8 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 import { AMTDomain } from '../../../models/Rcs'
-import { IDomainsDb } from '../../../interfaces/database/IDomainsDb'
-import { DomainsDbFactory } from '../../../repositories/factories/DomainsDbFactory'
 import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
@@ -13,15 +11,12 @@ import { MqttProvider } from '../../../utils/MqttProvider'
 import { Request, Response } from 'express'
 
 export async function createDomain (req: Request, res: Response): Promise<void> {
-  let domainsDb: IDomainsDb = null
   const amtDomain: AMTDomain = req.body
   amtDomain.tenantId = req.tenantId
   const log = new Logger('createDomain')
   let cert: any
   let domainPwd: string
   try {
-    domainsDb = DomainsDbFactory.getDomainsDb()
-
     // store the cert and password key in database
     if (req.secretsManager) {
       cert = amtDomain.provisioningCert
@@ -30,7 +25,7 @@ export async function createDomain (req: Request, res: Response): Promise<void> 
       amtDomain.provisioningCertPassword = 'CERT_PASSWORD'
     }
     // SQL Query > Insert Data
-    const results: AMTDomain = await domainsDb.insert(amtDomain)
+    const results: AMTDomain = await req.db.domains.insert(amtDomain)
     // store the actual cert and password into Vault
     if (results != null) {
       if (req.secretsManager) {

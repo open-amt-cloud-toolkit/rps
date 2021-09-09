@@ -14,13 +14,13 @@ import { WSManProcessor } from '../WSManProcessor'
 import { IClientManager } from '../interfaces/IClientManager'
 import { IValidator } from '../interfaces/IValidator'
 import { CIRAConfigurator } from './CIRAConfigurator'
-import { AMTGeneralSettings, AMTEthernetPortSettings, AddWiFiSettingsResponse, CIM_WiFiPortResponse, WiFiEndPointSettings } from '../models/WSManResponse'
+import { AMTGeneralSettings, AMTEthernetPortSettings, AddWiFiSettingsResponse, CIM_WiFiPortResponse, WiFiEndPointSettings, AMT_WiFiPortConfigurationService, AMT_WiFiPortConfigurationServiceResponse } from '../models/WSManResponse'
 import { AMTUserName, WIFIENDPOINT } from './../utils/constants'
 import { AMTConfiguration } from '../models/Rcs'
-import { IWirelessProfilesDb } from '../interfaces/database/IWirelessProfilesDB'
-import { WirelessConfigDbFactory } from '../repositories/factories/WirelessConfigDbFactory'
 import { MqttProvider } from '../utils/MqttProvider'
 import { RPSError } from '../utils/RPSError'
+import { DbCreatorFactory } from '../repositories/factories/DbCreatorFactory'
+import { EnvReader } from '../utils/EnvReader'
 
 export class NetworkConfigurator implements IExecutor {
   constructor (
@@ -58,8 +58,11 @@ export class NetworkConfigurator implements IExecutor {
         await this.amtwsman.setWiFiPort(clientId, 32769)
         clientObj.network.setWiFiPort = true
         this.clientManager.setClientObject(clientObj)
-      } else if (clientObj.network.setWiFiPortResponse && payload.profile.dhcpEnabled) {
+      } else if (clientObj.network.setWiFiPort && payload.profile.wifiConfigs?.length > 0 && clientObj.network.count <= payload.profile.wifiConfigs?.length - 1 && payload.profile.dhcpEnabled) {
         await this.addWifiConfigs(clientObj, clientId, payload.profile.wifiConfigs)
+      } else if (clientObj.network?.getWiFiPortConfigurationService) {
+        // If all wiFi configs are added, then move to CIRA config.
+        await this.callCIRAConfig(clientId, clientObj, 'ethernet and wifi settings are updated', message)
       }
     } catch (error) {
       this.logger.error(`${clientId} : Failed to configure network settings : ${error}`)
@@ -91,6 +94,14 @@ export class NetworkConfigurator implements IExecutor {
       await this.processWiFiPortResponse(message, clientId)
     } else if (wsmanResponse?.CIM_WiFiEndpointSettings != null) {
       clientObj.network.WiFiPortCapabilities = wsmanResponse.CIM_WiFiEndpointSettings.responses
+      this.clientManager.setClientObject(clientObj)
+    } else if (wsmanResponse?.AMT_WiFiPortConfigurationService != null) {
+      await this.processWiFiPortConfigurationService(clientObj, message, clientId)
+    } else if (wsmanResponse?.Header?.Method === 'AMT_WiFiPortConfigurationService') {
+      if (wsmanResponse?.Body?.localProfileSynchronizationEnabled !== 1) {
+        this.logger.warn(`Failed to update localProfileSynchronization for device: ${clientObj.uuid}`)
+      }
+      clientObj.network.getWiFiPortConfigurationService = true
       this.clientManager.setClientObject(clientObj)
     }
   }
@@ -133,9 +144,9 @@ export class NetworkConfigurator implements IExecutor {
       // ReturnValueMap={0, 1, 2, 3, 4, .., 32768..65535}
       // Values={Completed with No Error, Not Supported, Failed, Invalid Parameter, Invalid Reference, Method Reserved, Vendor Specific}
       await this.callCIRAConfig(clientId, clientObj, 'Ethernet Configured. WiFi Failed', wsmanResponse)
-    } else if (clientObj.network.count >= payload.profile.wifiConfigs.length - 1) {
-      // If all wiFi configs are added, then move to CIRA config.
-      await this.callCIRAConfig(clientId, clientObj, 'Ethernet & WiFi configured', wsmanResponse)
+    } else if (clientObj.network.count > payload.profile.wifiConfigs.length - 1) {
+      // If all wiFi configs are added, Get AMT_WiFiPortConfigurationService to localProfileSynchronizationEnabled
+      await this.amtwsman.batchEnum(clientId, '*AMT_WiFiPortConfigurationService', AMTUserName, clientObj.ClientData.payload.uuid)
     } else {
       this.logger.debug(`Device ${clientObj.uuid} add WiFi Settings ${response.Body?.ReturnValue}}`)
     }
@@ -251,9 +262,17 @@ export class NetworkConfigurator implements IExecutor {
    */
   async addWifiConfigs (clientObj: ClientObject, clientId: string, wifiConfigs: ProfileWifiConfigs[]): Promise<void> {
     if (clientObj.network.count <= wifiConfigs.length - 1) {
-      const wifiProfilesDb: IWirelessProfilesDb = WirelessConfigDbFactory.getConfigDb()
+      // TODO: Don't love it
+      const dbf = new DbCreatorFactory(EnvReader.GlobalEnvConfig)
+      const db = await dbf.getDb()
       // Get WiFi profile information based on the profile name.
-      const wifiConfig = await wifiProfilesDb.getByName(wifiConfigs[clientObj.network.count].profileName)
+      const wifiConfig = await db.wirelessProfiles.getByName(wifiConfigs[clientObj.network.count].profileName)
+      if (this.configurator?.secretsManager) {
+        const data: any = await this.configurator.secretsManager.getSecretAtPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}Wireless/${wifiConfig.profileName}`)
+        if (data != null) {
+          wifiConfig.pskPassphrase = data.data.PSK_PASSPHRASE
+        }
+      }
       // Add  WiFi profile information to WiFi endpoint settings object
       const wifiEndpointSettings = {
         __parameterType: 'instance',
@@ -280,15 +299,40 @@ export class NetworkConfigurator implements IExecutor {
    */
   async deleteWiFiConfigs (clientObj: ClientObject, clientId: string): Promise<void> {
     let wifiEndpoints: WiFiEndPointSettings[] = clientObj.network?.WiFiPortCapabilities
-    if (wifiEndpoints?.length > 1) {
-      await this.amtwsman.delete(clientId, 'CIM_WiFiEndpointSettings', { InstanceID: wifiEndpoints[1].InstanceID })
-      wifiEndpoints = wifiEndpoints.slice(2)
+    wifiEndpoints.forEach(wifi => {
+      if (wifi.InstanceID == null && wifi.Priority === 0) {
+        const index = wifiEndpoints.indexOf(wifi)
+        if (index > -1) {
+          wifiEndpoints.splice(index, 1)
+        }
+      }
+    })
+    if (wifiEndpoints?.length > 0) {
+      await this.amtwsman.delete(clientId, 'CIM_WiFiEndpointSettings', { InstanceID: wifiEndpoints[0].InstanceID })
+      wifiEndpoints = wifiEndpoints.slice(1)
       clientObj.network.WiFiPortCapabilities = wifiEndpoints
       this.clientManager.setClientObject(clientObj)
     } else {
       clientObj.network.isWiFiConfigsDeleted = true
       this.clientManager.setClientObject(clientObj)
       await this.amtwsman.batchEnum(clientId, '*AMT_GeneralSettings', AMTUserName)
+    }
+  }
+
+  /**
+   * @description Parse the get and set of AMT_EthernetPortSettings response received from AMT
+   * @param {string} clientId Id to keep track of connections
+   * @param {string} message
+   */
+  async processWiFiPortConfigurationService (clientObj: ClientObject, message: any, clientId: string): Promise<void> {
+    const wifiPortConfigurationService: AMT_WiFiPortConfigurationService = message?.payload.AMT_WiFiPortConfigurationService
+    if (wifiPortConfigurationService?.response.localProfileSynchronizationEnabled === 0) {
+      const response: AMT_WiFiPortConfigurationServiceResponse = wifiPortConfigurationService.response
+      response.localProfileSynchronizationEnabled = 1
+      await this.amtwsman.put(clientId, 'AMT_WiFiPortConfigurationService', response, AMTUserName, null, true)
+    } else if (wifiPortConfigurationService?.response.localProfileSynchronizationEnabled === 1) {
+      clientObj.network.getWiFiPortConfigurationService = true
+      this.clientManager.setClientObject(clientObj)
     }
   }
 }

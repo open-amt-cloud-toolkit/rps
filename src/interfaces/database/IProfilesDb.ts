@@ -5,8 +5,8 @@
  **********************************************************************/
 import { AMTConfiguration } from '../../models/Rcs'
 import { CIRAConfig } from '../../RCS.Config'
-import { IDB } from './IDb'
+import { ITable } from './ITable'
 
-export interface IProfilesDb extends IDB<AMTConfiguration> {
+export interface IProfilesTable extends ITable<AMTConfiguration> {
   getCiraConfigForProfile: (ciraConfigName: string, tenantId?: string) => Promise<CIRAConfig>
 }

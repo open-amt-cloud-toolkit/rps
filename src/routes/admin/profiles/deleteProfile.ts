@@ -5,8 +5,6 @@
  **********************************************************************/
 import Logger from '../../../Logger'
 import { AMTConfiguration } from '../../../models/Rcs'
-import { IProfilesDb } from '../../../interfaces/database/IProfilesDb'
-import { ProfilesDbFactory } from '../../../repositories/factories/ProfilesDbFactory'
 import { PROFILE_NOT_FOUND, API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../../utils/constants'
 import { EnvReader } from '../../../utils/EnvReader'
 import { MqttProvider } from '../../../utils/MqttProvider'
@@ -14,16 +12,14 @@ import { Request, Response } from 'express'
 
 export async function deleteProfile (req: Request, res: Response): Promise<void> {
   const log = new Logger('deleteProfile')
-  let profilesDb: IProfilesDb = null
   const { profileName } = req.params
   try {
-    profilesDb = ProfilesDbFactory.getProfilesDb()
-    const profile: AMTConfiguration = await profilesDb.getByName(profileName)
+    const profile: AMTConfiguration = await req.db.profiles.getByName(profileName)
     if (profile == null) {
       MqttProvider.publishEvent('fail', ['deleteProfile'], `Profile Not Found : ${profileName}`)
       res.status(404).json(API_RESPONSE(null, 'Not Found', PROFILE_NOT_FOUND(profileName))).end()
     } else {
-      const results: boolean = await profilesDb.delete(profileName)
+      const results: boolean = await req.db.profiles.delete(profileName)
       if (results) {
         if (!profile.generateRandomPassword || !profile.generateRandomMEBxPassword) {
           if (req.secretsManager) {

@@ -4,7 +4,7 @@
  * Author : Ramu Bachala
  **********************************************************************/
 import { AMTDomain } from '../../models/Rcs'
-import { IDB } from './IDb'
-export interface IDomainsDb extends IDB<AMTDomain> {
+import { ITable } from './ITable'
+export interface IDomainsTable extends ITable<AMTDomain> {
   getDomainByDomainSuffix: (domainSuffix: string, tenantId?: string) => Promise<AMTDomain>
 }

@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 import { WirelessConfig } from '../../RCS.Config'
-import { IDB } from './IDb'
+import { ITable } from './ITable'
 
-export interface IWirelessProfilesDb extends IDB<WirelessConfig> {
+export interface IWirelessProfilesTable extends ITable<WirelessConfig> {
   checkProfileExits: (configName: string, tenantId?: string) => Promise<boolean>
 }

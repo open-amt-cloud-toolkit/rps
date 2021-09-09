@@ -2,8 +2,6 @@
  * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
-import { ICiraConfigDb } from '../../../interfaces/database/ICiraConfigDb'
-import { CiraConfigDbFactory } from '../../../repositories/factories/CiraConfigDbFactory'
 import { CIRAConfig } from '../../../RCS.Config'
 import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
@@ -15,12 +13,10 @@ import { Request, Response } from 'express'
 
 export async function editCiraConfig (req: Request, res: Response): Promise<void> {
   const log = new Logger('editCiraConfig')
-  let ciraConfigDb: ICiraConfigDb = null
   const newConfig: CIRAConfig = req.body
   newConfig.tenantId = req.tenantId
   try {
-    ciraConfigDb = CiraConfigDbFactory.getCiraConfigDb()
-    const oldConfig: CIRAConfig = await ciraConfigDb.getByName(newConfig.configName)
+    const oldConfig: CIRAConfig = await req.db.ciraConfigs.getByName(newConfig.configName)
     if (oldConfig == null) {
       log.debug('Not found : ', newConfig.configName)
       MqttProvider.publishEvent('fail', ['editCiraConfig'], `CIRA config "${newConfig.configName}" not found`)
@@ -33,7 +29,7 @@ export async function editCiraConfig (req: Request, res: Response): Promise<void
       }
       // TBD: Need to check the ServerAddressFormat, CommonName and MPSServerAddress if they are not updated.
       // SQL Query > Insert Data
-      const results = await ciraConfigDb.update(ciraConfig)
+      const results = await req.db.ciraConfigs.update(ciraConfig)
       if (results !== undefined) {
         if (req.secretsManager) {
           if (mpsPwd != null) {

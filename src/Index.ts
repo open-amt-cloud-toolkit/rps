@@ -16,6 +16,7 @@ import dot = require('dot-object')
 import routes from './routes'
 import rc = require('rc')
 import { MqttProvider } from './utils/MqttProvider'
+import { DbCreatorFactory } from './repositories/factories/DbCreatorFactory'
 const log = new Logger('Index')
 
 // To merge ENV variables. consider after lowercasing ENV since our config keys are lowercase
@@ -43,10 +44,12 @@ const server: WebSocketListener = new WebSocketListener(new Logger('WebSocketLis
 const mqtt: MqttProvider = new MqttProvider(config)
 mqtt.connectBroker()
 
-app.use('/api/v1', (req, res, next) => {
+app.use('/api/v1', async (req: express.Request, res: express.Response, next) => {
   if (configurator.secretsManager) {
     (req as any).secretsManager = configurator.secretsManager
   }
+  const newdb = new DbCreatorFactory(config)
+  req.db = await newdb.getDb()
   next()
 }, routes)
 

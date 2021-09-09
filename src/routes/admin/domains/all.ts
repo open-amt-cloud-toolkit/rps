@@ -2,8 +2,6 @@
  * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
-import { IDomainsDb } from '../../../interfaces/database/IDomainsDb'
-import { DomainsDbFactory } from '../../../repositories/factories/DomainsDbFactory'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
 import Logger from '../../../Logger'
 import { AMTDomain, DataWithCount } from '../../../models/Rcs'
@@ -12,13 +10,11 @@ import { Request, Response } from 'express'
 
 export async function getAllDomains (req: Request, res: Response): Promise<void> {
   const log = new Logger('getAllDomains')
-  let domainsDb: IDomainsDb
   const top = Number(req.query.$top)
   const skip = Number(req.query.$skip)
   const includeCount = req.query.$count
   try {
-    domainsDb = DomainsDbFactory.getDomainsDb()
-    let domains: AMTDomain[] = await domainsDb.get(top, skip)
+    let domains: AMTDomain[] = await req.db.domains.get(top, skip)
     if (domains.length >= 0) {
       domains = domains.map((result: AMTDomain) => {
         delete result.provisioningCert
@@ -29,7 +25,7 @@ export async function getAllDomains (req: Request, res: Response): Promise<void>
     if (includeCount == null || includeCount === 'false') {
       res.status(200).json(API_RESPONSE(domains)).end()
     } else {
-      const count: number = await domainsDb.getCount()
+      const count: number = await req.db.domains.getCount()
       const dataWithCount: DataWithCount = {
         data: domains,
         totalCount: count

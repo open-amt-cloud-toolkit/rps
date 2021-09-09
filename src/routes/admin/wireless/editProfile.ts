@@ -2,9 +2,6 @@
  * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
-
-import { IWirelessProfilesDb } from '../../../interfaces/database/IWirelessProfilesDB'
-import { WirelessConfigDbFactory } from '../../../repositories/factories/WirelessConfigDbFactory'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, NETWORK_CONFIG_NOT_FOUND } from '../../../utils/constants'
 import { WirelessConfig } from '../../../RCS.Config'
 import Logger from '../../../Logger'
@@ -15,10 +12,8 @@ import { Request, Response } from 'express'
 
 export async function editWirelessProfile (req: Request, res: Response): Promise<void> {
   const log = new Logger('editNetProfile')
-  let wirelessDb: IWirelessProfilesDb = null
   try {
-    wirelessDb = WirelessConfigDbFactory.getConfigDb()
-    let config: WirelessConfig = await wirelessDb.getByName(req.body.profileName)
+    let config: WirelessConfig = await req.db.wirelessProfiles.getByName(req.body.profileName)
     if (config == null) {
       MqttProvider.publishEvent('fail', ['editWirelessProfiles'], `Wireless Profile Not Found : ${req.body.profileName}`)
       res.status(404).json(API_RESPONSE(null, 'Not Found', NETWORK_CONFIG_NOT_FOUND('Wireless', req.body.profileName))).end()
@@ -26,12 +21,12 @@ export async function editWirelessProfile (req: Request, res: Response): Promise
       const passphrase = req.body.pskPassphrase
       if (passphrase) {
         config = { ...config, ...req.body }
-        config.pskPassphrase = 'pskPassphrase'
+        config.pskPassphrase = 'PSK_PASSPHRASE'
       } else {
         config = { ...config, ...req.body }
       }
 
-      const results: WirelessConfig = await wirelessDb.update(config)
+      const results: WirelessConfig = await req.db.wirelessProfiles.update(config)
       if (req.secretsManager && passphrase) {
         await req.secretsManager.writeSecretWithKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}Wireless/${config.profileName}`, config.pskPassphrase, passphrase)
         log.debug(`pskPassphrase stored in Vault for wireless profile: ${config.profileName}`)
