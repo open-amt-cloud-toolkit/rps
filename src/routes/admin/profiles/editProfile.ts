@@ -31,9 +31,13 @@ export async function editProfile (req: Request, res: Response): Promise<void> {
       const mebxPwdBefore = amtConfig.mebxPassword
       if (req.secretsManager) {
         // store the AMT password key into db
-        amtConfig.amtPassword = 'AMT_PASSWORD'
+        if (!amtConfig.generateRandomPassword) {
+          amtConfig.amtPassword = 'AMT_PASSWORD'
+        }
         // store the MEBX password key into db
-        amtConfig.mebxPassword = 'MEBX_PASSWORD'
+        if (!amtConfig.generateRandomMEBxPassword && amtConfig.activation === 'acmactivate') {
+          amtConfig.mebxPassword = 'MEBX_PASSWORD'
+        }
       }
       // SQL Query > Insert Data
       const results = await req.db.profiles.update(amtConfig)
@@ -47,11 +51,16 @@ export async function editProfile (req: Request, res: Response): Promise<void> {
           }
         }
         // store the password sent into Vault
-        if (req.secretsManager) {
+        if (req.secretsManager && (!amtConfig.generateRandomPassword || !amtConfig.generateRandomMEBxPassword)) {
           const data = { data: { AMT_PASSWORD: '', MEBX_PASSWORD: '' } }
-          data.data.AMT_PASSWORD = amtPwdBefore
-          data.data.MEBX_PASSWORD = mebxPwdBefore
-          log.debug('AMT and MEBX Passwords written to vault')
+          if (!amtConfig.generateRandomPassword) {
+            data.data.AMT_PASSWORD = amtPwdBefore
+            log.debug('AMT Password written to vault')
+          }
+          if (!amtConfig.generateRandomMEBxPassword) {
+            data.data.MEBX_PASSWORD = mebxPwdBefore
+            log.debug('MEBX Password written to vault')
+          }
           await req.secretsManager.writeSecretWithObject(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${amtConfig.profileName}`, data)
         }
         log.verbose(`Updated AMT profile: ${newConfig.profileName}`)
@@ -72,6 +81,46 @@ export async function editProfile (req: Request, res: Response): Promise<void> {
   }
 }
 
+export const handleAMTPassword = (amtConfig: AMTConfiguration, newConfig: AMTConfiguration, oldConfig: AMTConfiguration): AMTConfiguration => {
+  if (newConfig.amtPassword == null) {
+    amtConfig.amtPassword = oldConfig.amtPassword
+    amtConfig.generateRandomPassword = false
+  } else {
+    amtConfig.amtPassword = newConfig.amtPassword
+  }
+  return amtConfig
+}
+
+export const handleMEBxPassword = (amtConfig: AMTConfiguration, newConfig: AMTConfiguration, oldConfig: AMTConfiguration): AMTConfiguration => {
+  if (newConfig.mebxPassword == null) {
+    amtConfig.mebxPassword = oldConfig.mebxPassword
+    amtConfig.generateRandomMEBxPassword = false
+  } else {
+    amtConfig.mebxPassword = newConfig.mebxPassword
+  }
+  return amtConfig
+}
+
+export const handleGenerateRandomPassword = (amtConfig: AMTConfiguration, newConfig: AMTConfiguration, oldConfig: AMTConfiguration): AMTConfiguration => {
+  if (newConfig.generateRandomPassword) {
+    amtConfig.generateRandomPassword = newConfig.generateRandomPassword
+    amtConfig.amtPassword = null
+  } else {
+    amtConfig.generateRandomPassword = newConfig.amtPassword == null ? oldConfig.generateRandomPassword : false
+  }
+  return amtConfig
+}
+
+export const handleGenerateRandomMEBxPassword = (amtConfig: AMTConfiguration, newConfig: AMTConfiguration, oldConfig: AMTConfiguration): AMTConfiguration => {
+  if (newConfig.generateRandomMEBxPassword) {
+    amtConfig.generateRandomMEBxPassword = newConfig.generateRandomMEBxPassword
+    amtConfig.mebxPassword = null
+  } else {
+    amtConfig.generateRandomMEBxPassword = newConfig.mebxPassword == null ? oldConfig.generateRandomMEBxPassword : false
+  }
+  return amtConfig
+}
+
 export const handleWifiConfigs = async (newConfig: AMTConfiguration, oldConfig: AMTConfiguration, profileWifiConfigsDb: IProfilesWifiConfigsTable): Promise<ProfileWifiConfigs[]> => {
   let wifiConfigs: ProfileWifiConfigs[] = null
   if (oldConfig.dhcpEnabled && !newConfig.dhcpEnabled) {
@@ -84,12 +133,15 @@ export const handleWifiConfigs = async (newConfig: AMTConfiguration, oldConfig: 
 }
 
 export const getUpdatedData = async (newConfig: any, oldConfig: AMTConfiguration): Promise<AMTConfiguration> => {
-  const amtConfig: AMTConfiguration = { profileName: newConfig.profileName } as AMTConfiguration
-  amtConfig.amtPassword = newConfig.amtPassword ?? oldConfig.amtPassword
-  amtConfig.mebxPassword = newConfig.mebxPassword ?? oldConfig.mebxPassword
+  let amtConfig: AMTConfiguration = { profileName: newConfig.profileName } as AMTConfiguration
+  amtConfig = handleAMTPassword(amtConfig, newConfig, oldConfig)
+  amtConfig = handleMEBxPassword(amtConfig, newConfig, oldConfig)
+  amtConfig = handleGenerateRandomPassword(amtConfig, newConfig, oldConfig)
+  amtConfig = handleGenerateRandomMEBxPassword(amtConfig, newConfig, oldConfig)
   amtConfig.activation = newConfig.activation ?? oldConfig.activation
   if (amtConfig.activation === ClientAction.CLIENTCTLMODE) {
     amtConfig.mebxPassword = null
+    amtConfig.generateRandomMEBxPassword = false
   }
   amtConfig.ciraConfigName = newConfig.ciraConfigName
   amtConfig.tags = newConfig.tags ?? oldConfig.tags
