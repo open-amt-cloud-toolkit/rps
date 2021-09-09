@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "9b55b3a9-b528-4e44-8002-9fe0b5724092",
+		"_postman_id": "53375159-06ed-4210-90c5-1a5412c1bba6",
 		"name": "RPS API Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -4259,7 +4259,7 @@
 									"});\r",
 									"pm.test(\"Creation should fail when activation is valid\", function () {\r",
 									"    var result = pm.response.json();\r",
-									"     pm.expect(result.errors[0].msg).to.eql(\"Invalid value\")\r",
+									"     pm.expect(result.errors[0].msg).to.eql(\"Either generateRandomPassword should be enabled with amtPassword or should provide amtPassword\")\r",
 									"    pm.expect(result.errors[0].param).to.eql(\"amtPassword\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"\r",
@@ -4520,7 +4520,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": true,\r\n    \"generateRanodomMEBxPassword\": true\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": true\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -8696,7 +8696,7 @@
 		"bearer": [
 			{
 				"key": "token",
-				"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZW5hbnRJZCI6IiIsImlzcyI6IjlFbVJKVGJJaUliNGJJZVNzbWdjV0lqclI2SHlFVHFjIiwiZXhwIjoxNjI5NTY3MzU5fQ.wHL2z2ldeCr2GY87c5TXFF89AxkshucKNipkJv_ignA",
+				"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZW5hbnRJZCI6IiIsImlzcyI6IjlFbVJKVGJJaUliNGJJZVNzbWdjV0lqclI2SHlFVHFjIiwiZXhwIjoxNjMxMjk3MjAyfQ.m99vUJ9HrD3sHxZd6PLFO4UXTYjXqrnFRxEfW2zmqlA",
 				"type": "string"
 			}
 		]
