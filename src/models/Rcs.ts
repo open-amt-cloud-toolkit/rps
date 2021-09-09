@@ -44,9 +44,11 @@ export class RCSConfig {
 export class AMTConfiguration {
   profileName?: string
   amtPassword?: string
+  generateRandomPassword?: boolean
   ciraConfigName?: string
   activation: string
   mebxPassword?: string
+  generateRandomMEBxPassword?: boolean
   ciraConfigObject?: CIRAConfig
   tags?: string[]
   dhcpEnabled?: boolean
