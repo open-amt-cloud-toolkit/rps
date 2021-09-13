@@ -299,14 +299,13 @@ export class NetworkConfigurator implements IExecutor {
    */
   async deleteWiFiConfigs (clientObj: ClientObject, clientId: string): Promise<void> {
     let wifiEndpoints: WiFiEndPointSettings[] = clientObj.network?.WiFiPortCapabilities
+    const wifiProfiles: WiFiEndPointSettings[] = []
     wifiEndpoints.forEach(wifi => {
-      if (wifi.InstanceID == null && wifi.Priority === 0) {
-        const index = wifiEndpoints.indexOf(wifi)
-        if (index > -1) {
-          wifiEndpoints.splice(index, 1)
-        }
+      if (wifi.InstanceID != null && wifi.Priority !== 0) {
+        wifiProfiles.push({ ...wifi })
       }
     })
+    wifiEndpoints = wifiProfiles
     if (wifiEndpoints?.length > 0) {
       await this.amtwsman.delete(clientId, 'CIM_WiFiEndpointSettings', { InstanceID: wifiEndpoints[0].InstanceID })
       wifiEndpoints = wifiEndpoints.slice(1)
