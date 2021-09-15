@@ -172,6 +172,7 @@ export class Activator implements IExecutor {
         this.clientManager.setClientObject(clientObj)
         await this.saveDeviceInfo(clientObj)
         const msg = await this.waitAfterActivation(clientId, clientObj)
+        MqttProvider.publishEvent('success', ['Activator', 'execute'], 'Device activated in admin control mode', clientObj.uuid)
         return msg
       }
     } else if (wsmanResponse.Header.Method === 'Setup') {
@@ -185,6 +186,7 @@ export class Activator implements IExecutor {
         this.clientManager.setClientObject(clientObj)
         await this.saveDeviceInfo(clientObj)
         const msg = await this.waitAfterActivation(clientId, clientObj)
+        MqttProvider.publishEvent('success', ['Activator', 'execute'], 'Device activated in client control mode', clientObj.uuid)
         return msg
       }
     } else if (wsmanResponse.Header && wsmanResponse.Header.Method === 'SetMEBxPassword') {
