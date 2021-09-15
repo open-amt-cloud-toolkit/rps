@@ -247,6 +247,8 @@ describe('Activation message for admin control mode', () => {
         serverAddressFormat: 201,
         username: 'admin'
       },
+      generateRandomMEBxPassword: false,
+      generateRandomPassword: false,
       mebxPassword: 'P@ssw0rd',
       profileName: 'profile1'
     }

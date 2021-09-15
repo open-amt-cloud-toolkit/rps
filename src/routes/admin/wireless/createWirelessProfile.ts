@@ -16,7 +16,7 @@ export async function createWirelessProfile (req: Request, res: Response): Promi
   try {
     const passphrase = wirelessConfig.pskPassphrase
     if (req.secretsManager) {
-      wirelessConfig.pskPassphrase = 'pskPassphrase'
+      wirelessConfig.pskPassphrase = 'PSK_PASSPHRASE'
     }
 
     const results: WirelessConfig = await req.db.wirelessProfiles.insert(wirelessConfig)
