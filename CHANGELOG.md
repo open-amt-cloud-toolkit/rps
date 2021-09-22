@@ -2,8 +2,21 @@
 ## [Unreleased]
 
 
-<a name="2.0.0"></a>
-## [2.0.0] - 2021-09-15
+<a name="2.0.1"></a>
+## [2.0.1] - 2021-09-22
+### Build
+- **deps:** bump tmpl from 1.0.4 to 1.0.5 (#53b175f) 
+- **version:** update to v2.0.1 (#1222ff7) 
+
+### Ci
+- azure boards issue sync (#a730ce7) 
+
+### Fix
+- **mqtt:** topic publishing is now rps/events (#d8cab2d) 
+
+
+<a name="v2.0.0"></a>
+## [v2.0.0] - 2021-09-15
 ### Build
 - update version to v2.0.0 (#1dbd15c) 
 - **deps:** bump ws from 7.5.3 to 8.2.1 (#5ebdc3f) 
@@ -24,6 +37,9 @@
 - **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin (#78947a4) 
 - **deps-dev:** bump [@types](https://github.com/types)/node-forge from 0.10.2 to 0.10.3 (#dade1b6) 
 - **deps-dev:** bump typescript from 4.3.5 to 4.4.2 (#444bd5d) 
+
+### Docs
+- **changelog:** update changelog (#15ca5ec) 
 
 ### Feat
 - **ciraconfig:** allow null values for ciraconfigname in profile edit (#f3b2659) 
@@ -464,8 +480,9 @@ API responses are structured and no longer return string messages
 - **docker:** optimize dockerfile (#ad2319d) 
 
 
-[Unreleased]: https://github.com/open-amt-cloud-toolkit/rps/compare/2.0.0...HEAD
-[2.0.0]: https://github.com/open-amt-cloud-toolkit/rps/compare/v1.5.0...2.0.0
+[Unreleased]: https://github.com/open-amt-cloud-toolkit/rps/compare/2.0.1...HEAD
+[2.0.1]: https://github.com/open-amt-cloud-toolkit/rps/compare/v2.0.0...2.0.1
+[v2.0.0]: https://github.com/open-amt-cloud-toolkit/rps/compare/v1.5.0...v2.0.0
 [v1.5.0]: https://github.com/open-amt-cloud-toolkit/rps/compare/v1.4.0...v1.5.0
 [v1.4.0]: https://github.com/open-amt-cloud-toolkit/rps/compare/v1.3.0...v1.4.0
 [v1.3.0]: https://github.com/open-amt-cloud-toolkit/rps/compare/v1.2.0...v1.3.0
