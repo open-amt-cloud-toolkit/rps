@@ -64,7 +64,7 @@ export class MqttProvider {
 
     // Enforce message type names before publishing
     return new Promise((resolve, reject) => {
-      MqttProvider.instance.client.publish('mps/events', JSON.stringify(event), function (err) {
+      MqttProvider.instance.client.publish('rps/events', JSON.stringify(event), function (err) {
         if (err == null) {
           log.info('Event message published')
           resolve(null)
