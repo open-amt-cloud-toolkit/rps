@@ -17,12 +17,12 @@ import { Validator } from '../Validator'
 import { ClientResponseMsg } from '../utils/ClientResponseMsg'
 import { WSManProcessor } from '../WSManProcessor'
 import { EnvReader } from '../utils/EnvReader'
-import { ClientAction } from '../RCS.Config'
+import { ClientAction } from '../models/RCS.Config'
 
 EnvReader.GlobalEnvConfig = config
 
 const nodeForge = new NodeForge()
-const certManager = new CertManager(nodeForge)
+const certManager = new CertManager(new Logger('CertManager'), nodeForge)
 const helper = new SignatureHelper(nodeForge)
 const clientManager = ClientManager.getInstance(new Logger('ClientManager'))
 const responseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'), nodeForge)

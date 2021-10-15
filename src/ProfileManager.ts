@@ -9,7 +9,7 @@ import { AMTConfiguration } from './models/Rcs'
 import { ILogger } from './interfaces/ILogger'
 import { IProfileManager } from './interfaces/IProfileManager'
 import { PasswordHelper } from './utils/PasswordHelper'
-import { CIRAConfig } from './RCS.Config'
+import { CIRAConfig } from './models/RCS.Config'
 import { IConfigurator } from './interfaces/IConfigurator'
 import { IProfilesTable } from './interfaces/database/IProfilesDb'
 import { EnvReader } from './utils/EnvReader'
@@ -189,6 +189,24 @@ export class ProfileManager implements IProfileManager {
             amtProfile.ciraConfigObject.password = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${amtProfile.ciraConfigObject.configName}`, 'MPS_PASSWORD')
           } else {
             this.logger.error("The amtProfile CIRAConfigObject doesn't have a password. Check CIRA profile creation.")
+          }
+        }
+      }
+      // If the TLS Config associated with profile, retrieves from DB
+      if (amtProfile.tlsConfigName != null) {
+        amtProfile.tlsConfigObject = await this.amtConfigurations.getTLSConfigForProfile(amtProfile.tlsConfigName)
+        if (this.configurator?.secretsManager) {
+          let path = `${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}TLS/${amtProfile.tlsConfigObject.configName}`
+
+          if (amtProfile.tlsConfigObject.certVersion) {
+            path += `?version=${amtProfile.tlsConfigObject.certVersion}`
+          }
+
+          const results = await this.configurator.secretsManager.getSecretAtPath(path)
+          amtProfile.tlsConfigObject.certs = results.data
+
+          if (amtProfile.tlsConfigObject.certVersion == null) {
+            amtProfile.tlsConfigObject.certVersion = results?.metadata?.version
           }
         }
       }

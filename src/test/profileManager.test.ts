@@ -8,7 +8,7 @@ import { ProfileManager } from '../ProfileManager'
 import { ILogger } from '../interfaces/ILogger'
 import Logger from '../Logger'
 import { IProfilesTable } from '../interfaces/database/IProfilesDb'
-import { CIRAConfig } from '../RCS.Config'
+import { CIRAConfig, TlsConfigs } from '../models/RCS.Config'
 
 const logger: ILogger = new Logger('ProfileManagerTests')
 
@@ -61,6 +61,18 @@ const ciraConfigurations: CIRAConfig[] = [{
   tenantId: ''
 }]
 
+const tlsConfigurations: TlsConfigs[] = [{
+  configName: 'tls',
+  commonName: 'AMT',
+  issuedCommonName: 'AMT',
+  organization: 'intel',
+  stateOrProvince: 'az',
+  country: 'usa',
+  isTrustedCert: true,
+  tlsMode: 2,
+  tenantId: ''
+}]
+
 const amtConfigurations: AMTConfiguration[] = [
   {
     profileName: 'profile 1',
@@ -71,6 +83,8 @@ const amtConfigurations: AMTConfiguration[] = [
     activation: 'ccmactivate',
     ciraConfigName: 'ciraconfig1',
     ciraConfigObject: ciraConfigurations[0],
+    tlsConfigName: 'tls',
+    tlsConfigObject: tlsConfigurations[0],
     tenantId: ''
   },
   {
@@ -97,6 +111,9 @@ const profileStub: IProfilesTable = {
   },
   getCiraConfigForProfile: async (ciraConfigName) => {
     return ciraConfigurations.find(c => c.configName === ciraConfigName)
+  },
+  getTLSConfigForProfile: async (tlsConfigName) => {
+    return tlsConfigurations.find(c => c.configName === tlsConfigName)
   },
   delete: async (profileName) => {
     return true

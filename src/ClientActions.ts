@@ -6,10 +6,9 @@
  **********************************************************************/
 
 import Logger from './Logger'
-import { ClientMsg, ClientAction } from './RCS.Config'
+import { ClientMsg, ClientAction } from './models/RCS.Config'
 import { IConfigurator } from './interfaces/IConfigurator'
 import { ILogger } from './interfaces/ILogger'
-import { ICertManager } from './interfaces/ICertManager'
 import { SignatureHelper } from './utils/SignatureHelper'
 import { Activator } from './actions/Activator'
 import { ClientResponseMsg } from './utils/ClientResponseMsg'
@@ -20,6 +19,8 @@ import { RPSError } from './utils/RPSError'
 import { Deactivator } from './actions/Deactivator'
 import { CIRAConfigurator } from './actions/CIRAConfigurator'
 import { NetworkConfigurator } from './actions/NetworkConfigurator'
+import { CertManager } from './CertManager'
+import { TLSConfigurator } from './actions/TLSConfigurator'
 
 export class ClientActions {
   actions: any
@@ -27,7 +28,7 @@ export class ClientActions {
   constructor (
     private readonly logger: ILogger,
     private readonly configurator: IConfigurator,
-    private readonly certManager: ICertManager,
+    private readonly certManager: CertManager,
     private readonly helper: SignatureHelper,
     private readonly responseMsg: ClientResponseMsg,
     private readonly amtwsman: WSManProcessor,
@@ -35,7 +36,10 @@ export class ClientActions {
     private readonly validator: IValidator) {
     this.actions = {}
 
-    const ciraConfig = new CIRAConfigurator(new Logger('CIRAConfig'), configurator, responseMsg, amtwsman, clientManager)
+    const tlsConfig = new TLSConfigurator(new Logger('TLSConfig'), certManager, responseMsg, amtwsman, clientManager)
+    this.actions[ClientAction.TLSCONFIG] = tlsConfig
+
+    const ciraConfig = new CIRAConfigurator(new Logger('CIRAConfig'), configurator, responseMsg, amtwsman, clientManager, tlsConfig)
     this.actions[ClientAction.CIRACONFIG] = ciraConfig
 
     const networkConfig = new NetworkConfigurator(new Logger('NetworkConfig'), configurator, responseMsg, amtwsman, clientManager, validator, ciraConfig)

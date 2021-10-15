@@ -13,7 +13,7 @@ import { Configurator } from '../Configurator'
 import { ClientManager } from '../ClientManager'
 import { RPSError } from '../utils/RPSError'
 import { EnvReader } from '../utils/EnvReader'
-import { ClientAction } from '../RCS.Config'
+import { ClientAction } from '../models/RCS.Config'
 import { VersionChecker } from '../VersionChecker'
 
 EnvReader.GlobalEnvConfig = config

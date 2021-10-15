@@ -3,7 +3,7 @@
 * SPDX-License-Identifier: Apache-2.0
 **********************************************************************/
 
-import { apiResponse } from '../RCS.Config'
+import { apiResponse } from '../models/RCS.Config'
 
 export const AMTRandomPasswordChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()'
 export const AMTRandomPasswordLength = 16
@@ -38,6 +38,12 @@ export const NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE = (type: string, config: 
 // Domain REST API
 export const DOMAIN_NOT_FOUND = (domain: string): string => `Domain ${domain} not found`
 export const DUPLICATE_DOMAIN_FAILED = (message: string): string => `Domain ${message} ID or Suffix already exists`
+
+// TLS REST API
+export const TLS_CONFIG_NOT_FOUND = (config: string): string => `TLS Config ${config} not found`
+export const TLS_CONFIG_DELETION_FAILED_CONSTRAINT = (config: string): string => `TLS Config: ${config} associated with an AMT profile`
+export const TLS_CONFIG_INSERTION_FAILED = (config: string): string => `TLS Config insertion failed for ${config}`
+export const TLS_CONFIG_INSERTION_FAILED_DUPLICATE = (config: string): string => `TLS Config ${config} already exists.`
 
 // Generic REST API Error Message
 export const API_UNEXPECTED_EXCEPTION = (message: string): string => `Operation failed: ${message}`

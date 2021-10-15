@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 import { IProfilesTable } from '../../../interfaces/database/IProfilesDb'
-import { CIRAConfig } from '../../../RCS.Config'
+import { CIRAConfig, TlsConfigs } from '../../../models/RCS.Config'
 import { AMTConfiguration } from '../../../models/Rcs'
 import { PROFILE_INSERTION_FAILED_DUPLICATE, PROFILE_INSERTION_CIRA_CONSTRAINT, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP, PROFILE_INSERTION_GENERIC_CONSTRAINT } from '../../../utils/constants'
 import Logger from '../../../Logger'
@@ -46,6 +46,7 @@ export class ProfilesTable implements IProfilesTable {
       p.profile_name as "profileName", 
       activation as "activation", 
       cira_config_name as "ciraConfigName",
+      tls_config_name as "tlsConfigName",
       generate_random_password as "generateRandomPassword",
       generate_random_mebx_password as "generateRandomMEBxPassword",
       tags as "tags", 
@@ -78,6 +79,7 @@ export class ProfilesTable implements IProfilesTable {
       p.profile_name as "profileName", 
       activation as "activation", 
       cira_config_name as "ciraConfigName", 
+      tls_config_name as "tlsConfigName",
       generate_random_password as "generateRandomPassword",
       generate_random_mebx_password as "generateRandomMEBxPassword",
       tags as "tags", 
@@ -109,6 +111,15 @@ export class ProfilesTable implements IProfilesTable {
   }
 
   /**
+   * @description Get TLS config from DB by name
+   * @param {string} configName
+   * @returns {TlsConfigs} TLS config object
+   */
+  async getTLSConfigForProfile (configName: string): Promise<TlsConfigs> {
+    return await this.db.tlsConfigs.getByName(configName)
+  }
+
+  /**
    * @description Delete AMT Profile from DB by name
    * @param {string} profileName
    * @returns {boolean} Return true on successful deletion
@@ -133,14 +144,15 @@ export class ProfilesTable implements IProfilesTable {
    */
   async insert (amtConfig: AMTConfiguration): Promise<AMTConfiguration> {
     try {
-      const results = await this.db.query(`INSERT INTO profiles(profile_name, activation, amt_password, generate_random_password, cira_config_name, mebx_password, generate_random_mebx_password, tags, dhcp_enabled, tenant_id)
-        values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+      const results = await this.db.query(`INSERT INTO profiles(profile_name, activation, amt_password, generate_random_password, cira_config_name,tls_config_name, mebx_password, generate_random_mebx_password, tags, dhcp_enabled, tenant_id)
+        values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
       [
         amtConfig.profileName,
         amtConfig.activation,
         amtConfig.amtPassword,
         amtConfig.generateRandomPassword,
         amtConfig.ciraConfigName,
+        amtConfig.tlsConfigName,
         amtConfig.mebxPassword,
         amtConfig.generateRandomMEBxPassword,
         amtConfig.tags,
@@ -181,7 +193,7 @@ export class ProfilesTable implements IProfilesTable {
     try {
       const results = await this.db.query(`
       UPDATE profiles 
-      SET activation=$2, amt_password=$3, generate_random_password=$4, cira_config_name=$5, mebx_password=$6, generate_random_mebx_password=$7, tags=$8, dhcp_enabled=$9 
+      SET activation=$2, amt_password=$3, generate_random_password=$4, cira_config_name=$5, mebx_password=$6, generate_random_mebx_password=$7, tags=$8, dhcp_enabled=$9, tls_config_name=$11 
       WHERE profile_name=$1 and tenant_id = $10`,
       [
         amtConfig.profileName,
@@ -193,7 +205,8 @@ export class ProfilesTable implements IProfilesTable {
         amtConfig.generateRandomMEBxPassword,
         amtConfig.tags,
         amtConfig.dhcpEnabled,
-        amtConfig.tenantId
+        amtConfig.tenantId,
+        amtConfig.tlsConfigName
       ])
       if (results.rowCount > 0) {
         if (amtConfig.wifiConfigs?.length > 0) {

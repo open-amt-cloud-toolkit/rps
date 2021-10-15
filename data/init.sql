@@ -30,6 +30,19 @@ CREATE TABLE IF NOT EXISTS wirelessconfigs(
   tenant_id varchar(36) NOT NULL,
   PRIMARY KEY (wireless_profile_name, tenant_id)
 );
+CREATE TABLE IF NOT EXISTS tls(
+  tls_config_name citext NOT NULL,
+  common_name text NOT NULL,
+  issued_common_name text NOT NULL,
+  organization text NOT NULL,
+  state_province text NOT NULL,
+  country text NOT NULL,
+  is_trusted_cert BOOLEAN NOT NULL,
+  tls_mode integer NOT NULL,
+  tenant_id varchar(36) NOT NULL,
+  cert_version integer,
+  PRIMARY KEY (tls_config_name, tenant_id)
+);
 CREATE TABLE IF NOT EXISTS profiles(
   profile_name citext NOT NULL,
   activation varchar(20) NOT NULL,
@@ -44,6 +57,8 @@ CREATE TABLE IF NOT EXISTS profiles(
   tags text[],
   dhcp_enabled BOOLEAN,
   tenant_id varchar(36) NOT NULL,
+  tls_config_name citext,
+  FOREIGN KEY (tls_config_name,tenant_id)  REFERENCES tls(tls_config_name,tenant_id),
   PRIMARY KEY (profile_name, tenant_id)
 );
 CREATE TABLE IF NOT EXISTS profiles_wirelessconfigs(
@@ -69,5 +84,4 @@ CREATE TABLE IF NOT EXISTS domains(
   CONSTRAINT domainsuffix UNIQUE(domain_suffix,tenant_id),
   PRIMARY KEY (name, tenant_id)
 );
-
 CREATE UNIQUE INDEX lower_name_suffix_idx ON domains ((lower(name)), (lower(domain_suffix)));

@@ -47,7 +47,7 @@ export class SecretManagerService implements ISecretManagerService {
     try {
       this.logger.verbose(`getting secrets from ${path}`)
       const data = await this.vaultClient.read(path)
-      this.logger.debug(`got data back from vault ${path}`)
+      this.logger.debug(`got data back from vault ${path}, ${JSON.stringify(data?.data?.metadata)}`)
       return data.data
     } catch (error) {
       this.logger.error('getSecretAtPath error \r\n')
@@ -56,18 +56,20 @@ export class SecretManagerService implements ISecretManagerService {
     }
   }
 
-  async writeSecretWithKey (path: string, key: string, keyValue: any): Promise<void> {
+  async writeSecretWithKey (path: string, key: string, keyValue: any): Promise<any> {
     const data = { data: {} }
     data.data[key] = keyValue
     this.logger.verbose('writing data to vault:')
-    await this.vaultClient.write(path, data)
-    this.logger.debug(`Successfully written data to vault at path: ${path}`)
+    const result = await this.vaultClient.write(path, data)
+    this.logger.debug(`Successfully written data to vault at path: ${path}, result: ${JSON.stringify(result)}`)
+    return result
   }
 
-  async writeSecretWithObject (path: string, data: any): Promise<void> {
+  async writeSecretWithObject (path: string, data: any): Promise<any> {
     this.logger.verbose('writing data to vault:')
-    await this.vaultClient.write(path, data)
-    this.logger.debug(`Successfully written data to vault at path: ${path}`)
+    const result = await this.vaultClient.write(path, data)
+    this.logger.debug(`Successfully written data to vault at path: ${path}, result: ${JSON.stringify(result)}`)
+    return result
   }
 
   async deleteSecretWithPath (path: string): Promise<void> {

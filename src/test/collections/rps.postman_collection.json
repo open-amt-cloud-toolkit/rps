@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "d2663acd-e2f9-4332-a522-5bb653697038",
+		"_postman_id": "adf229a1-1578-48c3-a585-f439c294c9f3",
 		"name": "RPS API Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -7503,6 +7503,269 @@
 							"response": []
 						}
 					]
+				},
+				{
+					"name": "AMT - TLS Profiles",
+					"item": [
+						{
+							"name": "Create Cert Copy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 201\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"value": "APIKEYFORRPS123!",
+										"type": "text",
+										"disabled": true
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"configName\": \"tls-config\",\r\n    \"commonName\": \"tls1\",\r\n    \"issuedCommonName\": \"tls1-console\",\r\n    \"organization\": \"organization\",\r\n    \"stateOrProvince\": \"stateOrProvince\",\r\n    \"country\": \"country\",\r\n    \"isTrustedCert\": true,\r\n    \"tlsMode\": 4\r\n}"
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/tlsconfigs/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"tlsconfigs",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create AMT Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 201\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
+											"});\r",
+											"pm.test(\"Creation should succeed\", function () {\r",
+											"    var result = pm.response.json();\r",
+											"    pm.expect(result.profileName).to.eql(\"ccm\"),\r",
+											"    pm.expect(result.amtPassword).to.eql(),\r",
+											"    pm.expect(result.mebxPassword).to.eql(),\r",
+											"    pm.expect(result.activation).to.eql(\"ccmactivate\")\r",
+											"    pm.expect(result.tags.length).to.equal(1)\r",
+											"    pm.expect(result.dhcpEnabled).to.equal(true)\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"value": "APIKEYFORRPS123!",
+										"type": "text",
+										"disabled": true
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"ccm\",\r\n    \"amtPassword\": \"P@ssw0rd\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"acm\"],\r\n    \"dhcpEnabled\": true,\r\n    \"tlsConfigName\": \"tls-config\"\r\n}"
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "GET AMT Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"pm.test(\"Result should succeed\", function () {\r",
+											"    var result = pm.response.json();\r",
+											"    pm.expect(result.profileName).to.eql(\"ccm\"),\r",
+											"    pm.expect(result.amtPassword).to.eql(),\r",
+											"    pm.expect(result.mebxPassword).to.eql(),\r",
+											"    pm.expect(result.activation).to.eql(\"ccmactivate\")\r",
+											"    pm.expect(result.tags.length).to.equal(1)\r",
+											"    pm.expect(result.dhcpEnabled).to.equal(true)\r",
+											"    pm.expect(result.wifiConfigs.length).to.equal(0)\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/ccm",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										"ccm"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Remove Profile Copy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 204\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"type": "text",
+										"value": "APIKEYFORRPS123!",
+										"disabled": true
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/ccm",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										"ccm"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Remove Profile Copy 2",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 204\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"type": "text",
+										"value": "APIKEYFORRPS123!",
+										"disabled": true
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/tlsconfigs/tls-config",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"tlsconfigs",
+										"tls-config"
+									]
+								}
+							},
+							"response": []
+						}
+					]
 				}
 			]
 		},
@@ -8635,6 +8898,960 @@
 								"admin",
 								"wirelessconfigs",
 								"P11"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "TLS",
+			"item": [
+				{
+					"name": "Get 1 tls Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {\r",
+									"    pm.response.to.have.status(404);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/tlsconfigs/tls1",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"tlsconfigs",
+								"tls1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Cert",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"value": "APIKEYFORRPS123!",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"configName\": \"tls1\",\r\n    \"commonName\": \"tls1\",\r\n    \"issuedCommonName\": \"tls1-console\",\r\n    \"organization\": \"organization\",\r\n    \"stateOrProvince\": \"stateOrProvince\",\r\n    \"country\": \"country\",\r\n    \"isTrustedCert\": true,\r\n    \"tlsMode\": 4\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/tlsconfigs/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"tlsconfigs",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get 1 tls Profile after create",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/tlsconfigs/tls1",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"tlsconfigs",
+								"tls1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All tls Profiles skip 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/tlsconfigs/?$skip=1",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"tlsconfigs",
+								""
+							],
+							"query": [
+								{
+									"key": "$skip",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All tls Profiles",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/tlsconfigs/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"tlsconfigs",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All tls Profiles top1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/tlsconfigs/?$top=1",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"tlsconfigs",
+								""
+							],
+							"query": [
+								{
+									"key": "$top",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Cert invalid tlsMode",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"value": "APIKEYFORRPS123!",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"configName\": \"tls1\",\r\n    \"commonName\": \"commonName\",\r\n    \"issuedCommonName\": \"tls1-console\",\r\n    \"organization\": \"organization\",\r\n    \"stateOrProvince\": \"stateOrProvince\",\r\n    \"country\": \"country\",\r\n    \"isTrustedCert\": true,\r\n    \"tlsMode\": -1\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/tlsconfigs/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"tlsconfigs",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Cert invalid tlsMode 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"value": "APIKEYFORRPS123!",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"configName\": \"tls1\",\r\n    \"commonName\": \"commonName\",\r\n    \"issuedCommonName\": \"tls1-console\",\r\n    \"organization\": \"organization\",\r\n    \"stateOrProvince\": \"stateOrProvince\",\r\n    \"country\": \"country\",\r\n    \"isTrustedCert\": true,\r\n    \"tlsMode\": \"invalid\"\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/tlsconfigs/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"tlsconfigs",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Cert missing tlsMode",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"value": "APIKEYFORRPS123!",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"configName\": \"tls1\",\r\n    \"commonName\": \"commonName\",\r\n    \"issuedCommonName\": \"tls1-console\",\r\n    \"organization\": \"organization\",\r\n    \"stateOrProvince\": \"stateOrProvince\",\r\n    \"country\": \"country\",\r\n    \"isTrustedCert\": true\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/tlsconfigs/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"tlsconfigs",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Cert invalid isTrustedCert data",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"value": "APIKEYFORRPS123!",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"configName\": \"tls1\",\r\n    \"commonName\": \"commonName\",\r\n    \"issuedCommonName\": \"tls1-console\",\r\n    \"organization\": \"organization\",\r\n    \"stateOrProvince\": \"stateOrProvince\",\r\n    \"country\": \"country\",\r\n    \"isTrustedCert\": \"invalid\",\r\n    \"tlsMode\": 2\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/tlsconfigs/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"tlsconfigs",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Cert missing isTrustedCert",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"value": "APIKEYFORRPS123!",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"configName\": \"tls1\",\r\n    \"commonName\": \"commonName\",\r\n    \"issuedCommonName\": \"tls1-console\",\r\n    \"organization\": \"organization\",\r\n    \"stateOrProvince\": \"stateOrProvince\",\r\n    \"country\": \"country\",\r\n    \"tlsMode\": 2\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/tlsconfigs/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"tlsconfigs",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Cert missing country",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"value": "APIKEYFORRPS123!",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"configName\": \"tls1\",\r\n    \"commonName\": \"commonName\",\r\n    \"issuedCommonName\": \"tls1-console\",\r\n    \"organization\": \"organization\",\r\n    \"stateOrProvince\": \"stateOrProvince\",\r\n    \"isTrustedCert\": true,\r\n    \"tlsMode\": 2\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/tlsconfigs/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"tlsconfigs",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Cert missing state",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"value": "APIKEYFORRPS123!",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"configName\": \"tls1\",\r\n    \"commonName\": \"commonName\",\r\n    \"issuedCommonName\": \"tls1-console\",\r\n    \"organization\": \"organization\",\r\n    \"country\": \"country\",\r\n    \"isTrustedCert\": true,\r\n    \"tlsMode\": 2\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/tlsconfigs/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"tlsconfigs",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Cert missing organization",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"value": "APIKEYFORRPS123!",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"configName\": \"tls1\",\r\n    \"commonName\": \"commonName\",\r\n    \"issuedCommonName\": \"tls1-console\",\r\n    \"stateOrProvince\": \"stateOrProvince\",\r\n    \"country\": \"country\",\r\n    \"isTrustedCert\": true,\r\n    \"tlsMode\": 2\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/tlsconfigs/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"tlsconfigs",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Cert missing commonName",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"value": "APIKEYFORRPS123!",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"configName\": \"tls1\",\r\n    \"issuedCommonName\": \"tls1-console\",\r\n    \"organization\": \"organization\",\r\n    \"stateOrProvince\": \"stateOrProvince\",\r\n    \"country\": \"country\",\r\n    \"isTrustedCert\": true,\r\n    \"tlsMode\": 2\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/tlsconfigs/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"tlsconfigs",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {\r",
+									"    pm.response.to.have.status(204);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/tlsconfigs/tls1",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"tlsconfigs",
+								"tls1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Profile when it doesn't exist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {\r",
+									"    pm.response.to.have.status(404);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/tlsconfigs/invalidprofile",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"tlsconfigs",
+								"invalidprofile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile invalid isTrustedCert",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"configName\": \"tls1\",\r\n    \"isTrustedCert\": \"invalid\",\r\n    \"tlsMode\": 3\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/tlsconfigs/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"tlsconfigs",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile invalid tlsMode",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"configName\": \"tls1\",\r\n    \"isTrustedCert\": false,\r\n    \"tlsMode\": \"invalid\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/tlsconfigs/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"tlsconfigs",
+								""
 							]
 						}
 					},

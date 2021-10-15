@@ -6,6 +6,7 @@ import { ProfilesTable } from './tables/profiles'
 import { DomainsTable } from './tables/domains'
 import { ProfilesWifiConfigsTable } from './tables/profileWifiConfigs'
 import { WirelessProfilesTable } from './tables/wirelessProfiles'
+import { TlsConfigsTable } from './tables/tlsConfigs'
 
 export default class Db implements IDB {
   pool: Pool
@@ -14,6 +15,7 @@ export default class Db implements IDB {
   profiles: ProfilesTable
   wirelessProfiles: WirelessProfilesTable
   profileWirelessConfigs: ProfilesWifiConfigsTable
+  tlsConfigs: TlsConfigsTable
 
   log: Logger = new Logger('PostgresDb')
 
@@ -26,6 +28,7 @@ export default class Db implements IDB {
     this.domains = new DomainsTable(this)
     this.wirelessProfiles = new WirelessProfilesTable(this)
     this.profileWirelessConfigs = new ProfilesWifiConfigsTable(this)
+    this.tlsConfigs = new TlsConfigsTable(this)
   }
 
   async query<T>(text: string, params?: any): Promise<QueryResult<T>> {

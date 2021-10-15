@@ -6,7 +6,7 @@ import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, PROFILE_NOT_FOUND } from '../../../utils/constants'
 import { AMTConfiguration } from '../../../models/Rcs'
-import { ClientAction, ProfileWifiConfigs } from '../../../RCS.Config'
+import { ClientAction, ProfileWifiConfigs } from '../../../models/RCS.Config'
 import { RPSError } from '../../../utils/RPSError'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { Request, Response } from 'express'
@@ -147,5 +147,6 @@ export const getUpdatedData = async (newConfig: any, oldConfig: AMTConfiguration
   amtConfig.tags = newConfig.tags ?? oldConfig.tags
   amtConfig.dhcpEnabled = newConfig.dhcpEnabled ?? oldConfig.dhcpEnabled
   amtConfig.tenantId = newConfig.tenantId ?? oldConfig.tenantId
+  amtConfig.tlsConfigName = newConfig.tlsConfigName ?? oldConfig.tlsConfigName
   return amtConfig
 }

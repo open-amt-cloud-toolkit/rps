@@ -4,8 +4,8 @@
  * Author: Madhavi Losetty
  **********************************************************************/
 import * as WebSocket from 'ws'
-import { AMTConfiguration, AMTDomain } from './models/Rcs'
-import { AMTEthernetPortSettings } from './models/WSManResponse'
+import { AMTConfiguration, AMTDomain } from './Rcs'
+import { AMTEthernetPortSettings } from './WSManResponse'
 
 export interface WebSocketConfig {
   WebSocketPort: number
@@ -27,6 +27,24 @@ export interface ProfileWifiConfigs {
   tenantId: string
 }
 
+export interface TlsConfigs {
+  configName: string
+  commonName: string
+  issuedCommonName: string
+  organization: string
+  stateOrProvince: string
+  country: string
+  isTrustedCert: boolean
+  tlsMode: TlsMode
+  tenantId: string
+  certs?: TLSServerCerts
+  certVersion?: number
+}
+
+export interface TLSServerCerts {
+  ROOT_CERTIFICATE: any
+  ISSUED_CERTIFICATE: any
+}
 /*
 - AddMpServer Method:
 
@@ -79,6 +97,7 @@ export interface Status {
   Status?: string
   Network?: string
   CIRAConnection?: string
+  TLSConfiguration?: string
 }
 export interface ClientObject {
   ClientId: string
@@ -102,6 +121,7 @@ export interface ClientObject {
   mpsUsername?: string
   mpsPassword?: string
   network?: NetworkConfigFlow
+  tls?: TLSConfigFlow
   status?: Status
 }
 
@@ -136,6 +156,37 @@ export interface NetworkConfigFlow {
   setWiFiPortResponse?: boolean
   getWiFiPortConfigurationService?: boolean
   count?: number
+}
+
+export interface TLSConfigFlow {
+  getPublicKeyCertificate?: boolean
+  addTrustedRootCert?: boolean
+  createdTrustedRootCert?: boolean
+  checkPublicKeyCertificate?: boolean
+  confirmPublicKeyCertificate?: boolean
+  getPublicPrivateKeyPair?: boolean
+  generateKeyPair?: boolean
+  generatedPublicPrivateKeyPair?: boolean
+  createdPublicPrivateKeyPair?: boolean
+  checkPublicPrivateKeyPair?: boolean
+  confirmPublicPrivateKeyPair?: boolean
+  addCert?: boolean
+  getTLSSettingData?: boolean
+  getTLSCredentialContext?: boolean
+  PublicKeyCertificate?: any
+  PublicPrivateKeyPair?: any
+  TLSSettingData?: any
+  TLSCredentialContext?: any
+  setRemoteTLS?: boolean
+  setLocalTLS?: boolean
+  putRemoteTLS?: boolean
+  putLocalTLS?: boolean
+  addCredentialContext?: boolean
+  resCredentialContext?: boolean
+  commitRemoteTLS?: boolean
+  commitLocalTLS?: boolean
+  getTimeSynch?: boolean
+  setTimeSynch?: boolean
 }
 
 export interface mpsServer {
@@ -190,7 +241,8 @@ export enum ClientAction{
   CLIENTCTLMODE = 'ccmactivate',
   DEACTIVATE = 'deactivate',
   CIRACONFIG= 'ciraconfig',
-  NETWORKCONFIG = 'networkConfig'
+  NETWORKCONFIG = 'networkConfig',
+  TLSCONFIG ='tlsConfig'
 }
 
 export enum ClientMethods{
@@ -207,4 +259,13 @@ export interface apiResponse {
   data?: any
   error?: string
   message?: string
+}
+
+export enum TlsMode{
+  INVALID = -1,
+  NONE = 0,
+  SERVERONLY = 1,
+  SERVERALLOWNONTLS = 2,
+  MUTUALONLY = 3,
+  MUTUALALLOWNONTLS = 4
 }

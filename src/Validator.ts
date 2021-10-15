@@ -8,7 +8,7 @@ import * as WebSocket from 'ws'
 
 import { IValidator } from './interfaces/IValidator'
 import { ILogger } from './interfaces/ILogger'
-import { ClientMsg, ClientAction, Payload, ClientMethods } from './RCS.Config'
+import { ClientMsg, ClientAction, Payload, ClientMethods } from './models/RCS.Config'
 import { IConfigurator } from './interfaces/IConfigurator'
 import { IClientManager } from './interfaces/IClientManager'
 import { NodeForge } from './NodeForge'

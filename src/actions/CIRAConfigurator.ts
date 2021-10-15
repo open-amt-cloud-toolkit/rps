@@ -7,7 +7,7 @@
 
 import { IExecutor } from '../interfaces/IExecutor'
 import { ILogger } from '../interfaces/ILogger'
-import { ClientMsg, mpsServer, ClientObject, CIRAConfig } from '../RCS.Config'
+import { mpsServer, ClientObject, CIRAConfig, ClientAction } from '../models/RCS.Config'
 import { ClientResponseMsg } from '../utils/ClientResponseMsg'
 import { WSManProcessor } from '../WSManProcessor'
 import { IClientManager } from '../interfaces/IClientManager'
@@ -18,6 +18,7 @@ import { AMTUserName } from './../utils/constants'
 import { EnvReader } from '../utils/EnvReader'
 import got from 'got'
 import { MqttProvider } from '../utils/MqttProvider'
+import { TLSConfigurator } from './TLSConfigurator'
 
 export class CIRAConfigurator implements IExecutor {
   constructor (
@@ -25,7 +26,8 @@ export class CIRAConfigurator implements IExecutor {
     private readonly configurator: IConfigurator,
     private readonly responseMsg: ClientResponseMsg,
     private readonly amtwsman: WSManProcessor,
-    private readonly clientManager: IClientManager
+    private readonly clientManager: IClientManager,
+    private readonly tlsConfigurator: TLSConfigurator
   ) { }
 
   /**
@@ -34,7 +36,7 @@ export class CIRAConfigurator implements IExecutor {
      * @param {string} clientId Id to keep track of connections
      * @returns {ClientMsg} message to sent to client
      */
-  async execute (message: any, clientId: string): Promise<ClientMsg> {
+  async execute (message: any, clientId: string): Promise<any> {
     let clientObj: ClientObject
     try {
       clientObj = this.clientManager.getClientObject(clientId)
@@ -124,11 +126,24 @@ export class CIRAConfigurator implements IExecutor {
           } else if (clientObj.ciraconfig.setENVSettingDataCIRA) {
             clientObj.status.CIRAConnection = 'Configured'
             MqttProvider.publishEvent('success', ['CIRAConfigurator'], 'CIRA Configured', clientObj.uuid)
-            return this.responseMsg.get(clientId, null, 'success', 'success', JSON.stringify(clientObj.status))
+            //  TBD: Need to refactor this repetitive code
+            if (clientObj.ClientData.payload.profile.tlsConfigObject != null && clientObj.ClientData.payload.profile.tlsConfigName != null) {
+              clientObj.action = ClientAction.TLSCONFIG
+              this.clientManager.setClientObject(clientObj)
+              await this.tlsConfigurator.execute(message, clientId)
+            } else {
+              return this.responseMsg.get(clientId, null, 'success', 'success', JSON.stringify(clientObj.status))
+            }
           }
         } else if (clientObj.ciraconfig.setENVSettingData) {
           MqttProvider.publishEvent('success', ['CIRAConfigurator'], 'CIRA Configured', clientObj.uuid)
-          return this.responseMsg.get(clientId, null, 'success', 'success', JSON.stringify(clientObj.status))
+          if (clientObj.ClientData.payload.profile.tlsConfigObject != null && clientObj.ClientData.payload.profile.tlsConfigName != null) {
+            clientObj.action = ClientAction.TLSCONFIG
+            this.clientManager.setClientObject(clientObj)
+            await this.tlsConfigurator.execute(message, clientId)
+          } else {
+            return this.responseMsg.get(clientId, null, 'success', 'success', JSON.stringify(clientObj.status))
+          }
         }
       }
     } catch (error) {

@@ -7,7 +7,7 @@
 
 import { IExecutor } from '../interfaces/IExecutor'
 import { ILogger } from '../interfaces/ILogger'
-import { ClientAction, ClientMsg, ClientObject, ProfileWifiConfigs } from '../RCS.Config'
+import { ClientAction, ClientMsg, ClientObject, ProfileWifiConfigs } from '../models/RCS.Config'
 import { IConfigurator } from '../interfaces/IConfigurator'
 import { ClientResponseMsg } from '../utils/ClientResponseMsg'
 import { WSManProcessor } from '../WSManProcessor'

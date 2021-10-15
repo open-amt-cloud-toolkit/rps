@@ -4,7 +4,7 @@
  **********************************************************************/
 import { Request } from 'express'
 import { check, ValidationChain } from 'express-validator'
-import { ClientAction, ProfileWifiConfigs } from '../../../RCS.Config'
+import { ClientAction, ProfileWifiConfigs } from '../../../models/RCS.Config'
 
 export const amtProfileValidator = (): ValidationChain[] => {
   return [
@@ -81,11 +81,16 @@ export const amtProfileValidator = (): ValidationChain[] => {
         }
         return true
       }),
+    check('tlsConfigName')
+      .optional({ nullable: true }),
     check('ciraConfigName')
       .optional({ nullable: true })
       .custom((value, { req }) => {
         if (!req.body.dhcpEnabled) {
           throw new Error('CIRA cannot be configured if DHCP is disabled')
+        }
+        if (req.body.tlsConfigName != null) {
+          throw new Error('CIRA cannot be configured if TLS is enabled')
         }
         return true
       }),
@@ -203,11 +208,16 @@ export const profileUpdateValidator = (): any => {
         }
         return true
       }),
+    check('tlsConfigName')
+      .optional({ nullable: true }),
     check('ciraConfigName')
       .optional({ nullable: true })
       .custom((value, { req }) => {
         if (!req.body.dhcpEnabled) {
           throw new Error('CIRA cannot be configured if DHCP is disabled')
+        }
+        if (req.body.tlsConfigName != null) {
+          throw new Error('CIRA cannot be configured if TLS is enabled')
         }
         return true
       }),

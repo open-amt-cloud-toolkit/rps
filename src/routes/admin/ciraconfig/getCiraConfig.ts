@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  * Author : Ramu Bachala
  **********************************************************************/
-import { CIRAConfig } from '../../../RCS.Config'
+import { CIRAConfig } from '../../../models/RCS.Config'
 import Logger from '../../../Logger'
 import { CIRA_CONFIG_NOT_FOUND, API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../../utils/constants'
 import { MqttProvider } from '../../../utils/MqttProvider'

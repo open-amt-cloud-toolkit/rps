@@ -23,7 +23,7 @@ import { VersionChecker } from '../VersionChecker'
 EnvReader.GlobalEnvConfig = config
 const nodeForge = new NodeForge()
 const helper = new SignatureHelper(nodeForge)
-const certManager = new CertManager(nodeForge)
+const certManager = new CertManager(new Logger('CertManager'), nodeForge)
 const configurator = new Configurator()
 const clientManager = ClientManager.getInstance(new Logger('ClientManager'))
 const responseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'), nodeForge)

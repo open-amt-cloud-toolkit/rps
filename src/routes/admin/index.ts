@@ -10,6 +10,7 @@ import profiles from './profiles/index'
 import ciraConfigs from './ciraconfig/index'
 import version from './version/index'
 import wirelessconfigs from './wireless/index'
+import tlsconfigs from './tls/index'
 
 const adminRouter: Router = Router()
 
@@ -18,6 +19,7 @@ adminRouter.use('/profiles', profiles)
 adminRouter.use('/ciraconfigs', ciraConfigs)
 adminRouter.use('/wirelessconfigs', wirelessconfigs)
 adminRouter.use('/version', version)
+adminRouter.use('/tlsconfigs', tlsconfigs)
 adminRouter.get('/', (req: Request, res: Response) => {
   res.status(200).json({ message: 'admin path. use admin/profiles' })
 })
