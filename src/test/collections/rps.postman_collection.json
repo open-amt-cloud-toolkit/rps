@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "d2663acd-e2f9-4332-a522-5bb653697038",
+		"_postman_id": "847720d7-5e2e-46a0-95cd-9b3504e26370",
 		"name": "RPS API Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -6067,62 +6067,6 @@
 							"response": []
 						},
 						{
-							"name": "Create AMT profile with duplicate priority for wifiConfig",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"Status code is 400\", function () {\r",
-											"    pm.response.to.have.status(400);\r",
-											"});\r",
-											"pm.test(\"Creation should fail\", function () {\r",
-											"    var result = pm.response.json();\r",
-											"    pm.expect(result.errors[0].msg).to.eql(\"wifi config priority should be unique\"),\r",
-											"    pm.expect(result.errors[0].param).to.eql(\"wifiConfigs\")\r",
-											"});"
-										],
-										"type": "text/javascript"
-									}
-								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json",
-										"type": "text"
-									},
-									{
-										"key": "X-RPS-API-Key",
-										"value": "APIKEYFORRPS123!",
-										"type": "text",
-										"disabled": true
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
-								},
-								"url": {
-									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
-									"protocol": "{{protocol}}",
-									"host": [
-										"{{host}}"
-									],
-									"path": [
-										"api",
-										"v1",
-										"admin",
-										"profiles",
-										""
-									]
-								}
-							},
-							"response": []
-						},
-						{
 							"name": "Create AMT profile with DHCP enabled false and Wifi configs",
 							"event": [
 								{
@@ -6560,62 +6504,6 @@
 								"body": {
 									"mode": "raw",
 									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"test\"\r\n        }\r\n    ]\r\n}"
-								},
-								"url": {
-									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
-									"protocol": "{{protocol}}",
-									"host": [
-										"{{host}}"
-									],
-									"path": [
-										"api",
-										"v1",
-										"admin",
-										"profiles",
-										""
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Create AMT profile with duplicate priority for wifiConfig",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"Status code is 400\", function () {\r",
-											"    pm.response.to.have.status(400);\r",
-											"});\r",
-											"pm.test(\"Creation should fail\", function () {\r",
-											"    var result = pm.response.json();\r",
-											"    pm.expect(result.errors[0].msg).to.eql(\"wifi config priority should be unique\"),\r",
-											"    pm.expect(result.errors[0].param).to.eql(\"wifiConfigs\")\r",
-											"});"
-										],
-										"type": "text/javascript"
-									}
-								}
-							],
-							"request": {
-								"method": "PATCH",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json",
-										"type": "text"
-									},
-									{
-										"key": "X-RPS-API-Key",
-										"value": "APIKEYFORRPS123!",
-										"type": "text",
-										"disabled": true
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home2\"\r\n        },\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
