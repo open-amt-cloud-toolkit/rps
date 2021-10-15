@@ -4,7 +4,7 @@
  **********************************************************************/
 import { Request } from 'express'
 import { check, ValidationChain } from 'express-validator'
-import { ClientAction, ProfileWifiConfigs } from '../../../RCS.Config'
+import { ClientAction } from '../../../RCS.Config'
 
 export const amtProfileValidator = (): ValidationChain[] => {
   return [
@@ -102,14 +102,14 @@ export const amtProfileValidator = (): ValidationChain[] => {
         if (!req.body.dhcpEnabled && value?.length > 0) {
           throw new Error('Wifi supports only DHCP in AMT')
         }
-        const priorities = new Set(value.map((config: ProfileWifiConfigs) => {
+        if (value.length > 8) {
+          throw new Error('A maximum of 8 wifi profiles can be stored at a time.')
+        }
+        for (const config of value) {
+          // priority is uint8 on AMT, but api doesn't accept 0 because some profiles exists with O priority by default on some devices
           if (Number.isInteger(config.priority) && (config.priority < 1 || config.priority > 255)) {
             throw new Error('wifi config priority should be an integer and between 1 and 255')
           }
-          return config.priority
-        }))
-        if ([...priorities].length !== value.length) {
-          throw new Error('wifi config priority should be unique')
         }
         const wifiConfigs = await validatewifiConfigs(value, req as Request)
         if (wifiConfigs.length > 0) {
@@ -225,14 +225,13 @@ export const profileUpdateValidator = (): any => {
         } else if (!req.body.dhcpEnabled && value?.length > 0) {
           throw new Error('Wifi supports only DHCP in AMT')
         }
-        const priorities = new Set(value.map((config: ProfileWifiConfigs) => {
+        if (value.length > 8) {
+          throw new Error('A maximum of 8 wifi profiles can be stored at a time.')
+        }
+        for (const config of value) {
           if (Number.isInteger(config.priority) && (config.priority < 1 || config.priority > 255)) {
             throw new Error('wifi config priority should be an integer and between 1 and 255')
           }
-          return config.priority
-        }))
-        if ([...priorities].length !== value.length) {
-          throw new Error('wifi config priority should be unique')
         }
         const wifiConfigs = await validatewifiConfigs(value, req as Request)
         if (wifiConfigs.length > 0) {
