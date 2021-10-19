@@ -66,6 +66,9 @@ export class DataProcessor implements IDataProcessor {
         case ClientMethods.HEARTBEAT: {
           return await this.heartbeat(clientMsg, clientId)
         }
+        case ClientMethods.MAINTENANCE: {
+          return await this.maintainDevice(clientMsg, clientId)
+        }
         default: {
           const uuid = clientMsg.payload.uuid ? clientMsg.payload.uuid : this.clientManager.getClientObject(clientId).ClientData.payload.uuid
           throw new RPSError(`Device ${uuid} Not a supported method received from AMT device`)
@@ -133,5 +136,11 @@ export class DataProcessor implements IDataProcessor {
       await new Promise(resolve => setTimeout(resolve, 5000)) // TODO: make configurable rate if required by customers
       return this.responseMsg.get(clientId, null, 'heartbeat_request', 'heartbeat', '')
     }
+  }
+
+  async maintainDevice (clientMsg: ClientMsg, clientId: string): Promise<ClientMsg> {
+    this.logger.debug(`ProcessData: Parsed Maintenance message received from device ${clientMsg.payload.uuid}: ${JSON.stringify(clientMsg, null, '\t')}`)
+    await this.validator.validateMaintenanceMsg(clientMsg, clientId)
+    return await this.clientActions.buildResponseMessage(clientMsg, clientId)
   }
 }

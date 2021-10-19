@@ -180,20 +180,22 @@ export class ProfileManager implements IProfileManager {
     */
   public async getAmtProfile (profile: string): Promise<AMTConfiguration> {
     try {
-      const amtProfile: AMTConfiguration = await this.amtConfigurations.getByName(profile)
-      // If the CIRA Config associated with profile, retrieves from DB
-      if (amtProfile.ciraConfigName != null) {
-        amtProfile.ciraConfigObject = await this.amtConfigurations.getCiraConfigForProfile(amtProfile.ciraConfigName)
-        if (this.configurator?.secretsManager) {
-          if (amtProfile.ciraConfigObject?.password) {
-            amtProfile.ciraConfigObject.password = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${amtProfile.ciraConfigObject.configName}`, 'MPS_PASSWORD')
-          } else {
-            this.logger.error("The amtProfile CIRAConfigObject doesn't have a password. Check CIRA profile creation.")
+      if (profile) {
+        const amtProfile: AMTConfiguration = await this.amtConfigurations.getByName(profile)
+        // If the CIRA Config associated with profile, retrieves from DB
+        if (amtProfile?.ciraConfigName != null) {
+          amtProfile.ciraConfigObject = await this.amtConfigurations.getCiraConfigForProfile(amtProfile.ciraConfigName)
+          if (this.configurator?.secretsManager) {
+            if (amtProfile.ciraConfigObject?.password) {
+              amtProfile.ciraConfigObject.password = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${amtProfile.ciraConfigObject.configName}`, 'MPS_PASSWORD')
+            } else {
+              this.logger.error("The amtProfile CIRAConfigObject doesn't have a password. Check CIRA profile creation.")
+            }
           }
         }
+        this.logger.debug(`AMT Profile returned from db: ${amtProfile?.profileName}`)
+        return amtProfile
       }
-      this.logger.debug(`AMT Profile returned from db: ${amtProfile.profileName}`)
-      return amtProfile
     } catch (error) {
       this.logger.error(`Failed to get AMT profile: ${error}`)
     }

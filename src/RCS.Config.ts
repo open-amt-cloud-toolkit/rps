@@ -184,13 +184,14 @@ export interface ConnectionObject {
   onStateChange?: any
 }
 
-export enum ClientAction{
+export enum ClientAction {
   INVALID = 'invalid',
   ADMINCTLMODE = 'acmactivate',
   CLIENTCTLMODE = 'ccmactivate',
   DEACTIVATE = 'deactivate',
-  CIRACONFIG= 'ciraconfig',
-  NETWORKCONFIG = 'networkConfig'
+  CIRACONFIG = 'ciraconfig',
+  NETWORKCONFIG = 'networkConfig',
+  MAINTENANCE = 'MAINTENANCE'
 }
 
 export enum ClientMethods{
@@ -200,7 +201,8 @@ export enum ClientMethods{
   ACTIVATION = 'activate',
   DEACTIVATION = 'deactivate',
   CIRACONFIG= 'ciraconfig',
-  HEARTBEAT='heartbeat_response'
+  HEARTBEAT='heartbeat_response',
+  MAINTENANCE='maintenance'
 }
 
 export interface apiResponse {
