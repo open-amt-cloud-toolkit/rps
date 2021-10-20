@@ -59,11 +59,6 @@ export class ProfileManager implements IProfileManager {
     if (profile?.ciraConfigName && profile.ciraConfigObject) {
       this.logger.debug(`found CIRAConfigObject for profile: ${profile.profileName}`)
       ciraConfig = profile.ciraConfigObject
-
-      this.logger.debug(`retrieve CIRA MPS Password for cira config ${ciraConfig.configName}`)
-      if (this.configurator?.secretsManager) {
-        ciraConfig.password = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfig.configName}`, 'MPS_PASSWORD')
-      }
     } else {
       this.logger.debug(`unable to find CIRAConfig for profile ${profile.profileName}`)
     }
@@ -149,17 +144,12 @@ export class ProfileManager implements IProfileManager {
     let mpsPassword: string
 
     if (profile?.ciraConfigObject) {
-      if (!profile.ciraConfigObject.password) {
-        mpsPassword = PasswordHelper.generateRandomPassword(AMTRandomPasswordLength)
+      mpsPassword = PasswordHelper.generateRandomPassword(AMTRandomPasswordLength)
 
-        if (mpsPassword) {
-          this.logger.debug(`Created random MPS password for ${profile.profileName}`)
-        } else {
-          this.logger.error(`unable to create MPS random password for ${profile.profileName}`)
-        }
+      if (mpsPassword) {
+        this.logger.debug(`Created random MPS password for ${profile.profileName}`)
       } else {
-        this.logger.debug('using mps password from cira config')
-        mpsPassword = profile.ciraConfigObject.password
+        this.logger.error(`unable to create MPS random password for ${profile.profileName}`)
       }
     } else {
       this.logger.error(`unable to find mpsPassword for profile ${profileName}`)
@@ -184,13 +174,6 @@ export class ProfileManager implements IProfileManager {
       // If the CIRA Config associated with profile, retrieves from DB
       if (amtProfile.ciraConfigName != null) {
         amtProfile.ciraConfigObject = await this.amtConfigurations.getCiraConfigForProfile(amtProfile.ciraConfigName)
-        if (this.configurator?.secretsManager) {
-          if (amtProfile.ciraConfigObject?.password) {
-            amtProfile.ciraConfigObject.password = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${amtProfile.ciraConfigObject.configName}`, 'MPS_PASSWORD')
-          } else {
-            this.logger.error("The amtProfile CIRAConfigObject doesn't have a password. Check CIRA profile creation.")
-          }
-        }
       }
       this.logger.debug(`AMT Profile returned from db: ${amtProfile.profileName}`)
       return amtProfile
