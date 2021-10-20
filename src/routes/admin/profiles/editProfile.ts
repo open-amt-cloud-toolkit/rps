@@ -52,7 +52,7 @@ export async function editProfile (req: Request, res: Response): Promise<void> {
         }
         // store the password sent into Vault
         if (req.secretsManager && (!amtConfig.generateRandomPassword || !amtConfig.generateRandomMEBxPassword)) {
-          const data = { data: { AMT_PASSWORD: '', MEBX_PASSWORD: '' } }
+          const data = { data: { AMT_PASSWORD: null, MEBX_PASSWORD: null } }
           if (!amtConfig.generateRandomPassword) {
             data.data.AMT_PASSWORD = amtPwdBefore
             log.debug('AMT Password written to vault')
@@ -61,7 +61,10 @@ export async function editProfile (req: Request, res: Response): Promise<void> {
             data.data.MEBX_PASSWORD = mebxPwdBefore
             log.debug('MEBX Password written to vault')
           }
-          await req.secretsManager.writeSecretWithObject(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${amtConfig.profileName}`, data)
+
+          if (data.data.AMT_PASSWORD != null || data.data.MEBX_PASSWORD != null) {
+            await req.secretsManager.writeSecretWithObject(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${amtConfig.profileName}`, data)
+          }
         }
         log.verbose(`Updated AMT profile: ${newConfig.profileName}`)
         delete results.amtPassword
