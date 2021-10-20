@@ -3,12 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 import { CIRAConfig } from '../../../RCS.Config'
-import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
-import { AMTRandomPasswordLength, API_RESPONSE, API_UNEXPECTED_EXCEPTION, CIRA_CONFIG_NOT_FOUND } from '../../../utils/constants'
+import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, CIRA_CONFIG_NOT_FOUND } from '../../../utils/constants'
 import { RPSError } from '../../../utils/RPSError'
 import { MqttProvider } from '../../../utils/MqttProvider'
-import { PasswordHelper } from '../../../utils/PasswordHelper'
 import { Request, Response } from 'express'
 
 export async function editCiraConfig (req: Request, res: Response): Promise<void> {
@@ -23,25 +21,15 @@ export async function editCiraConfig (req: Request, res: Response): Promise<void
       res.status(404).json(API_RESPONSE(null, 'Not Found', CIRA_CONFIG_NOT_FOUND(newConfig.configName))).end()
     } else {
       const ciraConfig: CIRAConfig = getUpdatedData(newConfig, oldConfig)
-      const mpsPwd = newConfig.regeneratePassword ? PasswordHelper.generateRandomPassword(AMTRandomPasswordLength) : newConfig.password
-      if (req.secretsManager) {
-        ciraConfig.password = 'MPS_PASSWORD'
-      }
       // TBD: Need to check the ServerAddressFormat, CommonName and MPSServerAddress if they are not updated.
       // SQL Query > Insert Data
       const results = await req.db.ciraConfigs.update(ciraConfig)
       if (results !== undefined) {
-        if (req.secretsManager) {
-          if (mpsPwd != null) {
-            await req.secretsManager.writeSecretWithKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfig.configName}`, ciraConfig.password, mpsPwd)
-            log.debug(`MPS password updated in Vault for CIRA Config ${ciraConfig.configName}`)
-          }
-        }
+        MqttProvider.publishEvent('success', ['editCiraConfig'], `Updated CIRA config profile : ${ciraConfig.configName}`)
+        log.verbose(`Updated CIRA config profile : ${ciraConfig.configName}`)
+        delete results.password
+        res.status(200).json(results).end()
       }
-      MqttProvider.publishEvent('success', ['editCiraConfig'], `Updated CIRA config profile : ${ciraConfig.configName}`)
-      log.verbose(`Updated CIRA config profile : ${ciraConfig.configName}`)
-      delete results.password
-      res.status(200).json(results).end()
     }
   } catch (error) {
     MqttProvider.publishEvent('fail', ['editCiraConfig'], `Failed to update CIRA config : ${newConfig.configName}`)
