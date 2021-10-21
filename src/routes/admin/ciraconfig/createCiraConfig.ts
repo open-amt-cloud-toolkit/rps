@@ -3,13 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 import { CIRAConfig } from '../../../RCS.Config'
-import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
-import { PasswordHelper } from '../../../utils/PasswordHelper'
 import {
   API_UNEXPECTED_EXCEPTION,
-  API_RESPONSE,
-  AMTRandomPasswordLength
+  API_RESPONSE
 } from '../../../utils/constants'
 import { RPSError } from '../../../utils/RPSError'
 import { MqttProvider } from '../../../utils/MqttProvider'
@@ -21,19 +18,10 @@ export async function createCiraConfig (req: Request, res: Response): Promise<vo
   ciraConfig.tenantId = req.tenantId
 
   try {
-    const mpsPwd = ciraConfig.password ?? PasswordHelper.generateRandomPassword(AMTRandomPasswordLength)
-    if (req.secretsManager) {
-      ciraConfig.password = 'MPS_PASSWORD'
-    }
     // SQL Query > Insert Data
     const results: CIRAConfig = await req.db.ciraConfigs.insert(ciraConfig)
     // CIRA profile inserted  into db successfully.
     if (results != null) {
-      // store the password into Vault
-      if (req.secretsManager && ciraConfig.password) {
-        await req.secretsManager.writeSecretWithKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfig.configName}`, ciraConfig.password, mpsPwd)
-        log.debug(`MPS password stored in Vault for CIRA config : ${ciraConfig.configName}`)
-      }
       log.verbose(`Created CIRA config : ${ciraConfig.configName}`)
       delete results.password
       MqttProvider.publishEvent('success', ['createCiraConfig'], `Created ${results.configName}`)

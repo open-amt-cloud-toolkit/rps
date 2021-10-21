@@ -191,7 +191,7 @@ export enum ClientAction {
   DEACTIVATE = 'deactivate',
   CIRACONFIG = 'ciraconfig',
   NETWORKCONFIG = 'networkConfig',
-  MAINTENANCE = 'MAINTENANCE'
+  MAINTENANCE = 'maintenance'
 }
 
 export enum ClientMethods{

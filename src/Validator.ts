@@ -294,28 +294,26 @@ export class Validator implements IValidator {
           throw new RPSError(`AMT password DOES NOT match stored version for Device ${payload.uuid}`)
         }
       } else {
-        this.logger.error(`Device ${payload.uuid} repository not found`)
-        throw new RPSError(`Device ${payload.uuid} repository not found`)
+        this.logger.error(`Device ${payload.uuid} secret provider not found`)
+        throw new RPSError(`Device ${payload.uuid} secret provider not found`)
       }
     } catch (error) {
-      this.logger.error(`AMT device repo exception: ${error}`)
+      this.logger.error(`AMT device secret provider exception: ${error}`)
       if (error instanceof RPSError) {
         throw new RPSError(`${error.message}`)
       } else {
-        throw new Error('AMT device repo exception')
+        throw new Error('AMT device secret provider exception')
       }
     }
   }
 
   verifyPayload (msg: ClientMsg, clientId: string): Payload {
-    let payload: Payload = null
     if (!msg) {
       throw new RPSError(`${clientId} - Error while Validating the client message`)
     }
-    payload = msg.payload
-    if (!payload.uuid) {
+    if (!msg.payload.uuid) {
       throw new RPSError(`${clientId} - Missing uuid from payload`)
     }
-    return payload
+    return msg.payload
   }
 }
