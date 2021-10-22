@@ -170,12 +170,15 @@ export class ProfileManager implements IProfileManager {
     */
   public async getAmtProfile (profile: string): Promise<AMTConfiguration> {
     try {
+      if (!profile) {
+        return null
+      }
       const amtProfile: AMTConfiguration = await this.amtConfigurations.getByName(profile)
       // If the CIRA Config associated with profile, retrieves from DB
-      if (amtProfile.ciraConfigName != null) {
+      if (amtProfile?.ciraConfigName != null) {
         amtProfile.ciraConfigObject = await this.amtConfigurations.getCiraConfigForProfile(amtProfile.ciraConfigName)
       }
-      this.logger.debug(`AMT Profile returned from db: ${amtProfile.profileName}`)
+      this.logger.debug(`AMT Profile returned from db: ${amtProfile?.profileName}`)
       return amtProfile
     } catch (error) {
       this.logger.error(`Failed to get AMT profile: ${error}`)

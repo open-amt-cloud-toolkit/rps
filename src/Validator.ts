@@ -73,16 +73,8 @@ export class Validator implements IValidator {
    * @returns {RCSMessage}
    */
   async validateActivationMsg (msg: ClientMsg, clientId: string): Promise<void> {
-    let payload: Payload = null
-    if (!msg) {
-      throw new RPSError('Error while Validating the client message')
-    }
-
-    payload = msg.payload
-
-    if (!payload.uuid) {
-      throw new RPSError('Missing uuid from payload')
-    }
+    const clientObj = this.clientManager.getClientObject(clientId)
+    const payload: Payload = this.verifyPayload(msg, clientId)
 
     // Check version and build compatibility
     if (parseInt(payload.ver) > 7 && parseInt(payload.ver) < 12) {
@@ -97,8 +89,6 @@ export class Validator implements IValidator {
     if (!payload.password) {
       throw new RPSError(`Device ${payload.uuid} activation failed. Missing password.`)
     }
-
-    const clientObj = this.clientManager.getClientObject(clientId)
 
     // Check for client requested action and profile activation
     const profileExists = await this.configurator.profileManager.doesProfileExist(payload.profile)
@@ -194,18 +184,8 @@ export class Validator implements IValidator {
  * @returns {RCSMessage}
  */
   async validateDeactivationMsg (msg: ClientMsg, clientId: string): Promise<void> {
-    let payload: Payload = null
-    if (!msg) {
-      throw new RPSError('Error while Validating the client message')
-    }
-
     const clientObj = this.clientManager.getClientObject(clientId)
-
-    payload = msg.payload
-
-    if (!payload.uuid) {
-      throw new RPSError('Missing uuid from payload')
-    }
+    const payload: Payload = this.verifyPayload(msg, clientId)
 
     // Check for the current mode
     if (payload.currentMode >= 0) {
@@ -241,30 +221,7 @@ export class Validator implements IValidator {
     if (msg.payload.force) {
       this.logger.debug('bypassing password check')
     } else {
-      try {
-        let amtDevice: AMTDeviceDTO
-        if (this.configurator?.amtDeviceRepository) {
-          amtDevice = await this.configurator.amtDeviceRepository.get(payload.uuid)
-
-          if (amtDevice?.amtpass && payload.password && payload.password === amtDevice.amtpass) {
-            this.logger.debug(`AMT password matches stored version for Device ${payload.uuid}`)
-          } else {
-            this.logger.error(`
-            stored version for Device ${payload.uuid}`)
-            throw new RPSError(`AMT password DOES NOT match stored version for Device ${payload.uuid}`)
-          }
-        } else {
-          this.logger.error(`Device ${payload.uuid} repository not found`)
-          throw new RPSError(`Device ${payload.uuid} repository not found`)
-        }
-      } catch (error) {
-        this.logger.error(`AMT device repo exception: ${error}`)
-        if (error instanceof RPSError) {
-          throw new RPSError(`${error.message}`)
-        } else {
-          throw new Error('AMT device repo exception')
-        }
-      }
+      await this.verifyDevicePassword(payload)
     }
 
     // Store the client message
@@ -305,5 +262,58 @@ export class Validator implements IValidator {
         }
       })
     }
+  }
+
+  async validateMaintenanceMsg (msg: ClientMsg, clientId: string): Promise<void> {
+    const clientObj = this.clientManager.getClientObject(clientId)
+    const payload: Payload = this.verifyPayload(msg, clientId)
+    // Check for the current mode
+    if (payload.currentMode > 0) {
+      const mode = payload.currentMode === 1 ? 'client control mode' : 'admin control mode'
+      clientObj.action = ClientAction.MAINTENANCE
+      this.logger.debug(`Device ${payload.uuid} is in ${mode}.`)
+    } else {
+      throw new RPSError(`Device ${payload.uuid} is in pre-provisioning mode.`)
+    }
+    await this.verifyDevicePassword(payload)
+    clientObj.ClientData = msg
+    this.clientManager.setClientObject(clientObj)
+  }
+
+  async verifyDevicePassword (payload: Payload): Promise<void> {
+    try {
+      let amtDevice: AMTDeviceDTO
+      if (this.configurator?.amtDeviceRepository) {
+        amtDevice = await this.configurator.amtDeviceRepository.get(payload.uuid)
+
+        if (amtDevice?.amtpass && payload.password && payload.password === amtDevice.amtpass) {
+          this.logger.debug(`AMT password matches stored version for Device ${payload.uuid}`)
+        } else {
+          this.logger.error(`
+          stored version for Device ${payload.uuid}`)
+          throw new RPSError(`AMT password DOES NOT match stored version for Device ${payload.uuid}`)
+        }
+      } else {
+        this.logger.error(`Device ${payload.uuid} secret provider not found`)
+        throw new RPSError(`Device ${payload.uuid} secret provider not found`)
+      }
+    } catch (error) {
+      this.logger.error(`AMT device secret provider exception: ${error}`)
+      if (error instanceof RPSError) {
+        throw new RPSError(`${error.message}`)
+      } else {
+        throw new Error('AMT device secret provider exception')
+      }
+    }
+  }
+
+  verifyPayload (msg: ClientMsg, clientId: string): Payload {
+    if (!msg) {
+      throw new RPSError(`${clientId} - Error while Validating the client message`)
+    }
+    if (!msg.payload.uuid) {
+      throw new RPSError(`${clientId} - Missing uuid from payload`)
+    }
+    return msg.payload
   }
 }
