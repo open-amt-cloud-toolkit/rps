@@ -91,7 +91,7 @@ export class DataProcessor implements IDataProcessor {
 
     // Makes the first wsman call
     const clientObj = this.clientManager.getClientObject(clientId)
-    if ((clientObj.action === ClientAction.ADMINCTLMODE || clientObj.action === ClientAction.CLIENTCTLMODE) && !clientMsg.payload.digestRealm) {
+    if ((clientObj.action === ClientAction.ADMINCTLMODE || clientObj.action === ClientAction.CLIENTCTLMODE) && !clientMsg.payload.digestRealm && !clientObj.activationStatus.activated) {
       await this.amtwsman.batchEnum(clientId, '*AMT_GeneralSettings')
     } else {
       const response = await this.clientActions.buildResponseMessage(clientMsg, clientId)

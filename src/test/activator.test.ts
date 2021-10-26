@@ -85,7 +85,8 @@ beforeAll(() => {
     ClientData: activationmsg,
     ciraconfig: {},
     network: {},
-    status: {}
+    status: {},
+    activationStatus: {}
   })
 })
 
@@ -177,15 +178,6 @@ describe('processWSManJasonResponse', () => {
   })
   test('should populate ciraconfig.status and activationStatus if CCM activation successful', async () => {
   })
-  test('should throw an error if setting the MEBx password fails', async () => {
-    const message = { payload: { Header: { Method: 'SetMEBxPassword' }, Body: { ReturnValue: 1 } } }
-    const clientObj = clientManager.getClientObject(clientId)
-    try {
-      await activator.processWSManJsonResponse(message, clientId)
-    } catch (error) {
-      expect(error.message).toEqual(`Device ${clientObj.uuid} failed to set MEBx password.`)
-    }
-  })
   test('should thow an error if receives an invalid response', async () => {
     const message = { payload: { Header: { Method: 'badrequest' }, Body: { ReturnValue: 0 } } }
     const clientObj = clientManager.getClientObject(clientId)
@@ -214,17 +206,36 @@ describe('waitForActivation', () => {
     const responseMsg = await activator.waitAfterActivation(clientId, clientObj)
     expect(responseMsg).toEqual({ apiKey: 'xxxxx', appVersion: '1.2.0', message: '', method: 'heartbeat_request', payload: '', protocolVersion: '4.0.0', status: 'heartbeat' })
   })
-  test('should set next action as CIRACONFIG once heartbeat has ended', async () => {
+  test('should set next action as NETWORKCONFIG once heartbeat has ended for ACM', async () => {
     const clientObj = clientManager.getClientObject(clientId)
     const currentTime = new Date().getTime()
+    clientObj.action = ClientAction.ADMINCTLMODE
+    clientObj.delayEndTime = currentTime
+    clientObj.mebxPassword = 'P@ssw0rd'
+    const message = {
+      Header: {
+        To: 'http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous',
+        RelatesTo: '7',
+        Action: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_SetupAndConfigurationService/SetMEBxPasswordResponse',
+        MessageID: 'uuid:00000000-8086-8086-8086-00000000019D',
+        ResourceURI: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_SetupAndConfigurationService',
+        Method: 'SetMEBxPassword'
+      },
+      Body: {
+        ReturnValue: 0,
+        ReturnValueStr: 'SUCCESS'
+      }
+    }
+    await activator.waitAfterActivation(clientId, clientObj, message)
+    expect(clientObj.action).toBe(ClientAction.NETWORKCONFIG)
+  })
+  test('should set next action as NETWORKCONFIG once heartbeat has ended for ACM', async () => {
+    const clientObj = clientManager.getClientObject(clientId)
+    const currentTime = new Date().getTime()
+    clientObj.action = ClientAction.CLIENTCTLMODE
     clientObj.delayEndTime = currentTime
     await activator.waitAfterActivation(clientId, clientObj)
     expect(clientObj.action).toBe(ClientAction.NETWORKCONFIG)
-  })
-})
-
-describe('setMEBxPassword', () => {
-  test('mebxPassword is populated', async () => {
   })
 })
 
@@ -239,6 +250,7 @@ describe('performACMSteps', () => {
 })
 
 describe('injectCertificate', () => {
+  const spy = jest.spyOn(amtwsman, 'getCertChainWSManResponse')
   test('updates client count when count === certChain.length', async () => {
     const clientObj = clientManager.getClientObject(clientId)
     clientObj.count = 1
@@ -254,6 +266,33 @@ describe('injectCertificate', () => {
     clientObj.certObj.certChain = ['cert']
     await activator.injectCertificate(clientId, clientObj)
     expect(clientObj.count).toBeLessThanOrEqual(clientObj.certObj.certChain.length)
+  })
+  test('amt wsman call to update leaf certificate', async () => {
+    const clientObj = clientManager.getClientObject(clientId)
+    clientObj.count = 0
+    clientObj.certObj = {}
+    clientObj.certObj.certChain = ['leaf', 'inter1', 'inter2', 'root']
+    await activator.injectCertificate(clientId, clientObj)
+    expect(spy).toHaveBeenCalled()
+    expect(clientObj.count).toBe(1)
+  })
+  test('amt wsman call to update intermediate certificate', async () => {
+    const clientObj = clientManager.getClientObject(clientId)
+    clientObj.count = 2
+    clientObj.certObj = {}
+    clientObj.certObj.certChain = ['leaf', 'inter1', 'inter2', 'root']
+    await activator.injectCertificate(clientId, clientObj)
+    expect(spy).toHaveBeenCalled()
+    expect(clientObj.count).toBe(3)
+  })
+  test('amt wsman call to update root certificate', async () => {
+    const clientObj = clientManager.getClientObject(clientId)
+    clientObj.count = 3
+    clientObj.certObj = {}
+    clientObj.certObj.certChain = ['leaf', 'inter1', 'inter2', 'root']
+    await activator.injectCertificate(clientId, clientObj)
+    expect(spy).toHaveBeenCalled()
+    expect(clientObj.count).toBe(4)
   })
 })
 
