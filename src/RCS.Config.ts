@@ -92,7 +92,7 @@ export interface ClientObject {
   payload?: any
   certObj?: any
   readyState?: number
-  activationStatus?: boolean
+  activationStatus?: ActivationStatus
   delayEndTime?: any
   amtPassword?: string
   mebxPassword?: string
@@ -103,6 +103,12 @@ export interface ClientObject {
   mpsPassword?: string
   network?: NetworkConfigFlow
   status?: Status
+}
+
+export interface ActivationStatus {
+  activated?: boolean
+  missingMebxPassword?: boolean
+  changePassword?: boolean
 }
 
 export interface CIRAConfigFlow {
