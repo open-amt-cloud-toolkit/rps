@@ -9,7 +9,7 @@ import { AMTConfiguration } from './models/Rcs'
 import { ILogger } from './interfaces/ILogger'
 import { IProfileManager } from './interfaces/IProfileManager'
 import { PasswordHelper } from './utils/PasswordHelper'
-import { CIRAConfig } from './RCS.Config'
+import { CIRAConfig } from './models/RCS.Config'
 import { IConfigurator } from './interfaces/IConfigurator'
 import { IProfilesTable } from './interfaces/database/IProfilesDb'
 import { EnvReader } from './utils/EnvReader'
@@ -177,6 +177,20 @@ export class ProfileManager implements IProfileManager {
       // If the CIRA Config associated with profile, retrieves from DB
       if (amtProfile?.ciraConfigName != null) {
         amtProfile.ciraConfigObject = await this.amtConfigurations.getCiraConfigForProfile(amtProfile.ciraConfigName)
+      }
+      // If the TLS Config associated with profile, retrieves from DB
+      if (amtProfile.tlsMode != null) {
+        // amtProfile.tlsConfigObject = await this.amtConfigurations.getTLSConfigForProfile(amtProfile.tlsConfigName)
+        if (this.configurator?.secretsManager) {
+          const path = `${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}TLS/${amtProfile.profileName}`
+
+          // if (amtProfile.tlsConfigObject.certVersion) {
+          //   path += `?version=${amtProfile.tlsConfigObject.certVersion}`
+          // }
+          const results = await this.configurator.secretsManager.getSecretAtPath(path)
+          amtProfile.tlsCerts = results.data
+          amtProfile.tlsCerts.version = results?.metadata?.version
+        }
       }
       this.logger.debug(`AMT Profile returned from db: ${amtProfile?.profileName}`)
       return amtProfile

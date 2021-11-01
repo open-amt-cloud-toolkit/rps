@@ -4,7 +4,7 @@
  * Author : Ramu Bachala
  **********************************************************************/
 import { AMTConfiguration } from '../../models/Rcs'
-import { CIRAConfig } from '../../RCS.Config'
+import { CIRAConfig } from '../../models/RCS.Config'
 import { ITable } from './ITable'
 
 export interface IProfilesTable extends ITable<AMTConfiguration> {

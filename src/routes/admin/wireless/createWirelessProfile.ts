@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 import { API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../../utils/constants'
-import { WirelessConfig } from '../../../RCS.Config'
+import { WirelessConfig } from '../../../models/RCS.Config'
 import Logger from '../../../Logger'
 import { RPSError } from '../../../utils/RPSError'
 import { EnvReader } from '../../../utils/EnvReader'

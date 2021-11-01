@@ -6,11 +6,10 @@
  **********************************************************************/
 
 import { IExecutor } from '../interfaces/IExecutor'
-import { ICertManager } from '../interfaces/ICertManager'
 import { ILogger } from '../interfaces/ILogger'
 import { SignatureHelper } from '../utils/SignatureHelper'
 import { PasswordHelper } from '../utils/PasswordHelper'
-import { ClientMsg, ClientAction, ClientObject } from '../RCS.Config'
+import { ClientMsg, ClientAction, ClientObject } from '../models/RCS.Config'
 import { IConfigurator } from '../interfaces/IConfigurator'
 import { AMTDeviceDTO } from '../repositories/dto/AmtDeviceDTO'
 import { ClientResponseMsg } from '../utils/ClientResponseMsg'
@@ -25,12 +24,13 @@ import { AMTDomain } from '../models/Rcs'
 import got from 'got'
 import { MqttProvider } from '../utils/MqttProvider'
 import { setMEBXPassword } from '../utils/maintenance/setMEBXPassword'
+import { CertManager } from '../CertManager'
 
 export class Activator implements IExecutor {
   constructor (
     private readonly logger: ILogger,
     private readonly configurator: IConfigurator,
-    private readonly certManager: ICertManager,
+    private readonly certManager: CertManager,
     private readonly signatureHelper: SignatureHelper,
     private readonly responseMsg: ClientResponseMsg,
     private readonly amtwsman: WSManProcessor,

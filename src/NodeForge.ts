@@ -4,10 +4,9 @@
  * Description: implementation of forge package functionality
  **********************************************************************/
 
-import { INodeForge } from './interfaces/INodeForge'
 import * as forge from 'node-forge'
 
-export class NodeForge implements INodeForge {
+export class NodeForge {
   public readonly pkiOidsCertBag: string = '1.2.840.113549.1.12.10.1.3'
   public readonly pkcs8ShroudedKeyBag: string = '1.2.840.113549.1.12.10.1.2'
 
@@ -27,7 +26,11 @@ export class NodeForge implements INodeForge {
     return forge.asn1.fromDer(input, strict)
   }
 
-  getBags (pkcs12Pfx: forge.pkcs12.Pkcs12Pfx, filter: forge.pkcs12.BagsFilter): any {
+  getBags (pkcs12Pfx: forge.pkcs12.Pkcs12Pfx, filter: forge.pkcs12.BagsFilter): {
+    [key: string]: forge.pkcs12.Bag[]
+    localKeyId?: forge.pkcs12.Bag[]
+    friendlyName?: forge.pkcs12.Bag[]
+  } {
     return pkcs12Pfx.getBags(filter)
   }
 
@@ -49,5 +52,17 @@ export class NodeForge implements INodeForge {
 
   privateKeyToPem (key: forge.pki.PrivateKey, maxline?: number): string {
     return forge.pki.privateKeyToPem(key, maxline)
+  }
+
+  publicKeyFromPem (pem: string): forge.pki.rsa.PublicKey {
+    return forge.pki.publicKeyFromPem(pem)
+  }
+
+  rsaGenerateKeyPair (length: number): forge.pki.rsa.KeyPair {
+    return forge.pki.rsa.generateKeyPair(length)
+  }
+
+  createCert (): forge.pki.Certificate {
+    return forge.pki.createCertificate()
   }
 }

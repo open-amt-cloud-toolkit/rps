@@ -6,7 +6,7 @@
  **********************************************************************/
 
 import * as parseArgs from 'minimist'
-import { ClientMsg } from './RCS.Config'
+import { ClientMsg } from './models/RCS.Config'
 import Logger from './Logger'
 import { ILogger } from './interfaces/ILogger'
 

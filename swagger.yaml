@@ -966,6 +966,9 @@ components:
           type: array
           items:
             type: object
+        tlsMode:
+          type: number
+          description: Server Authentication Only(1), Server and Non-TLS Authentication (2), Mutual TLS only (3), Mutual and Non-TLS authentication (4)
       example:
         profileName: profile1
         amtPassword: G@ppm0ym
@@ -1025,6 +1028,9 @@ components:
           type: array
           items:
             type: object
+        tlsMode:
+          type: number
+          description: Server Authentication Only(1), Server and Non-TLS Authentication (2), Mutual TLS only (3), Mutual and Non-TLS authentication (4)
       example:
         profileName: profile1
         generateRandomPassword: false
@@ -1033,6 +1039,7 @@ components:
         ciraConfigName: ciraconfig
         networkConfigName: dhcp_enabled
         generateRandomMEBxPassword: false
+        tlsMode: null
         tenantId: ""
         tags: [tag1, tag2]
         dhcpEnabled: true
