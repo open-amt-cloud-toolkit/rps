@@ -4,7 +4,7 @@
  **********************************************************************/
 import { Request } from 'express'
 import { check, ValidationChain } from 'express-validator'
-import { ClientAction } from '../../../RCS.Config'
+import { ClientAction } from '../../../models/RCS.Config'
 
 export const amtProfileValidator = (): ValidationChain[] => {
   return [
@@ -81,11 +81,18 @@ export const amtProfileValidator = (): ValidationChain[] => {
         }
         return true
       }),
+    check('tlsMode')
+      .optional({ nullable: true })
+      .isInt({ min: 1, max: 4 })
+      .withMessage('tlsMode must be set to one of these values: 1 (Server Authentication Only), 2 (Server and Non-TLS Authentication), 3 (Mutual TLS only), 4 (Mutual and Non-TLS authentication)'),
     check('ciraConfigName')
       .optional({ nullable: true })
       .custom((value, { req }) => {
         if (!req.body.dhcpEnabled) {
           throw new Error('CIRA cannot be configured if DHCP is disabled')
+        }
+        if (req.body.tlsMode != null) {
+          throw new Error('CIRA cannot be configured if TLS is enabled')
         }
         return true
       }),
@@ -203,11 +210,18 @@ export const profileUpdateValidator = (): any => {
         }
         return true
       }),
+    check('tlsMode')
+      .optional({ nullable: true })
+      .isInt({ min: 1, max: 4 })
+      .withMessage('tlsMode must be set to one of these values: 1 (Server Authentication Only), 2 (Server and Non-TLS Authentication), 3 (Mutual TLS only), 4 (Mutual and Non-TLS authentication)'),
     check('ciraConfigName')
       .optional({ nullable: true })
       .custom((value, { req }) => {
         if (!req.body.dhcpEnabled) {
           throw new Error('CIRA cannot be configured if DHCP is disabled')
+        }
+        if (req.body.tlsMode != null) {
+          throw new Error('CIRA cannot be configured if TLS is enabled')
         }
         return true
       }),

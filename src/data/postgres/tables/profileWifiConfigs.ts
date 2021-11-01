@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 import { IProfilesWifiConfigsTable } from '../../../interfaces/database/IProfileWifiConfigsDb'
-import { ProfileWifiConfigs } from '../../../RCS.Config'
+import { ProfileWifiConfigs } from '../../../models/RCS.Config'
 import { API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
 import Logger from '../../../Logger'
 import { RPSError } from '../../../utils/RPSError'
@@ -69,6 +69,6 @@ export class ProfilesWifiConfigsTable implements IProfilesWifiConfigsTable {
     FROM profiles_wirelessconfigs 
     WHERE profile_name = $1 and tenant_id = $2`, [profileName, tenantId])
 
-    return deleteProfileWifiResults.rowCount >= 0 // TODO: is this right?
+    return deleteProfileWifiResults.rowCount > 0
   }
 }

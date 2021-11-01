@@ -7,7 +7,7 @@
 
 import { IExecutor } from '../interfaces/IExecutor'
 import { ILogger } from '../interfaces/ILogger'
-import { ClientMsg, ClientObject } from '../RCS.Config'
+import { ClientMsg, ClientObject } from '../models/RCS.Config'
 import { ClientResponseMsg } from '../utils/ClientResponseMsg'
 import { WSManProcessor } from '../WSManProcessor'
 import { IClientManager } from '../interfaces/IClientManager'

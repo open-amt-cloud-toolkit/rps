@@ -3,7 +3,7 @@
 * SPDX-License-Identifier: Apache-2.0
 **********************************************************************/
 import Logger from '../../../Logger'
-import { WirelessConfig } from '../../../RCS.Config'
+import { WirelessConfig } from '../../../models/RCS.Config'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
 import { DataWithCount } from '../../../models/Rcs'
 import { MqttProvider } from '../../../utils/MqttProvider'

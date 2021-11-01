@@ -6,7 +6,7 @@
  **********************************************************************/
 
 import { IClientMessageParser } from '../interfaces/IClientMessageParser'
-import { ClientMsg, Payload, ClientMethods } from '../RCS.Config'
+import { ClientMsg, Payload, ClientMethods } from '../models/RCS.Config'
 import { NodeForge } from '../NodeForge'
 import { RPSError } from './RPSError'
 

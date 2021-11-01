@@ -5,7 +5,7 @@
  **********************************************************************/
 import Logger from '../../../Logger'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
-import { CIRAConfig } from '../../../RCS.Config'
+import { CIRAConfig } from '../../../models/RCS.Config'
 import { DataWithCount } from '../../../models/Rcs'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { Request, Response } from 'express'

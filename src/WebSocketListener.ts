@@ -7,7 +7,7 @@
 import * as WebSocket from 'ws'
 import { v4 as uuid } from 'uuid'
 
-import { WebSocketConfig, ClientObject } from './RCS.Config'
+import { WebSocketConfig, ClientObject } from './models/RCS.Config'
 import { IWebSocketListener } from './interfaces/IWebSocketListener'
 import { IClientManager } from './interfaces/IClientManager'
 import { IDataProcessor } from './interfaces/IDataProcessor'
@@ -56,7 +56,7 @@ export class WebSocketListener implements IWebSocketListener {
     try {
       const clientId = uuid()
 
-      const client: ClientObject = { ClientId: clientId, ClientSocket: ws, ciraconfig: {}, network: {}, status: {}, activationStatus: {} }
+      const client: ClientObject = { ClientId: clientId, ClientSocket: ws, ciraconfig: {}, network: {}, status: {}, tls: {}, activationStatus: {} }
       this.clientManager.addClient(client)
 
       ws.on('message', async (data: WebSocket.Data, isBinary: boolean) => {
@@ -96,7 +96,7 @@ export class WebSocketListener implements IWebSocketListener {
    */
   onError (error: Error, clientId: string): void {
     this.logger.error(`${clientId} : ${error.message}`)
-  };
+  }
 
   /**
    * @description Called on message event of WebSocket Server

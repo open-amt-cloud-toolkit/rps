@@ -2,7 +2,7 @@
  * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
-import { WirelessConfig } from '../../../RCS.Config'
+import { WirelessConfig } from '../../../models/RCS.Config'
 import { IWirelessProfilesTable } from '../../../interfaces/database/IWirelessProfilesDB'
 import { API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP, NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT, NETWORK_CONFIG_ERROR, NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE, NETWORK_UPDATE_ERROR } from '../../../utils/constants'
 import { RPSError } from '../../../utils/RPSError'
