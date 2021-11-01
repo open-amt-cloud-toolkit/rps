@@ -6,7 +6,7 @@ import { RPSError } from '../utils/RPSError'
 import { WSManProcessor } from '../WSManProcessor'
 import { v4 as uuid } from 'uuid'
 import { setMEBXPassword } from '../utils/maintenance/setMEBXPassword'
-import { ClientObject } from '../RCS.Config'
+import { ClientObject } from '../models/RCS.Config'
 
 const clientManager = ClientManager.getInstance(new Logger('ClientManager'))
 const nodeForge = new NodeForge()
