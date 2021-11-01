@@ -7,7 +7,7 @@ import { v4 as uuid } from 'uuid'
 
 import { IClientManager } from '../interfaces/IClientManager'
 import { ClientManager } from '../ClientManager'
-import { ClientObject, ClientAction } from '../RCS.Config'
+import { ClientObject, ClientAction } from '../models/RCS.Config'
 import { ILogger } from '../interfaces/ILogger'
 import Logger from '../Logger'
 

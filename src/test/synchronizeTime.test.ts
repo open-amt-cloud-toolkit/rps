@@ -6,7 +6,7 @@ import { RPSError } from '../utils/RPSError'
 import { WSManProcessor } from '../WSManProcessor'
 import { v4 as uuid } from 'uuid'
 import { synchronizeTime } from '../utils/maintenance/synchronizeTime'
-import { ClientObject } from '../RCS.Config'
+import { ClientObject } from '../models/RCS.Config'
 import { AMTUserName } from '../utils/constants'
 
 const clientManager = ClientManager.getInstance(new Logger('ClientManager'))
