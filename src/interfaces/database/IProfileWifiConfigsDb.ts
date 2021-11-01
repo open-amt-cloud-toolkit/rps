@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { ProfileWifiConfigs } from '../../RCS.Config'
+import { ProfileWifiConfigs } from '../../models/RCS.Config'
 
 export interface IProfilesWifiConfigsTable {
   getProfileWifiConfigs: (profileName: string) => Promise<ProfileWifiConfigs[]>

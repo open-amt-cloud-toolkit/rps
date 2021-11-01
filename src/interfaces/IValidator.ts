@@ -4,7 +4,7 @@
  * Author: Madhavi Losetty
  **********************************************************************/
 import * as WebSocket from 'ws'
-import { ClientMsg } from '../RCS.Config'
+import { ClientMsg } from '../models/RCS.Config'
 
 export interface IValidator {
   validateMaintenanceMsg: (clientMsg: ClientMsg, clientId: string) => any

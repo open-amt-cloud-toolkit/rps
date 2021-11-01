@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import { CommandParser } from '../CommandParser'
-import { ClientMsg } from '../RCS.Config'
+import { ClientMsg } from '../models/RCS.Config'
 
 test('test activation command parsing', () => {
   const clientMessage: ClientMsg = {
