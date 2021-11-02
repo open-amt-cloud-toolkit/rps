@@ -298,13 +298,13 @@ export class Validator implements IValidator {
   }
 
   async setNextStepsForConfiguration (msg: ClientMsg, clientObj: ClientObject, clientId: string): Promise<void> {
-    await this.updateTags(msg.payload.uuid, msg.payload.profile)
     const amtDevice: AMTDeviceDTO = await this.getDeviceCredentials(msg)
     if (amtDevice?.amtpass) {
       msg.payload.username = AMTUserName
       msg.payload.password = amtDevice.amtpass
       this.logger.debug(`AMT password found for Device ${msg.payload.uuid}`)
     }
+    await this.updateTags(msg.payload.uuid, msg.payload.profile)
     if (clientObj.action === ClientAction.ADMINCTLMODE) {
       if (!amtDevice.mebxpass) {
         clientObj.activationStatus.activated = true
