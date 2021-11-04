@@ -1,18 +1,21 @@
-import { IDbCreator } from '../interfaces/IDbCreator'
+import { IDB } from '../../interfaces/database/IDb'
 import { RCSConfig } from '../../models/Rcs'
-import { PostgresDbCreator } from './PostgresDbCreator'
-import { ConfigDbCreator } from './ConfigDbCreator'
+
 export class DbCreatorFactory {
+  static instance: IDB
   config: RCSConfig
   constructor (config: RCSConfig) {
     this.config = config
   }
 
-  getDbCreator (): IDbCreator {
-    if (this.config.DbConfig.useDbForConfig) {
-      return new PostgresDbCreator(this.config)
+  async getDb (): Promise<IDB> {
+    const provider = await import(`../../data/${this.config.dbProvider}`)
+
+    if (DbCreatorFactory.instance == null) {
+      // eslint-disable-next-line new-cap
+      return new provider.default(this.config.connectionString)
     } else {
-      return new ConfigDbCreator(this.config)
+      return DbCreatorFactory.instance
     }
   }
 }

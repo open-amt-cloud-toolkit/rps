@@ -3,26 +3,18 @@
     {
       "profileName": "profile1",
       "amtPassword": "P@ssw0rd",
-      "mebxPassword": "P@ssw0rd",
       "generateRandomPassword": false,
-      "passwordLength": 8,
+      "mebxPassword": "P@ssw0rd",
       "generateRandomMEBxPassword": false,
-      "mebxPasswordLength": 8,
-      "randomPasswordCharacters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()",
-      "configurationScript": "sample config script 1",
       "activation": "acmactivate",
       "ciraConfigName": "ciraconfig1"
     },
     {
       "profileName": "profile2",
       "amtPassword": "P@ssw0rd",
-      "mebxPassword": "P@ssw0rd",
       "generateRandomPassword": false,
-      "passwordLength": 8,
+      "mebxPassword": "P@ssw0rd",
       "generateRandomMEBxPassword": false,
-      "mebxPasswordLength": 8,
-      "randomPasswordCharacters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()",
-      "configurationScript": "sample config script 2",
       "activation": "ccmactivate",
       "ciraConfigName": "ciraconfig1"
     },
@@ -30,9 +22,6 @@
       "profileName": "profile3",
       "amtPassword": "P@ssw0rd",
       "generateRandomPassword": false,
-      "passwordLength": 8,
-      "randomPasswordCharacters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()",
-      "configurationScript": null,
       "activation": "invalid",
       "ciraConfigName": "ciraconfig1"
     },
@@ -40,9 +29,6 @@
       "profileName": "profile4",
       "amtPassword": "P@ssw0rd",
       "generateRandomPassword": false,
-      "passwordLength": 8,
-      "randomPasswordCharacters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()",
-      "configurationScript": null,
       "activation": "",
       "ciraConfigName": "ciraconfig1"
     }

@@ -1,28 +1,15 @@
 {
-  "name": "RPS Configuration",
-  "description": "Contains settings to configure the RCS Server",
-  "user": "standalone", //mps username
-  "password":"G@ppm0ym", // mps password
-  "amt_user":"admin", 
-  "web_port":8081,
-  "credentials_path":"../../../../mps/private/data.json", // mps credentials path
-  "data_path": "private/data.json", // data path to store AMT Profiles and AMT Domains in devmode
-  "use_vault": true,
+  "web_port": 8081,
   "secrets_path": "secret/data/",
   "vault_address": "http://localhost:8200",
   "vault_token": "myroot",
   "websocketport": 8080,
-  "db_host": "localhost",
-  "db_name": "rpsdb",
-  "db_port": 5432,
-  "db_user": "postgresadmin",
-  "db_password": "admin123",
-  "use_db_profiles": true,
-  "use_raw_certs": false,
-  "cors_origin":"http://localhost:4200",
-  "cors_headers":"Origin, X-Requested-With, Accept, X-RPS-API-Key, Content-Type, csrf-token, authorization",
-  "cors_methods":"*",
-  "cors_allow_credentials":"true",
-  "mps_server":"http://localhost:3000",
-  "delay_timer":12
+  "db_provider": "postgres",
+  "connection_string": "postgresql://<USERNAME>:<PASSWORD>@localhost:5432/rpsdb?sslmode=no-verify",
+  "cors_origin": "http://localhost:4200",
+  "cors_headers": "Origin, X-Requested-With, Accept, Content-Type, csrf-token, authorization",
+  "cors_methods": "*",
+  "mps_server": "http://localhost:3000",
+  "delay_timer": 12,
+  "mqtt_address": ""
 }

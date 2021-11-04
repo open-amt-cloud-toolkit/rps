@@ -3,9 +3,10 @@
 * SPDX-License-Identifier: Apache-2.0
 **********************************************************************/
 
-import { apiResponse } from '../RCS.Config'
+import { apiResponse } from '../models/RCS.Config'
 
 export const AMTRandomPasswordChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()'
+export const AMTRandomPasswordLength = 16
 
 export const AppVersion = '1.2.0'
 export const ProtocolVersion = '4.0.0'
@@ -19,6 +20,7 @@ export const PROFILE_NOT_FOUND = (profileName: string): string => `Profile ${pro
 export const PROFILE_INSERTION_FAILED_DUPLICATE = (profileName: string): string => `AMT profile ${profileName} already exists`
 export const PROFILE_INSERTION_CIRA_CONSTRAINT = (config: string): string => `Referenced config ${config} doesn't exist`
 export const PROFILE_INSERTION_NETWORK_CONSTRAINT = (config: string): string => `Referenced network ${config} doesn't exist`
+export const PROFILE_INSERTION_GENERIC_CONSTRAINT = (name: string): string => `Referenced constraint ${name} doesn't exist`
 
 // CIRA REST API
 export const CIRA_CONFIG_NOT_FOUND = (ciraConfig: string): string => `CIRA Config ${ciraConfig} not found`
@@ -27,11 +29,11 @@ export const CIRA_CONFIG_INSERTION_FAILED = (ciraConfig: string): string => `CIR
 export const CIRA_CONFIG_INSERTION_FAILED_DUPLICATE = (ciraConfig: string): string => `CIRA Config ${ciraConfig} already exists.`
 
 // Network configs REST API
-export const NETWORK_CONFIG_NOT_FOUND = (networkConfig: string): string => `NETWORK Config ${networkConfig} not found`
-export const NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT = (networkConfig: string): string => `NETWORK Config: ${networkConfig} is associated with an AMT Profile.`
-export const NETWORK_CONFIG_ERROR = (networkConfig: string): string => `Operation failed for NETWORK Config: ${networkConfig}`
-export const NETWORK_UPDATE_ERROR = (networkConfig: string): string => `Operation failed for NETWORK Config: ${networkConfig}. Cannot Update Network settings if its already associated with a profile.`
-export const NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE = (networkConfig: string): string => `NETWORK Config ${networkConfig} already exists`
+export const NETWORK_CONFIG_NOT_FOUND = (type: string, config: string): string => `${type} profile ${config} not found`
+export const NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT = (type: string, config: string): string => `${type} profile: ${config} is associated with an AMT Profile.`
+export const NETWORK_CONFIG_ERROR = (type: string, config: string): string => `Operation failed for ${type} profile: ${config}`
+export const NETWORK_UPDATE_ERROR = (type: string, config: string): string => `Operation failed for ${type} profile: ${config}. Cannot modify ${type} settings if its already associated with a profile.`
+export const NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE = (type: string, config: string): string => `${type} profile ${config} already exists`
 
 // Domain REST API
 export const DOMAIN_NOT_FOUND = (domain: string): string => `Domain ${domain} not found`
@@ -53,3 +55,16 @@ export const API_RESPONSE = (data?: any, error?: string, message?: string): apiR
   }
   return response
 }
+
+// Network Configurator
+
+export const WIFIENDPOINT = {
+  __parameterType: 'reference',
+  __resourceUri: 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_WiFiEndpoint',
+  Name: 'WiFi Endpoint 0'
+}
+
+// Default limit and offset for api pagination
+
+export const DEFAULT_TOP = 25
+export const DEFAULT_SKIP = 0

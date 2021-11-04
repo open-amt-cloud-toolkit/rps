@@ -6,7 +6,7 @@
  **********************************************************************/
 
 import { IClientManager } from './interfaces/IClientManager'
-import { ClientObject } from './RCS.Config'
+import { ClientObject } from './models/RCS.Config'
 import { ILogger } from './interfaces/ILogger'
 
 export class ClientManager implements IClientManager {
@@ -44,10 +44,10 @@ export class ClientManager implements IClientManager {
     }
   }
 
-  getClientIndex (ClientId: string): number {
+  getClientIndex (clientId: string): number {
     let index: number
     try {
-      index = this.clients.findIndex(x => x.ClientId === ClientId)
+      index = this.clients.findIndex(x => x.ClientId === clientId)
     } catch (error) {
       this.logger.error(`Failed to get a client index: ${error}`)
       return -1
@@ -58,7 +58,7 @@ export class ClientManager implements IClientManager {
   addClient (client: ClientObject): void {
     try {
       this.clients.push(client)
-      this.logger.info(`Active clients : ${this.clients.length}`)
+      this.logger.debug(`Active clients : ${this.clients.length}`)
     } catch (error) {
       this.logger.error(`Failed to add a client: ${error}`)
     }
@@ -68,7 +68,7 @@ export class ClientManager implements IClientManager {
     try {
       const index = this.getClientIndex(clientId)
       this.clients.splice(index, 1)
-      this.logger.info(`Active clients : ${this.clients.length}`)
+      this.logger.debug(`Active clients : ${this.clients.length}`)
     } catch (error) {
       this.logger.error(`Failed to remove a client: ${error}`)
     }

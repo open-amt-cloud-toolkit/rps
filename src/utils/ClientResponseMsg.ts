@@ -1,13 +1,13 @@
-import { ClientMsg } from '../RCS.Config'
-import { INodeForge } from '../interfaces/INodeForge'
+import { ClientMsg } from '../models/RCS.Config'
 import { ILogger } from '../interfaces/ILogger'
 import { AppVersion, ProtocolVersion } from './constants'
+import { NodeForge } from '../NodeForge'
 
 export class ClientResponseMsg {
   logger: ILogger
-  nodeForge: INodeForge
+  nodeForge: NodeForge
 
-  constructor (logger: ILogger, nodeForge: INodeForge) {
+  constructor (logger: ILogger, nodeForge: NodeForge) {
     this.logger = logger
     this.nodeForge = nodeForge
   }
@@ -34,5 +34,5 @@ export class ClientResponseMsg {
       this.logger.error(`${clientId} : Failed to create the error message`, error)
     }
     return msg
-  };
+  }
 }

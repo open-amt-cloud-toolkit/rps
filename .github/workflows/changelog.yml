@@ -1,0 +1,30 @@
+name: Changelog Generator
+
+on:  
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with: 
+          fetch-depth: 0
+      - run: docker run -v $PWD:/workdir quay.io/git-chglog/git-chglog --next-tag $(node --eval="process.stdout.write(require('./package.json').version)") --output CHANGELOG.md  
+      - name: GitHub Upload Release Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: CHANGELOG.md
+          path: |
+            ./CHANGELOG.md
+      # publish it
+      - name: Publish content
+        if: ${{ github.ref == 'refs/heads/main' }}      
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add ./CHANGELOG.md
+          git commit -m 'docs(changelog): update changelog'
+          git push origin main
+      

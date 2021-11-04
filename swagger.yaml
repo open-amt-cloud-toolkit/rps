@@ -2,36 +2,64 @@ openapi: 3.0.0
 info:
   title: Remote Provisioning Server API
   contact: {}
-  version: '1.2'
+  version: 2.0.0
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  description: |
+    This section is a reference to the RPS API methods available in the Open AMT Cloud Toolkit, and to some commands it provides. 
+    Please note when running behind the Kong API proxy the following prefix must be prepended:
+    * `/rps` for all routes
+
+    GET Domains Example:
+    * Direct connection to RPS: `{{protocol}}://{{host}}/api/v1/admin/domains`
+
+    * Connection to RPS through Kong: `{{protocol}}://{{host}}/rps/api/v1/admin/domains`
+
 servers:
-- url: http://example.com:8081/api/v1
+# Added by API Auto Mocking Plugin
+- description: SwaggerHub API Auto Mocking
+  url: https://virtserver.swaggerhub.com/rbheopenamt/rps/1.5.0
+- url: http://example.com:8081/api/v1/admin
   variables: {}
+security:
+  - BearerAuth: []
 paths:
-  /domains:
+  /api/v1/domains:
     get:
       tags:
       - Domains
       summary: Get All Domains
       operationId: GetAllDomains
+      description: Retrieves all of the domain configuration profiles stored in the database.  Will not return the provisioning certificate or certificate password to protect the privacy of these assets
       parameters:
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
+        - in: query
+          name: $skip
+          schema:
+            type: integer
+          description: The number of items to skip before starting to collect the result set
+        - in: query
+          name: $top
+          schema:
+            type: integer
+          description: The number of items to return
+        - in: query
+          name: $count
+          schema:
+            type: boolean
+          description: The total number of domains to return
       responses:
         200:
           description: 'successful operation'
           headers: {}
           content:
             application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/DomainRequest'
+                schema:
+                  oneOf:
+                    - type: array
+                      items:
+                        $ref: '#/components/schemas/DomainResponse'
+                    - $ref: '#/components/schemas/CountDomainResponse'
         404:
           description: 'not found'
           content:
@@ -50,21 +78,13 @@ paths:
       - Domains
       summary: Create Domain
       operationId: CreateDomain
-      parameters:
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
+      description: Creates a new domain configuration profile to the database.  The provisioning certificate and certificate password are stored in a secrets manager and are only used when required during activation.  Provisioning certificate must be a base64 string of the Personal Information Exchange (PFX) certificate that includes the entire certificate chain and private key.
       requestBody:
         description: ''
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DomainRequest'
+              $ref: '#/components/schemas/DomainSubmit'
         required: true
       responses:
         201:
@@ -73,7 +93,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DomainRequest'
+                $ref: '#/components/schemas/DomainResponse'
         400:
           description: 'bad request'
           content:
@@ -92,21 +112,13 @@ paths:
       - Domains
       summary: Update Domain Suffix
       operationId: UpdateDomainSuffix
-      parameters:
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
+      description: Edits an existing domain configuration profile.  The profileName field can not be changed.  The provisioning certificate and certificate password are stored in a secrets manager and are only used when required during activation.  Provisioning certificate must be a base64 string of the Personal Information Exchange (PFX) certificate that includes the entire certificate chain and private key.
       requestBody:
         description: ''
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DomainRequest'
+              $ref: '#/components/schemas/DomainSubmit'
         required: true
       responses:
         200:
@@ -115,7 +127,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DomainRequest'
+                $ref: '#/components/schemas/DomainResponse'
         400:
           description: 'bad request'
           content:
@@ -129,12 +141,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/APIResponse'
       deprecated: false
-  /domains/{profileName}:
+  /api/v1/domains/{profileName}:
     get:
       tags:
         - Domains
       summary: Get Domain
       operationId: GetDomain
+      description: Retrieves the specific domain configuration profile.
       parameters:
       - name: profileName
         in: path
@@ -142,14 +155,6 @@ paths:
         required: true
         schema:
           type: string
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
       responses:
         200:
           description: 'successful operation'
@@ -157,7 +162,7 @@ paths:
           content:
             application/json:
               schema:
-                  $ref: '#/components/schemas/DomainRequest'
+                  $ref: '#/components/schemas/DomainResponse'
         404:
           description: 'not found'
           content:
@@ -177,6 +182,7 @@ paths:
       - Domains
       summary: Remove Domain
       operationId: RemoveDomain
+      description: Removes the specific domain configuration profile
       parameters:
       - name: profileName
         in: path
@@ -184,14 +190,6 @@ paths:
         required: true
         schema:
           type: string
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
       responses:
         204:
           description: 'successful operation'
@@ -209,21 +207,29 @@ paths:
               schema:
                 $ref: '#/components/schemas/APIResponse'
       deprecated: false
-  /ciraconfigs:
+  /api/v1/ciraconfigs:
     get:
       tags:
       - CIRA
       summary: Get All CIRA Configs
       operationId: GetAllCIRAConfigs
+      description: Retrieves all of the CIRA configuration profiles from the database.  Will not return the password field to protect the privacy of this asset
       parameters:
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
+        - in: query
+          name: $skip
+          schema:
+            type: integer
+          description: The number of items to skip before starting to collect the result set
+        - in: query
+          name: $top
+          schema:
+            type: integer
+          description: The number of items to return
+        - in: query
+          name: $count
+          schema:
+            type: boolean
+          description: The total number of CIRA configs to return
       responses:
         200:
           description: 'successful operation'
@@ -231,9 +237,11 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/CIRAConfigRequest'
+                oneOf:
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/CIRAConfigResponse'
+                  - $ref: '#/components/schemas/CountCIRAResponse'
         404:
           description: 'not found'
           content:
@@ -252,21 +260,13 @@ paths:
       - CIRA
       summary: Create CIRA Config
       operationId: CreateCIRAConfig
-      parameters:
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
+      description: Creates a new CIRA configuration profile.  The password is stored in a secrets manager and is only used during configuration to set the MPS credentials in the AMT device.
       requestBody:
         description: ''
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CIRAConfigRequest'
+              $ref: '#/components/schemas/CIRAConfigSubmit'
         required: true
       responses:
         201:
@@ -275,7 +275,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CIRAConfigRequest'
+                $ref: '#/components/schemas/CIRAConfigResponse'
         400:
           description: 'bad request'
           content:
@@ -294,21 +294,13 @@ paths:
       - CIRA
       summary: Edit CIRA Config
       operationId: EditCIRAConfig
-      parameters:
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
+      description: Edits an existing CIRA configuration profile.  The configName can not be changed.  The password is stored in a secrets manager and is only used during configuration to set the MPS credentials in the AMT device.
       requestBody:
         description: ''
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CIRAConfigRequest'
+              $ref: '#/components/schemas/CIRAConfigSubmit'
         required: true
       responses:
         200:
@@ -317,7 +309,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CIRAConfigRequest'
+                $ref: '#/components/schemas/CIRAConfigResponse'
         400:
           description: 'bad request'
           content:
@@ -331,12 +323,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/APIResponse'
       deprecated: false
-  /ciraconfigs/{configName}:
+  /api/v1/ciraconfigs/{configName}:
     get:
       tags:
       - CIRA
       summary: Get CIRA Config
       operationId: GetCIRAConfig
+      description: Retrieves the specific CIRA configuration profile from the database.  Will not return the password field to protect the privacy of this asset.
       parameters:
       - name: configName
         in: path
@@ -344,14 +337,6 @@ paths:
         required: true
         schema:
           type: string
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
       responses:
         200:
           description: 'successful operation'
@@ -359,7 +344,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CIRAConfigRequest'
+                $ref: '#/components/schemas/CIRAConfigResponse'
         404:
           description: 'not found'
           content:
@@ -378,6 +363,7 @@ paths:
       - CIRA
       summary: Remove CIRA Config
       operationId: RemoveCIRAConfig
+      description: Removes the specific CIRA configuration profile from the database.
       parameters:
       - name: configName
         in: path
@@ -385,14 +371,6 @@ paths:
         required: true
         schema:
           type: string
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
       responses:
         204:
           description: 'successful operation'
@@ -410,21 +388,29 @@ paths:
               schema:
                 $ref: '#/components/schemas/APIResponse'
       deprecated: false
-  /profiles:
+  /api/v1/wirelessconfigs:
     get:
       tags:
-      - Profiles
-      summary: Get All Profiles
-      operationId: GetAllProfiles
+      - Wireless
+      summary: Get All Wireless Configs
+      operationId: GetAllWirelessConfigs
+      description: Retrieves all of the Wireless configuration profiles from the database.  Will not return the password field to protect the privacy of this asset.
       parameters:
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
+        - in: query
+          name: $skip
+          schema:
+            type: integer
+          description: The number of items to skip before starting to collect the result set
+        - in: query
+          name: $top
+          schema:
+            type: integer
+          description: The number of items to return
+        - in: query
+          name: $count
+          schema:
+            type: boolean
+          description: The total number of wireless configs to return
       responses:
         200:
           description: 'successful operation'
@@ -432,9 +418,192 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ProfileRequest'
+                oneOf:
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/WirelessConfigResponse'
+                  - $ref: '#/components/schemas/CountWirelessResponse'
+        404:
+          description: 'not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        500:
+          description: 'internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+      deprecated: false
+    post:
+      tags:
+      - Wireless
+      summary: Create Wireless Config
+      operationId: CreateWirelessConfig
+      description: Creates a new Wireless configuration profile.  The PSK passphrase is stored in a secrets manager and is only used during configuration to set the Wi-Fi credentials in the AMT device.
+      requestBody:
+        description: 'authenticationMethod valid values: 4 - WPA PSK, 6 - WPA2 PSK.  encryptionMethod valid values: 3 - TKIP, 4 - CCMP'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WirelessConfigSubmit'
+        required: true
+      responses:
+        201:
+          description: 'successful operation'
+          headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WirelessConfigResponse'
+        400:
+          description: 'bad request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        500:
+          description: 'internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+      deprecated: false
+    patch:
+      tags:
+      - Wireless
+      summary: Edit Wireless Config
+      operationId: EditWirelessConfig
+      description: Edits an existing Wireless configuration profile.  The profileName can not be changed.  The password is stored in a secrets manager and is only used during configuration to set the Wi-Fi credentials in the AMT device.
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WirelessConfigSubmit'
+        required: true
+      responses:
+        200:
+          description: 'successful operation'
+          headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WirelessConfigResponse'
+        400:
+          description: 'bad request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        500:
+          description: 'internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+      deprecated: false  
+  /api/v1/wirelessconfigs/{configName}:
+    get:
+      tags:
+      - Wireless
+      summary: Get Wireless Config
+      operationId: GetWirelessConfig
+      description: Retrieves the specific Wireless configuration profile from the database.  Will not return the password field to protect the privacy of this asset.
+      parameters:
+      - name: configName
+        in: path
+        description: Name of Wireless config to return
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: 'successful operation'
+          headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WirelessConfigResponse'
+        404:
+          description: 'not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        500:
+          description: 'internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+      deprecated: false
+    delete:
+      tags:
+      - Wireless
+      summary: Remove Wireless Config
+      operationId: RemoveWirelessConfig
+      description: Removes the specific Wireless configuration profile from the database.
+      parameters:
+      - name: configName
+        in: path
+        description: Name of Wireless config to return
+        required: true
+        schema:
+          type: string
+      responses:
+        204:
+          description: 'successful operation'
+          headers: {}
+        404:
+          description: 'not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        500:
+          description: 'internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+      deprecated: false
+  /api/v1/profiles:
+    get:
+      tags:
+      - Profiles
+      summary: Get All Profiles
+      operationId: GetAllProfiles
+      description: Retrieves all of the AMT configuration profiles from the database.  Will not return the amtPassword or mebxPassword fields to protect the privacy of these assets.
+      parameters:
+        - in: query
+          name: $skip
+          schema:
+            type: integer
+          description: The number of items to skip before starting to collect the result set
+        - in: query
+          name: $top
+          schema:
+            type: integer
+          description: The number of items to return
+        - in: query
+          name: $count
+          schema:
+            type: boolean
+          description: The total number of profiles to return
+      responses:
+        200:
+          description: 'successful operation'
+          headers: {}
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/ProfileResponse'
+                  - $ref: '#/components/schemas/CountProfileResponse'
         404:
           description: 'not found'
           content:
@@ -453,21 +622,13 @@ paths:
       - Profiles
       summary: Create Profile
       operationId: CreateProfile
-      parameters:
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
+      description: Creates a new AMT configuration profile.  The amtPassword and mebxPassword are stored in a secrets manager and are only used during activation and configuration, respectively, to set these credentials in the AMT device.
       requestBody:
         description: ''
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProfileRequest'
+              $ref: '#/components/schemas/ProfileSubmit'
         required: true
       responses:
         201:
@@ -476,7 +637,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProfileRequest'
+                $ref: '#/components/schemas/ProfileResponse'
         400:
           description: 'bad request'
           content:
@@ -495,26 +656,22 @@ paths:
       - Profiles
       summary: Update Profile
       operationId: UpdateProfile
-      parameters:
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
+      description: Edits an existing AMT configuration profile.  The profileName can not be changed.  The amtPassword and mebxPassword are stored in a secrets manager and are only used during activation and configuration, respectively, to set these credentials in the AMT device.
       requestBody:
         description: ''
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProfileRequest'
+              $ref: '#/components/schemas/ProfileSubmit'
         required: true
       responses:
         200:
           description: 'successful operation'
           headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileResponse'
         400:
           description: 'bad request'
           content:
@@ -528,12 +685,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/APIResponse'
       deprecated: false
-  /profiles/{profileName}:
+  /api/v1/profiles/{profileName}:
     get:
       tags:
       - Profiles
       summary: Get Profile
       operationId: GetProfile
+      description: Retrieves the specific AMT configuration profile from the database.  Will not return the amtPassword or mebxPassword fields to protect the privacy of these assets.
       parameters:
       - name: profileName
         in: path
@@ -541,14 +699,6 @@ paths:
         required: true
         schema:
           type: string
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
       responses:
         200:
           description: 'successful operation'
@@ -556,7 +706,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProfileRequest'
+                $ref: '#/components/schemas/ProfileResponse'
         404:
           description: 'not found'
           content:
@@ -575,6 +725,7 @@ paths:
       - Profiles
       summary: Remove Profile
       operationId: RemoveProfile
+      description: Removes the specific AMT configuration profile from the database.
       parameters:
       - name: profileName
         in: path
@@ -582,207 +733,6 @@ paths:
         required: true
         schema:
           type: string
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
-      responses:
-        204:
-          description: 'successful operation'
-          headers: {}
-        404:
-          description: 'not found'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/APIResponse'
-        500:
-          description: 'internal server error'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/APIResponse'
-      deprecated: false
-  /networkconfigs:
-    get:
-      tags:
-      - Networks
-      summary: Get All Networks
-      operationId: GetAllNetworks
-      parameters:
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
-      responses:
-        200:
-          description: 'successful operation'
-          headers: {}
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/NetworkConfigRequest'
-        404:
-          description: 'not found'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/APIResponse'
-        500:
-          description: 'internal server error'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/APIResponse'
-      deprecated: false
-    post:
-      tags:
-      - Networks
-      summary: Create Network Config
-      operationId: CreateNetworkConfig
-      parameters:
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
-      requestBody:
-        description: ''
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/NetworkConfigRequest'
-        required: true
-      responses:
-        201:
-          description: 'successful operation'
-          headers: {}
-        400:
-          description: 'bad request'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/APIResponse'
-        500:
-          description: 'internal server error'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/APIResponse'
-      deprecated: false
-    patch:
-      tags:
-      - Networks
-      summary: Update Network Config
-      operationId: UpdateNetworkConfig
-      parameters:
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
-      requestBody:
-        description: ''
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/NetworkConfigRequest'
-        required: true
-      responses:
-        200:
-          description: 'successful operation'
-          headers: {}
-        400:
-          description: 'bad request'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/APIResponse'
-        500:
-          description: 'internal server error'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/APIResponse'
-      deprecated: false
-  /networkconfigs/{profileName}:
-    get:
-      tags:
-      - Networks
-      summary: Get Network Config
-      operationId: GetNetworkConfig
-      parameters:
-      - name: profileName
-        in: path
-        description: Name of network config to return
-        required: true
-        schema:
-          type: string
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
-      responses:
-        200:
-          description: 'successful operation'
-          headers: {}
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NetworkConfigRequest'
-        404:
-          description: 'not found'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/APIResponse'
-        500:
-          description: 'internal server error'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/APIResponse'
-      deprecated: false
-    delete:
-      tags:
-      - Networks
-      summary: Remove Network Config
-      operationId: RemoveNetworkConfig
-      parameters:
-      - name: profileName
-        in: path
-        description: Name of profile to delete
-        required: true
-        schema:
-          type: string
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
       responses:
         204:
           description: 'successful operation'
@@ -806,51 +756,74 @@ paths:
       - Misc
       summary: Get Version
       operationId: GetVersion
-      parameters:
-      - name: X-RPS-API-Key
-        in: header
-        description: ''
-        required: true
-        style: simple
-        schema:
-          type: string
-          example: APIKEYFORRPS123!
+      description: Returns the supported protocol version.  This is used to check compatibility with RPC
       responses:
         200:
           description: 'successful operation'
           headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionResponse'
       deprecated: false
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
-    DomainRequest:
-      title: DomainRequest
+    DomainSubmit:
+      title: DomainSubmit
       type: object
       required:
       - profileName
       - domainSuffix
-      - provisioningCert
       - provisioningCertStorageFormat
+      - provisioningCert
       - provisioningCertPassword
       properties:
         profileName:
           type: string
         domainSuffix:
           type: string
-        provisioningCert:
-          type: string
         provisioningCertStorageFormat:
           type: string
+        provisioningCert:
+          type: string
+          format: byte
         provisioningCertPassword:
           type: string
+          format: password
       example:
         profileName: NewDomain
         domainSuffix: NewDomain.com
-        provisioningCert: test
-        provisioningCertStorageFormat: raw
-        provisioningCertPassword: P@ssw0rd
-
-    CIRAConfigRequest:
-      title: CIRAConfigRequest
+        provisioningCertStorageFormat: string
+        provisioningCert: U3dhZ2dlciByb2Nrcw==
+        provisioningCertPassword: G@ppm0ym
+    DomainResponse:
+      title: DomainResponse
+      type: object
+      required:
+      - profileName
+      - domainSuffix
+      - provisioningCertStorageFormat
+      properties:
+        tenantId:
+          type: string
+        profileName:
+          type: string
+        domainSuffix:
+          type: string
+        provisioningCertStorageFormat:
+          type: string
+      example:
+        tenantId: ''
+        profileName: NewDomain
+        domainSuffix: NewDomain.com
+        provisioningCertStorageFormat: string
+    CIRAConfigSubmit:
+      title: CIRAConfigSubmit
       required:
       - configName
       - mpsServerAddress
@@ -875,6 +848,7 @@ components:
           type: string
         password:
           type: string
+          format: password
         commonName:
           type: string
         serverAddressFormat:
@@ -885,55 +859,313 @@ components:
           format: int32
         mpsRootCertificate:
           type: string
+          format: byte
         proxyDetails:
           type: string
       example:
-        configName: ciraconfig2
+        configName: ciraconfig
         mpsServerAddress: 192.168.8.50
-        mpsPort: 1000
-        username: admin
-        password: Intel123!
+        mpsPort: 4433
+        username: mps
+        password: G@ppm0ym
         commonName: 192.168.8.50
         serverAddressFormat: 3
         authMethod: 2
-        mpsRootCertificate: rootcert
+        mpsRootCertificate: U3dhZ2dlciByb2Nrcw==
         proxyDetails: ''      
-    ProfileRequest:
-      title: ProfileRequest
+    CIRAConfigResponse:
+      title: CIRAConfigResponse
+      required:
+      - configName
+      - mpsServerAddress
+      - mpsPort
+      - username
+      - commonName
+      - serverAddressFormat
+      - authMethod
+      - mpsRootCertificate
+      - proxyDetails
+      type: object
+      properties:
+        configName:
+          type: string
+        mpsServerAddress:
+          type: string
+        mpsPort:
+          type: integer
+          format: int32
+        username:
+          type: string
+        commonName:
+          type: string
+        serverAddressFormat:
+          type: integer
+          format: int32
+        authMethod:
+          type: integer
+          format: int32
+        mpsRootCertificate:
+          type: string
+          format: byte
+        proxyDetails:
+          type: string
+        tenantId:
+          type: string
+      example:
+        configName: ciraconfig
+        mpsServerAddress: 192.168.8.50
+        mpsPort: 4433
+        username: mps
+        commonName: 192.168.8.50
+        serverAddressFormat: 3
+        authMethod: 2
+        mpsRootCertificate: U3dhZ2dlciByb2Nrcw==
+        proxyDetails: '' 
+        tenantId: ''     
+    ProfileSubmit:
+      title: ProfileSubmit
       required:
       - profileName
       - amtPassword
-      - mebxPassword
+      - generateRandomPassword
       - activation
+      - ciraConfigName
+      - networkConfigName
+      - mebxPassword
+      - generateRandomMEBxPassword
+      - tags
+      - dhcpEnabled
+      - wifiConfigs
       type: object
       properties:
         profileName:
           type: string
         amtPassword:
           type: string
-        mebxPassword:
-          type: string
+          format: password
+        generateRandomPassword:
+          type: boolean
         activation:
           type: string
+        ciraConfigName:
+          type: string
+        networkConfigName:
+          type: string
+        mebxPassword:
+          type: string
+          format: password
+        generateRandomMEBxPassword:
+          type: boolean
+        tags:
+          type: array
+          items:
+            type: string
+        dhcpEnabled:
+          type: boolean
+        wifiConfigs:
+          type: array
+          items:
+            type: object
+        tlsMode:
+          type: number
+          description: Server Authentication Only(1), Server and Non-TLS Authentication (2), Mutual TLS only (3), Mutual and Non-TLS authentication (4)
       example:
-        profileName: profile6
-        amtPassword: Intel123!
-        mebxPassword: Intel123!
-        activation: activate      
-    NetworkConfigRequest:
-      title: NetworkConfigRequest
+        profileName: profile1
+        amtPassword: G@ppm0ym
+        generateRandomPassword: false
+        activation: acmactivate      
+        ciraConfigName: ciraconfig
+        networkConfigName: dhcp_enabled
+        mebxPassword: G@ppm0ym
+        generateRandomMEBxPassword: false
+        tags: [tag1, tag2]
+        dhcpEnabled: true
+        wifiConfigs: [
+          {
+              priority: 1,
+              profileName: "home"
+          },
+          {
+              priority: 2,
+              profileName: "office"
+          }
+        ]
+    ProfileResponse:
+      title: ProfileResponse
       required:
       - profileName
+      - generateRandomPassword
+      - activation
+      - ciraConfigName
+      - networkConfigName
+      - generateRandomMEBxPassword
+      - tags
       - dhcpEnabled
+      - wifiConfigs
       type: object
       properties:
         profileName:
           type: string
+        generateRandomPassword:
+          type: boolean
+        activation:
+          type: string
+        ciraConfigName:
+          type: string
+        networkConfigName:
+          type: string
+        generateRandomMEBxPassword:
+          type: boolean
+        tags:
+          type: array
+          items:
+            type: string
         dhcpEnabled:
           type: boolean
+        tenantId:
+          type: string
+        wifiConfigs:
+          type: array
+          items:
+            type: object
+        tlsMode:
+          type: number
+          description: Server Authentication Only(1), Server and Non-TLS Authentication (2), Mutual TLS only (3), Mutual and Non-TLS authentication (4)
       example:
-        profileName: profile6
+        profileName: profile1
+        generateRandomPassword: false
+        configurationScript: null
+        activation: acmactivate      
+        ciraConfigName: ciraconfig
+        networkConfigName: dhcp_enabled
+        generateRandomMEBxPassword: false
+        tlsMode: null
+        tenantId: ""
+        tags: [tag1, tag2]
         dhcpEnabled: true
+        wifiConfigs: [
+          {
+              priority: 1,
+              profileName: "home"
+          },
+          {
+              priority: 2,
+              profileName: "office"
+          }
+        ]
+    WirelessConfigSubmit:
+      title: WirelessConfigSubmit
+      required:
+      - profileName
+      - authenticationMethod
+      - encryptionMethod
+      - ssid
+      - pskPassphrase
+      - linkPolicy
+      type: object
+      properties:
+        profileName:
+          type: string
+        authenticationMethod:
+          type: integer
+        encryptionMethod:
+          type: integer
+        ssid:
+          type: string
+        pskPassphrase:
+          type: string
+        linkPolicy:
+          type: array
+          items:
+            type: integer
+      example:
+        profileName: homeWifiConfig
+        authenticationMethod: 4
+        encryptionMethod: 4
+        ssid: home
+        pskPassphrase: P@ssw0rd
+        linkPolicy: [14, 16]
+    WirelessConfigResponse:
+      title: WirelessConfigResponse
+      required:
+      - profileName
+      - authenticationMethod
+      - encryptionMethod
+      - ssid
+      - linkPolicy
+      type: object
+      properties:
+        profileName:
+          type: string
+        authenticationMethod:
+          type: integer
+        encryptionMethod:
+          type: integer
+        ssid:
+          type: string
+        linkPolicy:
+          type: array
+          items:
+            type: integer
+        tenantId:
+          type: string
+      example:
+        profileName: homeWifiConfig
+        authenticationMethod: 4
+        encryptionMethod: 4
+        ssid: home
+        tenantId: ""
+        linkPolicy: [14, 16]
+    VersionResponse:
+      title: VersionResponse
+      required:
+        - protocolVersion
+      type: object
+      properties:
+        protocolVersion:
+          type: string
+      example:
+        protocolVersion: 4.0.0
+    CountDomainResponse:
+      title: CountDomainResponse
+      type: object 
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/DomainResponse'  
+        totalCount:
+          type: integer
+    CountCIRAResponse:
+      title: CountCIRAResponse
+      type: object 
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/CIRAConfigResponse'  
+        totalCount:
+          type: integer
+    CountProfileResponse:
+      title: CountProfileResponse
+      type: object 
+      properties:
+        data:
+          type: array
+          items:
+             $ref: '#/components/schemas/ProfileResponse'
+        totalCount:
+          type: integer
+    CountWirelessResponse:
+      title: CountWirelessResponse
+      type: object 
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/WirelessConfigResponse'
+        totalCount:
+          type: integer
     APIResponse:
       title: APIResponse 
       type: object
@@ -946,8 +1178,8 @@ components:
 tags:
 - name: Domains
 - name: CIRA
+- name: Wireless
 - name: Profiles
-- name: Networks
 - name: Integration
 - name: Misc
   description: ''

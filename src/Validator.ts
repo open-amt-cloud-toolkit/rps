@@ -8,7 +8,7 @@ import * as WebSocket from 'ws'
 
 import { IValidator } from './interfaces/IValidator'
 import { ILogger } from './interfaces/ILogger'
-import { ClientMsg, ClientAction, Payload, ClientMethods } from './RCS.Config'
+import { ClientMsg, ClientAction, Payload, ClientMethods, ClientObject } from './models/RCS.Config'
 import { IConfigurator } from './interfaces/IConfigurator'
 import { IClientManager } from './interfaces/IClientManager'
 import { NodeForge } from './NodeForge'
@@ -19,7 +19,9 @@ import { CommandParser } from './CommandParser'
 import { AMTDeviceDTO } from './repositories/dto/AmtDeviceDTO'
 import { VersionChecker } from './VersionChecker'
 import { AMTUserName } from './utils/constants'
-
+import { EnvReader } from './utils/EnvReader'
+import got from 'got'
+import { AMTConfiguration } from './models/Rcs'
 export class Validator implements IValidator {
   jsonParser: IClientMessageParser
 
@@ -71,116 +73,40 @@ export class Validator implements IValidator {
    * @returns {RCSMessage}
    */
   async validateActivationMsg (msg: ClientMsg, clientId: string): Promise<void> {
-    let payload: Payload = null
-    if (!msg) {
-      throw new RPSError('Error while Validating the client message')
-    }
-
-    payload = msg.payload
-
-    if (!payload.uuid) {
-      throw new RPSError('Missing uuid from payload')
-    }
-
+    let clientObj = this.clientManager.getClientObject(clientId)
+    const payload: Payload = this.verifyPayload(msg, clientId)
     // Check version and build compatibility
-    if (parseInt(payload.ver) > 7 && parseInt(payload.ver) < 12) {
-      if (parseInt(payload.build) < 3000) {
-        throw new RPSError(`Device ${payload.uuid} activation failed. Only version ${payload.ver} with build greater than 3000 can be remotely configured `)
-      }
-    } else if (parseInt(payload.ver) < 7) {
-      throw new RPSError(`Device ${payload.uuid} activation failed. AMT version: ${payload.ver}. Version less than 7 cannot be remotely configured `)
-    }
-
+    this.verifyAMTVersion(payload, 'activation')
     // Check for password
     if (!payload.password) {
       throw new RPSError(`Device ${payload.uuid} activation failed. Missing password.`)
     }
-
-    const clientObj = this.clientManager.getClientObject(clientId)
-
     // Check for client requested action and profile activation
-    const profileExists = await this.configurator.profileManager.doesProfileExist(payload.profile)
-    if (!profileExists) {
-      throw new RPSError(`Device ${payload.uuid} activation failed. Specified AMT profile name does not match list of available AMT profiles.`)
+    const profile: AMTConfiguration = await this.configurator.profileManager.getAmtProfile(payload.profile)
+    if (!profile) {
+      throw new RPSError(`Device ${payload.uuid} activation failed. ${payload.profile} does not match list of available AMT profiles.`)
     }
-
-    const profile = await this.configurator.profileManager.getAmtProfile(payload.profile)
     payload.profile = profile
-
+    // Store the client message
+    clientObj.uuid = payload.uuid
     if (profile.activation === ClientAction.ADMINCTLMODE) {
       clientObj.action = ClientAction.ADMINCTLMODE
     } else if (profile.activation === ClientAction.CLIENTCTLMODE) {
       clientObj.action = ClientAction.CLIENTCTLMODE
     }
-
-    // Check for the current mode
-    if (payload.currentMode > 0) {
-      switch (payload.currentMode) {
-        case 1: {
-          if (profile.activation === ClientAction.CLIENTCTLMODE) {
-            this.logger.debug(`Device ${payload.uuid} already enabled in client mode.`)
-            clientObj.ciraconfig.status = 'already enabled in client mode.'
-            clientObj.action = payload.profile.networkConfigObject ? ClientAction.NETWORKCONFIG : ClientAction.CIRACONFIG
-          } else {
-            throw new RPSError(`Device ${payload.uuid} already enabled in client control mode.`)
-          }
-          break
-        }
-        case 2: {
-          if (profile.activation === ClientAction.ADMINCTLMODE) {
-            this.logger.debug(`Device ${payload.uuid} already enabled in admin mode.`)
-            clientObj.ciraconfig.status = 'already enabled in admin mode.'
-            clientObj.action = payload.profile.networkConfigObject ? ClientAction.NETWORKCONFIG : ClientAction.CIRACONFIG
-          } else {
-            throw new RPSError(`Device ${payload.uuid} already enabled in admin control mode.`)
-          }
-          break
-        }
-        default: {
-          throw new RPSError(`Device ${payload.uuid} activation failed. It is in unknown mode.`)
-        }
-      }
-    } else this.logger.debug(`Device ${payload.uuid} is in pre-provisioning mode`)
-
-    if (!clientObj.action) {
-      throw new RPSError(`Device ${payload.uuid} activation failed. Failed to get activation mode for the profile :${payload.profile}`)
-    }
-
-    // Validate client message to configure ACM message
-    if (clientObj.action === ClientAction.ADMINCTLMODE) {
-      if (!payload.certHashes) {
-        throw new RPSError(`Device ${payload.uuid} activation failed. Missing certificate hashes from the device.`)
-      }
-      if (!payload.fqdn) {
-        throw new RPSError(`Device ${payload.uuid} activation failed. Missing DNS Suffix.`)
-      }
-      if (!(await this.configurator.domainCredentialManager.doesDomainExist(payload.fqdn))) {
-        throw new RPSError(`Device ${payload.uuid} activation failed. Specified AMT domain suffix: ${payload.fqdn} does not match list of available AMT domain suffixes.`)
-      }
-    }
-
-    if (clientObj.action !== ClientAction.ADMINCTLMODE && clientObj.action !== ClientAction.CLIENTCTLMODE) {
-      if (this.configurator?.amtDeviceRepository) {
-        const amtDevice = await this.configurator.amtDeviceRepository.get(payload.uuid)
-        if (amtDevice?.amtpass) {
-          payload.username = AMTUserName
-          payload.password = amtDevice.amtpass
-          this.logger.info(`AMT password found for Device ${payload.uuid}`)
-        } else {
-          this.logger.error(`AMT device DOES NOT exists in repository ${payload.uuid}`)
-          throw new RPSError(`AMT device DOES NOT exists in repository ${payload.uuid}`)
-        }
-      } else {
-        this.logger.error(`Device ${payload.uuid} repository not found`)
-        throw new RPSError(`Device ${payload.uuid} repository not found`)
-      }
-    }
-
-    // Store the client message
-    clientObj.uuid = payload.uuid
     msg.payload = payload
     clientObj.ClientData = msg
     this.clientManager.setClientObject(clientObj)
+    // Check for the current activation mode on AMT
+    await this.verifyCurrentModeForActivation(msg, profile, clientId)
+    clientObj = this.clientManager.getClientObject(clientId)
+    if (!clientObj.action) {
+      throw new RPSError(`Device ${payload.uuid} activation failed. Failed to get activation mode for the profile :${payload.profile}`)
+    }
+    // Validate client message to configure ACM message
+    if (clientObj.action === ClientAction.ADMINCTLMODE) {
+      await this.verifyActivationMsgForACM(payload)
+    }
   }
 
   /**
@@ -190,19 +116,8 @@ export class Validator implements IValidator {
  * @returns {RCSMessage}
  */
   async validateDeactivationMsg (msg: ClientMsg, clientId: string): Promise<void> {
-    let payload: Payload = null
-    if (!msg) {
-      throw new RPSError('Error while Validating the client message')
-    }
-
     const clientObj = this.clientManager.getClientObject(clientId)
-
-    payload = msg.payload
-
-    if (!payload.uuid) {
-      throw new RPSError('Missing uuid from payload')
-    }
-
+    const payload: Payload = this.verifyPayload(msg, clientId)
     // Check for the current mode
     if (payload.currentMode >= 0) {
       switch (payload.currentMode) {
@@ -224,45 +139,14 @@ export class Validator implements IValidator {
         }
       }
     }
-
     // Check version and build compatibility
-    if (parseInt(payload.ver) > 7 && parseInt(payload.ver) < 12) {
-      if (parseInt(payload.build) < 3000) {
-        throw new RPSError(`Device ${payload.uuid} deactivation failed. Only version ${payload.ver} with build greater than 3000 can be remotely configured `)
-      }
-    } else if (parseInt(payload.ver) < 7) {
-      throw new RPSError(`Device ${payload.uuid} deactivation failed. AMT version: ${payload.ver}. Version less than 7 cannot be remotely configured `)
-    }
-
+    this.verifyAMTVersion(payload, 'deactivation')
+    // Check for forced deactivation request
     if (msg.payload.force) {
       this.logger.debug('bypassing password check')
     } else {
-      try {
-        let amtDevice: AMTDeviceDTO
-        if (this.configurator?.amtDeviceRepository) {
-          amtDevice = await this.configurator.amtDeviceRepository.get(payload.uuid)
-
-          if (amtDevice?.amtpass && payload.password && payload.password === amtDevice.amtpass) {
-            this.logger.info(`AMT password matches stored version for Device ${payload.uuid}`)
-          } else {
-            this.logger.error(`
-            stored version for Device ${payload.uuid}`)
-            throw new RPSError(`AMT password DOES NOT match stored version for Device ${payload.uuid}`)
-          }
-        } else {
-          this.logger.error(`Device ${payload.uuid} repository not found`)
-          throw new RPSError(`Device ${payload.uuid} repository not found`)
-        }
-      } catch (error) {
-        this.logger.error(`AMT device repo exception: ${error}`)
-        if (error instanceof RPSError) {
-          throw new RPSError(`${error.message}`)
-        } else {
-          throw new Error('AMT device repo exception')
-        }
-      }
+      await this.verifyDevicePassword(payload)
     }
-
     // Store the client message
     clientObj.uuid = payload.uuid
     msg.payload = payload
@@ -287,5 +171,160 @@ export class Validator implements IValidator {
       }
     }
     return isValidRealm
+  }
+
+  async updateTags (uuid: string, profile: AMTConfiguration): Promise<void> {
+    let tags = []
+    if (profile?.tags.length > 0) {
+      tags = profile.tags
+      await got(`${EnvReader.GlobalEnvConfig.mpsServer}/api/v1/devices`, {
+        method: 'PATCH',
+        json: {
+          guid: uuid,
+          tags: tags
+        }
+      })
+    }
+  }
+
+  async validateMaintenanceMsg (msg: ClientMsg, clientId: string): Promise<void> {
+    const clientObj = this.clientManager.getClientObject(clientId)
+    const payload: Payload = this.verifyPayload(msg, clientId)
+    // Check for the current mode
+    if (payload.currentMode > 0) {
+      const mode = payload.currentMode === 1 ? 'client control mode' : 'admin control mode'
+      clientObj.action = ClientAction.MAINTENANCE
+      this.logger.debug(`Device ${payload.uuid} is in ${mode}.`)
+    } else {
+      throw new RPSError(`Device ${payload.uuid} is in pre-provisioning mode.`)
+    }
+    await this.verifyDevicePassword(payload)
+    clientObj.ClientData = msg
+    this.clientManager.setClientObject(clientObj)
+  }
+
+  async verifyDevicePassword (payload: Payload): Promise<void> {
+    try {
+      let amtDevice: AMTDeviceDTO
+      if (this.configurator?.amtDeviceRepository) {
+        amtDevice = await this.configurator.amtDeviceRepository.get(payload.uuid)
+
+        if (amtDevice?.amtpass && payload.password && payload.password === amtDevice.amtpass) {
+          this.logger.debug(`AMT password matches stored version for Device ${payload.uuid}`)
+        } else {
+          this.logger.error(`
+          stored version for Device ${payload.uuid}`)
+          throw new RPSError(`AMT password DOES NOT match stored version for Device ${payload.uuid}`)
+        }
+      } else {
+        this.logger.error(`Device ${payload.uuid} secret provider not found`)
+        throw new RPSError(`Device ${payload.uuid} secret provider not found`)
+      }
+    } catch (error) {
+      this.logger.error(`AMT device secret provider exception: ${error}`)
+      if (error instanceof RPSError) {
+        throw new RPSError(`${error.message}`)
+      } else {
+        throw new Error('AMT device secret provider exception')
+      }
+    }
+  }
+
+  verifyPayload (msg: ClientMsg, clientId: string): Payload {
+    if (!msg) {
+      throw new RPSError(`${clientId} - Error while Validating the client message`)
+    }
+    if (!msg.payload.uuid) {
+      throw new RPSError(`${clientId} - Missing uuid from payload`)
+    }
+    return msg.payload
+  }
+
+  async verifyActivationMsgForACM (payload: Payload): Promise<void> {
+    if (!payload.certHashes) {
+      throw new RPSError(`Device ${payload.uuid} activation failed. Missing certificate hashes from the device.`)
+    }
+    if (!payload.fqdn) {
+      throw new RPSError(`Device ${payload.uuid} activation failed. Missing DNS Suffix.`)
+    }
+    if (!(await this.configurator.domainCredentialManager.doesDomainExist(payload.fqdn))) {
+      throw new RPSError(`Device ${payload.uuid} activation failed. Specified AMT domain suffix: ${payload.fqdn} does not match list of available AMT domain suffixes.`)
+    }
+  }
+
+  async verifyCurrentModeForActivation (msg: ClientMsg, profile: AMTConfiguration, clientId: string): Promise<void> {
+    const clientObj = this.clientManager.getClientObject(clientId)
+    switch (msg.payload.currentMode) {
+      case 0: {
+        this.logger.debug(`Device ${msg.payload.uuid} is in pre-provisioning mode`)
+        break
+      }
+      case 1: {
+        if (profile.activation !== ClientAction.CLIENTCTLMODE) {
+          throw new RPSError(`Device ${msg.payload.uuid} already enabled in client control mode.`)
+        }
+        this.logger.debug(`Device ${msg.payload.uuid} already enabled in client mode.`)
+        clientObj.status.Status = 'already enabled in client mode.'
+        await this.setNextStepsForConfiguration(msg, clientObj, clientId)
+        break
+      }
+      case 2: {
+        if (profile.activation !== ClientAction.ADMINCTLMODE) {
+          throw new RPSError(`Device ${msg.payload.uuid} already enabled in admin control mode.`)
+        }
+        this.logger.debug(`Device ${msg.payload.uuid} already enabled in admin mode.`)
+        clientObj.status.Status = 'already enabled in admin mode.'
+        await this.setNextStepsForConfiguration(msg, clientObj, clientId)
+        break
+      }
+      default: {
+        throw new RPSError(`Device ${msg.payload.uuid} activation failed. It is in unknown mode.`)
+      }
+    }
+    this.clientManager.setClientObject(clientObj)
+  }
+
+  async getDeviceCredentials (msg: ClientMsg): Promise<AMTDeviceDTO> {
+    if (!this.configurator?.amtDeviceRepository) {
+      this.logger.error(`Device ${msg.payload.uuid} not found`)
+      throw new RPSError(`Device ${msg.payload.uuid} not found`)
+    }
+    const amtDevice: AMTDeviceDTO = await this.configurator.amtDeviceRepository.get(msg.payload.uuid)
+    if (amtDevice?.amtpass == null) {
+      this.logger.error(`AMT device DOES NOT exists ${msg.payload.uuid}`)
+      throw new RPSError(`AMT device DOES NOT exists ${msg.payload.uuid}`)
+    }
+    return amtDevice
+  }
+
+  async setNextStepsForConfiguration (msg: ClientMsg, clientObj: ClientObject, clientId: string): Promise<void> {
+    const amtDevice: AMTDeviceDTO = await this.getDeviceCredentials(msg)
+    if (amtDevice?.amtpass) {
+      msg.payload.username = AMTUserName
+      msg.payload.password = amtDevice.amtpass
+      this.logger.debug(`AMT password found for Device ${msg.payload.uuid}`)
+    }
+    await this.updateTags(msg.payload.uuid, msg.payload.profile)
+    if (clientObj.action === ClientAction.ADMINCTLMODE) {
+      if (!amtDevice.mebxpass) {
+        clientObj.activationStatus.activated = true
+        clientObj.activationStatus.missingMebxPassword = true
+        clientObj.amtPassword = amtDevice.amtpass
+      } else {
+        clientObj.action = ClientAction.NETWORKCONFIG
+      }
+    }
+    clientObj.ClientData = msg
+    this.clientManager.setClientObject(clientObj)
+  }
+
+  verifyAMTVersion (payload: Payload, action: string): void {
+    if (parseInt(payload.ver) >= 7 && parseInt(payload.ver) < 12) {
+      if (parseInt(payload.build) < 3000) {
+        throw new RPSError(`Device ${payload.uuid} ${action} failed. Only version ${payload.ver} with build greater than 3000 can be remotely configured `)
+      }
+    } else if (parseInt(payload.ver) < 7) {
+      throw new RPSError(`Device ${payload.uuid} ${action} failed. AMT version: ${payload.ver}. Version less than 7 cannot be remotely configured `)
+    }
   }
 }

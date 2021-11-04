@@ -5,32 +5,35 @@
  **********************************************************************/
 import Logger from '../../../Logger'
 import { AMTConfiguration } from '../../../models/Rcs'
-import { IProfilesDb } from '../../../repositories/interfaces/IProfilesDb'
-import { ProfilesDbFactory } from '../../../repositories/factories/ProfilesDbFactory'
 import { PROFILE_NOT_FOUND, API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../../utils/constants'
 import { EnvReader } from '../../../utils/EnvReader'
+import { MqttProvider } from '../../../utils/MqttProvider'
+import { Request, Response } from 'express'
 
-export async function deleteProfile (req, res): Promise<void> {
+export async function deleteProfile (req: Request, res: Response): Promise<void> {
   const log = new Logger('deleteProfile')
-  let profilesDb: IProfilesDb = null
   const { profileName } = req.params
   try {
-    profilesDb = ProfilesDbFactory.getProfilesDb()
-    const profile: AMTConfiguration = await profilesDb.getProfileByName(profileName)
+    const profile: AMTConfiguration = await req.db.profiles.getByName(profileName)
     if (profile == null) {
+      MqttProvider.publishEvent('fail', ['deleteProfile'], `Profile Not Found : ${profileName}`)
       res.status(404).json(API_RESPONSE(null, 'Not Found', PROFILE_NOT_FOUND(profileName))).end()
     } else {
-      const results: boolean = await profilesDb.deleteProfileByName(profileName)
+      const results: boolean = await req.db.profiles.delete(profileName)
       if (results) {
-        if (!profile.generateRandomPassword || !profile.generateRandomMEBxPassword) {
-          if (req.secretsManager) {
+        if (req.secretsManager) {
+          if (!profile.generateRandomPassword || !profile.generateRandomMEBxPassword) {
             await req.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${profile.profileName}`)
           }
+          await req.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}TLS/${profile.profileName}`)
         }
+
+        MqttProvider.publishEvent('success', ['deleteProfile'], `Deleted Profile : ${profileName}`)
         res.status(204).end()
       }
     }
   } catch (error) {
+    MqttProvider.publishEvent('fail', ['deleteProfile'], `Failed to delete profile : ${profileName}`)
     log.error(`Failed to delete AMT profile : ${profileName}`, error)
     res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`Delete AMT profile ${profileName}`))).end()
   }

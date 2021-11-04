@@ -50,7 +50,8 @@ beforeAll(() => {
   clientManager.addClient({
     ClientId: clientId,
     ClientSocket: null,
-    ClientData: deactivatemsg
+    ClientData: deactivatemsg,
+    status: {}
   })
 })
 
@@ -62,6 +63,6 @@ describe('deactivate from admin control mode', () => {
 
     const clientMsg = { payload: null }
     const deactivateMsg = await deactivate.execute(clientMsg, clientId)
-    expect(deactivateMsg.message).toEqual(`Device ${deactivatemsg.payload.uuid} deactivate failed : Missing/invalid WSMan response payload.`)
+    expect(deactivateMsg.message).toEqual(`{"Status":"Device ${deactivatemsg.payload.uuid} deactivate failed : Missing/invalid WSMan response payload."}`)
   })
 })

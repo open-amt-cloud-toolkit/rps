@@ -1,16 +1,17 @@
 /*********************************************************************
  * Copyright (c) Intel Corporation 2020
  * SPDX-License-Identifier: Apache-2.0
- * Description: stores amt device in memory
+ * Description: stores amt device in vault
  * Author: Brian Osburn
  **********************************************************************/
 
 import { ILogger } from '../../interfaces/ILogger'
 import { AMTDeviceDTO } from '.././dto/AmtDeviceDTO'
-import { IAMTDeviceRepository } from '../interfaces/IAMTDeviceRepository'
+import { IAMTDeviceRepository } from '../../interfaces/database/IAMTDeviceRepository'
 import { IConfigurator } from '../../interfaces/IConfigurator'
 import { EnvReader } from '../../utils/EnvReader'
 import { RPSError } from '../../utils/RPSError'
+import { AMTUserName } from '../../utils/constants'
 
 export class AMTDeviceVaultRepository implements IAMTDeviceRepository {
   private readonly logger: ILogger
@@ -24,9 +25,10 @@ export class AMTDeviceVaultRepository implements IAMTDeviceRepository {
   public async insert (device: AMTDeviceDTO): Promise<boolean> {
     try {
       if (this.configurator?.secretsManager) {
-        const data = { data: { AMT_PASSWORD: null, MEBX_PASSWORD: null } }
+        const data = { data: { AMT_PASSWORD: null, MEBX_PASSWORD: null, MPS_PASSWORD: null } }
         data.data.AMT_PASSWORD = device.amtpass
         data.data.MEBX_PASSWORD = device.mebxpass
+        data.data.MPS_PASSWORD = device.mpspass
         await this.configurator.secretsManager.writeSecretWithObject(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}devices/${device.guid}`, data)
         return true
       } else {
@@ -56,17 +58,16 @@ export class AMTDeviceVaultRepository implements IAMTDeviceRepository {
     try {
       if (this.configurator?.secretsManager) {
         const devicePwds: any = await this.configurator.secretsManager.getSecretAtPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}devices/${deviceId}`)
-        this.logger.info('devicePwds :' + JSON.stringify(devicePwds))
         if (devicePwds) {
           const amtDevice: AMTDeviceDTO = new AMTDeviceDTO(
             deviceId,
             deviceId,
-            EnvReader.GlobalEnvConfig.mpsusername,
-            EnvReader.GlobalEnvConfig.mpspass,
-            EnvReader.GlobalEnvConfig.amtusername,
+            null,
+            devicePwds.data.MPS_PASSWORD,
+            AMTUserName,
             devicePwds.data.AMT_PASSWORD,
             devicePwds.data.MEBX_PASSWORD)
-          this.logger.debug(`found vault amt device: ${deviceId}, ${JSON.stringify(amtDevice)}`)
+          this.logger.debug(`found vault amt device: ${deviceId}`)
 
           return amtDevice
         } else {

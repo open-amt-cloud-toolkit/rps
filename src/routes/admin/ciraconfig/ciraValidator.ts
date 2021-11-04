@@ -44,13 +44,9 @@ export const ciraInsertValidator = (): any => {
       .isEmpty()
       .withMessage('MPS user name is required')
       .matches('^[a-zA-Z0-9]+$') // As per AMT SDK, accepts only alphanumeric values
-      .withMessage('MPS user name should be alphanumeric'),
-    check('password')
-      .not()
-      .isEmpty()
-      .withMessage('MPS password is required')
-      .matches('^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9$@$!%*#?&-_~^]{8,32}$')
-      .withMessage('Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
+      .withMessage('MPS user name should be alphanumeric')
+      .isLength({ min: 5, max: 16 })
+      .withMessage('MPS user name length should be in between 5 to 16'),
     check('commonName')
       .if((value, { req }) => req.body.serverAddressFormat !== 201)
       .optional()
@@ -107,12 +103,10 @@ export const ciraUpdateValidator = (): any => {
       }),
     check('username')
       .optional()
-      .matches('^[a-zA-Z0-9$@$!%*#?&-_~^]+$')
-      .withMessage('MPS user name accepts letters, numbers, special characters and no spaces'),
-    check('password')
-      .optional()
-      .matches('^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9$@$!%*#?&-_~^]{8,32}$')
-      .withMessage('Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
+      .matches('^[a-zA-Z0-9]+$') // As per AMT SDK, accepts only alphanumeric values
+      .withMessage('MPS user name should be alphanumeric')
+      .isLength({ min: 5, max: 16 })
+      .withMessage('MPS user name length should be in between 5 to 16'),
     check('commonName')
       .if((value, { req }) => req.body.serverAddressFormat !== 201)
       .optional()
@@ -131,7 +125,10 @@ export const ciraUpdateValidator = (): any => {
     check('mpsRootCertificate')
       .optional(),
     check('proxyDetails')
+      .optional(),
+    check('regeneratePassword')
       .optional()
+      .isBoolean()
   ]
 }
 

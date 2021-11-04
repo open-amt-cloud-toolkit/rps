@@ -4,27 +4,60 @@
 * Description: Constants
 **********************************************************************/
 
-import { CIRAConfig, NetworkConfig, WebSocketConfig } from '../RCS.Config'
+import { pki } from 'node-forge'
+import { CIRAConfig, ProfileWifiConfigs, WebSocketConfig } from './RCS.Config'
 
-export class ProvisioningCertObj {
+export interface ProvisioningCertObj {
   certChain: string[]
-  privateKey: string
+  privateKey: pki.PrivateKey
+}
+export interface AMTKeyUsage{
+  /** Extension ID  */
+  name: string
+  /** Enables Console Usage */
+  ['2.16.840.1.113741.1.2.1']: boolean
+  /** Enables Agent Usage */
+  ['2.16.840.1.113741.1.2.2']: boolean
+  /** Enables AMT Activation Usage */
+  ['2.16.840.1.113741.1.2.3']: boolean
+  /** Enables TLS Usage on the Server */
+  serverAuth: boolean
+  /** Enables TLS Usage Usage on the Client */
+  clientAuth: boolean
+  /** Enables Email Protection */
+  emailProtection: boolean
+  /** Enables Code Signing */
+  codeSigning: boolean
+  /** Enables Time Stamping */
+  timeStamping: boolean
 }
 
-export class CertificateObject {
+export interface CertAttributes {
+  CN: string
+  O?: string
+  ST?: string
+  C?: string
+}
+
+export interface CertCreationResult {
+  h: any
+  cert: pki.Certificate
+  pem: string
+  certbin: string
+  privateKey: string
+  privateKeyBin?: string
+  checked: boolean
+  key?: pki.PrivateKey
+}
+export interface CertsAndKeys {
+  certs: pki.Certificate[]
+  keys: pki.PrivateKey[]
+  errorText?: string
+}
+export interface CertificateObject {
   pem: string
   issuer: string
   subject: string
-}
-
-export class DbConfig {
-  useDbForConfig: boolean
-  useRawCerts?: boolean
-  dbhost: string
-  dbname: string
-  dbport: number
-  dbuser: string
-  dbpassword: string
 }
 
 export class VaultConfig {
@@ -34,45 +67,48 @@ export class VaultConfig {
   token: string
 }
 export class RCSConfig {
-  Name: string
-  Description: string
   VaultConfig: VaultConfig
-  mpsusername: string
-  mpspass: string
   amtusername: string
   webport: number
   credentialspath: string
-  datapath?: string
   WSConfiguration: WebSocketConfig
-  DbConfig: DbConfig
-  NodeEnv?: string
+  dbProvider: string
+  connectionString: string
   corsOrigin: string
   corsHeaders: string
   corsMethods: string
-  corsAllowCredentials: string
   mpsServer: string
   delayTimer: number
+  mqttAddress?: string
   constructor () {
     this.VaultConfig = new VaultConfig()
-    this.DbConfig = new DbConfig()
   }
 }
 export class AMTConfiguration {
   profileName?: string
   amtPassword?: string
   generateRandomPassword?: boolean
-  passwordLength?: number
-  randomPasswordCharacters?: string
-  configurationScript?: string
   ciraConfigName?: string
   activation: string
-  networkConfigName?: string
-  networkConfigObject?: NetworkConfig
   mebxPassword?: string
   generateRandomMEBxPassword?: boolean
-  mebxPasswordLength?: number
   ciraConfigObject?: CIRAConfig
   tags?: string[]
+  dhcpEnabled?: boolean
+  wifiConfigs?: ProfileWifiConfigs[]
+  tenantId: string
+  tlsMode?: number
+  tlsCerts?: TLSCerts
+}
+export interface TLSCerts {
+  ROOT_CERTIFICATE: CertCreationResult
+  ISSUED_CERTIFICATE: CertCreationResult
+  version?: string
+}
+
+export class DataWithCount {
+  data: any[]
+  totalCount: number
 }
 
 export class AMTDomain {
@@ -81,6 +117,7 @@ export class AMTDomain {
   provisioningCert: string
   provisioningCertStorageFormat: string
   provisioningCertPassword: string
+  tenantId: string
 }
 
 export class WSMessage {
@@ -205,39 +242,36 @@ export class Version {
 }
 
 const recipeRCSConfig = {
-  name: 'Name',
-  description: 'Description',
-  user: 'mpsusername',
-  password: 'mpspass',
-  amt_user: 'amtusername',
-  developer_mode: 'devmode',
   web_port: 'webport',
   credentials_path: 'credentialspath',
   websocketport: 'WSConfiguration.WebSocketPort',
-  use_vault: 'VaultConfig.usevault',
   vault_address: 'VaultConfig.address',
   vault_token: 'VaultConfig.token',
   secrets_path: 'VaultConfig.SecretsPath',
-  db_host: 'DbConfig.dbhost',
-  db_name: 'DbConfig.dbname',
-  db_port: 'DbConfig.dbport',
-  db_user: 'DbConfig.dbuser',
-  db_password: 'DbConfig.dbpassword',
-  use_db_profiles: 'DbConfig.useDbForConfig',
+  db_provider: 'dbProvider',
+  connection_string: 'connectionString',
   amt_domains: 'AMTDomains',
   amt_configurations: 'AMTConfigurations',
   cira_configurations: 'CIRAConfigurations',
-  data_path: 'datapath',
-  node_env: 'NodeEnv',
-  use_raw_certs: 'DbConfig.useRawCerts',
   cors_origin: 'corsOrigin',
   cors_headers: 'corsHeaders',
   cors_methods: 'corsMethods',
   cors_allow_credentials: 'corsAllowCredentials',
   mps_server: 'mpsServer',
-  delay_timer: 'delayTimer'
+  delay_timer: 'delayTimer',
+  mqtt_address: 'mqttAddress'
 }
 
 export function mapConfig (src, dot): RCSConfig {
   return dot.transform(recipeRCSConfig, src) as RCSConfig
+}
+
+export type eventType = 'request' | 'success' | 'fail'
+
+export interface OpenAMTEvent {
+  type: eventType
+  message: string
+  methods: string[]
+  guid: string
+  timestamp: number
 }

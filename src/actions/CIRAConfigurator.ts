@@ -7,7 +7,7 @@
 
 import { IExecutor } from '../interfaces/IExecutor'
 import { ILogger } from '../interfaces/ILogger'
-import { ClientMsg, mpsServer, ClientObject, CIRAConfig } from '../RCS.Config'
+import { mpsServer, ClientObject, CIRAConfig, ClientAction } from '../models/RCS.Config'
 import { ClientResponseMsg } from '../utils/ClientResponseMsg'
 import { WSManProcessor } from '../WSManProcessor'
 import { IClientManager } from '../interfaces/IClientManager'
@@ -15,6 +15,10 @@ import { RPSError } from '../utils/RPSError'
 import { mpsserver } from '../utils/constants'
 import { IConfigurator } from '../interfaces/IConfigurator'
 import { AMTUserName } from './../utils/constants'
+import { EnvReader } from '../utils/EnvReader'
+import got from 'got'
+import { MqttProvider } from '../utils/MqttProvider'
+import { TLSConfigurator } from './TLSConfigurator'
 
 export class CIRAConfigurator implements IExecutor {
   constructor (
@@ -22,7 +26,8 @@ export class CIRAConfigurator implements IExecutor {
     private readonly configurator: IConfigurator,
     private readonly responseMsg: ClientResponseMsg,
     private readonly amtwsman: WSManProcessor,
-    private readonly clientManager: IClientManager
+    private readonly clientManager: IClientManager,
+    private readonly tlsConfigurator: TLSConfigurator
   ) { }
 
   /**
@@ -31,8 +36,8 @@ export class CIRAConfigurator implements IExecutor {
      * @param {string} clientId Id to keep track of connections
      * @returns {ClientMsg} message to sent to client
      */
-  async execute (message: any, clientId: string): Promise<ClientMsg> {
-    let clientObj
+  async execute (message: any, clientId: string): Promise<any> {
+    let clientObj: ClientObject
     try {
       clientObj = this.clientManager.getClientObject(clientId)
       if (message?.payload != null || !clientObj.ciraconfig.policyRuleUserInitiate) {
@@ -49,14 +54,17 @@ export class CIRAConfigurator implements IExecutor {
             this.logger.debug(`${clientObj.uuid}  Adding trusted root certificate.`)
             clientObj.ciraconfig.addMPSServer = true
             this.clientManager.setClientObject(clientObj)
+
+            await this.setMPSPassword(clientObj)
+
             const configScript: CIRAConfig = clientObj.ClientData.payload.profile.ciraConfigObject
             const server: mpsServer = {
               AccessInfo: configScript.mpsServerAddress,
               InfoFormat: configScript.serverAddressFormat,
               Port: configScript.mpsPort,
               AuthMethod: configScript.authMethod,
-              Username: configScript.username,
-              Password: configScript.password
+              Username: clientObj.mpsUsername,
+              Password: clientObj.mpsPassword
             }
             if (configScript.serverAddressFormat === 3 && configScript.commonName) {
               server.CN = configScript.commonName
@@ -66,11 +74,13 @@ export class CIRAConfigurator implements IExecutor {
             clientObj.ciraconfig.mpsRemoteSAP = true
             this.clientManager.setClientObject(clientObj)
             if (wsmanResponse.Body && wsmanResponse.Body.ReturnValueStr === 'SUCCESS') {
+              MqttProvider.publishEvent('success', ['CIRAConfigurator'], 'Management Presence Server (MPS) successfully added', clientObj.uuid)
               this.logger.debug(`${clientObj.uuid}  Management Presence Server (MPS) successfully added.`)
               await this.amtwsman.batchEnum(clientId, 'AMT_ManagementPresenceRemoteSAP', AMTUserName, clientObj.ClientData.payload.uuid)
             } else {
-              this.logger.info('AMT_ManagementPresenceRemoteSAP')
-              throw new RPSError(`Device ${clientObj.uuid} ${clientObj.ciraconfig.status} Failed to add Management Presence Server.`)
+              MqttProvider.publishEvent('fail', ['CIRAConfigurator'], 'Failed to add Management Presence Server', clientObj.uuid)
+              this.logger.error('AMT_ManagementPresenceRemoteSAP')
+              throw new RPSError(`Device ${clientObj.uuid} Failed to add Management Presence Server.`)
             }
           } else if (!clientObj.ciraconfig.addRemoteAccessPolicyRule && clientObj.ciraconfig.addMPSServer) {
             const result = wsmanResponse.AMT_ManagementPresenceRemoteSAP
@@ -89,8 +99,9 @@ export class CIRAConfigurator implements IExecutor {
                 this.clientManager.setClientObject(clientObj)
                 await this.amtwsman.execute(clientId, 'AMT_RemoteAccessService', 'AddRemoteAccessPolicyRule', policy, null, AMTUserName, clientObj.ClientData.payload.password)
               } else {
-                this.logger.info('AMT_RemoteAccessService')
-                throw new RPSError(`Device ${clientObj.uuid} ${clientObj.ciraconfig.status} Failed to add Management Presence Server.`)
+                MqttProvider.publishEvent('fail', ['CIRAConfigurator'], 'Failed to add Management Presence Server', clientObj.uuid)
+                this.logger.error('AMT_RemoteAccessService')
+                throw new RPSError(`Device ${clientObj.uuid} Failed to add Management Presence Server.`)
               }
             }
           } else if (!clientObj.ciraconfig.userInitConnectionService && clientObj.ciraconfig.addRemoteAccessPolicyRule) {
@@ -103,7 +114,7 @@ export class CIRAConfigurator implements IExecutor {
             await this.amtwsman.batchEnum(clientId, '*AMT_EnvironmentDetectionSettingData', AMTUserName, clientObj.ClientData.payload.uuid)
           } else if (clientObj.ciraconfig.getENVSettingData && !clientObj.ciraconfig.setENVSettingDataCIRA) {
             const envSettings = wsmanResponse.AMT_EnvironmentDetectionSettingData.response
-            this.logger.info(`Environment settings : ${JSON.stringify(envSettings, null, '\t')}`)
+            this.logger.debug(`Environment settings : ${JSON.stringify(envSettings, null, '\t')}`)
             if (envSettings.DetectionStrings === undefined) {
               envSettings.DetectionStrings = 'dummy.com'
             } else if (envSettings.DetectionStrings !== 'dummy.com') {
@@ -113,19 +124,37 @@ export class CIRAConfigurator implements IExecutor {
             this.clientManager.setClientObject(clientObj)
             await this.amtwsman.put(clientId, 'AMT_EnvironmentDetectionSettingData', envSettings, AMTUserName, clientObj.ClientData.payload.password)
           } else if (clientObj.ciraconfig.setENVSettingDataCIRA) {
-            return this.responseMsg.get(clientId, null, 'success', 'success', `Device ${clientObj.uuid} ${clientObj.ciraconfig.status} CIRA Configured.`)
+            clientObj.status.CIRAConnection = 'Configured'
+            MqttProvider.publishEvent('success', ['CIRAConfigurator'], 'CIRA Configured', clientObj.uuid)
+            //  TBD: Need to refactor this repetitive code
+            if (clientObj.ClientData.payload.profile.tlsCerts != null && clientObj.ClientData.payload.profile.tlsCerts != null) {
+              clientObj.action = ClientAction.TLSCONFIG
+              this.clientManager.setClientObject(clientObj)
+              await this.tlsConfigurator.execute(message, clientId)
+            } else {
+              return this.responseMsg.get(clientId, null, 'success', 'success', JSON.stringify(clientObj.status))
+            }
           }
         } else if (clientObj.ciraconfig.setENVSettingData) {
-          return this.responseMsg.get(clientId, null, 'success', 'success', `Device ${clientObj.uuid} ${clientObj.ciraconfig.status}`)
+          MqttProvider.publishEvent('success', ['CIRAConfigurator'], 'CIRA Configured', clientObj.uuid)
+          if (clientObj.ClientData.payload.profile.tlsCerts != null && clientObj.ClientData.payload.profile.tlsCerts != null) {
+            clientObj.action = ClientAction.TLSCONFIG
+            this.clientManager.setClientObject(clientObj)
+            await this.tlsConfigurator.execute(message, clientId)
+          } else {
+            return this.responseMsg.get(clientId, null, 'success', 'success', JSON.stringify(clientObj.status))
+          }
         }
       }
     } catch (error) {
       this.logger.error(`${clientId} : Failed to configure CIRA : ${error}`)
       if (error instanceof RPSError) {
-        return this.responseMsg.get(clientId, null, 'error', 'failed', error.message)
+        clientObj.status.CIRAConnection = error.message
       } else {
-        return this.responseMsg.get(clientId, null, 'error', 'failed', `${clientObj.ciraconfig.status} Failed to configure CIRA `)
+        clientObj.status.CIRAConnection = 'Failed'
       }
+      MqttProvider.publishEvent('fail', ['CIRAConfigurator'], 'Failed to configure CIRA', clientObj.uuid)
+      return this.responseMsg.get(clientId, null, 'error', 'failed', JSON.stringify(clientObj.status))
     }
   }
 
@@ -199,10 +228,69 @@ export class CIRAConfigurator implements IExecutor {
         await this.amtwsman.put(clientId, 'AMT_EnvironmentDetectionSettingData', envSettings, AMTUserName)
       } else {
         clientObj.ciraconfig.setENVSettingData = true
+        clientObj.status.CIRAConnection = 'Unconfigured'
         this.clientManager.setClientObject(clientObj)
         this.logger.debug(`${clientObj.uuid} Deleted existing CIRA Configuration.`)
         clientObj = this.clientManager.getClientObject(clientId)
       }
+    }
+  }
+
+  /**
+   * @description Set MPS password for the AMT
+   * @param {ClientObject} clientObj
+   */
+  async setMPSPassword (clientObj: ClientObject): Promise<void> {
+    this.logger.debug('setting MPS password')
+
+    clientObj.mpsUsername = await (await this.configurator.profileManager.getCiraConfiguration(clientObj.ClientData.payload.profile.profileName))?.username
+    clientObj.mpsPassword = await this.configurator.profileManager.getMPSPassword(clientObj.ClientData.payload.profile.profileName)
+    this.clientManager.setClientObject(clientObj)
+
+    if (clientObj.mpsUsername && clientObj.mpsPassword) {
+      try {
+        if (this.configurator?.secretsManager) {
+          let data: any = await this.configurator.secretsManager.getSecretAtPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}devices/${clientObj.uuid}`)
+
+          if (data != null) {
+            data.data.MPS_PASSWORD = clientObj.mpsPassword
+          } else {
+            data = { data: { MPS_PASSWORD: clientObj.mpsPassword } }
+          }
+
+          await this.configurator.secretsManager.writeSecretWithObject(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}devices/${clientObj.uuid}`, data)
+        } else {
+          MqttProvider.publishEvent('fail', ['CIRAConfigurator'], 'Secret Manager Missing', clientObj.uuid)
+          throw new Error('secret manager missing')
+        }
+      } catch (error) {
+        MqttProvider.publishEvent('fail', ['CIRAConfigurator'], 'Exception writing to vault', clientObj.uuid)
+        this.logger.error(`failed to insert record guid: ${clientObj.uuid}, error: ${JSON.stringify(error)}`)
+        throw new RPSError('Exception writing to vault')
+      }
+
+      try {
+        const profile = await this.configurator.profileManager.getAmtProfile(clientObj.ClientData.payload.profile.profileName)
+        let tags = []
+        if (profile?.tags != null) {
+          tags = profile.tags
+        }
+        await got(`${EnvReader.GlobalEnvConfig.mpsServer}/api/v1/devices`, {
+          method: 'POST',
+          json: {
+            guid: clientObj.uuid,
+            hostname: clientObj.hostname,
+            mpsusername: clientObj.mpsUsername,
+            tags: tags,
+            tenantId: profile.tenantId
+          }
+        })
+      } catch (err) {
+        this.logger.error('unable to register metadata with MPS', err)
+      }
+    } else {
+      MqttProvider.publishEvent('fail', ['CIRAConfigurator'], 'mpsUsername or mpsPassword is null', clientObj.uuid)
+      throw new RPSError('setMPSPassword: mpsUsername or mpsPassword is null')
     }
   }
 }

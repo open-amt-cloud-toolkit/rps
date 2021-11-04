@@ -5,17 +5,17 @@
 **********************************************************************/
 
 import * as crypto from 'crypto'
-import { INodeForge } from '../interfaces/INodeForge'
+import { NodeForge } from '../NodeForge'
 
 export class SignatureHelper {
-  private readonly nodeForge: INodeForge
+  private readonly nodeForge: NodeForge
 
-  constructor (nodeForge: INodeForge) {
+  constructor (nodeForge: NodeForge) {
     this.nodeForge = nodeForge
   }
 
   /**
-    * @description Signs the concatinated nonce with the private key of the provisioning certificate and encodes as base64
+    * @description Signs the concatenated nonce with the private key of the provisioning certificate and encodes as base64
     * @param {any} message Message to be signed
     * @param {any} key Private key of provisioning certificate
     * @returns {any} Returns the signed string

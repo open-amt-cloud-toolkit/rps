@@ -1,51 +1,46 @@
 /*********************************************************************
- * Copyright (c) Intel Corporation 2019
+ * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
- * Author : Ramu Bachala
  **********************************************************************/
-import { IProfilesDb } from '../../../repositories/interfaces/IProfilesDb'
-import { ProfilesDbFactory } from '../../../repositories/factories/ProfilesDbFactory'
 import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, PROFILE_NOT_FOUND } from '../../../utils/constants'
-import { validationResult } from 'express-validator'
 import { AMTConfiguration } from '../../../models/Rcs'
-import { ClientAction } from '../../../RCS.Config'
+import { ClientAction, ProfileWifiConfigs } from '../../../models/RCS.Config'
 import { RPSError } from '../../../utils/RPSError'
+import { MqttProvider } from '../../../utils/MqttProvider'
+import { Request, Response } from 'express'
+import { IProfilesWifiConfigsTable } from '../../../interfaces/database/IProfileWifiConfigsDb'
 
-export async function editProfile (req, res): Promise<void> {
-  let profilesDb: IProfilesDb = null
+export async function editProfile (req: Request, res: Response): Promise<void> {
   const log = new Logger('editProfile')
   const newConfig = req.body
+  newConfig.tenantId = req.tenantId
   try {
-    const errors = validationResult(req)
-    if (!errors.isEmpty()) {
-      res.status(400).json({ errors: errors.array() })
-      return
-    }
-    profilesDb = ProfilesDbFactory.getProfilesDb()
-    const oldConfig: AMTConfiguration = await profilesDb.getProfileByName(newConfig.profileName)
+    const oldConfig: AMTConfiguration = await req.db.profiles.getByName(newConfig.profileName)
 
     if (oldConfig == null) {
-      log.info(`Not found: ${newConfig.profileName}`)
+      MqttProvider.publishEvent('fail', ['editProfile'], `Profile Not Found : ${newConfig.profileName}`)
+      log.debug(`Not found: ${newConfig.profileName}`)
       res.status(404).json(API_RESPONSE(null, 'Not Found', PROFILE_NOT_FOUND(newConfig.profileName))).end()
     } else {
-      const amtConfig: AMTConfiguration = getUpdatedData(newConfig, oldConfig)
+      const amtConfig: AMTConfiguration = await getUpdatedData(newConfig, oldConfig)
+      amtConfig.wifiConfigs = await handleWifiConfigs(newConfig, oldConfig, req.db.profileWirelessConfigs)
       // Assigning value key value for AMT Random Password and MEBx Random Password to store in database
       const amtPwdBefore = amtConfig.amtPassword
       const mebxPwdBefore = amtConfig.mebxPassword
       if (req.secretsManager) {
         // store the AMT password key into db
         if (!amtConfig.generateRandomPassword) {
-          amtConfig.amtPassword = `${amtConfig.profileName}_DEVICE_AMT_PASSWORD`
+          amtConfig.amtPassword = 'AMT_PASSWORD'
         }
         // store the MEBX password key into db
-        if (!amtConfig.generateRandomMEBxPassword) {
-          amtConfig.mebxPassword = `${amtConfig.profileName}_DEVICE_MEBX_PASSWORD`
+        if (!amtConfig.generateRandomMEBxPassword && amtConfig.activation === 'acmactivate') {
+          amtConfig.mebxPassword = 'MEBX_PASSWORD'
         }
       }
       // SQL Query > Insert Data
-      const results = await profilesDb.updateProfile(amtConfig)
+      const results = await req.db.profiles.update(amtConfig)
       if (results) {
         // profile inserted  into db successfully. insert the secret into vault
         if (oldConfig.amtPassword !== null || oldConfig.mebxPassword !== null) {
@@ -57,24 +52,29 @@ export async function editProfile (req, res): Promise<void> {
         }
         // store the password sent into Vault
         if (req.secretsManager && (!amtConfig.generateRandomPassword || !amtConfig.generateRandomMEBxPassword)) {
-          const data = { data: {} }
+          const data = { data: { AMT_PASSWORD: null, MEBX_PASSWORD: null } }
           if (!amtConfig.generateRandomPassword) {
-            data.data[`${amtConfig.profileName}_DEVICE_AMT_PASSWORD`] = amtPwdBefore
+            data.data.AMT_PASSWORD = amtPwdBefore
             log.debug('AMT Password written to vault')
           }
           if (!amtConfig.generateRandomMEBxPassword) {
-            data.data[`${amtConfig.profileName}_DEVICE_MEBX_PASSWORD`] = mebxPwdBefore
+            data.data.MEBX_PASSWORD = mebxPwdBefore
             log.debug('MEBX Password written to vault')
           }
-          await req.secretsManager.writeSecretWithObject(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${amtConfig.profileName}`, data)
+
+          if (data.data.AMT_PASSWORD != null || data.data.MEBX_PASSWORD != null) {
+            await req.secretsManager.writeSecretWithObject(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${amtConfig.profileName}`, data)
+          }
         }
-        log.info(`Updated AMT profile: ${newConfig.profileName}`)
+        log.verbose(`Updated AMT profile: ${newConfig.profileName}`)
         delete results.amtPassword
         delete results.mebxPassword
+        MqttProvider.publishEvent('success', ['editProfile'], `Updated Profile : ${newConfig.profileName}`)
         res.status(200).json(results).end()
       }
     }
   } catch (error) {
+    MqttProvider.publishEvent('fail', ['editProfile'], `Failed to update profile : ${newConfig.profileName}`)
     log.error(`Failed to update AMT profile: ${newConfig.profileName}`, error)
     if (error instanceof RPSError) {
       res.status(400).json(API_RESPONSE(null, error.name, error.message)).end()
@@ -88,7 +88,6 @@ export const handleAMTPassword = (amtConfig: AMTConfiguration, newConfig: AMTCon
   if (newConfig.amtPassword == null) {
     amtConfig.amtPassword = oldConfig.amtPassword
     amtConfig.generateRandomPassword = false
-    amtConfig.passwordLength = null
   } else {
     amtConfig.amtPassword = newConfig.amtPassword
   }
@@ -99,7 +98,6 @@ export const handleMEBxPassword = (amtConfig: AMTConfiguration, newConfig: AMTCo
   if (newConfig.mebxPassword == null) {
     amtConfig.mebxPassword = oldConfig.mebxPassword
     amtConfig.generateRandomMEBxPassword = false
-    amtConfig.mebxPasswordLength = null
   } else {
     amtConfig.mebxPassword = newConfig.mebxPassword
   }
@@ -109,11 +107,9 @@ export const handleMEBxPassword = (amtConfig: AMTConfiguration, newConfig: AMTCo
 export const handleGenerateRandomPassword = (amtConfig: AMTConfiguration, newConfig: AMTConfiguration, oldConfig: AMTConfiguration): AMTConfiguration => {
   if (newConfig.generateRandomPassword) {
     amtConfig.generateRandomPassword = newConfig.generateRandomPassword
-    amtConfig.passwordLength = newConfig.passwordLength
     amtConfig.amtPassword = null
   } else {
     amtConfig.generateRandomPassword = newConfig.amtPassword == null ? oldConfig.generateRandomPassword : false
-    amtConfig.passwordLength = newConfig.amtPassword == null ? oldConfig.passwordLength : null
   }
   return amtConfig
 }
@@ -121,16 +117,25 @@ export const handleGenerateRandomPassword = (amtConfig: AMTConfiguration, newCon
 export const handleGenerateRandomMEBxPassword = (amtConfig: AMTConfiguration, newConfig: AMTConfiguration, oldConfig: AMTConfiguration): AMTConfiguration => {
   if (newConfig.generateRandomMEBxPassword) {
     amtConfig.generateRandomMEBxPassword = newConfig.generateRandomMEBxPassword
-    amtConfig.mebxPasswordLength = newConfig.mebxPasswordLength
     amtConfig.mebxPassword = null
   } else {
     amtConfig.generateRandomMEBxPassword = newConfig.mebxPassword == null ? oldConfig.generateRandomMEBxPassword : false
-    amtConfig.mebxPasswordLength = newConfig.mebxPassword == null ? oldConfig.mebxPasswordLength : null
   }
   return amtConfig
 }
 
-export const getUpdatedData = (newConfig: any, oldConfig: AMTConfiguration): AMTConfiguration => {
+export const handleWifiConfigs = async (newConfig: AMTConfiguration, oldConfig: AMTConfiguration, profileWifiConfigsDb: IProfilesWifiConfigsTable): Promise<ProfileWifiConfigs[]> => {
+  let wifiConfigs: ProfileWifiConfigs[] = null
+  if (oldConfig.dhcpEnabled && !newConfig.dhcpEnabled) {
+    await profileWifiConfigsDb.deleteProfileWifiConfigs(newConfig.profileName)
+  } else if ((oldConfig.dhcpEnabled && newConfig.dhcpEnabled) || (!oldConfig.dhcpEnabled && newConfig.dhcpEnabled)) {
+    await profileWifiConfigsDb.deleteProfileWifiConfigs(newConfig.profileName)
+    wifiConfigs = newConfig.wifiConfigs
+  }
+  return wifiConfigs
+}
+
+export const getUpdatedData = async (newConfig: any, oldConfig: AMTConfiguration): Promise<AMTConfiguration> => {
   let amtConfig: AMTConfiguration = { profileName: newConfig.profileName } as AMTConfiguration
   amtConfig = handleAMTPassword(amtConfig, newConfig, oldConfig)
   amtConfig = handleMEBxPassword(amtConfig, newConfig, oldConfig)
@@ -138,12 +143,13 @@ export const getUpdatedData = (newConfig: any, oldConfig: AMTConfiguration): AMT
   amtConfig = handleGenerateRandomMEBxPassword(amtConfig, newConfig, oldConfig)
   amtConfig.activation = newConfig.activation ?? oldConfig.activation
   if (amtConfig.activation === ClientAction.CLIENTCTLMODE) {
-    amtConfig.generateRandomMEBxPassword = false
-    amtConfig.mebxPasswordLength = null
     amtConfig.mebxPassword = null
+    amtConfig.generateRandomMEBxPassword = false
   }
-  amtConfig.ciraConfigName = newConfig.ciraConfigName ?? oldConfig.ciraConfigName
-  amtConfig.networkConfigName = newConfig.networkConfigName ?? oldConfig.networkConfigName
+  amtConfig.ciraConfigName = newConfig.ciraConfigName
   amtConfig.tags = newConfig.tags ?? oldConfig.tags
+  amtConfig.dhcpEnabled = newConfig.dhcpEnabled ?? oldConfig.dhcpEnabled
+  amtConfig.tenantId = newConfig.tenantId ?? oldConfig.tenantId
+  amtConfig.tlsMode = newConfig.tlsMode
   return amtConfig
 }

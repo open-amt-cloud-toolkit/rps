@@ -99,3 +99,90 @@ export interface AMTGeneralSettings {
   // When set to Disabled, a management console cannot communicate with Intel AMT via a Thunderbolt dock.
   ThunderboltDockEnabled?: number
 }
+
+export interface Header {
+  To: string
+  RelatesTo: string
+  Action: string
+  MessageID: string
+  ResourceURI: string
+  Method: string
+}
+
+export interface CIMWiFiEndpointSettings {
+  responses: WiFiEndPointSettings[]
+  status: number
+}
+export interface WiFiEndPointSettings {
+  // The user-friendly name for this instance of SettingData . . .
+  ElementName: string
+  // Within the scope of the instantiating Namespace, InstanceID opaquely and uniquely identifies an instance of this class . . .
+  InstanceID?: string
+  // Priority shall indicate the priority of the instance among all WiFiEndpointSettings instances.
+  Priority: number
+  // SSID shall indicate the Service Set Identifier (SSID) that shall be used when the settings are applied to a WiFiEndpoint . . .
+  SSID: string
+  // BSSType shall indicate the Basic Service Set (BSS) Type that shall be used when the settings are applied . . .
+  BSSType?: number
+  // EncryptionMethod shall specify the 802.11 encryption method used when the settings are applied . . .
+  EncryptionMethod: number
+  // AuthenticationMethod shall specify the 802.11 authentication method used when the settings are applied . . .
+  AuthenticationMethod: number
+  // Keys shall contain the default WEP encryption keys . . .
+  Keys?: string[4]
+  // KeyIndex shall contain the index of the active key in the Keys array property . . .
+  KeyIndex?: number
+  // The actual binary value of a PSK (pre-shared key) . . .
+  PSKValue?: number
+  // An ASCII alphanumeric string used to generate a PSK (pre-shared key) . . .
+  PSKPassPhrase?: string
+}
+export interface AddWiFiSettingsResponse {
+  Header: Header
+  Body: {
+    WiFiEndpointSettings: any
+    ReturnValue: number
+    ReturnValueStr: string
+  }
+}
+
+export interface CIM_WiFiPortResponse {
+  Header: Header
+  Body: {
+    CreationClassName: string
+    DeviceID: string
+    ElementName: string
+    EnabledState: number
+    HealthState: number
+    LinkTechnology: number
+    PermanentAddress: string
+    PortType: number
+    RequestedState: number
+    SystemCreationClassName: string
+    SystemName: string
+  }
+}
+
+export interface AMT_WiFiPortConfigurationServiceResponse {
+  CreationClassName: string
+  ElementName: string
+  EnabledState: number
+  HealthState: number
+  LastConnectedSsidUnderMeControl: string
+  Name: string
+  NoHostCsmeSoftwarePolicy: number
+  RequestedState: number
+  SystemCreationClassName: string
+  SystemName: string
+  UEFIWiFiProfileShareEnabled: boolean
+  localProfileSynchronizationEnabled: number
+}
+
+export interface AMT_WiFiPortConfigurationService {
+  response: AMT_WiFiPortConfigurationServiceResponse
+  responses: {
+    Header: Header
+    Body: AMT_WiFiPortConfigurationServiceResponse
+  }
+  status: number
+}

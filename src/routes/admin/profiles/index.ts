@@ -11,12 +11,14 @@ import { getProfile } from './getProfile'
 import { createProfile } from './createProfile'
 import { editProfile } from './editProfile'
 import { amtProfileValidator, profileUpdateValidator } from './amtProfileValidator'
+import { odataValidator } from '../odataValidator'
+import validateMiddleware from '../../../middleware/validate'
 const profileRouter: Router = Router()
 
-profileRouter.get('/', allProfiles)
+profileRouter.get('/', odataValidator(), validateMiddleware, allProfiles)
 profileRouter.get('/:profileName', getProfile)
-profileRouter.post('/', amtProfileValidator(), createProfile)
-profileRouter.patch('/', profileUpdateValidator(), editProfile)
+profileRouter.post('/', amtProfileValidator(), validateMiddleware, createProfile)
+profileRouter.patch('/', profileUpdateValidator(), validateMiddleware, editProfile)
 profileRouter.delete('/:profileName', deleteProfile)
 
 export default profileRouter

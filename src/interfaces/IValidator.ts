@@ -4,9 +4,10 @@
  * Author: Madhavi Losetty
  **********************************************************************/
 import * as WebSocket from 'ws'
-import { ClientMsg } from '../RCS.Config'
+import { ClientMsg } from '../models/RCS.Config'
 
 export interface IValidator {
+  validateMaintenanceMsg: (clientMsg: ClientMsg, clientId: string) => any
   parseClientMsg: (message: WebSocket.Data, clientId: string) => any
   isDigestRealmValid: (realm: string) => boolean
   validateActivationMsg: (message: ClientMsg, clientId: string) => any

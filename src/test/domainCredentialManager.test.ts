@@ -7,20 +7,37 @@
 import { DomainCredentialManager } from '../DomainCredentialManager'
 import { ILogger } from '../interfaces/ILogger'
 import Logger from '../Logger'
-import { DomainConfigDb } from '../db/DomainConfigDb'
-import { readFileSync } from 'fs'
-import { join } from 'path'
-import { EnvReader } from '../utils/EnvReader'
 import { AMTDomain } from '../models/Rcs'
+import { DomainsTable } from '../data/postgres/tables/domains'
+import Db from '../data/postgres'
 
 const logger: ILogger = new Logger('DomainCredentialManagerTests')
+describe('Domain Credential Manager Tests', () => {
+  let creator: Db
 
-const data = JSON.parse(readFileSync(join(__dirname, 'private', 'data.json'), 'utf8'))
-EnvReader.configPath = join(__dirname, 'private', 'data.json')
-test('retrieve provisioning cert based on domain', async () => {
-  const domainCredentialManager: DomainCredentialManager = new DomainCredentialManager(logger, new DomainConfigDb(data.AMTDomains, new Logger('DomainConfigDb')))
+  beforeEach(() => {
+    creator = {
+      query: (query) => {
+        if (query.indexOf('SELECT') >= 0) {
+          return {
+            rowCount: 1,
+            rows: [{
+              name: '',
+              domainSuffix: 'd2.com',
+              provisioningCert: 'd2.pfx',
+              provisioningCertstorageFormat: '',
+              provisioningCertPassword: ''
+            }]
+          }
+        }
+      }
+    } as any
+  })
+  test('retrieve provisioning cert based on domain', async () => {
+    const domainCredentialManager: DomainCredentialManager = new DomainCredentialManager(logger, new DomainsTable(creator))
 
-  const expectedProvisioningCert: string = 'd2.pfx'
-  const domain: AMTDomain = await domainCredentialManager.getProvisioningCert('d2.com')
-  expect(domain.provisioningCert).toEqual(expectedProvisioningCert)
+    const expectedProvisioningCert: string = 'd2.pfx'
+    const domain: AMTDomain = await domainCredentialManager.getProvisioningCert('d2.com')
+    expect(domain.provisioningCert).toEqual(expectedProvisioningCert)
+  })
 })

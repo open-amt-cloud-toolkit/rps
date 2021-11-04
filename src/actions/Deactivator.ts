@@ -7,7 +7,7 @@
 
 import { IExecutor } from '../interfaces/IExecutor'
 import { ILogger } from '../interfaces/ILogger'
-import { ClientMsg } from '../RCS.Config'
+import { ClientMsg, ClientObject } from '../models/RCS.Config'
 import { ClientResponseMsg } from '../utils/ClientResponseMsg'
 import { WSManProcessor } from '../WSManProcessor'
 import { IClientManager } from '../interfaces/IClientManager'
@@ -16,6 +16,7 @@ import { AMTDeviceDTO } from '../repositories/dto/AmtDeviceDTO'
 import { IConfigurator } from '../interfaces/IConfigurator'
 import { EnvReader } from '../utils/EnvReader'
 import got from 'got'
+import { MqttProvider } from '../utils/MqttProvider'
 
 export class Deactivator implements IExecutor {
   constructor (
@@ -33,10 +34,9 @@ export class Deactivator implements IExecutor {
    * @returns {RCSMessage} message to sent to client
    */
   async execute (message: any, clientId: string): Promise<ClientMsg> {
+    let clientObj: ClientObject
     try {
-      this.logger.debug(`deactivator execute message received: ${JSON.stringify(message, null, '\t')}`)
-
-      const clientObj = this.clientManager.getClientObject(clientId)
+      clientObj = this.clientManager.getClientObject(clientId)
 
       const wsmanResponse = message.payload
 
@@ -54,14 +54,16 @@ export class Deactivator implements IExecutor {
 
           /* unregister device metadata with MPS */
           try {
-            await got(`${EnvReader.GlobalEnvConfig.mpsServer}/metadata/${clientObj.uuid}`, {
+            await got(`${EnvReader.GlobalEnvConfig.mpsServer}/api/v1/devices/${clientObj.uuid}`, {
               method: 'DELETE'
             })
           } catch (err) {
-            this.logger.warn('unable to removed metadata with MPS', err)
+            MqttProvider.publishEvent('fail', ['Deactivator'], 'unable to removed metadata with MPS', clientObj.uuid)
+            this.logger.error('unable to removed metadata with MPS', err)
           }
-
-          return this.responseMsg.get(clientId, null, 'success', 'success', `Device ${clientObj.uuid} deactivated`)
+          MqttProvider.publishEvent('success', ['Deactivator'], 'Device deactivated', clientObj.uuid)
+          clientObj.status.Status = 'Deactivated'
+          return this.responseMsg.get(clientId, null, 'success', 'success', JSON.stringify(clientObj.status))
         }
       } else {
         clientObj.ClientData.payload = wsmanResponse
@@ -69,14 +71,14 @@ export class Deactivator implements IExecutor {
         await this.amtwsman.deactivateACM(clientId)
       }
     } catch (error) {
-      this.logger.error(
-        `${clientId} : Failed to deactivate: ${error}`
-      )
+      this.logger.error(`${clientId} : Failed to deactivate: ${error}`)
       if (error instanceof RPSError) {
-        return this.responseMsg.get(clientId, null, 'error', 'failed', error.message)
+        clientObj.status.Status = error.message
       } else {
-        return this.responseMsg.get(clientId, null, 'error', 'failed', 'failed to deactivate')
+        clientObj.status.Status = 'Failed'
       }
+      MqttProvider.publishEvent('fail', ['Deactivator'], 'Failed to deactivate', clientObj.uuid)
+      return this.responseMsg.get(clientId, null, 'error', 'failed', JSON.stringify(clientObj.status))
     }
   }
 }

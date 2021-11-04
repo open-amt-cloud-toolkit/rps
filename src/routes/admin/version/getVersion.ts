@@ -1,11 +1,11 @@
 /*********************************************************************
- * Copyright (c) Intel Corporation 2019
+ * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
- * Author : Brian Osburn
  **********************************************************************/
 import { ProtocolVersion } from '../../../utils/constants'
+import { Request, Response } from 'express'
 
-export function getVersion (req, res): void {
+export function getVersion (req: Request, res: Response): void {
   const response = {
     protocolVersion: ProtocolVersion
   }

@@ -11,9 +11,7 @@ import { DomainCredentialManager } from './DomainCredentialManager'
 import { ProfileManager } from './ProfileManager'
 import Logger from './Logger'
 import { ISecretManagerService } from './interfaces/ISecretManagerService'
-import { ProfilesDbFactory } from './repositories/factories/ProfilesDbFactory'
-import { DomainsDbFactory } from './repositories/factories/DomainsDbFactory'
-import { IAMTDeviceRepository } from './repositories/interfaces/IAMTDeviceRepository'
+import { IAMTDeviceRepository } from './interfaces/database/IAMTDeviceRepository'
 import { SecretManagerService } from './utils/SecretManagerService'
 import { AmtDeviceFactory } from './repositories/factories/AmtDeviceFactory'
 import { EnvReader } from './utils/EnvReader'
@@ -27,56 +25,37 @@ import { WSManProcessor } from './WSManProcessor'
 import { CertManager } from './CertManager'
 import { SignatureHelper } from './utils/SignatureHelper'
 import { DataProcessor } from './DataProcessor'
-import { IDataProcessor } from './interfaces/IDataProcessor'
+import { DbCreatorFactory } from './repositories/factories/DbCreatorFactory'
 
 export class Configurator implements IConfigurator {
-  private readonly _amtDeviceRepository: IAMTDeviceRepository
-  get amtDeviceRepository (): IAMTDeviceRepository {
-    return this._amtDeviceRepository
-  }
-
-  private readonly _domainCredentialManager: IDomainCredentialManager
-  get domainCredentialManager (): IDomainCredentialManager {
-    return this._domainCredentialManager
-  }
-
-  private readonly _profileManager: IProfileManager
-  get profileManager (): IProfileManager {
-    return this._profileManager
-  }
-
-  private readonly _secretManager: ISecretManagerService
-  get secretsManager (): ISecretManagerService {
-    return this._secretManager
-  }
-
-  private readonly _dataProcessor: DataProcessor
-  get dataProcessor (): IDataProcessor {
-    return this._dataProcessor
-  }
-
-  private readonly _clientManager: IClientManager
-  get clientManager (): IClientManager {
-    return this._clientManager
-  }
+  readonly amtDeviceRepository: IAMTDeviceRepository
+  domainCredentialManager: IDomainCredentialManager
+  profileManager: IProfileManager
+  readonly secretsManager: ISecretManagerService
+  readonly dataProcessor: DataProcessor
+  readonly clientManager: IClientManager
 
   constructor () {
-    if (EnvReader.GlobalEnvConfig.VaultConfig.usevault) {
-      this._secretManager = new SecretManagerService(new Logger('SecretManagerService'))
-    }
-
+    const log = new Logger('Configurator')
+    this.secretsManager = new SecretManagerService(new Logger('SecretManagerService'))
     const nodeForge = new NodeForge()
-    this._clientManager = ClientManager.getInstance(new Logger('ClientManager'))
+    this.clientManager = ClientManager.getInstance(new Logger('ClientManager'))
     const responseMsg: ClientResponseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'), nodeForge)
-    const validator: IValidator = new Validator(new Logger('Validator'), this, this._clientManager, nodeForge)
-    const amtwsman: WSManProcessor = new WSManProcessor(new Logger('WSManProcessor'), this._clientManager, responseMsg)
-    const certManager = new CertManager(nodeForge)
+    const validator: IValidator = new Validator(new Logger('Validator'), this, this.clientManager, nodeForge)
+    const amtwsman: WSManProcessor = new WSManProcessor(new Logger('WSManProcessor'), this.clientManager, responseMsg)
+    const certManager = new CertManager(new Logger('CertManager'), nodeForge)
     const helper = new SignatureHelper(nodeForge)
 
-    this._dataProcessor = new DataProcessor(new Logger('DataProcessor'), helper, this, validator, certManager, this._clientManager, responseMsg, amtwsman)
+    this.dataProcessor = new DataProcessor(new Logger('DataProcessor'), helper, this, validator, certManager, this.clientManager, responseMsg, amtwsman)
+    const dbf = new DbCreatorFactory(EnvReader.GlobalEnvConfig)
 
-    this._amtDeviceRepository = AmtDeviceFactory.getAmtDeviceRepository(this)
-    this._domainCredentialManager = new DomainCredentialManager(new Logger('DomainCredentialManager'), DomainsDbFactory.getDomainsDb(), this)
-    this._profileManager = new ProfileManager(new Logger('ProfileManager'), this, ProfilesDbFactory.getProfilesDb(), EnvReader.GlobalEnvConfig)
+    this.amtDeviceRepository = AmtDeviceFactory.getAmtDeviceRepository(this)
+    dbf.getDb().then((db) => {
+      this.domainCredentialManager = new DomainCredentialManager(new Logger('DomainCredentialManager'), db.domains, this)
+      this.profileManager = new ProfileManager(new Logger('ProfileManager'), this, db.profiles, EnvReader.GlobalEnvConfig)
+    }).catch((err) => {
+      log.error(err)
+      throw new Error('Unable to get db configuration')
+    })
   }
 }

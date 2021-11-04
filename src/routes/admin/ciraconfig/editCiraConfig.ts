@@ -1,64 +1,48 @@
 /*********************************************************************
- * Copyright (c) Intel Corporation 2019
+ * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
- * Author : Ramu Bachala
  **********************************************************************/
-import { ICiraConfigDb } from '../../../repositories/interfaces/ICiraConfigDb'
-import { CiraConfigDbFactory } from '../../../repositories/factories/CiraConfigDbFactory'
-import { CIRAConfig } from '../../../RCS.Config'
-import { EnvReader } from '../../../utils/EnvReader'
+import { CIRAConfig } from '../../../models/RCS.Config'
 import Logger from '../../../Logger'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, CIRA_CONFIG_NOT_FOUND } from '../../../utils/constants'
-import { validationResult } from 'express-validator'
 import { RPSError } from '../../../utils/RPSError'
+import { MqttProvider } from '../../../utils/MqttProvider'
+import { Request, Response } from 'express'
 
-export async function editCiraConfig (req, res): Promise<void> {
+export async function editCiraConfig (req: Request, res: Response): Promise<void> {
   const log = new Logger('editCiraConfig')
-  let ciraConfigDb: ICiraConfigDb = null
-  const newConfig = req.body
+  const newConfig: CIRAConfig = req.body
+  newConfig.tenantId = req.tenantId
   try {
-    const errors = validationResult(req)
-    if (!errors.isEmpty()) {
-      res.status(400).json({ errors: errors.array() })
-      return
-    }
-    ciraConfigDb = CiraConfigDbFactory.getCiraConfigDb()
-    const oldConfig: CIRAConfig = await ciraConfigDb.getCiraConfigByName(newConfig.configName)
+    const oldConfig: CIRAConfig = await req.db.ciraConfigs.getByName(newConfig.configName)
     if (oldConfig == null) {
-      log.info('Not found : ', newConfig.configName)
+      log.debug('Not found : ', newConfig.configName)
+      MqttProvider.publishEvent('fail', ['editCiraConfig'], `CIRA config "${newConfig.configName}" not found`)
       res.status(404).json(API_RESPONSE(null, 'Not Found', CIRA_CONFIG_NOT_FOUND(newConfig.configName))).end()
     } else {
       const ciraConfig: CIRAConfig = getUpdatedData(newConfig, oldConfig)
-      const mpsPwd = newConfig.password
-      if (req.secretsManager) {
-        ciraConfig.password = `${ciraConfig.configName}_CIRA_PROFILE_PASSWORD`
-      }
       // TBD: Need to check the ServerAddressFormat, CommonName and MPSServerAddress if they are not updated.
       // SQL Query > Insert Data
-      const results = await ciraConfigDb.updateCiraConfig(ciraConfig)
+      const results = await req.db.ciraConfigs.update(ciraConfig)
       if (results !== undefined) {
-        // update the password in Vault if not null
-        if (req.secretsManager && mpsPwd !== null) {
-          await req.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfig.configName}`)
-          await req.secretsManager.writeSecretWithKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfig.configName}`, ciraConfig.password, mpsPwd)
-          log.info(`MPS password updated in Vault for CIRA Config ${ciraConfig.configName}`)
-        }
+        MqttProvider.publishEvent('success', ['editCiraConfig'], `Updated CIRA config profile : ${ciraConfig.configName}`)
+        log.verbose(`Updated CIRA config profile : ${ciraConfig.configName}`)
+        delete results.password
+        res.status(200).json(results).end()
       }
-      log.info(`Updated CIRA config profile : ${ciraConfig.configName}`)
-      delete results.password
-      res.status(200).json(results).end()
     }
   } catch (error) {
-    log.error(`Failed to update CIRA config : ${newConfig.ConfigName}`, error)
+    MqttProvider.publishEvent('fail', ['editCiraConfig'], `Failed to update CIRA config : ${newConfig.configName}`)
+    log.error(`Failed to update CIRA config : ${newConfig.configName}`, error)
     if (error instanceof RPSError) {
       res.status(400).json(API_RESPONSE(null, error.name, error.message)).end()
     } else {
-      res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`UPDATE ${newConfig.ConfigName}`))).end()
+      res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`UPDATE ${newConfig.configName}`))).end()
     }
   }
 }
 
-function getUpdatedData (newConfig: any, oldConfig: CIRAConfig): CIRAConfig {
+function getUpdatedData (newConfig: CIRAConfig, oldConfig: CIRAConfig): CIRAConfig {
   const config: CIRAConfig = { configName: newConfig.configName } as CIRAConfig
   config.mpsServerAddress = newConfig.mpsServerAddress ?? oldConfig.mpsServerAddress
   config.mpsPort = newConfig.mpsPort ?? oldConfig.mpsPort
@@ -69,5 +53,6 @@ function getUpdatedData (newConfig: any, oldConfig: CIRAConfig): CIRAConfig {
   config.mpsRootCertificate = newConfig.mpsRootCertificate ?? oldConfig.mpsRootCertificate
   config.proxyDetails = newConfig.proxyDetails ?? oldConfig.proxyDetails
   config.authMethod = newConfig.authMethod ?? oldConfig.authMethod
+  config.tenantId = newConfig.tenantId ?? oldConfig.tenantId
   return config
 }

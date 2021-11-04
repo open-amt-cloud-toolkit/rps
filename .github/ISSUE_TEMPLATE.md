@@ -27,9 +27,9 @@ If applicable, add screenshots to help explain your problem.
  - Network Configuration [e.g. Dynamic IP or Static IP]
 
 **Service Deployment (please complete the following information):** ⛈️
- - Deployment Type: [e.g. Azure, Docker, Developer]
+ - Deployment Type: [e.g. Azure, Docker, K8s]
  - Node Version: [e.g. LTS 14]
- - Component & Version: [e.g. RPS 1.2.0]
+ - Component & Version: [e.g. RPS 2.0.0]
 
 **Additional context**
 Add any other context about the problem here.

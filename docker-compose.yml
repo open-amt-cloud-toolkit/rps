@@ -15,12 +15,7 @@ services:
       dockerfile: ./Dockerfile
     environment:
       RPS_VAULT_ADDRESS: http://vault:8200
-      RPS_DB_HOST: db
-      RPS_DB_NAME: rpsdb
-      RPS_DB_PORT: 5432
-      RPS_DB_USER: postgresadmin
-      RPS_DB_PASSWORD: admin123
-      RPS_HTTPS: "false"
+      RPS_CONNECTION_STRING: "postgresql://postgresadmin:admin123@db:5432/rpsdb"
       RPS_LOG_LEVEL: "silly"
     depends_on:
       - db

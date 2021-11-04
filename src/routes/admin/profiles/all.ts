@@ -1,31 +1,35 @@
 /*********************************************************************
- * Copyright (c) Intel Corporation 2019
+ * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
- * Author : Ramu Bachala
  **********************************************************************/
 import Logger from '../../../Logger'
-import { AMTConfiguration } from '../../../models/Rcs'
-import { IProfilesDb } from '../../../repositories/interfaces/IProfilesDb'
-import { ProfilesDbFactory } from '../../../repositories/factories/ProfilesDbFactory'
+import { AMTConfiguration, DataWithCount } from '../../../models/Rcs'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
+import { MqttProvider } from '../../../utils/MqttProvider'
+import { Request, Response } from 'express'
 
-export async function allProfiles (req, res): Promise<void> {
+export async function allProfiles (req: Request, res: Response): Promise<void> {
   const log = new Logger('allProfiles')
-  let profilesDb: IProfilesDb = null
-  let results: AMTConfiguration[] = [] as AMTConfiguration[]
+  let amtConfigs: AMTConfiguration[] = [] as AMTConfiguration[]
+  const top = Number(req.query.$top)
+  const skip = Number(req.query.$skip)
+  const includeCount = req.query.$count
   try {
-    profilesDb = ProfilesDbFactory.getProfilesDb()
-    results = await profilesDb.getAllProfiles()
-    if (results.length >= 0) {
-      results = results.map((result: AMTConfiguration) => {
-        delete result.amtPassword
-        delete result.mebxPassword
-        return result
-      })
-      res.status(200).json(API_RESPONSE(results)).end()
+    amtConfigs = await req.db.profiles.get(top, skip)
+    if (includeCount == null || includeCount === 'false') {
+      res.status(200).json(API_RESPONSE(amtConfigs)).end()
+    } else {
+      const count: number = await req.db.profiles.getCount()
+      const dataWithCount: DataWithCount = {
+        data: amtConfigs,
+        totalCount: count
+      }
+      res.status(200).json(API_RESPONSE(dataWithCount)).end()
     }
+    MqttProvider.publishEvent('success', ['allProfiles'], 'Sent profiles')
   } catch (error) {
-    log.error('Failed to get all the AMT Domains :', error)
+    MqttProvider.publishEvent('fail', ['allProfiles'], 'Failed to get all profiles')
+    log.error('Failed to get all the AMT Profiles :', error)
     res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION('GET all AMT profiles'))).end()
   }
 }
