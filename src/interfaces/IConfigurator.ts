@@ -11,7 +11,6 @@ import { ISecretManagerService } from './ISecretManagerService'
 import { IAMTDeviceRepository } from './database/IAMTDeviceRepository'
 import { IClientManager } from './IClientManager'
 import { IDataProcessor } from './IDataProcessor'
-import { IHealthCheck } from './IHealthCheck'
 
 export interface IConfigurator {
   domainCredentialManager: IDomainCredentialManager
@@ -20,5 +19,4 @@ export interface IConfigurator {
   amtDeviceRepository: IAMTDeviceRepository
   dataProcessor: IDataProcessor
   clientManager: IClientManager
-  healthCheck: IHealthCheck
 }

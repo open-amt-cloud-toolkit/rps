@@ -251,16 +251,13 @@ export interface apiResponse {
   message?: string
 }
 
-export interface healthCheckError {
-  name: DependencyName
-  errorCode?: any
-  error?: string
+export interface HealthCheck {
+  db: HealthCheckStatus
+  secretStore: HealthCheckStatus
 }
-
-export enum DependencyName{
-  INVALID = 'invalid',
-  VAULT = 'vault',
-  POSTGRESQL = 'postgresql'
+export interface HealthCheckStatus{
+  name: string
+  status: any
 }
 
 export enum TlsMode{
