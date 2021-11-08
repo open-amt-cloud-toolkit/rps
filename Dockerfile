@@ -7,6 +7,8 @@ LABEL license='SPDX-License-Identifier: Apache-2.0' \
       copyright='Copyright (c) Intel Corporation 2021'
 WORKDIR /rcs-microservice
 
+RUN apt-get update && apt-get install curl -y
+
 # Default Ports Used
 EXPOSE 8080
 EXPOSE 8081

@@ -50,6 +50,8 @@ app.use('/api/v1', async (req: express.Request, res: express.Response, next) => 
   }
   const newdb = new DbCreatorFactory(config)
   req.db = await newdb.getDb()
+
+  req.configurator = configurator
   next()
 }, routes)
 

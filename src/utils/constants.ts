@@ -56,6 +56,54 @@ export const API_RESPONSE = (data?: any, error?: string, message?: string): apiR
   return response
 }
 
+export const VAULT_RESPONSE_CODES = (statusCode: any = null): string => {
+  let vaultError: string
+  if (statusCode != null) {
+    switch (statusCode) {
+      case 429:
+        vaultError = 'unsealed and standby'
+        break
+      case 472:
+        vaultError = 'disaster recovery mode replication secondary and active'
+        break
+      case 473:
+        vaultError = 'performance standby'
+        break
+      case 501:
+        vaultError = 'not initialized'
+        break
+      case 503:
+        vaultError = 'sealed'
+        break
+      default:
+        vaultError = 'unknown error'
+        break
+    }
+  } else {
+    vaultError = 'statusCode null'
+  }
+
+  return vaultError
+}
+
+export const POSTGRES_RESPONSE_CODES = (statusCode: any = null): string => {
+  let vaultError: string
+  if (statusCode != null) {
+    switch (statusCode) {
+      case '28P01':
+        vaultError = 'invalid_password'
+        break
+      default:
+        vaultError = 'unknown error'
+        break
+    }
+  } else {
+    vaultError = 'statusCode null'
+  }
+
+  return vaultError
+}
+
 // Network Configurator
 
 export const WIFIENDPOINT = {

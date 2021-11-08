@@ -210,3 +210,15 @@ export interface apiResponse {
   error?: string
   message?: string
 }
+
+export interface healthCheckError {
+  name: DependencyName
+  errorCode?: any
+  error?: string
+}
+
+export enum DependencyName{
+  INVALID = 'invalid',
+  VAULT = 'vault',
+  POSTGRESQL = 'postgresql'
+}

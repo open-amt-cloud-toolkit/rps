@@ -26,6 +26,8 @@ import { CertManager } from './CertManager'
 import { SignatureHelper } from './utils/SignatureHelper'
 import { DataProcessor } from './DataProcessor'
 import { DbCreatorFactory } from './repositories/factories/DbCreatorFactory'
+import { IHealthCheck } from './interfaces/IHealthCheck'
+import { HealthCheck } from './utils/healthCheck'
 
 export class Configurator implements IConfigurator {
   readonly amtDeviceRepository: IAMTDeviceRepository
@@ -34,6 +36,7 @@ export class Configurator implements IConfigurator {
   readonly secretsManager: ISecretManagerService
   readonly dataProcessor: DataProcessor
   readonly clientManager: IClientManager
+  healthCheck: IHealthCheck
 
   constructor () {
     const log = new Logger('Configurator')
@@ -53,6 +56,7 @@ export class Configurator implements IConfigurator {
     dbf.getDb().then((db) => {
       this.domainCredentialManager = new DomainCredentialManager(new Logger('DomainCredentialManager'), db.domains, this)
       this.profileManager = new ProfileManager(new Logger('ProfileManager'), this, db.profiles, EnvReader.GlobalEnvConfig)
+      this.healthCheck = new HealthCheck(new Logger('HealthCheck'), this, db.profiles, EnvReader.GlobalEnvConfig)
     }).catch((err) => {
       log.error(err)
       throw new Error('Unable to get db configuration')
