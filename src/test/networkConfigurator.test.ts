@@ -16,15 +16,19 @@ import { v4 as uuid } from 'uuid'
 import { AddWiFiSettingsResponse, AMTEthernetPortSettings, AMTEthernetPortSettingsResponse, AMTGeneralSettings, CIMWiFiPortResponse } from './helper/AMTJSONResponses'
 import { EnvReader } from '../utils/EnvReader'
 import { config } from './helper/Config'
-import { ClientAction } from '../RCS.Config'
+import { ClientAction } from '../models/RCS.Config'
+import { TLSConfigurator } from '../actions/TLSConfigurator'
+import { CertManager } from '../CertManager'
 EnvReader.GlobalEnvConfig = config
 const nodeForge = new NodeForge()
+const certManager = new CertManager(new Logger('CertManager'), nodeForge)
 const configurator = new Configurator()
 const clientManager = ClientManager.getInstance(new Logger('ClientManager'))
 const responseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'), nodeForge)
 const amtwsman = new WSManProcessor(new Logger('WSManProcessor'), clientManager, responseMsg)
 const validator = new Validator(new Logger('Validator'), configurator, clientManager, nodeForge)
-const ciraConfig = new CIRAConfigurator(new Logger('CIRAConfig'), configurator, responseMsg, amtwsman, clientManager)
+const tlsConfig = new TLSConfigurator(new Logger('CIRAConfig'), certManager, responseMsg, amtwsman, clientManager)
+const ciraConfig = new CIRAConfigurator(new Logger('CIRAConfig'), configurator, responseMsg, amtwsman, clientManager, tlsConfig)
 const networkConfigurator = new NetworkConfigurator(new Logger('NetworkConfig'), configurator, responseMsg, amtwsman, clientManager, validator, ciraConfig)
 let clientId, activationmsg
 

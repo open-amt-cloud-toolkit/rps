@@ -9,9 +9,8 @@ import * as WebSocket from 'ws'
 import { ILogger } from './interfaces/ILogger'
 import { IDataProcessor } from './interfaces/IDataProcessor'
 import { IClientManager } from './interfaces/IClientManager'
-import { ClientMsg, ClientAction, ClientMethods } from './RCS.Config'
+import { ClientMsg, ClientAction, ClientMethods } from './models/RCS.Config'
 import { ClientActions } from './ClientActions'
-import { ICertManager } from './interfaces/ICertManager'
 import { SignatureHelper } from './utils/SignatureHelper'
 import Logger from './Logger'
 import { IConfigurator } from './interfaces/IConfigurator'
@@ -19,6 +18,7 @@ import { RPSError } from './utils/RPSError'
 import { WSManProcessor } from './WSManProcessor'
 import { ClientResponseMsg } from './utils/ClientResponseMsg'
 import { IValidator } from './interfaces/IValidator'
+import { CertManager } from './CertManager'
 
 export class DataProcessor implements IDataProcessor {
   private readonly clientActions: ClientActions
@@ -28,7 +28,7 @@ export class DataProcessor implements IDataProcessor {
     private readonly signatureHelper: SignatureHelper,
     private readonly configurator: IConfigurator,
     private readonly validator: IValidator,
-    private readonly certManager: ICertManager,
+    private readonly certManager: CertManager,
     private readonly clientManager: IClientManager,
     private readonly responseMsg: ClientResponseMsg,
     private readonly amtwsman: WSManProcessor
@@ -91,7 +91,7 @@ export class DataProcessor implements IDataProcessor {
 
     // Makes the first wsman call
     const clientObj = this.clientManager.getClientObject(clientId)
-    if ((clientObj.action === ClientAction.ADMINCTLMODE || clientObj.action === ClientAction.CLIENTCTLMODE) && !clientMsg.payload.digestRealm) {
+    if ((clientObj.action === ClientAction.ADMINCTLMODE || clientObj.action === ClientAction.CLIENTCTLMODE) && !clientMsg.payload.digestRealm && !clientObj.activationStatus.activated) {
       await this.amtwsman.batchEnum(clientId, '*AMT_GeneralSettings')
     } else {
       const response = await this.clientActions.buildResponseMessage(clientMsg, clientId)

@@ -6,11 +6,10 @@
  **********************************************************************/
 
 import { IExecutor } from '../interfaces/IExecutor'
-import { ICertManager } from '../interfaces/ICertManager'
 import { ILogger } from '../interfaces/ILogger'
 import { SignatureHelper } from '../utils/SignatureHelper'
 import { PasswordHelper } from '../utils/PasswordHelper'
-import { ClientMsg, ClientAction, ClientObject } from '../RCS.Config'
+import { ClientMsg, ClientAction, ClientObject } from '../models/RCS.Config'
 import { IConfigurator } from '../interfaces/IConfigurator'
 import { AMTDeviceDTO } from '../repositories/dto/AmtDeviceDTO'
 import { ClientResponseMsg } from '../utils/ClientResponseMsg'
@@ -24,12 +23,14 @@ import { AMTUserName } from '../utils/constants'
 import { AMTDomain } from '../models/Rcs'
 import got from 'got'
 import { MqttProvider } from '../utils/MqttProvider'
+import { setMEBXPassword } from '../utils/maintenance/setMEBXPassword'
+import { CertManager } from '../CertManager'
 
 export class Activator implements IExecutor {
   constructor (
     private readonly logger: ILogger,
     private readonly configurator: IConfigurator,
-    private readonly certManager: ICertManager,
+    private readonly certManager: CertManager,
     private readonly signatureHelper: SignatureHelper,
     private readonly responseMsg: ClientResponseMsg,
     private readonly amtwsman: WSManProcessor,
@@ -49,11 +50,11 @@ export class Activator implements IExecutor {
     try {
       clientObj = this.clientManager.getClientObject(clientId)
       const wsmanResponse = message.payload
-      if (!clientObj.activationStatus && !wsmanResponse) {
+      if (!clientObj.activationStatus.activated && !wsmanResponse) {
         MqttProvider.publishEvent('fail', ['Activator', 'execute'], 'Missing/invalid WSMan response payload', clientObj.uuid)
         throw new RPSError(`Device ${clientObj.uuid} activation failed. Missing/invalid WSMan response payload.`)
-      } else if (clientObj.activationStatus) {
-        const msg = await this.waitAfterActivation(clientId, clientObj)
+      } else if (clientObj.activationStatus.activated) {
+        const msg = await this.waitAfterActivation(clientId, clientObj, wsmanResponse)
         return msg
       }
       const msg = await this.processWSManJsonResponse(message, clientId)
@@ -65,7 +66,7 @@ export class Activator implements IExecutor {
       if (clientObj.ClientData.payload.fwNonce && clientObj.action === ClientAction.ADMINCTLMODE) {
         await this.performACMSteps(clientId, clientObj)
       }
-      if (((clientObj.action === ClientAction.ADMINCTLMODE && clientObj.certObj && clientObj.count > clientObj.certObj.certChain.length) || (clientObj.action === ClientAction.CLIENTCTLMODE)) && !clientObj.activationStatus) {
+      if (((clientObj.action === ClientAction.ADMINCTLMODE && clientObj.certObj && clientObj.count > clientObj.certObj.certChain.length) || (clientObj.action === ClientAction.CLIENTCTLMODE)) && !clientObj.activationStatus.activated) {
         const amtPassword: string = await this.configurator.profileManager.getAmtPassword(clientObj.ClientData.payload.profile.profileName)
         clientObj.amtPassword = amtPassword
         this.clientManager.setClientObject(clientObj)
@@ -168,7 +169,7 @@ export class Activator implements IExecutor {
       } else {
         this.logger.debug(`Device ${clientObj.uuid} activated in admin mode.`)
         clientObj.status.Status = 'Admin control mode'
-        clientObj.activationStatus = true
+        clientObj.activationStatus.activated = true
         this.clientManager.setClientObject(clientObj)
         await this.saveDeviceInfo(clientObj)
         const msg = await this.waitAfterActivation(clientId, clientObj)
@@ -182,21 +183,11 @@ export class Activator implements IExecutor {
       } else {
         this.logger.debug(`Device ${clientObj.uuid} activated in client mode.`)
         clientObj.status.Status = 'Client control mode'
-        clientObj.activationStatus = true
+        clientObj.activationStatus.activated = true
         this.clientManager.setClientObject(clientObj)
         await this.saveDeviceInfo(clientObj)
         const msg = await this.waitAfterActivation(clientId, clientObj)
         MqttProvider.publishEvent('success', ['Activator', 'execute'], 'Device activated in client control mode', clientObj.uuid)
-        return msg
-      }
-    } else if (wsmanResponse.Header && wsmanResponse.Header.Method === 'SetMEBxPassword') {
-      // Response from setMEBxPassword call
-      if (wsmanResponse.Body.ReturnValue !== 0) {
-        throw new RPSError(`Device ${clientObj.uuid} failed to set MEBx password.`)
-      } else {
-        this.logger.debug(`Device ${clientObj.uuid} MEBx password updated.`)
-        /* Update a device in the repository. */
-        const msg = await this.waitAfterActivation(clientId, clientObj)
         return msg
       }
     } else {
@@ -210,7 +201,7 @@ export class Activator implements IExecutor {
    * @param {ClientObject} clientObj
    * @returns {ClientMsg} returns message to client
    */
-  async waitAfterActivation (clientId: string, clientObj: ClientObject): Promise<ClientMsg> {
+  async waitAfterActivation (clientId: string, clientObj: ClientObject, wsmanResponse: any = null): Promise<ClientMsg> {
     if (clientObj.delayEndTime == null) {
       this.logger.debug(`waiting for ${EnvReader.GlobalEnvConfig.delayTimer} seconds after activation`)
       const endTime: Date = new Date()
@@ -219,7 +210,7 @@ export class Activator implements IExecutor {
       this.logger.debug(`Delay end time : ${clientObj.delayEndTime}`)
     }
     const currentTime = new Date().getTime()
-    if (currentTime >= clientObj.delayEndTime) {
+    if (currentTime >= clientObj.delayEndTime || clientObj.activationStatus.missingMebxPassword) {
       this.logger.debug(`Delay ${EnvReader.GlobalEnvConfig.delayTimer} seconds after activation completed`)
       /* Update the wsman stack username and password */
       if (this.amtwsman.cache[clientId]) {
@@ -228,34 +219,26 @@ export class Activator implements IExecutor {
       }
       if (clientObj.action === ClientAction.ADMINCTLMODE && clientObj.mebxPassword == null) {
       /* Set MEBx password called after the activation as the API is accessible only with admin user */
-        await this.setMEBxPassword(clientId, clientObj)
+        await setMEBXPassword(clientId, null, this.amtwsman, this.clientManager, this.configurator)
+      } else if (clientObj.action === ClientAction.ADMINCTLMODE && clientObj.mebxPassword != null) {
+        const result = await setMEBXPassword(clientId, wsmanResponse, this.amtwsman, this.clientManager, this.configurator)
+        // Response from setMEBxPassword call
+        if (result) {
+          this.logger.debug(`Device ${clientObj.uuid} MEBx password updated.`)
+        } else {
+          this.logger.debug(`Device ${clientObj.uuid} failed to update MEBx password.`)
+        }
+        clientObj.action = ClientAction.NETWORKCONFIG
+        this.clientManager.setClientObject(clientObj)
+        await this.networkConfigurator.execute(null, clientId)
+      } else if (clientObj.action === ClientAction.CLIENTCTLMODE) {
+        clientObj.action = ClientAction.NETWORKCONFIG
+        this.clientManager.setClientObject(clientObj)
+        await this.networkConfigurator.execute(null, clientId)
       }
-      clientObj.action = ClientAction.NETWORKCONFIG
-      this.clientManager.setClientObject(clientObj)
-      await this.networkConfigurator.execute(null, clientId)
     } else {
       this.logger.debug(`Current Time: ${currentTime} Delay end time : ${clientObj.delayEndTime}`)
       return this.responseMsg.get(clientId, null, 'heartbeat_request', 'heartbeat', '')
-    }
-  }
-
-  /**
-   * @description Set MEBx password for the AMT
-   * @param {string} clientId Id to keep track of connections
-   * @param {ClientObject} clientObj
-   */
-  async setMEBxPassword (clientId: string, clientObj: ClientObject): Promise<void> {
-    if (clientObj.action === ClientAction.ADMINCTLMODE) {
-      this.logger.debug('setting MEBx password')
-
-      /* Get the MEBx password */
-      const mebxPassword: string = await this.configurator.profileManager.getMEBxPassword(clientObj.ClientData.payload.profile.profileName)
-
-      clientObj.mebxPassword = mebxPassword
-      this.clientManager.setClientObject(clientObj)
-      await this.saveDeviceInfo(clientObj)
-      /*  API is only for Admin control mode */
-      await this.amtwsman.execute(clientId, 'AMT_SetupAndConfigurationService', 'SetMEBxPassword', { Password: mebxPassword }, null)
     }
   }
 
@@ -287,7 +270,7 @@ export class Activator implements IExecutor {
       }
     }
     await this.injectCertificate(clientId, clientObj)
-    if (clientObj.count > clientObj.certObj.certChain.length && !clientObj.activationStatus) {
+    if (clientObj.count > clientObj.certObj.certChain.length && !clientObj.activationStatus.activated) {
       await this.createSignedString(clientObj)
     }
   }

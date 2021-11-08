@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "847720d7-5e2e-46a0-95cd-9b3504e26370",
+		"_postman_id": "0db21d0f-d5e8-4d99-b8ff-c1e7f4df4f92",
 		"name": "RPS API Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -295,10 +295,6 @@
 									"    pm.expect(result.errors[0].msg).to.eql(\"Provisioning Cert Password is required\")\r",
 									"    pm.expect(result.errors[0].param).to.eql(\"provisioningCertPassword\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
-									"\r",
-									"    pm.expect(result.errors[1].msg).to.eql(\"Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.\")\r",
-									"    pm.expect(result.errors[1].param).to.eql(\"provisioningCertPassword\")\r",
-									"    pm.expect(result.errors[1].location).to.eql(\"body\")\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -341,7 +337,7 @@
 					"response": []
 				},
 				{
-					"name": "Create Domain with Invalid password",
+					"name": "Create Domain with password length greater than 64",
 					"event": [
 						{
 							"listen": "test",
@@ -350,9 +346,9 @@
 									"pm.test(\"Status code is 400\", function () {\r",
 									"    pm.response.to.have.status(400);\r",
 									"});\r",
-									"pm.test(\"Creation should fail when password is inavlid\", function () {\r",
+									"pm.test(\"Creation should fail when password length greater than 64\", function () {\r",
 									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.\")\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"Password should not exceed 64 characters in length\")\r",
 									"    pm.expect(result.errors[0].param).to.eql(\"provisioningCertPassword\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
@@ -378,119 +374,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"vprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"password\"\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"domains"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create Domain with password length less than 8",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.response.to.have.status(400);\r",
-									"});\r",
-									"pm.test(\"Creation should fail when password length is less than eight\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"provisioningCertPassword\")\r",
-									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"vprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"passwo\"\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"domains"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create Domain with password length greater than 32",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.response.to.have.status(400);\r",
-									"});\r",
-									"pm.test(\"Creation should fail when password length greater than 32\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Password should contain at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"provisioningCertPassword\")\r",
-									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"vprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"0123456789012345678901234567890123456789\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"vprodemo1\",\r\n    \"domainSuffix\": \"vprodemo.1com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"01234567890123456789012345678901234567890123456789012345678901234\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
@@ -720,7 +604,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"vprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"vprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"Pass\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
@@ -1315,6 +1199,63 @@
 						"body": {
 							"mode": "raw",
 							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"newvprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"Intel123!\"\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"domains"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Domain Cert Password with password length greater than 64",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Updaste should fail when password length greater than 64\", function () {\r",
+									"    var result = pm.response.json();\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"Password should not exceed 64 characters in length\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"provisioningCertPassword\")\r",
+									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"newvprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"01234567890123456789012345678901234567890123456789012345678901234\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
@@ -4540,6 +4481,125 @@
 					"response": []
 				},
 				{
+					"name": "Create Profile with tls",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"pm.test(\"Creation should succeed\", function () {\r",
+									"    var result = pm.response.json();\r",
+									"    pm.expect(result.profileName).to.eql(\"profiletls\"),\r",
+									"    pm.expect(result.amtPassword).to.eql(),\r",
+									"    pm.expect(result.mebxPassword).to.eql(),\r",
+									"    pm.expect(result.activation).to.eql(\"ccmactivate\")\r",
+									"    pm.expect(result.tags.length).to.equal(1)\r",
+									"    pm.expect(result.tlsMode).to.equal(4)\r",
+									"\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"value": "APIKEYFORRPS123!",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"profileName\": \"profiletls\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"tlsMode\": 4\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"profiles",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Profile with invalid tlsMode value",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"pm.test(\"Creation should fail when tlsMode is invalid\", function () {\r",
+									"    var result = pm.response.json();\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"tlsMode must be set to one of these values: 1 (Server Authentication Only), 2 (Server and Non-TLS Authentication), 3 (Mutual TLS only), 4 (Mutual and Non-TLS authentication)\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"tlsMode\")\r",
+									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
+									"      pm.expect(result.errors[0].value).to.eql(5)\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"value": "APIKEYFORRPS123!",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"profileName\": \"profiletlsinvalid\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"tlsMode\": 5\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"profiles",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Get Profile with different case",
 					"event": [
 						{
@@ -4608,7 +4668,7 @@
 									"});\r",
 									"pm.test(\"Result length should be equal to zero\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
-									"    pm.expect(jsonData.length).to.eql(1);\r",
+									"    pm.expect(jsonData.length).to.eql(2);\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -4741,8 +4801,8 @@
 									"});\r",
 									"pm.test(\"Result length should be equal to zero\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
-									"    pm.expect(jsonData.data.length).to.eql(1);\r",
-									"    pm.expect(jsonData.totalCount).to.eql(1);\r",
+									"    pm.expect(jsonData.data.length).to.eql(2);\r",
+									"    pm.expect(jsonData.totalCount).to.eql(2);\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -4807,7 +4867,7 @@
 									"});\r",
 									"pm.test(\"Result length should be equal to zero\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
-									"    pm.expect(jsonData.length).to.eql(1);\r",
+									"    pm.expect(jsonData.length).to.eql(2);\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -5007,6 +5067,64 @@
 						"body": {
 							"mode": "raw",
 							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"amtPassword\": \"Intel123\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"profiles",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update profile with invalid tlsMode value",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"pm.test(\"Creation should fail when payload contains invalid tlsMode\", function () {\r",
+									"    var result = pm.response.json();\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"tlsMode must be set to one of these values: 1 (Server Authentication Only), 2 (Server and Non-TLS Authentication), 3 (Mutual TLS only), 4 (Mutual and Non-TLS authentication)\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"tlsMode\")\r",
+									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
+									"      pm.expect(result.errors[0].value).to.eql(\"invalid\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"profileName\": \"profiletlsinvalid\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"tlsMode\": \"invalid\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5368,6 +5486,57 @@
 								"admin",
 								"profiles",
 								"profile6"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove tls Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {\r",
+									"    pm.response.to.have.status(204);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/profiletls",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"profiles",
+								"profiletls"
 							]
 						}
 					},

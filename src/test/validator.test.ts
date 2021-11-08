@@ -263,33 +263,6 @@ describe('validateActivationMsg function', () => {
       }
     }
   })
-  test('should throw an exception if version is less than 7', async () => {
-    let rpsError = null
-    try {
-      const clientId = uuid()
-      clientManager.addClient({ ClientId: clientId, ClientSocket: null })
-      activationmsg.payload.ver = '6.8.50'
-      await validator.validateActivationMsg(activationmsg, clientId)
-    } catch (error) {
-      rpsError = error
-    }
-    expect(rpsError).toBeInstanceOf(RPSError)
-    expect(rpsError.message).toEqual(`Device ${activationmsg.payload.uuid} activation failed. AMT version: ${activationmsg.payload.ver}. Version less than 7 cannot be remotely configured `)
-  })
-
-  test('should throw an exception if version is greater than 7 and build is less than 3000', async () => {
-    let rpsError = null
-    try {
-      const clientId = uuid()
-      clientManager.addClient({ ClientId: clientId, ClientSocket: null })
-      activationmsg.payload.build = '2425'
-      await validator.validateActivationMsg(activationmsg, clientId)
-    } catch (error) {
-      rpsError = error
-    }
-    expect(rpsError).toBeInstanceOf(RPSError)
-    expect(rpsError.message).toEqual(`Device ${activationmsg.payload.uuid} activation failed. Only version ${activationmsg.payload.ver} with build greater than 3000 can be remotely configured `)
-  })
   test('should throw an exception if AMT password is undefined', async () => {
     let rpsError = null
     try {
@@ -314,7 +287,7 @@ describe('validateActivationMsg function', () => {
       rpsError = error
     }
     expect(rpsError).toBeInstanceOf(RPSError)
-    expect(rpsError.message).toEqual(`Device ${activationmsg.payload.uuid} activation failed. Specified AMT profile name does not match list of available AMT profiles.`)
+    expect(rpsError.message).toEqual(`Device ${activationmsg.payload.uuid} activation failed. ${activationmsg.payload.profile} does not match list of available AMT profiles.`)
   })
 })
 
@@ -360,5 +333,118 @@ describe('validateDeactivationMsg function', () => {
     }
     expect(rpsError).toBeInstanceOf(RPSError)
     expect(rpsError.message).toContain('deactivation failed. It is in unknown mode')
+  })
+})
+
+describe('verifyAMTVersion', () => {
+  beforeEach(() => {
+    msg = {
+      method: 'activation',
+      apiKey: 'key',
+      appVersion: '1.2.0',
+      protocolVersion: '4.0.0',
+      status: 'ok',
+      message: "all's good!",
+      payload: {
+        ver: '11.8.50',
+        build: '3425',
+        fqdn: 'vprodemo.com',
+        password: 'KQGnH+N5qJ8YLqjEFJMnGSgcnFLMv0Tk',
+        currentMode: 0,
+        certHashes: [
+          'e7685634efacf69ace939a6b255b7b4fabef42935b50a265acb5cb6027e44e70',
+          'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244',
+          'c3846bf24b9e93ca64274c0ec67c1ecc5e024ffcacd2d74019350e81fe546ae4'
+        ],
+        sku: '16392',
+        uuid: '4bac9510-04a6-4321-bae2-d45ddf07b684',
+        username: '$$OsAdmin',
+        client: 'RPC',
+        profile: 'profile1'
+      }
+    }
+  })
+  test('should throw an exception if version is less than 7', async () => {
+    let rpsError = null
+    try {
+      const clientId = uuid()
+      clientManager.addClient({ ClientId: clientId, ClientSocket: null })
+      msg.payload.ver = '6.8.50'
+      await validator.verifyAMTVersion(msg.payload, 'activation')
+    } catch (error) {
+      rpsError = error
+    }
+    expect(rpsError).toBeInstanceOf(RPSError)
+    expect(rpsError.message).toEqual(`Device ${msg.payload.uuid} activation failed. AMT version: ${msg.payload.ver}. Version less than 7 cannot be remotely configured `)
+  })
+
+  test('should throw an exception if version is greater than 7 and build is less than 3000', async () => {
+    let rpsError = null
+    try {
+      const clientId = uuid()
+      clientManager.addClient({ ClientId: clientId, ClientSocket: null })
+      msg.payload.build = '2425'
+      await validator.verifyAMTVersion(msg.payload, 'activation')
+    } catch (error) {
+      rpsError = error
+    }
+    expect(rpsError).toBeInstanceOf(RPSError)
+    expect(rpsError.message).toEqual(`Device ${msg.payload.uuid} activation failed. Only version ${msg.payload.ver} with build greater than 3000 can be remotely configured `)
+  })
+})
+
+describe('verifyActivationMsgForACM', () => {
+  beforeEach(() => {
+    msg = {
+      method: 'activation',
+      apiKey: 'key',
+      appVersion: '1.2.0',
+      protocolVersion: '4.0.0',
+      status: 'ok',
+      message: "all's good!",
+      payload: {
+        ver: '11.8.50',
+        build: '3425',
+        fqdn: 'vprodemo.com',
+        password: 'KQGnH+N5qJ8YLqjEFJMnGSgcnFLMv0Tk',
+        currentMode: 0,
+        certHashes: [
+          'e7685634efacf69ace939a6b255b7b4fabef42935b50a265acb5cb6027e44e70',
+          'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244',
+          'c3846bf24b9e93ca64274c0ec67c1ecc5e024ffcacd2d74019350e81fe546ae4'
+        ],
+        sku: '16392',
+        uuid: '4bac9510-04a6-4321-bae2-d45ddf07b684',
+        username: '$$OsAdmin',
+        client: 'RPC',
+        profile: 'profile1'
+      }
+    }
+  })
+  test('should throw an exception if no certHashes', async () => {
+    let rpsError = null
+    try {
+      const clientId = uuid()
+      clientManager.addClient({ ClientId: clientId, ClientSocket: null })
+      msg.payload.certHashes = undefined
+      await validator.verifyActivationMsgForACM(msg.payload)
+    } catch (error) {
+      rpsError = error
+    }
+    expect(rpsError).toBeInstanceOf(RPSError)
+    expect(rpsError.message).toEqual(`Device ${msg.payload.uuid} activation failed. Missing certificate hashes from the device.`)
+  })
+  test('should throw an exception if no fqdn', async () => {
+    let rpsError = null
+    try {
+      const clientId = uuid()
+      clientManager.addClient({ ClientId: clientId, ClientSocket: null })
+      msg.payload.fqdn = undefined
+      await validator.verifyActivationMsgForACM(msg.payload)
+    } catch (error) {
+      rpsError = error
+    }
+    expect(rpsError).toBeInstanceOf(RPSError)
+    expect(rpsError.message).toEqual(`Device ${msg.payload.uuid} activation failed. Missing DNS Suffix.`)
   })
 })

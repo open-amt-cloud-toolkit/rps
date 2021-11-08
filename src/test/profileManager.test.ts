@@ -8,7 +8,7 @@ import { ProfileManager } from '../ProfileManager'
 import { ILogger } from '../interfaces/ILogger'
 import Logger from '../Logger'
 import { IProfilesTable } from '../interfaces/database/IProfilesDb'
-import { CIRAConfig } from '../RCS.Config'
+import { CIRAConfig } from '../models/RCS.Config'
 
 const logger: ILogger = new Logger('ProfileManagerTests')
 
@@ -71,6 +71,7 @@ const amtConfigurations: AMTConfiguration[] = [
     activation: 'ccmactivate',
     ciraConfigName: 'ciraconfig1',
     ciraConfigObject: ciraConfigurations[0],
+    tlsMode: 1,
     tenantId: ''
   },
   {

@@ -4,14 +4,57 @@
 * Description: Constants
 **********************************************************************/
 
-import { CIRAConfig, ProfileWifiConfigs, WebSocketConfig } from '../RCS.Config'
+import { pki } from 'node-forge'
+import { CIRAConfig, ProfileWifiConfigs, WebSocketConfig } from './RCS.Config'
 
-export class ProvisioningCertObj {
+export interface ProvisioningCertObj {
   certChain: string[]
-  privateKey: string
+  privateKey: pki.PrivateKey
+}
+export interface AMTKeyUsage{
+  /** Extension ID  */
+  name: string
+  /** Enables Console Usage */
+  ['2.16.840.1.113741.1.2.1']: boolean
+  /** Enables Agent Usage */
+  ['2.16.840.1.113741.1.2.2']: boolean
+  /** Enables AMT Activation Usage */
+  ['2.16.840.1.113741.1.2.3']: boolean
+  /** Enables TLS Usage on the Server */
+  serverAuth: boolean
+  /** Enables TLS Usage Usage on the Client */
+  clientAuth: boolean
+  /** Enables Email Protection */
+  emailProtection: boolean
+  /** Enables Code Signing */
+  codeSigning: boolean
+  /** Enables Time Stamping */
+  timeStamping: boolean
 }
 
-export class CertificateObject {
+export interface CertAttributes {
+  CN: string
+  O?: string
+  ST?: string
+  C?: string
+}
+
+export interface CertCreationResult {
+  h: any
+  cert: pki.Certificate
+  pem: string
+  certbin: string
+  privateKey: string
+  privateKeyBin?: string
+  checked: boolean
+  key?: pki.PrivateKey
+}
+export interface CertsAndKeys {
+  certs: pki.Certificate[]
+  keys: pki.PrivateKey[]
+  errorText?: string
+}
+export interface CertificateObject {
   pem: string
   issuer: string
   subject: string
@@ -54,6 +97,13 @@ export class AMTConfiguration {
   dhcpEnabled?: boolean
   wifiConfigs?: ProfileWifiConfigs[]
   tenantId: string
+  tlsMode?: number
+  tlsCerts?: TLSCerts
+}
+export interface TLSCerts {
+  ROOT_CERTIFICATE: CertCreationResult
+  ISSUED_CERTIFICATE: CertCreationResult
+  version?: string
 }
 
 export class DataWithCount {

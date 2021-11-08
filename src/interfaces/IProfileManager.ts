@@ -6,7 +6,7 @@
  **********************************************************************/
 
 import { AMTConfiguration } from '../models/Rcs'
-import { CIRAConfig } from '../RCS.Config'
+import { CIRAConfig } from '../models/RCS.Config'
 
 export interface IProfileManager {
   getActivationMode: (profileName: string) => Promise<string>

@@ -6,7 +6,7 @@
  **********************************************************************/
 import { ILogger } from './interfaces/ILogger'
 import { ClientResponseMsg as ResponseMessage } from './utils/ClientResponseMsg'
-import { ClientMsg, Payload, ClientObject, SocketConnection } from './RCS.Config'
+import { ClientMsg, Payload, ClientObject, SocketConnection } from './models/RCS.Config'
 import { IClientManager } from './interfaces/IClientManager'
 
 import WSComm = require('./amt-libraries/amt-wsman-comm')
@@ -217,7 +217,7 @@ export class WSManProcessor {
    * @param {string} clientId Id to keep track of connections
    * @param {string} action WSMan action
    */
-  async batchEnum (clientId: string, action: string, amtuser?: string, amtpass?: string): Promise<void> {
+  async batchEnum (clientId: string, action: string, amtuser?: string, amtpass?: string, tag: string = null): Promise<void> {
     const clientObj = this.clientManager.getClientObject(clientId)
     try {
       const amtstack = this.getAmtStack(clientId, amtuser, amtpass)
@@ -228,7 +228,7 @@ export class WSManProcessor {
           this.logger.debug(`batchEnum request succeeded for clientId: ${clientId}, action:${action}.`)
         }
         clientObj.payload = jsonResponse
-      })
+      }, tag)
       if (clientObj.socketConn?.onStateChange && clientObj.readyState == null) {
         clientObj.readyState = 2
         this.clientManager.setClientObject(clientObj)
@@ -332,6 +332,31 @@ export class WSManProcessor {
         }
         clientObj.payload = jsonResponse
       }, null, 0, selectors)
+
+      if (clientObj.socketConn?.onStateChange && clientObj.readyState == null) {
+        this.logger.debug('updating ready state')
+        clientObj.readyState = 2
+        this.clientManager.setClientObject(clientObj)
+        clientObj.socketConn.onStateChange(clientObj.ClientSocket, clientObj.readyState)
+      }
+    } catch (error) {
+      this.logger.error(`${clientId} : Failed to execute the wsman for ${name}, error: ${JSON.stringify(error)}`)
+    }
+  }
+
+  // TBD: Needs to refactor this file as most of the methods share the same lines of code.
+  async create (clientId: string, name: string, putobj: any, tag: any = null, amtuser?: string, amtpass?: string): Promise<void> {
+    const clientObj: ClientObject = this.clientManager.getClientObject(clientId)
+    try {
+      const amtstack = this.getAmtStack(clientId, amtuser, amtpass)
+      await amtstack.Create(name, putobj, (stack, name, jsonResponse, status) => {
+        if (status !== 200) {
+          this.logger.error(`Create request failed for clientId: ${clientId}, action:${name}.`)
+        } else {
+          this.logger.debug(`Create request succeeded for clientId: ${clientId}, action:${name}.`)
+        }
+        clientObj.payload = jsonResponse
+      }, tag, 0)
 
       if (clientObj.socketConn?.onStateChange && clientObj.readyState == null) {
         this.logger.debug('updating ready state')

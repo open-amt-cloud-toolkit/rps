@@ -18,6 +18,7 @@
         "@typescript-eslint"
     ],
     "rules": {
+        "no-extra-semi": "error",
         "@typescript-eslint/strict-boolean-expressions": 0,
         "@typescript-eslint/restrict-template-expressions": 0,
         "@typescript-eslint/no-misused-promises": 0,
