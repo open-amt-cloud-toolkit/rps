@@ -1,31 +1,38 @@
 openapi: 3.0.0
 info:
-  title: Remote Provisioning Server API
+  title: Remote Provisioning  (RPS) API
   contact: {}
-  version: 2.0.0
-  license:
-    name: Apache 2.0
-    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  version: 2.1.0
   description: |
-    This section is a reference to the RPS API methods available in the Open AMT Cloud Toolkit, and to some commands it provides. 
-    Please note when running behind the Kong API proxy the following prefix must be prepended:
+    Open AMT Cloud Toolkit supports RPS API methods for domains, CIRA configuration, wireless, profiles, and version information.
+    
+    For direct connection to RPS:
+    * RPS Format of URI: `{{protocol}}://{{host}}:{{port}}/api/v1/admin/{{RPS API}}`
+
+    * Example URI for Domains: [https://example.site.com:8081/api/v1/admin/domains]()
+
+
+    When running behind the Kong API proxy, prepend the following prefixes to the URI:
+    
+    Kong prefixes:
     * `/rps` for all routes
+    
+    For connection through Kong:
+    
+    * RPS Format of URI: `{{protocol}}://{{host}}/rps/api/v1/admin/{{RPS API}}`
 
-    GET Domains Example:
-    * Direct connection to RPS: `{{protocol}}://{{host}}/api/v1/admin/domains`
-
-    * Connection to RPS through Kong: `{{protocol}}://{{host}}/rps/api/v1/admin/domains`
+    * Example URI for Authorize: [https://example.site.com/rps/api/v1/admin/domains]()
 
 servers:
 # Added by API Auto Mocking Plugin
 - description: SwaggerHub API Auto Mocking
-  url: https://virtserver.swaggerhub.com/rbheopenamt/rps/1.5.0
+  url: https://virtserver.swaggerhub.com/rbheopenamt/rps/2.1.0
 - url: http://example.com:8081/api/v1/admin
   variables: {}
 security:
   - BearerAuth: []
 paths:
-  /api/v1/domains:
+  /api/v1/admin/domains:
     get:
       tags:
       - Domains
@@ -42,7 +49,7 @@ paths:
           name: $top
           schema:
             type: integer
-          description: The number of items to return
+          description: The numbers of items to return
         - in: query
           name: $count
           schema:
@@ -141,7 +148,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/APIResponse'
       deprecated: false
-  /api/v1/domains/{profileName}:
+  /api/v1/admin/domains/{profileName}:
     get:
       tags:
         - Domains
@@ -207,7 +214,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/APIResponse'
       deprecated: false
-  /api/v1/ciraconfigs:
+  /api/v1/admin/ciraconfigs:
     get:
       tags:
       - CIRA
@@ -224,7 +231,7 @@ paths:
           name: $top
           schema:
             type: integer
-          description: The number of items to return
+          description: The numbers of items to return
         - in: query
           name: $count
           schema:
@@ -323,7 +330,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/APIResponse'
       deprecated: false
-  /api/v1/ciraconfigs/{configName}:
+  /api/v1/admin/ciraconfigs/{configName}:
     get:
       tags:
       - CIRA
@@ -388,7 +395,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/APIResponse'
       deprecated: false
-  /api/v1/wirelessconfigs:
+  /api/v1/admin/wirelessconfigs:
     get:
       tags:
       - Wireless
@@ -405,7 +412,7 @@ paths:
           name: $top
           schema:
             type: integer
-          description: The number of items to return
+          description: The numbers of items to return
         - in: query
           name: $count
           schema:
@@ -504,7 +511,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/APIResponse'
       deprecated: false  
-  /api/v1/wirelessconfigs/{configName}:
+  /api/v1/admin/wirelessconfigs/{configName}:
     get:
       tags:
       - Wireless
@@ -569,7 +576,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/APIResponse'
       deprecated: false
-  /api/v1/profiles:
+  /api/v1/admin/profiles:
     get:
       tags:
       - Profiles
@@ -586,7 +593,7 @@ paths:
           name: $top
           schema:
             type: integer
-          description: The number of items to return
+          description: The numbers of items to return
         - in: query
           name: $count
           schema:
@@ -685,7 +692,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/APIResponse'
       deprecated: false
-  /api/v1/profiles/{profileName}:
+  /api/v1/admin/profiles/{profileName}:
     get:
       tags:
       - Profiles
@@ -750,7 +757,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/APIResponse'
       deprecated: false
-  /version:
+  /api/v1/admin/version:
     get:
       tags:
       - Misc
@@ -809,8 +816,6 @@ components:
       - domainSuffix
       - provisioningCertStorageFormat
       properties:
-        tenantId:
-          type: string
         profileName:
           type: string
         domainSuffix:
@@ -818,7 +823,6 @@ components:
         provisioningCertStorageFormat:
           type: string
       example:
-        tenantId: ''
         profileName: NewDomain
         domainSuffix: NewDomain.com
         provisioningCertStorageFormat: string
@@ -909,8 +913,6 @@ components:
           format: byte
         proxyDetails:
           type: string
-        tenantId:
-          type: string
       example:
         configName: ciraconfig
         mpsServerAddress: 192.168.8.50
@@ -920,19 +922,20 @@ components:
         serverAddressFormat: 3
         authMethod: 2
         mpsRootCertificate: U3dhZ2dlciByb2Nrcw==
-        proxyDetails: '' 
-        tenantId: ''     
+        proxyDetails: ''      
     ProfileSubmit:
       title: ProfileSubmit
       required:
       - profileName
       - amtPassword
       - generateRandomPassword
+      - passwordLength
       - activation
       - ciraConfigName
       - networkConfigName
       - mebxPassword
       - generateRandomMEBxPassword
+      - mebxPasswordLength
       - tags
       - dhcpEnabled
       - wifiConfigs
@@ -945,6 +948,9 @@ components:
           format: password
         generateRandomPassword:
           type: boolean
+        passwordLength:
+          type: integer
+          format: int32
         activation:
           type: string
         ciraConfigName:
@@ -956,6 +962,9 @@ components:
           format: password
         generateRandomMEBxPassword:
           type: boolean
+        mebxPasswordLength:
+          type: integer
+          format: int32
         tags:
           type: array
           items:
@@ -973,11 +982,15 @@ components:
         profileName: profile1
         amtPassword: G@ppm0ym
         generateRandomPassword: false
+        passwordLength: null
+        configurationScript: null
         activation: acmactivate      
         ciraConfigName: ciraconfig
         networkConfigName: dhcp_enabled
         mebxPassword: G@ppm0ym
         generateRandomMEBxPassword: false
+        mebxPasswordLength: null
+        tlsMode: null
         tags: [tag1, tag2]
         dhcpEnabled: true
         wifiConfigs: [
@@ -995,10 +1008,12 @@ components:
       required:
       - profileName
       - generateRandomPassword
+      - passwordLength
       - activation
       - ciraConfigName
       - networkConfigName
       - generateRandomMEBxPassword
+      - mebxPasswordLength
       - tags
       - dhcpEnabled
       - wifiConfigs
@@ -1008,6 +1023,9 @@ components:
           type: string
         generateRandomPassword:
           type: boolean
+        passwordLength:
+          type: integer
+          format: int32
         activation:
           type: string
         ciraConfigName:
@@ -1016,14 +1034,15 @@ components:
           type: string
         generateRandomMEBxPassword:
           type: boolean
+        mebxPasswordLength:
+          type: integer
+          format: int32
         tags:
           type: array
           items:
             type: string
         dhcpEnabled:
           type: boolean
-        tenantId:
-          type: string
         wifiConfigs:
           type: array
           items:
@@ -1034,13 +1053,14 @@ components:
       example:
         profileName: profile1
         generateRandomPassword: false
+        passwordLength: null
         configurationScript: null
         activation: acmactivate      
         ciraConfigName: ciraconfig
         networkConfigName: dhcp_enabled
         generateRandomMEBxPassword: false
+        mebxPasswordLength: null
         tlsMode: null
-        tenantId: ""
         tags: [tag1, tag2]
         dhcpEnabled: true
         wifiConfigs: [
@@ -1107,14 +1127,11 @@ components:
           type: array
           items:
             type: integer
-        tenantId:
-          type: string
       example:
         profileName: homeWifiConfig
         authenticationMethod: 4
         encryptionMethod: 4
         ssid: home
-        tenantId: ""
         linkPolicy: [14, 16]
     VersionResponse:
       title: VersionResponse
