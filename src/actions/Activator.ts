@@ -25,6 +25,7 @@ import got from 'got'
 import { MqttProvider } from '../utils/MqttProvider'
 import { setMEBXPassword } from '../utils/maintenance/setMEBXPassword'
 import { CertManager } from '../CertManager'
+import { updateAMTAdminPassword } from '../utils/maintenance/updateAMTAdminPassword'
 
 export class Activator implements IExecutor {
   constructor (
@@ -53,13 +54,25 @@ export class Activator implements IExecutor {
       if (!clientObj.activationStatus.activated && !wsmanResponse) {
         MqttProvider.publishEvent('fail', ['Activator', 'execute'], 'Missing/invalid WSMan response payload', clientObj.uuid)
         throw new RPSError(`Device ${clientObj.uuid} activation failed. Missing/invalid WSMan response payload.`)
+      } else if (clientObj.activationStatus.activated && clientObj.activationStatus.changePassword) {
+        const result = await updateAMTAdminPassword(clientId, wsmanResponse, this.amtwsman, this.clientManager, this.configurator, this.validator)
+        if (result) {
+          clientObj.activationStatus.changePassword = false
+          if (clientObj.action === ClientAction.ADMINCTLMODE) {
+            clientObj.activationStatus.missingMebxPassword = true
+          }
+          await this.waitAfterActivation(clientId, clientObj, wsmanResponse)
+          this.clientManager.setClientObject(clientObj)
+          this.logger.debug(`${clientId} : AMT admin password updated: ${clientObj.uuid}`)
+        }
       } else if (clientObj.activationStatus.activated) {
         const msg = await this.waitAfterActivation(clientId, clientObj, wsmanResponse)
         return msg
-      }
-      const msg = await this.processWSManJsonResponse(message, clientId)
-      if (msg) {
-        return msg
+      } else {
+        const msg = await this.processWSManJsonResponse(message, clientId)
+        if (msg) {
+          return msg
+        }
       }
 
       // clientObj = this.clientManager.getClientObject(clientId)

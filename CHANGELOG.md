@@ -2,14 +2,66 @@
 ## [Unreleased]
 
 
-<a name="2.0.1"></a>
-## [2.0.1] - 2021-09-22
+<a name="2.1.0"></a>
+## [2.1.0] - 2021-11-08
+### Build
+- **deps:** bump express-validator from 6.12.2 to 6.13.0 (#51cb84a) 
+- **deps:** bump express-validator from 6.12.1 to 6.12.2 (#e7f01f5) 
+- **deps:** bump ws from 8.2.2 to 8.2.3 (#64fb10f) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 4.31.0 to 4.32.0 (#d6ba015) 
+- **deps-dev:** bump nodemon from 2.0.13 to 2.0.14 (#1d2865c) 
+- **deps-dev:** bump typescript from 4.4.3 to 4.4.4 (#e8ca23c) 
+- **deps-dev:** bump eslint-plugin-import from 2.24.2 to 2.25.2 (#8329e33) 
+- **deps-dev:** bump [@types](https://github.com/types)/node-forge from 0.10.5 to 0.10.8 (#781addc) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin (#eb0d641) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 4.32.0 to 4.33.0 (#6104305) 
+- **deps-dev:** bump eslint-plugin-promise from 5.1.0 to 5.1.1 (#d55f8f0) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin (#c573589) 
+- **deps-dev:** bump [@types](https://github.com/types)/node-forge from 0.10.8 to 0.10.9 (#6a241bd) 
+- **deps-dev:** bump [@types](https://github.com/types)/jest from 27.0.1 to 27.0.2 (#b63e011) 
+- **deps-dev:** bump [@types](https://github.com/types)/ws from 7.4.7 to 8.2.0 (#a896fa1) 
+- **deps-dev:** bump nodemon from 2.0.12 to 2.0.13 (#964ff96) 
+- **deps-dev:** bump typescript from 4.4.2 to 4.4.3 (#910cc6d) 
+- **deps-dev:** bump [@types](https://github.com/types)/node-forge from 0.10.4 to 0.10.5 (#88275e8) 
+- **version:** bump to v2.1.0 (#50ba659) 
+
+### Ci
+- rename master to main for jobs (#439ae6e) 
+
+### Docs
+- adds issue template (#1958a08) 
+- add contributing guidlines (#05b3843) 
+- **github:** add pull request template (#72aa4d8) 
+- **swagger:** update version to 2.0.0 (#5425a27) 
+
+### Feat
+- **maintenance:** added a task to sync time on AMT ([#459](https://github.com/open-amt-cloud-toolkit/rps/issues/459)) (#faa4b2c) 
+- **tls:** configure amt device with tls (#6ed238e) 
+
+### Fix
+- **activation:** sets mebx password if not updated ([#463](https://github.com/open-amt-cloud-toolkit/rps/issues/463)) (#95cdf41) 
+- **api:** restricted 8 wi-fi profiles to amt profile ([#452](https://github.com/open-amt-cloud-toolkit/rps/issues/452)) (#8523955) 
+- **device:** update tags execute after device exists check (#783a7b1) 
+- **vault:** removed storing random ccm password in vault profile ([#455](https://github.com/open-amt-cloud-toolkit/rps/issues/455)) (#8107375) 
+
+### Refactor
+- **api:** remove password validation from domain cert upload (#d456103) 
+
+### Test
+- **tls:** test tls feature (#07ec59a) 
+
+
+<a name="v2.0.1"></a>
+## [v2.0.1] - 2021-09-22
 ### Build
 - **deps:** bump tmpl from 1.0.4 to 1.0.5 (#53b175f) 
 - **version:** update to v2.0.1 (#1222ff7) 
 
 ### Ci
 - azure boards issue sync (#a730ce7) 
+
+### Docs
+- **changelog:** update changelog (#3ef2dc7) 
 
 ### Fix
 - **mqtt:** topic publishing is now rps/events (#d8cab2d) 
@@ -480,8 +532,9 @@ API responses are structured and no longer return string messages
 - **docker:** optimize dockerfile (#ad2319d) 
 
 
-[Unreleased]: https://github.com/open-amt-cloud-toolkit/rps/compare/2.0.1...HEAD
-[2.0.1]: https://github.com/open-amt-cloud-toolkit/rps/compare/v2.0.0...2.0.1
+[Unreleased]: https://github.com/open-amt-cloud-toolkit/rps/compare/2.1.0...HEAD
+[2.1.0]: https://github.com/open-amt-cloud-toolkit/rps/compare/v2.0.1...2.1.0
+[v2.0.1]: https://github.com/open-amt-cloud-toolkit/rps/compare/v2.0.0...v2.0.1
 [v2.0.0]: https://github.com/open-amt-cloud-toolkit/rps/compare/v1.5.0...v2.0.0
 [v1.5.0]: https://github.com/open-amt-cloud-toolkit/rps/compare/v1.4.0...v1.5.0
 [v1.4.0]: https://github.com/open-amt-cloud-toolkit/rps/compare/v1.3.0...v1.4.0

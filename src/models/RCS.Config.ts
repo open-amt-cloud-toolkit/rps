@@ -105,6 +105,7 @@ export interface ClientObject {
   network?: NetworkConfigFlow
   tls?: TLSConfigFlow
   status?: Status
+  unauthCount?: number
 }
 
 export interface ActivationStatus {
@@ -249,6 +250,15 @@ export interface apiResponse {
   data?: any
   error?: string
   message?: string
+}
+
+export interface HealthCheck {
+  db: HealthCheckStatus
+  secretStore: HealthCheckStatus
+}
+export interface HealthCheckStatus{
+  name: string
+  status: any
 }
 
 export enum TlsMode{
