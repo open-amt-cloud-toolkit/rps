@@ -252,6 +252,15 @@ export interface apiResponse {
   message?: string
 }
 
+export interface HealthCheck {
+  db: HealthCheckStatus
+  secretStore: HealthCheckStatus
+}
+export interface HealthCheckStatus{
+  name: string
+  status: any
+}
+
 export enum TlsMode{
   INVALID = -1,
   NONE = 0,
