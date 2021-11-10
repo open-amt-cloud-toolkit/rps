@@ -80,4 +80,9 @@ export class SecretManagerService implements ISecretManagerService {
     await this.vaultClient.delete(path)
     this.logger.debug(`Successfully Deleted data from vault: ${path}`)
   }
+
+  async health (): Promise<any> {
+    const result = await this.vaultClient.health()
+    return result
+  }
 }
