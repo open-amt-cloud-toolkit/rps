@@ -105,6 +105,7 @@ export interface ClientObject {
   network?: NetworkConfigFlow
   tls?: TLSConfigFlow
   status?: Status
+  unauthCount?: number
 }
 
 export interface ActivationStatus {

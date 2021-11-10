@@ -289,30 +289,44 @@ export class Validator implements IValidator {
       this.logger.error(`Device ${msg.payload.uuid} not found`)
       throw new RPSError(`Device ${msg.payload.uuid} not found`)
     }
-    const amtDevice: AMTDeviceDTO = await this.configurator.amtDeviceRepository.get(msg.payload.uuid)
-    if (amtDevice?.amtpass == null) {
+    try {
+      const amtDevice: AMTDeviceDTO = await this.configurator.amtDeviceRepository.get(msg.payload.uuid)
+      if (amtDevice?.amtpass == null) {
+        this.logger.error(`AMT device DOES NOT exists ${msg.payload.uuid}`)
+        throw new RPSError(`AMT device DOES NOT exists ${msg.payload.uuid}`)
+      }
+      return amtDevice
+    } catch (error) {
       this.logger.error(`AMT device DOES NOT exists ${msg.payload.uuid}`)
-      throw new RPSError(`AMT device DOES NOT exists ${msg.payload.uuid}`)
     }
-    return amtDevice
+    return null
   }
 
   async setNextStepsForConfiguration (msg: ClientMsg, clientObj: ClientObject, clientId: string): Promise<void> {
-    const amtDevice: AMTDeviceDTO = await this.getDeviceCredentials(msg)
+    let amtDevice: AMTDeviceDTO = null
+    try {
+      amtDevice = await this.getDeviceCredentials(msg)
+    } catch (error) {
+      this.logger.error(`AMT device DOES NOT exists ${msg.payload.uuid}`)
+    }
     if (amtDevice?.amtpass) {
       msg.payload.username = AMTUserName
       msg.payload.password = amtDevice.amtpass
       this.logger.debug(`AMT password found for Device ${msg.payload.uuid}`)
-    }
-    await this.updateTags(msg.payload.uuid, msg.payload.profile)
-    if (clientObj.action === ClientAction.ADMINCTLMODE) {
-      if (!amtDevice.mebxpass) {
-        clientObj.activationStatus.activated = true
-        clientObj.activationStatus.missingMebxPassword = true
-        clientObj.amtPassword = amtDevice.amtpass
-      } else {
-        clientObj.action = ClientAction.NETWORKCONFIG
+      await this.updateTags(msg.payload.uuid, msg.payload.profile)
+      if (clientObj.action === ClientAction.ADMINCTLMODE) {
+        if (!amtDevice.mebxpass) {
+          clientObj.activationStatus.activated = true
+          clientObj.activationStatus.missingMebxPassword = true
+          clientObj.amtPassword = amtDevice.amtpass
+        } else {
+          clientObj.action = ClientAction.NETWORKCONFIG
+        }
       }
+    } else {
+      clientObj.activationStatus.activated = true
+      clientObj.activationStatus.changePassword = true
+      msg.payload.username = AMTUserName
     }
     clientObj.ClientData = msg
     this.clientManager.setClientObject(clientObj)
