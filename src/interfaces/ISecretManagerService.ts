@@ -11,4 +11,5 @@ export interface ISecretManagerService {
   writeSecretWithKey: (path: string, key: string, keyvalue: any) => Promise<any>
   writeSecretWithObject: (path: string, data: any) => Promise<any>
   deleteSecretWithPath: (path: string) => Promise<void>
+  health: () => Promise<any>
 }

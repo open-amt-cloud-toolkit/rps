@@ -91,7 +91,7 @@ export class DataProcessor implements IDataProcessor {
 
     // Makes the first wsman call
     const clientObj = this.clientManager.getClientObject(clientId)
-    if ((clientObj.action === ClientAction.ADMINCTLMODE || clientObj.action === ClientAction.CLIENTCTLMODE) && !clientMsg.payload.digestRealm && !clientObj.activationStatus.activated) {
+    if ((clientObj.action === ClientAction.ADMINCTLMODE || clientObj.action === ClientAction.CLIENTCTLMODE) && !clientMsg.payload.digestRealm && !clientObj.activationStatus.missingMebxPassword) {
       await this.amtwsman.batchEnum(clientId, '*AMT_GeneralSettings')
     } else {
       const response = await this.clientActions.buildResponseMessage(clientMsg, clientId)
@@ -113,6 +113,14 @@ export class DataProcessor implements IDataProcessor {
     const statusCode = msg[0].substr(9, 3).trim()
 
     if (statusCode === '401') {
+      // For Digest authentication, RPS first receives 401 unauthorized error.
+      clientObj.unauthCount += 1
+      this.clientManager.setClientObject(clientObj)
+      if (clientObj.unauthCount > 2) {
+        clientObj.unauthCount = 0
+        this.clientManager.setClientObject(clientObj)
+        throw new RPSError(`Device ${payload.uuid} authentication failed.`)
+      }
       return this.amtwsman.parseWsManResponseXML(clientMsg.payload, clientId, statusCode)
     } else if (statusCode === '200') {
       clientMsg.payload = this.amtwsman.parseWsManResponseXML(clientMsg.payload, clientId, statusCode)
