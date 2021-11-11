@@ -58,12 +58,9 @@ export class Activator implements IExecutor {
         const result = await updateAMTAdminPassword(clientId, wsmanResponse, this.amtwsman, this.clientManager, this.configurator, this.validator)
         if (result) {
           clientObj.activationStatus.changePassword = false
-          if (clientObj.action === ClientAction.ADMINCTLMODE) {
-            clientObj.activationStatus.missingMebxPassword = true
-          }
-          await this.waitAfterActivation(clientId, clientObj, wsmanResponse)
           this.clientManager.setClientObject(clientObj)
           this.logger.debug(`${clientId} : AMT admin password updated: ${clientObj.uuid}`)
+          return await this.waitAfterActivation(clientId, clientObj, wsmanResponse)
         }
       } else if (clientObj.activationStatus.activated) {
         const msg = await this.waitAfterActivation(clientId, clientObj, wsmanResponse)

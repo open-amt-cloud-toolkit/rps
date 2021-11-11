@@ -212,8 +212,7 @@ export class Validator implements IValidator {
         if (amtDevice?.amtpass && payload.password && payload.password === amtDevice.amtpass) {
           this.logger.debug(`AMT password matches stored version for Device ${payload.uuid}`)
         } else {
-          this.logger.error(`
-          stored version for Device ${payload.uuid}`)
+          this.logger.error(`stored version for Device ${payload.uuid}`)
           throw new RPSError(`AMT password DOES NOT match stored version for Device ${payload.uuid}`)
         }
       } else {
@@ -310,6 +309,9 @@ export class Validator implements IValidator {
       this.logger.error(`AMT device DOES NOT exists ${msg.payload.uuid}`)
     }
     if (amtDevice?.amtpass) {
+      if (amtDevice.amtpass !== msg.payload.password) {
+        throw new RPSError(`AMT password DOES NOT match stored version for Device ${msg.payload.uuid}`)
+      }
       msg.payload.username = AMTUserName
       msg.payload.password = amtDevice.amtpass
       this.logger.debug(`AMT password found for Device ${msg.payload.uuid}`)
@@ -326,6 +328,7 @@ export class Validator implements IValidator {
     } else {
       clientObj.activationStatus.activated = true
       clientObj.activationStatus.changePassword = true
+      clientObj.activationStatus.missingMebxPassword = false
       msg.payload.username = AMTUserName
     }
     clientObj.ClientData = msg
