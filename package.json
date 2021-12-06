@@ -71,7 +71,7 @@
     "@types/node-forge": "^0.10.10",
     "@types/node-vault": "^0.9.13",
     "@types/pg": "^8.6.1",
-    "@types/ws": "^8.2.0",
+    "@types/ws": "^8.2.1",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
     "eslint": "^7.32.0",
