@@ -14,5 +14,6 @@ module.exports = {
   testMatch: [
     '**/test/**/*.test.ts'
   ],
+  reporters: ["default", "jest-junit"],
   testEnvironment: 'node'
 }
