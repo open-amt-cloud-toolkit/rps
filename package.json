@@ -54,7 +54,7 @@
     "got": "^11.8.3",
     "minimist": "^1.2.5",
     "mqtt": "^4.3.2",
-    "node-forge": "^0.10.0",
+    "node-forge": "^1.0.0",
     "node-vault": "^0.9.22",
     "pg": "^8.7.1",
     "pg-format": "^1.0.4",
