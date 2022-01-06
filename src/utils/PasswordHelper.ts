@@ -28,7 +28,7 @@ const PasswordHelper = {
     const len: number = 8
     const maxLen: number = 32
     const matches: string[] = []
-    matches.push('[$@$!%*#?&]')
+    matches.push('[$@$!%*#?]')
     matches.push('[A-Z]')
     matches.push('[0-9]')
     matches.push('[a-z]')
