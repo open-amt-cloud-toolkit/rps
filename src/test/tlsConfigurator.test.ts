@@ -1,7 +1,6 @@
 import { TLSConfigurator } from '../actions/TLSConfigurator'
 import { AMTUserName } from '../utils/constants'
 import Logger from '../Logger'
-
 describe('TLS Configurator', () => {
   let tlsConfigurator: TLSConfigurator
 
@@ -43,6 +42,8 @@ describe('TLS Configurator', () => {
       tls: {}
     }
   })
+  jest.setTimeout(30000)
+
   test('should create TLS Configurator', () => {
     expect(tlsConfigurator).toBeDefined()
   })
@@ -237,6 +238,7 @@ describe('TLS Configurator', () => {
       responses: [{}, {}]
     }
     expect(tlsConfigurator.clientObj.tls.putLocalTLS).toBeFalsy()
+
     await tlsConfigurator.setTLSData(clientId)
     expect(tlsConfigurator.clientObj.tls.TLSSettingData.responses[1].Enabled).toBe(true)
     expect(tlsConfigurator.clientObj.tls.putLocalTLS).toBe(true)
