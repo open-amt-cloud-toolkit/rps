@@ -8,8 +8,8 @@ import { v4 as uuid } from 'uuid'
 import Logger from '../Logger'
 import { NodeForge } from '../NodeForge'
 import { ClientManager } from '../ClientManager'
-import { ClientMsgJsonParser } from '../utils/ClientMsgJsonParser'
-import { RPSError } from '../utils/RPSError'
+import { ClientMsgJsonParser } from './ClientMsgJsonParser'
+import { RPSError } from './RPSError'
 
 const nodeForge = new NodeForge()
 const clientManager = ClientManager.getInstance(new Logger('ClientManager'))

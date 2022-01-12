@@ -7,8 +7,8 @@ import { ClientResponseMsg } from '../utils/ClientResponseMsg'
 import { WSManProcessor } from '../WSManProcessor'
 import { v4 as uuid } from 'uuid'
 import { EnvReader } from '../utils/EnvReader'
-import { config } from './helper/Config'
-import { Maintenance } from '../actions/Maintenance'
+import { config } from '../test/helper/Config'
+import { Maintenance } from './Maintenance'
 EnvReader.GlobalEnvConfig = config
 const nodeForge = new NodeForge()
 const configurator = new Configurator()

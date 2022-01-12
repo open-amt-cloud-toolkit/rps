@@ -4,12 +4,12 @@
  * Author: Brian Osburn
  **********************************************************************/
 
-import { DomainCredentialManager } from '../DomainCredentialManager'
-import { ILogger } from '../interfaces/ILogger'
-import Logger from '../Logger'
-import { AMTDomain } from '../models/Rcs'
-import { DomainsTable } from '../data/postgres/tables/domains'
-import Db from '../data/postgres'
+import { DomainCredentialManager } from './DomainCredentialManager'
+import { ILogger } from './interfaces/ILogger'
+import Logger from './Logger'
+import { AMTDomain } from './models/Rcs'
+import { DomainsTable } from './data/postgres/tables/domains'
+import Db from './data/postgres'
 
 const logger: ILogger = new Logger('DomainCredentialManagerTests')
 describe('Domain Credential Manager Tests', () => {

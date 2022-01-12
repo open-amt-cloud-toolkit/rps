@@ -5,15 +5,15 @@
  **********************************************************************/
 import { v4 as uuid } from 'uuid'
 
-import Logger from '../Logger'
-import { config } from './helper/Config'
-import { NodeForge } from '../NodeForge'
-import { Validator } from '../Validator'
-import { Configurator } from '../Configurator'
-import { ClientManager } from '../ClientManager'
-import { RPSError } from '../utils/RPSError'
-import { EnvReader } from '../utils/EnvReader'
-import { VersionChecker } from '../VersionChecker'
+import Logger from './Logger'
+import { config } from './test/helper/Config'
+import { NodeForge } from './NodeForge'
+import { Validator } from './Validator'
+import { Configurator } from './Configurator'
+import { ClientManager } from './ClientManager'
+import { RPSError } from './utils/RPSError'
+import { EnvReader } from './utils/EnvReader'
+import { VersionChecker } from './VersionChecker'
 
 EnvReader.GlobalEnvConfig = config
 const nodeForge = new NodeForge()

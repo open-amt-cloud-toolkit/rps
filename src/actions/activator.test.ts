@@ -4,23 +4,23 @@
  * Author: Madhavi Losetty
  **********************************************************************/
 import { v4 as uuid } from 'uuid'
-import { Activator } from '../actions/Activator'
+import { Activator } from './Activator'
 import Logger from '../Logger'
 import { SignatureHelper } from '../utils/SignatureHelper'
 import { NodeForge } from '../NodeForge'
 import { CertManager } from '../CertManager'
 import { Configurator } from '../Configurator'
-import { config } from './helper/Config'
+import { config } from '../test/helper/Config'
 import { ClientManager } from '../ClientManager'
 import { ClientResponseMsg } from '../utils/ClientResponseMsg'
 import { WSManProcessor } from '../WSManProcessor'
 import { Validator } from '../Validator'
 import { EnvReader } from '../utils/EnvReader'
-import { CIRAConfigurator } from '../actions/CIRAConfigurator'
+import { CIRAConfigurator } from './CIRAConfigurator'
 import { ClientAction } from '../models/RCS.Config'
-import { NetworkConfigurator } from '../actions/NetworkConfigurator'
+import { NetworkConfigurator } from './NetworkConfigurator'
 import { PasswordHelper } from '../utils/PasswordHelper'
-import { TLSConfigurator } from '../actions/TLSConfigurator'
+import { TLSConfigurator } from './TLSConfigurator'
 // EnvReader.InitFromEnv(config);
 EnvReader.GlobalEnvConfig = config
 const nodeForge = new NodeForge()
