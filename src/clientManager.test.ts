@@ -5,11 +5,11 @@
 
 import { v4 as uuid } from 'uuid'
 
-import { IClientManager } from '../interfaces/IClientManager'
-import { ClientManager } from '../ClientManager'
-import { ClientObject, ClientAction } from '../models/RCS.Config'
-import { ILogger } from '../interfaces/ILogger'
-import Logger from '../Logger'
+import { IClientManager } from './interfaces/IClientManager'
+import { ClientManager } from './ClientManager'
+import { ClientObject, ClientAction } from './models/RCS.Config'
+import { ILogger } from './interfaces/ILogger'
+import Logger from './Logger'
 
 const logger: ILogger = new Logger('ClientManager')
 const clientManager: IClientManager = ClientManager.getInstance(logger)

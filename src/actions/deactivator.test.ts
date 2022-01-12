@@ -5,10 +5,10 @@
  **********************************************************************/
 import { v4 as uuid } from 'uuid'
 
-import { Deactivator } from '../actions/Deactivator'
+import { Deactivator } from './Deactivator'
 import Logger from '../Logger'
 import { NodeForge } from '../NodeForge'
-import { config } from './helper/Config'
+import { config } from '../test/helper/Config'
 import { ClientResponseMsg } from '../utils/ClientResponseMsg'
 import { WSManProcessor } from '../WSManProcessor'
 import { ClientManager } from '../ClientManager'

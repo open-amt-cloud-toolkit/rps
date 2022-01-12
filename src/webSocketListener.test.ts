@@ -2,12 +2,12 @@
  * Copyright (c) Intel Corporation 2019
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
-import { WebSocketConfig } from '../models/RCS.Config'
-import { WebSocketListener } from '../WebSocketListener'
-import Logger from '../Logger'
-import { ILogger } from '../interfaces/ILogger'
-import { IClientManager } from '../interfaces/IClientManager'
-import { ClientManager } from '../ClientManager'
+import { WebSocketConfig } from './models/RCS.Config'
+import { WebSocketListener } from './WebSocketListener'
+import Logger from './Logger'
+import { ILogger } from './interfaces/ILogger'
+import { IClientManager } from './interfaces/IClientManager'
+import { ClientManager } from './ClientManager'
 
 const wsConfig: WebSocketConfig = {
   WebSocketPort: 8080

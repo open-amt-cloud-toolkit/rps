@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { VersionChecker } from '../VersionChecker'
-import { Version } from '../models/Rcs'
-import { RPSError } from '../utils/RPSError'
+import { VersionChecker } from './VersionChecker'
+import { Version } from './models/Rcs'
+import { RPSError } from './utils/RPSError'
 test('test version string parsing', () => {
   const versionString: string = '1.2.3'
 
