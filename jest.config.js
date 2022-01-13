@@ -12,7 +12,10 @@ module.exports = {
     '^.+\\.(ts)?$': 'ts-jest'
   },
   testMatch: [
-    '**/test/**/*.test.ts'
+    '**/*.test.ts'
+  ],
+  collectCoverageFrom: [
+    "src/**/*.{js,ts}",
   ],
   reporters: ["default", "jest-junit"],
   testEnvironment: 'node'

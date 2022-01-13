@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { CertManager } from '../CertManager'
-import { NodeForge } from '../NodeForge'
-import { AMTKeyUsage, CertAttributes, CertificateObject } from '../models/Rcs'
-import Logger from '../Logger'
-import { TEST_PFXCERT, EXPECTED_CERT } from './helper/certs'
+import { CertManager } from './CertManager'
+import { NodeForge } from './NodeForge'
+import { AMTKeyUsage, CertAttributes, CertificateObject } from './models/Rcs'
+import Logger from './Logger'
+import { TEST_PFXCERT, EXPECTED_CERT } from './test/helper/certs'
 
 describe('Cert Manager', () => {
   test('issuer is from root', () => {

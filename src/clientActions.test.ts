@@ -5,19 +5,19 @@
  **********************************************************************/
 import { v4 as uuid } from 'uuid'
 
-import Logger from '../Logger'
-import { NodeForge } from '../NodeForge'
-import { Configurator } from '../Configurator'
-import { ClientActions } from '../ClientActions'
-import { CertManager } from '../CertManager'
-import { config } from './helper/Config'
-import { SignatureHelper } from '../utils/SignatureHelper'
-import { ClientManager } from '../ClientManager'
-import { Validator } from '../Validator'
-import { ClientResponseMsg } from '../utils/ClientResponseMsg'
-import { WSManProcessor } from '../WSManProcessor'
-import { EnvReader } from '../utils/EnvReader'
-import { ClientAction } from '../models/RCS.Config'
+import Logger from './Logger'
+import { NodeForge } from './NodeForge'
+import { Configurator } from './Configurator'
+import { ClientActions } from './ClientActions'
+import { CertManager } from './CertManager'
+import { config } from './test/helper/Config'
+import { SignatureHelper } from './utils/SignatureHelper'
+import { ClientManager } from './ClientManager'
+import { Validator } from './Validator'
+import { ClientResponseMsg } from './utils/ClientResponseMsg'
+import { WSManProcessor } from './WSManProcessor'
+import { EnvReader } from './utils/EnvReader'
+import { ClientAction } from './models/RCS.Config'
 
 EnvReader.GlobalEnvConfig = config
 

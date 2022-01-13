@@ -1,12 +1,12 @@
-import { ClientManager } from '../ClientManager'
-import Logger from '../Logger'
-import { NodeForge } from '../NodeForge'
-import { ClientResponseMsg } from '../utils/ClientResponseMsg'
-import { RPSError } from '../utils/RPSError'
-import { WSManProcessor } from '../WSManProcessor'
+import { ClientManager } from '../../ClientManager'
+import Logger from '../../Logger'
+import { NodeForge } from '../../NodeForge'
+import { ClientResponseMsg } from '../ClientResponseMsg'
+import { RPSError } from '../RPSError'
+import { WSManProcessor } from '../../WSManProcessor'
 import { v4 as uuid } from 'uuid'
-import { setMEBXPassword } from '../utils/maintenance/setMEBXPassword'
-import { ClientObject } from '../models/RCS.Config'
+import { setMEBXPassword } from './setMEBXPassword'
+import { ClientObject } from '../../models/RCS.Config'
 
 const clientManager = ClientManager.getInstance(new Logger('ClientManager'))
 const nodeForge = new NodeForge()

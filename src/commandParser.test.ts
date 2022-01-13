@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { CommandParser } from '../CommandParser'
-import { ClientMsg } from '../models/RCS.Config'
+import { CommandParser } from './CommandParser'
+import { ClientMsg } from './models/RCS.Config'
 
 test('test activation command parsing', () => {
   const clientMessage: ClientMsg = {
