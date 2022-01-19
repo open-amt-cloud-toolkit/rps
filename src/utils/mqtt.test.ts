@@ -43,7 +43,6 @@ describe('MQTT Turned ON Tests', () => {
     // TODO: update this to check string prefix
     expect(MqttProvider.instance.options.clientId).toBeDefined()
   })
-
   it('Checks Connection', () => {
     jest.spyOn(mqtt1, 'connect').mockImplementation(() => {
       return {
@@ -66,7 +65,7 @@ describe('MQTT Turned ON Tests', () => {
     })
     MqttProvider.instance.turnedOn = true
     try {
-      MqttProvider.publishEvent('success', ['testMethod'], 'Test Message')
+      await MqttProvider.publishEvent('success', ['testMethod'], 'Test Message')
       expect(spy).toHaveBeenCalled()
     } catch (err) {
 
@@ -75,37 +74,33 @@ describe('MQTT Turned ON Tests', () => {
 
   it('Should throw error when event message publish fails', async () => {
     MqttProvider.instance.client = {
-      publish: (topic, message, callback) => { return {} as any }
+      publish: (topic, message, callback) => {
+        expect(topic).toEqual('rps/events')
+        expect(message).toContain('testMethod')
+        callback(new Error())
+        return {} as any
+      }
     } as any
-    const spy = jest.spyOn(MqttProvider.instance.client, 'publish').mockImplementation((topic, message, callback) => {
-      callback(new Error())
-      return {} as any
-    })
     MqttProvider.instance.turnedOn = true
+
     try {
-      MqttProvider.publishEvent('success', ['testMethod'], 'Test Message')
+      await MqttProvider.publishEvent('success', ['testMethod'], 'Test Message')
     } catch (err) {
-      expect(spy).toHaveBeenCalled()
-      expect(err).toBeDefined()
+      expect(err?.message).toBe('Event message failed: ')
     }
   })
 
-  it('Should close client when promted', async () => {
+  it('Should close client when prompted', async () => {
     MqttProvider.instance.client = {
-      connected: true
+      connected: true,
+      end: () => {
+        return { connected: false }
+      }
     } as any
-    MqttProvider.instance.client = {
-      end: () => { return {} as any }
-    } as any
-    const spy = jest.spyOn(MqttProvider.instance.client, 'end').mockImplementation(() => {
-      return {
-        connected: false
-      } as any
-    })
+
     MqttProvider.instance.turnedOn = true
 
     MqttProvider.endBroker()
-    expect(spy).toHaveBeenCalled()
     expect(MqttProvider.instance.client.connected).toBe(false)
   })
 })
