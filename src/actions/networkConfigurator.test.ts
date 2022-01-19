@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { CIRAConfigurator } from '../actions/CIRAConfigurator'
-import { NetworkConfigurator } from '../actions/NetworkConfigurator'
+import { CIRAConfigurator } from './CIRAConfigurator'
+import { NetworkConfigurator } from './NetworkConfigurator'
 import { ClientManager } from '../ClientManager'
 import { Configurator } from '../Configurator'
 import Logger from '../Logger'
@@ -13,11 +13,11 @@ import { ClientResponseMsg } from '../utils/ClientResponseMsg'
 import { Validator } from '../Validator'
 import { WSManProcessor } from '../WSManProcessor'
 import { v4 as uuid } from 'uuid'
-import { AddWiFiSettingsResponse, AMTEthernetPortSettings, AMTEthernetPortSettingsResponse, AMTGeneralSettings, CIMWiFiPortResponse } from './helper/AMTJSONResponses'
+import { AddWiFiSettingsResponse, AMTEthernetPortSettings, AMTEthernetPortSettingsResponse, AMTGeneralSettings, CIMWiFiPortResponse } from '../test/helper/AMTJSONResponses'
 import { EnvReader } from '../utils/EnvReader'
-import { config } from './helper/Config'
+import { config } from '../test/helper/Config'
 import { ClientAction } from '../models/RCS.Config'
-import { TLSConfigurator } from '../actions/TLSConfigurator'
+import { TLSConfigurator } from './TLSConfigurator'
 import { CertManager } from '../CertManager'
 EnvReader.GlobalEnvConfig = config
 const nodeForge = new NodeForge()

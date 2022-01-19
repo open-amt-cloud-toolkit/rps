@@ -1,4 +1,4 @@
-import { MqttProvider } from '../utils/MqttProvider'
+import { MqttProvider } from './MqttProvider'
 import { RCSConfig } from '../models/Rcs'
 import * as mqtt1 from 'mqtt'
 

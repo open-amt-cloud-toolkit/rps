@@ -1,4 +1,4 @@
-import { TLSConfigurator } from '../actions/TLSConfigurator'
+import { TLSConfigurator } from './TLSConfigurator'
 import { AMTUserName } from '../utils/constants'
 import Logger from '../Logger'
 describe('TLS Configurator', () => {

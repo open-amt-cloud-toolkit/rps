@@ -50,7 +50,7 @@ export class MqttProvider {
   // eslint-disable-next-line @typescript-eslint/promise-function-async
   // Return type is any to get around the linter - Rule : no-floating-promises
   // Publish event is meant to be fire and forget
-  static async publishEvent (type: eventType, methods: string[], message: string, guid?: string): Promise<any> {
+  static publishEvent (type: eventType, methods: string[], message: string, guid?: string): any {
     // Block message if mqtt option is off
     if (!MqttProvider.instance?.turnedOn) return
 
@@ -63,7 +63,7 @@ export class MqttProvider {
     }
 
     // Enforce message type names before publishing
-    return await new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       MqttProvider.instance.client.publish('rps/events', JSON.stringify(event), function (err) {
         if (err == null) {
           log.info('Event message published')
