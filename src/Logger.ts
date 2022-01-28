@@ -16,7 +16,7 @@ const myFormat = printf(info => {
 // const logFile = path.join(__dirname, '/logs/logs.txt')
 
 const logger = winston.createLogger({
-  level: process.env.RPS_LOG_LEVEL || 'info',
+  level: process.env.RPS_LOG_LEVEL as winston.level || 'info',
   format: combine(timestamp(), myFormat),
   transports: [
     new winston.transports.Console()
