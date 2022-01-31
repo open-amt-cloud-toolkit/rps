@@ -17,15 +17,19 @@ import { IConfigurator } from '../interfaces/IConfigurator'
 import { EnvReader } from '../utils/EnvReader'
 import got from 'got'
 import { MqttProvider } from '../utils/MqttProvider'
-
+import { HttpHandler } from '../HttpHandler'
+import { AMT } from '@open-amt-cloud-toolkit/wsman-messages/index'
 export class Deactivator implements IExecutor {
+  amt: AMT.AMT
   constructor (
     private readonly logger: ILogger,
     private readonly responseMsg: ClientResponseMsg,
     private readonly amtwsman: WSManProcessor,
     private readonly clientManager: IClientManager,
-    private readonly configurator?: IConfigurator
-  ) {}
+    readonly configurator?: IConfigurator
+  ) {
+    this.amt = new AMT.AMT()
+  }
 
   /**
    * @description Create configuration message to deactivate AMT from ACM or CCM
@@ -33,7 +37,7 @@ export class Deactivator implements IExecutor {
    * @param {string} clientId Id to keep track of connections
    * @returns {RCSMessage} message to sent to client
    */
-  async execute (message: any, clientId: string): Promise<ClientMsg> {
+  async execute (message: any, clientId: string, httpHandler?: HttpHandler): Promise<ClientMsg> {
     let clientObj: ClientObject
     try {
       clientObj = this.clientManager.getClientObject(clientId)
@@ -44,14 +48,17 @@ export class Deactivator implements IExecutor {
         throw new RPSError(`Device ${clientObj.uuid} deactivate failed : Missing/invalid WSMan response payload.`)
       }
 
-      if (wsmanResponse.Header.Method === 'Unprovision') {
-        if (wsmanResponse.Body.ReturnValue !== 0) {
-          throw new RPSError(`Device ${clientObj.uuid} deactivation failed`)
-        } else {
+      switch (wsmanResponse.statusCode) {
+        case 401: {
+          const messageId = (httpHandler.messageId++).toString()
+          const xmlRequestBody = this.amt.SetupAndConfigurationService(AMT.Methods.UNPROVISION, messageId, null, 2)
+          const data = httpHandler.wrapIt(xmlRequestBody)
+          return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+        }
+        case 200: {
           this.logger.debug(`Deleting secret from vault for ${clientObj.uuid}`)
           await this.configurator.amtDeviceRepository.delete(new AMTDeviceDTO(clientObj.uuid, null, null, null, null, null, null))
           this.logger.debug(`Deleting metadata from mps for ${clientObj.uuid}`)
-
           /* unregister device metadata with MPS */
           try {
             await got(`${EnvReader.GlobalEnvConfig.mpsServer}/api/v1/devices/${clientObj.uuid}`, {
@@ -65,10 +72,9 @@ export class Deactivator implements IExecutor {
           clientObj.status.Status = 'Deactivated'
           return this.responseMsg.get(clientId, null, 'success', 'success', JSON.stringify(clientObj.status))
         }
-      } else {
-        clientObj.ClientData.payload = wsmanResponse
-        this.clientManager.setClientObject(clientObj)
-        await this.amtwsman.deactivateACM(clientId)
+        default: {
+          throw new RPSError(`Device ${clientObj.uuid} deactivation failed`)
+        }
       }
     } catch (error) {
       this.logger.error(`${clientId} : Failed to deactivate: ${error}`)

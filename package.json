@@ -37,7 +37,7 @@
   "scripts": {
     "compile": "tsc",
     "start": "tsc && node ./dist/Index.js",
-    "test": "jest --coverage",
+    "test": "jest --coverage --detectOpenHandles",
     "watch": "nodemon -e ts -w ./src -x npm run start",
     "lint": "eslint . --ext .ts"
   },
@@ -59,10 +59,12 @@
     "node-vault": "^0.9.22",
     "pg": "^8.7.1",
     "pg-format": "^1.0.4",
+    "http-z": "^6.1.2",
     "rc": "^1.2.8",
     "request": "^2.88.2",
     "winston": "^3.5.0",
-    "ws": "^8.4.2"
+    "ws": "^8.4.2",
+    "xml2js": "^0.4.23"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.2",

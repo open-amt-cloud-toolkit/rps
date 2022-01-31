@@ -19,21 +19,28 @@ import { WSManProcessor } from './WSManProcessor'
 import { ClientResponseMsg } from './utils/ClientResponseMsg'
 import { IValidator } from './interfaces/IValidator'
 import { CertManager } from './CertManager'
+import { AMT } from '@open-amt-cloud-toolkit/wsman-messages/index'
+import { HttpHandler } from './HttpHandler'
+import { parse, HttpZResponseModel } from 'http-z'
+import { DigestChallenge } from '@open-amt-cloud-toolkit/wsman-messages/models/common'
 
 export class DataProcessor implements IDataProcessor {
-  private readonly clientActions: ClientActions
-
+  readonly clientActions: ClientActions
+  amt: AMT.AMT
+  httpHandler: HttpHandler
   constructor (
     private readonly logger: ILogger,
     private readonly signatureHelper: SignatureHelper,
     private readonly configurator: IConfigurator,
-    private readonly validator: IValidator,
+    readonly validator: IValidator,
     private readonly certManager: CertManager,
     private readonly clientManager: IClientManager,
     private readonly responseMsg: ClientResponseMsg,
     private readonly amtwsman: WSManProcessor
   ) {
     this.clientActions = new ClientActions(new Logger('ClientActions'), configurator, certManager, signatureHelper, responseMsg, amtwsman, clientManager, validator)
+    this.amt = new AMT.AMT()
+    this.httpHandler = new HttpHandler()
   }
 
   /**
@@ -51,14 +58,12 @@ export class DataProcessor implements IDataProcessor {
       } catch (parseErr) {
         throw new RPSError(parseErr)
       }
-
       switch (clientMsg.method) {
         case ClientMethods.ACTIVATION: {
           return await this.activateDevice(clientMsg, clientId)
         }
         case ClientMethods.DEACTIVATION: {
-          await this.deactivateDevice(clientMsg, clientId)
-          return null
+          return await this.deactivateDevice(clientMsg, clientId)
         }
         case ClientMethods.RESPONSE: {
           return await this.handleResponse(clientMsg, clientId)
@@ -92,47 +97,45 @@ export class DataProcessor implements IDataProcessor {
     // Makes the first wsman call
     const clientObj = this.clientManager.getClientObject(clientId)
     if ((clientObj.action === ClientAction.ADMINCTLMODE || clientObj.action === ClientAction.CLIENTCTLMODE) && !clientMsg.payload.digestRealm && !clientObj.activationStatus.missingMebxPassword) {
-      await this.amtwsman.batchEnum(clientId, '*AMT_GeneralSettings')
+      const messageId = this.setConnectionParams(clientObj.ClientData.payload.uuid, clientObj.ClientData.payload.username, clientObj.ClientData.payload.password)
+      const xmlRequestBody = this.amt.GeneralSettings(AMT.Methods.GET, messageId)
+      const data = this.httpHandler.wrapIt(xmlRequestBody)
+      return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
     } else {
       const response = await this.clientActions.buildResponseMessage(clientMsg, clientId)
       return response
     }
   }
 
-  async deactivateDevice (clientMsg: ClientMsg, clientId: string): Promise<void> {
+  async deactivateDevice (clientMsg: ClientMsg, clientId: string): Promise<ClientMsg> {
     this.logger.debug(`ProcessData: Parsed DEACTIVATION Message received from device ${clientMsg.payload.uuid}: ${JSON.stringify(clientMsg, null, '\t')}`)
     await this.validator.validateDeactivationMsg(clientMsg, clientId) // Validate the deactivation message payload
-    await this.amtwsman.getWSManResponse(clientId, 'AMT_SetupAndConfigurationService', 'admin')
+    const messageId = this.setConnectionParams(clientMsg.payload.uuid, 'admin', clientMsg.payload.password)
+    const xmlRequestBody = this.amt.SetupAndConfigurationService(AMT.Methods.UNPROVISION, messageId, null, 2)
+    const data = this.httpHandler.wrapIt(xmlRequestBody)
+    return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
   }
 
   async handleResponse (clientMsg: ClientMsg, clientId: string): Promise<ClientMsg> {
     const clientObj = this.clientManager.getClientObject(clientId)
     const payload = clientObj.ClientData.payload
-    // this.logger.debug(`ProcessData: Parsed Message received from device ${payload.uuid}, clientId: ${clientId}: ${JSON.stringify(clientMsg, null, "\t")}`);
-    const msg = clientMsg.payload.split('\r\n')
-    const statusCode = msg[0].substr(9, 3).trim()
+    const message = parse(clientMsg.payload) as HttpZResponseModel
 
-    if (statusCode === '401') {
+    if (message.statusCode === 401) {
       // For Digest authentication, RPS first receives 401 unauthorized error.
-      clientObj.unauthCount += 1
-      this.clientManager.setClientObject(clientObj)
-      if (clientObj.unauthCount > 2) {
-        clientObj.unauthCount = 0
-        this.clientManager.setClientObject(clientObj)
-        throw new RPSError(`Device ${payload.uuid} authentication failed.`)
-      }
-      return this.amtwsman.parseWsManResponseXML(clientMsg.payload, clientId, statusCode)
-    } else if (statusCode === '200') {
-      clientMsg.payload = this.amtwsman.parseWsManResponseXML(clientMsg.payload, clientId, statusCode)
-      this.logger.debug(`Device ${payload.uuid} wsman response ${statusCode}: ${JSON.stringify(clientMsg.payload, null, '\t')}`)
+      this.httpHandler.connectionParams.digestChallenge = this.handleAuth(message)
+      clientMsg.payload = message
+    } else if (message.statusCode === 200) {
+      this.logger.debug(`Device ${payload.uuid} wsman response ${message.statusCode}: ${JSON.stringify(clientMsg.payload, null, '\t')}`)
+      clientMsg.payload = message
     } else {
-      clientMsg.payload = this.amtwsman.parseWsManResponseXML(clientMsg.payload, clientId, statusCode)
-      this.logger.debug(`Device ${payload.uuid} wsman response ${statusCode}: ${JSON.stringify(clientMsg.payload, null, '\t')}`)
+      this.logger.debug(`Device ${payload.uuid} wsman response ${message.statusCode}: ${JSON.stringify(clientMsg.payload, null, '\t')}`)
+      clientMsg.payload = message
       if (clientObj.action !== ClientAction.CIRACONFIG) {
         throw new RPSError(`Device ${payload.uuid} activation failed. Bad wsman response from AMT device`)
       }
     }
-    return await this.clientActions.buildResponseMessage(clientMsg, clientId)
+    return await this.clientActions.buildResponseMessage(clientMsg, clientId, this.httpHandler)
   }
 
   async heartbeat (clientMsg: ClientMsg, clientId: string): Promise<ClientMsg> {
@@ -150,5 +153,24 @@ export class DataProcessor implements IDataProcessor {
     this.logger.debug(`ProcessData: Parsed Maintenance message received from device ${clientMsg.payload.uuid}: ${JSON.stringify(clientMsg, null, '\t')}`)
     await this.validator.validateMaintenanceMsg(clientMsg, clientId)
     return await this.clientActions.buildResponseMessage(clientMsg, clientId)
+  }
+
+  handleAuth (message: HttpZResponseModel): DigestChallenge {
+    const found = message.headers.find(item => item.name === 'Www-Authenticate')
+    if (found != null) {
+      return this.httpHandler.parseAuthenticateResponseHeader(found.value)
+    }
+    return null
+  }
+
+  setConnectionParams (guid: string, username: string, password: string): string {
+    const messageId = (this.httpHandler.messageId++).toString()
+    this.httpHandler.connectionParams = {
+      port: 16992,
+      guid: guid,
+      username: username,
+      password: password
+    }
+    return messageId
   }
 }
