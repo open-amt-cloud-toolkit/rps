@@ -1,6 +1,5 @@
 import { ClientManager } from '../../ClientManager'
 import Logger from '../../Logger'
-import { NodeForge } from '../../NodeForge'
 import { ClientResponseMsg } from '../ClientResponseMsg'
 import { RPSError } from '../RPSError'
 import { WSManProcessor } from '../../WSManProcessor'
@@ -9,8 +8,7 @@ import { setMEBXPassword } from './setMEBXPassword'
 import { ClientObject } from '../../models/RCS.Config'
 
 const clientManager = ClientManager.getInstance(new Logger('ClientManager'))
-const nodeForge = new NodeForge()
-const responseMsg: ClientResponseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'), nodeForge)
+const responseMsg: ClientResponseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'))
 const amtwsman: WSManProcessor = new WSManProcessor(new Logger('WSManProcessor'), clientManager, responseMsg)
 let msg
 

@@ -26,9 +26,9 @@ const helper = new SignatureHelper(nodeForge)
 const certManager = new CertManager(new Logger('CertManager'), nodeForge)
 const configurator = new Configurator()
 const clientManager = ClientManager.getInstance(new Logger('ClientManager'))
-const responseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'), nodeForge)
+const responseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'))
 const amtwsman = new WSManProcessor(new Logger('WSManProcessor'), clientManager, responseMsg)
-const validator = new Validator(new Logger('Validator'), configurator, clientManager, nodeForge)
+const validator = new Validator(new Logger('Validator'), configurator, clientManager)
 const dataProcessor = new DataProcessor(new Logger('DataProcessor'), helper, configurator, validator, certManager, clientManager, responseMsg, amtwsman)
 
 afterAll(() => {
