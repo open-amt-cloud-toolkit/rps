@@ -5,7 +5,7 @@
  * Author: Brian Osburn
  **********************************************************************/
 
-import { AMTConfiguration } from './models/Rcs'
+import { AMTConfiguration } from './models'
 import { ILogger } from './interfaces/ILogger'
 import { IProfileManager } from './interfaces/IProfileManager'
 import { PasswordHelper } from './utils/PasswordHelper'

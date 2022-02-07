@@ -21,7 +21,7 @@ import { VersionChecker } from './VersionChecker'
 import { AMTUserName } from './utils/constants'
 import { EnvReader } from './utils/EnvReader'
 import got from 'got'
-import { AMTConfiguration } from './models/Rcs'
+import { AMTConfiguration } from './models'
 export class Validator implements IValidator {
   jsonParser: IClientMessageParser
 

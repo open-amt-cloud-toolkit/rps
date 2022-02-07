@@ -5,7 +5,7 @@
  * Author: Brian Osburn
  **********************************************************************/
 
-import { AMTConfiguration } from '../models/Rcs'
+import { AMTConfiguration } from '../models'
 import { CIRAConfig } from '../models/RCS.Config'
 
 export interface IProfileManager {

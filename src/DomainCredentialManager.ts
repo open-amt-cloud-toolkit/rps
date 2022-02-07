@@ -10,7 +10,7 @@ import { ILogger } from './interfaces/ILogger'
 import { IConfigurator } from './interfaces/IConfigurator'
 import { IDomainsTable } from './interfaces/database/IDomainsDb'
 import { EnvReader } from './utils/EnvReader'
-import { AMTDomain } from './models/Rcs'
+import { AMTDomain } from './models'
 
 export class DomainCredentialManager implements IDomainCredentialManager {
   private readonly amtDomains: IDomainsTable

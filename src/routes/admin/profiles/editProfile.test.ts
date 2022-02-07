@@ -1,4 +1,4 @@
-import { AMTConfiguration } from '../../../models/Rcs'
+import { AMTConfiguration } from '../../../models'
 import {
   handleAMTPassword,
   handleMEBxPassword,

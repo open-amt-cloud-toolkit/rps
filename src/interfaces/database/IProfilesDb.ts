@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  * Author : Ramu Bachala
  **********************************************************************/
-import { AMTConfiguration } from '../../models/Rcs'
+import { AMTConfiguration } from '../../models'
 import { CIRAConfig } from '../../models/RCS.Config'
 import { ITable } from './ITable'
 

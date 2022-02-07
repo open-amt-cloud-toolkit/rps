@@ -6,7 +6,7 @@
 
 import { RPSError } from './utils/RPSError'
 import { ProtocolVersion } from './utils/constants'
-import { Version } from './models/Rcs'
+import { Version } from './models'
 const VersionChecker = {
   currentVersion: null as Version,
   setCurrentVersion (currentVersion: string): void {

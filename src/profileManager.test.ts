@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { AMTConfiguration, RCSConfig } from './models/Rcs'
+import { AMTConfiguration, RPSConfig } from './models'
 import { ProfileManager } from './ProfileManager'
 import { ILogger } from './interfaces/ILogger'
 import Logger from './Logger'
@@ -12,7 +12,7 @@ import { CIRAConfig } from './models/RCS.Config'
 
 const logger: ILogger = new Logger('ProfileManagerTests')
 
-const rcsConfig: RCSConfig = {
+const rcsConfig: RPSConfig = {
   WSConfiguration: {
     WebSocketPort: 8080
   },

@@ -5,7 +5,7 @@
  **********************************************************************/
 import Logger from '../../../Logger'
 import { PROFILE_NOT_FOUND, API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../../utils/constants'
-import { AMTConfiguration } from '../../../models/Rcs'
+import { AMTConfiguration } from '../../../models'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { Request, Response } from 'express'
 

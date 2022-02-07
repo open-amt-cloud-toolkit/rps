@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 import Logger from '../../../Logger'
-import { AMTConfiguration, DataWithCount } from '../../../models/Rcs'
+import { AMTConfiguration, DataWithCount } from '../../../models'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { Request, Response } from 'express'

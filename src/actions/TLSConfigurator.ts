@@ -9,7 +9,7 @@ import { EnvReader } from '../utils/EnvReader'
 import { MqttProvider } from '../utils/MqttProvider'
 import { RPSError } from '../utils/RPSError'
 import { WSManProcessor } from '../WSManProcessor'
-import { AMTConfiguration, AMTKeyUsage, CertAttributes, TLSCerts } from '../models/Rcs'
+import { AMTConfiguration, AMTKeyUsage, CertAttributes, TLSCerts } from '../models'
 import got from 'got'
 
 import * as forge from 'node-forge'
