@@ -18,7 +18,7 @@ import { EnvReader } from '../utils/EnvReader'
 import got from 'got'
 import { MqttProvider } from '../utils/MqttProvider'
 import { HttpHandler } from '../HttpHandler'
-import { AMT } from '@open-amt-cloud-toolkit/wsman-messages/index'
+import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 export class Deactivator implements IExecutor {
   amt: AMT.AMT
   constructor (

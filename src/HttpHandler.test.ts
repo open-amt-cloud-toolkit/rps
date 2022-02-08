@@ -1,4 +1,4 @@
-import { CIM } from '@open-amt-cloud-toolkit/wsman-messages/index'
+import { CIM } from '@open-amt-cloud-toolkit/wsman-messages'
 import { DigestChallenge } from '@open-amt-cloud-toolkit/wsman-messages/models/common'
 import { HttpHandler } from './HttpHandler'
 
