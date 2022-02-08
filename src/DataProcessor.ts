@@ -19,14 +19,14 @@ import { WSManProcessor } from './WSManProcessor'
 import { ClientResponseMsg } from './utils/ClientResponseMsg'
 import { IValidator } from './interfaces/IValidator'
 import { CertManager } from './CertManager'
-import { AMT } from '@open-amt-cloud-toolkit/wsman-messages/index'
+import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 import { HttpHandler } from './HttpHandler'
 import { parse, HttpZResponseModel } from 'http-z'
 import { DigestChallenge } from '@open-amt-cloud-toolkit/wsman-messages/models/common'
 
 export class DataProcessor implements IDataProcessor {
   readonly clientActions: ClientActions
-  amt: AMT.AMT
+  amt: AMT.Messages
   httpHandler: HttpHandler
   constructor (
     private readonly logger: ILogger,
@@ -39,7 +39,7 @@ export class DataProcessor implements IDataProcessor {
     private readonly amtwsman: WSManProcessor
   ) {
     this.clientActions = new ClientActions(new Logger('ClientActions'), configurator, certManager, signatureHelper, responseMsg, amtwsman, clientManager, validator)
-    this.amt = new AMT.AMT()
+    this.amt = new AMT.Messages()
     this.httpHandler = new HttpHandler()
   }
 
