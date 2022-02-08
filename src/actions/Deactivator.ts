@@ -20,7 +20,7 @@ import { MqttProvider } from '../utils/MqttProvider'
 import { HttpHandler } from '../HttpHandler'
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 export class Deactivator implements IExecutor {
-  amt: AMT.AMT
+  amt: AMT.Messages
   constructor (
     private readonly logger: ILogger,
     private readonly responseMsg: ClientResponseMsg,
@@ -28,7 +28,7 @@ export class Deactivator implements IExecutor {
     private readonly clientManager: IClientManager,
     readonly configurator?: IConfigurator
   ) {
-    this.amt = new AMT.AMT()
+    this.amt = new AMT.Messages()
   }
 
   /**

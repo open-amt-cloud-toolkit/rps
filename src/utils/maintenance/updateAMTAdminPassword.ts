@@ -15,7 +15,7 @@ import { parseBody } from '../parseWSManResponseBody'
 import { ClientResponseMsg } from '../ClientResponseMsg'
 import { ClientMsg } from '../../models/RCS.Config'
 
-const amt = new AMT.AMT()
+const amt = new AMT.Messages()
 
 export const updateAMTAdminPassword = async (clientId: string, message: any, responseMsg: ClientResponseMsg, clientManager: IClientManager, configurator: IConfigurator, validator: IValidator, httpHandler: HttpHandler): Promise<ClientMsg> => {
   const logger = new Logger('updateAMTAdminPassword')

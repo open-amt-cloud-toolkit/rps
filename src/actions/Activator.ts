@@ -29,8 +29,8 @@ import { HttpHandler } from '../HttpHandler'
 import { AMT, IPS } from '@open-amt-cloud-toolkit/wsman-messages'
 import { parseBody } from '../utils/parseWSManResponseBody'
 export class Activator implements IExecutor {
-  amt: AMT.AMT
-  ips: IPS.IPS
+  amt: AMT.Messages
+  ips: IPS.Messages
   constructor (
     private readonly logger: ILogger,
     readonly configurator: IConfigurator,
@@ -41,8 +41,8 @@ export class Activator implements IExecutor {
     private readonly validator: IValidator,
     private readonly networkConfigurator: NetworkConfigurator
   ) {
-    this.amt = new AMT.AMT()
-    this.ips = new IPS.IPS()
+    this.amt = new AMT.Messages()
+    this.ips = new IPS.Messages()
   }
 
   /**

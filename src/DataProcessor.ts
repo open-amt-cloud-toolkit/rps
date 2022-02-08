@@ -26,7 +26,7 @@ import { DigestChallenge } from '@open-amt-cloud-toolkit/wsman-messages/models/c
 
 export class DataProcessor implements IDataProcessor {
   readonly clientActions: ClientActions
-  amt: AMT.AMT
+  amt: AMT.Messages
   httpHandler: HttpHandler
   constructor (
     private readonly logger: ILogger,
@@ -39,7 +39,7 @@ export class DataProcessor implements IDataProcessor {
     private readonly amtwsman: WSManProcessor
   ) {
     this.clientActions = new ClientActions(new Logger('ClientActions'), configurator, certManager, signatureHelper, responseMsg, amtwsman, clientManager, validator)
-    this.amt = new AMT.AMT()
+    this.amt = new AMT.Messages()
     this.httpHandler = new HttpHandler()
   }
 

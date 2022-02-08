@@ -11,12 +11,11 @@ import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 import { parseBody } from '../parseWSManResponseBody'
 
 const logger = new Logger('setMEBXPassword')
-const amt = new AMT.AMT()
+const amt = new AMT.Messages()
 
 export const setMEBXPassword = async (clientId: string, message: any, responseMsg: ClientResponseMsg, clientManager: IClientManager, configurator: IConfigurator, httpHandler: HttpHandler): Promise<ClientMsg> => {
   const clientObj = clientManager.getClientObject(clientId)
   const mebxPassword: string = await configurator.profileManager.getMEBxPassword(clientObj.ClientData.payload.profile.profileName)
-  // const mebxPassword = 'Intel@123!'
   if (message === '') {
     const xmlRequestBody = amt.SetupAndConfigurationService(AMT.Methods.SET_MEBX_PASSWORD, (httpHandler.messageId++).toString(), mebxPassword)
     const wsmanRequest = httpHandler.wrapIt(xmlRequestBody)
