@@ -11,7 +11,6 @@ import { ILogger } from './interfaces/ILogger'
 import { ClientMsg, ClientAction, Payload, ClientMethods, ClientObject } from './models/RCS.Config'
 import { IConfigurator } from './interfaces/IConfigurator'
 import { IClientManager } from './interfaces/IClientManager'
-import { NodeForge } from './NodeForge'
 import { IClientMessageParser } from './interfaces/IClientMessageParser'
 import { ClientMsgJsonParser } from './utils/ClientMsgJsonParser'
 import { RPSError } from './utils/RPSError'
@@ -28,10 +27,9 @@ export class Validator implements IValidator {
   constructor (
     private readonly logger: ILogger,
     private readonly configurator: IConfigurator,
-    private readonly clientManager: IClientManager,
-    private readonly nodeForge: NodeForge
+    private readonly clientManager: IClientManager
   ) {
-    this.jsonParser = new ClientMsgJsonParser(this.nodeForge)
+    this.jsonParser = new ClientMsgJsonParser()
   }
 
   /**

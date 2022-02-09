@@ -109,7 +109,7 @@ export class CertManager {
      */
   convertPfxToObject (pfxb64: string, passphrase: string): CertsAndKeys {
     const pfxOut: CertsAndKeys = { certs: [], keys: [] }
-    const pfxder = this.nodeForge.decode64(pfxb64)
+    const pfxder = Buffer.from(pfxb64, 'base64').toString('binary')
     const asn = this.nodeForge.asn1FromDer(pfxder)
     let pfx: pkcs12.Pkcs12Pfx
     try {

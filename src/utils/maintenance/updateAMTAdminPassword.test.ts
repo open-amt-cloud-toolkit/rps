@@ -1,6 +1,5 @@
 import { ClientManager } from '../../ClientManager'
 import Logger from '../../Logger'
-import { NodeForge } from '../../NodeForge'
 import { ClientResponseMsg } from '../ClientResponseMsg'
 import { v4 as uuid } from 'uuid'
 import { updateAMTAdminPassword } from './updateAMTAdminPassword'
@@ -14,10 +13,9 @@ import { ClientObject } from '../../models/RCS.Config'
 
 EnvReader.GlobalEnvConfig = config
 const clientManager = ClientManager.getInstance(new Logger('ClientManager'))
-const nodeForge = new NodeForge()
 const configurator = new Configurator()
-const responseMsg: ClientResponseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'), nodeForge)
-const validator = new Validator(new Logger('Validator'), configurator, clientManager, nodeForge)
+const responseMsg: ClientResponseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'))
+const validator = new Validator(new Logger('Validator'), configurator, clientManager)
 const httpHandler = new HttpHandler()
 let msg
 let setAdminAclEntryExOutPut = null
