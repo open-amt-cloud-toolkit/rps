@@ -1,5 +1,5 @@
 import { createSpyObj } from '../../../test/helper/jest'
-import * as version from './getVersion'
+import * as version from './get'
 
 describe('Checks getVersion', () => {
   let resSpy

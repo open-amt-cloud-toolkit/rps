@@ -3,13 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  * Author : Ramu Bachala
  **********************************************************************/
-import { deleteProfile } from './deleteProfile'
+import { deleteProfile } from './delete'
 
 import { Router } from 'express'
 import { allProfiles } from './all'
-import { getProfile } from './getProfile'
-import { createProfile } from './createProfile'
-import { editProfile } from './editProfile'
+import { getProfile } from './get'
+import { createProfile } from './create'
+import { editProfile } from './edit'
 import { amtProfileValidator, profileUpdateValidator } from './amtProfileValidator'
 import { odataValidator } from '../odataValidator'
 import validateMiddleware from '../../../middleware/validate'
