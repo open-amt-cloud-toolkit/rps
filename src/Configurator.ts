@@ -28,7 +28,7 @@ import { DataProcessor } from './DataProcessor'
 import { DbCreatorFactory } from './repositories/factories/DbCreatorFactory'
 
 export class Configurator implements IConfigurator {
-  readonly amtDeviceRepository: IAMTDeviceRepository
+  amtDeviceRepository: IAMTDeviceRepository
   domainCredentialManager: IDomainCredentialManager
   profileManager: IProfileManager
   readonly secretsManager: ISecretManagerService
