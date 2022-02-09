@@ -13,7 +13,6 @@ import { ClientMsg, ClientAction, ClientObject } from '../models/RCS.Config'
 import { IConfigurator } from '../interfaces/IConfigurator'
 import { AMTDeviceDTO } from '../repositories/dto/AmtDeviceDTO'
 import { ClientResponseMsg } from '../utils/ClientResponseMsg'
-import { WSManProcessor } from '../WSManProcessor'
 import { IClientManager } from '../interfaces/IClientManager'
 import { IValidator } from '../interfaces/IValidator'
 import { RPSError } from '../utils/RPSError'
@@ -26,19 +25,25 @@ import { MqttProvider } from '../utils/MqttProvider'
 import { setMEBXPassword } from '../utils/maintenance/setMEBXPassword'
 import { CertManager } from '../CertManager'
 import { updateAMTAdminPassword } from '../utils/maintenance/updateAMTAdminPassword'
-
+import { HttpHandler } from '../HttpHandler'
+import { AMT, IPS } from '@open-amt-cloud-toolkit/wsman-messages'
+import { parseBody } from '../utils/parseWSManResponseBody'
 export class Activator implements IExecutor {
+  amt: AMT.Messages
+  ips: IPS.Messages
   constructor (
     private readonly logger: ILogger,
-    private readonly configurator: IConfigurator,
+    readonly configurator: IConfigurator,
     private readonly certManager: CertManager,
-    private readonly signatureHelper: SignatureHelper,
+    readonly signatureHelper: SignatureHelper,
     private readonly responseMsg: ClientResponseMsg,
-    private readonly amtwsman: WSManProcessor,
     private readonly clientManager: IClientManager,
     private readonly validator: IValidator,
     private readonly networkConfigurator: NetworkConfigurator
-  ) { }
+  ) {
+    this.amt = new AMT.Messages()
+    this.ips = new IPS.Messages()
+  }
 
   /**
    * @description Create configuration message to activate AMT in admin control mode
@@ -46,7 +51,7 @@ export class Activator implements IExecutor {
    * @param {string} clientId Id to keep track of connections
    * @returns {RCSMessage} message to sent to client
    */
-  async execute (message: any, clientId: string): Promise<ClientMsg> {
+  async execute (message: any, clientId: string, httpHandler?: HttpHandler): Promise<ClientMsg> {
     let clientObj: ClientObject
     try {
       clientObj = this.clientManager.getClientObject(clientId)
@@ -55,26 +60,32 @@ export class Activator implements IExecutor {
         MqttProvider.publishEvent('fail', ['Activator', 'execute'], 'Missing/invalid WSMan response payload', clientObj.uuid)
         throw new RPSError(`Device ${clientObj.uuid} activation failed. Missing/invalid WSMan response payload.`)
       } else if (clientObj.activationStatus.activated && clientObj.activationStatus.changePassword) {
-        const result = await updateAMTAdminPassword(clientId, wsmanResponse, this.amtwsman, this.clientManager, this.configurator, this.validator)
-        if (result) {
+        const result = await updateAMTAdminPassword(clientId, wsmanResponse, this.responseMsg, this.clientManager, this.configurator, this.validator, httpHandler)
+        if (result.method === 'success') {
           clientObj.activationStatus.changePassword = false
           this.clientManager.setClientObject(clientObj)
           this.logger.debug(`${clientId} : AMT admin password updated: ${clientObj.uuid}`)
-          return await this.waitAfterActivation(clientId, clientObj, wsmanResponse)
+          return await this.waitAfterActivation(clientId, clientObj, wsmanResponse, httpHandler)
+        } else if (result.method === 'error') {
+          throw new RPSError(`Device ${clientObj.uuid} failed to update AMT password.`)
+        } else {
+          return result
         }
       } else if (clientObj.activationStatus.activated) {
-        const msg = await this.waitAfterActivation(clientId, clientObj, wsmanResponse)
+        const msg = await this.waitAfterActivation(clientId, clientObj, wsmanResponse, httpHandler)
         return msg
       } else {
-        const msg = await this.processWSManJsonResponse(message, clientId)
+        const msg = await this.processWSManJsonResponse(message, clientId, httpHandler)
         if (msg) {
           return msg
         }
       }
 
-      // clientObj = this.clientManager.getClientObject(clientId)
       if (clientObj.ClientData.payload.fwNonce && clientObj.action === ClientAction.ADMINCTLMODE) {
-        await this.performACMSteps(clientId, clientObj)
+        const msg = await this.performACMSteps(clientId, clientObj, httpHandler)
+        if (msg) {
+          return msg
+        }
       }
       if (((clientObj.action === ClientAction.ADMINCTLMODE && clientObj.certObj && clientObj.count > clientObj.certObj.certChain.length) || (clientObj.action === ClientAction.CLIENTCTLMODE)) && !clientObj.activationStatus.activated) {
         const amtPassword: string = await this.configurator.profileManager.getAmtPassword(clientObj.ClientData.payload.profile.profileName)
@@ -83,13 +94,17 @@ export class Activator implements IExecutor {
 
         const data: string = `admin:${clientObj.ClientData.payload.digestRealm}:${amtPassword}`
         const password = SignatureHelper.createMd5Hash(data)
+        let xmlRequestBody = ''
         if (clientObj.action === ClientAction.ADMINCTLMODE) {
+          await this.createSignedString(clientObj)
           // Activate in ACM
-          await this.amtwsman.setupACM(clientId, password, clientObj.nonce.toString('base64'), clientObj.signature)
+          xmlRequestBody = this.ips.HostBasedSetupService(IPS.Methods.ADMIN_SETUP, (httpHandler.messageId++).toString(), 2, password, clientObj.nonce.toString('base64'), 2, clientObj.signature)
         } else {
-        // Activate in CCM
-          await this.amtwsman.setupCCM(clientId, password)
+          // Activate in CCM
+          xmlRequestBody = this.ips.HostBasedSetupService(IPS.Methods.SETUP, (httpHandler.messageId++).toString(), 2, password)
         }
+        const wsmanRequest = httpHandler.wrapIt(xmlRequestBody)
+        return this.responseMsg.get(clientId, wsmanRequest, 'wsman', 'ok', 'alls good!')
       }
     } catch (error) {
       this.logger.error(`${clientId} : Failed to activate - ${error}`)
@@ -139,69 +154,103 @@ export class Activator implements IExecutor {
    * @param {string} clientId Id to keep track of connections
    * @param {string} message
    */
-  async processWSManJsonResponse (message: any, clientId: string): Promise<ClientMsg> {
-    // TODO: Move Header Methods to a model and use as a constant
-    // TODO: Centralize error handling that is repeated
-    // TODO: break out decision content to separate functions
+  async processWSManJsonResponse (message: any, clientId: string, httpHandler?: HttpHandler): Promise<ClientMsg> {
     const clientObj = this.clientManager.getClientObject(clientId)
+    console.log('message :', message)
     const wsmanResponse = message.payload
-    // Process the next step in the activation flow based on the response from the client
-    if (wsmanResponse.AMT_GeneralSettings) {
-      // Response from GeneralSettings wsman call
-      const digestRealm = wsmanResponse.AMT_GeneralSettings.response.DigestRealm
-      // Validate Digest Realm
-      if (!this.validator.isDigestRealmValid(digestRealm)) {
-        throw new RPSError(`Device ${clientObj.uuid} activation failed. Not a valid digest realm.`)
+    switch (wsmanResponse.statusCode) {
+      case 401: {
+        const xmlRequestBody = this.amt.GeneralSettings(AMT.Methods.GET, (httpHandler.messageId++).toString())
+        const data = httpHandler.wrapIt(xmlRequestBody)
+        return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
       }
-      clientObj.ClientData.payload.digestRealm = digestRealm
-      clientObj.hostname = clientObj.ClientData.payload.hostname
-      this.clientManager.setClientObject(clientObj)
-      if (clientObj.ClientData.payload.fwNonce == null && clientObj.action === ClientAction.ADMINCTLMODE) {
-        await this.amtwsman.batchEnum(clientId, '*IPS_HostBasedSetupService')
+      case 200: {
+        const xmlBody = parseBody(wsmanResponse)
+        // pares WSMan xml response to json
+        const response = httpHandler.parseXML(xmlBody)
+        const method = response.Envelope.Header.ResourceURI.split('/').pop()
+        switch (method) {
+          case 'AMT_GeneralSettings': {
+            return await this.validateGeneralSettings(clientId, clientObj, response, httpHandler)
+          }
+          case 'IPS_HostBasedSetupService': {
+            return await this.validateHostBasedSetupService(clientId, clientObj, response, httpHandler)
+          }
+          default: {
+            throw new RPSError(`Device ${clientObj.uuid} failed to activate`)
+          }
+        }
       }
-    } else if (wsmanResponse.IPS_HostBasedSetupService) {
-      // Response from IPS_HostBasedSetup wsman call
-      const response = wsmanResponse.IPS_HostBasedSetupService.response
-      clientObj.ClientData.payload.fwNonce = Buffer.from(response.ConfigurationNonce, 'base64')
-      clientObj.ClientData.payload.modes = response.AllowedControlModes
-      this.clientManager.setClientObject(clientObj)
-    } else if (wsmanResponse.Header && wsmanResponse.Header.Method === 'AddNextCertInChain') {
-      // Response from injectCertificate call
-      if (wsmanResponse.Body.ReturnValue !== 0) {
-        throw new RPSError(`Device ${clientObj.uuid} activation failed. Error while adding the certificates to AMT.`)
-      } else {
+      default: {
+        throw new RPSError(`Device ${clientObj.uuid} failed to activate`)
+      }
+    }
+  }
+
+  // Todo: Remove any
+  async validateGeneralSettings (clientId: string, clientObj: ClientObject, response: any, httpHandler: HttpHandler): Promise<ClientMsg> {
+    const digestRealm = response.Envelope.Body.AMT_GeneralSettings.DigestRealm
+    // Validate Digest Realm
+    if (!this.validator.isDigestRealmValid(digestRealm)) {
+      throw new RPSError(`Device ${clientObj.uuid} activation failed. Not a valid digest realm.`)
+    }
+    clientObj.ClientData.payload.digestRealm = digestRealm
+    clientObj.hostname = clientObj.ClientData.payload.hostname
+    this.clientManager.setClientObject(clientObj)
+    if (clientObj.ClientData.payload.fwNonce == null && clientObj.action === ClientAction.ADMINCTLMODE) {
+      const xmlRequestBody = this.ips.HostBasedSetupService(IPS.Methods.GET, (httpHandler.messageId++).toString())
+      const data = httpHandler.wrapIt(xmlRequestBody)
+      return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+    }
+    return null
+  }
+
+  // Todo: Remove any
+  async validateHostBasedSetupService (clientId: string, clientObj: ClientObject, response: any, httpHandler: HttpHandler): Promise<ClientMsg> {
+    const action = response.Envelope.Header.Action.split('/').pop()
+    switch (action) {
+      case 'GetResponse': {
+        clientObj.ClientData.payload.fwNonce = Buffer.from(response.Envelope.Body.IPS_HostBasedSetupService.ConfigurationNonce, 'base64')
+        clientObj.ClientData.payload.modes = response.Envelope.Body.IPS_HostBasedSetupService.AllowedControlModes
+        this.clientManager.setClientObject(clientObj)
+        return null
+      }
+      case 'AddNextCertInChainResponse': {
+        // Response from injectCertificate call
+        if (response.Envelope.Body.AddNextCertInChain_OUTPUT.ReturnValue !== 0) {
+          throw new RPSError(`Device ${clientObj.uuid} activation failed. Error while adding the certificates to AMT.`)
+        }
         this.logger.debug(`cert added to AMT device ${clientObj.uuid}`)
+        return null
       }
-    } else if (wsmanResponse.Header && wsmanResponse.Header.Method === 'AdminSetup') {
-      // Response from setupACM call
-      if (wsmanResponse.Body.ReturnValue !== 0) {
-        throw new RPSError(`Device ${clientObj.uuid} activation failed. Error while activating the AMT device in admin mode.`)
-      } else {
+      case 'AdminSetupResponse': {
+        if (response.Envelope.Body.AdminSetup_OUTPUT.ReturnValue !== 0) {
+          throw new RPSError(`Device ${clientObj.uuid} activation failed. Error while activating the AMT device in admin mode.`)
+        }
         this.logger.debug(`Device ${clientObj.uuid} activated in admin mode.`)
-        clientObj.status.Status = 'Admin control mode'
+        clientObj.status.Status = 'Admin control mode.'
         clientObj.activationStatus.activated = true
         this.clientManager.setClientObject(clientObj)
-        await this.saveDeviceInfo(clientObj)
-        const msg = await this.waitAfterActivation(clientId, clientObj)
+        await this.saveDeviceInfoToVault(clientObj)
+        await this.saveDeviceInfoToMPS(clientObj)
+        const msg = await this.waitAfterActivation(clientId, clientObj, null, httpHandler)
         MqttProvider.publishEvent('success', ['Activator', 'execute'], 'Device activated in admin control mode', clientObj.uuid)
         return msg
       }
-    } else if (wsmanResponse.Header.Method === 'Setup') {
-      // Response from setupCCM call
-      if (wsmanResponse.Body.ReturnValue !== 0) {
-        throw new RPSError(`Device ${clientObj.uuid} activation failed. Error while activating the AMT device in client mode.`)
-      } else {
+      case 'SetupResponse': {
+        if (response.Envelope.Body.Setup_OUTPUT.ReturnValue !== 0) {
+          throw new RPSError(`Device ${clientObj.uuid} activation failed. Error while activating the AMT device in client mode.`)
+        }
         this.logger.debug(`Device ${clientObj.uuid} activated in client mode.`)
         clientObj.status.Status = 'Client control mode'
         clientObj.activationStatus.activated = true
         this.clientManager.setClientObject(clientObj)
-        await this.saveDeviceInfo(clientObj)
-        const msg = await this.waitAfterActivation(clientId, clientObj)
+        await this.saveDeviceInfoToVault(clientObj)
+        await this.saveDeviceInfoToMPS(clientObj)
+        const msg = await this.waitAfterActivation(clientId, clientObj, null, httpHandler)
         MqttProvider.publishEvent('success', ['Activator', 'execute'], 'Device activated in client control mode', clientObj.uuid)
         return msg
       }
-    } else {
-      throw new RPSError(`Device ${clientObj.uuid} sent an invalid response.`)
     }
   }
 
@@ -211,7 +260,7 @@ export class Activator implements IExecutor {
    * @param {ClientObject} clientObj
    * @returns {ClientMsg} returns message to client
    */
-  async waitAfterActivation (clientId: string, clientObj: ClientObject, wsmanResponse: any = null): Promise<ClientMsg> {
+  async waitAfterActivation (clientId: string, clientObj: ClientObject, wsmanResponse: any = null, httpHandler: HttpHandler): Promise<ClientMsg> {
     if (clientObj.delayEndTime == null) {
       this.logger.debug(`waiting for ${EnvReader.GlobalEnvConfig.delayTimer} seconds after activation`)
       const endTime: Date = new Date()
@@ -223,19 +272,17 @@ export class Activator implements IExecutor {
     if (currentTime >= clientObj.delayEndTime || clientObj.activationStatus.missingMebxPassword) {
       this.logger.debug(`Delay ${EnvReader.GlobalEnvConfig.delayTimer} seconds after activation completed`)
       /* Update the wsman stack username and password */
-      if (this.amtwsman.cache[clientId]) {
-        this.amtwsman.cache[clientId].wsman.comm.setupCommunication.getUsername = (): string => { return AMTUserName }
-        this.amtwsman.cache[clientId].wsman.comm.setupCommunication.getPassword = (): string => { return clientObj.amtPassword }
-      }
-      if (clientObj.action === ClientAction.ADMINCTLMODE && clientObj.mebxPassword == null) {
-      /* Set MEBx password called after the activation as the API is accessible only with admin user */
-        await setMEBXPassword(clientId, null, this.amtwsman, this.clientManager, this.configurator)
-      } else if (clientObj.action === ClientAction.ADMINCTLMODE && clientObj.mebxPassword != null) {
-        const result = await setMEBXPassword(clientId, wsmanResponse, this.amtwsman, this.clientManager, this.configurator)
+      httpHandler.connectionParams.username = AMTUserName
+      httpHandler.connectionParams.password = clientObj.amtPassword
+      if (clientObj.action === ClientAction.ADMINCTLMODE) {
+        /* Set MEBx password called after the activation as the API is accessible only with admin user */
+        const result = await setMEBXPassword(clientId, wsmanResponse, this.responseMsg, this.clientManager, this.configurator, httpHandler)
         // Response from setMEBxPassword call
-        if (result) {
+        if (result.method !== 'success' && result.method !== 'error') {
+          return result
+        } else if (result.method === 'success') {
           this.logger.debug(`Device ${clientObj.uuid} MEBx password updated.`)
-        } else {
+        } else if (result.method === 'error') {
           this.logger.debug(`Device ${clientObj.uuid} failed to update MEBx password.`)
         }
         clientObj.action = ClientAction.NETWORKCONFIG
@@ -257,9 +304,9 @@ export class Activator implements IExecutor {
    * @param {string} clientId Id to keep track of connections
    * @param {ClientObject} clientObj
    */
-  async performACMSteps (clientId: string, clientObj: ClientObject): Promise<void> {
+  async performACMSteps (clientId: string, clientObj: ClientObject, httpHandler: HttpHandler): Promise<ClientMsg> {
     if (!clientObj.count) {
-      clientObj.count = 0
+      clientObj.count = 1
       const amtDomain: AMTDomain = await this.configurator.domainCredentialManager.getProvisioningCert(clientObj.ClientData.payload.fqdn)
       this.logger.debug(`domain : ${JSON.stringify(amtDomain)}`)
       // Verify that the certificate path points to a file that exists
@@ -279,10 +326,7 @@ export class Activator implements IExecutor {
         throw new RPSError(`Device ${clientObj.uuid} activation failed. Provisioning certificate doesn't match any trusted certificates from AMT`)
       }
     }
-    await this.injectCertificate(clientId, clientObj)
-    if (clientObj.count > clientObj.certObj.certChain.length && !clientObj.activationStatus.activated) {
-      await this.createSignedString(clientObj)
-    }
+    return await this.injectCertificate(clientId, clientObj, httpHandler)
   }
 
   /**
@@ -290,22 +334,23 @@ export class Activator implements IExecutor {
   * @param {string} clientId Id to keep track of connections
   * @param {ClientObject} clientObj
   */
-  async injectCertificate (clientId: string, clientObj: ClientObject): Promise<void> {
-    if (clientObj.count === clientObj.certObj.certChain.length) {
-      ++clientObj.count
-      this.clientManager.setClientObject(clientObj)
-    }
+  async injectCertificate (clientId: string, clientObj: ClientObject, httpHandler: HttpHandler): Promise<ClientMsg> {
+    let data
     // inject certificates in proper order with proper flags
-    if (clientObj.count <= clientObj.certObj.certChain.length - 1) {
-      if (clientObj.count === 0) {
-        await this.amtwsman.getCertChainWSManResponse(clientObj.certObj.certChain[clientObj.count], true, false, clientId)
-      } else if (clientObj.count > 0 && clientObj.count < clientObj.certObj.certChain.length - 1) {
-        await this.amtwsman.getCertChainWSManResponse(clientObj.certObj.certChain[clientObj.count], false, false, clientId)
-      } else if (clientObj.count === clientObj.certObj.certChain.length - 1) {
-        await this.amtwsman.getCertChainWSManResponse(clientObj.certObj.certChain[clientObj.count], false, true, clientId)
+    if (clientObj.count <= clientObj.certObj.certChain.length) {
+      if (clientObj.count === 1) {
+        const xmlRequestBody = this.ips.HostBasedSetupService(IPS.Methods.ADD_NEXT_CERT_IN_CHAIN, (httpHandler.messageId++).toString(), null, null, null, null, null, clientObj.certObj.certChain[clientObj.count - 1], true, false)
+        data = httpHandler.wrapIt(xmlRequestBody)
+      } else if (clientObj.count > 1 && clientObj.count < clientObj.certObj.certChain.length) {
+        const xmlRequestBody = this.ips.HostBasedSetupService(IPS.Methods.ADD_NEXT_CERT_IN_CHAIN, (httpHandler.messageId++).toString(), null, null, null, null, null, clientObj.certObj.certChain[clientObj.count - 1], false, false)
+        data = httpHandler.wrapIt(xmlRequestBody)
+      } else if (clientObj.count === clientObj.certObj.certChain.length) {
+        const xmlRequestBody = this.ips.HostBasedSetupService(IPS.Methods.ADD_NEXT_CERT_IN_CHAIN, (httpHandler.messageId++).toString(), null, null, null, null, null, clientObj.certObj.certChain[clientObj.count - 1], false, true)
+        data = httpHandler.wrapIt(xmlRequestBody)
       }
       ++clientObj.count
       this.clientManager.setClientObject(clientObj)
+      return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
     }
   }
 
@@ -329,7 +374,7 @@ export class Activator implements IExecutor {
    * @param {ClientObject} clientObj
    * @param {string} amtPassword
    */
-  async saveDeviceInfo (clientObj: ClientObject): Promise<void> {
+  async saveDeviceInfoToVault (clientObj: ClientObject): Promise<boolean> {
     if (this.configurator?.amtDeviceRepository) {
       if (clientObj.action === ClientAction.ADMINCTLMODE) {
         await this.configurator.amtDeviceRepository.insert(new AMTDeviceDTO(clientObj.uuid,
@@ -340,6 +385,7 @@ export class Activator implements IExecutor {
           clientObj.amtPassword,
           clientObj.mebxPassword
         ))
+        return true
       } else {
         await this.configurator.amtDeviceRepository.insert(new AMTDeviceDTO(clientObj.uuid,
           clientObj.hostname,
@@ -349,10 +395,15 @@ export class Activator implements IExecutor {
           clientObj.amtPassword,
           null))
       }
+      return true
     } else {
       MqttProvider.publishEvent('fail', ['Activator'], 'Unable to write device', clientObj.uuid)
       this.logger.error('unable to write device')
     }
+    return false
+  }
+
+  async saveDeviceInfoToMPS (clientObj: ClientObject): Promise<boolean> {
     /* Register device metadata with MPS */
     try {
       const profile = await this.configurator.profileManager.getAmtProfile(clientObj.ClientData.payload.profile.profileName)
@@ -370,9 +421,11 @@ export class Activator implements IExecutor {
           tenantId: profile.tenantId
         }
       })
+      return true
     } catch (err) {
       MqttProvider.publishEvent('fail', ['Activator'], 'unable to register metadata with MPS', clientObj.uuid)
       this.logger.error('unable to register metadata with MPS', err)
     }
+    return false
   }
 }

@@ -19,14 +19,14 @@ import { WSManProcessor } from './WSManProcessor'
 import { ClientResponseMsg } from './utils/ClientResponseMsg'
 import { IValidator } from './interfaces/IValidator'
 import { CertManager } from './CertManager'
-import { AMT } from '@open-amt-cloud-toolkit/wsman-messages/index'
+import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 import { HttpHandler } from './HttpHandler'
 import { parse, HttpZResponseModel } from 'http-z'
 import { DigestChallenge } from '@open-amt-cloud-toolkit/wsman-messages/models/common'
 
 export class DataProcessor implements IDataProcessor {
   readonly clientActions: ClientActions
-  amt: AMT.AMT
+  amt: AMT.Messages
   httpHandler: HttpHandler
   constructor (
     private readonly logger: ILogger,
@@ -39,7 +39,7 @@ export class DataProcessor implements IDataProcessor {
     private readonly amtwsman: WSManProcessor
   ) {
     this.clientActions = new ClientActions(new Logger('ClientActions'), configurator, certManager, signatureHelper, responseMsg, amtwsman, clientManager, validator)
-    this.amt = new AMT.AMT()
+    this.amt = new AMT.Messages()
     this.httpHandler = new HttpHandler()
   }
 
@@ -120,7 +120,6 @@ export class DataProcessor implements IDataProcessor {
     const clientObj = this.clientManager.getClientObject(clientId)
     const payload = clientObj.ClientData.payload
     const message = parse(clientMsg.payload) as HttpZResponseModel
-
     if (message.statusCode === 401) {
       // For Digest authentication, RPS first receives 401 unauthorized error.
       this.httpHandler.connectionParams.digestChallenge = this.handleAuth(message)
@@ -142,7 +141,7 @@ export class DataProcessor implements IDataProcessor {
     const clientObj = this.clientManager.getClientObject(clientId)
     const currentTime = new Date().getTime()
     if (currentTime >= clientObj.delayEndTime) {
-      return await this.clientActions.buildResponseMessage(clientMsg, clientId)
+      return await this.clientActions.buildResponseMessage(clientMsg, clientId, this.httpHandler)
     } else {
       await new Promise(resolve => setTimeout(resolve, 5000)) // TODO: make configurable rate if required by customers
       return this.responseMsg.get(clientId, null, 'heartbeat_request', 'heartbeat', '')
