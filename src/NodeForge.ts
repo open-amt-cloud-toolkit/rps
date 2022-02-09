@@ -14,15 +14,7 @@ export class NodeForge {
     return forge.pkcs12.pkcs12FromAsn1(obj, strict, password)
   }
 
-  decode64 (encoded: string): string {
-    return forge.util.decode64(encoded)
-  }
-
-  encode64 (encode: string): string {
-    return forge.util.encode64(encode)
-  }
-
-  asn1FromDer (input: any, strict?: boolean): forge.asn1.Asn1 {
+  asn1FromDer (input: string, strict?: boolean): forge.asn1.Asn1 {
     return forge.asn1.fromDer(input, strict)
   }
 

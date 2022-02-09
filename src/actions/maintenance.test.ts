@@ -2,7 +2,6 @@
 import { ClientManager } from '../ClientManager'
 import { Configurator } from '../Configurator'
 import Logger from '../Logger'
-import { NodeForge } from '../NodeForge'
 import { ClientResponseMsg } from '../utils/ClientResponseMsg'
 import { WSManProcessor } from '../WSManProcessor'
 import { v4 as uuid } from 'uuid'
@@ -10,10 +9,9 @@ import { EnvReader } from '../utils/EnvReader'
 import { config } from '../test/helper/Config'
 import { Maintenance } from './Maintenance'
 EnvReader.GlobalEnvConfig = config
-const nodeForge = new NodeForge()
 const configurator = new Configurator()
 const clientManager = ClientManager.getInstance(new Logger('ClientManager'))
-const responseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'), nodeForge)
+const responseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'))
 const amtwsman = new WSManProcessor(new Logger('WSManProcessor'), clientManager, responseMsg)
 const maintenance = new Maintenance(new Logger('Maintenance'), configurator, responseMsg, amtwsman, clientManager)
 let maintenanceMsg

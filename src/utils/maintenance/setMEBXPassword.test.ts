@@ -1,6 +1,5 @@
 import { ClientManager } from '../../ClientManager'
 import Logger from '../../Logger'
-import { NodeForge } from '../../NodeForge'
 import { ClientResponseMsg } from '../ClientResponseMsg'
 import { v4 as uuid } from 'uuid'
 import { setMEBXPassword } from './setMEBXPassword'
@@ -11,9 +10,8 @@ import { config } from '../../test/helper/Config'
 
 EnvReader.GlobalEnvConfig = config
 const clientManager = ClientManager.getInstance(new Logger('ClientManager'))
-const nodeForge = new NodeForge()
 const configurator = new Configurator()
-const responseMsg: ClientResponseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'), nodeForge)
+const responseMsg: ClientResponseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'))
 const httpHandler = new HttpHandler()
 let msg
 let SetMEBxPasswordOutPut = null

@@ -1,6 +1,5 @@
 import { ClientManager } from '../../ClientManager'
 import Logger from '../../Logger'
-import { NodeForge } from '../../NodeForge'
 import { ClientResponseMsg } from '../ClientResponseMsg'
 import { RPSError } from '../RPSError'
 import { WSManProcessor } from '../../WSManProcessor'
@@ -10,8 +9,7 @@ import { ClientObject } from '../../models/RCS.Config'
 import { AMTUserName } from '../constants'
 
 const clientManager = ClientManager.getInstance(new Logger('ClientManager'))
-const nodeForge = new NodeForge()
-const responseMsg: ClientResponseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'), nodeForge)
+const responseMsg: ClientResponseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'))
 const amtwsman: WSManProcessor = new WSManProcessor(new Logger('WSManProcessor'), clientManager, responseMsg)
 let maintenanceMsg
 let amtwsmanExecuteSpy: jest.SpyInstance

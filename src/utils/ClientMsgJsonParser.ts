@@ -7,15 +7,9 @@
 
 import { IClientMessageParser } from '../interfaces/IClientMessageParser'
 import { ClientMsg, Payload, ClientMethods } from '../models/RCS.Config'
-import { NodeForge } from '../NodeForge'
 import { RPSError } from './RPSError'
 
 export class ClientMsgJsonParser implements IClientMessageParser {
-  nodeForge: NodeForge
-  constructor (private readonly _nodeForge: NodeForge) {
-    this.nodeForge = _nodeForge
-  }
-
   /**
    * @description Parse client message and check for mandatory information
    * @param {WebSocket.Data} message the message coming in over the websocket connection
@@ -36,11 +30,12 @@ export class ClientMsgJsonParser implements IClientMessageParser {
    */
   convertClientMsg (message: ClientMsg): ClientMsg {
     if (message.payload) {
-      let payload: any = this.nodeForge.decode64(message.payload)
+      const decodedPayload = Buffer.from(message.payload, 'base64').toString('utf8')
       if (message.method !== ClientMethods.RESPONSE) {
-        payload = this.parsePayload(payload)
+        message.payload = this.parsePayload(decodedPayload)
+      } else {
+        message.payload = decodedPayload
       }
-      message.payload = payload
     }
     return message
   }
