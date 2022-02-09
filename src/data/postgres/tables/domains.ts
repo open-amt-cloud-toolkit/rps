@@ -4,7 +4,7 @@
  **********************************************************************/
 import { IDomainsTable } from '../../../interfaces/database/IDomainsDb'
 import { DUPLICATE_DOMAIN_FAILED, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP } from '../../../utils/constants'
-import { AMTDomain } from '../../../models/Rcs'
+import { AMTDomain } from '../../../models'
 import { RPSError } from '../../../utils/RPSError'
 import Logger from '../../../Logger'
 import PostgresDb from '..'

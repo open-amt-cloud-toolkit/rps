@@ -7,7 +7,7 @@
 import { pkcs12, pki } from 'node-forge'
 import { ILogger } from './interfaces/ILogger'
 import Logger from './Logger'
-import { AMTKeyUsage, CertAttributes, CertCreationResult, CertificateObject, CertsAndKeys, ProvisioningCertObj } from './models/Rcs'
+import { AMTKeyUsage, CertAttributes, CertCreationResult, CertificateObject, CertsAndKeys, ProvisioningCertObj } from './models'
 import { NodeForge } from './NodeForge'
 
 export class CertManager {

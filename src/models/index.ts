@@ -66,7 +66,7 @@ export class VaultConfig {
   address: string
   token: string
 }
-export class RCSConfig {
+export class RPSConfig {
   VaultConfig: VaultConfig
   amtusername: string
   webport: number
@@ -80,6 +80,7 @@ export class RCSConfig {
   mpsServer: string
   delayTimer: number
   mqttAddress?: string
+  disableCIRADomainName?: string
   constructor () {
     this.VaultConfig = new VaultConfig()
   }
@@ -259,11 +260,12 @@ const recipeRCSConfig = {
   cors_allow_credentials: 'corsAllowCredentials',
   mps_server: 'mpsServer',
   delay_timer: 'delayTimer',
-  mqtt_address: 'mqttAddress'
+  mqtt_address: 'mqttAddress',
+  disable_cira_domain_name: 'disableCIRADomainName'
 }
 
-export function mapConfig (src, dot): RCSConfig {
-  return dot.transform(recipeRCSConfig, src) as RCSConfig
+export function mapConfig (src, dot): RPSConfig {
+  return dot.transform(recipeRCSConfig, src) as RPSConfig
 }
 
 export type eventType = 'request' | 'success' | 'fail'

@@ -5,7 +5,7 @@
  * Author: Brian Osburn
  **********************************************************************/
 
-import { AMTDomain } from '../models/Rcs'
+import { AMTDomain } from '../models'
 
 export interface IDomainCredentialManager {
   getProvisioningCertStorageType: (domain: string) => Promise<string>

@@ -5,8 +5,8 @@
  * Author: Brian Osburn
  **********************************************************************/
 
-import { RCSConfig } from '../models/Rcs'
+import { RPSConfig } from '../models'
 
 export interface IRCSConfigReader {
-  importconfig: () => RCSConfig
+  importconfig: () => RPSConfig
 }

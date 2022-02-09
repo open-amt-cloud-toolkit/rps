@@ -4,7 +4,7 @@
  **********************************************************************/
 import { IProfilesTable } from '../../../interfaces/database/IProfilesDb'
 import { CIRAConfig } from '../../../models/RCS.Config'
-import { AMTConfiguration } from '../../../models/Rcs'
+import { AMTConfiguration } from '../../../models'
 import { PROFILE_INSERTION_FAILED_DUPLICATE, PROFILE_INSERTION_CIRA_CONSTRAINT, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP, PROFILE_INSERTION_GENERIC_CONSTRAINT } from '../../../utils/constants'
 import Logger from '../../../Logger'
 import { RPSError } from '../../../utils/RPSError'
