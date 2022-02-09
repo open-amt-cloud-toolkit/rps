@@ -1,12 +1,12 @@
 import { MqttProvider } from './MqttProvider'
-import { RCSConfig } from '../models/Rcs'
+import { RPSConfig } from '../models'
 import * as mqtt1 from 'mqtt'
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
 jest.mock('mqtt', () => ({ ...jest.requireActual('mqtt') as object }))
 
 describe('MQTT Turned ON Tests', () => {
-  const config: RCSConfig = {
+  const config: RPSConfig = {
     WSConfiguration: {
       WebSocketPort: 8080
     },
@@ -106,7 +106,7 @@ describe('MQTT Turned ON Tests', () => {
 })
 
 describe('MQTT Turned OFF Tests', () => {
-  const config: RCSConfig = {
+  const config: RPSConfig = {
     WSConfiguration: {
       WebSocketPort: 8080
     },

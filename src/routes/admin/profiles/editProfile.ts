@@ -5,7 +5,7 @@
 import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, PROFILE_NOT_FOUND } from '../../../utils/constants'
-import { AMTConfiguration } from '../../../models/Rcs'
+import { AMTConfiguration } from '../../../models'
 import { ClientAction, ProfileWifiConfigs } from '../../../models/RCS.Config'
 import { RPSError } from '../../../utils/RPSError'
 import { MqttProvider } from '../../../utils/MqttProvider'

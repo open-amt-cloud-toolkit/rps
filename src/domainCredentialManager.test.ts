@@ -7,7 +7,7 @@
 import { DomainCredentialManager } from './DomainCredentialManager'
 import { ILogger } from './interfaces/ILogger'
 import Logger from './Logger'
-import { AMTDomain } from './models/Rcs'
+import { AMTDomain } from './models'
 import { DomainsTable } from './data/postgres/tables/domains'
 import Db from './data/postgres'
 

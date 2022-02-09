@@ -6,14 +6,12 @@
 import { v4 as uuid } from 'uuid'
 
 import Logger from '../Logger'
-import { NodeForge } from '../NodeForge'
 import { ClientManager } from '../ClientManager'
 import { ClientMsgJsonParser } from './ClientMsgJsonParser'
 import { RPSError } from './RPSError'
 
-const nodeForge = new NodeForge()
 const clientManager = ClientManager.getInstance(new Logger('ClientManager'))
-const jsonParser = new ClientMsgJsonParser(nodeForge)
+const jsonParser = new ClientMsgJsonParser()
 
 describe('Parse the message received from client', () => {
   test('When method is activation, it should decode payload and return the message ', () => {

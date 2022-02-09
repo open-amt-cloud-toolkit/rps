@@ -1,15 +1,12 @@
 import { ClientMsg } from '../models/RCS.Config'
 import { ILogger } from '../interfaces/ILogger'
 import { AppVersion, ProtocolVersion } from './constants'
-import { NodeForge } from '../NodeForge'
 
 export class ClientResponseMsg {
   logger: ILogger
-  nodeForge: NodeForge
 
-  constructor (logger: ILogger, nodeForge: NodeForge) {
+  constructor (logger: ILogger) {
     this.logger = logger
-    this.nodeForge = nodeForge
   }
 
   /**
@@ -28,7 +25,7 @@ export class ClientResponseMsg {
       } else if (method === 'success') {
         msg = { method: method, apiKey: 'xxxxx', appVersion: AppVersion, protocolVersion: ProtocolVersion, status: status, message: message, payload: payload }
       } else {
-        msg = { method: method, apiKey: 'xxxxx', appVersion: AppVersion, protocolVersion: ProtocolVersion, status: status, message: message, payload: this.nodeForge.encode64(payload) }
+        msg = { method: method, apiKey: 'xxxxx', appVersion: AppVersion, protocolVersion: ProtocolVersion, status: status, message: message, payload: Buffer.from(payload).toString('base64') }
       }
     } catch (error) {
       this.logger.error(`${clientId} : Failed to create the error message`, error)

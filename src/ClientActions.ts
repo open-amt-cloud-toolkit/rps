@@ -22,6 +22,7 @@ import { NetworkConfigurator } from './actions/NetworkConfigurator'
 import { TLSConfigurator } from './actions/TLSConfigurator'
 import { CertManager } from './CertManager'
 import { Maintenance } from './actions/Maintenance'
+import { HttpHandler } from './HttpHandler'
 
 export class ClientActions {
   actions: any
@@ -47,8 +48,8 @@ export class ClientActions {
     this.actions[ClientAction.NETWORKCONFIG] = networkConfig
 
     this.actions[ClientAction.MAINTENANCE] = new Maintenance(new Logger('Maintenance'), configurator, responseMsg, amtwsman, clientManager)
-    this.actions[ClientAction.ADMINCTLMODE] = new Activator(new Logger('Activator'), configurator, certManager, helper, responseMsg, amtwsman, clientManager, validator, networkConfig)
-    this.actions[ClientAction.CLIENTCTLMODE] = new Activator(new Logger('Activator'), configurator, certManager, helper, responseMsg, amtwsman, clientManager, validator, networkConfig)
+    this.actions[ClientAction.ADMINCTLMODE] = new Activator(new Logger('Activator'), configurator, certManager, helper, responseMsg, clientManager, validator, networkConfig)
+    this.actions[ClientAction.CLIENTCTLMODE] = new Activator(new Logger('Activator'), configurator, certManager, helper, responseMsg, clientManager, validator, networkConfig)
     this.actions[ClientAction.DEACTIVATE] = new Deactivator(new Logger('Deactivator'), responseMsg, amtwsman, clientManager, configurator)
   }
 
@@ -59,12 +60,12 @@ export class ClientActions {
    * @param {any} config
    * @returns {Boolean} Returns response message if action object exists. Returns null if action object does not exists.
    */
-  async buildResponseMessage (message: any, clientId: string): Promise<ClientMsg> {
+  async buildResponseMessage (message: any, clientId: string, httpHandler?: HttpHandler): Promise<ClientMsg> {
     const clientObj = this.clientManager.getClientObject(clientId)
     if (clientObj.action) {
       if (this.actions[clientObj.action]) {
         // eslint-disable-next-line @typescript-eslint/return-await
-        return await this.actions[clientObj.action].execute(message, clientId)
+        return await this.actions[clientObj.action].execute(message, clientId, httpHandler)
       } else {
         throw new RPSError(`Device ${clientObj.uuid} - Not supported action.`)
       }

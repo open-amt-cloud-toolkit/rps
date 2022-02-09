@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 import { DOMAIN_NOT_FOUND, API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../../utils/constants'
-import { AMTDomain } from '../../../models/Rcs'
+import { AMTDomain } from '../../../models'
 import Logger from '../../../Logger'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { Request, Response } from 'express'

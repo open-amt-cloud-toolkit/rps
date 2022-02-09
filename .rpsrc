@@ -11,5 +11,6 @@
   "cors_methods": "*",
   "mps_server": "http://localhost:3000",
   "delay_timer": 12,
-  "mqtt_address": ""
+  "mqtt_address": "",
+  "disable_cira_domain_name": ""
 }

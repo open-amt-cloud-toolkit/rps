@@ -7,7 +7,7 @@
 import { pkcs12, pki } from 'node-forge'
 import { ILogger } from './interfaces/ILogger'
 import Logger from './Logger'
-import { AMTKeyUsage, CertAttributes, CertCreationResult, CertificateObject, CertsAndKeys, ProvisioningCertObj } from './models/Rcs'
+import { AMTKeyUsage, CertAttributes, CertCreationResult, CertificateObject, CertsAndKeys, ProvisioningCertObj } from './models'
 import { NodeForge } from './NodeForge'
 
 export class CertManager {
@@ -109,7 +109,7 @@ export class CertManager {
      */
   convertPfxToObject (pfxb64: string, passphrase: string): CertsAndKeys {
     const pfxOut: CertsAndKeys = { certs: [], keys: [] }
-    const pfxder = this.nodeForge.decode64(pfxb64)
+    const pfxder = Buffer.from(pfxb64, 'base64').toString('binary')
     const asn = this.nodeForge.asn1FromDer(pfxder)
     let pfx: pkcs12.Pkcs12Pfx
     try {

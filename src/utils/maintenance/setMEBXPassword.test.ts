@@ -1,19 +1,21 @@
 import { ClientManager } from '../../ClientManager'
 import Logger from '../../Logger'
-import { NodeForge } from '../../NodeForge'
 import { ClientResponseMsg } from '../ClientResponseMsg'
-import { RPSError } from '../RPSError'
-import { WSManProcessor } from '../../WSManProcessor'
 import { v4 as uuid } from 'uuid'
 import { setMEBXPassword } from './setMEBXPassword'
-import { ClientObject } from '../../models/RCS.Config'
+import { HttpHandler } from '../../HttpHandler'
+import { Configurator } from '../../Configurator'
+import { EnvReader } from '../EnvReader'
+import { config } from '../../test/helper/Config'
 
+EnvReader.GlobalEnvConfig = config
 const clientManager = ClientManager.getInstance(new Logger('ClientManager'))
-const nodeForge = new NodeForge()
-const responseMsg: ClientResponseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'), nodeForge)
-const amtwsman: WSManProcessor = new WSManProcessor(new Logger('WSManProcessor'), clientManager, responseMsg)
+const configurator = new Configurator()
+const responseMsg: ClientResponseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'))
+const httpHandler = new HttpHandler()
 let msg
-
+let SetMEBxPasswordOutPut = null
+const message = { statusCode: 200, body: { text: null } }
 beforeEach(() => {
   msg = {
     method: 'activate',
@@ -43,54 +45,114 @@ beforeEach(() => {
       }
     }
   }
+  const digestChallenge = {
+    realm: 'Digest:AF541D9BC94CFF7ADFA073F492F355E6',
+    nonce: 'dxNzCQ9JBAAAAAAAd2N7c6tYmUl0FFzQ',
+    stale: 'false',
+    qop: 'auth'
+  }
+  httpHandler.connectionParams = {
+    guid: '4c4c4544-004b-4210-8033-b6c04f504633',
+    port: 16992,
+    digestChallenge: digestChallenge,
+    username: 'admin',
+    password: 'P@ssw0rd'
+  }
+  SetMEBxPasswordOutPut = (value: number) => {
+    message.body.text = '0462\r\n' +
+   `<?xml version="1.0" encoding="UTF-8"?><a:Envelope xmlns:a="http://www.w3.org/2003/05/soap-envelope" xmlns:b="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:c="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" xmlns:d="http://schemas.xmlsoap.org/ws/2005/02/trust" xmlns:e="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:f="http://schemas.dmtf.org/wbem/wsman/1/cimbinding.xsd" xmlns:g="http://intel.com/wbem/wscim/1/amt-schema/1/AMT_SetupAndConfigurationService" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><a:Header><b:To>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</b:To><b:RelatesTo>7</b:RelatesTo><b:Action a:mustUnderstand="true">http://intel.com/wbem/wscim/1/amt-schema/1/AMT_SetupAndConfigurationService/SetMEBxPasswordResponse</b:Action><b:MessageID>uuid:00000000-8086-8086-8086-00000000002F</b:MessageID><c:ResourceURI>http://intel.com/wbem/wscim/1/amt-schema/1/AMT_SetupAndConfigurationService</c:ResourceURI></a:Header><a:Body><g:SetMEBxPassword_OUTPUT><g:ReturnValue>${value}</g:ReturnValue></g:SetMEBxPassword_OUTPUT></a:Body></a:Envelope>\r\n` +
+   '0\r\n' +
+   '\r\n'
+    return message
+  }
 })
 
-test('should throw an exception if ReturnValue is not equal to zero', async () => {
-  let rpsError = null
-  let clientObj: ClientObject = null
-  const message = {
-    Header: {
-      To: 'http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous',
-      RelatesTo: '7',
-      Action: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_SetupAndConfigurationService/SetMEBxPasswordResponse',
-      MessageID: 'uuid:00000000-8086-8086-8086-00000000019D',
-      ResourceURI: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_SetupAndConfigurationService',
-      Method: 'SetMEBxPassword'
-    },
-    Body: {
-      ReturnValue: 1,
-      ReturnValueStr: 'NOTSUCCESS'
-    }
-  }
-  try {
-    const clientId = uuid()
-    clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg })
-    clientObj = clientManager.getClientObject(clientId)
-    await setMEBXPassword(clientId, message, amtwsman, clientManager, null)
-  } catch (error) {
-    rpsError = error
-  }
-  expect(rpsError).toBeInstanceOf(RPSError)
-  expect(rpsError.message).toContain(`${message.Header.Method} failed for ${clientObj.uuid}`)
+test('should return wsman message if incoming message is empty', async () => {
+  const getMEBxPasswordSpy = jest.spyOn(configurator.profileManager, 'getMEBxPassword').mockImplementation(async () => 'P@ssw0rd')
+  const clientId = uuid()
+  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg, status: {} })
+  const response = await setMEBXPassword(clientId, '', responseMsg, clientManager, configurator, httpHandler)
+  expect(getMEBxPasswordSpy).toHaveBeenCalled()
+  expect(response.method).toEqual('wsman')
 })
 
-test('should return true if ReturnValue is zero', async () => {
+test('should return wsman message if status code is 401', async () => {
+  const getMEBxPasswordSpy = jest.spyOn(configurator.profileManager, 'getMEBxPassword').mockImplementation(async () => 'P@ssw0rd')
   const message = {
-    Header: {
-      To: 'http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous',
-      RelatesTo: '7',
-      Action: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_SetupAndConfigurationService/SetMEBxPasswordResponse',
-      MessageID: 'uuid:00000000-8086-8086-8086-00000000019D',
-      ResourceURI: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_SetupAndConfigurationService',
-      Method: 'SetMEBxPassword'
-    },
-    Body: {
-      ReturnValue: 0,
-      ReturnValueStr: 'SUCCESS'
-    }
+    statusCode: 401,
+    headers: [],
+    body: {}
   }
   const clientId = uuid()
-  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg })
-  const result = await setMEBXPassword(clientId, message, amtwsman, clientManager, null)
-  expect(result).toBe(true)
+  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg, status: {} })
+  const response = await setMEBXPassword(clientId, message, responseMsg, clientManager, configurator, httpHandler)
+  expect(getMEBxPasswordSpy).toHaveBeenCalled()
+  expect(response.method).toEqual('wsman')
+})
+
+test('should return success message if ReturnValue is zero', async () => {
+  const getMEBxPasswordSpy = jest.spyOn(configurator.profileManager, 'getMEBxPassword').mockImplementation(async () => 'P@ssw0rd')
+  const insertSpy = jest.spyOn(configurator.amtDeviceRepository, 'insert').mockImplementation(async () => true)
+  const clientId = uuid()
+  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg, status: {} })
+  const response = await setMEBXPassword(clientId, SetMEBxPasswordOutPut(0), responseMsg, clientManager, configurator, httpHandler)
+  expect(getMEBxPasswordSpy).toHaveBeenCalled()
+  expect(insertSpy).toHaveBeenCalled()
+  expect(response.method).toEqual('success')
+  expect(response.message).toEqual('{"Status":"MEBx Password updated"}')
+})
+
+test('should return error message if ReturnValue is not zero', async () => {
+  const getMEBxPasswordSpy = jest.spyOn(configurator.profileManager, 'getMEBxPassword').mockImplementation(async () => 'P@ssw0rd')
+  const clientId = uuid()
+  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg, status: {} })
+  const response = await setMEBXPassword(clientId, SetMEBxPasswordOutPut(1), responseMsg, clientManager, configurator, httpHandler)
+  expect(getMEBxPasswordSpy).toHaveBeenCalled()
+  expect(response.method).toEqual('error')
+  expect(response.message).toEqual('{"Status":"Failed to update MEBx Password"}')
+})
+
+test('should return success message if ReturnValue is not zero and client message status is activated', async () => {
+  const getMEBxPasswordSpy = jest.spyOn(configurator.profileManager, 'getMEBxPassword').mockImplementation(async () => 'P@ssw0rd')
+  const clientId = uuid()
+  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg, status: { Status: 'Admin control mode' } })
+  const response = await setMEBXPassword(clientId, SetMEBxPasswordOutPut(1), responseMsg, clientManager, configurator, httpHandler)
+  expect(getMEBxPasswordSpy).toHaveBeenCalled()
+  expect(response.method).toEqual('error')
+})
+
+test('should not insert into vault if configurator is null', async () => {
+  const getMEBxPasswordSpy = jest.spyOn(configurator.profileManager, 'getMEBxPassword').mockImplementation(async () => 'P@ssw0rd')
+  const clientId = uuid()
+  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg, status: {} })
+  configurator.amtDeviceRepository = null
+  const response = await setMEBXPassword(clientId, SetMEBxPasswordOutPut(0), responseMsg, clientManager, configurator, httpHandler)
+  expect(getMEBxPasswordSpy).toHaveBeenCalled()
+  expect(response.method).toEqual('success')
+})
+
+test('should return error message if status code is not 401 or 200', async () => {
+  const getMEBxPasswordSpy = jest.spyOn(configurator.profileManager, 'getMEBxPassword').mockImplementation(async () => 'P@ssw0rd')
+  const message = {
+    statusCode: 400
+  }
+  const clientId = uuid()
+  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg, status: {} })
+  const response = await setMEBXPassword(clientId, message, responseMsg, clientManager, configurator, httpHandler)
+  expect(getMEBxPasswordSpy).toHaveBeenCalled()
+  expect(response.method).toEqual('error')
+  expect(response.message).toEqual('{"Status":"Failed to update MEBx Password"}')
+})
+
+test('should return error message if status code is not 401 or 200, client status message is not null', async () => {
+  const getMEBxPasswordSpy = jest.spyOn(configurator.profileManager, 'getMEBxPassword').mockImplementation(async () => 'P@ssw0rd')
+  const message = {
+    statusCode: 400
+  }
+  const clientId = uuid()
+  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg, status: { Status: 'Admin control mode' } })
+  const response = await setMEBXPassword(clientId, message, responseMsg, clientManager, configurator, httpHandler)
+  expect(getMEBxPasswordSpy).toHaveBeenCalled()
+  expect(response.method).toEqual('error')
+  expect(response.message).toEqual('{"Status":"Admin control mode, Failed to update MEBx Password"}')
 })
