@@ -6,7 +6,7 @@
 
 import { Router } from 'express'
 
-import { getVersion } from './getVersion'
+import { getVersion } from './get'
 const profileRouter: Router = Router()
 
 profileRouter.get('/', getVersion)
