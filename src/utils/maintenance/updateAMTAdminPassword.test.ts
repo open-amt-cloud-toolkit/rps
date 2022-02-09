@@ -1,25 +1,25 @@
 import { ClientManager } from '../../ClientManager'
 import Logger from '../../Logger'
-import { NodeForge } from '../../NodeForge'
 import { ClientResponseMsg } from '../ClientResponseMsg'
-import { RPSError } from '../RPSError'
-import { WSManProcessor } from '../../WSManProcessor'
 import { v4 as uuid } from 'uuid'
 import { updateAMTAdminPassword } from './updateAMTAdminPassword'
-import { ClientObject } from '../../models/RCS.Config'
 import { Configurator } from '../../Configurator'
 import { Validator } from '../../Validator'
 import { config } from '../../test/helper/Config'
 import { EnvReader } from '../EnvReader'
+import { HttpHandler } from '../../HttpHandler'
+import { RPSError } from '../RPSError'
+import { ClientObject } from '../../models/RCS.Config'
 
 EnvReader.GlobalEnvConfig = config
 const clientManager = ClientManager.getInstance(new Logger('ClientManager'))
-const nodeForge = new NodeForge()
 const configurator = new Configurator()
-const responseMsg: ClientResponseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'), nodeForge)
-const validator = new Validator(new Logger('Validator'), configurator, clientManager, nodeForge)
-const amtwsman: WSManProcessor = new WSManProcessor(new Logger('WSManProcessor'), clientManager, responseMsg)
+const responseMsg: ClientResponseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'))
+const validator = new Validator(new Logger('Validator'), configurator, clientManager)
+const httpHandler = new HttpHandler()
 let msg
+let setAdminAclEntryExOutPut = null
+let generalSettings = null
 
 beforeEach(() => {
   msg = {
@@ -50,71 +50,148 @@ beforeEach(() => {
       }
     }
   }
-})
-
-test('should throw an exception if ReturnValue is not equal to zero', async () => {
-  let rpsError = null
-  let clientObj: ClientObject = null
-  const message = {
-    Header: {
-      To: 'http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous',
-      RelatesTo: 2,
-      Action: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_AuthorizationService/SetAdminAclEntryExResponse',
-      MessageID: 'uuid:00000000-8086-8086-8086-00000000275D',
-      ResourceURI: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_AuthorizationService',
-      Method: 'SetAdminAclEntryEx'
-    },
-    Body: {
-      ReturnValue: 2054,
-      ReturnValueStr: 'INVALID_PASSWORD'
+  const digestChallenge = {
+    realm: 'Digest:AF541D9BC94CFF7ADFA073F492F355E6',
+    nonce: 'dxNzCQ9JBAAAAAAAd2N7c6tYmUl0FFzQ',
+    stale: 'false',
+    qop: 'auth'
+  }
+  httpHandler.connectionParams = {
+    guid: '4c4c4544-004b-4210-8033-b6c04f504633',
+    port: 16992,
+    digestChallenge: digestChallenge,
+    username: 'admin',
+    password: 'P@ssw0rd'
+  }
+  setAdminAclEntryExOutPut = (value: number) => {
+    return {
+      statusCode: 200,
+      body: {
+        contentType: 'application/soap+xml',
+        text: '0453\r\n' +
+          `<?xml version="1.0" encoding="UTF-8"?><a:Envelope xmlns:a="http://www.w3.org/2003/05/soap-envelope" xmlns:b="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:c="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" xmlns:d="http://schemas.xmlsoap.org/ws/2005/02/trust" xmlns:e="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:f="http://schemas.dmtf.org/wbem/wsman/1/cimbinding.xsd" xmlns:g="http://intel.com/wbem/wscim/1/amt-schema/1/AMT_AuthorizationService" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><a:Header><b:To>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</b:To><b:RelatesTo>2</b:RelatesTo><b:Action a:mustUnderstand="true">http://intel.com/wbem/wscim/1/amt-schema/1/AMT_AuthorizationService/SetAdminAclEntryExResponse</b:Action><b:MessageID>uuid:00000000-8086-8086-8086-0000000000CC</b:MessageID><c:ResourceURI>http://intel.com/wbem/wscim/1/amt-schema/1/AMT_AuthorizationService</c:ResourceURI></a:Header><a:Body><g:SetAdminAclEntryEx_OUTPUT><g:ReturnValue>${value}</g:ReturnValue></g:SetAdminAclEntryEx_OUTPUT></a:Body></a:Envelope>\r\n` +
+          '0\r\n' +
+          '\r\n'
+      }
     }
   }
-  try {
-    const clientId = uuid()
-    clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg })
-    clientObj = clientManager.getClientObject(clientId)
-    await updateAMTAdminPassword(clientId, message, amtwsman, clientManager, configurator, validator)
-  } catch (error) {
-    rpsError = error
+  generalSettings = (value: string) => {
+    return {
+      statusCode: 200,
+      body: {
+        text: '0514\r\n' +
+          '<?xml version="1.0" encoding="UTF-8"?><a:Envelope xmlns:a="http://www.w3.org/2003/05/soap-envelope" xmlns:b="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:c="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" xmlns:d="http://schemas.xmlsoap.org/ws/2005/02/trust" xmlns:e="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:f="http://schemas.dmtf.org/wbem/wsman/1/cimbinding.xsd" xmlns:g="http://intel.com/wbem/wscim/1/amt-schema/1/AMT_GeneralSettings" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><a:Header><b:To>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</b:To><b:RelatesTo>1</b:RelatesTo><b:Action a:mustUnderstand="true">http://schemas.xmlsoap.org/ws/2004/09/transfer/GetResponse</b:Action><b:MessageID>uuid:00000000-8086-8086-8086-000000000024</b:MessageID><c:ResourceURI>http://intel.com/wbem/wscim/1/amt-schema/1/AMT_GeneralSettings</c:ResourceURI></a:Header><a:Body><g:AMT_GeneralSettings><g:AMTNetworkEnabled>1</g:AMTNetworkEnabled><g:DDNSPeriodicUpdateInterval>1440</g:DDNSPeriodicUpdateInterval><g:DDNSTTL>900</g:DDNSTTL><g:DDNSUpdateByDHCPServerEnabled>true</g:DDNSUpdateByDHCPServerEnabled><g:DDNSUpdateEnabled>false</g:DDNSUpdateEnabled><g:DHCPv6ConfigurationTimeout>0</g:DHCPv6ConfigurationTimeout><g:DigestReal\r\n' +
+          '033C\r\n' +
+          `m>${value}</g:DigestRealm><g:DomainName></g:DomainName><g:ElementName>Intel(r) AMT: General Settings</g:ElementName><g:HostName></g:HostName><g:HostOSFQDN></g:HostOSFQDN><g:IdleWakeTimeout>1</g:IdleWakeTimeout><g:InstanceID>Intel(r) AMT: General Settings</g:InstanceID><g:NetworkInterfaceEnabled>true</g:NetworkInterfaceEnabled><g:PingResponseEnabled>true</g:PingResponseEnabled><g:PowerSource>0</g:PowerSource><g:PreferredAddressFamily>0</g:PreferredAddressFamily><g:PresenceNotificationInterval>0</g:PresenceNotificationInterval><g:PrivacyLevel>0</g:PrivacyLevel><g:RmcpPingResponseEnabled>true</g:RmcpPingResponseEnabled><g:SharedFQDN>true</g:SharedFQDN><g:ThunderboltDockEnabled>0</g:ThunderboltDockEnabled><g:WsmanOnlyMode>false</g:WsmanOnlyMode></g:AMT_GeneralSettings></a:Body></a:Envelope>\r\n` +
+          '0\r\n' +
+          '\r\n'
+      }
+    }
   }
-  expect(rpsError).toBeInstanceOf(RPSError)
-  expect(rpsError.message).toContain(`${message.Header.Method} failed for ${clientObj.uuid}`)
 })
 
-test('should return true if ReturnValue is zero', async () => {
+test('should return wsman message if message status code is 401', async () => {
   const message = {
-    Header: {
-      To: 'http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous',
-      RelatesTo: 2,
-      Action: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_AuthorizationService/SetAdminAclEntryExResponse',
-      MessageID: 'uuid:00000000-8086-8086-8086-00000000275D',
-      ResourceURI: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_AuthorizationService',
-      Method: 'SetAdminAclEntryEx'
-    },
-    Body: {
-      ReturnValue: 0,
-      ReturnValueStr: 'SUCCESS'
-    }
+    protocolVersion: 'HTTP/1.1',
+    statusCode: 401,
+    statusMessage: 'Unauthorized',
+    headersSize: 295,
+    bodySize: 693,
+    headers: [],
+    body: { }
   }
   const clientId = uuid()
   clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg })
-  const result = await updateAMTAdminPassword(clientId, message, amtwsman, clientManager, configurator, validator)
-  expect(result).toBe(true)
+  const response = await updateAMTAdminPassword(clientId, message, responseMsg, clientManager, configurator, validator, httpHandler)
+  expect(response.method).toEqual('wsman')
+})
+
+test('should return wsman message if message is AMT_GeneralSettings and status code is 200  ', async () => {
+  const getAMTPasswordSpy = jest.spyOn(configurator.profileManager, 'getAmtPassword').mockImplementation(async () => 'P@ssw0rd')
+  const insertSpy = jest.spyOn(configurator.amtDeviceRepository, 'insert').mockImplementation(async () => true)
+  const getprofileSpy = jest.spyOn(configurator.profileManager, 'getAmtProfile').mockImplementation(async () => {
+    return {
+      profileName: 'acm',
+      activation: 'acmactivate',
+      tenantId: '',
+      tags: ['acm']
+    }
+  })
+  const clientId = uuid()
+  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg })
+
+  const response = await updateAMTAdminPassword(clientId, generalSettings('Digest:AF541D9BC94CFF7ADFA073F492F355E6'), responseMsg, clientManager, configurator, validator, httpHandler)
+  expect(getAMTPasswordSpy).toHaveBeenCalled()
+  expect(insertSpy).toHaveBeenCalled()
+  expect(getprofileSpy).toHaveBeenCalled()
+  expect(response.method).toEqual('wsman')
+})
+
+test('should not insert into vault if configurator is null', async () => {
+  const getAMTPasswordSpy = jest.spyOn(configurator.profileManager, 'getAmtPassword').mockImplementation(async () => 'P@ssw0rd')
+  const insertSpy = jest.spyOn(configurator.amtDeviceRepository, 'insert').mockImplementation(async () => true)
+  const getprofileSpy = jest.spyOn(configurator.profileManager, 'getAmtProfile').mockImplementation(async () => {
+    return {
+      profileName: 'acm',
+      activation: 'acmactivate',
+      tenantId: '',
+      tags: ['acm']
+    }
+  })
+  configurator.amtDeviceRepository = null
+  const clientId = uuid()
+  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg })
+  const response = await updateAMTAdminPassword(clientId, generalSettings('Digest:AF541D9BC94CFF7ADFA073F492F355E6'), responseMsg, clientManager, configurator, validator, httpHandler)
+  expect(getAMTPasswordSpy).toHaveBeenCalled()
+  expect(insertSpy).toHaveBeenCalled()
+  expect(getprofileSpy).toHaveBeenCalled()
+  expect(response.method).toEqual('wsman')
+})
+
+test('should return success message if message is AMT_AuthorizationService, status code is 200 and ReturnValue is 0  ', async () => {
+  const clientId = uuid()
+  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg, status: {} })
+  const response = await updateAMTAdminPassword(clientId, setAdminAclEntryExOutPut(0), responseMsg, clientManager, configurator, validator, httpHandler)
+  expect(response.method).toEqual('success')
+})
+
+test('should return error message if message status code is not 200 0r 401  ', async () => {
+  const message = {
+    statusCode: 400
+  }
+  const clientId = uuid()
+  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg, status: {} })
+  const response = await updateAMTAdminPassword(clientId, message, responseMsg, clientManager, configurator, validator, httpHandler)
+  expect(response.method).toEqual('error')
+  expect(response.message).toEqual('{"Status":"Failed to update AMT admin password"}')
 })
 
 test('should throw an error if the digest realm is invalid', async () => {
   let rpsError = null
   let clientObj: ClientObject = null
-  const message = { AMT_GeneralSettings: { response: { DigestRealm: 'Digest:968871E1351D09ADA0E8C5D7282407' } } }
   try {
     const clientId = uuid()
     clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg })
     clientObj = clientManager.getClientObject(clientId)
-    clientObj.uuid = msg.uuid
-    await updateAMTAdminPassword(clientId, message, amtwsman, clientManager, configurator, validator)
+    await updateAMTAdminPassword(clientId, generalSettings('Digest:AF541D9BC94CFF7ADFA073F492F355E'), responseMsg, clientManager, configurator, validator, httpHandler)
   } catch (error) {
     rpsError = error
   }
   expect(rpsError).toBeInstanceOf(RPSError)
   expect(rpsError.message).toBe(`Device ${clientObj.uuid} activation failed. Not a valid digest realm.`)
+})
+
+test('should throw an error if the message is AMT_AuthorizationService, status code is 200 and ReturnValue is not 0', async () => {
+  let rpsError = null
+  let clientObj: ClientObject = null
+  try {
+    const clientId = uuid()
+    clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg })
+    clientObj = clientManager.getClientObject(clientId)
+    await await updateAMTAdminPassword(clientId, setAdminAclEntryExOutPut(1), responseMsg, clientManager, configurator, validator, httpHandler)
+  } catch (error) {
+    rpsError = error
+  }
+  expect(rpsError).toBeInstanceOf(RPSError)
+  expect(rpsError.message).toBe(`Failed to update AMT admin password for ${clientObj.uuid}`)
 })

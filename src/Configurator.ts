@@ -28,7 +28,7 @@ import { DataProcessor } from './DataProcessor'
 import { DbCreatorFactory } from './repositories/factories/DbCreatorFactory'
 
 export class Configurator implements IConfigurator {
-  readonly amtDeviceRepository: IAMTDeviceRepository
+  amtDeviceRepository: IAMTDeviceRepository
   domainCredentialManager: IDomainCredentialManager
   profileManager: IProfileManager
   readonly secretsManager: ISecretManagerService
@@ -40,8 +40,8 @@ export class Configurator implements IConfigurator {
     this.secretsManager = new SecretManagerService(new Logger('SecretManagerService'))
     const nodeForge = new NodeForge()
     this.clientManager = ClientManager.getInstance(new Logger('ClientManager'))
-    const responseMsg: ClientResponseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'), nodeForge)
-    const validator: IValidator = new Validator(new Logger('Validator'), this, this.clientManager, nodeForge)
+    const responseMsg: ClientResponseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'))
+    const validator: IValidator = new Validator(new Logger('Validator'), this, this.clientManager)
     const amtwsman: WSManProcessor = new WSManProcessor(new Logger('WSManProcessor'), this.clientManager, responseMsg)
     const certManager = new CertManager(new Logger('CertManager'), nodeForge)
     const helper = new SignatureHelper(nodeForge)

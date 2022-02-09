@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import { VersionChecker } from './VersionChecker'
-import { Version } from './models/Rcs'
+import { Version } from './models'
 import { RPSError } from './utils/RPSError'
 test('test version string parsing', () => {
   const versionString: string = '1.2.3'

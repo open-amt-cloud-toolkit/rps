@@ -1,4 +1,4 @@
-import { RCSConfig } from '../models/Rcs'
+import { RPSConfig } from '../models'
 
 export interface webConfigType {
   ca: any
@@ -8,7 +8,7 @@ export interface webConfigType {
 }
 
 interface IEnvReader{
-  GlobalEnvConfig: RCSConfig
+  GlobalEnvConfig: RPSConfig
 }
 const EnvReader: IEnvReader = {
   GlobalEnvConfig: null

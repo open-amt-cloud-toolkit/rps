@@ -4,7 +4,7 @@
  * Author : Ramu Bachala
  **********************************************************************/
 import Logger from '../../../Logger'
-import { AMTConfiguration } from '../../../models/Rcs'
+import { AMTConfiguration } from '../../../models'
 import { PROFILE_NOT_FOUND, API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../../utils/constants'
 import { EnvReader } from '../../../utils/EnvReader'
 import { MqttProvider } from '../../../utils/MqttProvider'

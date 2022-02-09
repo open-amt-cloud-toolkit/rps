@@ -7,7 +7,7 @@
  **********************************************************************/
 
 import * as url from 'url'
-import { RCSConfig, eventType, OpenAMTEvent } from '../models/Rcs'
+import { RPSConfig, eventType, OpenAMTEvent } from '../models'
 import { MqttClient, connect, IClientOptions } from 'mqtt'
 import Logger from '../Logger'
 const log: Logger = new Logger('MqttProvider')
@@ -23,7 +23,7 @@ export class MqttProvider {
   // A global instance of the MqttProvider to be accessed across rps
   static instance: MqttProvider
 
-  constructor (config: RCSConfig) {
+  constructor (config: RPSConfig) {
     if (!config?.mqttAddress) {
       log.info('MQTT is turned off')
     } else {

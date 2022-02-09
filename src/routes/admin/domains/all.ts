@@ -4,7 +4,7 @@
  **********************************************************************/
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
 import Logger from '../../../Logger'
-import { AMTDomain, DataWithCount } from '../../../models/Rcs'
+import { AMTDomain, DataWithCount } from '../../../models'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { Request, Response } from 'express'
 
