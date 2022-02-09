@@ -1,6 +1,6 @@
-import { RCSConfig } from '../../models/Rcs'
+import { RPSConfig } from '../../models'
 
-export const config: RCSConfig = {
+export const config: RPSConfig = {
   VaultConfig: {
     usevault: false,
     SecretsPath: 'kv/data/rcs/',

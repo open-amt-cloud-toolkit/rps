@@ -1,10 +1,10 @@
 import { IDB } from '../../interfaces/database/IDb'
-import { RCSConfig } from '../../models/Rcs'
+import { RPSConfig } from '../../models'
 
 export class DbCreatorFactory {
   static instance: IDB
-  config: RCSConfig
-  constructor (config: RCSConfig) {
+  config: RPSConfig
+  constructor (config: RPSConfig) {
     this.config = config
   }
 

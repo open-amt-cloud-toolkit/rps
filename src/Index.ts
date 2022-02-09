@@ -9,7 +9,7 @@ import Logger from './Logger'
 import { WebSocketListener } from './WebSocketListener'
 import { Configurator } from './Configurator'
 import { EnvReader } from './utils/EnvReader'
-import { RCSConfig, mapConfig } from './models/Rcs'
+import { RPSConfig, mapConfig } from './models'
 import { IConfigurator } from './interfaces/IConfigurator'
 import { parseValue } from './utils/parseEnvValue'
 import dot = require('dot-object')
@@ -29,7 +29,7 @@ process.env = Object.keys(process.env)
 // build config object
 const rcconfig = rc('rps')
 log.silly(`Before config... ${JSON.stringify(rcconfig, null, 2)}`)
-const config: RCSConfig = mapConfig(rcconfig, dot)
+const config: RPSConfig = mapConfig(rcconfig, dot)
 log.silly(`Updated config... ${JSON.stringify(config, null, 2)}`)
 EnvReader.GlobalEnvConfig = config
 const app = express()

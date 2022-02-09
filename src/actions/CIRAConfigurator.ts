@@ -19,6 +19,7 @@ import { EnvReader } from '../utils/EnvReader'
 import got from 'got'
 import { MqttProvider } from '../utils/MqttProvider'
 import { TLSConfigurator } from './TLSConfigurator'
+import { randomUUID } from 'crypto'
 
 export class CIRAConfigurator implements IExecutor {
   constructor (
@@ -115,10 +116,10 @@ export class CIRAConfigurator implements IExecutor {
           } else if (clientObj.ciraconfig.getENVSettingData && !clientObj.ciraconfig.setENVSettingDataCIRA) {
             const envSettings = wsmanResponse.AMT_EnvironmentDetectionSettingData.response
             this.logger.debug(`Environment settings : ${JSON.stringify(envSettings, null, '\t')}`)
-            if (envSettings.DetectionStrings === undefined) {
-              envSettings.DetectionStrings = 'dummy.com'
-            } else if (envSettings.DetectionStrings !== 'dummy.com') {
-              envSettings.DetectionStrings = 'dummy.com'
+            if (EnvReader.GlobalEnvConfig.disableCIRADomainName?.toLowerCase() !== '') {
+              envSettings.DetectionStrings = EnvReader.GlobalEnvConfig.disableCIRADomainName // this can be whatever.com
+            } else {
+              envSettings.DetectionStrings = `${randomUUID()}.com`
             }
             clientObj.ciraconfig.setENVSettingDataCIRA = true
             this.clientManager.setClientObject(clientObj)
@@ -222,7 +223,7 @@ export class CIRAConfigurator implements IExecutor {
       this.clientManager.setClientObject(clientObj)
       await this.amtwsman.batchEnum(clientId, '*AMT_EnvironmentDetectionSettingData', AMTUserName)
     } else if (clientObj.ciraconfig.getENVSettingData && !clientObj.ciraconfig.setENVSettingData) {
-      if (wsmanResponse.AMT_EnvironmentDetectionSettingData?.response?.DetectionStrings !== undefined) {
+      if (wsmanResponse.AMT_EnvironmentDetectionSettingData?.response?.DetectionStrings != null) {
         const envSettings = wsmanResponse.AMT_EnvironmentDetectionSettingData.response
         envSettings.DetectionStrings = []
         await this.amtwsman.put(clientId, 'AMT_EnvironmentDetectionSettingData', envSettings, AMTUserName)

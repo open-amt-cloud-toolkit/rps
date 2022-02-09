@@ -4,7 +4,7 @@
  * Author: Madhavi Losetty
  **********************************************************************/
 import * as WebSocket from 'ws'
-import { AMTConfiguration, AMTDomain } from './Rcs'
+import { AMTConfiguration, AMTDomain } from '.'
 import { AMTEthernetPortSettings } from './WSManResponse'
 
 export interface WebSocketConfig {
