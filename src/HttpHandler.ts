@@ -7,20 +7,9 @@ import { createHash } from 'crypto'
 import * as xml2js from 'xml2js'
 import { DigestChallenge } from '@open-amt-cloud-toolkit/wsman-messages/models/common'
 import Logger from './Logger'
-
-export class connectionParams {
-  port: number
-  guid: string
-  username: string
-  password: string
-  nonce?: string
-  nonceCounter?: number
-  consoleNonce?: string
-  digestChallenge?: DigestChallenge
-}
+import { connectionParams } from './models/RCS.Config'
 
 export class HttpHandler {
-  connectionParams: connectionParams
   authResolve: any
   isAuthInProgress: any
   // The purpose of this directive is to allow the server to detect request replays by maintaining its own copy of this count.
@@ -29,14 +18,13 @@ export class HttpHandler {
   stripPrefix: any
   parser: any
   logger: Logger
-  messageId: number = 0
   constructor () {
     this.stripPrefix = xml2js.processors.stripPrefix
     this.parser = new xml2js.Parser({ ignoreAttrs: true, mergeAttrs: false, explicitArray: false, tagNameProcessors: [this.stripPrefix], valueProcessors: [xml2js.processors.parseNumbers, xml2js.processors.parseBooleans] })
     this.logger = new Logger('HttpHandler')
   }
 
-  wrapIt (data: string): string {
+  wrapIt (data: string, connectionParams: connectionParams): string {
     try {
       const url = '/wsman'
       const action = 'POST'
@@ -44,30 +32,30 @@ export class HttpHandler {
       if (data == null) {
         return null
       }
-      if (this.connectionParams.digestChallenge != null) {
+      if (connectionParams.digestChallenge != null) {
         // Prepare an Authorization request header from the 401 unauthorized response from AMT
         let responseDigest = null
         // console nonce should be a unique opaque quoted string
-        this.connectionParams.consoleNonce = Math.random().toString(36).substring(7)
-        const HA1 = this.hashIt(`${this.connectionParams.username}:${this.connectionParams.digestChallenge.realm}:${this.connectionParams.password}`)
+        connectionParams.consoleNonce = Math.random().toString(36).substring(7)
+        const HA1 = this.hashIt(`${connectionParams.username}:${connectionParams.digestChallenge.realm}:${connectionParams.password}`)
         const HA2 = this.hashIt(`${action}:${url}`)
-        responseDigest = this.hashIt(`${HA1}:${this.connectionParams.digestChallenge.nonce}:${this.nonceCounter}:${this.connectionParams.consoleNonce}:${this.connectionParams.digestChallenge.qop}:${HA2}`)
+        responseDigest = this.hashIt(`${HA1}:${connectionParams.digestChallenge.nonce}:${this.nonceCounter}:${connectionParams.consoleNonce}:${connectionParams.digestChallenge.qop}:${HA2}`)
         const authorizationRequestHeader = this.digestIt({
-          username: this.connectionParams.username,
-          realm: this.connectionParams.digestChallenge.realm,
-          nonce: this.connectionParams.digestChallenge.nonce,
+          username: connectionParams.username,
+          realm: connectionParams.digestChallenge.realm,
+          nonce: connectionParams.digestChallenge.nonce,
           uri: url,
-          qop: this.connectionParams.digestChallenge.qop,
+          qop: connectionParams.digestChallenge.qop,
           response: responseDigest,
           nc: this.nonceCounter++,
-          cnonce: this.connectionParams.consoleNonce
+          cnonce: connectionParams.consoleNonce
         })
         message += `Authorization: ${authorizationRequestHeader}\r\n`
       }
       // Use Chunked-Encoding
       // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
       message += Buffer.from([
-        `Host: ${this.connectionParams.guid}:${this.connectionParams.port}`,
+        `Host: ${connectionParams.guid}:${connectionParams.port}`,
         'Transfer-Encoding: chunked',
         '',
         data.length.toString(16).toUpperCase(),
