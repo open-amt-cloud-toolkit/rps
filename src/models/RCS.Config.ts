@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  * Author: Madhavi Losetty
  **********************************************************************/
+import { DigestChallenge } from '@open-amt-cloud-toolkit/wsman-messages/models/common'
 import * as WebSocket from 'ws'
 import { AMTConfiguration, AMTDomain } from '.'
 import { AMTEthernetPortSettings } from './WSManResponse'
@@ -106,6 +107,8 @@ export interface ClientObject {
   tls?: TLSConfigFlow
   status?: Status
   unauthCount?: number
+  connectionParams?: connectionParams
+  messageId?: number
 }
 
 export interface ActivationStatus {
@@ -268,4 +271,15 @@ export enum TlsMode{
   SERVERALLOWNONTLS = 2,
   MUTUALONLY = 3,
   MUTUALALLOWNONTLS = 4
+}
+
+export interface connectionParams {
+  port: number
+  guid: string
+  username: string
+  password: string
+  nonce?: string
+  nonceCounter?: number
+  consoleNonce?: string
+  digestChallenge?: DigestChallenge
 }

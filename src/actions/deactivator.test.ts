@@ -47,11 +47,25 @@ beforeAll(() => {
       action: 'deactivate'
     }
   }
+  const digestChallenge = {
+    realm: 'Digest:56ABC7BE224EF620C69EB88F01071DC8',
+    nonce: 'fVNueyEAAAAAAAAAcO8WqJ8s+WdyFUIY',
+    stale: 'false',
+    qop: 'auth'
+  }
   clientManager.addClient({
     ClientId: clientId,
     ClientSocket: null,
     ClientData: deactivatemsg,
-    status: {}
+    status: {},
+    connectionParams: {
+      guid: '4c4c4544-004b-4210-8033-b6c04f504633',
+      port: 16992,
+      digestChallenge: digestChallenge,
+      username: 'admin',
+      password: 'P@ssw0rd'
+    },
+    messageId: 1
   })
 })
 
@@ -64,19 +78,6 @@ describe('deactivate', () => {
     const message = parse(response) as HttpZResponseModel
     const clientMsg = { payload: message }
     const httpHandler = new HttpHandler()
-    const digestChallenge = {
-      realm: 'Digest:56ABC7BE224EF620C69EB88F01071DC8',
-      nonce: 'fVNueyEAAAAAAAAAcO8WqJ8s+WdyFUIY',
-      stale: 'false',
-      qop: 'auth'
-    }
-    httpHandler.connectionParams = {
-      guid: '4c4c4544-004b-4210-8033-b6c04f504633',
-      port: 16992,
-      digestChallenge: digestChallenge,
-      username: 'admin',
-      password: 'P@ssw0rd'
-    }
     const deactivateMsg = await deactivate.execute(clientMsg, clientId, httpHandler)
     expect(deactivateMsg.method).toEqual('wsman')
   })

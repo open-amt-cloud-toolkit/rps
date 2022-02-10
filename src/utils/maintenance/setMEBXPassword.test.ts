@@ -16,6 +16,19 @@ const httpHandler = new HttpHandler()
 let msg
 let SetMEBxPasswordOutPut = null
 const message = { statusCode: 200, body: { text: null } }
+const digestChallenge = {
+  realm: 'Digest:AF541D9BC94CFF7ADFA073F492F355E6',
+  nonce: 'dxNzCQ9JBAAAAAAAd2N7c6tYmUl0FFzQ',
+  stale: 'false',
+  qop: 'auth'
+}
+const connectionParams = {
+  guid: '4c4c4544-004b-4210-8033-b6c04f504633',
+  port: 16992,
+  digestChallenge: digestChallenge,
+  username: 'admin',
+  password: 'P@ssw0rd'
+}
 beforeEach(() => {
   msg = {
     method: 'activate',
@@ -45,19 +58,6 @@ beforeEach(() => {
       }
     }
   }
-  const digestChallenge = {
-    realm: 'Digest:AF541D9BC94CFF7ADFA073F492F355E6',
-    nonce: 'dxNzCQ9JBAAAAAAAd2N7c6tYmUl0FFzQ',
-    stale: 'false',
-    qop: 'auth'
-  }
-  httpHandler.connectionParams = {
-    guid: '4c4c4544-004b-4210-8033-b6c04f504633',
-    port: 16992,
-    digestChallenge: digestChallenge,
-    username: 'admin',
-    password: 'P@ssw0rd'
-  }
   SetMEBxPasswordOutPut = (value: number) => {
     message.body.text = '0462\r\n' +
    `<?xml version="1.0" encoding="UTF-8"?><a:Envelope xmlns:a="http://www.w3.org/2003/05/soap-envelope" xmlns:b="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:c="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" xmlns:d="http://schemas.xmlsoap.org/ws/2005/02/trust" xmlns:e="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:f="http://schemas.dmtf.org/wbem/wsman/1/cimbinding.xsd" xmlns:g="http://intel.com/wbem/wscim/1/amt-schema/1/AMT_SetupAndConfigurationService" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><a:Header><b:To>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</b:To><b:RelatesTo>7</b:RelatesTo><b:Action a:mustUnderstand="true">http://intel.com/wbem/wscim/1/amt-schema/1/AMT_SetupAndConfigurationService/SetMEBxPasswordResponse</b:Action><b:MessageID>uuid:00000000-8086-8086-8086-00000000002F</b:MessageID><c:ResourceURI>http://intel.com/wbem/wscim/1/amt-schema/1/AMT_SetupAndConfigurationService</c:ResourceURI></a:Header><a:Body><g:SetMEBxPassword_OUTPUT><g:ReturnValue>${value}</g:ReturnValue></g:SetMEBxPassword_OUTPUT></a:Body></a:Envelope>\r\n` +
@@ -70,7 +70,7 @@ beforeEach(() => {
 test('should return wsman message if incoming message is empty', async () => {
   const getMEBxPasswordSpy = jest.spyOn(configurator.profileManager, 'getMEBxPassword').mockImplementation(async () => 'P@ssw0rd')
   const clientId = uuid()
-  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg, status: {} })
+  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg, status: {}, connectionParams: connectionParams, messageId: 0 })
   const response = await setMEBXPassword(clientId, '', responseMsg, clientManager, configurator, httpHandler)
   expect(getMEBxPasswordSpy).toHaveBeenCalled()
   expect(response.method).toEqual('wsman')
@@ -84,7 +84,7 @@ test('should return wsman message if status code is 401', async () => {
     body: {}
   }
   const clientId = uuid()
-  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg, status: {} })
+  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg, status: {}, connectionParams: connectionParams, messageId: 0 })
   const response = await setMEBXPassword(clientId, message, responseMsg, clientManager, configurator, httpHandler)
   expect(getMEBxPasswordSpy).toHaveBeenCalled()
   expect(response.method).toEqual('wsman')
@@ -94,7 +94,7 @@ test('should return success message if ReturnValue is zero', async () => {
   const getMEBxPasswordSpy = jest.spyOn(configurator.profileManager, 'getMEBxPassword').mockImplementation(async () => 'P@ssw0rd')
   const insertSpy = jest.spyOn(configurator.amtDeviceRepository, 'insert').mockImplementation(async () => true)
   const clientId = uuid()
-  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg, status: {} })
+  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg, status: {}, connectionParams: connectionParams, messageId: 0 })
   const response = await setMEBXPassword(clientId, SetMEBxPasswordOutPut(0), responseMsg, clientManager, configurator, httpHandler)
   expect(getMEBxPasswordSpy).toHaveBeenCalled()
   expect(insertSpy).toHaveBeenCalled()
@@ -105,7 +105,7 @@ test('should return success message if ReturnValue is zero', async () => {
 test('should return error message if ReturnValue is not zero', async () => {
   const getMEBxPasswordSpy = jest.spyOn(configurator.profileManager, 'getMEBxPassword').mockImplementation(async () => 'P@ssw0rd')
   const clientId = uuid()
-  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg, status: {} })
+  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg, status: {}, connectionParams: connectionParams, messageId: 0 })
   const response = await setMEBXPassword(clientId, SetMEBxPasswordOutPut(1), responseMsg, clientManager, configurator, httpHandler)
   expect(getMEBxPasswordSpy).toHaveBeenCalled()
   expect(response.method).toEqual('error')
@@ -115,7 +115,7 @@ test('should return error message if ReturnValue is not zero', async () => {
 test('should return success message if ReturnValue is not zero and client message status is activated', async () => {
   const getMEBxPasswordSpy = jest.spyOn(configurator.profileManager, 'getMEBxPassword').mockImplementation(async () => 'P@ssw0rd')
   const clientId = uuid()
-  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg, status: { Status: 'Admin control mode' } })
+  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg, status: { Status: 'Admin control mode' }, connectionParams: connectionParams, messageId: 0 })
   const response = await setMEBXPassword(clientId, SetMEBxPasswordOutPut(1), responseMsg, clientManager, configurator, httpHandler)
   expect(getMEBxPasswordSpy).toHaveBeenCalled()
   expect(response.method).toEqual('error')
@@ -124,7 +124,7 @@ test('should return success message if ReturnValue is not zero and client messag
 test('should not insert into vault if configurator is null', async () => {
   const getMEBxPasswordSpy = jest.spyOn(configurator.profileManager, 'getMEBxPassword').mockImplementation(async () => 'P@ssw0rd')
   const clientId = uuid()
-  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg, status: {} })
+  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg, status: {}, connectionParams: connectionParams, messageId: 0 })
   configurator.amtDeviceRepository = null
   const response = await setMEBXPassword(clientId, SetMEBxPasswordOutPut(0), responseMsg, clientManager, configurator, httpHandler)
   expect(getMEBxPasswordSpy).toHaveBeenCalled()
@@ -137,7 +137,7 @@ test('should return error message if status code is not 401 or 200', async () =>
     statusCode: 400
   }
   const clientId = uuid()
-  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg, status: {} })
+  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg, status: {}, connectionParams: connectionParams, messageId: 0 })
   const response = await setMEBXPassword(clientId, message, responseMsg, clientManager, configurator, httpHandler)
   expect(getMEBxPasswordSpy).toHaveBeenCalled()
   expect(response.method).toEqual('error')
@@ -150,7 +150,7 @@ test('should return error message if status code is not 401 or 200, client statu
     statusCode: 400
   }
   const clientId = uuid()
-  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg, status: { Status: 'Admin control mode' } })
+  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg, status: { Status: 'Admin control mode' }, connectionParams: connectionParams, messageId: 0 })
   const response = await setMEBXPassword(clientId, message, responseMsg, clientManager, configurator, httpHandler)
   expect(getMEBxPasswordSpy).toHaveBeenCalled()
   expect(response.method).toEqual('error')

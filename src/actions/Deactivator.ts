@@ -50,9 +50,9 @@ export class Deactivator implements IExecutor {
 
       switch (wsmanResponse.statusCode) {
         case 401: {
-          const messageId = (httpHandler.messageId++).toString()
+          const messageId = (clientObj.messageId++).toString()
           const xmlRequestBody = this.amt.SetupAndConfigurationService(AMT.Methods.UNPROVISION, messageId, null, 2)
-          const data = httpHandler.wrapIt(xmlRequestBody)
+          const data = httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
           return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
         }
         case 200: {

@@ -69,6 +69,12 @@ beforeAll(() => {
       action: 'acmactivate'
     }
   }
+  const digestChallenge = {
+    realm: 'Digest:AF541D9BC94CFF7ADFA073F492F355E6',
+    nonce: 'dxNzCQ9JBAAAAAAAd2N7c6tYmUl0FFzQ',
+    stale: 'false',
+    qop: 'auth'
+  }
   clientManager.addClient({
     ClientId: clientId,
     ClientSocket: null,
@@ -76,21 +82,16 @@ beforeAll(() => {
     ciraconfig: {},
     network: {},
     status: {},
-    activationStatus: {}
+    activationStatus: {},
+    connectionParams: {
+      guid: '4c4c4544-004b-4210-8033-b6c04f504633',
+      port: 16992,
+      digestChallenge: digestChallenge,
+      username: 'admin',
+      password: 'P@ssw0rd'
+    },
+    messageId: 1
   })
-  const digestChallenge = {
-    realm: 'Digest:AF541D9BC94CFF7ADFA073F492F355E6',
-    nonce: 'dxNzCQ9JBAAAAAAAd2N7c6tYmUl0FFzQ',
-    stale: 'false',
-    qop: 'auth'
-  }
-  httpHandler.connectionParams = {
-    guid: '4c4c4544-004b-4210-8033-b6c04f504633',
-    port: 16992,
-    digestChallenge: digestChallenge,
-    username: 'admin',
-    password: 'P@ssw0rd'
-  }
 })
 const message = {
   payload: {
