@@ -47,7 +47,7 @@ export class ClientActions {
     const networkConfig = new NetworkConfigurator(new Logger('NetworkConfig'), configurator, responseMsg, amtwsman, clientManager, validator, ciraConfig)
     this.actions[ClientAction.NETWORKCONFIG] = networkConfig
 
-    this.actions[ClientAction.MAINTENANCE] = new Maintenance(new Logger('Maintenance'), configurator, responseMsg, amtwsman, clientManager)
+    this.actions[ClientAction.MAINTENANCE] = new Maintenance(new Logger('Maintenance'), configurator, responseMsg, clientManager)
     this.actions[ClientAction.ADMINCTLMODE] = new Activator(new Logger('Activator'), configurator, certManager, helper, responseMsg, clientManager, validator, networkConfig)
     this.actions[ClientAction.CLIENTCTLMODE] = new Activator(new Logger('Activator'), configurator, certManager, helper, responseMsg, clientManager, validator, networkConfig)
     this.actions[ClientAction.DEACTIVATE] = new Deactivator(new Logger('Deactivator'), responseMsg, amtwsman, clientManager, configurator)

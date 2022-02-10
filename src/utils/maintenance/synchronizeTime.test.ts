@@ -1,21 +1,32 @@
 import { ClientManager } from '../../ClientManager'
 import Logger from '../../Logger'
 import { ClientResponseMsg } from '../ClientResponseMsg'
-import { RPSError } from '../RPSError'
-import { WSManProcessor } from '../../WSManProcessor'
 import { v4 as uuid } from 'uuid'
 import { synchronizeTime } from './synchronizeTime'
-import { ClientObject } from '../../models/RCS.Config'
-import { AMTUserName } from '../constants'
+import { HttpHandler } from '../../HttpHandler'
 
 const clientManager = ClientManager.getInstance(new Logger('ClientManager'))
 const responseMsg: ClientResponseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'))
-const amtwsman: WSManProcessor = new WSManProcessor(new Logger('WSManProcessor'), clientManager, responseMsg)
+const httpHandler = new HttpHandler()
+const message = { payload: { statusCode: null, header: null, body: null } }
 let maintenanceMsg
-let amtwsmanExecuteSpy: jest.SpyInstance
+let getLowAccuracyTimeSync = null
+let setHighAccuracyTimeSync = null
+const digestChallenge = {
+  realm: 'Digest:AF541D9BC94CFF7ADFA073F492F355E6',
+  nonce: 'dxNzCQ9JBAAAAAAAd2N7c6tYmUl0FFzQ',
+  stale: 'false',
+  qop: 'auth'
+}
+const connectionParams = {
+  guid: '4c4c4544-004b-4210-8033-b6c04f504633',
+  port: 16992,
+  digestChallenge: digestChallenge,
+  username: 'admin',
+  password: 'P@ssw0rd'
+}
 
 beforeEach(() => {
-  amtwsmanExecuteSpy = jest.spyOn(amtwsman, 'execute')
   maintenanceMsg = {
     method: 'maintenance',
     apiKey: 'key',
@@ -42,90 +53,91 @@ beforeEach(() => {
       task: 'synctime'
     }
   }
-})
-
-test('should throw an exception if ReturnValue is not equal to zero', async () => {
-  let rpsError = null
-  let clientObj: ClientObject = null
-  const message = {
-    payload: {
-      Header: {
-        To: 'http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous',
-        RelatesTo: '32',
-        Action: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_TimeSynchronizationService/SetHighAccuracyTimeSynchResponse',
-        MessageID: 'uuid:00000000-8086-8086-8086-00000002CFEB',
-        ResourceURI: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_TimeSynchronizationService',
-        Method: 'SetHighAccuracyTimeSynch'
-      },
-      Body: {
-        ReturnValue: 1,
-        ReturnValueStr: 'PT_STATUS_INTERNAL_ERROR'
-      }
+  getLowAccuracyTimeSync = (value: number) => {
+    return {
+      text: '048D\r\n' +
+              `<?xml version="1.0" encoding="UTF-8"?><a:Envelope xmlns:a="http://www.w3.org/2003/05/soap-envelope" xmlns:b="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:c="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" xmlns:d="http://schemas.xmlsoap.org/ws/2005/02/trust" xmlns:e="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:f="http://schemas.dmtf.org/wbem/wsman/1/cimbinding.xsd" xmlns:g="http://intel.com/wbem/wscim/1/amt-schema/1/AMT_TimeSynchronizationService" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><a:Header><b:To>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</b:To><b:RelatesTo>1</b:RelatesTo><b:Action a:mustUnderstand="true">http://intel.com/wbem/wscim/1/amt-schema/1/AMT_TimeSynchronizationService/GetLowAccuracyTimeSynchResponse</b:Action><b:MessageID>uuid:00000000-8086-8086-8086-00000000004A</b:MessageID><c:ResourceURI>http://intel.com/wbem/wscim/1/amt-schema/1/AMT_TimeSynchronizationService</c:ResourceURI></a:Header><a:Body><g:GetLowAccuracyTimeSynch_OUTPUT><g:Ta0>1644242209</g:Ta0><g:ReturnValue>${value}</g:ReturnValue></g:GetLowAccuracyTimeSynch_OUTPUT></a:Body></a:Envelope>\r\n` +
+              '0\r\n' +
+              '\r\n'
     }
   }
-  try {
-    const clientId = uuid()
-    clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg })
-    clientObj = clientManager.getClientObject(clientId)
-    await synchronizeTime(clientId, message, amtwsman, clientManager)
-  } catch (error) {
-    rpsError = error
-  }
-  expect(rpsError).toBeInstanceOf(RPSError)
-  expect(rpsError.message).toContain(`${message.payload.Header.Method} failed for ${clientObj.uuid}`)
-})
-
-test('should return true if ReturnValue is zero', async () => {
-  const message = {
-    payload: {
-      Header: {
-        To: 'http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous',
-        RelatesTo: '32',
-        Action: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_TimeSynchronizationService/SetHighAccuracyTimeSynchResponse',
-        MessageID: 'uuid:00000000-8086-8086-8086-00000002CFEB',
-        ResourceURI: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_TimeSynchronizationService',
-        Method: 'SetHighAccuracyTimeSynch'
-      },
-      Body: {
-        ReturnValue: 0,
-        ReturnValueStr: 'SUCCESS'
-      }
+  setHighAccuracyTimeSync = (value: number, response: string) => {
+    return {
+      text: '0477\r\n' +
+      `<?xml version="1.0" encoding="UTF-8"?><a:Envelope xmlns:a="http://www.w3.org/2003/05/soap-envelope" xmlns:b="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:c="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" xmlns:d="http://schemas.xmlsoap.org/ws/2005/02/trust" xmlns:e="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:f="http://schemas.dmtf.org/wbem/wsman/1/cimbinding.xsd" xmlns:g="http://intel.com/wbem/wscim/1/amt-schema/1/AMT_TimeSynchronizationService" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><a:Header><b:To>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</b:To><b:RelatesTo>2</b:RelatesTo><b:Action a:mustUnderstand="true">http://intel.com/wbem/wscim/1/amt-schema/1/AMT_TimeSynchronizationService/${response}</b:Action><b:MessageID>uuid:00000000-8086-8086-8086-00000000004C</b:MessageID><c:ResourceURI>http://intel.com/wbem/wscim/1/amt-schema/1/AMT_TimeSynchronizationService</c:ResourceURI></a:Header><a:Body><g:SetHighAccuracyTimeSynch_OUTPUT><g:ReturnValue>${value}</g:ReturnValue></g:SetHighAccuracyTimeSynch_OUTPUT></a:Body></a:Envelope>\r\n` +
+      '0\r\n' +
+      '\r\n'
     }
   }
-  const clientId = uuid()
-  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg })
-  const result = await synchronizeTime(clientId, message, amtwsman, clientManager)
-  expect(result).toBe(true)
 })
 
-test('should synchronize time', async () => {
-  const message = {
-    payload: {
-      Header: {
-        To: 'http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous',
-        RelatesTo: '31',
-        Action: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_TimeSynchronizationService/GetLowAccuracyTimeSynchResponse',
-        MessageID: 'uuid:00000000-8086-8086-8086-00000002CFEA',
-        ResourceURI: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_TimeSynchronizationService',
-        Method: 'GetLowAccuracyTimeSynch'
-      },
-      Body: {
-        Ta0: 1633106396,
-        ReturnValue: 0,
-        ReturnValueStr: 'SUCCESS'
-      }
-    }
-  }
+test('should return a wsman message if input message a maintenance request', async () => {
   const clientId = uuid()
-  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg })
-  await synchronizeTime(clientId, message, amtwsman, clientManager)
-  const Tm1 = Math.round(new Date().getTime() / 1000)
-  expect(amtwsmanExecuteSpy).toHaveBeenCalledWith(clientId, 'AMT_TimeSynchronizationService', 'SetHighAccuracyTimeSynch', { Ta0: 1633106396, Tm1: Tm1, Tm2: Tm1 }, null, AMTUserName, 'P@ssw0rd')
+  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg, status: {}, connectionParams: connectionParams, messageId: 0 })
+  const response = await synchronizeTime(clientId, maintenanceMsg, responseMsg, clientManager, httpHandler)
+  expect(response.method).toBe('wsman')
 })
 
-test('should synchronize time', async () => {
+test('should return a wsman message if input is a 401 unauthorized error from AMT', async () => {
+  message.payload.statusCode = 401
   const clientId = uuid()
-  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg })
-  await synchronizeTime(clientId, maintenanceMsg, amtwsman, clientManager)
-  expect(amtwsmanExecuteSpy).toHaveBeenCalledWith(clientId, 'AMT_TimeSynchronizationService', 'GetLowAccuracyTimeSynch', {}, null, AMTUserName, 'P@ssw0rd')
+  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg, status: {}, connectionParams: connectionParams, messageId: 0 })
+  const response = await synchronizeTime(clientId, message, responseMsg, clientManager, httpHandler)
+  expect(response.method).toBe('wsman')
+})
+
+test('should return a wsman message if input is a 200 response message for GET_LOW_ACCURACY_TIME_SYNCH', async () => {
+  message.payload.statusCode = 200
+  message.payload.body = getLowAccuracyTimeSync(0)
+  const clientId = uuid()
+  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg, status: {}, connectionParams: connectionParams, messageId: 0 })
+  const response = await synchronizeTime(clientId, message, responseMsg, clientManager, httpHandler)
+  expect(response.method).toBe('wsman')
+})
+
+test('should return an error message if input is a 200 response message for GET_LOW_ACCURACY_TIME_SYNCH and return value is not zero', async () => {
+  message.payload.statusCode = 200
+  message.payload.body = getLowAccuracyTimeSync(1)
+  const clientId = uuid()
+  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg, status: {}, connectionParams: connectionParams, messageId: 0 })
+  const response = await synchronizeTime(clientId, message, responseMsg, clientManager, httpHandler)
+  expect(response.method).toBe('error')
+  expect(response.message).toEqual('{"Status":"Failed to Synchronize time"}')
+})
+
+test('should return success message if input is a 200 response message for SET_HIGH_ACCURACY_TIME_SYNCH', async () => {
+  message.payload.statusCode = 200
+  message.payload.body = setHighAccuracyTimeSync(0, 'SetHighAccuracyTimeSynchResponse')
+  const clientId = uuid()
+  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg, status: {}, connectionParams: connectionParams, messageId: 0 })
+  const response = await synchronizeTime(clientId, message, responseMsg, clientManager, httpHandler)
+  expect(response.method).toBe('success')
+  expect(response.message).toEqual('{"Status":"Time Synchronized"}')
+})
+test('should return an error message if input  is a 200 response message for SET_HIGH_ACCURACY_TIME_SYNCH and return value is not zero', async () => {
+  message.payload.statusCode = 200
+  message.payload.body = setHighAccuracyTimeSync(1, 'SetHighAccuracyTimeSynchResponse')
+  const clientId = uuid()
+  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg, status: {}, connectionParams: connectionParams, messageId: 0 })
+  const response = await synchronizeTime(clientId, message, responseMsg, clientManager, httpHandler)
+  expect(response.method).toBe('error')
+  expect(response.message).toEqual('{"Status":"Failed to Synchronize time"}')
+})
+test('should return an error message if input is a 200 response message but not for SET_HIGH_ACCURACY_TIME_SYNCH and GET_LOW_ACCURACY_TIME_SYNCH', async () => {
+  message.payload.statusCode = 200
+  message.payload.body = setHighAccuracyTimeSync(1, 'SetHighAccuracyTimeSynchResronse')
+  const clientId = uuid()
+  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg, status: {}, connectionParams: connectionParams, messageId: 0 })
+  const response = await synchronizeTime(clientId, message, responseMsg, clientManager, httpHandler)
+  expect(response.method).toBe('error')
+  expect(response.message).toEqual('{"Status":"Failed to Synchronize time"}')
+})
+test('should return an error message if input is not 401 0r 200', async () => {
+  message.payload.statusCode = 400
+  message.payload.body = null
+  const clientId = uuid()
+  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg, status: {}, connectionParams: connectionParams, messageId: 0 })
+  const response = await synchronizeTime(clientId, message, responseMsg, clientManager, httpHandler)
+  expect(response.method).toBe('error')
+  expect(response.message).toEqual('{"Status":"Failed to Synchronize time"}')
 })

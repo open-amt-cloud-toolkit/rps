@@ -98,12 +98,12 @@ export class Activator implements IExecutor {
         if (clientObj.action === ClientAction.ADMINCTLMODE) {
           await this.createSignedString(clientObj)
           // Activate in ACM
-          xmlRequestBody = this.ips.HostBasedSetupService(IPS.Methods.ADMIN_SETUP, (httpHandler.messageId++).toString(), 2, password, clientObj.nonce.toString('base64'), 2, clientObj.signature)
+          xmlRequestBody = this.ips.HostBasedSetupService(IPS.Methods.ADMIN_SETUP, (clientObj.messageId++).toString(), 2, password, clientObj.nonce.toString('base64'), 2, clientObj.signature)
         } else {
           // Activate in CCM
-          xmlRequestBody = this.ips.HostBasedSetupService(IPS.Methods.SETUP, (httpHandler.messageId++).toString(), 2, password)
+          xmlRequestBody = this.ips.HostBasedSetupService(IPS.Methods.SETUP, (clientObj.messageId++).toString(), 2, password)
         }
-        const wsmanRequest = httpHandler.wrapIt(xmlRequestBody)
+        const wsmanRequest = httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
         return this.responseMsg.get(clientId, wsmanRequest, 'wsman', 'ok', 'alls good!')
       }
     } catch (error) {
@@ -156,12 +156,11 @@ export class Activator implements IExecutor {
    */
   async processWSManJsonResponse (message: any, clientId: string, httpHandler?: HttpHandler): Promise<ClientMsg> {
     const clientObj = this.clientManager.getClientObject(clientId)
-    console.log('message :', message)
     const wsmanResponse = message.payload
     switch (wsmanResponse.statusCode) {
       case 401: {
-        const xmlRequestBody = this.amt.GeneralSettings(AMT.Methods.GET, (httpHandler.messageId++).toString())
-        const data = httpHandler.wrapIt(xmlRequestBody)
+        const xmlRequestBody = this.amt.GeneralSettings(AMT.Methods.GET, (clientObj.messageId++).toString())
+        const data = httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
         return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
       }
       case 200: {
@@ -198,8 +197,8 @@ export class Activator implements IExecutor {
     clientObj.hostname = clientObj.ClientData.payload.hostname
     this.clientManager.setClientObject(clientObj)
     if (clientObj.ClientData.payload.fwNonce == null && clientObj.action === ClientAction.ADMINCTLMODE) {
-      const xmlRequestBody = this.ips.HostBasedSetupService(IPS.Methods.GET, (httpHandler.messageId++).toString())
-      const data = httpHandler.wrapIt(xmlRequestBody)
+      const xmlRequestBody = this.ips.HostBasedSetupService(IPS.Methods.GET, (clientObj.messageId++).toString())
+      const data = httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
       return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
     }
     return null
@@ -272,8 +271,8 @@ export class Activator implements IExecutor {
     if (currentTime >= clientObj.delayEndTime || clientObj.activationStatus.missingMebxPassword) {
       this.logger.debug(`Delay ${EnvReader.GlobalEnvConfig.delayTimer} seconds after activation completed`)
       /* Update the wsman stack username and password */
-      httpHandler.connectionParams.username = AMTUserName
-      httpHandler.connectionParams.password = clientObj.amtPassword
+      clientObj.connectionParams.username = AMTUserName
+      clientObj.connectionParams.password = clientObj.amtPassword
       if (clientObj.action === ClientAction.ADMINCTLMODE) {
         /* Set MEBx password called after the activation as the API is accessible only with admin user */
         const result = await setMEBXPassword(clientId, wsmanResponse, this.responseMsg, this.clientManager, this.configurator, httpHandler)
@@ -339,14 +338,14 @@ export class Activator implements IExecutor {
     // inject certificates in proper order with proper flags
     if (clientObj.count <= clientObj.certObj.certChain.length) {
       if (clientObj.count === 1) {
-        const xmlRequestBody = this.ips.HostBasedSetupService(IPS.Methods.ADD_NEXT_CERT_IN_CHAIN, (httpHandler.messageId++).toString(), null, null, null, null, null, clientObj.certObj.certChain[clientObj.count - 1], true, false)
-        data = httpHandler.wrapIt(xmlRequestBody)
+        const xmlRequestBody = this.ips.HostBasedSetupService(IPS.Methods.ADD_NEXT_CERT_IN_CHAIN, (clientObj.messageId++).toString(), null, null, null, null, null, clientObj.certObj.certChain[clientObj.count - 1], true, false)
+        data = httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
       } else if (clientObj.count > 1 && clientObj.count < clientObj.certObj.certChain.length) {
-        const xmlRequestBody = this.ips.HostBasedSetupService(IPS.Methods.ADD_NEXT_CERT_IN_CHAIN, (httpHandler.messageId++).toString(), null, null, null, null, null, clientObj.certObj.certChain[clientObj.count - 1], false, false)
-        data = httpHandler.wrapIt(xmlRequestBody)
+        const xmlRequestBody = this.ips.HostBasedSetupService(IPS.Methods.ADD_NEXT_CERT_IN_CHAIN, (clientObj.messageId++).toString(), null, null, null, null, null, clientObj.certObj.certChain[clientObj.count - 1], false, false)
+        data = httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
       } else if (clientObj.count === clientObj.certObj.certChain.length) {
-        const xmlRequestBody = this.ips.HostBasedSetupService(IPS.Methods.ADD_NEXT_CERT_IN_CHAIN, (httpHandler.messageId++).toString(), null, null, null, null, null, clientObj.certObj.certChain[clientObj.count - 1], false, true)
-        data = httpHandler.wrapIt(xmlRequestBody)
+        const xmlRequestBody = this.ips.HostBasedSetupService(IPS.Methods.ADD_NEXT_CERT_IN_CHAIN, (clientObj.messageId++).toString(), null, null, null, null, null, clientObj.certObj.certChain[clientObj.count - 1], false, true)
+        data = httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
       }
       ++clientObj.count
       this.clientManager.setClientObject(clientObj)
