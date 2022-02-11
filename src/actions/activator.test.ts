@@ -11,7 +11,6 @@ import { NodeForge } from '../NodeForge'
 import { CertManager } from '../CertManager'
 import { Configurator } from '../Configurator'
 import { config } from '../test/helper/Config'
-import { ClientManager } from '../ClientManager'
 import { ClientResponseMsg } from '../utils/ClientResponseMsg'
 import { WSManProcessor } from '../WSManProcessor'
 import { Validator } from '../Validator'
@@ -24,20 +23,20 @@ import { TLSConfigurator } from './TLSConfigurator'
 import { HttpHandler } from '../HttpHandler'
 import { ClientAction, ClientObject } from '../models/RCS.Config'
 import { RPSError } from '../utils/RPSError'
+import { devices } from '../WebSocketListener'
 
 EnvReader.GlobalEnvConfig = config
 const nodeForge = new NodeForge()
 const certManager = new CertManager(new Logger('CertManager'), nodeForge)
 const helper = new SignatureHelper(nodeForge)
 const configurator = new Configurator()
-const clientManager = ClientManager.getInstance(new Logger('ClientManager'))
 const responseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'))
-const amtwsman = new WSManProcessor(new Logger('WSManProcessor'), clientManager, responseMsg)
-const validator = new Validator(new Logger('Validator'), configurator, clientManager)
-const tlsConfig = new TLSConfigurator(new Logger('CIRAConfig'), certManager, responseMsg, amtwsman, clientManager)
-const ciraConfig = new CIRAConfigurator(new Logger('CIRAConfig'), configurator, responseMsg, amtwsman, clientManager, tlsConfig)
-const networkConfigurator = new NetworkConfigurator(new Logger('NetworkConfig'), configurator, responseMsg, amtwsman, clientManager, validator, ciraConfig)
-const activator = new Activator(new Logger('Activator'), configurator, certManager, helper, responseMsg, clientManager, validator, networkConfigurator)
+const amtwsman = new WSManProcessor(new Logger('WSManProcessor'), responseMsg)
+const validator = new Validator(new Logger('Validator'), configurator)
+const tlsConfig = new TLSConfigurator(new Logger('CIRAConfig'), certManager, responseMsg, amtwsman)
+const ciraConfig = new CIRAConfigurator(new Logger('CIRAConfig'), configurator, responseMsg, amtwsman, tlsConfig)
+const networkConfigurator = new NetworkConfigurator(new Logger('NetworkConfig'), configurator, responseMsg, amtwsman, validator, ciraConfig)
+const activator = new Activator(new Logger('Activator'), configurator, certManager, helper, responseMsg, validator, networkConfigurator)
 const httpHandler = new HttpHandler()
 let clientId, activationmsg
 
@@ -75,7 +74,7 @@ beforeAll(() => {
     stale: 'false',
     qop: 'auth'
   }
-  clientManager.addClient({
+  devices[clientId] = {
     ClientId: clientId,
     ClientSocket: null,
     ClientData: activationmsg,
@@ -91,7 +90,7 @@ beforeAll(() => {
       password: 'P@ssw0rd'
     },
     messageId: 1
-  })
+  }
 })
 const message = {
   payload: {
@@ -190,7 +189,6 @@ describe('GetProvisioningCertObj', () => {
     const message = activationmsg
     const password = null
     const result = activator.GetProvisioningCertObj(message, cert, password, clientId)
-    console.log('result :', result)
     expect(convertPfxToObjectSpy).toHaveBeenCalled()
     expect(dumpPfxSpy).toHaveBeenCalled()
     expect(result).toBe(certObject.provisioningCertificateObj)
@@ -199,7 +197,7 @@ describe('GetProvisioningCertObj', () => {
 
 describe('createSignedString', () => {
   test('should return valid signed string when certificate is valid', async () => {
-    const clientObj = clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     clientObj.ClientData.payload.fwNonce = PasswordHelper.generateNonce()
     clientObj.nonce = PasswordHelper.generateNonce()
     const nodeForge = new NodeForge()
@@ -209,17 +207,17 @@ describe('createSignedString', () => {
     const pfxobj = certManager.convertPfxToObject(cert, 'Intel123!')
     clientObj.certObj = {}
     clientObj.certObj.privateKey = pfxobj.keys[0]
-    await activator.createSignedString(clientObj)
+    await activator.createSignedString(clientId)
     expect(clientObj.signature.errorText).toBe(undefined)
   })
   test('should throw error message when certificate is invalid', async () => {
     let rpsError = null
-    const clientObj = clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     clientObj.ClientData.payload.fwNonce = PasswordHelper.generateNonce()
     clientObj.nonce = PasswordHelper.generateNonce()
     const signStringSpy = jest.spyOn(activator.signatureHelper, 'signString').mockImplementation(() => { return { errorText: 'Unable to create Digital Signature' } })
     try {
-      await activator.createSignedString(clientObj)
+      await activator.createSignedString(clientId)
     } catch (error) {
       rpsError = error
     }
@@ -236,9 +234,9 @@ describe('performACMSteps', () => {
       return domain
     })
     try {
-      clientObj = clientManager.getClientObject(clientId)
+      clientObj = devices[clientId]
       clientObj.count = undefined
-      await activator.performACMSteps(clientId, clientObj, httpHandler)
+      await activator.performACMSteps(clientId, httpHandler)
     } catch (error) {
       rpsError = error
     }
@@ -254,9 +252,9 @@ describe('performACMSteps', () => {
       return domain
     })
     try {
-      clientObj = clientManager.getClientObject(clientId)
+      clientObj = devices[clientId]
       clientObj.count = undefined
-      await activator.performACMSteps(clientId, clientObj, httpHandler)
+      await activator.performACMSteps(clientId, httpHandler)
     } catch (error) {
       rpsError = error
     }
@@ -274,9 +272,9 @@ describe('performACMSteps', () => {
       return domain
     })
     try {
-      clientObj = clientManager.getClientObject(clientId)
+      clientObj = devices[clientId]
       clientObj.count = undefined
-      await activator.performACMSteps(clientId, clientObj, httpHandler)
+      await activator.performACMSteps(clientId, httpHandler)
     } catch (error) {
       rpsError = error
     }
@@ -295,9 +293,9 @@ describe('performACMSteps', () => {
     const getProvisioningCertSpy = jest.spyOn(configurator.domainCredentialManager, 'getProvisioningCert').mockImplementation(async () => {
       return domain
     })
-    clientObj = clientManager.getClientObject(clientId)
+    clientObj = devices[clientId]
     clientObj.count = undefined
-    const response = await activator.performACMSteps(clientId, clientObj, httpHandler)
+    const response = await activator.performACMSteps(clientId, httpHandler)
 
     expect(getProvisioningCertSpy).toHaveBeenCalled()
     expect(getProvisioningCertObjSpy).toHaveBeenCalled()
@@ -307,29 +305,26 @@ describe('performACMSteps', () => {
 
 describe('activate device', () => {
   test('should throw an error when the payload is null', async () => {
-    const clientObj = clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     clientObj.uuid = activationmsg.payload.uuid
-    clientManager.setClientObject(clientObj)
     const clientMsg = { payload: null }
     const responseMsg = await activator.execute(clientMsg, clientId, httpHandler)
     expect(responseMsg.message).toEqual(`{"Status":"Device ${activationmsg.payload.uuid} activation failed. Missing/invalid WSMan response payload."}`)
   })
   test('should return wsman to update AMT admin password when device does not exits in DB', async () => {
-    const clientObj = clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     clientObj.uuid = activationmsg.payload.uuid
     clientObj.activationStatus.changePassword = true
     clientObj.activationStatus.activated = true
-    clientManager.setClientObject(clientObj)
     const clientMsg = { payload: { protocolVersion: 'HTTP/1.1', statusCode: 401, statusMessage: 'Unauthorized', headersSize: 295, bodySize: 693, headers: [], body: { } } }
     const responseMsg = await activator.execute(clientMsg, clientId, httpHandler)
     expect(responseMsg.method).toEqual('wsman')
   })
   test('should return error message when AMT admin password failed to update', async () => {
-    const clientObj = clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     clientObj.uuid = activationmsg.payload.uuid
     clientObj.activationStatus.changePassword = true
     clientObj.activationStatus.activated = true
-    clientManager.setClientObject(clientObj)
     const clientMsg = {
       payload: {
         statusCode: 400,
@@ -342,11 +337,10 @@ describe('activate device', () => {
     expect(responseMsg.message).toEqual(`{"Status":"Device ${activationmsg.payload.uuid} failed to update AMT password."}`)
   })
   test('should return success message when AMT admin password update', async () => {
-    const clientObj = clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     clientObj.uuid = activationmsg.payload.uuid
     clientObj.activationStatus.changePassword = true
     clientObj.activationStatus.activated = true
-    clientManager.setClientObject(clientObj)
     const clientMsg = {
       payload: {
         statusCode: 200,
@@ -366,14 +360,13 @@ describe('activate device', () => {
   test('should return wsman message for admin control mode activation', async () => {
     const getAMTPasswordSpy = jest.spyOn(configurator.profileManager, 'getAmtPassword').mockImplementation(async () => 'P@ssw0rd')
     const signStringSpy = jest.spyOn(activator.signatureHelper, 'signString').mockImplementation(() => { return { errorText: undefined } })
-    const clientObj = clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     clientObj.uuid = activationmsg.payload.uuid
     clientObj.activationStatus.changePassword = false
     clientObj.activationStatus.activated = false
     clientObj.certObj.certChain = ['leaf', 'inter1', 'root']
     clientObj.count = 4
     clientObj.action = ClientAction.ADMINCTLMODE
-    clientManager.setClientObject(clientObj)
     const clientMsg = {
       payload: {
         statusCode: 200,
@@ -392,12 +385,11 @@ describe('activate device', () => {
     expect(responseMsg.method).toEqual('wsman')
   })
   test('should return wsman message for client control mode activation', async () => {
-    const clientObj = clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     clientObj.uuid = activationmsg.payload.uuid
     clientObj.activationStatus.changePassword = false
     clientObj.activationStatus.activated = false
     clientObj.action = ClientAction.CLIENTCTLMODE
-    clientManager.setClientObject(clientObj)
     const responseMsg = await activator.execute(response200GeneralSettingsMsg('Digest:E637970E01D8813AA21BA98C7589B883'), clientId, httpHandler)
     expect(responseMsg.method).toEqual('wsman')
   })
@@ -413,8 +405,7 @@ describe('save Device Information to MPS database', () => {
         tags: ['acm']
       }
     })
-    const clientObj = clientManager.getClientObject(clientId)
-    const response = await activator.saveDeviceInfoToMPS(clientObj)
+    const response = await activator.saveDeviceInfoToMPS(clientId)
     expect(insertSpy).toHaveBeenCalled()
     expect(response).toBe(false)
   })
@@ -440,51 +431,48 @@ describe('save Device Information to MPS database', () => {
 describe('save Device Information to vault', () => {
   test('should return true if saved for acmactivate', async () => {
     const insertSpy = jest.spyOn(configurator.amtDeviceRepository, 'insert').mockImplementation(async () => true)
-    const clientObj = clientManager.getClientObject(clientId)
-    const response = await activator.saveDeviceInfoToVault(clientObj)
+    const response = await activator.saveDeviceInfoToVault(clientId)
     expect(insertSpy).toHaveBeenCalled()
     expect(response).toBe(true)
   })
   test('should return true if saved for ccmactivate', async () => {
     const insertSpy = jest.spyOn(configurator.amtDeviceRepository, 'insert').mockImplementation(async () => true)
-    const clientObj = clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     clientObj.action = ClientAction.ADMINCTLMODE
-    clientManager.setClientObject(clientObj)
-    const response = await activator.saveDeviceInfoToVault(clientObj)
+    const response = await activator.saveDeviceInfoToVault(clientId)
     expect(insertSpy).toHaveBeenCalled()
     expect(response).toBe(true)
   })
   test('should return false if not able to save data', async () => {
     configurator.amtDeviceRepository = null
-    const clientObj = clientManager.getClientObject(clientId)
-    const response = await activator.saveDeviceInfoToVault(clientObj)
+    const response = await activator.saveDeviceInfoToVault(clientId)
     expect(response).toBe(false)
   })
 })
 
 describe('inject Certificate', () => {
   test('should return wsman message when certchain is not null', async () => {
-    const clientObj = clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     clientObj.count = 1
     clientObj.certObj = {}
     clientObj.certObj.certChain = ['leaf', 'inter1', 'root']
-    const response = await activator.injectCertificate(clientId, clientObj, httpHandler)
+    const response = await activator.injectCertificate(clientId, httpHandler)
     expect(response.method).toBe('wsman')
     expect(clientObj.count).toBe(2)
   })
   test('should return wsman message when certchain is not null and cert chain length is less than count', async () => {
-    const clientObj = clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     clientObj.certObj = {}
     clientObj.certObj.certChain = ['leaf', 'inter1', 'root']
-    const response = await activator.injectCertificate(clientId, clientObj, httpHandler)
+    const response = await activator.injectCertificate(clientId, httpHandler)
     expect(response.method).toBe('wsman')
     expect(clientObj.count).toBe(3)
   })
   test('should return wsman message when certchain is not null and cert chain length is equal to count', async () => {
-    const clientObj = clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     clientObj.certObj = {}
     clientObj.certObj.certChain = ['leaf', 'inter1', 'root']
-    const response = await activator.injectCertificate(clientId, clientObj, httpHandler)
+    const response = await activator.injectCertificate(clientId, httpHandler)
     expect(response.method).toBe('wsman')
     expect(clientObj.count).toBe(4)
     expect(clientObj.certObj.certChain.length).toBeLessThan(clientObj.count)
@@ -510,7 +498,7 @@ describe('process WSMan Json Response ', () => {
       }
     }
     try {
-      clientObj = clientManager.getClientObject(clientId)
+      clientObj = devices[clientId]
       await activator.processWSManJsonResponse(message, clientId, httpHandler)
     } catch (error) {
       rpsError = error
@@ -534,7 +522,7 @@ describe('process WSMan Json Response ', () => {
       }
     }
     try {
-      clientObj = clientManager.getClientObject(clientId)
+      clientObj = devices[clientId]
       await activator.processWSManJsonResponse(message, clientId, httpHandler)
     } catch (error) {
       rpsError = error
@@ -549,7 +537,7 @@ describe('validate AMT GeneralSettings  response', () => {
     let rpsError = null
     let clientObj: ClientObject = null
     try {
-      clientObj = clientManager.getClientObject(clientId)
+      clientObj = devices[clientId]
       await activator.processWSManJsonResponse(response200GeneralSettingsMsg('Digest:E637970E01D8813AA21BA98C7589883'), clientId, httpHandler)
     } catch (error) {
       rpsError = error
@@ -558,22 +546,18 @@ describe('validate AMT GeneralSettings  response', () => {
     expect(rpsError.message).toBe(`Device ${clientObj.uuid} activation failed. Not a valid digest realm.`)
   })
   test('should return wsman message for acmactivate method', async () => {
-    let clientObj = clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     clientObj.ClientData.payload.fwNonce = null
     clientObj.action = ClientAction.ADMINCTLMODE
-    clientManager.setClientObject(clientObj)
     const response = await activator.processWSManJsonResponse(response200GeneralSettingsMsg('Digest:E637970E01D8813AA21BA98C7589B883'), clientId, httpHandler)
-    clientObj = clientManager.getClientObject(clientId)
     expect(response.method).toBe('wsman')
     expect(clientObj.ClientData.payload.digestRealm).toBe('Digest:E637970E01D8813AA21BA98C7589B883')
     expect(clientObj.hostname).toBe('DESKTOP-9CC12U7')
   })
   test('should return null for ccmactivate method', async () => {
-    let clientObj = clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     clientObj.action = ClientAction.CLIENTCTLMODE
-    clientManager.setClientObject(clientObj)
     const response = await activator.processWSManJsonResponse(response200GeneralSettingsMsg('Digest:E637970E01D8813AA21BA98C7589B883'), clientId, httpHandler)
-    clientObj = clientManager.getClientObject(clientId)
     expect(response).toBeNull()
     expect(clientObj.ClientData.payload.digestRealm).toBe('Digest:E637970E01D8813AA21BA98C7589B883')
     expect(clientObj.hostname).toBe('DESKTOP-9CC12U7')
@@ -607,7 +591,7 @@ describe('validate Host Based Setup Service response', () => {
     let rpsError = null
     let clientObj: ClientObject = null
     try {
-      clientObj = clientManager.getClientObject(clientId)
+      clientObj = devices[clientId]
       await activator.processWSManJsonResponse(response200AddNextInChain(1), clientId, httpHandler)
     } catch (error) {
       rpsError = error
@@ -619,7 +603,7 @@ describe('validate Host Based Setup Service response', () => {
     const saveDeviceInfoToVaultSpy = jest.spyOn(activator, 'saveDeviceInfoToVault').mockImplementation(async () => { return true })
     const saveDeviceInfoToMPSSpy = jest.spyOn(activator, 'saveDeviceInfoToMPS').mockImplementation(async () => { return true })
     const response = await activator.processWSManJsonResponse(response200AdminSetUp(0), clientId, httpHandler)
-    const clientObj = clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     clientObj.delayEndTime = null
     expect(saveDeviceInfoToVaultSpy).toHaveBeenCalled()
     expect(saveDeviceInfoToMPSSpy).toHaveBeenCalled()
@@ -629,7 +613,7 @@ describe('validate Host Based Setup Service response', () => {
     let rpsError = null
     let clientObj: ClientObject = null
     try {
-      clientObj = clientManager.getClientObject(clientId)
+      clientObj = devices[clientId]
       await activator.processWSManJsonResponse(response200AdminSetUp(1), clientId, httpHandler)
     } catch (error) {
       rpsError = error
@@ -641,7 +625,7 @@ describe('validate Host Based Setup Service response', () => {
     const saveDeviceInfoToVaultSpy = jest.spyOn(activator, 'saveDeviceInfoToVault').mockImplementation(async () => { return true })
     const saveDeviceInfoToMPSSpy = jest.spyOn(activator, 'saveDeviceInfoToMPS').mockImplementation(async () => { return true })
     const response = await activator.processWSManJsonResponse(response200Setup(0), clientId, httpHandler)
-    const clientObj = clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     clientObj.delayEndTime = null
     expect(saveDeviceInfoToVaultSpy).toHaveBeenCalled()
     expect(saveDeviceInfoToMPSSpy).toHaveBeenCalled()
@@ -651,7 +635,7 @@ describe('validate Host Based Setup Service response', () => {
     let rpsError = null
     let clientObj: ClientObject = null
     try {
-      clientObj = clientManager.getClientObject(clientId)
+      clientObj = devices[clientId]
       await activator.processWSManJsonResponse(response200Setup(1), clientId, httpHandler)
     } catch (error) {
       rpsError = error
@@ -663,43 +647,43 @@ describe('validate Host Based Setup Service response', () => {
 
 describe('wait for Activation', () => {
   test('should set next action as NETWORKCONFIG once heartbeat has ended for ACM', async () => {
-    const clientObj = clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     const currentTime = new Date().getTime()
     clientObj.action = ClientAction.ADMINCTLMODE
     clientObj.delayEndTime = currentTime + 1000000000000
     clientObj.delayEndTime = currentTime
-    await activator.waitAfterActivation(clientId, clientObj, response200SetMEBxPassword(0), httpHandler)
+    await activator.waitAfterActivation(clientId, response200SetMEBxPassword(0), httpHandler)
     expect(clientObj.action).toBe(ClientAction.NETWORKCONFIG)
   })
   test('should set next action as NETWORKCONFIG once heartbeat has ended for ACM', async () => {
-    const clientObj = clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     const currentTime = new Date().getTime()
     clientObj.action = ClientAction.ADMINCTLMODE
     clientObj.delayEndTime = currentTime + 1000000000000
     clientObj.delayEndTime = currentTime
-    await activator.waitAfterActivation(clientId, clientObj, response200SetMEBxPassword(1), httpHandler)
+    await activator.waitAfterActivation(clientId, response200SetMEBxPassword(1), httpHandler)
     expect(clientObj.action).toBe(ClientAction.NETWORKCONFIG)
   })
   test('should set next action as NETWORKCONFIG once heartbeat has ended for ACM', async () => {
-    const clientObj = clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     const currentTime = new Date().getTime()
     clientObj.action = ClientAction.ADMINCTLMODE
     clientObj.delayEndTime = currentTime + 1000000000000
     clientObj.delayEndTime = currentTime
     const message = ''
-    const response = await activator.waitAfterActivation(clientId, clientObj, message, httpHandler)
+    const response = await activator.waitAfterActivation(clientId, message, httpHandler)
     expect(response.method).toBe('wsman')
   })
   test('should set next action as NETWORKCONFIG once heartbeat has ended for CCM', async () => {
-    const clientObj = clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     const currentTime = new Date().getTime()
     clientObj.action = ClientAction.CLIENTCTLMODE
     clientObj.delayEndTime = currentTime
-    await activator.waitAfterActivation(clientId, clientObj, null, httpHandler)
+    await activator.waitAfterActivation(clientId, null, httpHandler)
     expect(clientObj.action).toBe(ClientAction.NETWORKCONFIG)
   })
 })
 
 afterAll(() => {
-  clientManager.clients = []
+  // clientManager.clients = []
 })

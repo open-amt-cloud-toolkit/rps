@@ -1,15 +1,20 @@
-import { IClientManager } from '../../interfaces/IClientManager'
+/*********************************************************************
+ * Copyright (c) Intel Corporation 2022
+ * SPDX-License-Identifier: Apache-2.0
+ **********************************************************************/
+
 import { ClientMsg, ClientObject } from '../../models/RCS.Config'
 import { ClientResponseMsg } from '../ClientResponseMsg'
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 import { parseBody } from '../parseWSManResponseBody'
 import Logger from '../../Logger'
+import { devices } from '../../WebSocketListener'
 
 const logger = new Logger('synchronizeTime')
 const amt = new AMT.Messages()
 
-export const synchronizeTime = async (clientId: string, message: any, responseMsg: ClientResponseMsg, clientManager: IClientManager, httpHandler): Promise<ClientMsg> => {
-  const clientObj = clientManager.getClientObject(clientId)
+export const synchronizeTime = async (clientId: string, message: any, responseMsg: ClientResponseMsg, httpHandler): Promise<ClientMsg> => {
+  const clientObj = devices[clientId]
   const wsmanResponse = message?.payload
   if (wsmanResponse.statusCode == null) {
     const xmlRequestBody = amt.TimeSynchronizationService(AMT.Methods.GET_LOW_ACCURACY_TIME_SYNCH, (clientObj.messageId++).toString())

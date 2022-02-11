@@ -1,6 +1,12 @@
+/*********************************************************************
+ * Copyright (c) Intel Corporation 2022
+ * SPDX-License-Identifier: Apache-2.0
+ **********************************************************************/
+
 import { TLSConfigurator } from './TLSConfigurator'
 import { AMTUserName } from '../utils/constants'
 import Logger from '../Logger'
+import { devices } from '../WebSocketListener'
 describe('TLS Configurator', () => {
   let tlsConfigurator: TLSConfigurator
 
@@ -8,30 +14,17 @@ describe('TLS Configurator', () => {
   let amtwsmanExecuteSpy: jest.SpyInstance
   let amtwsmanCreateSpy: jest.SpyInstance
   let amtwsmanPutSpy: jest.SpyInstance
-  let clientManagerSetSpy: jest.SpyInstance
-  let clientManagerGetSpy: jest.SpyInstance
   let responseMsgSpy: jest.SpyInstance
   const clientId = '123'
-  const clientObj = {
-    ClientId: clientId,
-    status: {},
-    ClientData: {
-      payload: {
-        password: 'password'
-      }
-    },
-    tls: {}
-  }
+
   beforeEach(() => {
-    tlsConfigurator = new TLSConfigurator(new Logger('TLS Configurator'), null, { get: () => {} } as any, { execute: () => {}, batchEnum: () => {}, create: () => {}, put: () => {} } as any, { setClientObject: () => {}, getClientObject: () => clientObj } as any)
+    tlsConfigurator = new TLSConfigurator(new Logger('TLS Configurator'), null, { get: () => {} } as any, { execute: () => {}, batchEnum: () => {}, create: () => {}, put: () => {} } as any)
     amtwsmanBatchEnumSpy = jest.spyOn(tlsConfigurator.amtwsman, 'batchEnum')
     amtwsmanExecuteSpy = jest.spyOn(tlsConfigurator.amtwsman, 'execute')
     amtwsmanCreateSpy = jest.spyOn(tlsConfigurator.amtwsman, 'create')
     amtwsmanPutSpy = jest.spyOn(tlsConfigurator.amtwsman, 'put')
-    clientManagerSetSpy = jest.spyOn(tlsConfigurator.clientManager, 'setClientObject')
-    clientManagerGetSpy = jest.spyOn(tlsConfigurator.clientManager, 'getClientObject')
     responseMsgSpy = jest.spyOn(tlsConfigurator.responseMsg, 'get')
-    tlsConfigurator.clientObj = {
+    tlsConfigurator.clientObj = devices[clientId] = {
       ClientId: clientId,
       status: {},
       ClientData: {
@@ -56,7 +49,6 @@ describe('TLS Configurator', () => {
     const setTLSDataSpy = jest.spyOn(tlsConfigurator, 'setTLSData').mockResolvedValue()
     const result = await tlsConfigurator.execute('', clientId)
     expect(result).toBeNull()
-    expect(clientManagerGetSpy).toHaveBeenCalledWith(clientId)
     expect(processWSManJsonResponsesSpy).toHaveBeenCalled()
     expect(trustedRootCertificatesSpy).toHaveBeenCalled()
     expect(generateKeyPairSpy).toHaveBeenCalled()
@@ -65,10 +57,8 @@ describe('TLS Configurator', () => {
     expect(setTLSDataSpy).toHaveBeenCalled()
   })
   test('should execute when commitLocalTLS', async () => {
-    const clientObj2 = clientObj;
-    (clientObj2.tls as any).commitLocalTLS = true
+    tlsConfigurator.clientObj.tls.commitLocalTLS = true
 
-    tlsConfigurator.clientManager.getClientObject = () => clientObj2
     const processWSManJsonResponsesSpy = jest.spyOn(tlsConfigurator, 'processWSManJsonResponses').mockResolvedValue()
     const trustedRootCertificatesSpy = jest.spyOn(tlsConfigurator, 'trustedRootCertificates').mockResolvedValue()
     const generateKeyPairSpy = jest.spyOn(tlsConfigurator, 'generateKeyPair').mockResolvedValue()
@@ -96,7 +86,6 @@ describe('TLS Configurator', () => {
     await tlsConfigurator.synchronizeTime(clientId)
     expect(amtwsmanExecuteSpy).toHaveBeenCalledWith(clientId, 'AMT_TimeSynchronizationService', 'GetLowAccuracyTimeSynch', {}, null, AMTUserName, 'password')
     expect(tlsConfigurator.clientObj.tls.getTimeSynch).toBe(true)
-    expect(clientManagerSetSpy).toHaveBeenCalled()
   })
   test('should create tls credential context when getTLSCredentialContext is falsy', async () => {
     tlsConfigurator.clientObj.tls.confirmPublicPrivateKeyPair = true
@@ -117,7 +106,6 @@ describe('TLS Configurator', () => {
     await tlsConfigurator.createTLSCredentialContext(clientId)
     expect(amtwsmanCreateSpy).toHaveBeenCalledWith(clientId, 'AMT_TLSCredentialContext', putObj, null, AMTUserName, 'password')
     expect(tlsConfigurator.clientObj.tls.addCredentialContext).toBe(true)
-    expect(clientManagerSetSpy).toHaveBeenCalled()
   })
   test('should add trusted root certificates when not getPublicKeyCertificate', async () => {
     tlsConfigurator.clientObj.ClientData.payload.profile = {
@@ -129,7 +117,6 @@ describe('TLS Configurator', () => {
     await tlsConfigurator.trustedRootCertificates(clientId)
     expect(tlsConfigurator.clientObj.tls.getPublicKeyCertificate).toBe(true)
     expect(amtwsmanBatchEnumSpy).toHaveBeenCalledWith(clientId, 'AMT_PublicKeyCertificate', AMTUserName, 'password')
-    expect(clientManagerSetSpy).toHaveBeenCalled()
   })
   test('should add trusted root certificates when not addTrustedRootCert', async () => {
     tlsConfigurator.clientObj.tls.getPublicKeyCertificate = true
@@ -148,7 +135,6 @@ describe('TLS Configurator', () => {
     expect(tlsConfigurator.clientObj.tls.addTrustedRootCert).toBe(true)
 
     expect(amtwsmanExecuteSpy).toHaveBeenCalledWith(clientId, 'AMT_PublicKeyManagementService', 'AddTrustedRootCertificate', { CertificateBlob: ROOT_CERTIFICATE.certbin }, null, AMTUserName, 'password')
-    expect(clientManagerSetSpy).toHaveBeenCalled()
   })
   test('should add trusted root certificates when not checkPublicKeyCertificate ', async () => {
     tlsConfigurator.clientObj.tls.getPublicKeyCertificate = true
@@ -167,7 +153,6 @@ describe('TLS Configurator', () => {
     await tlsConfigurator.trustedRootCertificates(clientId)
     expect(tlsConfigurator.clientObj.tls.checkPublicKeyCertificate).toBe(true)
     expect(amtwsmanBatchEnumSpy).toHaveBeenCalledWith(clientId, 'AMT_PublicKeyCertificate', AMTUserName, 'password')
-    expect(clientManagerSetSpy).toHaveBeenCalled()
   })
   test('should generate key pair when confirmPublicKeyCertificate', async () => {
     tlsConfigurator.clientObj.tls.confirmPublicKeyCertificate = true
@@ -175,7 +160,6 @@ describe('TLS Configurator', () => {
     await tlsConfigurator.generateKeyPair(clientId)
     expect(tlsConfigurator.clientObj.tls.getPublicPrivateKeyPair).toBe(true)
     expect(amtwsmanBatchEnumSpy).toHaveBeenCalledWith(clientId, 'AMT_PublicPrivateKeyPair', AMTUserName, 'password')
-    expect(clientManagerSetSpy).toHaveBeenCalled()
   })
   test('should generate key pair when PublicPrivateKeyPair', async () => {
     tlsConfigurator.clientObj.tls.PublicPrivateKeyPair = { responses: [{}] }
@@ -183,7 +167,6 @@ describe('TLS Configurator', () => {
     await tlsConfigurator.generateKeyPair(clientId)
     expect(tlsConfigurator.clientObj.tls.generateKeyPair).toBe(true)
     expect(amtwsmanExecuteSpy).toHaveBeenCalledWith(clientId, 'AMT_PublicKeyManagementService', 'GenerateKeyPair', { KeyAlgorithm: 0, KeyLength: 2048 }, null, AMTUserName, 'password')
-    expect(clientManagerSetSpy).toHaveBeenCalled()
   })
 
   test('should generate key pair when addCert ', async () => {
@@ -192,7 +175,6 @@ describe('TLS Configurator', () => {
     await tlsConfigurator.generateKeyPair(clientId)
     expect(tlsConfigurator.clientObj.tls.checkPublicPrivateKeyPair).toBe(true)
     expect(amtwsmanBatchEnumSpy).toHaveBeenCalledWith(clientId, 'AMT_PublicPrivateKeyPair', AMTUserName, 'password')
-    expect(clientManagerSetSpy).toHaveBeenCalled()
   })
   test('should set tls data when setTimeSync', async () => {
     tlsConfigurator.clientObj.tls.setTimeSynch = true
@@ -204,7 +186,6 @@ describe('TLS Configurator', () => {
     expect(tlsConfigurator.clientObj.tls.getTLSSettingData).toBeFalsy()
     await tlsConfigurator.setTLSData(clientId)
     expect(tlsConfigurator.clientObj.tls.getTLSSettingData).toBe(true)
-    expect(clientManagerSetSpy).toHaveBeenCalled()
     expect(amtwsmanBatchEnumSpy).toHaveBeenCalledWith(clientId, 'AMT_TLSSettingData', AMTUserName, 'password')
   })
 
@@ -223,7 +204,6 @@ describe('TLS Configurator', () => {
     expect(tlsConfigurator.clientObj.tls.TLSSettingData.responses[0].AcceptNonSecureConnections).toBe(true)
     expect(tlsConfigurator.clientObj.tls.TLSSettingData.responses[0].MutualAuthentication).toBe(false)
     expect(tlsConfigurator.clientObj.tls.putRemoteTLS).toBe(true)
-    expect(clientManagerSetSpy).toHaveBeenCalled()
     expect(amtwsmanPutSpy).toHaveBeenCalledWith(clientId, 'AMT_TLSSettingData', tlsConfigurator.clientObj.tls.TLSSettingData.responses[0], AMTUserName, 'password')
   })
   test('should set tls data when commitRemoteTLS  ', async () => {
@@ -243,7 +223,6 @@ describe('TLS Configurator', () => {
     expect(tlsConfigurator.clientObj.tls.TLSSettingData.responses[1].Enabled).toBe(true)
     expect(tlsConfigurator.clientObj.tls.putLocalTLS).toBe(true)
     expect(amtwsmanPutSpy).toHaveBeenCalledWith(clientId, 'AMT_TLSSettingData', tlsConfigurator.clientObj.tls.TLSSettingData.responses[1], AMTUserName, 'password')
-    expect(clientManagerSetSpy).toHaveBeenCalled()
   })
 
   test('should process WSMan response when AMT_PublicKeyCertificate', async () => {
@@ -264,7 +243,6 @@ describe('TLS Configurator', () => {
     expect(spy).toHaveBeenCalledTimes(1)
     expect(spy).toHaveBeenCalledWith(message.payload.AMT_PublicKeyCertificate)
     expect(tlsConfigurator.clientObj.tls.confirmPublicKeyCertificate).toBe(true)
-    expect(clientManagerSetSpy).toHaveBeenCalled()
   })
   test('should process WSMan response when AMTPublicPrivateKeyPair', async () => {
     const message = {
@@ -276,7 +254,6 @@ describe('TLS Configurator', () => {
     await tlsConfigurator.processWSManJsonResponses(message, clientId)
     expect(spy).toHaveBeenCalledTimes(1)
     expect(spy).toHaveBeenCalledWith(message.payload.AMT_PublicPrivateKeyPair, clientId)
-    expect(clientManagerSetSpy).toHaveBeenCalled()
   })
   test('should process WSMan response when AMTTLSCredentialContext', async () => {
     const message = {
@@ -313,7 +290,6 @@ describe('TLS Configurator', () => {
     }
     await tlsConfigurator.processWSManJsonResponses(message, clientId)
     expect(tlsConfigurator.clientObj.tls.createdTrustedRootCert).toBe(true)
-    expect(clientManagerSetSpy).toHaveBeenCalled()
   })
   test('should process WSMan response when header method GenerateKeyPair', async () => {
     const message = {
@@ -328,7 +304,6 @@ describe('TLS Configurator', () => {
     }
     await tlsConfigurator.processWSManJsonResponses(message, clientId)
     expect(tlsConfigurator.clientObj.tls.generatedPublicPrivateKeyPair).toBe(true)
-    expect(clientManagerSetSpy).toHaveBeenCalled()
   })
   test('should process WSMan response when header method AddCertificate', async () => {
     const message = {
@@ -343,7 +318,6 @@ describe('TLS Configurator', () => {
     }
     await tlsConfigurator.processWSManJsonResponses(message, clientId)
     expect(tlsConfigurator.clientObj.tls.addCert).toBe(true)
-    expect(clientManagerSetSpy).toHaveBeenCalled()
   })
   test('should process WSMan response when header method ResourceCreated', async () => {
     const message = {
@@ -358,7 +332,6 @@ describe('TLS Configurator', () => {
     }
     await tlsConfigurator.processWSManJsonResponses(message, clientId)
     expect(tlsConfigurator.clientObj.tls.resCredentialContext).toBe(true)
-    expect(clientManagerSetSpy).toHaveBeenCalled()
   })
   test('should process WSMan response when header method AMT_TLSSettingData and Intel(r) AMT 802.3 TLS Settings', async () => {
     const message = {
@@ -375,8 +348,6 @@ describe('TLS Configurator', () => {
     await tlsConfigurator.processWSManJsonResponses(message, clientId)
     expect(tlsConfigurator.clientObj.tls.setRemoteTLS).toBe(true)
     expect(tlsConfigurator.clientObj.tls.setLocalTLS).toBeFalsy()
-
-    expect(clientManagerSetSpy).toHaveBeenCalled()
   })
   test('should process WSMan response when header method AMT_TLSSettingData and Intel(r) AMT LMS TLS Settings', async () => {
     const message = {
@@ -393,7 +364,6 @@ describe('TLS Configurator', () => {
     await tlsConfigurator.processWSManJsonResponses(message, clientId)
     expect(tlsConfigurator.clientObj.tls.setRemoteTLS).toBeFalsy()
     expect(tlsConfigurator.clientObj.tls.setLocalTLS).toBe(true)
-    expect(clientManagerSetSpy).toHaveBeenCalled()
   })
   test('should process WSMan response when header method CommitChanges and setRemoteTLS', async () => {
     tlsConfigurator.clientObj.tls.setRemoteTLS = true
@@ -411,7 +381,6 @@ describe('TLS Configurator', () => {
     await tlsConfigurator.processWSManJsonResponses(message, clientId)
     expect(tlsConfigurator.clientObj.tls.commitRemoteTLS).toBe(true)
     expect(tlsConfigurator.clientObj.tls.commitLocalTLS).toBeFalsy()
-    expect(clientManagerSetSpy).toHaveBeenCalled()
   })
   test('should process WSMan response when header method CommitChanges and setLocalTLS', async () => {
     tlsConfigurator.clientObj.tls.setLocalTLS = true
@@ -430,7 +399,6 @@ describe('TLS Configurator', () => {
     await tlsConfigurator.processWSManJsonResponses(message, clientId)
     expect(tlsConfigurator.clientObj.tls.commitRemoteTLS).toBe(true)
     expect(tlsConfigurator.clientObj.tls.commitLocalTLS).toBe(true)
-    expect(clientManagerSetSpy).toHaveBeenCalled()
   })
   test('should process WSMan response when header method GetLowAccuracyTimeSynch', async () => {
     const message = {
@@ -445,7 +413,6 @@ describe('TLS Configurator', () => {
     }
     await tlsConfigurator.processWSManJsonResponses(message, clientId)
     // expect(tlsConfigurator.clientObj.tls.createdTrustedRootCert).toBe(true)
-    // expect(clientManagerSetSpy).toHaveBeenCalled()
   })
   test('should process WSMan response when header method SetHighAccuracyTimeSynch', async () => {
     const message = {
@@ -460,6 +427,5 @@ describe('TLS Configurator', () => {
     }
     await tlsConfigurator.processWSManJsonResponses(message, clientId)
     expect(tlsConfigurator.clientObj.tls.setTimeSynch).toBe(true)
-    expect(clientManagerSetSpy).toHaveBeenCalled()
   })
 })

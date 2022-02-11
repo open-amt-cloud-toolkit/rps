@@ -7,23 +7,21 @@
 import * as WebSocket from 'ws'
 import { v4 as uuid } from 'uuid'
 
-import { WebSocketConfig, ClientObject } from './models/RCS.Config'
+import { ClientObject, WebSocketConfig } from './models/RCS.Config'
 import { IWebSocketListener } from './interfaces/IWebSocketListener'
-import { IClientManager } from './interfaces/IClientManager'
 import { IDataProcessor } from './interfaces/IDataProcessor'
 import { ILogger } from './interfaces/ILogger'
-
+const devices: {[key: string]: ClientObject} = {}
+export { devices }
 export class WebSocketListener implements IWebSocketListener {
-  clientManager: IClientManager
   dataProcessor: IDataProcessor
   wsServer: WebSocket.Server
   wsConfig: WebSocketConfig
   logger: ILogger
 
-  constructor (logger: ILogger, wsConfig: WebSocketConfig, clientManager: IClientManager, dataProcessor: IDataProcessor) {
+  constructor (logger: ILogger, wsConfig: WebSocketConfig, dataProcessor: IDataProcessor) {
     this.logger = logger
     this.wsConfig = wsConfig
-    this.clientManager = clientManager
     this.dataProcessor = dataProcessor
   }
 
@@ -55,9 +53,7 @@ export class WebSocketListener implements IWebSocketListener {
   onClientConnected = (ws: WebSocket): void => {
     try {
       const clientId = uuid()
-
-      const client: ClientObject = { ClientId: clientId, ClientSocket: ws, ciraconfig: {}, network: {}, status: {}, tls: {}, activationStatus: {}, unauthCount: 0, messageId: 0 }
-      this.clientManager.addClient(client)
+      devices[clientId] = { ClientId: clientId, ClientSocket: ws, ciraconfig: {}, network: {}, status: {}, tls: {}, activationStatus: {}, unauthCount: 0, messageId: 0 }
 
       ws.on('message', async (data: WebSocket.Data, isBinary: boolean) => {
         // eslint-disable-next-line @typescript-eslint/no-base-to-string
@@ -83,7 +79,7 @@ export class WebSocketListener implements IWebSocketListener {
    */
   onClientDisconnected (clientId: string): void {
     try {
-      this.clientManager.removeClient(clientId)
+      delete devices[clientId]
       this.logger.debug(`Connection ended for client : ${clientId}`)
     } catch (error) {
       this.logger.error(`Failed to close connection : ${error}`)
@@ -126,10 +122,9 @@ export class WebSocketListener implements IWebSocketListener {
    */
   onSendMessage (message: string, clientId: string): void {
     try {
-      const index = this.clientManager.getClientIndex(clientId)
       this.logger.debug(`${clientId} : response message sent to device: ${JSON.stringify(message, null, '\t')}`)
-      if (index > -1) {
-        this.clientManager.clients[index].ClientSocket.send(JSON.stringify(message))
+      if (devices[clientId] != null) {
+        devices[clientId].ClientSocket.send(JSON.stringify(message))
       }
     } catch (error) {
       this.logger.error(`Failed to send message to AMT: ${error}`)

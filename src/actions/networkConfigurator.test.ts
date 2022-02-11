@@ -5,7 +5,6 @@
 
 import { CIRAConfigurator } from './CIRAConfigurator'
 import { NetworkConfigurator } from './NetworkConfigurator'
-import { ClientManager } from '../ClientManager'
 import { Configurator } from '../Configurator'
 import Logger from '../Logger'
 import { NodeForge } from '../NodeForge'
@@ -19,17 +18,17 @@ import { config } from '../test/helper/Config'
 import { ClientAction } from '../models/RCS.Config'
 import { TLSConfigurator } from './TLSConfigurator'
 import { CertManager } from '../CertManager'
+import { devices } from '../WebSocketListener'
 EnvReader.GlobalEnvConfig = config
 const nodeForge = new NodeForge()
 const certManager = new CertManager(new Logger('CertManager'), nodeForge)
 const configurator = new Configurator()
-const clientManager = ClientManager.getInstance(new Logger('ClientManager'))
 const responseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'))
-const amtwsman = new WSManProcessor(new Logger('WSManProcessor'), clientManager, responseMsg)
-const validator = new Validator(new Logger('Validator'), configurator, clientManager)
-const tlsConfig = new TLSConfigurator(new Logger('CIRAConfig'), certManager, responseMsg, amtwsman, clientManager)
-const ciraConfig = new CIRAConfigurator(new Logger('CIRAConfig'), configurator, responseMsg, amtwsman, clientManager, tlsConfig)
-const networkConfigurator = new NetworkConfigurator(new Logger('NetworkConfig'), configurator, responseMsg, amtwsman, clientManager, validator, ciraConfig)
+const amtwsman = new WSManProcessor(new Logger('WSManProcessor'), responseMsg)
+const validator = new Validator(new Logger('Validator'), configurator)
+const tlsConfig = new TLSConfigurator(new Logger('CIRAConfig'), certManager, responseMsg, amtwsman)
+const ciraConfig = new CIRAConfigurator(new Logger('CIRAConfig'), configurator, responseMsg, amtwsman, tlsConfig)
+const networkConfigurator = new NetworkConfigurator(new Logger('NetworkConfig'), configurator, responseMsg, amtwsman, validator, ciraConfig)
 let clientId, activationmsg
 
 beforeAll(() => {
@@ -90,14 +89,15 @@ beforeAll(() => {
       action: 'acmactivate'
     }
   }
-  clientManager.addClient({
+  devices[clientId] = {
     ClientId: clientId,
     ClientSocket: null,
     ClientData: activationmsg,
     ciraconfig: {},
     network: {},
-    status: {}
-  })
+    status: {},
+    uuid: activationmsg.payload.uuid
+  }
 })
 
 describe('execute function', () => {
@@ -114,18 +114,13 @@ describe('execute function', () => {
 describe('process AMT General Settings', () => {
   test('should send a request to get AMT ether net settings when network or shared FQDN is enabled', async () => {
     const spy = jest.spyOn(amtwsman, 'batchEnum')
-    const clientObj = clientManager.getClientObject(clientId)
-    clientObj.uuid = activationmsg.payload.uuid
-    clientManager.setClientObject(clientObj)
+    devices[clientId].uuid = activationmsg.payload.uuid
     const message = { payload: AMTGeneralSettings }
     await networkConfigurator.processGeneralSettings(message, clientId)
     expect(spy).toHaveBeenCalled()
   })
   test('should send a request to set general settings when the network is not enabled', async () => {
     jest.spyOn(amtwsman, 'put')
-    const clientObj = clientManager.getClientObject(clientId)
-    clientObj.uuid = activationmsg.payload.uuid
-    clientManager.setClientObject(clientObj)
     const networkDisabled = AMTGeneralSettings
     networkDisabled.AMT_GeneralSettings.response.AMTNetworkEnabled = 0
     const message = { payload: networkDisabled }
@@ -138,55 +133,40 @@ describe('process AMT General Settings', () => {
 describe('Parse the get and set of AMT Ethernet Port Settings response received from AMT', () => {
   test('Should send a put resquest if the dhcpEnabled true to update ethernet port settings', async () => {
     const spy = jest.spyOn(amtwsman, 'put')
-    const clientObj = clientManager.getClientObject(clientId)
-    clientObj.uuid = activationmsg.payload.uuid
-    clientManager.setClientObject(clientObj)
     const message = { payload: AMTEthernetPortSettings }
     await networkConfigurator.processEthernetPortSettings(message, clientId)
     // await amtwsman.put(clientId, 'AMT_EthernetPortSettings', AMTEthernetPortSettings.AMT_EthernetPortSettings.responses[0])
     expect(spy).toHaveBeenCalledWith(clientId, 'AMT_EthernetPortSettings', AMTEthernetPortSettings.AMT_EthernetPortSettings.responses[0])
   })
   test('should set action to CIRA Config when update to ethernet port settings fails', async () => {
-    const clientObj = clientManager.getClientObject(clientId)
-    clientObj.uuid = activationmsg.payload.uuid
-    clientManager.setClientObject(clientObj)
     const ipSyncEnabledFalse = AMTEthernetPortSettingsResponse
     ipSyncEnabledFalse.Body.IpSyncEnabled = false
     const message = { payload: ipSyncEnabledFalse }
     await networkConfigurator.processEthernetPortSettings(message, clientId)
-    expect(clientObj.status.Network).toBe('Failed.')
-    expect(clientObj.action).toBe(ClientAction.CIRACONFIG)
-    expect(clientObj.network.setEthernetPortSettings).toBe(true)
+    expect(devices[clientId].status.Network).toBe('Failed.')
+    expect(devices[clientId].action).toBe(ClientAction.CIRACONFIG)
+    expect(devices[clientId].network.setEthernetPortSettings).toBe(true)
   })
   test('should set action to CIRA Config when update to ethernet port settings response SharedStaticIp is true', async () => {
-    const clientObj = clientManager.getClientObject(clientId)
-    clientObj.uuid = activationmsg.payload.uuid
-    clientManager.setClientObject(clientObj)
     const sharedStaticIpTrue = AMTEthernetPortSettingsResponse
     sharedStaticIpTrue.Body.IpSyncEnabled = true
     sharedStaticIpTrue.Body.SharedStaticIp = true
     const message = { payload: sharedStaticIpTrue }
     await networkConfigurator.processEthernetPortSettings(message, clientId)
-    expect(clientObj.status.Network).toBe('Ethernet Configured.')
-    expect(clientObj.action).toBe(ClientAction.CIRACONFIG)
-    expect(clientObj.network.setEthernetPortSettings).toBe(true)
+    expect(devices[clientId].status.Network).toBe('Ethernet Configured.')
+    expect(devices[clientId].action).toBe(ClientAction.CIRACONFIG)
+    expect(devices[clientId].network.setEthernetPortSettings).toBe(true)
   })
   test('should set action to CIRA Config when the IpSyncEnabled, DHCPEnabled is true and profile has no wifi configs', async () => {
-    const clientObj = clientManager.getClientObject(clientId)
-    clientObj.uuid = activationmsg.payload.uuid
-    clientManager.setClientObject(clientObj)
     activationmsg.payload.profile.wificonfigs = []
     const message = { payload: AMTEthernetPortSettingsResponse }
     await networkConfigurator.processEthernetPortSettings(message, clientId)
-    expect(clientObj.status.Network).toBe('Ethernet Configured.')
-    expect(clientObj.action).toBe(ClientAction.CIRACONFIG)
-    expect(clientObj.network.setEthernetPortSettings).toBe(true)
+    expect(devices[clientId].status.Network).toBe('Ethernet Configured.')
+    expect(devices[clientId].action).toBe(ClientAction.CIRACONFIG)
+    expect(devices[clientId].network.setEthernetPortSettings).toBe(true)
   })
   test('should set action to CIRA Config when IpSyncEnabled, DHCPEnabled is true and profile has wifi configs but no wifi capabilities', async () => {
-    const clientObj = clientManager.getClientObject(clientId)
-    clientObj.uuid = activationmsg.payload.uuid
-    clientObj.network.ethernetSettingsWifiObj = null
-    clientManager.setClientObject(clientObj)
+    devices[clientId].network.ethernetSettingsWifiObj = null
     AMTEthernetPortSettingsResponse.Body.SharedStaticIp = false
     AMTEthernetPortSettingsResponse.Body.DHCPEnabled = true
     const message = { payload: AMTEthernetPortSettingsResponse }
@@ -197,54 +177,42 @@ describe('Parse the get and set of AMT Ethernet Port Settings response received 
       }
     ]
     await networkConfigurator.processEthernetPortSettings(message, clientId)
-    expect(clientObj.status.Network).toBe('Ethernet Configured. WiFi Failed.')
-    expect(clientObj.action).toBe(ClientAction.CIRACONFIG)
-    expect(clientObj.network.setEthernetPortSettings).toBe(true)
+    expect(devices[clientId].status.Network).toBe('Ethernet Configured. WiFi Failed.')
+    expect(devices[clientId].action).toBe(ClientAction.CIRACONFIG)
+    expect(devices[clientId].network.setEthernetPortSettings).toBe(true)
   })
 })
 
 describe('Parse the WiFi port response received from AMT', () => {
   test('setWiFiPortResponse flag should be true when EnabledState and RequestedState is 32769 ', async () => {
-    const clientObj = clientManager.getClientObject(clientId)
-    clientObj.uuid = activationmsg.payload.uuid
-    clientManager.setClientObject(clientObj)
     const message = { payload: CIMWiFiPortResponse }
     await networkConfigurator.processWiFiPortResponse(message, clientId)
-    expect(clientObj.network.setWiFiPortResponse).toBe(true)
+    expect(devices[clientId].network.setWiFiPortResponse).toBe(true)
   })
   test('should set action to CIRA Config when EnabledState or RequestedState is not 32769', async () => {
-    const clientObj = clientManager.getClientObject(clientId)
-    clientObj.uuid = activationmsg.payload.uuid
-    clientManager.setClientObject(clientObj)
     const zeroEnabledState = CIMWiFiPortResponse
     zeroEnabledState.Body.EnabledState = 0
     const message = { payload: zeroEnabledState }
     await networkConfigurator.processWiFiPortResponse(message, clientId)
-    expect(clientObj.status.Network).toBe('Ethernet Configured. WiFi Failed.')
-    expect(clientObj.action).toBe(ClientAction.CIRACONFIG)
-    expect(clientObj.network.setEthernetPortSettings).toBe(true)
+    expect(devices[clientId].status.Network).toBe('Ethernet Configured. WiFi Failed.')
+    expect(devices[clientId].action).toBe(ClientAction.CIRACONFIG)
+    expect(devices[clientId].network.setEthernetPortSettings).toBe(true)
   })
 })
 
 describe('Parse the WiFi Endpoint Settings response received from AMT', () => {
   test('should set action to CIRA Config when ReturnValue is not zero in response to add WiFi setttings', async () => {
-    const clientObj = clientManager.getClientObject(clientId)
-    clientObj.uuid = activationmsg.payload.uuid
-    clientManager.setClientObject(clientObj)
     const returnValueZero = AddWiFiSettingsResponse
     returnValueZero.Body.ReturnValue = 2
     const message = { payload: returnValueZero }
     await networkConfigurator.processWiFiEndpointSettings(message, clientId)
-    expect(clientObj.action).toBe(ClientAction.CIRACONFIG)
+    expect(devices[clientId].action).toBe(ClientAction.CIRACONFIG)
   })
   test('should set action to CIRA Config when ReturnValue is zero in response to add WiFi setttings and count is greater than or equal to profile wificonfigs', async () => {
-    const clientObj = clientManager.getClientObject(clientId)
-    clientObj.uuid = activationmsg.payload.uuid
-    clientManager.setClientObject(clientObj)
     AddWiFiSettingsResponse.Body.ReturnValue = 0
     const message = { payload: AddWiFiSettingsResponse }
     await networkConfigurator.processWiFiEndpointSettings(message, clientId)
-    expect(clientObj.status.Network).toBe('Ethernet Configured. WiFi Failed.')
-    expect(clientObj.action).toBe(ClientAction.CIRACONFIG)
+    expect(devices[clientId].status.Network).toBe('Ethernet Configured. WiFi Failed.')
+    expect(devices[clientId].action).toBe(ClientAction.CIRACONFIG)
   })
 })

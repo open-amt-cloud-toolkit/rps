@@ -1,4 +1,8 @@
-import { ClientManager } from '../../ClientManager'
+/*********************************************************************
+ * Copyright (c) Intel Corporation 2022
+ * SPDX-License-Identifier: Apache-2.0
+ **********************************************************************/
+
 import Logger from '../../Logger'
 import { ClientResponseMsg } from '../ClientResponseMsg'
 import { v4 as uuid } from 'uuid'
@@ -9,13 +13,12 @@ import { config } from '../../test/helper/Config'
 import { EnvReader } from '../EnvReader'
 import { HttpHandler } from '../../HttpHandler'
 import { RPSError } from '../RPSError'
-import { ClientObject } from '../../models/RCS.Config'
+import { devices } from '../../WebSocketListener'
 
 EnvReader.GlobalEnvConfig = config
-const clientManager = ClientManager.getInstance(new Logger('ClientManager'))
 const configurator = new Configurator()
 const responseMsg: ClientResponseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'))
-const validator = new Validator(new Logger('Validator'), configurator, clientManager)
+const validator = new Validator(new Logger('Validator'), configurator)
 const httpHandler = new HttpHandler()
 let msg
 let setAdminAclEntryExOutPut = null
@@ -101,8 +104,8 @@ test('should return wsman message if message status code is 401', async () => {
     body: { }
   }
   const clientId = uuid()
-  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg, connectionParams: connectionParams, messageId: 0 })
-  const response = await updateAMTAdminPassword(clientId, message, responseMsg, clientManager, configurator, validator, httpHandler)
+  devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: msg, connectionParams: connectionParams, messageId: 0 }
+  const response = await updateAMTAdminPassword(clientId, message, responseMsg, configurator, validator, httpHandler)
   expect(response.method).toEqual('wsman')
 })
 
@@ -118,9 +121,9 @@ test('should return wsman message if message is AMT_GeneralSettings and status c
     }
   })
   const clientId = uuid()
-  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg, connectionParams: connectionParams, messageId: 0 })
+  devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: msg, connectionParams: connectionParams, messageId: 0 }
 
-  const response = await updateAMTAdminPassword(clientId, generalSettings('Digest:AF541D9BC94CFF7ADFA073F492F355E6'), responseMsg, clientManager, configurator, validator, httpHandler)
+  const response = await updateAMTAdminPassword(clientId, generalSettings('Digest:AF541D9BC94CFF7ADFA073F492F355E6'), responseMsg, configurator, validator, httpHandler)
   expect(getAMTPasswordSpy).toHaveBeenCalled()
   expect(insertSpy).toHaveBeenCalled()
   expect(getprofileSpy).toHaveBeenCalled()
@@ -140,8 +143,8 @@ test('should not insert into vault if configurator is null', async () => {
   })
   configurator.amtDeviceRepository = null
   const clientId = uuid()
-  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg, connectionParams: connectionParams, messageId: 0 })
-  const response = await updateAMTAdminPassword(clientId, generalSettings('Digest:AF541D9BC94CFF7ADFA073F492F355E6'), responseMsg, clientManager, configurator, validator, httpHandler)
+  devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: msg, connectionParams: connectionParams, messageId: 0 }
+  const response = await updateAMTAdminPassword(clientId, generalSettings('Digest:AF541D9BC94CFF7ADFA073F492F355E6'), responseMsg, configurator, validator, httpHandler)
   expect(getAMTPasswordSpy).toHaveBeenCalled()
   expect(insertSpy).toHaveBeenCalled()
   expect(getprofileSpy).toHaveBeenCalled()
@@ -150,8 +153,8 @@ test('should not insert into vault if configurator is null', async () => {
 
 test('should return success message if message is AMT_AuthorizationService, status code is 200 and ReturnValue is 0  ', async () => {
   const clientId = uuid()
-  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg, status: {}, connectionParams: connectionParams, messageId: 0 })
-  const response = await updateAMTAdminPassword(clientId, setAdminAclEntryExOutPut(0), responseMsg, clientManager, configurator, validator, httpHandler)
+  devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: msg, status: {}, connectionParams: connectionParams, messageId: 0 }
+  const response = await updateAMTAdminPassword(clientId, setAdminAclEntryExOutPut(0), responseMsg, configurator, validator, httpHandler)
   expect(response.method).toEqual('success')
 })
 
@@ -160,38 +163,35 @@ test('should return error message if message status code is not 200 0r 401  ', a
     statusCode: 400
   }
   const clientId = uuid()
-  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg, status: {}, connectionParams: connectionParams, messageId: 0 })
-  const response = await updateAMTAdminPassword(clientId, message, responseMsg, clientManager, configurator, validator, httpHandler)
+  devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: msg, status: {}, connectionParams: connectionParams, messageId: 0 }
+  const response = await updateAMTAdminPassword(clientId, message, responseMsg, configurator, validator, httpHandler)
   expect(response.method).toEqual('error')
   expect(response.message).toEqual('{"Status":"Failed to update AMT admin password"}')
 })
 
 test('should throw an error if the digest realm is invalid', async () => {
   let rpsError = null
-  let clientObj: ClientObject = null
+  const clientId = uuid()
   try {
-    const clientId = uuid()
-    clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg, connectionParams: connectionParams, messageId: 0 })
-    clientObj = clientManager.getClientObject(clientId)
-    await updateAMTAdminPassword(clientId, generalSettings('Digest:AF541D9BC94CFF7ADFA073F492F355E'), responseMsg, clientManager, configurator, validator, httpHandler)
+    devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: msg, connectionParams: connectionParams, messageId: 0 }
+    await updateAMTAdminPassword(clientId, generalSettings('Digest:AF541D9BC94CFF7ADFA073F492F355E'), responseMsg, configurator, validator, httpHandler)
   } catch (error) {
     rpsError = error
   }
   expect(rpsError).toBeInstanceOf(RPSError)
-  expect(rpsError.message).toBe(`Device ${clientObj.uuid} activation failed. Not a valid digest realm.`)
+  expect(rpsError.message).toBe(`Device ${devices[clientId].uuid} activation failed. Not a valid digest realm.`)
 })
 
 test('should throw an error if the message is AMT_AuthorizationService, status code is 200 and ReturnValue is not 0', async () => {
   let rpsError = null
-  let clientObj: ClientObject = null
+  const clientId = uuid()
+
   try {
-    const clientId = uuid()
-    clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: msg, connectionParams: connectionParams, messageId: 0 })
-    clientObj = clientManager.getClientObject(clientId)
-    await await updateAMTAdminPassword(clientId, setAdminAclEntryExOutPut(1), responseMsg, clientManager, configurator, validator, httpHandler)
+    devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: msg, connectionParams: connectionParams, messageId: 0 }
+    await await updateAMTAdminPassword(clientId, setAdminAclEntryExOutPut(1), responseMsg, configurator, validator, httpHandler)
   } catch (error) {
     rpsError = error
   }
   expect(rpsError).toBeInstanceOf(RPSError)
-  expect(rpsError.message).toBe(`Failed to update AMT admin password for ${clientObj.uuid}`)
+  expect(rpsError.message).toBe(`Failed to update AMT admin password for ${devices[clientId].uuid}`)
 })

@@ -19,7 +19,6 @@ describe('Check index from admin', () => {
 
   it('should have routers', () => {
     routers.forEach((route) => {
-      console.log(router.stack)
       const match = router.stack.find(
         (s) => (s?.regexp as RegExp).exec(route.path)?.length > 0 && s.path == null
       )

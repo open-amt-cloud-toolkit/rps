@@ -39,7 +39,7 @@ app.use(express.json())
 
 const configurator: IConfigurator = new Configurator()
 log.silly(`WebSocket Cert Info ${JSON.stringify(EnvReader.GlobalEnvConfig.WSConfiguration)}`)
-const server: WebSocketListener = new WebSocketListener(new Logger('WebSocketListener'), EnvReader.GlobalEnvConfig.WSConfiguration, configurator.clientManager, configurator.dataProcessor)
+const server: WebSocketListener = new WebSocketListener(new Logger('WebSocketListener'), EnvReader.GlobalEnvConfig.WSConfiguration, configurator.dataProcessor)
 
 const mqtt: MqttProvider = new MqttProvider(config)
 mqtt.connectBroker()

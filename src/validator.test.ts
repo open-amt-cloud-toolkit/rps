@@ -9,15 +9,14 @@ import Logger from './Logger'
 import { config } from './test/helper/Config'
 import { Validator } from './Validator'
 import { Configurator } from './Configurator'
-import { ClientManager } from './ClientManager'
 import { RPSError } from './utils/RPSError'
 import { EnvReader } from './utils/EnvReader'
 import { VersionChecker } from './VersionChecker'
+import { devices } from './WebSocketListener'
 
 EnvReader.GlobalEnvConfig = config
 const configurator: Configurator = new Configurator()
-const clientManager = ClientManager.getInstance(new Logger('ClientManager'))
-const validator = new Validator(new Logger('Validator'), configurator, clientManager)
+const validator = new Validator(new Logger('Validator'), configurator)
 let activationmsg, msg
 
 describe('parseClientMsg function', () => {
@@ -68,7 +67,7 @@ describe('parseClientMsg function', () => {
   test('should parse and return a client activation message', () => {
     const msg = '{"apiKey":"key","appVersion":"1.2.0","message":"all\'s good!","method":"activation","payload":"eyJidWlsZCI6IjM0MjUiLCJjZXJ0SGFzaGVzIjpbImU3Njg1NjM0ZWZhY2Y2OWFjZTkzOWE2YjI1NWI3YjRmYWJlZjQyOTM1YjUwYTI2NWFjYjVjYjYwMjdlNDRlNzAiLCJlYjA0Y2Y1ZWIxZjM5YWZhNzYyZjJiYjEyMGYyOTZjYmE1MjBjMWI5N2RiMTU4OTU2NWI4MWNiOWExN2I3MjQ0IiwiYzM4NDZiZjI0YjllOTNjYTY0Mjc0YzBlYzY3YzFlY2M1ZTAyNGZmY2FjZDJkNzQwMTkzNTBlODFmZTU0NmFlNCIsImQ3YTdhMGZiNWQ3ZTI3MzFkNzcxZTk0ODRlYmNkZWY3MWQ1ZjBjM2UwYTI5NDg3ODJiYzgzZWUwZWE2OTllZjQiLCIxNDY1ZmEyMDUzOTdiODc2ZmFhNmYwYTk5NThlNTU5MGU0MGZjYzdmYWE0ZmI3YzJjODY3NzUyMWZiNWZiNjU4IiwiODNjZTNjMTIyOTY4OGE1OTNkNDg1ZjgxOTczYzBmOTE5NTQzMWVkYTM3Y2M1ZTM2NDMwZTc5YzdhODg4NjM4YiIsImE0YjZiMzk5NmZjMmYzMDZiM2ZkODY4MWJkNjM0MTNkOGM1MDA5Y2M0ZmEzMjljMmNjZjBlMmZhMWIxNDAzMDUiLCI5YWNmYWI3ZTQzYzhkODgwZDA2YjI2MmE5NGRlZWVlNGI0NjU5OTg5YzNkMGNhZjE5YmFmNjQwNWU0MWFiN2RmIiwiYTUzMTI1MTg4ZDIxMTBhYTk2NGIwMmM3YjdjNmRhMzIwMzE3MDg5NGU1ZmI3MWZmZmI2NjY3ZDVlNjgxMGEzNiIsIjE2YWY1N2E5ZjY3NmIwYWIxMjYwOTVhYTVlYmFkZWYyMmFiMzExMTlkNjQ0YWM5NWNkNGI5M2RiZjNmMjZhZWIiLCI5NjBhZGYwMDYzZTk2MzU2NzUwYzI5NjVkZDBhMDg2N2RhMGI5Y2JkNmU3NzcxNGFlYWZiMjM0OWFiMzkzZGEzIiwiNjhhZDUwOTA5YjA0MzYzYzYwNWVmMTM1ODFhOTM5ZmYyYzk2MzcyZTNmMTIzMjViMGE2ODYxZTFkNTlmNjYwMyIsIjZkYzQ3MTcyZTAxY2JjYjBiZjYyNTgwZDg5NWZlMmI4YWM5YWQ0Zjg3MzgwMWUwYzEwYjljODM3ZDIxZWIxNzciLCI3M2MxNzY0MzRmMWJjNmQ1YWRmNDViMGU3NmU3MjcyODdjOGRlNTc2MTZjMWU2ZTYxNDFhMmIyY2JjN2Q4ZTRjIiwiMjM5OTU2MTEyN2E1NzEyNWRlOGNlZmVhNjEwZGRmMmZhMDc4YjVjODA2N2Y0ZTgyODI5MGJmYjg2MGU4NGIzYyIsIjQ1MTQwYjMyNDdlYjljYzhjNWI0ZjBkN2I1MzA5MWY3MzI5MjA4OWU2ZTVhNjNlMjc0OWRkM2FjYTkxOThlZGEiLCI0M2RmNTc3NGIwM2U3ZmVmNWZlNDBkOTMxYTdiZWRmMWJiMmU2YjQyNzM4YzRlNmQzODQxMTAzZDNhYTdmMzM5IiwiMmNlMWNiMGJmOWQyZjllMTAyOTkzZmJlMjE1MTUyYzNiMmRkMGNhYmRlMWM2OGU1MzE5YjgzOTE1NGRiYjdmNSIsIjcwYTczZjdmMzc2YjYwMDc0MjQ4OTA0NTM0YjExNDgyZDViZjBlNjk4ZWNjNDk4ZGY1MjU3N2ViZjJlOTNiOWEiXSwiY2xpZW50IjoiUFBDIiwiY3VycmVudE1vZGUiOjAsImZxZG4iOiJ2cHJvZGVtby5jb20iLCJwYXNzd29yZCI6IktRR25IK041cUo4WUxxakVGSk1uR1NnY25GTE12MFRrIiwicHJvZmlsZSI6InByb2ZpbGUxIiwic2t1IjoiMTYzOTIiLCJ1c2VybmFtZSI6IiQkT3NBZG1pbiIsInV1aWQiOlsxNiwxNDksMTcyLDc1LDE2Niw0LDMzLDY3LDE4NiwyMjYsMjEyLDkzLDIyMyw3LDE4MiwxMzJdLCJ2ZXIiOiIxMS44LjUwIn0=","protocolVersion":"4.0.0","status":"ok"}'
     const clientId = uuid()
-    clientManager.addClient({ ClientId: clientId, ClientSocket: null })
+    devices[clientId] = { ClientId: clientId, ClientSocket: null }
     VersionChecker.setCurrentVersion('4.0.0')
     const clientMsg = validator.parseClientMsg(msg, clientId)
     expect(clientMsg).toEqual(activationmsg)
@@ -77,7 +76,7 @@ describe('parseClientMsg function', () => {
   test('check protocol version of message', () => {
     const msg = '{"apiKey":"key","appVersion":"1.2.0","message":"all\'s good!","method":"activation","payload":"eyJidWlsZCI6IjM0MjUiLCJjZXJ0SGFzaGVzIjpbImU3Njg1NjM0ZWZhY2Y2OWFjZTkzOWE2YjI1NWI3YjRmYWJlZjQyOTM1YjUwYTI2NWFjYjVjYjYwMjdlNDRlNzAiLCJlYjA0Y2Y1ZWIxZjM5YWZhNzYyZjJiYjEyMGYyOTZjYmE1MjBjMWI5N2RiMTU4OTU2NWI4MWNiOWExN2I3MjQ0IiwiYzM4NDZiZjI0YjllOTNjYTY0Mjc0YzBlYzY3YzFlY2M1ZTAyNGZmY2FjZDJkNzQwMTkzNTBlODFmZTU0NmFlNCIsImQ3YTdhMGZiNWQ3ZTI3MzFkNzcxZTk0ODRlYmNkZWY3MWQ1ZjBjM2UwYTI5NDg3ODJiYzgzZWUwZWE2OTllZjQiLCIxNDY1ZmEyMDUzOTdiODc2ZmFhNmYwYTk5NThlNTU5MGU0MGZjYzdmYWE0ZmI3YzJjODY3NzUyMWZiNWZiNjU4IiwiODNjZTNjMTIyOTY4OGE1OTNkNDg1ZjgxOTczYzBmOTE5NTQzMWVkYTM3Y2M1ZTM2NDMwZTc5YzdhODg4NjM4YiIsImE0YjZiMzk5NmZjMmYzMDZiM2ZkODY4MWJkNjM0MTNkOGM1MDA5Y2M0ZmEzMjljMmNjZjBlMmZhMWIxNDAzMDUiLCI5YWNmYWI3ZTQzYzhkODgwZDA2YjI2MmE5NGRlZWVlNGI0NjU5OTg5YzNkMGNhZjE5YmFmNjQwNWU0MWFiN2RmIiwiYTUzMTI1MTg4ZDIxMTBhYTk2NGIwMmM3YjdjNmRhMzIwMzE3MDg5NGU1ZmI3MWZmZmI2NjY3ZDVlNjgxMGEzNiIsIjE2YWY1N2E5ZjY3NmIwYWIxMjYwOTVhYTVlYmFkZWYyMmFiMzExMTlkNjQ0YWM5NWNkNGI5M2RiZjNmMjZhZWIiLCI5NjBhZGYwMDYzZTk2MzU2NzUwYzI5NjVkZDBhMDg2N2RhMGI5Y2JkNmU3NzcxNGFlYWZiMjM0OWFiMzkzZGEzIiwiNjhhZDUwOTA5YjA0MzYzYzYwNWVmMTM1ODFhOTM5ZmYyYzk2MzcyZTNmMTIzMjViMGE2ODYxZTFkNTlmNjYwMyIsIjZkYzQ3MTcyZTAxY2JjYjBiZjYyNTgwZDg5NWZlMmI4YWM5YWQ0Zjg3MzgwMWUwYzEwYjljODM3ZDIxZWIxNzciLCI3M2MxNzY0MzRmMWJjNmQ1YWRmNDViMGU3NmU3MjcyODdjOGRlNTc2MTZjMWU2ZTYxNDFhMmIyY2JjN2Q4ZTRjIiwiMjM5OTU2MTEyN2E1NzEyNWRlOGNlZmVhNjEwZGRmMmZhMDc4YjVjODA2N2Y0ZTgyODI5MGJmYjg2MGU4NGIzYyIsIjQ1MTQwYjMyNDdlYjljYzhjNWI0ZjBkN2I1MzA5MWY3MzI5MjA4OWU2ZTVhNjNlMjc0OWRkM2FjYTkxOThlZGEiLCI0M2RmNTc3NGIwM2U3ZmVmNWZlNDBkOTMxYTdiZWRmMWJiMmU2YjQyNzM4YzRlNmQzODQxMTAzZDNhYTdmMzM5IiwiMmNlMWNiMGJmOWQyZjllMTAyOTkzZmJlMjE1MTUyYzNiMmRkMGNhYmRlMWM2OGU1MzE5YjgzOTE1NGRiYjdmNSIsIjcwYTczZjdmMzc2YjYwMDc0MjQ4OTA0NTM0YjExNDgyZDViZjBlNjk4ZWNjNDk4ZGY1MjU3N2ViZjJlOTNiOWEiXSwiY2xpZW50IjoiUFBDIiwiY3VycmVudE1vZGUiOjAsImZxZG4iOiJ2cHJvZGVtby5jb20iLCJwYXNzd29yZCI6IktRR25IK041cUo4WUxxakVGSk1uR1NnY25GTE12MFRrIiwicHJvZmlsZSI6InByb2ZpbGUxIiwic2t1IjoiMTYzOTIiLCJ1c2VybmFtZSI6IiQkT3NBZG1pbiIsInV1aWQiOlsxNiwxNDksMTcyLDc1LDE2Niw0LDMzLDY3LDE4NiwyMjYsMjEyLDkzLDIyMyw3LDE4MiwxMzJdLCJ2ZXIiOiIxMS44LjUwIn0=","protocolVersion":"3.0.0","status":"ok"}'
     const clientId = uuid()
-    clientManager.addClient({ ClientId: clientId, ClientSocket: null })
+    devices[clientId] = { ClientId: clientId, ClientSocket: null }
     VersionChecker.setCurrentVersion('4.0.0')
 
     let rpsError = null
@@ -126,7 +125,7 @@ describe('verifyPayload function', () => {
   })
   test('Should return payload', async () => {
     const clientId = uuid()
-    clientManager.addClient({ ClientId: clientId, ClientSocket: null })
+    devices[clientId] = { ClientId: clientId, ClientSocket: null }
     const result = await validator.verifyPayload(msg, clientId)
     expect(result).toEqual(msg.payload)
   })
@@ -135,7 +134,7 @@ describe('verifyPayload function', () => {
     let rpsError = null
     const clientId = uuid()
     try {
-      clientManager.addClient({ ClientId: clientId, ClientSocket: null })
+      devices[clientId] = { ClientId: clientId, ClientSocket: null }
       await validator.verifyPayload(null, clientId)
     } catch (error) {
       rpsError = error
@@ -148,7 +147,7 @@ describe('verifyPayload function', () => {
     let rpsError = null
     const clientId = uuid()
     try {
-      clientManager.addClient({ ClientId: clientId, ClientSocket: null })
+      devices[clientId] = { ClientId: clientId, ClientSocket: null }
       msg.payload.uuid = ''
       await validator.verifyPayload(msg, clientId)
     } catch (error) {
@@ -192,7 +191,7 @@ describe('validateMaintenanceMsg function', () => {
     let rpsError = null
     const clientId = uuid()
     try {
-      clientManager.addClient({ ClientId: clientId, ClientSocket: null })
+      devices[clientId] = { ClientId: clientId, ClientSocket: null }
       await validator.validateMaintenanceMsg(msg, clientId)
     } catch (error) {
       rpsError = error
@@ -265,7 +264,7 @@ describe('validateActivationMsg function', () => {
     let rpsError = null
     try {
       const clientId = uuid()
-      clientManager.addClient({ ClientId: clientId, ClientSocket: null })
+      devices[clientId] = { ClientId: clientId, ClientSocket: null }
       activationmsg.payload.password = undefined
       await validator.validateActivationMsg(activationmsg, clientId)
     } catch (error) {
@@ -278,7 +277,7 @@ describe('validateActivationMsg function', () => {
     let rpsError = null
     try {
       const clientId = uuid()
-      clientManager.addClient({ ClientId: clientId, ClientSocket: null })
+      devices[clientId] = { ClientId: clientId, ClientSocket: null }
       activationmsg.payload.profile = 'profile5'
       await validator.validateActivationMsg(activationmsg, clientId)
     } catch (error) {
@@ -324,7 +323,7 @@ describe('validateDeactivationMsg function', () => {
     let rpsError = null
     try {
       const clientId = uuid()
-      clientManager.addClient({ ClientId: clientId, ClientSocket: null })
+      devices[clientId] = { ClientId: clientId, ClientSocket: null }
       await validator.validateDeactivationMsg(msg, clientId)
     } catch (error) {
       rpsError = error
@@ -366,7 +365,7 @@ describe('verifyAMTVersion', () => {
     let rpsError = null
     try {
       const clientId = uuid()
-      clientManager.addClient({ ClientId: clientId, ClientSocket: null })
+      devices[clientId] = { ClientId: clientId, ClientSocket: null }
       msg.payload.ver = '6.8.50'
       await validator.verifyAMTVersion(msg.payload, 'activation')
     } catch (error) {
@@ -380,7 +379,7 @@ describe('verifyAMTVersion', () => {
     let rpsError = null
     try {
       const clientId = uuid()
-      clientManager.addClient({ ClientId: clientId, ClientSocket: null })
+      devices[clientId] = { ClientId: clientId, ClientSocket: null }
       msg.payload.build = '2425'
       await validator.verifyAMTVersion(msg.payload, 'activation')
     } catch (error) {
@@ -423,7 +422,7 @@ describe('verifyActivationMsgForACM', () => {
     let rpsError = null
     try {
       const clientId = uuid()
-      clientManager.addClient({ ClientId: clientId, ClientSocket: null })
+      devices[clientId] = { ClientId: clientId, ClientSocket: null }
       msg.payload.certHashes = undefined
       await validator.verifyActivationMsgForACM(msg.payload)
     } catch (error) {
@@ -436,7 +435,7 @@ describe('verifyActivationMsgForACM', () => {
     let rpsError = null
     try {
       const clientId = uuid()
-      clientManager.addClient({ ClientId: clientId, ClientSocket: null })
+      devices[clientId] = { ClientId: clientId, ClientSocket: null }
       msg.payload.fqdn = undefined
       await validator.verifyActivationMsgForACM(msg.payload)
     } catch (error) {

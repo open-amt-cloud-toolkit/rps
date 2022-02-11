@@ -1,5 +1,9 @@
+/*********************************************************************
+ * Copyright (c) Intel Corporation 2022
+ * SPDX-License-Identifier: Apache-2.0
+ **********************************************************************/
+
 import { CertManager } from '../CertManager'
-import { IClientManager } from '../interfaces/IClientManager'
 import { IExecutor } from '../interfaces/IExecutor'
 import { ILogger } from '../interfaces/ILogger'
 import { ClientMsg, ClientObject } from '../models/RCS.Config'
@@ -13,27 +17,25 @@ import { AMTConfiguration, AMTKeyUsage, CertAttributes, TLSCerts } from '../mode
 import got from 'got'
 
 import * as forge from 'node-forge'
+import { devices } from '../WebSocketListener'
 
 export class TLSConfigurator implements IExecutor {
   clientObj: ClientObject
-  clientManager: IClientManager
   amtwsman: WSManProcessor
   responseMsg: ClientResponseMsg
   constructor (
     private readonly logger: ILogger,
     private readonly certManager: CertManager,
     private readonly _responseMsg: ClientResponseMsg,
-    private readonly _amtwsman: WSManProcessor,
-    private readonly _clientManager: IClientManager
+    private readonly _amtwsman: WSManProcessor
   ) {
     this.responseMsg = _responseMsg
     this.amtwsman = _amtwsman
-    this.clientManager = _clientManager
   }
 
   async execute (message: any, clientId: string): Promise<ClientMsg> {
     try {
-      this.clientObj = this.clientManager.getClientObject(clientId)
+      this.clientObj = devices[clientId]
 
       await this.processWSManJsonResponses(message, clientId)
       // Trusted Root Certificates
@@ -81,7 +83,6 @@ export class TLSConfigurator implements IExecutor {
       await this.amtwsman.create(clientId, 'AMT_TLSCredentialContext', putObj, null, AMTUserName, this.clientObj.ClientData.payload.password)
       this.clientObj.tls.addCredentialContext = true
     }
-    this.clientManager.setClientObject(this.clientObj)
   }
 
   async trustedRootCertificates (clientId: string): Promise<void> {
@@ -99,7 +100,6 @@ export class TLSConfigurator implements IExecutor {
       await this.amtwsman.batchEnum(clientId, 'AMT_PublicKeyCertificate', AMTUserName, this.clientObj.ClientData.payload.password)
       this.clientObj.tls.checkPublicKeyCertificate = true
     }
-    this.clientManager.setClientObject(this.clientObj)
   }
 
   async generateKeyPair (clientId: string): Promise<void> {
@@ -115,7 +115,6 @@ export class TLSConfigurator implements IExecutor {
       await this.amtwsman.batchEnum(clientId, 'AMT_PublicPrivateKeyPair', AMTUserName, this.clientObj.ClientData.payload.password)
       this.clientObj.tls.checkPublicPrivateKeyPair = true
     }
-    this.clientManager.setClientObject(this.clientObj)
   }
 
   /**
@@ -126,7 +125,6 @@ export class TLSConfigurator implements IExecutor {
     if (this.clientObj.tls.resCredentialContext && !this.clientObj.tls.getTimeSynch) {
       await this.amtwsman.execute(clientId, 'AMT_TimeSynchronizationService', 'GetLowAccuracyTimeSynch', {}, null, AMTUserName, this.clientObj.ClientData.payload.password)
       this.clientObj.tls.getTimeSynch = true
-      this.clientManager.setClientObject(this.clientObj)
     }
   }
 
@@ -173,7 +171,7 @@ export class TLSConfigurator implements IExecutor {
       await this.amtwsman.put(clientId, 'AMT_TLSSettingData', this.clientObj.tls.TLSSettingData.responses[1], AMTUserName, this.clientObj.ClientData.payload.password)
       this.clientObj.tls.putLocalTLS = true
     }
-    this.clientManager.setClientObject(this.clientObj)
+    devices[clientId] = this.clientObj
   }
 
   /**
@@ -241,7 +239,7 @@ export class TLSConfigurator implements IExecutor {
           this.clientObj.tls.setTimeSynch = true
           break
       }
-      this.clientManager.setClientObject(this.clientObj)
+      devices[clientId] = this.clientObj
     }
   }
 
@@ -250,7 +248,7 @@ export class TLSConfigurator implements IExecutor {
       throw new RPSError(`Failed to get AMT TLS Data: ${this.clientObj.uuid}`)
     }
     this.clientObj.tls.TLSSettingData = wsmanResponse
-    this.clientManager.setClientObject(this.clientObj)
+    devices[this.clientObj.ClientId] = this.clientObj
   }
 
   processAMTTLSCredentialContext (wsmanResponse: any): void {
@@ -258,7 +256,7 @@ export class TLSConfigurator implements IExecutor {
       throw new RPSError(`Failed to get TLS Credential Context: ${this.clientObj.uuid}`)
     }
     this.clientObj.tls.TLSCredentialContext = wsmanResponse
-    this.clientManager.setClientObject(this.clientObj)
+    devices[this.clientObj.ClientId] = this.clientObj
   }
 
   async processAMTPublicPrivateKeyPair (wsmanResponse: any, clientId: string): Promise<void> {
@@ -289,7 +287,7 @@ export class TLSConfigurator implements IExecutor {
     } else if (this.clientObj.tls.checkPublicPrivateKeyPair && !this.clientObj.tls.confirmPublicPrivateKeyPair) {
       this.clientObj.tls.confirmPublicPrivateKeyPair = true
     }
-    this.clientManager.setClientObject(this.clientObj)
+    devices[this.clientObj.ClientId] = this.clientObj
   }
 
   processAMTPublicKeyCertificate (wsmanResponse: any): void {
@@ -307,7 +305,7 @@ export class TLSConfigurator implements IExecutor {
         this.clientObj.tls.confirmPublicKeyCertificate = true
       }
     }
-    this.clientManager.setClientObject(this.clientObj)
+    devices[this.clientObj.ClientId] = this.clientObj
   }
 
   async updateDeviceVersion (clientObj: ClientObject): Promise<void> {

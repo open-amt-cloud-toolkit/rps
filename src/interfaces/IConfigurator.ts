@@ -9,7 +9,6 @@ import { IDomainCredentialManager } from './IDomainCredentialManager'
 import { IProfileManager } from './IProfileManager'
 import { ISecretManagerService } from './ISecretManagerService'
 import { IAMTDeviceRepository } from './database/IAMTDeviceRepository'
-import { IClientManager } from './IClientManager'
 import { IDataProcessor } from './IDataProcessor'
 
 export interface IConfigurator {
@@ -18,5 +17,4 @@ export interface IConfigurator {
   secretsManager: ISecretManagerService
   amtDeviceRepository: IAMTDeviceRepository
   dataProcessor: IDataProcessor
-  clientManager: IClientManager
 }
