@@ -17,7 +17,7 @@ import { SignatureHelper } from './utils/SignatureHelper'
 import { ClientResponseMsg } from './utils/ClientResponseMsg'
 import { EnvReader } from './utils/EnvReader'
 import { VersionChecker } from './VersionChecker'
-import { ClientMethods } from './models/RCS.Config'
+import { ClientMethods, ClientAction } from './models/RCS.Config'
 import { devices } from './WebSocketListener'
 
 // EnvReader.InitFromEnv(config);
@@ -253,6 +253,208 @@ describe('deactivate Device', () => {
     VersionChecker.setCurrentVersion('4.0.0')
     const responseMsg = await dataProcessor.handleResponse(clientMsg, clientId)
     expect(buildResponseSpy).toHaveBeenCalled()
+    expect(responseMsg.method).toContain('success')
+  })
+})
+
+describe('activate Device', () => {
+  it('activate in acm', async () => {
+    const clientData = {
+      method: 'activate',
+      apiKey: 'key',
+      appVersion: '1.0.0',
+      protocolVersion: '4.0.0',
+      status: 'ok',
+      message: 'ok',
+      fqdn: '',
+      payload: {
+        uuid: '4c4c4544-004b-4210-8033-b6c04f504633',
+        username: '$$OsAdmin',
+        password: 'P@ssw0rd',
+        currentMode: 2,
+        hostname: 'DESKTOP-9CC12U7',
+        certHashes: ['c3846bf24b9e93ca64274c0ec67c1ecc5e024ffcacd2d74019350e81fe546ae4']
+      }
+    }
+    const clientMsg = {
+      method: 'activate',
+      apiKey: 'key',
+      appVersion: '1.0.0',
+      protocolVersion: '4.0.0',
+      status: 'ok',
+      message: 'ok',
+      fqdn: '',
+      payload: {
+        uuid: '4c4c4544-004b-4210-8033-b6c04f504633',
+        username: '$$OsAdmin',
+        password: 'P@ssw0rd',
+        currentMode: 2,
+        hostname: 'DESKTOP-9CC12U7',
+        certHashes: ['c3846bf24b9e93ca64274c0ec67c1ecc5e024ffcacd2d74019350e81fe546ae4']
+      }
+    }
+    const clientId = uuid()
+    const ActivationStatus = {
+      activated: false,
+      missingMebxPassword: false,
+      changePassword: false
+    }
+    devices[clientId] = { ClientId: clientId, activationStatus: ActivationStatus, action: ClientAction.ADMINCTLMODE, ClientSocket: null, ClientData: clientData, messageId: 2, connectionParams: connectionParams }
+    const validatorSpy = jest.spyOn(dataProcessor.validator, 'validateActivationMsg').mockImplementation(async () => {})
+    jest.spyOn(dataProcessor, 'setConnectionParams').mockImplementation().mockReturnValue(devices[clientId])
+    jest.spyOn(dataProcessor.amt, 'GeneralSettings').mockImplementation()
+    jest.spyOn(dataProcessor.httpHandler, 'wrapIt').mockImplementation().mockReturnValue('abcdef')
+    VersionChecker.setCurrentVersion('4.0.0')
+    const responseMsg = await dataProcessor.activateDevice(clientMsg, clientId)
+    expect(validatorSpy).toHaveBeenCalled()
+    expect(responseMsg.method).toContain('wsman')
+  })
+  it('activate in ccm', async () => {
+    const clientData = {
+      method: 'activate',
+      apiKey: 'key',
+      appVersion: '1.0.0',
+      protocolVersion: '4.0.0',
+      status: 'ok',
+      message: 'ok',
+      fqdn: '',
+      payload: {
+        uuid: '4c4c4544-004b-4210-8033-b6c04f504633',
+        username: '$$OsAdmin',
+        password: 'P@ssw0rd',
+        currentMode: 2,
+        hostname: 'DESKTOP-9CC12U7',
+        certHashes: ['c3846bf24b9e93ca64274c0ec67c1ecc5e024ffcacd2d74019350e81fe546ae4']
+      }
+    }
+    const clientMsg = {
+      method: 'activate',
+      apiKey: 'key',
+      appVersion: '1.0.0',
+      protocolVersion: '4.0.0',
+      status: 'ok',
+      message: 'ok',
+      fqdn: '',
+      payload: {
+        uuid: '4c4c4544-004b-4210-8033-b6c04f504633',
+        username: '$$OsAdmin',
+        password: 'P@ssw0rd',
+        currentMode: 2,
+        hostname: 'DESKTOP-9CC12U7',
+        certHashes: ['c3846bf24b9e93ca64274c0ec67c1ecc5e024ffcacd2d74019350e81fe546ae4']
+      }
+    }
+    const clientId = uuid()
+    const ActivationStatus = {
+      activated: false,
+      missingMebxPassword: false,
+      changePassword: false
+    }
+    devices[clientId] = { ClientId: clientId, activationStatus: ActivationStatus, action: ClientAction.CLIENTCTLMODE, ClientSocket: null, ClientData: clientData, messageId: 2, connectionParams: connectionParams }
+    const validatorSpy = jest.spyOn(dataProcessor.validator, 'validateActivationMsg').mockImplementation(async () => {})
+    jest.spyOn(dataProcessor, 'setConnectionParams').mockImplementation().mockReturnValue(devices[clientId])
+    jest.spyOn(dataProcessor.amt, 'GeneralSettings').mockImplementation()
+    jest.spyOn(dataProcessor.httpHandler, 'wrapIt').mockImplementation().mockReturnValue('abcdef')
+    VersionChecker.setCurrentVersion('4.0.0')
+    const responseMsg = await dataProcessor.activateDevice(clientMsg, clientId)
+    expect(validatorSpy).toHaveBeenCalled()
+    expect(responseMsg.method).toContain('wsman')
+  })
+  it('try activate in ccm with missingMebxPassword', async () => {
+    const clientData = {
+      method: 'activate',
+      apiKey: 'key',
+      appVersion: '1.0.0',
+      protocolVersion: '4.0.0',
+      status: 'ok',
+      message: 'ok',
+      fqdn: '',
+      payload: {
+        uuid: '4c4c4544-004b-4210-8033-b6c04f504633',
+        username: '$$OsAdmin',
+        password: 'P@ssw0rd',
+        currentMode: 2,
+        hostname: 'DESKTOP-9CC12U7',
+        certHashes: ['c3846bf24b9e93ca64274c0ec67c1ecc5e024ffcacd2d74019350e81fe546ae4']
+      }
+    }
+    const clientMsg = {
+      method: 'activate',
+      apiKey: 'key',
+      appVersion: '1.0.0',
+      protocolVersion: '4.0.0',
+      status: 'ok',
+      message: 'ok',
+      fqdn: '',
+      payload: {
+        uuid: '4c4c4544-004b-4210-8033-b6c04f504633',
+        username: '$$OsAdmin',
+        password: 'P@ssw0rd',
+        currentMode: 2,
+        hostname: 'DESKTOP-9CC12U7',
+        certHashes: ['c3846bf24b9e93ca64274c0ec67c1ecc5e024ffcacd2d74019350e81fe546ae4']
+      }
+    }
+    const clientId = uuid()
+    const ActivationStatus = {
+      activated: false,
+      missingMebxPassword: true,
+      changePassword: false
+    }
+    devices[clientId] = { ClientId: clientId, activationStatus: ActivationStatus, action: ClientAction.CLIENTCTLMODE, ClientSocket: null, ClientData: clientData, messageId: 2, connectionParams: connectionParams }
+    const validatorSpy = jest.spyOn(dataProcessor.validator, 'validateActivationMsg').mockImplementation(async () => {})
+    VersionChecker.setCurrentVersion('4.0.0')
+    const responseMsg = await dataProcessor.activateDevice(clientMsg, clientId)
+    expect(validatorSpy).toHaveBeenCalled()
+    expect(responseMsg.method).toContain('success')
+  })
+  it('try activate in ccm with digestRealm', async () => {
+    const clientData = {
+      method: 'activate',
+      apiKey: 'key',
+      appVersion: '1.0.0',
+      protocolVersion: '4.0.0',
+      status: 'ok',
+      message: 'ok',
+      fqdn: '',
+      payload: {
+        uuid: '4c4c4544-004b-4210-8033-b6c04f504633',
+        username: '$$OsAdmin',
+        password: 'P@ssw0rd',
+        currentMode: 2,
+        hostname: 'DESKTOP-9CC12U7',
+        certHashes: ['c3846bf24b9e93ca64274c0ec67c1ecc5e024ffcacd2d74019350e81fe546ae4']
+      }
+    }
+    const clientMsg = {
+      method: 'activate',
+      apiKey: 'key',
+      appVersion: '1.0.0',
+      protocolVersion: '4.0.0',
+      status: 'ok',
+      message: 'ok',
+      fqdn: '',
+      payload: {
+        uuid: '4c4c4544-004b-4210-8033-b6c04f504633',
+        username: '$$OsAdmin',
+        password: 'P@ssw0rd',
+        currentMode: 2,
+        hostname: 'DESKTOP-9CC12U7',
+        certHashes: ['c3846bf24b9e93ca64274c0ec67c1ecc5e024ffcacd2d74019350e81fe546ae4'],
+        digestRealm: 'Digest:A4070000000000000000000000000000'
+      }
+    }
+    const clientId = uuid()
+    const ActivationStatus = {
+      activated: false,
+      missingMebxPassword: false,
+      changePassword: false
+    }
+    devices[clientId] = { ClientId: clientId, activationStatus: ActivationStatus, action: ClientAction.CLIENTCTLMODE, ClientSocket: null, ClientData: clientData, messageId: 2, connectionParams: connectionParams }
+    const validatorSpy = jest.spyOn(dataProcessor.validator, 'validateActivationMsg').mockImplementation(async () => {})
+    VersionChecker.setCurrentVersion('4.0.0')
+    const responseMsg = await dataProcessor.activateDevice(clientMsg, clientId)
+    expect(validatorSpy).toHaveBeenCalled()
     expect(responseMsg.method).toContain('success')
   })
 })
