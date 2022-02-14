@@ -11,7 +11,6 @@ import { ClientMsg, ClientObject } from '../models/RCS.Config'
 import { ClientResponseMsg } from '../utils/ClientResponseMsg'
 import { WSManProcessor } from '../WSManProcessor'
 import { RPSError } from '../utils/RPSError'
-import { AMTDeviceDTO } from '../repositories/dto/AmtDeviceDTO'
 import { IConfigurator } from '../interfaces/IConfigurator'
 import { EnvReader } from '../utils/EnvReader'
 import got from 'got'
@@ -56,7 +55,7 @@ export class Deactivator implements IExecutor {
         }
         case 200: {
           this.logger.debug(`Deleting secret from vault for ${clientObj.uuid}`)
-          await this.configurator.amtDeviceRepository.delete(new AMTDeviceDTO(clientObj.uuid, null, null, null, null, null, null))
+          await this.configurator.amtDeviceRepository.delete(clientObj.uuid)
           this.logger.debug(`Deleting metadata from mps for ${clientObj.uuid}`)
           /* unregister device metadata with MPS */
           try {

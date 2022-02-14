@@ -6,12 +6,12 @@
  **********************************************************************/
 
 import { ILogger } from '../../interfaces/ILogger'
-import { AMTDeviceDTO } from '.././dto/AmtDeviceDTO'
 import { IAMTDeviceRepository } from '../../interfaces/database/IAMTDeviceRepository'
 import { IConfigurator } from '../../interfaces/IConfigurator'
 import { EnvReader } from '../../utils/EnvReader'
 import { RPSError } from '../../utils/RPSError'
 import { AMTUserName } from '../../utils/constants'
+import { AMTDeviceDTO } from '../../models'
 
 export class AMTDeviceVaultRepository implements IAMTDeviceRepository {
   private readonly logger: ILogger
@@ -40,16 +40,16 @@ export class AMTDeviceVaultRepository implements IAMTDeviceRepository {
     }
   }
 
-  public async delete (device: AMTDeviceDTO): Promise<boolean> {
+  public async delete (guid: string): Promise<boolean> {
     try {
       if (this.configurator?.secretsManager) {
-        await this.configurator.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}devices/${device.guid}`)
+        await this.configurator.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}devices/${guid}`)
         return true
       } else {
         throw new Error('secret manager missing')
       }
     } catch (error) {
-      this.logger.error(`failed to delete record guid: ${device.guid}, error: ${JSON.stringify(error)}`)
+      this.logger.error(`failed to delete record guid: ${guid}, error: ${JSON.stringify(error)}`)
       throw new RPSError('Exception deleting from vault')
     }
   }
@@ -59,14 +59,15 @@ export class AMTDeviceVaultRepository implements IAMTDeviceRepository {
       if (this.configurator?.secretsManager) {
         const devicePwds: any = await this.configurator.secretsManager.getSecretAtPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}devices/${deviceId}`)
         if (devicePwds) {
-          const amtDevice: AMTDeviceDTO = new AMTDeviceDTO(
-            deviceId,
-            deviceId,
-            null,
-            devicePwds.data.MPS_PASSWORD,
-            AMTUserName,
-            devicePwds.data.AMT_PASSWORD,
-            devicePwds.data.MEBX_PASSWORD)
+          const amtDevice: AMTDeviceDTO = {
+            guid: deviceId,
+            name: deviceId,
+            mpsuser: null,
+            mpspass: devicePwds.data.MPS_PASSWORD,
+            amtuser: AMTUserName,
+            amtpass: devicePwds.data.AMT_PASSWORD,
+            mebxpass: devicePwds.data.MEBX_PASSWORD
+          }
           this.logger.debug(`found vault amt device: ${deviceId}`)
 
           return amtDevice

@@ -4,10 +4,11 @@
  * Description: interface to export AMT device
  * Author: Brian Osburn
  **********************************************************************/
-import { AMTDeviceDTO } from '../../repositories/dto/AmtDeviceDTO'
+
+import { AMTDeviceDTO } from '../../models'
 
 export interface IAMTDeviceRepository {
   insert: (device: AMTDeviceDTO) => Promise<boolean>
-  delete: (device: AMTDeviceDTO) => Promise<boolean>
+  delete: (deviceId: string) => Promise<boolean>
   get: (deviceId: string) => Promise<AMTDeviceDTO>
 }

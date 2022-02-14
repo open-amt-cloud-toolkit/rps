@@ -8,7 +8,6 @@ import { HttpHandler } from '../../HttpHandler'
 import { IConfigurator } from '../../interfaces/IConfigurator'
 import { IValidator } from '../../interfaces/IValidator'
 import Logger from '../../Logger'
-import { AMTDeviceDTO } from '../../repositories/dto/AmtDeviceDTO'
 import { AMTUserName } from '../constants'
 import { EnvReader } from '../EnvReader'
 import { MqttProvider } from '../MqttProvider'
@@ -56,14 +55,13 @@ export const updateAMTAdminPassword = async (clientId: string, message: any, res
           clientObj.ClientData.payload.digestRealm = digestRealm
           clientObj.hostname = clientObj.ClientData.payload.hostname
           try {
-            await configurator.amtDeviceRepository.insert(new AMTDeviceDTO(clientObj.uuid,
-              clientObj.hostname,
-              null,
-              null,
-              EnvReader.GlobalEnvConfig.amtusername,
-              clientObj.amtPassword,
-              null
-            ))
+            const amtDevice = {
+              guid: clientObj.uuid,
+              name: clientObj.hostname,
+              amtuser: EnvReader.GlobalEnvConfig.amtusername,
+              amtpass: clientObj.amtPassword
+            }
+            await configurator.amtDeviceRepository.insert(amtDevice)
           } catch (err) {
             MqttProvider.publishEvent('fail', ['Activator'], 'unable to register credentials with vault', clientObj.uuid)
             logger.error('unable to register metadata with MPS', err)

@@ -14,13 +14,12 @@ import { IClientMessageParser } from './interfaces/IClientMessageParser'
 import { ClientMsgJsonParser } from './utils/ClientMsgJsonParser'
 import { RPSError } from './utils/RPSError'
 import { CommandParser } from './CommandParser'
-import { AMTDeviceDTO } from './repositories/dto/AmtDeviceDTO'
 import { VersionChecker } from './VersionChecker'
 import { AMTUserName } from './utils/constants'
 import { EnvReader } from './utils/EnvReader'
 import got from 'got'
-import { AMTConfiguration } from './models'
 import { devices } from './WebSocketListener'
+import { AMTConfiguration, AMTDeviceDTO } from './models'
 export class Validator implements IValidator {
   jsonParser: IClientMessageParser
 
@@ -199,9 +198,8 @@ export class Validator implements IValidator {
 
   async verifyDevicePassword (payload: Payload): Promise<void> {
     try {
-      let amtDevice: AMTDeviceDTO
       if (this.configurator?.amtDeviceRepository) {
-        amtDevice = await this.configurator.amtDeviceRepository.get(payload.uuid)
+        const amtDevice = await this.configurator.amtDeviceRepository.get(payload.uuid)
 
         if (amtDevice?.amtpass && payload.password && payload.password === amtDevice.amtpass) {
           this.logger.debug(`AMT password matches stored version for Device ${payload.uuid}`)
