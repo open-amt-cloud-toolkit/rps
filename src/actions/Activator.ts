@@ -11,7 +11,6 @@ import { SignatureHelper } from '../utils/SignatureHelper'
 import { PasswordHelper } from '../utils/PasswordHelper'
 import { ClientMsg, ClientAction, ClientObject } from '../models/RCS.Config'
 import { IConfigurator } from '../interfaces/IConfigurator'
-import { AMTDeviceDTO } from '../repositories/dto/AmtDeviceDTO'
 import { ClientResponseMsg } from '../utils/ClientResponseMsg'
 import { IClientManager } from '../interfaces/IClientManager'
 import { IValidator } from '../interfaces/IValidator'
@@ -19,7 +18,7 @@ import { RPSError } from '../utils/RPSError'
 import { EnvReader } from '../utils/EnvReader'
 import { NetworkConfigurator } from './NetworkConfigurator'
 import { AMTUserName } from '../utils/constants'
-import { AMTDomain } from '../models'
+import { AMTDeviceDTO, AMTDomain } from '../models'
 import got from 'got'
 import { MqttProvider } from '../utils/MqttProvider'
 import { setMEBXPassword } from '../utils/maintenance/setMEBXPassword'
@@ -375,25 +374,16 @@ export class Activator implements IExecutor {
    */
   async saveDeviceInfoToVault (clientObj: ClientObject): Promise<boolean> {
     if (this.configurator?.amtDeviceRepository) {
-      if (clientObj.action === ClientAction.ADMINCTLMODE) {
-        await this.configurator.amtDeviceRepository.insert(new AMTDeviceDTO(clientObj.uuid,
-          clientObj.hostname,
-          clientObj.mpsUsername,
-          clientObj.mpsPassword,
-          EnvReader.GlobalEnvConfig.amtusername,
-          clientObj.amtPassword,
-          clientObj.mebxPassword
-        ))
-        return true
-      } else {
-        await this.configurator.amtDeviceRepository.insert(new AMTDeviceDTO(clientObj.uuid,
-          clientObj.hostname,
-          clientObj.mpsUsername,
-          clientObj.mpsPassword,
-          EnvReader.GlobalEnvConfig.amtusername,
-          clientObj.amtPassword,
-          null))
+      const amtDevice: AMTDeviceDTO = {
+        guid: clientObj.uuid,
+        name: clientObj.hostname,
+        mpsuser: clientObj.mpsUsername,
+        mpspass: clientObj.mpsPassword,
+        amtuser: EnvReader.GlobalEnvConfig.amtusername,
+        amtpass: clientObj.amtPassword,
+        mebxpass: clientObj.action === ClientAction.ADMINCTLMODE ? clientObj.mebxPassword : null
       }
+      await this.configurator.amtDeviceRepository.insert(amtDevice)
       return true
     } else {
       MqttProvider.publishEvent('fail', ['Activator'], 'Unable to write device', clientObj.uuid)

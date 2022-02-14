@@ -3,7 +3,6 @@ import { IClientManager } from '../../interfaces/IClientManager'
 import { IConfigurator } from '../../interfaces/IConfigurator'
 import Logger from '../../Logger'
 import { ClientMsg, ClientObject } from '../../models/RCS.Config'
-import { AMTDeviceDTO } from '../../repositories/dto/AmtDeviceDTO'
 import { ClientResponseMsg } from '../ClientResponseMsg'
 import { EnvReader } from '../EnvReader'
 import { MqttProvider } from '../MqttProvider'
@@ -35,14 +34,16 @@ export const setMEBXPassword = async (clientId: string, message: any, responseMs
       }
       clientObj.mebxPassword = mebxPassword
       if (configurator?.amtDeviceRepository) {
-        await configurator.amtDeviceRepository.insert(new AMTDeviceDTO(clientObj.uuid,
-          clientObj.hostname,
-          clientObj.mpsUsername,
-          clientObj.mpsPassword,
-          EnvReader.GlobalEnvConfig.amtusername,
-          clientObj.amtPassword,
-          clientObj.mebxPassword
-        ))
+        const amtDevice = {
+          guid: clientObj.uuid,
+          name: clientObj.hostname,
+          mpsuser: clientObj.mpsUsername,
+          mpspass: clientObj.mpsPassword,
+          amtuser: EnvReader.GlobalEnvConfig.amtusername,
+          amtpass: clientObj.amtPassword,
+          mebxpass: clientObj.mebxPassword
+        }
+        await configurator.amtDeviceRepository.insert(amtDevice)
       } else {
         MqttProvider.publishEvent('fail', ['setMEBXPassword'], 'Unable to write device', clientObj.uuid)
         logger.error('unable to write device')
