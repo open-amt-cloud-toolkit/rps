@@ -7,6 +7,16 @@
 import { pki } from 'node-forge'
 import { CIRAConfig, ProfileWifiConfigs, WebSocketConfig } from './RCS.Config'
 
+// guid: string, name: string, mpsuser: string, mpspass: string, amtuser: string, amtpassword: string, mebxpass: string) {
+export interface AMTDeviceDTO {
+  guid: string
+  name?: string
+  mpsuser?: string
+  mpspass?: string
+  amtuser?: string
+  amtpass?: string
+  mebxpass?: string
+}
 export interface ProvisioningCertObj {
   certChain: string[]
   privateKey: pki.PrivateKey
