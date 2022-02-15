@@ -40,7 +40,7 @@ export class ClientActions {
     const tlsConfig = new TLSConfigurator(new Logger('TLSConfig'), certManager, responseMsg, amtwsman)
     this.actions[ClientAction.TLSCONFIG] = tlsConfig
 
-    const ciraConfig = new CIRAConfigurator(new Logger('CIRAConfig'), configurator, responseMsg, amtwsman, tlsConfig)
+    const ciraConfig = new CIRAConfigurator(new Logger('CIRAConfig'), configurator, responseMsg, tlsConfig)
     this.actions[ClientAction.CIRACONFIG] = ciraConfig
 
     const networkConfig = new NetworkConfigurator(new Logger('NetworkConfig'), configurator, responseMsg, amtwsman, validator, ciraConfig)
