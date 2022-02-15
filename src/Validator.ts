@@ -8,9 +8,8 @@ import * as WebSocket from 'ws'
 
 import { IValidator } from './interfaces/IValidator'
 import { ILogger } from './interfaces/ILogger'
-import { ClientMsg, ClientAction, Payload, ClientMethods, ClientObject } from './models/RCS.Config'
+import { ClientMsg, ClientAction, Payload, ClientMethods } from './models/RCS.Config'
 import { IConfigurator } from './interfaces/IConfigurator'
-import { IClientManager } from './interfaces/IClientManager'
 import { IClientMessageParser } from './interfaces/IClientMessageParser'
 import { ClientMsgJsonParser } from './utils/ClientMsgJsonParser'
 import { RPSError } from './utils/RPSError'
@@ -19,14 +18,14 @@ import { VersionChecker } from './VersionChecker'
 import { AMTUserName } from './utils/constants'
 import { EnvReader } from './utils/EnvReader'
 import got from 'got'
+import { devices } from './WebSocketListener'
 import { AMTConfiguration, AMTDeviceDTO } from './models'
 export class Validator implements IValidator {
   jsonParser: IClientMessageParser
 
   constructor (
     private readonly logger: ILogger,
-    private readonly configurator: IConfigurator,
-    private readonly clientManager: IClientManager
+    private readonly configurator: IConfigurator
   ) {
     this.jsonParser = new ClientMsgJsonParser()
   }
@@ -70,7 +69,7 @@ export class Validator implements IValidator {
    * @returns {RCSMessage}
    */
   async validateActivationMsg (msg: ClientMsg, clientId: string): Promise<void> {
-    let clientObj = this.clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     const payload: Payload = this.verifyPayload(msg, clientId)
     // Check version and build compatibility
     this.verifyAMTVersion(payload, 'activation')
@@ -93,10 +92,9 @@ export class Validator implements IValidator {
     }
     msg.payload = payload
     clientObj.ClientData = msg
-    this.clientManager.setClientObject(clientObj)
     // Check for the current activation mode on AMT
     await this.verifyCurrentModeForActivation(msg, profile, clientId)
-    clientObj = this.clientManager.getClientObject(clientId)
+
     if (!clientObj.action) {
       throw new RPSError(`Device ${payload.uuid} activation failed. Failed to get activation mode for the profile :${payload.profile}`)
     }
@@ -113,7 +111,7 @@ export class Validator implements IValidator {
  * @returns {RCSMessage}
  */
   async validateDeactivationMsg (msg: ClientMsg, clientId: string): Promise<void> {
-    const clientObj = this.clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     const payload: Payload = this.verifyPayload(msg, clientId)
     // Check for the current mode
     if (payload.currentMode >= 0) {
@@ -148,7 +146,6 @@ export class Validator implements IValidator {
     clientObj.uuid = payload.uuid
     msg.payload = payload
     clientObj.ClientData = msg
-    this.clientManager.setClientObject(clientObj)
   }
 
   /**
@@ -185,7 +182,7 @@ export class Validator implements IValidator {
   }
 
   async validateMaintenanceMsg (msg: ClientMsg, clientId: string): Promise<void> {
-    const clientObj = this.clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     const payload: Payload = this.verifyPayload(msg, clientId)
     // Check for the current mode
     if (payload.currentMode > 0) {
@@ -197,7 +194,6 @@ export class Validator implements IValidator {
     }
     await this.verifyDevicePassword(payload)
     clientObj.ClientData = msg
-    this.clientManager.setClientObject(clientObj)
   }
 
   async verifyDevicePassword (payload: Payload): Promise<void> {
@@ -248,7 +244,7 @@ export class Validator implements IValidator {
   }
 
   async verifyCurrentModeForActivation (msg: ClientMsg, profile: AMTConfiguration, clientId: string): Promise<void> {
-    const clientObj = this.clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     switch (msg.payload.currentMode) {
       case 0: {
         this.logger.debug(`Device ${msg.payload.uuid} is in pre-provisioning mode`)
@@ -260,7 +256,7 @@ export class Validator implements IValidator {
         }
         this.logger.debug(`Device ${msg.payload.uuid} already enabled in client mode.`)
         clientObj.status.Status = 'already enabled in client mode.'
-        await this.setNextStepsForConfiguration(msg, clientObj, clientId)
+        await this.setNextStepsForConfiguration(msg, clientId)
         break
       }
       case 2: {
@@ -269,14 +265,13 @@ export class Validator implements IValidator {
         }
         this.logger.debug(`Device ${msg.payload.uuid} already enabled in admin mode.`)
         clientObj.status.Status = 'already enabled in admin mode.'
-        await this.setNextStepsForConfiguration(msg, clientObj, clientId)
+        await this.setNextStepsForConfiguration(msg, clientId)
         break
       }
       default: {
         throw new RPSError(`Device ${msg.payload.uuid} activation failed. It is in unknown mode.`)
       }
     }
-    this.clientManager.setClientObject(clientObj)
   }
 
   async getDeviceCredentials (msg: ClientMsg): Promise<AMTDeviceDTO> {
@@ -297,7 +292,8 @@ export class Validator implements IValidator {
     return null
   }
 
-  async setNextStepsForConfiguration (msg: ClientMsg, clientObj: ClientObject, clientId: string): Promise<void> {
+  async setNextStepsForConfiguration (msg: ClientMsg, clientId: string): Promise<void> {
+    const clientObj = devices[clientId]
     let amtDevice: AMTDeviceDTO = null
     try {
       amtDevice = await this.getDeviceCredentials(msg)
@@ -328,7 +324,6 @@ export class Validator implements IValidator {
       msg.payload.username = AMTUserName
     }
     clientObj.ClientData = msg
-    this.clientManager.setClientObject(clientObj)
   }
 
   verifyAMTVersion (payload: Payload, action: string): void {

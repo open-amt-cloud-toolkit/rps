@@ -1,6 +1,8 @@
+/*********************************************************************
+ * Copyright (c) Intel Corporation 2022
+ * SPDX-License-Identifier: Apache-2.0
+ **********************************************************************/
 
-import { ClientManager } from '../ClientManager'
-import { Configurator } from '../Configurator'
 import Logger from '../Logger'
 import { ClientResponseMsg } from '../utils/ClientResponseMsg'
 import { v4 as uuid } from 'uuid'
@@ -8,12 +10,11 @@ import { EnvReader } from '../utils/EnvReader'
 import { config } from '../test/helper/Config'
 import { Maintenance } from './Maintenance'
 import { HttpHandler } from '../HttpHandler'
+import { devices } from '../WebSocketListener'
 EnvReader.GlobalEnvConfig = config
-const configurator = new Configurator()
-const clientManager = ClientManager.getInstance(new Logger('ClientManager'))
 const responseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'))
 const httpHandler = new HttpHandler()
-const maintenance = new Maintenance(new Logger('Maintenance'), configurator, responseMsg, clientManager)
+const maintenance = new Maintenance(new Logger('Maintenance'), responseMsg)
 let maintenanceMsg
 describe('execute', () => {
   beforeEach(() => {
@@ -60,14 +61,14 @@ describe('execute', () => {
   }
   test('should return success response for successful timesync response', async () => {
     const clientId = uuid()
-    clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg, connectionParams: connectionParams })
+    devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg, connectionParams: connectionParams }
     const result = await maintenance.execute(maintenanceMsg, clientId, httpHandler)
     expect(result.method).toBe('wsman')
   })
   test('should return failure message for maintenance task does not exists', async () => {
     const clientId = uuid()
     maintenanceMsg.payload.task = 'setMEBXPassword'
-    clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg })
+    devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg }
     const result = await maintenance.execute(maintenanceMsg, clientId, httpHandler)
     expect(result.method).toBe('error')
   })

@@ -13,7 +13,6 @@ import { SignatureHelper } from './utils/SignatureHelper'
 import { Activator } from './actions/Activator'
 import { ClientResponseMsg } from './utils/ClientResponseMsg'
 import { WSManProcessor } from './WSManProcessor'
-import { IClientManager } from './interfaces/IClientManager'
 import { IValidator } from './interfaces/IValidator'
 import { RPSError } from './utils/RPSError'
 import { Deactivator } from './actions/Deactivator'
@@ -23,6 +22,7 @@ import { TLSConfigurator } from './actions/TLSConfigurator'
 import { CertManager } from './CertManager'
 import { Maintenance } from './actions/Maintenance'
 import { HttpHandler } from './HttpHandler'
+import { devices } from './WebSocketListener'
 
 export class ClientActions {
   actions: any
@@ -34,23 +34,22 @@ export class ClientActions {
     private readonly helper: SignatureHelper,
     private readonly responseMsg: ClientResponseMsg,
     private readonly amtwsman: WSManProcessor,
-    private readonly clientManager: IClientManager,
     private readonly validator: IValidator) {
     this.actions = {}
 
-    const tlsConfig = new TLSConfigurator(new Logger('TLSConfig'), certManager, responseMsg, amtwsman, clientManager)
+    const tlsConfig = new TLSConfigurator(new Logger('TLSConfig'), certManager, responseMsg, amtwsman)
     this.actions[ClientAction.TLSCONFIG] = tlsConfig
 
-    const ciraConfig = new CIRAConfigurator(new Logger('CIRAConfig'), configurator, responseMsg, amtwsman, clientManager, tlsConfig)
+    const ciraConfig = new CIRAConfigurator(new Logger('CIRAConfig'), configurator, responseMsg, amtwsman, tlsConfig)
     this.actions[ClientAction.CIRACONFIG] = ciraConfig
 
-    const networkConfig = new NetworkConfigurator(new Logger('NetworkConfig'), configurator, responseMsg, amtwsman, clientManager, validator, ciraConfig)
+    const networkConfig = new NetworkConfigurator(new Logger('NetworkConfig'), configurator, responseMsg, amtwsman, validator, ciraConfig)
     this.actions[ClientAction.NETWORKCONFIG] = networkConfig
 
-    this.actions[ClientAction.MAINTENANCE] = new Maintenance(new Logger('Maintenance'), configurator, responseMsg, clientManager)
-    this.actions[ClientAction.ADMINCTLMODE] = new Activator(new Logger('Activator'), configurator, certManager, helper, responseMsg, clientManager, validator, networkConfig)
-    this.actions[ClientAction.CLIENTCTLMODE] = new Activator(new Logger('Activator'), configurator, certManager, helper, responseMsg, clientManager, validator, networkConfig)
-    this.actions[ClientAction.DEACTIVATE] = new Deactivator(new Logger('Deactivator'), responseMsg, amtwsman, clientManager, configurator)
+    this.actions[ClientAction.MAINTENANCE] = new Maintenance(new Logger('Maintenance'), responseMsg)
+    this.actions[ClientAction.ADMINCTLMODE] = new Activator(new Logger('Activator'), configurator, certManager, helper, responseMsg, validator, networkConfig)
+    this.actions[ClientAction.CLIENTCTLMODE] = new Activator(new Logger('Activator'), configurator, certManager, helper, responseMsg, validator, networkConfig)
+    this.actions[ClientAction.DEACTIVATE] = new Deactivator(new Logger('Deactivator'), responseMsg, amtwsman, configurator)
   }
 
   /**
@@ -61,7 +60,7 @@ export class ClientActions {
    * @returns {Boolean} Returns response message if action object exists. Returns null if action object does not exists.
    */
   async buildResponseMessage (message: any, clientId: string, httpHandler?: HttpHandler): Promise<ClientMsg> {
-    const clientObj = this.clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     if (clientObj.action) {
       if (this.actions[clientObj.action]) {
         // eslint-disable-next-line @typescript-eslint/return-await
