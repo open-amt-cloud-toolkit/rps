@@ -6,8 +6,6 @@ import { WebSocketConfig, ClientMsg } from './models/RCS.Config'
 import { WebSocketListener } from './WebSocketListener'
 import Logger from './Logger'
 import { ILogger } from './interfaces/ILogger'
-import { IClientManager } from './interfaces/IClientManager'
-import { ClientManager } from './ClientManager'
 import * as WebSocket from 'ws'
 
 const wsConfig: WebSocketConfig = {
@@ -15,7 +13,6 @@ const wsConfig: WebSocketConfig = {
 }
 
 const log: ILogger = new Logger('WebSocketListener')
-const clientManager: IClientManager = ClientManager.getInstance(new Logger('ClientManager'))
 let server: WebSocketListener
 let isConnect: boolean
 
@@ -24,7 +21,7 @@ describe('Check Websocket Listener', () => {
     const stub = {
       processData: jest.fn()
     }
-    server = new WebSocketListener(log, wsConfig, clientManager, stub)
+    server = new WebSocketListener(log, wsConfig, stub)
     isConnect = await server.connect()
     expect(isConnect).toEqual(true)
   })
@@ -35,7 +32,7 @@ describe('connect method', () => {
     const stub = {
       processData: jest.fn()
     }
-    const server1: WebSocketListener = new WebSocketListener(log, wsConfig, clientManager, stub)
+    const server1: WebSocketListener = new WebSocketListener(log, wsConfig, stub)
     jest.spyOn(WebSocket, 'Server').mockReturnValue(null)
     const on = jest.spyOn(server.wsServer, 'on')
     const ret = server1.connect()
@@ -47,9 +44,7 @@ describe('connect method', () => {
 describe('onClientDisconnected method', () => {
   it('remove Client on close event of WebSocket Server', async () => {
     const clientid = 'abcd'
-    const removeClient = jest.spyOn(server.clientManager, 'removeClient')
     await server.onClientDisconnected(clientid)
-    expect(removeClient).toHaveBeenCalledTimes(1)
   })
 })
 
@@ -95,10 +90,8 @@ describe('onMessageReceived method', () => {
 describe('onSendMessage method', () => {
   it('do not send message if invalid client index', () => {
     const clientid = 'test'
-    const getClientIndex = jest.spyOn(server.clientManager, 'getClientIndex').mockReturnValue(-1)
     const message: WebSocket.Data = 'test'
     server.onSendMessage(message, clientid)
-    expect(getClientIndex).toHaveBeenCalledTimes(1)
   })
 })
 

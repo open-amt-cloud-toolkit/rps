@@ -1,11 +1,15 @@
-import { ClientManager } from '../../ClientManager'
+/*********************************************************************
+ * Copyright (c) Intel Corporation 2022
+ * SPDX-License-Identifier: Apache-2.0
+ **********************************************************************/
+
 import Logger from '../../Logger'
 import { ClientResponseMsg } from '../ClientResponseMsg'
 import { v4 as uuid } from 'uuid'
 import { synchronizeTime } from './synchronizeTime'
 import { HttpHandler } from '../../HttpHandler'
+import { devices } from '../../WebSocketListener'
 
-const clientManager = ClientManager.getInstance(new Logger('ClientManager'))
 const responseMsg: ClientResponseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'))
 const httpHandler = new HttpHandler()
 const message = { payload: { statusCode: null, header: null, body: null } }
@@ -73,16 +77,17 @@ beforeEach(() => {
 
 test('should return a wsman message if input message a maintenance request', async () => {
   const clientId = uuid()
-  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg, status: {}, connectionParams: connectionParams, messageId: 0 })
-  const response = await synchronizeTime(clientId, maintenanceMsg, responseMsg, clientManager, httpHandler)
+  devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg, status: {}, connectionParams: connectionParams, messageId: 0 }
+  const response = await synchronizeTime(clientId, maintenanceMsg, responseMsg, httpHandler)
   expect(response.method).toBe('wsman')
 })
 
 test('should return a wsman message if input is a 401 unauthorized error from AMT', async () => {
   message.payload.statusCode = 401
   const clientId = uuid()
-  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg, status: {}, connectionParams: connectionParams, messageId: 0 })
-  const response = await synchronizeTime(clientId, message, responseMsg, clientManager, httpHandler)
+  devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg, status: {}, connectionParams: connectionParams, messageId: 0 }
+
+  const response = await synchronizeTime(clientId, message, responseMsg, httpHandler)
   expect(response.method).toBe('wsman')
 })
 
@@ -90,8 +95,9 @@ test('should return a wsman message if input is a 200 response message for GET_L
   message.payload.statusCode = 200
   message.payload.body = getLowAccuracyTimeSync(0)
   const clientId = uuid()
-  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg, status: {}, connectionParams: connectionParams, messageId: 0 })
-  const response = await synchronizeTime(clientId, message, responseMsg, clientManager, httpHandler)
+  devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg, status: {}, connectionParams: connectionParams, messageId: 0 }
+
+  const response = await synchronizeTime(clientId, message, responseMsg, httpHandler)
   expect(response.method).toBe('wsman')
 })
 
@@ -99,8 +105,9 @@ test('should return an error message if input is a 200 response message for GET_
   message.payload.statusCode = 200
   message.payload.body = getLowAccuracyTimeSync(1)
   const clientId = uuid()
-  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg, status: {}, connectionParams: connectionParams, messageId: 0 })
-  const response = await synchronizeTime(clientId, message, responseMsg, clientManager, httpHandler)
+  devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg, status: {}, connectionParams: connectionParams, messageId: 0 }
+
+  const response = await synchronizeTime(clientId, message, responseMsg, httpHandler)
   expect(response.method).toBe('error')
   expect(response.message).toEqual('{"Status":"Failed to Synchronize time"}')
 })
@@ -109,8 +116,9 @@ test('should return success message if input is a 200 response message for SET_H
   message.payload.statusCode = 200
   message.payload.body = setHighAccuracyTimeSync(0, 'SetHighAccuracyTimeSynchResponse')
   const clientId = uuid()
-  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg, status: {}, connectionParams: connectionParams, messageId: 0 })
-  const response = await synchronizeTime(clientId, message, responseMsg, clientManager, httpHandler)
+  devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg, status: {}, connectionParams: connectionParams, messageId: 0 }
+
+  const response = await synchronizeTime(clientId, message, responseMsg, httpHandler)
   expect(response.method).toBe('success')
   expect(response.message).toEqual('{"Status":"Time Synchronized"}')
 })
@@ -118,8 +126,9 @@ test('should return an error message if input  is a 200 response message for SET
   message.payload.statusCode = 200
   message.payload.body = setHighAccuracyTimeSync(1, 'SetHighAccuracyTimeSynchResponse')
   const clientId = uuid()
-  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg, status: {}, connectionParams: connectionParams, messageId: 0 })
-  const response = await synchronizeTime(clientId, message, responseMsg, clientManager, httpHandler)
+  devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg, status: {}, connectionParams: connectionParams, messageId: 0 }
+
+  const response = await synchronizeTime(clientId, message, responseMsg, httpHandler)
   expect(response.method).toBe('error')
   expect(response.message).toEqual('{"Status":"Failed to Synchronize time"}')
 })
@@ -127,8 +136,9 @@ test('should return an error message if input is a 200 response message but not 
   message.payload.statusCode = 200
   message.payload.body = setHighAccuracyTimeSync(1, 'SetHighAccuracyTimeSynchResronse')
   const clientId = uuid()
-  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg, status: {}, connectionParams: connectionParams, messageId: 0 })
-  const response = await synchronizeTime(clientId, message, responseMsg, clientManager, httpHandler)
+  devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg, status: {}, connectionParams: connectionParams, messageId: 0 }
+
+  const response = await synchronizeTime(clientId, message, responseMsg, httpHandler)
   expect(response.method).toBe('error')
   expect(response.message).toEqual('{"Status":"Failed to Synchronize time"}')
 })
@@ -136,8 +146,9 @@ test('should return an error message if input is not 401 0r 200', async () => {
   message.payload.statusCode = 400
   message.payload.body = null
   const clientId = uuid()
-  clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg, status: {}, connectionParams: connectionParams, messageId: 0 })
-  const response = await synchronizeTime(clientId, message, responseMsg, clientManager, httpHandler)
+  devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg, status: {}, connectionParams: connectionParams, messageId: 0 }
+
+  const response = await synchronizeTime(clientId, message, responseMsg, httpHandler)
   expect(response.method).toBe('error')
   expect(response.message).toEqual('{"Status":"Failed to Synchronize time"}')
 })

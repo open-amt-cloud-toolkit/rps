@@ -7,18 +7,17 @@
 import { ILogger } from './interfaces/ILogger'
 import { ClientResponseMsg as ResponseMessage } from './utils/ClientResponseMsg'
 import { ClientMsg, Payload, ClientObject, SocketConnection } from './models/RCS.Config'
-import { IClientManager } from './interfaces/IClientManager'
 
 import WSComm = require('./amt-libraries/amt-wsman-comm')
 import WSMan = require('./amt-libraries/amt-wsman')
 import AMT = require('./amt-libraries/amt')
+import { devices } from './WebSocketListener'
 
 export class WSManProcessor {
   cache: any
 
   constructor (
     private readonly logger: ILogger,
-    private readonly clientManager: IClientManager,
     private readonly responseMsg: ResponseMessage
   ) {
     this.cache = {}
@@ -32,7 +31,7 @@ export class WSManProcessor {
    * @returns {string} json message
    */
   parseWsManResponseXML (wsManResponseXML: any, clientId: string, statusCode: string): any {
-    const clientObj = this.clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     try {
       const amtstack = this.getAmtStack(clientId)
       amtstack.wsman.comm.socketAccumulator = ''
@@ -69,7 +68,7 @@ export class WSManProcessor {
   */
   async getCertChainWSManResponse (cert: any, leaf: boolean, root: boolean, clientId: string): Promise<void> {
     const amtstack = this.getAmtStack(clientId)
-    const clientObj = this.clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     await amtstack.IPS_HostBasedSetupService_AddNextCertInChain(cert, leaf, root, (stack, name, jsonResponse, status) => {
       if (status !== 200) {
         this.logger.error(`AddNextCertInChain error, status=${status}`)
@@ -91,7 +90,7 @@ export class WSManProcessor {
   * @param {string} clientId
   */
   async setupACM (clientId: string, password: any, nonce: any, signature: any): Promise<void> {
-    const clientObj = this.clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     const amtstack = this.getAmtStack(clientId)
     await amtstack.IPS_HostBasedSetupService_AdminSetup(2, password, nonce, 2, signature, (stack, name, jsonResponse, status) => {
       if (status !== 200) {
@@ -110,7 +109,7 @@ export class WSManProcessor {
   * @param {any} password
   */
   async setupCCM (clientId: string, password: any): Promise<void> {
-    const clientObj = this.clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     const amtstack = this.getAmtStack(clientId)
     await amtstack.IPS_HostBasedSetupService_Setup(2, password, null, null, null, null, (stack, name, jsonResponse, status) => {
       if (status !== 200) {
@@ -129,7 +128,7 @@ export class WSManProcessor {
   * @param {any} password
   */
   async addWifiConfig (clientId: string, wifiEndpoint: any, wifiEndpointSettings: any): Promise<void> {
-    const clientObj = this.clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     const amtstack = this.getAmtStack(clientId)
     await amtstack.AMT_WiFiPortConfigurationService_AddWiFiSettings(wifiEndpoint, wifiEndpointSettings, null, null, null, (stack, name, jsonResponse, status) => {
       if (status === 200) {
@@ -142,7 +141,7 @@ export class WSManProcessor {
   }
 
   async setWiFiPort (clientId: string, value: number): Promise<void> {
-    const clientObj = this.clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     const amtstack = this.getAmtStack(clientId)
     await amtstack.CIM_WiFiPort_RequestStateChange(value, null, async () => {
       await amtstack.Get('CIM_WiFiPort', (stack, name, jsonResponse, status) => {
@@ -156,7 +155,7 @@ export class WSManProcessor {
   }
 
   async deactivateACM (clientId: string): Promise<void> {
-    const clientObj = this.clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     const amtstack = this.getAmtStack(clientId)
 
     await amtstack.AMT_SetupAndConfigurationService_Unprovision(2, (stack, name, jsonResponse, status) => {
@@ -178,7 +177,7 @@ export class WSManProcessor {
    */
   getAmtStack (clientId: string, username?: string, password?: string): any {
     let payload: Payload
-    const clientObj = this.clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
 
     try {
       if (typeof this.cache[clientId] === 'undefined') {
@@ -218,7 +217,7 @@ export class WSManProcessor {
    * @param {string} action WSMan action
    */
   async batchEnum (clientId: string, action: string, amtuser?: string, amtpass?: string, tag: string = null): Promise<void> {
-    const clientObj = this.clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     try {
       const amtstack = this.getAmtStack(clientId, amtuser, amtpass)
       await amtstack.BatchEnum('', [action], (stack, name, jsonResponse, status) => {
@@ -231,7 +230,6 @@ export class WSManProcessor {
       }, tag)
       if (clientObj.socketConn?.onStateChange && clientObj.readyState == null) {
         clientObj.readyState = 2
-        this.clientManager.setClientObject(clientObj)
         clientObj.socketConn.onStateChange(clientObj.ClientSocket, clientObj.readyState)
       }
     } catch (error) {
@@ -245,7 +243,7 @@ export class WSManProcessor {
    * @param {string} action WSMan action
    */
   async getWSManResponse (clientId: string, action: string, amtuser?: string, amtpass?: string): Promise<void> {
-    const clientObj: ClientObject = this.clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     try {
       const amtstack = this.getAmtStack(clientId, amtuser, amtpass)
       await amtstack.Get(action, (stack, name, jsonResponse, status) => {
@@ -261,7 +259,6 @@ export class WSManProcessor {
       if (clientObj.socketConn?.onStateChange && clientObj.readyState == null) {
         this.logger.debug('updating ready state')
         clientObj.readyState = 2
-        this.clientManager.setClientObject(clientObj)
         clientObj.socketConn.onStateChange(clientObj.ClientSocket, clientObj.readyState)
       }
     } catch (error) {
@@ -270,7 +267,7 @@ export class WSManProcessor {
   }
 
   async put (clientId: string, action: string, obj: any, amtuser?: string, amtpass?: string, noselectors: boolean = false): Promise<void> {
-    const clientObj: ClientObject = this.clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     try {
       const amtstack = this.getAmtStack(clientId, amtuser, amtpass)
       const callback = (stack, name, jsonResponse, status): void => {
@@ -289,7 +286,6 @@ export class WSManProcessor {
       if (clientObj.socketConn?.onStateChange && clientObj.readyState == null) {
         this.logger.debug('updating ready state')
         clientObj.readyState = 2
-        this.clientManager.setClientObject(clientObj)
         clientObj.socketConn.onStateChange(clientObj.ClientSocket, clientObj.readyState)
       }
     } catch (error) {
@@ -298,7 +294,7 @@ export class WSManProcessor {
   }
 
   async delete (clientId: string, action: string, deleteObj: any, amtuser?: string, amtpass?: string): Promise<void> {
-    const clientObj: ClientObject = this.clientManager.getClientObject(clientId)
+    const clientObj: ClientObject = devices[clientId]
     try {
       const amtstack = this.getAmtStack(clientId, amtuser, amtpass)
       await amtstack.Delete(action, deleteObj, (stack, name, jsonResponse, status) => {
@@ -312,7 +308,6 @@ export class WSManProcessor {
       if (clientObj.socketConn?.onStateChange && clientObj.readyState == null) {
         this.logger.debug('updating ready state')
         clientObj.readyState = 2
-        this.clientManager.setClientObject(clientObj)
         clientObj.socketConn.onStateChange(clientObj.ClientSocket, clientObj.readyState)
       }
     } catch (error) {
@@ -321,7 +316,7 @@ export class WSManProcessor {
   }
 
   async execute (clientId: string, name: string, method: string, args: any, selectors: any, amtuser?: string, amtpass?: string): Promise<void> {
-    const clientObj: ClientObject = this.clientManager.getClientObject(clientId)
+    const clientObj: ClientObject = devices[clientId]
     try {
       const amtstack = this.getAmtStack(clientId, amtuser, amtpass)
       await amtstack.Exec(name, method, args, (stack, name, jsonResponse, status) => {
@@ -336,7 +331,6 @@ export class WSManProcessor {
       if (clientObj.socketConn?.onStateChange && clientObj.readyState == null) {
         this.logger.debug('updating ready state')
         clientObj.readyState = 2
-        this.clientManager.setClientObject(clientObj)
         clientObj.socketConn.onStateChange(clientObj.ClientSocket, clientObj.readyState)
       }
     } catch (error) {
@@ -346,7 +340,7 @@ export class WSManProcessor {
 
   // TBD: Needs to refactor this file as most of the methods share the same lines of code.
   async create (clientId: string, name: string, putobj: any, tag: any = null, amtuser?: string, amtpass?: string): Promise<void> {
-    const clientObj: ClientObject = this.clientManager.getClientObject(clientId)
+    const clientObj = devices[clientId]
     try {
       const amtstack = this.getAmtStack(clientId, amtuser, amtpass)
       await amtstack.Create(name, putobj, (stack, name, jsonResponse, status) => {
@@ -361,7 +355,6 @@ export class WSManProcessor {
       if (clientObj.socketConn?.onStateChange && clientObj.readyState == null) {
         this.logger.debug('updating ready state')
         clientObj.readyState = 2
-        this.clientManager.setClientObject(clientObj)
         clientObj.socketConn.onStateChange(clientObj.ClientSocket, clientObj.readyState)
       }
     } catch (error) {

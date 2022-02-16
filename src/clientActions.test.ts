@@ -12,29 +12,28 @@ import { ClientActions } from './ClientActions'
 import { CertManager } from './CertManager'
 import { config } from './test/helper/Config'
 import { SignatureHelper } from './utils/SignatureHelper'
-import { ClientManager } from './ClientManager'
 import { Validator } from './Validator'
 import { ClientResponseMsg } from './utils/ClientResponseMsg'
 import { WSManProcessor } from './WSManProcessor'
 import { EnvReader } from './utils/EnvReader'
 import { ClientAction } from './models/RCS.Config'
+import { devices } from './WebSocketListener'
 
 EnvReader.GlobalEnvConfig = config
 
 const nodeForge = new NodeForge()
 const certManager = new CertManager(new Logger('CertManager'), nodeForge)
 const helper = new SignatureHelper(nodeForge)
-const clientManager = ClientManager.getInstance(new Logger('ClientManager'))
 const responseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'))
-const amtwsman = new WSManProcessor(new Logger('WSManProcessor'), clientManager, responseMsg)
+const amtwsman = new WSManProcessor(new Logger('WSManProcessor'), responseMsg)
 const configurator: Configurator = new Configurator()
-const validator = new Validator(new Logger('Validator'), configurator, clientManager)
+const validator = new Validator(new Logger('Validator'), configurator)
 let clientActions: any
 let activationmsg
 
 describe('Client Actions', () => {
   beforeEach(() => {
-    clientActions = new ClientActions(new Logger('ClientActions'), configurator, certManager, helper, responseMsg, amtwsman, clientManager, validator)
+    clientActions = new ClientActions(new Logger('ClientActions'), configurator, certManager, helper, responseMsg, amtwsman, validator)
     activationmsg = {
       method: 'activation',
       apiKey: 'key',
@@ -90,7 +89,7 @@ describe('Client Actions', () => {
     }
     let rpsError
     const clientId = uuid()
-    clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: activationmsg })
+    devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: activationmsg }
     try {
       await clientActions.buildResponseMessage(clientMsg, clientId)
     } catch (error) {
@@ -111,11 +110,9 @@ describe('Client Actions', () => {
     }
     let rpsError
     const clientId = uuid()
-    clientManager.addClient({ ClientId: clientId, ClientSocket: null, ClientData: activationmsg, action: ClientAction.INVALID })
+    devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: activationmsg, action: ClientAction.INVALID }
 
-    const clientObj = clientManager.getClientObject(clientId)
-    clientObj.uuid = activationmsg.payload.uuid
-    clientManager.setClientObject(clientObj)
+    devices[clientId].uuid = activationmsg.payload.uuid
 
     try {
       await clientActions.buildResponseMessage(clientMsg, clientId)

@@ -10,7 +10,6 @@ import { ILogger } from '../interfaces/ILogger'
 import { ClientMsg, ClientObject } from '../models/RCS.Config'
 import { ClientResponseMsg } from '../utils/ClientResponseMsg'
 import { WSManProcessor } from '../WSManProcessor'
-import { IClientManager } from '../interfaces/IClientManager'
 import { RPSError } from '../utils/RPSError'
 import { IConfigurator } from '../interfaces/IConfigurator'
 import { EnvReader } from '../utils/EnvReader'
@@ -18,13 +17,13 @@ import got from 'got'
 import { MqttProvider } from '../utils/MqttProvider'
 import { HttpHandler } from '../HttpHandler'
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
+import { devices } from '../WebSocketListener'
 export class Deactivator implements IExecutor {
   amt: AMT.Messages
   constructor (
     private readonly logger: ILogger,
     private readonly responseMsg: ClientResponseMsg,
     private readonly amtwsman: WSManProcessor,
-    private readonly clientManager: IClientManager,
     readonly configurator?: IConfigurator
   ) {
     this.amt = new AMT.Messages()
@@ -39,7 +38,7 @@ export class Deactivator implements IExecutor {
   async execute (message: any, clientId: string, httpHandler?: HttpHandler): Promise<ClientMsg> {
     let clientObj: ClientObject
     try {
-      clientObj = this.clientManager.getClientObject(clientId)
+      clientObj = devices[clientId]
 
       const wsmanResponse = message.payload
 

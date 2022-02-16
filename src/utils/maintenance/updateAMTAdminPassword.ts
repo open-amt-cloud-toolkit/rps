@@ -1,6 +1,10 @@
+/*********************************************************************
+ * Copyright (c) Intel Corporation 2022
+ * SPDX-License-Identifier: Apache-2.0
+ **********************************************************************/
+
 import got from 'got'
 import { HttpHandler } from '../../HttpHandler'
-import { IClientManager } from '../../interfaces/IClientManager'
 import { IConfigurator } from '../../interfaces/IConfigurator'
 import { IValidator } from '../../interfaces/IValidator'
 import Logger from '../../Logger'
@@ -13,12 +17,13 @@ import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 import { parseBody } from '../parseWSManResponseBody'
 import { ClientResponseMsg } from '../ClientResponseMsg'
 import { ClientMsg } from '../../models/RCS.Config'
+import { devices } from '../../WebSocketListener'
 
 const amt = new AMT.Messages()
 
-export const updateAMTAdminPassword = async (clientId: string, message: any, responseMsg: ClientResponseMsg, clientManager: IClientManager, configurator: IConfigurator, validator: IValidator, httpHandler: HttpHandler): Promise<ClientMsg> => {
+export const updateAMTAdminPassword = async (clientId: string, message: any, responseMsg: ClientResponseMsg, configurator: IConfigurator, validator: IValidator, httpHandler: HttpHandler): Promise<ClientMsg> => {
   const logger = new Logger('updateAMTAdminPassword')
-  const clientObj = clientManager.getClientObject(clientId)
+  const clientObj = devices[clientId]
   switch (message.statusCode) {
     case 401: {
       const xmlRequestBody = amt.GeneralSettings(AMT.Methods.GET, (clientObj.messageId++).toString())
@@ -49,7 +54,6 @@ export const updateAMTAdminPassword = async (clientId: string, message: any, res
           clientObj.amtPassword = amtPassword
           clientObj.ClientData.payload.digestRealm = digestRealm
           clientObj.hostname = clientObj.ClientData.payload.hostname
-          clientManager.setClientObject(clientObj)
           try {
             const amtDevice = {
               guid: clientObj.uuid,
