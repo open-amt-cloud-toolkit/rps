@@ -44,7 +44,7 @@
   "dependencies": {
     "@open-amt-cloud-toolkit/wsman-messages": "^1.5.0",
     "atob": "^2.1.2",
-    "body-parser": "^1.19.1",
+    "body-parser": "^1.19.2",
     "cors": "^2.8.5",
     "crypto-random-string": "^3.3.1",
     "dot-object": "^2.1.4",
@@ -54,7 +54,7 @@
     "express-ws": "^5.0.2",
     "got": "^11.8.3",
     "minimist": "^1.2.5",
-    "mqtt": "^4.3.4",
+    "mqtt": "^4.3.5",
     "node-forge": "^1.0.0",
     "node-vault": "^0.9.22",
     "pg": "^8.7.3",
@@ -62,7 +62,7 @@
     "http-z": "^6.1.2",
     "rc": "^1.2.8",
     "request": "^2.88.2",
-    "winston": "^3.5.1",
+    "winston": "^3.6.0",
     "ws": "^8.5.0",
     "xml2js": "^0.4.23"
   },
