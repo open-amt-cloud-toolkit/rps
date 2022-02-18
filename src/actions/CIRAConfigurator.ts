@@ -7,28 +7,31 @@
 
 import { IExecutor } from '../interfaces/IExecutor'
 import { ILogger } from '../interfaces/ILogger'
-import { mpsServer, ClientObject, CIRAConfig, ClientAction } from '../models/RCS.Config'
+import { mpsServer, ClientObject, CIRAConfig, ClientAction, ClientMsg } from '../models/RCS.Config'
 import { ClientResponseMsg } from '../utils/ClientResponseMsg'
-import { WSManProcessor } from '../WSManProcessor'
 import { RPSError } from '../utils/RPSError'
-import { mpsserver } from '../utils/constants'
 import { IConfigurator } from '../interfaces/IConfigurator'
-import { AMTUserName } from './../utils/constants'
 import { EnvReader } from '../utils/EnvReader'
 import got from 'got'
 import { MqttProvider } from '../utils/MqttProvider'
 import { TLSConfigurator } from './TLSConfigurator'
 import { randomUUID } from 'crypto'
 import { devices } from '../WebSocketListener'
-
+import { HttpHandler } from '../HttpHandler'
+import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
+import { parseBody } from '../utils/parseWSManResponseBody'
 export class CIRAConfigurator implements IExecutor {
+  amt: AMT.Messages
+  httpHandler: HttpHandler
   constructor (
     private readonly logger: ILogger,
     private readonly configurator: IConfigurator,
     private readonly responseMsg: ClientResponseMsg,
-    private readonly amtwsman: WSManProcessor,
     private readonly tlsConfigurator: TLSConfigurator
-  ) { }
+  ) {
+    this.amt = new AMT.Messages()
+    this.httpHandler = new HttpHandler()
+  }
 
   /**
      * @description configure CIRA
@@ -40,102 +43,34 @@ export class CIRAConfigurator implements IExecutor {
     let clientObj: ClientObject
     try {
       clientObj = devices[clientId]
-      const ciraConfig = clientObj.ciraconfig
-      if (message?.payload != null || !ciraConfig.policyRuleUserInitiate) {
-        await this.delete(clientId, message)
-        const wsmanResponse = message.payload
-        if (clientObj.ClientData.payload.profile.ciraConfigName && ciraConfig.setENVSettingData) {
-          // Add trusted root certificate and MPS server
-          if (ciraConfig.mpsRemoteSAPDelete && !ciraConfig.addTrustedRootCert) {
-            ciraConfig.addTrustedRootCert = true
-            const configScript: CIRAConfig = clientObj.ClientData.payload.profile.ciraConfigObject
-            await this.amtwsman.execute(clientId, 'AMT_PublicKeyManagementService', 'AddTrustedRootCertificate', { CertificateBlob: configScript.mpsRootCertificate }, null, AMTUserName, clientObj.ClientData.payload.password)
-          } else if (ciraConfig.addTrustedRootCert && !ciraConfig.addMPSServer) {
-            this.logger.debug(`${clientObj.uuid}  Adding trusted root certificate.`)
-            ciraConfig.addMPSServer = true
-
-            await this.setMPSPassword(clientId)
-
-            const configScript: CIRAConfig = clientObj.ClientData.payload.profile.ciraConfigObject
-            const server: mpsServer = {
-              AccessInfo: configScript.mpsServerAddress,
-              InfoFormat: configScript.serverAddressFormat,
-              Port: configScript.mpsPort,
-              AuthMethod: configScript.authMethod,
-              Username: clientObj.mpsUsername,
-              Password: clientObj.mpsPassword
-            }
-            if (configScript.serverAddressFormat === 3 && configScript.commonName) {
-              server.CN = configScript.commonName
-            }
-            await this.amtwsman.execute(clientId, 'AMT_RemoteAccessService', 'AddMpServer', server, null, AMTUserName, clientObj.ClientData.payload.password)
-          } else if (ciraConfig.addMPSServer && !ciraConfig.mpsRemoteSAP) {
-            ciraConfig.mpsRemoteSAP = true
-            if (wsmanResponse.Body && wsmanResponse.Body.ReturnValueStr === 'SUCCESS') {
-              MqttProvider.publishEvent('success', ['CIRAConfigurator'], 'Management Presence Server (MPS) successfully added', clientObj.uuid)
-              this.logger.debug(`${clientObj.uuid}  Management Presence Server (MPS) successfully added.`)
-              await this.amtwsman.batchEnum(clientId, 'AMT_ManagementPresenceRemoteSAP', AMTUserName, clientObj.ClientData.payload.uuid)
-            } else {
-              MqttProvider.publishEvent('fail', ['CIRAConfigurator'], 'Failed to add Management Presence Server', clientObj.uuid)
-              this.logger.error('AMT_ManagementPresenceRemoteSAP')
-              throw new RPSError(`Device ${clientObj.uuid} Failed to add Management Presence Server.`)
-            }
-          } else if (!ciraConfig.addRemoteAccessPolicyRule && ciraConfig.addMPSServer) {
-            const result = wsmanResponse.AMT_ManagementPresenceRemoteSAP
-            if (result) {
-              if (result?.responses?.length > 0) {
-                // TBD: Check when there are more than one MPS added to system.
-                const name = wsmanResponse.AMT_ManagementPresenceRemoteSAP.responses[0].Name
-                this.logger.debug(`${clientObj.uuid} : Management Presence Server (MPS) exists.`)
-                const policy = {
-                  Trigger: 2, // 2 – Periodic
-                  TunnelLifeTime: 0, // 0 means that the tunnel should stay open until it is closed
-                  ExtendedData: 'AAAAAAAAABk=', // Equals to 25 seconds in base 64 with network order.
-                  MpServer: mpsserver(name)
-                }
-                ciraConfig.addRemoteAccessPolicyRule = true
-                await this.amtwsman.execute(clientId, 'AMT_RemoteAccessService', 'AddRemoteAccessPolicyRule', policy, null, AMTUserName, clientObj.ClientData.payload.password)
-              } else {
-                MqttProvider.publishEvent('fail', ['CIRAConfigurator'], 'Failed to add Management Presence Server', clientObj.uuid)
-                this.logger.error('AMT_RemoteAccessService')
-                throw new RPSError(`Device ${clientObj.uuid} Failed to add Management Presence Server.`)
-              }
-            }
-          } else if (!ciraConfig.userInitConnectionService && ciraConfig.addRemoteAccessPolicyRule) {
-            ciraConfig.userInitConnectionService = true
-            await this.amtwsman.execute(clientId, 'AMT_UserInitiatedConnectionService', 'RequestStateChange', { RequestedState: 32771 }, null, AMTUserName, clientObj.ClientData.payload.password)
-          } else if (ciraConfig.userInitConnectionService && !ciraConfig.getENVSettingDataCIRA) {
-            ciraConfig.getENVSettingDataCIRA = true
-            await this.amtwsman.batchEnum(clientId, '*AMT_EnvironmentDetectionSettingData', AMTUserName, clientObj.ClientData.payload.uuid)
-          } else if (ciraConfig.getENVSettingData && !ciraConfig.setENVSettingDataCIRA) {
-            const envSettings = wsmanResponse.AMT_EnvironmentDetectionSettingData.response
-            this.logger.debug(`Environment settings : ${JSON.stringify(envSettings, null, '\t')}`)
-            if (EnvReader.GlobalEnvConfig.disableCIRADomainName?.toLowerCase() !== '') {
-              envSettings.DetectionStrings = EnvReader.GlobalEnvConfig.disableCIRADomainName // this can be whatever.com
-            } else {
-              envSettings.DetectionStrings = `${randomUUID()}.com`
-            }
-            ciraConfig.setENVSettingDataCIRA = true
-            await this.amtwsman.put(clientId, 'AMT_EnvironmentDetectionSettingData', envSettings, AMTUserName, clientObj.ClientData.payload.password)
-          } else if (ciraConfig.setENVSettingDataCIRA) {
-            clientObj.status.CIRAConnection = 'Configured'
-            MqttProvider.publishEvent('success', ['CIRAConfigurator'], 'CIRA Configured', clientObj.uuid)
-            //  TBD: Need to refactor this repetitive code
-            if (clientObj.ClientData.payload.profile.tlsCerts != null && clientObj.ClientData.payload.profile.tlsCerts != null) {
-              clientObj.action = ClientAction.TLSCONFIG
-              await this.tlsConfigurator.execute(message, clientId)
-            } else {
-              return this.responseMsg.get(clientId, null, 'success', 'success', JSON.stringify(clientObj.status))
-            }
-          }
-        } else if (ciraConfig.setENVSettingData) {
-          MqttProvider.publishEvent('success', ['CIRAConfigurator'], 'CIRA Configured', clientObj.uuid)
-          if (clientObj.ClientData.payload.profile.tlsCerts != null && clientObj.ClientData.payload.profile.tlsCerts != null) {
-            clientObj.action = ClientAction.TLSCONFIG
-            await this.tlsConfigurator.execute(message, clientId)
-          } else {
-            return this.responseMsg.get(clientId, null, 'success', 'success', JSON.stringify(clientObj.status))
-          }
+      // Process the response received from AMT
+      if (message != null) {
+        const msg = await this.processWSManJsonResponse(message, clientId)
+        if (msg) {
+          return msg
+        }
+      }
+      // Delete existing CIRA Config
+      const msg = this.removeRemoteAccessPolicyRule(clientId, clientObj)
+      if (msg) {
+        return msg
+      }
+      // Configure
+      if (clientObj.ClientData.payload.profile.ciraConfigName && clientObj.ciraconfig.setENVSettingData) {
+        // Add trusted root certificate and MPS server
+        if (!clientObj.ciraconfig.addTrustedRootCert) {
+          const configScript: CIRAConfig = clientObj.ClientData.payload.profile.ciraConfigObject
+          const xmlRequestBody = this.amt.PublicKeyManagementService(AMT.Methods.ADD_TRUSTED_ROOT_CERTIFICATE, (clientObj.messageId++).toString(), configScript.mpsRootCertificate)
+          const data = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
+          return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+        }
+      } else if (clientObj.ciraconfig.setENVSettingData) {
+        MqttProvider.publishEvent('success', ['CIRAConfigurator'], 'CIRA Configured', clientObj.uuid)
+        if (clientObj.ClientData.payload.profile.tlsCerts != null) {
+          clientObj.action = ClientAction.TLSCONFIG
+          await this.tlsConfigurator.execute(message, clientId)
+        } else {
+          return this.responseMsg.get(clientId, null, 'success', 'success', JSON.stringify(clientObj.status))
         }
       }
     } catch (error) {
@@ -150,81 +85,281 @@ export class CIRAConfigurator implements IExecutor {
     }
   }
 
-  /**
-     * @description Delete existing CIRA configurations
-     * @param {string} clientId Id to keep track of connections
-     * @param {clientObj} ClientObject keep track of client info and status
-     * @param {any} message valid client message
-     */
-  async delete (clientId: string, message: any): Promise<void> {
+  async processWSManJsonResponse (message: any, clientId: string): Promise<ClientMsg> {
     const clientObj = devices[clientId]
-    const ciraConfig = clientObj.ciraconfig
-    const wsmanResponse: any = message?.payload
-    if (!ciraConfig.policyRuleUserInitiate) {
-      this.logger.debug(`Deleting CIRA Configuration for device ${clientObj.ClientData.payload.uuid}`)
-      ciraConfig.policyRuleUserInitiate = true
-      await this.amtwsman.delete(clientId, 'AMT_RemoteAccessPolicyRule', { PolicyRuleName: 'User Initiated' }, AMTUserName, clientObj.ClientData.payload.password)
-    } else if (!ciraConfig.policyRuleAlert) {
-      ciraConfig.policyRuleAlert = true
-      await this.amtwsman.delete(clientId, 'AMT_RemoteAccessPolicyRule', { PolicyRuleName: 'Alert' }, AMTUserName)
-    } else if (!ciraConfig.policyRulePeriodic) {
-      ciraConfig.policyRulePeriodic = true
-      await this.amtwsman.delete(clientId, 'AMT_RemoteAccessPolicyRule', { PolicyRuleName: 'Periodic' }, AMTUserName)
-    } else if (!ciraConfig.mpsRemoteSAPEnumerate) {
-      this.logger.debug(`${clientObj.uuid}: All policies are removed successfully.`)
-      ciraConfig.mpsRemoteSAPEnumerate = true
-      await this.amtwsman.batchEnum(clientId, 'AMT_ManagementPresenceRemoteSAP')
-    } else if (!ciraConfig.mpsRemoteSAPDelete && wsmanResponse?.AMT_ManagementPresenceRemoteSAP) {
-      ciraConfig.mpsRemoteSAPDelete = true
-      let selector: any
-      if (wsmanResponse?.AMT_ManagementPresenceRemoteSAP.responses.length > 0) {
-        const name = wsmanResponse.AMT_ManagementPresenceRemoteSAP.responses[0].Name
-        selector = { Name: name }
-        this.logger.debug(`MPS Name : ${name},  selector : ${JSON.stringify(selector, null, '\t')}`)
-        await this.amtwsman.delete(clientId, 'AMT_ManagementPresenceRemoteSAP', selector, AMTUserName)
-        return
+    const wsmanResponse = message.payload
+    switch (wsmanResponse.statusCode) {
+      case 401: {
+        const xmlRequestBody = this.amt.RemoteAccessPolicyRule(AMT.Methods.DELETE, (clientObj.messageId++).toString(), { name: 'PolicyRuleName', value: 'User Initiated' })
+        const data = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
+        return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
       }
-    }
-    // Deletes all the public certificates if exists
-    if (ciraConfig.mpsRemoteSAPDelete && !ciraConfig.mpsRemoteSAPGet) {
-      ciraConfig.mpsRemoteSAPGet = true
-      await this.amtwsman.batchEnum(clientId, 'AMT_PublicKeyCertificate')
-    } else if (ciraConfig.mpsRemoteSAPGet && !ciraConfig.mpsPublicCertDelete) {
-      if (ciraConfig.publicCerts == null) {
-        ciraConfig.publicCerts = wsmanResponse?.AMT_PublicKeyCertificate.responses
+      case 200: {
+        const xmlBody = parseBody(wsmanResponse)
+        // pares WSMan xml response to json
+        const response = this.httpHandler.parseXML(xmlBody)
+        const method = response.Envelope.Header.ResourceURI.split('/').pop()
+        switch (method) {
+          case 'AMT_RemoteAccessPolicyRule': {
+            return this.validateRemoteAccessPolicyRule(clientId, clientObj, response)
+          }
+          case 'AMT_ManagementPresenceRemoteSAP': {
+            return this.validateManagementPresenceRemoteSAP(clientId, clientObj, response)
+          }
+          case 'AMT_PublicKeyCertificate': {
+            return this.validatePublicKeyCertificate(clientId, clientObj, response)
+          }
+          case 'AMT_EnvironmentDetectionSettingData': {
+            return await this.ValidateEnvironmentDetectionSettingData(clientId, clientObj, response)
+          }
+          case 'AMT_PublicKeyManagementService': {
+            return await this.ValidatePublicKeyManagementService(clientId, clientObj, response)
+          }
+          case 'AMT_RemoteAccessService': {
+            return this.ValidateRemoteAccessService(clientId, clientObj, response)
+          }
+          case 'AMT_UserInitiatedConnectionService': {
+            return this.ValidateUserInitiatedConnectionService(clientId, clientObj, response)
+          }
+        }
+        break
       }
-      if (ciraConfig.publicCerts?.length > 0) {
-        const cert = ciraConfig.publicCerts[ciraConfig.publicCerts.length - 1]
-        ciraConfig.publicCerts.pop()
-        await this.amtwsman.delete(clientId, 'AMT_PublicKeyCertificate', cert, AMTUserName)
-      } else {
-        ciraConfig.mpsPublicCertDelete = true
+      case 400: {
+        const msg = this.removeRemoteAccessPolicyRule(clientId, clientObj)
+        if (msg == null) {
+          const xmlRequestBody = this.amt.ManagementPresenceRemoteSAP(AMT.Methods.ENUMERATE, (clientObj.messageId++).toString())
+          const data = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
+          return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+        } else {
+          return msg
+        }
       }
-    }
-    // Max five domain suffix can be added. Deletes all the domain suffixes for now.
-    if (ciraConfig.mpsPublicCertDelete && !ciraConfig.getENVSettingData) {
-      ciraConfig.getENVSettingData = true
-      await this.amtwsman.batchEnum(clientId, '*AMT_EnvironmentDetectionSettingData', AMTUserName)
-    } else if (ciraConfig.getENVSettingData && !ciraConfig.setENVSettingData) {
-      if (wsmanResponse.AMT_EnvironmentDetectionSettingData?.response?.DetectionStrings != null) {
-        const envSettings = wsmanResponse.AMT_EnvironmentDetectionSettingData.response
-        envSettings.DetectionStrings = []
-        await this.amtwsman.put(clientId, 'AMT_EnvironmentDetectionSettingData', envSettings, AMTUserName)
-      } else {
-        ciraConfig.setENVSettingData = true
-        clientObj.status.CIRAConnection = 'Unconfigured'
-        this.logger.debug(`${clientObj.uuid} Deleted existing CIRA Configuration.`)
+      default: {
+        return null
       }
     }
   }
 
-  /**
-   * @description Set MPS password for the AMT
-   * @param {ClientObject} clientObj
-   */
-  async setMPSPassword (clientId: string): Promise<void> {
-    this.logger.debug('setting MPS password')
-    const clientObj = devices[clientId]
+  removeRemoteAccessPolicyRule (clientId: string, clientObj: ClientObject): ClientMsg {
+    if (clientObj.ciraconfig.policyRuleUserInitiate && clientObj.ciraconfig.policyRuleAlert && clientObj.ciraconfig.policyRulePeriodic) {
+      return null
+    }
+    const selector = { name: 'PolicyRuleName', value: '' }
+    if (!clientObj.ciraconfig.policyRuleUserInitiate) {
+      this.logger.debug(`Deleting CIRA Configuration for device ${clientObj.ClientData.payload.uuid}`)
+      clientObj.ciraconfig.policyRuleUserInitiate = true
+      selector.value = 'User Initiated'
+    } else if (clientObj.ciraconfig.policyRuleUserInitiate && !clientObj.ciraconfig.policyRuleAlert) {
+      clientObj.ciraconfig.policyRuleAlert = true
+      selector.value = 'Alert'
+    } else if (clientObj.ciraconfig.policyRuleAlert && !clientObj.ciraconfig.policyRulePeriodic) {
+      clientObj.ciraconfig.policyRulePeriodic = true
+      selector.value = 'Periodic'
+    }
+    const xmlRequestBody = this.amt.RemoteAccessPolicyRule(AMT.Methods.DELETE, (clientObj.messageId++).toString(), selector)
+    const data = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
+    return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+  }
+
+  ValidateUserInitiatedConnectionService (clientId: string, clientObj: ClientObject, response: any): ClientMsg {
+    let xmlRequestBody = null
+    let data = null
+    const action = response.Envelope.Header.Action.split('/').pop()
+    switch (action) {
+      case 'RequestStateChangeResponse': {
+        if (response.Envelope.Body?.RequestStateChange_OUTPUT?.ReturnValue !== 0) {
+          throw new RPSError(`Device ${clientObj.uuid} failed to update User Initiated Connection Service.`)
+        }
+        xmlRequestBody = this.amt.EnvironmentDetectionSettingData(AMT.Methods.GET, (clientObj.messageId++).toString())
+        clientObj.ciraconfig.userInitConnectionService = true
+        break
+      }
+    }
+    data = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
+    return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+  }
+
+  validateRemoteAccessPolicyRule (clientId: string, clientObj: ClientObject, response: any): ClientMsg {
+    let xmlRequestBody = null
+    let data = null
+    const action = response.Envelope.Header.Action.split('/').pop()
+    switch (action) {
+      case 'DeleteResponse': {
+        xmlRequestBody = this.amt.ManagementPresenceRemoteSAP(AMT.Methods.ENUMERATE, (clientObj.messageId++).toString())
+        break
+      }
+    }
+    data = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
+    return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+  }
+
+  validateManagementPresenceRemoteSAP (clientId: string, clientObj: ClientObject, response: any): ClientMsg {
+    let xmlRequestBody = null
+    let data = null
+    const action = response.Envelope.Header.Action.split('/').pop()
+    switch (action) {
+      case 'EnumerateResponse': {
+        xmlRequestBody = this.amt.ManagementPresenceRemoteSAP(AMT.Methods.PULL, (clientObj.messageId++).toString(), response.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+        break
+      }
+      case 'PullResponse': {
+        // To Do: Need to repeat the process for multiple MPS servers.
+        if (response.Envelope.Body.PullResponse.Items?.AMT_ManagementPresenceRemoteSAP != null) {
+          const selector = { name: 'Name', value: response.Envelope.Body.PullResponse.Items.AMT_ManagementPresenceRemoteSAP.Name }
+          if (clientObj.ciraconfig.addRemoteAccessPolicyRule) {
+            const policy = {
+              Trigger: 2, // 2 – Periodic
+              TunnelLifeTime: 0, // 0 means that the tunnel should stay open until it is closed
+              ExtendedData: 'AAAAAAAAABk=' // Equals to 25 seconds in base 64 with network order.
+            }
+            xmlRequestBody = this.amt.RemoteAccessService(AMT.Methods.ADD_REMOTE_ACCESS_POLICY_RULE, (clientObj.messageId++).toString(), null, policy, selector)
+          } else {
+            this.logger.debug(`MPS: ${JSON.stringify(selector, null, '\t')}`)
+            xmlRequestBody = this.amt.ManagementPresenceRemoteSAP(AMT.Methods.DELETE, (clientObj.messageId++).toString(), null, selector)
+          }
+        } else {
+          xmlRequestBody = this.amt.PublicKeyCertificate(AMT.Methods.ENUMERATE, (clientObj.messageId++).toString())
+        }
+        break
+      }
+      case 'DeleteResponse': {
+        xmlRequestBody = this.amt.PublicKeyCertificate(AMT.Methods.ENUMERATE, (clientObj.messageId++).toString())
+        break
+      }
+    }
+    data = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
+    return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+  }
+
+  validatePublicKeyCertificate (clientId: string, clientObj: ClientObject, response: any): ClientMsg {
+    const action = response.Envelope.Header.Action.split('/').pop()
+    let xmlRequestBody = null
+    let data = null
+    switch (action) {
+      case 'EnumerateResponse': {
+        xmlRequestBody = this.amt.PublicKeyCertificate(AMT.Methods.PULL, (clientObj.messageId++).toString(), response.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+        break
+      }
+      case 'PullResponse': {
+        if (response.Envelope.Body.PullResponse.Items?.AMT_PublicKeyCertificate != null) {
+          this.logger.debug(`Public Key Certificate InstanceID : ${response.Envelope.Body.PullResponse.Items.AMT_PublicKeyCertificate.InstanceID}`)
+          const selector = { name: 'InstanceID', value: response.Envelope.Body.PullResponse.Items.AMT_PublicKeyCertificate.InstanceID }
+          xmlRequestBody = this.amt.PublicKeyCertificate(AMT.Methods.DELETE, (clientObj.messageId++).toString(), null, selector)
+        } else {
+          xmlRequestBody = this.amt.EnvironmentDetectionSettingData(AMT.Methods.GET, (clientObj.messageId++).toString())
+        }
+        break
+      }
+      case 'DeleteResponse': {
+        xmlRequestBody = this.amt.EnvironmentDetectionSettingData(AMT.Methods.GET, (clientObj.messageId++).toString())
+        break
+      }
+    }
+    data = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
+    return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+  }
+
+  async ValidateEnvironmentDetectionSettingData (clientId: string, clientObj: ClientObject, response: any): Promise<ClientMsg> {
+    const action = response.Envelope.Header.Action.split('/').pop()
+    let xmlRequestBody = null
+    let data = null
+    switch (action) {
+      case 'GetResponse': {
+        const envSettings = response.Envelope.Body.AMT_EnvironmentDetectionSettingData
+        if (clientObj.ciraconfig.userInitConnectionService) {
+          if (EnvReader.GlobalEnvConfig.disableCIRADomainName?.toLowerCase() !== '') {
+            envSettings.DetectionStrings = [EnvReader.GlobalEnvConfig.disableCIRADomainName]
+          } else {
+            envSettings.DetectionStrings = [`${randomUUID()}.com`]
+          }
+          clientObj.ciraconfig.setENVSettingDataCIRA = true
+          xmlRequestBody = this.amt.EnvironmentDetectionSettingData(AMT.Methods.PUT, (clientObj.messageId++).toString(), envSettings)
+          data = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
+          return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+        }
+        if (envSettings.DetectionStrings != null && !clientObj.ciraconfig.userInitConnectionService) {
+          envSettings.DetectionStrings = []
+          clientObj.ciraconfig.setENVSettingData = true
+          xmlRequestBody = this.amt.EnvironmentDetectionSettingData(AMT.Methods.PUT, (clientObj.messageId++).toString(), envSettings)
+          data = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
+          return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+        }
+        clientObj.ciraconfig.setENVSettingData = true
+        return null
+      }
+      case 'PutResponse': {
+        if (clientObj.ciraconfig.setENVSettingData && !clientObj.ciraconfig.setENVSettingDataCIRA) {
+          clientObj.status.CIRAConnection = 'Unconfigured'
+          this.logger.debug(`${clientObj.uuid} Deleted existing CIRA Configuration.`)
+        }
+        if (clientObj.ciraconfig.setENVSettingDataCIRA) {
+          clientObj.status.CIRAConnection = 'Configured'
+          MqttProvider.publishEvent('success', ['CIRAConfigurator'], 'CIRA Configured', clientObj.uuid)
+          if (clientObj.ClientData.payload.profile.tlsCerts != null && clientObj.ClientData.payload.profile.tlsCerts != null) {
+            clientObj.action = ClientAction.TLSCONFIG
+            await this.tlsConfigurator.execute(null, clientId)
+          } else {
+            return this.responseMsg.get(clientId, null, 'success', 'success', JSON.stringify(clientObj.status))
+          }
+        }
+        break
+      }
+    }
+    return null
+  }
+
+  async ValidatePublicKeyManagementService (clientId: string, clientObj: ClientObject, response: any): Promise<ClientMsg> {
+    if (response.Envelope.Body.AddTrustedRootCertificate_OUTPUT.ReturnValue !== 0) {
+      throw new RPSError(`Device ${clientObj.uuid} failed to add Trusted Root Certificate.`)
+    }
+    clientObj.ciraconfig.addTrustedRootCert = true
+    this.logger.debug(`${clientObj.uuid} Added Trusted Root Certificate.`)
+    await this.setMPSPasswordInVault(clientObj)
+    await this.saveDeviceInfoToMPS(clientId)
+    // Add MPS Server
+    const configScript: CIRAConfig = clientObj.ClientData.payload.profile.ciraConfigObject
+    const server: mpsServer = {
+      AccessInfo: configScript.mpsServerAddress,
+      InfoFormat: configScript.serverAddressFormat,
+      Port: configScript.mpsPort,
+      AuthMethod: configScript.authMethod,
+      Username: clientObj.mpsUsername,
+      Password: clientObj.mpsPassword
+    }
+    if (configScript.serverAddressFormat === 3 && configScript.commonName) {
+      server.CommonName = configScript.commonName
+    }
+    const xmlRequestBody = this.amt.RemoteAccessService(AMT.Methods.ADD_MPS, (clientObj.messageId++).toString(), server)
+    const data = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
+    return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+  }
+
+  ValidateRemoteAccessService (clientId: string, clientObj: ClientObject, response: any): ClientMsg {
+    let xmlRequestBody = null
+    let data = null
+    const action = response.Envelope.Header.Action.split('/').pop()
+    switch (action) {
+      case 'AddMpServerResponse': {
+        if (response.Envelope.Body.AddMpServer_OUTPUT.ReturnValue !== 0) {
+          throw new RPSError(`Device ${clientObj.uuid} failed to add MPS server.`)
+        }
+        clientObj.ciraconfig.addRemoteAccessPolicyRule = true
+        xmlRequestBody = this.amt.ManagementPresenceRemoteSAP(AMT.Methods.ENUMERATE, (clientObj.messageId++).toString())
+        break
+      }
+      case 'AddRemoteAccessPolicyRuleResponse': {
+        if (response.Envelope.Body.AddRemoteAccessPolicyRule_OUTPUT.ReturnValue !== 0) {
+          throw new RPSError(`Device ${clientObj.uuid} failed to add access policy rule.`)
+        }
+        xmlRequestBody = this.amt.UserInitiatedConnectionService(AMT.Methods.REQUEST_STATE_CHANGE, (clientObj.messageId++).toString(), 32771)
+        break
+      }
+    }
+    data = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
+    return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+  }
+
+  async setMPSPasswordInVault (clientObj: ClientObject): Promise<void> {
     clientObj.mpsUsername = await (await this.configurator.profileManager.getCiraConfiguration(clientObj.ClientData.payload.profile.profileName))?.username
     clientObj.mpsPassword = await this.configurator.profileManager.getMPSPassword(clientObj.ClientData.payload.profile.profileName)
 
@@ -249,7 +384,15 @@ export class CIRAConfigurator implements IExecutor {
         this.logger.error(`failed to insert record guid: ${clientObj.uuid}, error: ${JSON.stringify(error)}`)
         throw new RPSError('Exception writing to vault')
       }
+    } else {
+      MqttProvider.publishEvent('fail', ['CIRAConfigurator'], 'mpsUsername or mpsPassword is null', clientObj.uuid)
+      throw new RPSError('setMPSPassword: mpsUsername or mpsPassword is null')
+    }
+  }
 
+  async saveDeviceInfoToMPS (clientId: string): Promise<boolean> {
+    const clientObj = devices[clientId]
+    if (clientObj.mpsUsername && clientObj.mpsPassword) {
       try {
         const profile = await this.configurator.profileManager.getAmtProfile(clientObj.ClientData.payload.profile.profileName)
         let tags = []
@@ -266,12 +409,14 @@ export class CIRAConfigurator implements IExecutor {
             tenantId: profile.tenantId
           }
         })
+        return true
       } catch (err) {
         this.logger.error('unable to register metadata with MPS', err)
       }
     } else {
       MqttProvider.publishEvent('fail', ['CIRAConfigurator'], 'mpsUsername or mpsPassword is null', clientObj.uuid)
-      throw new RPSError('setMPSPassword: mpsUsername or mpsPassword is null')
+      throw new RPSError(`Device ${clientObj.uuid} setMPSPassword: mpsUsername or mpsPassword is null`)
     }
+    return false
   }
 }
