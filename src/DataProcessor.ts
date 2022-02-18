@@ -95,8 +95,8 @@ export class DataProcessor implements IDataProcessor {
 
     // Makes the first wsman call
     let clientObj = devices[clientId]
+    clientObj = this.setConnectionParams(clientId)
     if ((clientObj.action === ClientAction.ADMINCTLMODE || clientObj.action === ClientAction.CLIENTCTLMODE) && !clientMsg.payload.digestRealm && !clientObj.activationStatus.missingMebxPassword) {
-      clientObj = this.setConnectionParams(clientId)
       const xmlRequestBody = this.amt.GeneralSettings(AMT.Methods.GET, (clientObj.messageId++).toString())
       const data = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
       return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')

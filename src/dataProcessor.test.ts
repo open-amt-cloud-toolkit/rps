@@ -406,7 +406,7 @@ describe('activate Device', () => {
     VersionChecker.setCurrentVersion('4.0.0')
     const responseMsg = await dataProcessor.activateDevice(clientMsg, clientId)
     expect(validatorSpy).toHaveBeenCalled()
-    expect(responseMsg.method).toContain('success')
+    expect(responseMsg.method).toContain('wsman')
   })
   it('try activate in ccm with digestRealm', async () => {
     const clientData = {
