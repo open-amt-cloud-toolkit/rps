@@ -62,7 +62,6 @@ export interface CertCreationResult {
 export interface CertsAndKeys {
   certs: pki.Certificate[]
   keys: pki.PrivateKey[]
-  errorText?: string
 }
 export interface CertificateObject {
   pem: string

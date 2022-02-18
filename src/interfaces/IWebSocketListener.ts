@@ -5,11 +5,12 @@
  **********************************************************************/
 
 import * as WebSocket from 'ws'
+import { ClientMsg } from '../models/RCS.Config'
 
 export interface IWebSocketListener{
   onClientConnected: (ws: WebSocket) => void
   onClientDisconnected: (clientId: string) => void
   onMessageReceived: (message: WebSocket.Data, clientId: string) => void
   onError: (error: Error, clientId: string) => void
-  onSendMessage: (message: string, clientId: string) => void
+  onSendMessage: (message: ClientMsg, clientId: string) => void
 }

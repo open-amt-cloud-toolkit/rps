@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 import { WebSocketConfig, ClientMsg } from './models/RCS.Config'
-import { WebSocketListener } from './WebSocketListener'
+import { devices, WebSocketListener } from './WebSocketListener'
 import Logger from './Logger'
 import { ILogger } from './interfaces/ILogger'
 import * as WebSocket from 'ws'
@@ -12,55 +12,63 @@ const wsConfig: WebSocketConfig = {
   WebSocketPort: 8080
 }
 
-const log: ILogger = new Logger('WebSocketListener')
-let server: WebSocketListener
-let isConnect: boolean
-
-describe('Check Websocket Listener', () => {
-  it('Should start WebSocket server', async () => {
+describe('Websocket Listener', () => {
+  const log: ILogger = new Logger('WebSocketListener')
+  let server: WebSocketListener
+  let isConnected: boolean
+  let onSpy: jest.SpyInstance
+  beforeEach(() => {
     const stub = {
       processData: jest.fn()
     }
+    const serverStub = {
+      on: jest.fn()
+    } as any
+    onSpy = jest.spyOn(serverStub, 'on')
+    jest.spyOn(WebSocket, 'Server').mockReturnValue(serverStub)
     server = new WebSocketListener(log, wsConfig, stub)
-    isConnect = await server.connect()
-    expect(isConnect).toEqual(true)
   })
-})
+  it('should start WebSocket server', () => {
+    isConnected = server.connect()
+    expect(isConnected).toEqual(true)
+  })
 
-describe('connect method', () => {
-  it('webserver client connection exception handling ', () => {
-    const stub = {
-      processData: jest.fn()
-    }
-    const server1: WebSocketListener = new WebSocketListener(log, wsConfig, stub)
+  it('should NOT start WebSocket server when exception ', () => {
     jest.spyOn(WebSocket, 'Server').mockReturnValue(null)
-    const on = jest.spyOn(server.wsServer, 'on')
-    const ret = server1.connect()
-    expect(on).toHaveBeenCalledTimes(0)
+    const ret = server.connect()
+    expect(onSpy).toHaveBeenCalledTimes(0)
     expect(ret).toEqual(false)
   })
-})
 
-describe('onClientDisconnected method', () => {
-  it('remove Client on close event of WebSocket Server', async () => {
+  it('Should remove client from devices on disconnect', async () => {
     const clientid = 'abcd'
+    devices[clientid] = {} as any
     await server.onClientDisconnected(clientid)
+    expect(devices[clientid]).toBeUndefined()
   })
-})
 
-describe('onError method', () => {
-  it('Test onError on error event of WebSocket Server', async () => {
+  it('Should initialize device on connect', async () => {
+    const mockWebSocket = {
+      on: jest.fn()
+    }
+    const webSocketMock = jest.spyOn(mockWebSocket, 'on')
+    await server.onClientConnected(mockWebSocket as any)
+    expect(webSocketMock).toHaveBeenCalledTimes(3)
+    expect(Object.keys(devices).length).toBe(1)
+  })
+
+  it('Should log on error', async () => {
     const clientid = 'abcd'
     const error: Error = {
       name: 'abc',
       message: 'abcd'
     }
+    const loggerSpy = jest.spyOn(server.logger, 'error')
     await server.onError(error, clientid)
+    expect(loggerSpy).toHaveBeenCalled()
   })
-})
 
-describe('onMessageReceived method', () => {
-  it('Check if on message event of WebSocket Server calls onSendMessage', async () => {
+  it('Should process client message and send response', async () => {
     const clientid = 'abcd'
     const clientMsg: ClientMsg = {
       method: 'myMethod',
@@ -72,29 +80,37 @@ describe('onMessageReceived method', () => {
       payload: null
     }
     const onSendMessage = jest.spyOn(server, 'onSendMessage')
-    jest.spyOn(server.dataProcessor, 'processData').mockResolvedValue(clientMsg)
+    const processMessageSpy = jest.spyOn(server.dataProcessor, 'processData').mockResolvedValue(clientMsg)
     const message: WebSocket.Data = 'abcd'
     await server.onMessageReceived(message, clientid)
     expect(onSendMessage).toHaveBeenCalledTimes(1)
+    expect(processMessageSpy).toHaveBeenCalled()
   })
-  it('Check if on message event of WebSocket Server not called onSendMessage when processData return null', async () => {
+  it('Should process client message and not respond when no response to send', async () => {
     const clientid = 'abcd'
     const onSendMessage = jest.spyOn(server, 'onSendMessage')
-    jest.spyOn(server.dataProcessor, 'processData').mockResolvedValue(null)
+    const processMessageSpy = jest.spyOn(server.dataProcessor, 'processData').mockResolvedValue(null)
     const message: WebSocket.Data = 'abcd'
     await server.onMessageReceived(message, clientid)
-    expect(onSendMessage).toHaveBeenCalledTimes(1)
+    expect(processMessageSpy).toHaveBeenCalled()
+    expect(onSendMessage).not.toHaveBeenCalled()
   })
-})
-
-describe('onSendMessage method', () => {
-  it('do not send message if invalid client index', () => {
+  it('Should send message if client is defined in devices list', () => {
     const clientid = 'test'
-    const message: WebSocket.Data = 'test'
+    devices[clientid] = {
+      ClientSocket: {
+        send: jest.fn()
+      }
+    } as any
+    const spy = jest.spyOn(devices[clientid].ClientSocket, 'send')
+    const message: ClientMsg = {} as any
+    server.onSendMessage(message, clientid)
+    expect(spy).toHaveBeenCalled()
+  })
+
+  it('Should NOT send message if client is not defined in devices list', () => {
+    const clientid = 'test'
+    const message: ClientMsg = {} as any
     server.onSendMessage(message, clientid)
   })
-})
-
-afterAll(() => {
-  server.wsServer.close()
 })

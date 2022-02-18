@@ -85,7 +85,7 @@ export class HttpHandler {
 
   parseAuthenticateResponseHeader = (value: string): DigestChallenge => {
     const params = value.replace('Digest realm', 'realm').split(',')
-    const challengeParams = params.reduce((obj: any, s: string) => {
+    const challengeParams = params.reduce((obj: DigestChallenge, s: string) => {
       const parts = s.split('=')
       obj[parts[0].trim()] = parts[1].replace(/"/g, '')
       return obj
@@ -94,7 +94,7 @@ export class HttpHandler {
   }
 
   parseXML (xmlBody: string): any {
-    let wsmanResponse: string
+    let wsmanResponse: any
     this.parser.parseString(xmlBody, (err, result) => {
       if (err) {
         this.logger.error('failed to parse XML :', err)

@@ -7,7 +7,7 @@
 
 import { IExecutor } from '../interfaces/IExecutor'
 import { ILogger } from '../interfaces/ILogger'
-import { mpsServer, ClientObject, CIRAConfig, ClientAction } from '../models/RCS.Config'
+import { mpsServer, ClientObject, CIRAConfig, ClientAction, ClientMsg } from '../models/RCS.Config'
 import { ClientResponseMsg } from '../utils/ClientResponseMsg'
 import { WSManProcessor } from '../WSManProcessor'
 import { RPSError } from '../utils/RPSError'
@@ -36,7 +36,7 @@ export class CIRAConfigurator implements IExecutor {
      * @param {string} clientId Id to keep track of connections
      * @returns {ClientMsg} message to sent to client
      */
-  async execute (message: any, clientId: string): Promise<any> {
+  async execute (message: any, clientId: string): Promise<ClientMsg> {
     let clientObj: ClientObject
     try {
       clientObj = devices[clientId]

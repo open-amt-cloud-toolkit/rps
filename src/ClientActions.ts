@@ -59,7 +59,7 @@ export class ClientActions {
    * @param {any} config
    * @returns {Boolean} Returns response message if action object exists. Returns null if action object does not exists.
    */
-  async buildResponseMessage (message: any, clientId: string, httpHandler?: HttpHandler): Promise<ClientMsg> {
+  async buildResponseMessage (message: ClientMsg, clientId: string, httpHandler?: HttpHandler): Promise<ClientMsg> {
     const clientObj = devices[clientId]
     if (clientObj.action) {
       if (this.actions[clientObj.action]) {

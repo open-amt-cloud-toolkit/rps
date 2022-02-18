@@ -5,7 +5,7 @@
  **********************************************************************/
 import { DigestChallenge } from '@open-amt-cloud-toolkit/wsman-messages/models/common'
 import * as WebSocket from 'ws'
-import { AMTConfiguration, AMTDomain } from '.'
+import { AMTConfiguration, AMTDomain, ProvisioningCertObj } from '.'
 import { AMTEthernetPortSettings } from './WSManResponse'
 
 export interface WebSocketConfig {
@@ -92,15 +92,15 @@ export interface ClientObject {
   socketConn?: SocketConnection
   count?: number
   payload?: any
-  certObj?: any
+  certObj?: ProvisioningCertObj
   readyState?: number
   activationStatus?: ActivationStatus
-  delayEndTime?: any
+  delayEndTime?: number
   amtPassword?: string
   mebxPassword?: string
   ciraconfig?: CIRAConfigFlow
-  nonce?: any
-  signature?: any
+  nonce?: Buffer
+  signature?: string
   mpsUsername?: string
   mpsPassword?: string
   network?: NetworkConfigFlow

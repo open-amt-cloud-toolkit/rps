@@ -89,6 +89,7 @@ beforeAll(() => {
       username: 'admin',
       password: 'P@ssw0rd'
     },
+    uuid: '4c4c4544-004b-4210-8033-b6c04f504633',
     messageId: 1
   }
 })
@@ -162,15 +163,17 @@ const domain = {
 }
 
 describe('GetProvisioningCertObj', () => {
-  test('should return error message if unable to convert pfx to object', async () => {
+  test('should return null if unable to convert pfx to object', async () => {
     const convertPfxToObjectSpy = jest.spyOn(certManager, 'convertPfxToObject').mockImplementation(() => {
-      return { certs: null, keys: null, errorText: 'Decrypting provisioning certificate failed.' }
+      throw new Error('Decrypting provisioning certificate failed.')
     })
     const message = activationmsg
     const password = null
     const result = activator.GetProvisioningCertObj(message, cert, password, clientId)
+    expect(result).toBeNull()
     expect(convertPfxToObjectSpy).toHaveBeenCalled()
-    expect(result.errorText).toBe('Decrypting provisioning certificate failed.')
+
+    // expect(result.errorText).toBe('Decrypting provisioning certificate failed.')
   })
   test('should return null if unable to get provisioning certificate', async () => {
     const message = activationmsg
@@ -205,17 +208,20 @@ describe('createSignedString', () => {
 
     // convert the certificate pfx to an object
     const pfxobj = certManager.convertPfxToObject(cert, 'Intel123!')
-    clientObj.certObj = {}
+    clientObj.certObj = {} as any
     clientObj.certObj.privateKey = pfxobj.keys[0]
     await activator.createSignedString(clientId)
-    expect(clientObj.signature.errorText).toBe(undefined)
+    expect(clientObj.signature).toBeDefined()
+    expect(clientObj.signature).not.toBe('')
   })
   test('should throw error message when certificate is invalid', async () => {
     let rpsError = null
     const clientObj = devices[clientId]
     clientObj.ClientData.payload.fwNonce = PasswordHelper.generateNonce()
     clientObj.nonce = PasswordHelper.generateNonce()
-    const signStringSpy = jest.spyOn(activator.signatureHelper, 'signString').mockImplementation(() => { return { errorText: 'Unable to create Digital Signature' } })
+    const signStringSpy = jest.spyOn(activator.signatureHelper, 'signString').mockImplementation(() => {
+      throw new Error('Unable to create Digital Signature')
+    })
     try {
       await activator.createSignedString(clientId)
     } catch (error) {
@@ -262,11 +268,11 @@ describe('performACMSteps', () => {
     expect(rpsError).toBeInstanceOf(RPSError)
     expect(rpsError.message).toBe(`Device ${clientObj.uuid} activation failed. Provisioning certificate doesn't match any trusted certificates from AMT`)
   })
-  test('should throw error if receive an error when retreiving certificate', async () => {
+  test('should throw error if receive an error when retrieving certificate', async () => {
     let rpsError = null
     let clientObj: ClientObject = null
     const getProvisioningCertObjSpy = jest.spyOn(activator, 'GetProvisioningCertObj').mockImplementation(() => {
-      return { errorText: 'Decrypting provisioning certificate failed.' }
+      return null
     })
     const getProvisioningCertSpy = jest.spyOn(configurator.domainCredentialManager, 'getProvisioningCert').mockImplementation(async () => {
       return domain
@@ -281,13 +287,14 @@ describe('performACMSteps', () => {
     expect(getProvisioningCertSpy).toHaveBeenCalled()
     expect(getProvisioningCertObjSpy).toHaveBeenCalled()
     expect(rpsError).toBeInstanceOf(RPSError)
-    expect(rpsError.message).toBe('Decrypting provisioning certificate failed.')
+    expect(rpsError.message).toBe("Device 4c4c4544-004b-4210-8033-b6c04f504633 activation failed. Provisioning certificate doesn't match any trusted certificates from AMT")
   })
   test('should return wsman message', async () => {
     let clientObj: ClientObject = null
     const getProvisioningCertObjSpy = jest.spyOn(activator, 'GetProvisioningCertObj').mockImplementation(() => {
       return {
-        certChain: ['leaf', 'inter1', 'inter2', 'root']
+        certChain: ['leaf', 'inter1', 'inter2', 'root'],
+        privateKey: '' as any
       }
     })
     const getProvisioningCertSpy = jest.spyOn(configurator.domainCredentialManager, 'getProvisioningCert').mockImplementation(async () => {
@@ -359,7 +366,9 @@ describe('activate device', () => {
   })
   test('should return wsman message for admin control mode activation', async () => {
     const getAMTPasswordSpy = jest.spyOn(configurator.profileManager, 'getAmtPassword').mockImplementation(async () => 'P@ssw0rd')
-    const signStringSpy = jest.spyOn(activator.signatureHelper, 'signString').mockImplementation(() => { return { errorText: undefined } })
+    const signStringSpy = jest.spyOn(activator.signatureHelper, 'signString').mockImplementation(() => {
+      return ''
+    })
     const clientObj = devices[clientId]
     clientObj.uuid = activationmsg.payload.uuid
     clientObj.activationStatus.changePassword = false
@@ -454,7 +463,7 @@ describe('inject Certificate', () => {
   test('should return wsman message when certchain is not null', async () => {
     const clientObj = devices[clientId]
     clientObj.count = 1
-    clientObj.certObj = {}
+    clientObj.certObj = {} as any
     clientObj.certObj.certChain = ['leaf', 'inter1', 'root']
     const response = await activator.injectCertificate(clientId, httpHandler)
     expect(response.method).toBe('wsman')
@@ -462,7 +471,7 @@ describe('inject Certificate', () => {
   })
   test('should return wsman message when certchain is not null and cert chain length is less than count', async () => {
     const clientObj = devices[clientId]
-    clientObj.certObj = {}
+    clientObj.certObj = {} as any
     clientObj.certObj.certChain = ['leaf', 'inter1', 'root']
     const response = await activator.injectCertificate(clientId, httpHandler)
     expect(response.method).toBe('wsman')
@@ -470,7 +479,7 @@ describe('inject Certificate', () => {
   })
   test('should return wsman message when certchain is not null and cert chain length is equal to count', async () => {
     const clientObj = devices[clientId]
-    clientObj.certObj = {}
+    clientObj.certObj = {} as any
     clientObj.certObj.certChain = ['leaf', 'inter1', 'root']
     const response = await activator.injectCertificate(clientId, httpHandler)
     expect(response.method).toBe('wsman')
