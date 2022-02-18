@@ -188,7 +188,7 @@ export interface mpsServer {
   AuthMethod: number
   Username: string
   Password: string
-  CN?: string
+  CommonName?: string
 }
 
 export interface ClientMsg {
