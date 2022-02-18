@@ -17,7 +17,7 @@ import { RPSError } from '../utils/RPSError'
 import { EnvReader } from '../utils/EnvReader'
 import { NetworkConfigurator } from './NetworkConfigurator'
 import { AMTUserName } from '../utils/constants'
-import { AMTDeviceDTO, AMTDomain } from '../models'
+import { AMTDeviceDTO, AMTDomain, ProvisioningCertObj } from '../models'
 import got from 'got'
 import { MqttProvider } from '../utils/MqttProvider'
 import { setMEBXPassword } from '../utils/maintenance/setMEBXPassword'
@@ -91,7 +91,7 @@ export class Activator implements IExecutor {
         const password = SignatureHelper.createMd5Hash(data)
         let xmlRequestBody = ''
         if (clientObj.action === ClientAction.ADMINCTLMODE) {
-          await this.createSignedString(clientId)
+          this.createSignedString(clientId)
           // Activate in ACM
           xmlRequestBody = this.ips.HostBasedSetupService(IPS.Methods.ADMIN_SETUP, (clientObj.messageId++).toString(), 2, password, clientObj.nonce.toString('base64'), 2, clientObj.signature)
         } else {
@@ -120,16 +120,12 @@ export class Activator implements IExecutor {
    * @param {string} password
    * @returns {any} returns cert object
    */
-  GetProvisioningCertObj (clientMsg: ClientMsg, cert: string, password: string, clientId: string): any {
-    // TODO: Look to change this to return a type
+  GetProvisioningCertObj (clientMsg: ClientMsg, cert: string, password: string, clientId: string): ProvisioningCertObj {
     try {
       // read in cert
       const pfxb64: string = Buffer.from(cert, 'base64').toString('base64')
       // convert the certificate pfx to an object
       const pfxobj = this.certManager.convertPfxToObject(pfxb64, password)
-      if (pfxobj.errorText) {
-        return pfxobj
-      }
       // return the certificate chain pems and private key
       const certChainPfx = this.certManager.dumpPfx(pfxobj)
       // check that provisioning certificate root matches one of the trusted roots from AMT
@@ -181,7 +177,6 @@ export class Activator implements IExecutor {
     }
   }
 
-  // Todo: Remove any
   async validateGeneralSettings (clientId: string, response: any, httpHandler: HttpHandler): Promise<ClientMsg> {
     const clientObj = devices[clientId]
     const digestRealm = response.Envelope.Body.AMT_GeneralSettings.DigestRealm
@@ -199,7 +194,6 @@ export class Activator implements IExecutor {
     return null
   }
 
-  // Todo: Remove any
   async validateHostBasedSetupService (clientId: string, response: any, httpHandler: HttpHandler): Promise<ClientMsg> {
     const clientObj = devices[clientId]
     const action = response.Envelope.Header.Action.split('/').pop()
@@ -306,14 +300,8 @@ export class Activator implements IExecutor {
         throw new RPSError(`Device ${clientObj.uuid} activation failed. AMT provisioning certificate not found on server`)
       }
       clientObj.certObj = this.GetProvisioningCertObj(clientObj.ClientData, amtDomain.provisioningCert, amtDomain.provisioningCertPassword, clientId)
-      if (clientObj.certObj) {
-        // Check if we got an error while getting the provisioning cert object
-        if (clientObj.certObj.errorText) {
-          MqttProvider.publishEvent('fail', ['Activator'], 'Failed to activate', clientObj.uuid)
-          throw new RPSError(clientObj.certObj.errorText)
-        }
-      } else {
-        MqttProvider.publishEvent('fail', ['Activator'], 'Failed to activate. Provisioning certificate doesn\'t match any trusted certificates from AMT', clientObj.uuid)
+      if (clientObj.certObj == null) {
+        MqttProvider.publishEvent('fail', ['Activator'], "Failed to activate. Provisioning certificate doesn't match any trusted certificates from AMT", clientObj.uuid)
         throw new RPSError(`Device ${clientObj.uuid} activation failed. Provisioning certificate doesn't match any trusted certificates from AMT`)
       }
     }
@@ -321,7 +309,7 @@ export class Activator implements IExecutor {
   }
 
   /**
-  * @description Injects provisoining certificate into AMT
+  * @description Injects provisioning certificate into AMT
   * @param {string} clientId Id to keep track of connections
   */
   async injectCertificate (clientId: string, httpHandler: HttpHandler): Promise<ClientMsg> {
@@ -329,16 +317,18 @@ export class Activator implements IExecutor {
     let data
     // inject certificates in proper order with proper flags
     if (clientObj.count <= clientObj.certObj.certChain.length) {
+      let xmlRequestBody = ''
+      let isLeaf = false
+      let isRoot = false
       if (clientObj.count === 1) {
-        const xmlRequestBody = this.ips.HostBasedSetupService(IPS.Methods.ADD_NEXT_CERT_IN_CHAIN, (clientObj.messageId++).toString(), null, null, null, null, null, clientObj.certObj.certChain[clientObj.count - 1], true, false)
-        data = httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
-      } else if (clientObj.count > 1 && clientObj.count < clientObj.certObj.certChain.length) {
-        const xmlRequestBody = this.ips.HostBasedSetupService(IPS.Methods.ADD_NEXT_CERT_IN_CHAIN, (clientObj.messageId++).toString(), null, null, null, null, null, clientObj.certObj.certChain[clientObj.count - 1], false, false)
-        data = httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
+        isLeaf = true
       } else if (clientObj.count === clientObj.certObj.certChain.length) {
-        const xmlRequestBody = this.ips.HostBasedSetupService(IPS.Methods.ADD_NEXT_CERT_IN_CHAIN, (clientObj.messageId++).toString(), null, null, null, null, null, clientObj.certObj.certChain[clientObj.count - 1], false, true)
-        data = httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
+        isRoot = true
       }
+      // else if (clientObj.count > 1 && clientObj.count < clientObj.certObj.certChain.length) {}
+      xmlRequestBody = this.ips.HostBasedSetupService(IPS.Methods.ADD_NEXT_CERT_IN_CHAIN, (clientObj.messageId++).toString(), null, null, null, null, null, clientObj.certObj.certChain[clientObj.count - 1], isLeaf, isRoot)
+      data = httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
+
       ++clientObj.count
       return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
     }
@@ -348,14 +338,15 @@ export class Activator implements IExecutor {
    * @description Creates the signed string required by AMT
    * @param {ClientObject} clientObj
    */
-  async createSignedString (clientId: string): Promise<void> {
+  createSignedString (clientId: string): void {
     const clientObj = devices[clientId]
     clientObj.nonce = PasswordHelper.generateNonce()
     const arr: Buffer[] = [clientObj.ClientData.payload.fwNonce, clientObj.nonce]
-    clientObj.signature = this.signatureHelper.signString(Buffer.concat(arr), clientObj.certObj.privateKey)
-    if (clientObj.signature.errorText) {
+    try {
+      clientObj.signature = this.signatureHelper.signString(Buffer.concat(arr), clientObj.certObj.privateKey)
+    } catch (err) {
       MqttProvider.publishEvent('fail', ['Activator'], 'Failed to activate', clientObj.uuid)
-      throw new RPSError(clientObj.signature.errorText)
+      throw new RPSError(err.message)
     }
   }
 

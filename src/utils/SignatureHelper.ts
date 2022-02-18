@@ -18,16 +18,16 @@ export class SignatureHelper {
     * @description Signs the concatenated nonce with the private key of the provisioning certificate and encodes as base64
     * @param {any} message Message to be signed
     * @param {any} key Private key of provisioning certificate
-    * @returns {any} Returns the signed string
+    * @returns {string} Returns the signed string
     */
-  public signString (message: any, key: any): any {
+  public signString (message: any, key: any): string {
     try {
       const signer = crypto.createSign('sha256')
       signer.update(message)
       const sign = signer.sign(this.nodeForge.privateKeyToPem(key), 'base64')
       return sign
     } catch (e) {
-      return { errorText: 'Unable to create Digital Signature' }
+      throw new Error('Unable to create Digital Signature')
     }
   }
 

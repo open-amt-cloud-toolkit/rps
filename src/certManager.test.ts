@@ -69,7 +69,6 @@ describe('certManager tests', () => {
       // convert the certificate pfx to an object
       const pfxobj = certManager.convertPfxToObject(pfxb64, 'Intel123!')
 
-      expect(pfxobj.errorText).toBeUndefined()
       expect(pfxobj.certs).toHaveLength(1)
       expect(pfxobj.keys).toHaveLength(1)
 

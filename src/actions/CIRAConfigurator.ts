@@ -39,7 +39,7 @@ export class CIRAConfigurator implements IExecutor {
      * @param {string} clientId Id to keep track of connections
      * @returns {ClientMsg} message to sent to client
      */
-  async execute (message: any, clientId: string): Promise<any> {
+  async execute (message: any, clientId: string): Promise<ClientMsg> {
     let clientObj: ClientObject
     try {
       clientObj = devices[clientId]

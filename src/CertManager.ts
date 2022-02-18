@@ -115,7 +115,7 @@ export class CertManager {
     try {
       pfx = this.nodeForge.pkcs12FromAsn1(asn, true, passphrase)
     } catch (e) {
-      return { certs: null, keys: null, errorText: 'Decrypting provisioning certificate failed.' }
+      throw new Error('Decrypting provisioning certificate failed')
     }
     // Get the certs from certbags
     let bags = pfx.getBags({ bagType: this.nodeForge.pkiOidsCertBag })
@@ -188,7 +188,7 @@ export class CertManager {
     return str
   }
 
-  amtCertSignWithCAKey (DERKey: string, caPrivateKey: pki.PrivateKey, certAttributes: CertAttributes, issuerAttributes: CertAttributes, extKeyUsage: AMTKeyUsage): any {
+  amtCertSignWithCAKey (DERKey: string, caPrivateKey: pki.PrivateKey, certAttributes: CertAttributes, issuerAttributes: CertAttributes, extKeyUsage: AMTKeyUsage): CertCreationResult {
     if (!caPrivateKey || caPrivateKey == null) {
       const certAndKey = this.createCertificate(issuerAttributes)
       caPrivateKey = certAndKey.key
