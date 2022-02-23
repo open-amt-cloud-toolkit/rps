@@ -6,7 +6,6 @@ import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, NETWORK_CONFIG_NOT_FOUND } from
 import { WirelessConfig } from '../../../models/RCS.Config'
 import Logger from '../../../Logger'
 import { RPSError } from '../../../utils/RPSError'
-import { EnvReader } from '../../../utils/EnvReader'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { Request, Response } from 'express'
 
@@ -28,7 +27,7 @@ export async function editWirelessProfile (req: Request, res: Response): Promise
 
       const results: WirelessConfig = await req.db.wirelessProfiles.update(config)
       if (req.secretsManager && passphrase) {
-        await req.secretsManager.writeSecretWithKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}Wireless/${config.profileName}`, config.pskPassphrase, passphrase)
+        await req.secretsManager.writeSecretWithKey(`Wireless/${config.profileName}`, config.pskPassphrase, passphrase)
         log.debug(`pskPassphrase stored in Vault for wireless profile: ${config.profileName}`)
       }
       delete results.pskPassphrase

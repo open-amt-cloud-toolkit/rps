@@ -6,7 +6,6 @@ import { API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../../utils/constants
 import { WirelessConfig } from '../../../models/RCS.Config'
 import Logger from '../../../Logger'
 import { RPSError } from '../../../utils/RPSError'
-import { EnvReader } from '../../../utils/EnvReader'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { Request, Response } from 'express'
 export async function createWirelessProfile (req: Request, res: Response): Promise<void> {
@@ -22,7 +21,7 @@ export async function createWirelessProfile (req: Request, res: Response): Promi
     const results: WirelessConfig = await req.db.wirelessProfiles.insert(wirelessConfig)
     // store the password into Vault
     if (req.secretsManager) {
-      await req.secretsManager.writeSecretWithKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}Wireless/${wirelessConfig.profileName}`, wirelessConfig.pskPassphrase, passphrase)
+      await req.secretsManager.writeSecretWithKey(`Wireless/${wirelessConfig.profileName}`, wirelessConfig.pskPassphrase, passphrase)
       log.debug(`pskPassphrase stored in Vault for wireless profile: ${wirelessConfig.profileName}`)
     }
     log.verbose(`Created wireless profile : ${wirelessConfig.profileName}`)

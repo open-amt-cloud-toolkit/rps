@@ -84,7 +84,7 @@ export class ProfileManager implements IProfileManager {
           this.logger.error(`unable to create a random password for ${profile.profileName}`)
         }
       } else if (this.configurator?.secretsManager) {
-        amtPassword = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${profileName}`, 'AMT_PASSWORD')
+        amtPassword = await this.configurator.secretsManager.getSecretFromKey(`profiles/${profileName}`, 'AMT_PASSWORD')
       } else {
         amtPassword = profile.amtPassword
       }
@@ -117,7 +117,7 @@ export class ProfileManager implements IProfileManager {
           this.logger.error(`unable to create MEBx random password for ${profile.profileName}`)
         }
       } else if (this.configurator?.secretsManager) {
-        mebxPassword = await this.configurator.secretsManager.getSecretFromKey(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${profileName}`, 'MEBX_PASSWORD')
+        mebxPassword = await this.configurator.secretsManager.getSecretFromKey(`profiles/${profileName}`, 'MEBX_PASSWORD')
       } else {
         mebxPassword = profile.mebxPassword
       }

@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 import { DOMAIN_NOT_FOUND, API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../../utils/constants'
-import { EnvReader } from '../../../utils/EnvReader'
 import { AMTDomain } from '../../../models'
 import Logger from '../../../Logger'
 import { MqttProvider } from '../../../utils/MqttProvider'
@@ -21,7 +20,7 @@ export async function deleteDomain (req: Request, res: Response): Promise<void> 
       const results = await req.db.domains.delete(domainName)
       if (results) {
         if (req.secretsManager) {
-          await req.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/${domain.profileName}`)
+          await req.secretsManager.deleteSecretWithPath(`certs/${domain.profileName}`)
         }
         MqttProvider.publishEvent('success', ['deleteDomain'], `Domain Deleted : ${domainName}`)
         res.status(204).end()

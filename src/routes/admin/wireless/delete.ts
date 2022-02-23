@@ -5,7 +5,6 @@
 import Logger from '../../../Logger'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, NETWORK_CONFIG_NOT_FOUND } from '../../../utils/constants'
 import { RPSError } from '../../../utils/RPSError'
-import { EnvReader } from '../../../utils/EnvReader'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { Request, Response } from 'express'
 
@@ -16,7 +15,7 @@ export async function deleteWirelessProfile (req: Request, res: Response): Promi
     const results: boolean = await req.db.wirelessProfiles.delete(profileName)
     if (results) {
       if (req.secretsManager) {
-        await req.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}Wireless/${profileName}`)
+        await req.secretsManager.deleteSecretWithPath(`Wireless/${profileName}`)
       }
       MqttProvider.publishEvent('success', ['deleteWirelessProfiles'], `Deleted wireless profile : ${profileName}`)
       log.verbose(`Deleted wireless profile : ${profileName}`)
