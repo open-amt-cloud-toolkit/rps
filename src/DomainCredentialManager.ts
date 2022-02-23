@@ -9,7 +9,6 @@ import { IDomainCredentialManager } from './interfaces/IDomainCredentialManager'
 import { ILogger } from './interfaces/ILogger'
 import { IConfigurator } from './interfaces/IConfigurator'
 import { IDomainsTable } from './interfaces/database/IDomainsDb'
-import { EnvReader } from './utils/EnvReader'
 import { AMTDomain } from './models'
 
 export class DomainCredentialManager implements IDomainCredentialManager {
@@ -51,7 +50,7 @@ export class DomainCredentialManager implements IDomainCredentialManager {
     let certPwd = null
     if (domain?.provisioningCert) {
       if (this.configurator?.secretsManager) {
-        certPwd = await this.configurator.secretsManager.getSecretAtPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/${domain.profileName}`)
+        certPwd = await this.configurator.secretsManager.getSecretAtPath(`certs/${domain.profileName}`)
         this.logger.debug('Received CertPwd from vault')
         domain.provisioningCert = certPwd.data.CERT
         domain.provisioningCertPassword = certPwd.data.CERT_PASSWORD

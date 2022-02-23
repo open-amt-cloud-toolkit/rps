@@ -366,7 +366,7 @@ export class CIRAConfigurator implements IExecutor {
     if (clientObj.mpsUsername && clientObj.mpsPassword) {
       try {
         if (this.configurator?.secretsManager) {
-          let data: any = await this.configurator.secretsManager.getSecretAtPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}devices/${clientObj.uuid}`)
+          let data: any = await this.configurator.secretsManager.getSecretAtPath(`devices/${clientObj.uuid}`)
 
           if (data != null) {
             data.data.MPS_PASSWORD = clientObj.mpsPassword
@@ -374,7 +374,7 @@ export class CIRAConfigurator implements IExecutor {
             data = { data: { MPS_PASSWORD: clientObj.mpsPassword } }
           }
 
-          await this.configurator.secretsManager.writeSecretWithObject(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}devices/${clientObj.uuid}`, data)
+          await this.configurator.secretsManager.writeSecretWithObject(`devices/${clientObj.uuid}`, data)
         } else {
           MqttProvider.publishEvent('fail', ['CIRAConfigurator'], 'Secret Manager Missing', clientObj.uuid)
           throw new Error('secret manager missing')

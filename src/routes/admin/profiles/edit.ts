@@ -2,7 +2,6 @@
  * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
-import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, PROFILE_NOT_FOUND } from '../../../utils/constants'
 import { AMTConfiguration } from '../../../models'
@@ -46,7 +45,7 @@ export async function editProfile (req: Request, res: Response): Promise<void> {
         if (oldConfig.amtPassword !== null || oldConfig.mebxPassword !== null) {
           if (req.secretsManager) {
             log.debug('Delete in vault') // User might be flipping from false to true which we dont know. So try deleting either way.
-            await req.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${amtConfig.profileName}`)
+            await req.secretsManager.deleteSecretWithPath(`profiles/${amtConfig.profileName}`)
             log.debug('Password deleted from vault')
           }
         }
@@ -63,7 +62,7 @@ export async function editProfile (req: Request, res: Response): Promise<void> {
           }
 
           if (data.data.AMT_PASSWORD != null || data.data.MEBX_PASSWORD != null) {
-            await req.secretsManager.writeSecretWithObject(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${amtConfig.profileName}`, data)
+            await req.secretsManager.writeSecretWithObject(`profiles/${amtConfig.profileName}`, data)
           }
         }
         log.verbose(`Updated AMT profile: ${newConfig.profileName}`)

@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 import { AMTDomain } from '../../../models'
-import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
 import { RPSError } from '../../../utils/RPSError'
@@ -35,7 +34,7 @@ export async function createDomain (req: Request, res: Response): Promise<void> 
             CERT_PASSWORD: domainPwd
           }
         }
-        await req.secretsManager.writeSecretWithObject(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/${amtDomain.profileName}`, data)
+        await req.secretsManager.writeSecretWithObject(`certs/${amtDomain.profileName}`, data)
         log.debug(`${amtDomain.profileName} provisioning cert & password stored in Vault`)
       }
       log.verbose(`Created Domain : ${amtDomain.profileName}`)

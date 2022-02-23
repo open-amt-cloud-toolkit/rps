@@ -260,7 +260,7 @@ export class NetworkConfigurator implements IExecutor {
       // Get WiFi profile information based on the profile name.
       const wifiConfig = await db.wirelessProfiles.getByName(wifiConfigs[clientObj.network.count].profileName)
       if (this.configurator?.secretsManager) {
-        const data: any = await this.configurator.secretsManager.getSecretAtPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}Wireless/${wifiConfig.profileName}`)
+        const data: any = await this.configurator.secretsManager.getSecretAtPath(`Wireless/${wifiConfig.profileName}`)
         if (data != null) {
           wifiConfig.pskPassphrase = data.data.PSK_PASSPHRASE
         }

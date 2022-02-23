@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 import { AMTDomain } from '../../../models'
-import { EnvReader } from '../../../utils/EnvReader'
 import Logger from '../../../Logger'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, DOMAIN_NOT_FOUND } from '../../../utils/constants'
 import { RPSError } from '../../../utils/RPSError'
@@ -42,7 +41,7 @@ export async function editDomain (req: Request, res: Response): Promise<void> {
               CERT_PASSWORD: domainPwd
             }
           }
-          await req.secretsManager.writeSecretWithObject(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}certs/${amtDomain.profileName}`, data)
+          await req.secretsManager.writeSecretWithObject(`certs/${amtDomain.profileName}`, data)
           log.debug(`Updated AMT Domain : ${amtDomain.profileName} in vault`)
         }
         delete results.provisioningCert

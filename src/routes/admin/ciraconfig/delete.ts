@@ -4,7 +4,6 @@
  **********************************************************************/
 import Logger from '../../../Logger'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, CIRA_CONFIG_NOT_FOUND } from '../../../utils/constants'
-import { EnvReader } from '../../../utils/EnvReader'
 import { RPSError } from '../../../utils/RPSError'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { Request, Response } from 'express'
@@ -16,7 +15,7 @@ export async function deleteCiraConfig (req: Request, res: Response): Promise<vo
     const result: boolean = await req.db.ciraConfigs.delete(ciraConfigName)
     if (result) {
       if (req.secretsManager) {
-        await req.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}CIRAConfigs/${ciraConfigName}`)
+        await req.secretsManager.deleteSecretWithPath(`CIRAConfigs/${ciraConfigName}`)
       }
       MqttProvider.publishEvent('success', ['deleteCiraConfig'], `Deleted CIRA config : ${ciraConfigName}`)
       log.verbose(`Deleted CIRA config profile : ${ciraConfigName}`)

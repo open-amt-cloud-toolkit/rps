@@ -8,7 +8,6 @@
 import { ILogger } from '../../interfaces/ILogger'
 import { IAMTDeviceRepository } from '../../interfaces/database/IAMTDeviceRepository'
 import { IConfigurator } from '../../interfaces/IConfigurator'
-import { EnvReader } from '../../utils/EnvReader'
 import { RPSError } from '../../utils/RPSError'
 import { AMTUserName } from '../../utils/constants'
 import { AMTDeviceDTO } from '../../models'
@@ -29,7 +28,7 @@ export class AMTDeviceVaultRepository implements IAMTDeviceRepository {
         data.data.AMT_PASSWORD = device.amtpass
         data.data.MEBX_PASSWORD = device.mebxpass
         data.data.MPS_PASSWORD = device.mpspass
-        await this.configurator.secretsManager.writeSecretWithObject(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}devices/${device.guid}`, data)
+        await this.configurator.secretsManager.writeSecretWithObject(`devices/${device.guid}`, data)
         return true
       } else {
         throw new Error('secret manager missing')
@@ -43,7 +42,7 @@ export class AMTDeviceVaultRepository implements IAMTDeviceRepository {
   public async delete (guid: string): Promise<boolean> {
     try {
       if (this.configurator?.secretsManager) {
-        await this.configurator.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}devices/${guid}`)
+        await this.configurator.secretsManager.deleteSecretWithPath(`devices/${guid}`)
         return true
       } else {
         throw new Error('secret manager missing')
@@ -57,7 +56,7 @@ export class AMTDeviceVaultRepository implements IAMTDeviceRepository {
   public async get (deviceId: string): Promise<AMTDeviceDTO> {
     try {
       if (this.configurator?.secretsManager) {
-        const devicePwds: any = await this.configurator.secretsManager.getSecretAtPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}devices/${deviceId}`)
+        const devicePwds: any = await this.configurator.secretsManager.getSecretAtPath(`devices/${deviceId}`)
         if (devicePwds) {
           const amtDevice: AMTDeviceDTO = {
             guid: deviceId,

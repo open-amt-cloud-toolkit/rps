@@ -6,7 +6,6 @@
 import Logger from '../../../Logger'
 import { AMTConfiguration } from '../../../models'
 import { PROFILE_NOT_FOUND, API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../../utils/constants'
-import { EnvReader } from '../../../utils/EnvReader'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { Request, Response } from 'express'
 
@@ -23,9 +22,9 @@ export async function deleteProfile (req: Request, res: Response): Promise<void>
       if (results) {
         if (req.secretsManager) {
           if (!profile.generateRandomPassword || !profile.generateRandomMEBxPassword) {
-            await req.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}profiles/${profile.profileName}`)
+            await req.secretsManager.deleteSecretWithPath(`profiles/${profile.profileName}`)
           }
-          await req.secretsManager.deleteSecretWithPath(`${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}TLS/${profile.profileName}`)
+          await req.secretsManager.deleteSecretWithPath(`TLS/${profile.profileName}`)
         }
 
         MqttProvider.publishEvent('success', ['deleteProfile'], `Deleted Profile : ${profileName}`)
