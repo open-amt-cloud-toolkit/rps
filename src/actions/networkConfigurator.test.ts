@@ -12,13 +12,12 @@ import { ClientResponseMsg } from '../utils/ClientResponseMsg'
 import { Validator } from '../Validator'
 import { WSManProcessor } from '../WSManProcessor'
 import { v4 as uuid } from 'uuid'
-import { AddWiFiSettingsResponse, AMTEthernetPortSettings, AMTEthernetPortSettingsResponse, AMTGeneralSettings, CIMWiFiPortResponse } from '../test/helper/AMTJSONResponses'
 import { EnvReader } from '../utils/EnvReader'
 import { config } from '../test/helper/Config'
-import { ClientAction } from '../models/RCS.Config'
 import { TLSConfigurator } from './TLSConfigurator'
 import { CertManager } from '../CertManager'
 import { devices } from '../WebSocketListener'
+import { ClientAction } from '../models/RCS.Config'
 EnvReader.GlobalEnvConfig = config
 const nodeForge = new NodeForge()
 const certManager = new CertManager(new Logger('CertManager'), nodeForge)
@@ -28,7 +27,7 @@ const amtwsman = new WSManProcessor(new Logger('WSManProcessor'), responseMsg)
 const validator = new Validator(new Logger('Validator'), configurator)
 const tlsConfig = new TLSConfigurator(new Logger('CIRAConfig'), certManager, responseMsg, amtwsman)
 const ciraConfig = new CIRAConfigurator(new Logger('CIRAConfig'), configurator, responseMsg, tlsConfig)
-const networkConfigurator = new NetworkConfigurator(new Logger('NetworkConfig'), configurator, responseMsg, amtwsman, validator, ciraConfig)
+const networkConfigurator = new NetworkConfigurator(new Logger('NetworkConfig'), configurator, responseMsg, validator, ciraConfig)
 let clientId, activationmsg
 
 beforeAll(() => {
@@ -89,6 +88,12 @@ beforeAll(() => {
       action: 'acmactivate'
     }
   }
+  const digestChallenge = {
+    realm: 'Digest:AF541D9BC94CFF7ADFA073F492F355E6',
+    nonce: 'dxNzCQ9JBAAAAAAAd2N7c6tYmUl0FFzQ',
+    stale: 'false',
+    qop: 'auth'
+  }
   devices[clientId] = {
     ClientId: clientId,
     ClientSocket: null,
@@ -96,123 +101,238 @@ beforeAll(() => {
     ciraconfig: {},
     network: {},
     status: {},
-    uuid: activationmsg.payload.uuid
+    uuid: activationmsg.payload.uuid,
+    activationStatus: {},
+    connectionParams: {
+      guid: '4c4c4544-004b-4210-8033-b6c04f504633',
+      port: 16992,
+      digestChallenge: digestChallenge,
+      username: 'admin',
+      password: 'P@ssw0rd'
+    },
+    messageId: 1
   }
 })
 
-describe('execute function', () => {
-  test('should throw an error when the payload is null', async () => {
-    // const clientObj = clientManager.getClientObject(clientId)
-    // clientObj.uuid = activationmsg.payload.uuid
-    // clientManager.setClientObject(clientObj)
-    // const clientMsg = { payload: null }
-    // const responseMsg = await networkConfigurator.execute(clientMsg, clientId)
-    // expect(responseMsg.message).toEqual(`Device ${activationmsg.payload.uuid} activation failed. Missing/invalid WSMan response payload.`)
+describe('process WSMan Response', () => {
+  test('should return a wsman if the status code 401', async () => {
+    const message = {
+      payload: { statusCode: 401 }
+    }
+    const result = await networkConfigurator.processWSManJsonResponse(message, clientId)
+    expect(result.method).toBe('wsman')
   })
-})
-
-describe('process AMT General Settings', () => {
-  test('should send a request to get AMT ether net settings when network or shared FQDN is enabled', async () => {
-    const spy = jest.spyOn(amtwsman, 'batchEnum')
-    devices[clientId].uuid = activationmsg.payload.uuid
-    const message = { payload: AMTGeneralSettings }
-    await networkConfigurator.processGeneralSettings(message, clientId)
-    expect(spy).toHaveBeenCalled()
-  })
-  test('should send a request to set general settings when the network is not enabled', async () => {
-    jest.spyOn(amtwsman, 'put')
-    const networkDisabled = AMTGeneralSettings
-    networkDisabled.AMT_GeneralSettings.response.AMTNetworkEnabled = 0
-    const message = { payload: networkDisabled }
-    await networkConfigurator.processGeneralSettings(message, clientId)
-    await amtwsman.put(clientId, 'AMT_GeneralSettings', networkDisabled.AMT_GeneralSettings.response)
-    expect(amtwsman.put).toHaveBeenCalledWith(clientId, 'AMT_GeneralSettings', networkDisabled.AMT_GeneralSettings.response)
-  })
-})
-
-describe('Parse the get and set of AMT Ethernet Port Settings response received from AMT', () => {
-  test('Should send a put resquest if the dhcpEnabled true to update ethernet port settings', async () => {
-    const spy = jest.spyOn(amtwsman, 'put')
-    const message = { payload: AMTEthernetPortSettings }
-    await networkConfigurator.processEthernetPortSettings(message, clientId)
-    // await amtwsman.put(clientId, 'AMT_EthernetPortSettings', AMTEthernetPortSettings.AMT_EthernetPortSettings.responses[0])
-    expect(spy).toHaveBeenCalledWith(clientId, 'AMT_EthernetPortSettings', AMTEthernetPortSettings.AMT_EthernetPortSettings.responses[0])
-  })
-  test('should set action to CIRA Config when update to ethernet port settings fails', async () => {
-    const ipSyncEnabledFalse = AMTEthernetPortSettingsResponse
-    ipSyncEnabledFalse.Body.IpSyncEnabled = false
-    const message = { payload: ipSyncEnabledFalse }
-    await networkConfigurator.processEthernetPortSettings(message, clientId)
-    expect(devices[clientId].status.Network).toBe('Failed.')
-    expect(devices[clientId].action).toBe(ClientAction.CIRACONFIG)
-    expect(devices[clientId].network.setEthernetPortSettings).toBe(true)
-  })
-  test('should set action to CIRA Config when update to ethernet port settings response SharedStaticIp is true', async () => {
-    const sharedStaticIpTrue = AMTEthernetPortSettingsResponse
-    sharedStaticIpTrue.Body.IpSyncEnabled = true
-    sharedStaticIpTrue.Body.SharedStaticIp = true
-    const message = { payload: sharedStaticIpTrue }
-    await networkConfigurator.processEthernetPortSettings(message, clientId)
-    expect(devices[clientId].status.Network).toBe('Ethernet Configured.')
-    expect(devices[clientId].action).toBe(ClientAction.CIRACONFIG)
-    expect(devices[clientId].network.setEthernetPortSettings).toBe(true)
-  })
-  test('should set action to CIRA Config when the IpSyncEnabled, DHCPEnabled is true and profile has no wifi configs', async () => {
-    activationmsg.payload.profile.wificonfigs = []
-    const message = { payload: AMTEthernetPortSettingsResponse }
-    await networkConfigurator.processEthernetPortSettings(message, clientId)
-    expect(devices[clientId].status.Network).toBe('Ethernet Configured.')
-    expect(devices[clientId].action).toBe(ClientAction.CIRACONFIG)
-    expect(devices[clientId].network.setEthernetPortSettings).toBe(true)
-  })
-  test('should set action to CIRA Config when IpSyncEnabled, DHCPEnabled is true and profile has wifi configs but no wifi capabilities', async () => {
-    devices[clientId].network.ethernetSettingsWifiObj = null
-    AMTEthernetPortSettingsResponse.Body.SharedStaticIp = false
-    AMTEthernetPortSettingsResponse.Body.DHCPEnabled = true
-    const message = { payload: AMTEthernetPortSettingsResponse }
-    activationmsg.payload.profile.wificonfigs = [
-      {
-        priority: 1,
-        profileName: 'home'
+  test('should return a wsman if the status code 200 for CIM_WiFiEndpointSettings enumerate response', async () => {
+    const message = {
+      payload: {
+        statusCode: 200,
+        body: {
+          text: '044E\r\n<?xml version="1.0" encoding="UTF-8"?><a:Envelope xmlns:a="http://www.w3.org/2003/05/soap-envelope" xmlns:b="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:c="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" xmlns:d="http://schemas.xmlsoap.org/ws/2005/02/trust" xmlns:e="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:f="http://schemas.dmtf.org/wbem/wsman/1/cimbinding.xsd" xmlns:g="http://schemas.xmlsoap.org/ws/2004/09/enumeration" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><a:Header><b:To>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</b:To><b:RelatesTo>1</b:RelatesTo><b:Action a:mustUnderstand="true">http://schemas.xmlsoap.org/ws/2004/09/enumeration/EnumerateResponse</b:Action><b:MessageID>uuid:00000000-8086-8086-8086-00000000A056</b:MessageID><c:ResourceURI>http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_WiFiEndpointSettings</c:ResourceURI></a:Header><a:Body><g:EnumerateResponse><g:EnumerationContext>93340000-0000-0000-0000-000000000000</g:EnumerationContext></g:EnumerateResponse></a:Body></a:Envelope>\r\n0\r\n\r\n'
+        }
       }
-    ]
-    await networkConfigurator.processEthernetPortSettings(message, clientId)
-    expect(devices[clientId].status.Network).toBe('Ethernet Configured. WiFi Failed.')
-    expect(devices[clientId].action).toBe(ClientAction.CIRACONFIG)
-    expect(devices[clientId].network.setEthernetPortSettings).toBe(true)
+    }
+    const result = await networkConfigurator.processWSManJsonResponse(message, clientId)
+    expect(result.method).toBe('wsman')
+  })
+  test('should return a wsman if the status code 200 for AMT_EthernetPortSettings enumerate response', async () => {
+    const message = {
+      payload: {
+        statusCode: 200,
+        body: {
+          text: '0447\r\n<?xml version="1.0" encoding="UTF-8"?><a:Envelope xmlns:a="http://www.w3.org/2003/05/soap-envelope" xmlns:b="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:c="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" xmlns:d="http://schemas.xmlsoap.org/ws/2005/02/trust" xmlns:e="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:f="http://schemas.dmtf.org/wbem/wsman/1/cimbinding.xsd" xmlns:g="http://schemas.xmlsoap.org/ws/2004/09/enumeration" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><a:Header><b:To>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</b:To><b:RelatesTo>4</b:RelatesTo><b:Action a:mustUnderstand="true">http://schemas.xmlsoap.org/ws/2004/09/enumeration/EnumerateResponse</b:Action><b:MessageID>uuid:00000000-8086-8086-8086-00000000A05C</b:MessageID><c:ResourceURI>http://intel.com/wbem/wscim/1/amt-schema/1/AMT_EthernetPortSettings</c:ResourceURI></a:Header><a:Body><g:EnumerateResponse><g:EnumerationContext>95340000-0000-0000-0000-000000000000</g:EnumerationContext></g:EnumerateResponse></a:Body></a:Envelope>\r\n0\r\n\r\n'
+        }
+      }
+    }
+    const result = await networkConfigurator.processWSManJsonResponse(message, clientId)
+    expect(result.method).toBe('wsman')
+  })
+  test('should return a wsman if the status code 200 for AMT_GeneralSettings get response', async () => {
+    const message = {
+      payload: {
+        statusCode: 200,
+        body: {
+          text: '0508\r\n' +
+            '<?xml version="1.0" encoding="UTF-8"?><a:Envelope xmlns:a="http://www.w3.org/2003/05/soap-envelope" xmlns:b="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:c="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" xmlns:d="http://schemas.xmlsoap.org/ws/2005/02/trust" xmlns:e="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:f="http://schemas.dmtf.org/wbem/wsman/1/cimbinding.xsd" xmlns:g="http://intel.com/wbem/wscim/1/amt-schema/1/AMT_GeneralSettings" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><a:Header><b:To>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</b:To><b:RelatesTo>3</b:RelatesTo><b:Action a:mustUnderstand="true">http://schemas.xmlsoap.org/ws/2004/09/transfer/GetResponse</b:Action><b:MessageID>uuid:00000000-8086-8086-8086-00000000A06C</b:MessageID><c:ResourceURI>http://intel.com/wbem/wscim/1/amt-schema/1/AMT_GeneralSettings</c:ResourceURI></a:Header><a:Body><g:AMT_GeneralSettings><g:AMTNetworkEnabled>1</g:AMTNetworkEnabled><g:DDNSPeriodicUpdateInterval>1440</g:DDNSPeriodicUpdateInterval><g:DDNSTTL>900</g:DDNSTTL><g:DDNSUpdateByDHCPServerEnabled>true</g:DDNSUpdateByDHCPServerEnabled><g:DDNSUpdateEnabled>false</g:DDNSUpdateEnabled><g:DHCPv6ConfigurationTimeout>0</g:DHCPv6ConfigurationTimeout><\r\n' +
+            '0348\r\n' +
+            'g:DigestRealm>Digest:92E0C911AFE032A34352AD65ECA5C308</g:DigestRealm><g:DomainName></g:DomainName><g:ElementName>Intel(r) AMT: General Settings</g:ElementName><g:HostName></g:HostName><g:HostOSFQDN></g:HostOSFQDN><g:IdleWakeTimeout>1</g:IdleWakeTimeout><g:InstanceID>Intel(r) AMT: General Settings</g:InstanceID><g:NetworkInterfaceEnabled>true</g:NetworkInterfaceEnabled><g:PingResponseEnabled>true</g:PingResponseEnabled><g:PowerSource>0</g:PowerSource><g:PreferredAddressFamily>0</g:PreferredAddressFamily><g:PresenceNotificationInterval>0</g:PresenceNotificationInterval><g:PrivacyLevel>0</g:PrivacyLevel><g:RmcpPingResponseEnabled>true</g:RmcpPingResponseEnabled><g:SharedFQDN>true</g:SharedFQDN><g:ThunderboltDockEnabled>0</g:ThunderboltDockEnabled><g:WsmanOnlyMode>false</g:WsmanOnlyMode></g:AMT_GeneralSettings></a:Body></a:Envelope>\r\n' +
+            '0\r\n' +
+            '\r\n'
+        }
+      }
+    }
+    const result = await networkConfigurator.processWSManJsonResponse(message, clientId)
+    expect(result.method).toBe('wsman')
+  })
+  test('should return a wsman if the status code 200 for AMT_EthernetPortSettings enumerate response', async () => {
+    const clientObj = devices[clientId]
+    const message = {
+      payload: {
+        statusCode: 200,
+        body: {
+          text: '0508\r\n' +
+            '<?xml version="1.0" encoding="UTF-8"?><a:Envelope xmlns:a="http://www.w3.org/2003/05/soap-envelope" xmlns:b="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:c="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" xmlns:d="http://schemas.xmlsoap.org/ws/2005/02/trust" xmlns:e="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:f="http://schemas.dmtf.org/wbem/wsman/1/cimbinding.xsd" xmlns:g="http://intel.com/wbem/wscim/1/amt-schema/1/AMT_EthernetPortSettings" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><a:Header><b:To>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</b:To><b:RelatesTo>6</b:RelatesTo><b:Action a:mustUnderstand="true">http://schemas.xmlsoap.org/ws/2004/09/transfer/PutResponse</b:Action><b:MessageID>uuid:00000000-8086-8086-8086-00000000A06F</b:MessageID><c:ResourceURI>http://intel.com/wbem/wscim/1/amt-schema/1/AMT_EthernetPortSettings</c:ResourceURI></a:Header><a:Body><g:AMT_EthernetPortSettings><g:DHCPEnabled>true</g:DHCPEnabled><g:DefaultGateway>192.168.1.1</g:DefaultGateway><g:ElementName>Intel(r) AMT Ethernet Port Settings</g:ElementName><g:IPAddress>192.168.1.53</g:IPAddress><g:InstanceID>Intel(r) AMT Ethernet Port Settings 0</g:InstanceID><g:IpSyncEnabled>true</g:IpSyncEnabled><g:LinkIs\r\n' +
+            '01DC\r\n' +
+            'Up>true</g:LinkIsUp><g:LinkPolicy>1</g:LinkPolicy><g:LinkPolicy>14</g:LinkPolicy><g:MACAddress>a4-bb-6d-89-52-e4</g:MACAddress><g:PhysicalConnectionType>0</g:PhysicalConnectionType><g:PrimaryDNS>68.105.28.11</g:PrimaryDNS><g:SecondaryDNS>68.105.29.11</g:SecondaryDNS><g:SharedDynamicIP>true</g:SharedDynamicIP><g:SharedMAC>true</g:SharedMAC><g:SharedStaticIp>false</g:SharedStaticIp><g:SubnetMask>255.255.255.0</g:SubnetMask></g:AMT_EthernetPortSettings></a:Body></a:Envelope>\r\n' +
+            '0\r\n' +
+            '\r\n'
+        }
+      }
+    }
+    await networkConfigurator.processWSManJsonResponse(message, clientId)
+    expect(clientObj.network.setEthernetPortSettings).toBeTruthy()
+  })
+  test('should return null if the status code 200 for CIM_WiFiPort', async () => {
+    const clientObj = devices[clientId]
+    const message = {
+      payload: {
+        statusCode: 200,
+        body: {
+          text: '0444\r\n' +
+            '<?xml version="1.0" encoding="UTF-8"?><a:Envelope xmlns:a="http://www.w3.org/2003/05/soap-envelope" xmlns:b="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:c="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" xmlns:d="http://schemas.xmlsoap.org/ws/2005/02/trust" xmlns:e="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:f="http://schemas.dmtf.org/wbem/wsman/1/cimbinding.xsd" xmlns:g="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_WiFiPort" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><a:Header><b:To>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</b:To><b:RelatesTo>7</b:RelatesTo><b:Action a:mustUnderstand="true">http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_WiFiPort/RequestStateChangeResponse</b:Action><b:MessageID>uuid:00000000-8086-8086-8086-00000001BFC6</b:MessageID><c:ResourceURI>http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_WiFiPort</c:ResourceURI></a:Header><a:Body><g:RequestStateChange_OUTPUT><g:ReturnValue>0</g:ReturnValue></g:RequestStateChange_OUTPUT></a:Body></a:Envelope>\r\n' +
+            '0\r\n' +
+            '\r\n'
+        }
+      }
+    }
+    await networkConfigurator.processWSManJsonResponse(message, clientId)
+    expect(clientObj.network.setWiFiPort).toBeTruthy()
+  })
+  test('should change action to ciraconfig if the status code 200 for CIM_WiFiPort and return value is not 0', async () => {
+    const clientObj = devices[clientId]
+    const message = {
+      payload: {
+        statusCode: 200,
+        body: {
+          text: '0444\r\n' +
+            '<?xml version="1.0" encoding="UTF-8"?><a:Envelope xmlns:a="http://www.w3.org/2003/05/soap-envelope" xmlns:b="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:c="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" xmlns:d="http://schemas.xmlsoap.org/ws/2005/02/trust" xmlns:e="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:f="http://schemas.dmtf.org/wbem/wsman/1/cimbinding.xsd" xmlns:g="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_WiFiPort" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><a:Header><b:To>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</b:To><b:RelatesTo>7</b:RelatesTo><b:Action a:mustUnderstand="true">http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_WiFiPort/RequestStateChangeResponse</b:Action><b:MessageID>uuid:00000000-8086-8086-8086-00000001BFC6</b:MessageID><c:ResourceURI>http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_WiFiPort</c:ResourceURI></a:Header><a:Body><g:RequestStateChange_OUTPUT><g:ReturnValue>1</g:ReturnValue></g:RequestStateChange_OUTPUT></a:Body></a:Envelope>\r\n' +
+            '0\r\n' +
+            '\r\n'
+        }
+      }
+    }
+    await networkConfigurator.processWSManJsonResponse(message, clientId)
+    expect(clientObj.action).toBe(ClientAction.CIRACONFIG)
+    expect(clientObj.status.Network).toBe('Ethernet Configured. WiFi Failed.')
   })
 })
 
-describe('Parse the WiFi port response received from AMT', () => {
-  test('setWiFiPortResponse flag should be true when EnabledState and RequestedState is 32769 ', async () => {
-    const message = { payload: CIMWiFiPortResponse }
-    await networkConfigurator.processWiFiPortResponse(message, clientId)
-    expect(devices[clientId].network.setWiFiPortResponse).toBe(true)
+describe('validate WiFi Endpoint Settings', () => {
+  test('should return a wsman for pull request', async () => {
+    const message = {
+      Envelope: {
+        Header: {
+          Action: 'http://schemas.xmlsoap.org/ws/2004/09/enumeration/EnumerateResponse',
+          ResourceURI: 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_WiFiEndpointSettings'
+        },
+        Body: {
+          EnumerateResponse: {
+            EnumerationContext: '92340000-0000-0000-0000-000000000000'
+          }
+        }
+      }
+    }
+    const result = await networkConfigurator.validateWiFiEndpointSettings(clientId, message)
+    expect(result.method).toBe('wsman')
   })
-  test('should set action to CIRA Config when EnabledState or RequestedState is not 32769', async () => {
-    const zeroEnabledState = CIMWiFiPortResponse
-    zeroEnabledState.Body.EnabledState = 0
-    const message = { payload: zeroEnabledState }
-    await networkConfigurator.processWiFiPortResponse(message, clientId)
-    expect(devices[clientId].status.Network).toBe('Ethernet Configured. WiFi Failed.')
-    expect(devices[clientId].action).toBe(ClientAction.CIRACONFIG)
-    expect(devices[clientId].network.setEthernetPortSettings).toBe(true)
+  test('should return a wsman for pull request', async () => {
+    const clientObj = devices[clientId]
+    const message = {
+      Envelope: {
+        Header: {
+          RelatesTo: 2,
+          Action: 'http://schemas.xmlsoap.org/ws/2004/09/enumeration/PullResponse',
+          ResourceURI: 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_WiFiEndpointSettings'
+        },
+        Body: {
+          PullResponse: {
+            Items: '',
+            EndOfSequence: ''
+          }
+        }
+      }
+    }
+    const result = await networkConfigurator.validateWiFiEndpointSettings(clientId, message)
+    expect(result.method).toBe('wsman')
+    expect(clientObj.network.getWiFiPortCapabilities).toBeTruthy()
   })
 })
 
-describe('Parse the WiFi Endpoint Settings response received from AMT', () => {
-  test('should set action to CIRA Config when ReturnValue is not zero in response to add WiFi setttings', async () => {
-    const returnValueZero = AddWiFiSettingsResponse
-    returnValueZero.Body.ReturnValue = 2
-    const message = { payload: returnValueZero }
-    await networkConfigurator.processWiFiEndpointSettings(message, clientId)
-    expect(devices[clientId].action).toBe(ClientAction.CIRACONFIG)
+describe('validate AMT General Settings', () => {
+  test('should return a wsman to enumerate ethernet port settings', async () => {
+    const message = {
+      Envelope: {
+        Header: {
+          Action: 'http://schemas.xmlsoap.org/ws/2004/09/transfer/GetResponse',
+          ResourceURI: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_GeneralSettings'
+        },
+        Body: {
+          AMT_GeneralSettings: {
+            AMTNetworkEnabled: 1,
+            RmcpPingResponseEnabled: true,
+            SharedFQDN: false
+          }
+        }
+      }
+    }
+    const result = await networkConfigurator.validateGeneralSettings(clientId, message)
+    expect(result.method).toBe('wsman')
   })
-  test('should set action to CIRA Config when ReturnValue is zero in response to add WiFi setttings and count is greater than or equal to profile wificonfigs', async () => {
-    AddWiFiSettingsResponse.Body.ReturnValue = 0
-    const message = { payload: AddWiFiSettingsResponse }
-    await networkConfigurator.processWiFiEndpointSettings(message, clientId)
-    expect(devices[clientId].status.Network).toBe('Ethernet Configured. WiFi Failed.')
-    expect(devices[clientId].action).toBe(ClientAction.CIRACONFIG)
+})
+
+describe('validate Ethernet Port Settings', () => {
+  test('should return a wsman to put ethernet port settings', async () => {
+    const message = {
+      Envelope: {
+        Header: {
+          Action: 'http://schemas.xmlsoap.org/ws/2004/09/enumeration/PullResponse',
+          ResourceURI: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_EthernetPortSettings'
+        },
+        Body: {
+          PullResponse: {
+            Items: {
+              AMT_EthernetPortSettings: [
+                {
+                  DHCPEnabled: true,
+                  DefaultGateway: '192.168.1.1',
+                  ElementName: 'Intel(r) AMT Ethernet Port Settings',
+                  IPAddress: '192.168.1.53',
+                  InstanceID: 'Intel(r) AMT Ethernet Port Settings 0',
+                  IpSyncEnabled: false,
+                  LinkIsUp: true,
+                  LinkPolicy: [
+                    1,
+                    14
+                  ],
+                  MACAddress: 'a4-bb-6d-89-52-e4',
+                  PhysicalConnectionType: 0,
+                  PrimaryDNS: '68.105.28.11',
+                  SecondaryDNS: '68.105.29.11',
+                  SharedDynamicIP: true,
+                  SharedMAC: true,
+                  SharedStaticIp: false,
+                  SubnetMask: '255.255.255.0'
+                },
+                {
+                  ConsoleTcpMaxRetransmissions: 5,
+                  DHCPEnabled: true,
+                  ElementName: 'Intel(r) AMT Ethernet Port Settings',
+                  InstanceID: 'Intel(r) AMT Ethernet Port Settings 1',
+                  LinkControl: 2,
+                  LinkIsUp: false,
+                  LinkPreference: 2,
+                  MACAddress: '00-00-00-00-00-00',
+                  PhysicalConnectionType: 3,
+                  SharedMAC: true,
+                  WLANLinkProtectionLevel: 1
+                }
+              ]
+            },
+            EndOfSequence: ''
+          }
+        }
+      }
+    }
+    const result = await networkConfigurator.validateEthernetPortSettings(clientId, message)
+    expect(result.method).toBe('wsman')
   })
 })
