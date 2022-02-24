@@ -9,7 +9,6 @@ import { IExecutor } from '../interfaces/IExecutor'
 import { ILogger } from '../interfaces/ILogger'
 import { ClientMsg, ClientObject } from '../models/RCS.Config'
 import { ClientResponseMsg } from '../utils/ClientResponseMsg'
-import { WSManProcessor } from '../WSManProcessor'
 import { RPSError } from '../utils/RPSError'
 import { IConfigurator } from '../interfaces/IConfigurator'
 import { EnvReader } from '../utils/EnvReader'
@@ -23,7 +22,6 @@ export class Deactivator implements IExecutor {
   constructor (
     private readonly logger: ILogger,
     private readonly responseMsg: ClientResponseMsg,
-    private readonly amtwsman: WSManProcessor,
     readonly configurator?: IConfigurator
   ) {
     this.amt = new AMT.Messages()

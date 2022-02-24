@@ -35,7 +35,7 @@ const amtwsman = new WSManProcessor(new Logger('WSManProcessor'), responseMsg)
 const validator = new Validator(new Logger('Validator'), configurator)
 const tlsConfig = new TLSConfigurator(new Logger('CIRAConfig'), certManager, responseMsg, amtwsman)
 const ciraConfig = new CIRAConfigurator(new Logger('CIRAConfig'), configurator, responseMsg, tlsConfig)
-const networkConfigurator = new NetworkConfigurator(new Logger('NetworkConfig'), configurator, responseMsg, amtwsman, validator, ciraConfig)
+const networkConfigurator = new NetworkConfigurator(new Logger('NetworkConfig'), configurator, responseMsg, validator, ciraConfig)
 const activator = new Activator(new Logger('Activator'), configurator, certManager, helper, responseMsg, validator, networkConfigurator)
 const httpHandler = new HttpHandler()
 let clientId, activationmsg

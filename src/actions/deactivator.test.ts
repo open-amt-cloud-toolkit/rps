@@ -8,7 +8,6 @@ import { Deactivator } from './Deactivator'
 import Logger from '../Logger'
 import { config } from '../test/helper/Config'
 import { ClientResponseMsg } from '../utils/ClientResponseMsg'
-import { WSManProcessor } from '../WSManProcessor'
 import { EnvReader } from '../utils/EnvReader'
 import { HttpZResponseModel, parse } from 'http-z'
 import { HttpHandler } from '../HttpHandler'
@@ -18,9 +17,8 @@ import { devices } from '../WebSocketListener'
 EnvReader.GlobalEnvConfig = config
 
 const responseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'))
-const amtwsman = new WSManProcessor(new Logger('WSManProcessor'), responseMsg)
 const configurator = new Configurator()
-const deactivate = new Deactivator(new Logger('Deactivator'), responseMsg, amtwsman, configurator)
+const deactivate = new Deactivator(new Logger('Deactivator'), responseMsg, configurator)
 let clientId, deactivatemsg
 
 beforeAll(() => {
