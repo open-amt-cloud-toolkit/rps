@@ -1,3 +1,8 @@
+/*********************************************************************
+ * Copyright (c) Intel Corporation 2022
+ * SPDX-License-Identifier: Apache-2.0
+ **********************************************************************/
+
 import { v4 as uuid } from 'uuid'
 import Logger from '../Logger'
 import { NodeForge } from '../NodeForge'
@@ -5,7 +10,6 @@ import { CertManager } from '../CertManager'
 import { Configurator } from '../Configurator'
 import { config } from '../test/helper/Config'
 import { ClientResponseMsg } from '../utils/ClientResponseMsg'
-import { WSManProcessor } from '../WSManProcessor'
 import { EnvReader } from '../utils/EnvReader'
 import { CIRAConfigurator } from './CIRAConfigurator'
 import { TLSConfigurator } from './TLSConfigurator'
@@ -18,8 +22,7 @@ const nodeForge = new NodeForge()
 const certManager = new CertManager(new Logger('CertManager'), nodeForge)
 const configurator = new Configurator()
 const responseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'))
-const amtwsman = new WSManProcessor(new Logger('WSManProcessor'), responseMsg)
-const tlsConfig = new TLSConfigurator(new Logger('CIRAConfig'), certManager, responseMsg, amtwsman)
+const tlsConfig = new TLSConfigurator(new Logger('CIRAConfig'), certManager, responseMsg)
 const ciraConfig = new CIRAConfigurator(new Logger('CIRAConfig'), configurator, responseMsg, tlsConfig)
 let clientId, activationmsg
 
@@ -164,25 +167,25 @@ describe('save Device Information to MPS database', () => {
 describe('remove Remote Access Policy Rule', () => {
   test('should return a wsman to delete Policy Rule Name user initiated from AMT', async () => {
     const clientObj = devices[clientId]
-    const result = ciraConfig.removeRemoteAccessPolicyRule(clientId, clientObj)
+    const result = ciraConfig.removeRemoteAccessPolicyRule(clientId)
     expect(result.method).toBe('wsman')
     expect(clientObj.ciraconfig.policyRuleUserInitiate).toBeTruthy()
   })
   test('should return a wsman to delete Policy Rule Name alert from AMT', async () => {
     const clientObj = devices[clientId]
-    const result = ciraConfig.removeRemoteAccessPolicyRule(clientId, clientObj)
+    const result = ciraConfig.removeRemoteAccessPolicyRule(clientId)
     expect(result.method).toBe('wsman')
     expect(clientObj.ciraconfig.policyRuleAlert).toBeTruthy()
   })
   test('should return a wsman to delete Policy Rule Name Periodic from AMT', async () => {
     const clientObj = devices[clientId]
-    const result = ciraConfig.removeRemoteAccessPolicyRule(clientId, clientObj)
+    const result = ciraConfig.removeRemoteAccessPolicyRule(clientId)
     expect(result.method).toBe('wsman')
     expect(clientObj.ciraconfig.policyRulePeriodic).toBeTruthy()
   })
   test('should return null when all the policy rules are deleted', async () => {
     const clientObj = devices[clientId]
-    const result = ciraConfig.removeRemoteAccessPolicyRule(clientId, clientObj)
+    const result = ciraConfig.removeRemoteAccessPolicyRule(clientId)
     expect(result).toBeNull()
     expect(clientObj.ciraconfig.policyRulePeriodic).toBeTruthy()
     expect(clientObj.ciraconfig.policyRuleAlert).toBeTruthy()
@@ -192,7 +195,6 @@ describe('remove Remote Access Policy Rule', () => {
 
 describe('validate Management Presence Remote SAP', () => {
   test('should return a wsman to Pull the existing MPS config from AMT', async () => {
-    const clientObj = devices[clientId]
     const response = {
       Envelope: {
         Header: {
@@ -209,11 +211,10 @@ describe('validate Management Presence Remote SAP', () => {
         }
       }
     }
-    const result = ciraConfig.validateManagementPresenceRemoteSAP(clientId, clientObj, response)
+    const result = ciraConfig.validateManagementPresenceRemoteSAP(clientId, response)
     expect(result.method).toBe('wsman')
   })
   test('should return a wsman to delete the existing config from AMT', async () => {
-    const clientObj = devices[clientId]
     const response = {
       Envelope: {
         Header: {
@@ -223,11 +224,10 @@ describe('validate Management Presence Remote SAP', () => {
         Body: { PullResponse: { Items: { AMT_ManagementPresenceRemoteSAP: { Name: 'Intel(r) AMT:Management Presence Server 0' } } } }
       }
     }
-    const result = ciraConfig.validateManagementPresenceRemoteSAP(clientId, clientObj, response)
+    const result = ciraConfig.validateManagementPresenceRemoteSAP(clientId, response)
     expect(result.method).toBe('wsman')
   })
   test('should return a wsman to enumerate the existing Public Key Certificates from AMT when pull response null', async () => {
-    const clientObj = devices[clientId]
     const response = {
       Envelope: {
         Header: {
@@ -237,11 +237,10 @@ describe('validate Management Presence Remote SAP', () => {
         Body: { PullResponse: { Items: '' } }
       }
     }
-    const result = ciraConfig.validateManagementPresenceRemoteSAP(clientId, clientObj, response)
+    const result = ciraConfig.validateManagementPresenceRemoteSAP(clientId, response)
     expect(result.method).toBe('wsman')
   })
   test('should return a wsman to enumerate the existing Public Key Certificates from AMT', async () => {
-    const clientObj = devices[clientId]
     const response = {
       Envelope: {
         Header: {
@@ -254,14 +253,13 @@ describe('validate Management Presence Remote SAP', () => {
         Body: ''
       }
     }
-    const result = ciraConfig.validateManagementPresenceRemoteSAP(clientId, clientObj, response)
+    const result = ciraConfig.validateManagementPresenceRemoteSAP(clientId, response)
     expect(result.method).toBe('wsman')
   })
 })
 
 describe('validate Public Key Certificate', () => {
   test('should return a wsman to pull Public Key Certificates from AMT', async () => {
-    const clientObj = devices[clientId]
     const response = {
       Envelope: {
         Header: {
@@ -271,11 +269,10 @@ describe('validate Public Key Certificate', () => {
         Body: { EnumerateResponse: { EnumerationContext: '3F000000-0000-0000-0000-000000000000' } }
       }
     }
-    const result = ciraConfig.validatePublicKeyCertificate(clientId, clientObj, response)
+    const result = ciraConfig.validatePublicKeyCertificate(clientId, response)
     expect(result.method).toBe('wsman')
   })
   test('should return a wsman to delete Public Key Certificates from AMT', async () => {
-    const clientObj = devices[clientId]
     const response = {
       Envelope: {
         Header: {
@@ -289,11 +286,10 @@ describe('validate Public Key Certificate', () => {
         }
       }
     }
-    const result = ciraConfig.validatePublicKeyCertificate(clientId, clientObj, response)
+    const result = ciraConfig.validatePublicKeyCertificate(clientId, response)
     expect(result.method).toBe('wsman')
   })
   test('should return a wsman to get Environment Detection Setting Data from AMT', async () => {
-    const clientObj = devices[clientId]
     const response = {
       Envelope: {
         Header: {
@@ -303,11 +299,10 @@ describe('validate Public Key Certificate', () => {
         Body: ''
       }
     }
-    const result = ciraConfig.validatePublicKeyCertificate(clientId, clientObj, response)
+    const result = ciraConfig.validatePublicKeyCertificate(clientId, response)
     expect(result.method).toBe('wsman')
   })
   test('should return wsman to get Environment Detection Setting Data from AMT when no certificates exists', async () => {
-    const clientObj = devices[clientId]
     const response = {
       Envelope: {
         Header: {
@@ -321,7 +316,7 @@ describe('validate Public Key Certificate', () => {
         }
       }
     }
-    const result = ciraConfig.validatePublicKeyCertificate(clientId, clientObj, response)
+    const result = ciraConfig.validatePublicKeyCertificate(clientId, response)
     expect(result.method).toBe('wsman')
   })
 })
@@ -347,7 +342,7 @@ describe('Validate User Initiated Connection Service ', () => {
       }
     }
     try {
-      await ciraConfig.ValidateUserInitiatedConnectionService(clientId, clientObj, response)
+      await ciraConfig.ValidateUserInitiatedConnectionService(clientId, response)
     } catch (error) {
       rpsError = error
     }
@@ -372,7 +367,7 @@ describe('Validate User Initiated Connection Service ', () => {
         }
       }
     }
-    const result = ciraConfig.ValidateUserInitiatedConnectionService(clientId, clientObj, response)
+    const result = ciraConfig.ValidateUserInitiatedConnectionService(clientId, response)
     expect(result.method).toBe('wsman')
     expect(clientObj.ciraconfig.userInitConnectionService).toBeTruthy()
   })
@@ -398,7 +393,7 @@ describe('Validate Environment Detection Setting Data', () => {
         }
       }
     }
-    const result = await ciraConfig.ValidateEnvironmentDetectionSettingData(clientId, clientObj, response)
+    const result = await ciraConfig.ValidateEnvironmentDetectionSettingData(clientId, response)
     expect(result.method).toBe('wsman')
     expect(clientObj.ciraconfig.setENVSettingData).toBeTruthy()
   })
@@ -420,7 +415,7 @@ describe('Validate Environment Detection Setting Data', () => {
         }
       }
     }
-    const result = await ciraConfig.ValidateEnvironmentDetectionSettingData(clientId, clientObj, response)
+    const result = await ciraConfig.ValidateEnvironmentDetectionSettingData(clientId, response)
     expect(result).toBe(null)
     expect(clientObj.ciraconfig.setENVSettingData).toBeTruthy()
   })
@@ -442,7 +437,7 @@ describe('Validate Environment Detection Setting Data', () => {
         }
       }
     }
-    const result = await ciraConfig.ValidateEnvironmentDetectionSettingData(clientId, clientObj, response)
+    const result = await ciraConfig.ValidateEnvironmentDetectionSettingData(clientId, response)
     expect(result).toBe(null)
     expect(clientObj.ciraconfig.setENVSettingData).toBeTruthy()
   })
@@ -464,7 +459,7 @@ describe('Validate Environment Detection Setting Data', () => {
         }
       }
     }
-    const result = await ciraConfig.ValidateEnvironmentDetectionSettingData(clientId, clientObj, response)
+    const result = await ciraConfig.ValidateEnvironmentDetectionSettingData(clientId, response)
     expect(result.method).toBe('wsman')
     expect(clientObj.ciraconfig.setENVSettingData).toBeTruthy()
   })
@@ -487,7 +482,7 @@ describe('Validate Environment Detection Setting Data', () => {
         }
       }
     }
-    const result = await ciraConfig.ValidateEnvironmentDetectionSettingData(clientId, clientObj, response)
+    const result = await ciraConfig.ValidateEnvironmentDetectionSettingData(clientId, response)
     expect(result.method).toBe('success')
     expect(clientObj.status.CIRAConnection).toBe('Configured')
   })
@@ -496,7 +491,6 @@ describe('Validate Environment Detection Setting Data', () => {
 describe('Validate Public Key Management Service', () => {
   test('should throw an error if trusted Root Certificate is not added ', async () => {
     let rpsError
-    const clientObj = devices[clientId]
     const response = {
       Envelope: {
         Header: {
@@ -514,7 +508,7 @@ describe('Validate Public Key Management Service', () => {
       }
     }
     try {
-      await ciraConfig.ValidatePublicKeyManagementService(clientId, clientObj, response)
+      await ciraConfig.ValidatePublicKeyManagementService(clientId, response)
     } catch (error) {
       rpsError = error
     }
@@ -524,7 +518,6 @@ describe('Validate Public Key Management Service', () => {
   test('should return a wsman if trusted Root Certificate added ', async () => {
     const setMPSPasswordSpy = jest.spyOn(ciraConfig, 'setMPSPasswordInVault').mockImplementation(async () => { })
     const saveDeviceInfoToMPSSpy = jest.spyOn(ciraConfig, 'saveDeviceInfoToMPS').mockImplementation(async () => { return true })
-    const clientObj = devices[clientId]
     const response = {
       Envelope: {
         Header: {
@@ -550,7 +543,7 @@ describe('Validate Public Key Management Service', () => {
         }
       }
     }
-    const result = await ciraConfig.ValidatePublicKeyManagementService(clientId, clientObj, response)
+    const result = await ciraConfig.ValidatePublicKeyManagementService(clientId, response)
     expect(setMPSPasswordSpy).toHaveBeenCalled()
     expect(saveDeviceInfoToMPSSpy).toHaveBeenCalled()
     expect(result.method).toBe('wsman')
@@ -575,7 +568,7 @@ describe('Validate Remote Access Service', () => {
       }
     }
     try {
-      await ciraConfig.ValidateRemoteAccessService(clientId, clientObj, response)
+      await ciraConfig.ValidateRemoteAccessService(clientId, response)
     } catch (error) {
       rpsError = error
     }
@@ -583,7 +576,6 @@ describe('Validate Remote Access Service', () => {
     expect(rpsError.message).toBe(`Device ${clientObj.uuid} failed to add MPS server.`)
   })
   test('should return a wsman if  MPS server added ', () => {
-    const clientObj = devices[clientId]
     const response = {
       Envelope: {
         Header: {
@@ -597,7 +589,7 @@ describe('Validate Remote Access Service', () => {
         }
       }
     }
-    const result = ciraConfig.ValidateRemoteAccessService(clientId, clientObj, response)
+    const result = ciraConfig.ValidateRemoteAccessService(clientId, response)
     expect(result.method).toBe('wsman')
   })
   test('should throw an error if it is failed to add remote policy rule', async () => {
@@ -617,7 +609,7 @@ describe('Validate Remote Access Service', () => {
       }
     }
     try {
-      await ciraConfig.ValidateRemoteAccessService(clientId, clientObj, response)
+      await ciraConfig.ValidateRemoteAccessService(clientId, response)
     } catch (error) {
       rpsError = error
     }
@@ -625,7 +617,6 @@ describe('Validate Remote Access Service', () => {
     expect(rpsError.message).toBe(`Device ${clientObj.uuid} failed to add access policy rule.`)
   })
   test('should return a wsman if remote policy rule is added ', () => {
-    const clientObj = devices[clientId]
     const response = {
       Envelope: {
         Header: {
@@ -639,7 +630,7 @@ describe('Validate Remote Access Service', () => {
         }
       }
     }
-    const result = ciraConfig.ValidateRemoteAccessService(clientId, clientObj, response)
+    const result = ciraConfig.ValidateRemoteAccessService(clientId, response)
     expect(result.method).toBe('wsman')
   })
 })

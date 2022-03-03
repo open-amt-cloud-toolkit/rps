@@ -12,5 +12,5 @@ export interface IWebSocketListener{
   onClientDisconnected: (clientId: string) => void
   onMessageReceived: (message: WebSocket.Data, clientId: string) => void
   onError: (error: Error, clientId: string) => void
-  onSendMessage: (message: ClientMsg, clientId: string) => void
+  sendMessage: (message: ClientMsg, clientId: string) => void
 }

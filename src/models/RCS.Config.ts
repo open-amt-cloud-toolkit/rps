@@ -165,8 +165,8 @@ export interface TLSConfigFlow {
   addCert?: boolean
   getTLSSettingData?: boolean
   getTLSCredentialContext?: boolean
-  PublicKeyCertificate?: any
-  PublicPrivateKeyPair?: any
+  PublicKeyCertificate?: any[]
+  PublicPrivateKeyPair?: any[]
   TLSSettingData?: any
   TLSCredentialContext?: any
   setRemoteTLS?: boolean

@@ -14,7 +14,6 @@ import { config } from './test/helper/Config'
 import { SignatureHelper } from './utils/SignatureHelper'
 import { Validator } from './Validator'
 import { ClientResponseMsg } from './utils/ClientResponseMsg'
-import { WSManProcessor } from './WSManProcessor'
 import { EnvReader } from './utils/EnvReader'
 import { ClientAction } from './models/RCS.Config'
 import { devices } from './WebSocketListener'
@@ -25,7 +24,6 @@ const nodeForge = new NodeForge()
 const certManager = new CertManager(new Logger('CertManager'), nodeForge)
 const helper = new SignatureHelper(nodeForge)
 const responseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'))
-const amtwsman = new WSManProcessor(new Logger('WSManProcessor'), responseMsg)
 const configurator: Configurator = new Configurator()
 const validator = new Validator(new Logger('Validator'), configurator)
 let clientActions: any
@@ -33,7 +31,7 @@ let activationmsg
 
 describe('Client Actions', () => {
   beforeEach(() => {
-    clientActions = new ClientActions(new Logger('ClientActions'), configurator, certManager, helper, responseMsg, amtwsman, validator)
+    clientActions = new ClientActions(new Logger('ClientActions'), configurator, certManager, helper, responseMsg, validator)
     activationmsg = {
       method: 'activation',
       apiKey: 'key',

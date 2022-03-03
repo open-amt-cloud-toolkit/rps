@@ -12,7 +12,6 @@ import { CertManager } from '../CertManager'
 import { Configurator } from '../Configurator'
 import { config } from '../test/helper/Config'
 import { ClientResponseMsg } from '../utils/ClientResponseMsg'
-import { WSManProcessor } from '../WSManProcessor'
 import { Validator } from '../Validator'
 import { EnvReader } from '../utils/EnvReader'
 import { CIRAConfigurator } from './CIRAConfigurator'
@@ -31,9 +30,8 @@ const certManager = new CertManager(new Logger('CertManager'), nodeForge)
 const helper = new SignatureHelper(nodeForge)
 const configurator = new Configurator()
 const responseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'))
-const amtwsman = new WSManProcessor(new Logger('WSManProcessor'), responseMsg)
 const validator = new Validator(new Logger('Validator'), configurator)
-const tlsConfig = new TLSConfigurator(new Logger('CIRAConfig'), certManager, responseMsg, amtwsman)
+const tlsConfig = new TLSConfigurator(new Logger('CIRAConfig'), certManager, responseMsg)
 const ciraConfig = new CIRAConfigurator(new Logger('CIRAConfig'), configurator, responseMsg, tlsConfig)
 const networkConfigurator = new NetworkConfigurator(new Logger('NetworkConfig'), configurator, responseMsg, validator, ciraConfig)
 const activator = new Activator(new Logger('Activator'), configurator, certManager, helper, responseMsg, validator, networkConfigurator)

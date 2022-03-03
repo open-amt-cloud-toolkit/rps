@@ -93,13 +93,13 @@ export class Activator implements IExecutor {
         if (clientObj.action === ClientAction.ADMINCTLMODE) {
           this.createSignedString(clientId)
           // Activate in ACM
-          xmlRequestBody = this.ips.HostBasedSetupService(IPS.Methods.ADMIN_SETUP, (clientObj.messageId++).toString(), 2, password, clientObj.nonce.toString('base64'), 2, clientObj.signature)
+          xmlRequestBody = this.ips.HostBasedSetupService(IPS.Methods.ADMIN_SETUP, 2, password, clientObj.nonce.toString('base64'), 2, clientObj.signature)
         } else {
           // Activate in CCM
-          xmlRequestBody = this.ips.HostBasedSetupService(IPS.Methods.SETUP, (clientObj.messageId++).toString(), 2, password)
+          xmlRequestBody = this.ips.HostBasedSetupService(IPS.Methods.SETUP, 2, password)
         }
         const wsmanRequest = httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
-        return this.responseMsg.get(clientId, wsmanRequest, 'wsman', 'ok', 'alls good!')
+        return this.responseMsg.get(clientId, wsmanRequest, 'wsman', 'ok')
       }
     } catch (error) {
       this.logger.error(`${clientId} : Failed to activate - ${error}`)
@@ -150,9 +150,9 @@ export class Activator implements IExecutor {
     const wsmanResponse = message.payload
     switch (wsmanResponse.statusCode) {
       case 401: {
-        const xmlRequestBody = this.amt.GeneralSettings(AMT.Methods.GET, (clientObj.messageId++).toString())
+        const xmlRequestBody = this.amt.GeneralSettings(AMT.Methods.GET)
         const data = httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
-        return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+        return this.responseMsg.get(clientId, data, 'wsman', 'ok')
       }
       case 200: {
         const xmlBody = parseBody(wsmanResponse)
@@ -187,9 +187,9 @@ export class Activator implements IExecutor {
     clientObj.ClientData.payload.digestRealm = digestRealm
     clientObj.hostname = clientObj.ClientData.payload.hostname
     if (clientObj.ClientData.payload.fwNonce == null && clientObj.action === ClientAction.ADMINCTLMODE) {
-      const xmlRequestBody = this.ips.HostBasedSetupService(IPS.Methods.GET, (clientObj.messageId++).toString())
+      const xmlRequestBody = this.ips.HostBasedSetupService(IPS.Methods.GET)
       const data = httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
-      return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+      return this.responseMsg.get(clientId, data, 'wsman', 'ok')
     }
     return null
   }
@@ -272,14 +272,14 @@ export class Activator implements IExecutor {
           this.logger.debug(`Device ${clientObj.uuid} failed to update MEBx password.`)
         }
         clientObj.action = ClientAction.NETWORKCONFIG
-        await this.networkConfigurator.execute(null, clientId)
+        return await this.networkConfigurator.execute(null, clientId)
       } else if (clientObj.action === ClientAction.CLIENTCTLMODE) {
         clientObj.action = ClientAction.NETWORKCONFIG
-        await this.networkConfigurator.execute(null, clientId)
+        return await this.networkConfigurator.execute(null, clientId)
       }
     } else {
       this.logger.debug(`Current Time: ${currentTime} Delay end time : ${clientObj.delayEndTime}`)
-      return this.responseMsg.get(clientId, null, 'heartbeat_request', 'heartbeat', '')
+      return this.responseMsg.get(clientId, null, 'heartbeat_request', 'heartbeat')
     }
   }
 
@@ -305,14 +305,14 @@ export class Activator implements IExecutor {
         throw new RPSError(`Device ${clientObj.uuid} activation failed. Provisioning certificate doesn't match any trusted certificates from AMT`)
       }
     }
-    return await this.injectCertificate(clientId, httpHandler)
+    return this.injectCertificate(clientId, httpHandler)
   }
 
   /**
   * @description Injects provisioning certificate into AMT
   * @param {string} clientId Id to keep track of connections
   */
-  async injectCertificate (clientId: string, httpHandler: HttpHandler): Promise<ClientMsg> {
+  injectCertificate (clientId: string, httpHandler: HttpHandler): ClientMsg {
     const clientObj = devices[clientId]
     let data
     // inject certificates in proper order with proper flags
@@ -326,11 +326,11 @@ export class Activator implements IExecutor {
         isRoot = true
       }
       // else if (clientObj.count > 1 && clientObj.count < clientObj.certObj.certChain.length) {}
-      xmlRequestBody = this.ips.HostBasedSetupService(IPS.Methods.ADD_NEXT_CERT_IN_CHAIN, (clientObj.messageId++).toString(), null, null, null, null, null, clientObj.certObj.certChain[clientObj.count - 1], isLeaf, isRoot)
+      xmlRequestBody = this.ips.HostBasedSetupService(IPS.Methods.ADD_NEXT_CERT_IN_CHAIN, null, null, null, null, null, clientObj.certObj.certChain[clientObj.count - 1], isLeaf, isRoot)
       data = httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
 
       ++clientObj.count
-      return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+      return this.responseMsg.get(clientId, data, 'wsman', 'ok')
     }
   }
 

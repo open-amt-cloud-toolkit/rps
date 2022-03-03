@@ -8,20 +8,18 @@ import * as WebSocket from 'ws'
 
 import { ILogger } from './interfaces/ILogger'
 import { IDataProcessor } from './interfaces/IDataProcessor'
-import { ClientMsg, ClientAction, ClientMethods, ClientObject } from './models/RCS.Config'
+import { ClientMsg, ClientAction, ClientMethods } from './models/RCS.Config'
 import { ClientActions } from './ClientActions'
 import { SignatureHelper } from './utils/SignatureHelper'
 import Logger from './Logger'
 import { IConfigurator } from './interfaces/IConfigurator'
 import { RPSError } from './utils/RPSError'
-import { WSManProcessor } from './WSManProcessor'
 import { ClientResponseMsg } from './utils/ClientResponseMsg'
 import { IValidator } from './interfaces/IValidator'
 import { CertManager } from './CertManager'
-import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
+import { AMT, Common } from '@open-amt-cloud-toolkit/wsman-messages'
 import { HttpHandler } from './HttpHandler'
 import { parse, HttpZResponseModel } from 'http-z'
-import { DigestChallenge } from '@open-amt-cloud-toolkit/wsman-messages/models/common'
 import { devices } from './WebSocketListener'
 
 export class DataProcessor implements IDataProcessor {
@@ -34,10 +32,9 @@ export class DataProcessor implements IDataProcessor {
     private readonly configurator: IConfigurator,
     readonly validator: IValidator,
     private readonly certManager: CertManager,
-    private readonly responseMsg: ClientResponseMsg,
-    private readonly amtwsman: WSManProcessor
+    private readonly responseMsg: ClientResponseMsg
   ) {
-    this.clientActions = new ClientActions(new Logger('ClientActions'), configurator, certManager, signatureHelper, responseMsg, amtwsman, validator)
+    this.clientActions = new ClientActions(new Logger('ClientActions'), configurator, certManager, signatureHelper, responseMsg, validator)
     this.amt = new AMT.Messages()
     this.httpHandler = new HttpHandler()
   }
@@ -94,12 +91,12 @@ export class DataProcessor implements IDataProcessor {
     await this.validator.validateActivationMsg(clientMsg, clientId) // Validate the activation message payload
 
     // Makes the first wsman call
-    let clientObj = devices[clientId]
-    clientObj = this.setConnectionParams(clientId)
+    const clientObj = devices[clientId]
+    this.setConnectionParams(clientId)
     if ((clientObj.action === ClientAction.ADMINCTLMODE || clientObj.action === ClientAction.CLIENTCTLMODE) && !clientMsg.payload.digestRealm && !clientObj.activationStatus.missingMebxPassword) {
-      const xmlRequestBody = this.amt.GeneralSettings(AMT.Methods.GET, (clientObj.messageId++).toString())
+      const xmlRequestBody = this.amt.GeneralSettings(AMT.Methods.GET)
       const data = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
-      return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+      return this.responseMsg.get(clientId, data, 'wsman', 'ok')
     } else {
       const response = await this.clientActions.buildResponseMessage(clientMsg, clientId)
       return response
@@ -107,12 +104,13 @@ export class DataProcessor implements IDataProcessor {
   }
 
   async deactivateDevice (clientMsg: ClientMsg, clientId: string): Promise<ClientMsg> {
+    const clientObj = devices[clientId]
     this.logger.debug(`ProcessData: Parsed DEACTIVATION Message received from device ${clientMsg.payload.uuid}: ${JSON.stringify(clientMsg, null, '\t')}`)
     await this.validator.validateDeactivationMsg(clientMsg, clientId) // Validate the deactivation message payload
-    const clientObj = this.setConnectionParams(clientId, 'admin', clientMsg.payload.password, clientMsg.payload.uuid)
-    const xmlRequestBody = this.amt.SetupAndConfigurationService(AMT.Methods.UNPROVISION, (clientObj.messageId++).toString(), null, 2)
+    this.setConnectionParams(clientId, 'admin', clientMsg.payload.password, clientMsg.payload.uuid)
+    const xmlRequestBody = this.amt.SetupAndConfigurationService(AMT.Methods.UNPROVISION, null, 2)
     const data = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
-    return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+    return this.responseMsg.get(clientId, data, 'wsman', 'ok')
   }
 
   async handleResponse (clientMsg: ClientMsg, clientId: string): Promise<ClientMsg> {
@@ -143,7 +141,7 @@ export class DataProcessor implements IDataProcessor {
       return await this.clientActions.buildResponseMessage(clientMsg, clientId, this.httpHandler)
     } else {
       await new Promise(resolve => setTimeout(resolve, 5000)) // TODO: make configurable rate if required by customers
-      return this.responseMsg.get(clientId, null, 'heartbeat_request', 'heartbeat', '')
+      return this.responseMsg.get(clientId, null, 'heartbeat_request', 'heartbeat')
     }
   }
 
@@ -154,7 +152,7 @@ export class DataProcessor implements IDataProcessor {
     return await this.clientActions.buildResponseMessage(clientMsg, clientId, this.httpHandler)
   }
 
-  handleAuth (message: HttpZResponseModel): DigestChallenge {
+  handleAuth (message: HttpZResponseModel): Common.Models.DigestChallenge {
     const found = message.headers.find(item => item.name === 'Www-Authenticate')
     if (found != null) {
       return this.httpHandler.parseAuthenticateResponseHeader(found.value)
@@ -162,7 +160,7 @@ export class DataProcessor implements IDataProcessor {
     return null
   }
 
-  setConnectionParams (clientId: string, username: string = null, password: string = null, uuid: string = null): ClientObject {
+  setConnectionParams (clientId: string, username: string = null, password: string = null, uuid: string = null): void {
     const clientObj = devices[clientId]
     clientObj.connectionParams = {
       port: 16992,
@@ -170,6 +168,5 @@ export class DataProcessor implements IDataProcessor {
       username: username ?? clientObj.ClientData.payload.username,
       password: password ?? clientObj.ClientData.payload.password
     }
-    return clientObj
   }
 }

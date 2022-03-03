@@ -12,7 +12,6 @@ import { ILogger } from './interfaces/ILogger'
 import { SignatureHelper } from './utils/SignatureHelper'
 import { Activator } from './actions/Activator'
 import { ClientResponseMsg } from './utils/ClientResponseMsg'
-import { WSManProcessor } from './WSManProcessor'
 import { IValidator } from './interfaces/IValidator'
 import { RPSError } from './utils/RPSError'
 import { Deactivator } from './actions/Deactivator'
@@ -33,11 +32,10 @@ export class ClientActions {
     private readonly certManager: CertManager,
     private readonly helper: SignatureHelper,
     private readonly responseMsg: ClientResponseMsg,
-    private readonly amtwsman: WSManProcessor,
     private readonly validator: IValidator) {
     this.actions = {}
 
-    const tlsConfig = new TLSConfigurator(new Logger('TLSConfig'), certManager, responseMsg, amtwsman)
+    const tlsConfig = new TLSConfigurator(new Logger('TLSConfig'), certManager, responseMsg)
     this.actions[ClientAction.TLSCONFIG] = tlsConfig
 
     const ciraConfig = new CIRAConfigurator(new Logger('CIRAConfig'), configurator, responseMsg, tlsConfig)

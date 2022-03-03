@@ -8,71 +8,100 @@ import { IExecutor } from '../interfaces/IExecutor'
 import { ILogger } from '../interfaces/ILogger'
 import { ClientMsg, ClientObject } from '../models/RCS.Config'
 import { ClientResponseMsg } from '../utils/ClientResponseMsg'
-import { AMTUserName } from '../utils/constants'
 import { EnvReader } from '../utils/EnvReader'
 import { MqttProvider } from '../utils/MqttProvider'
 import { RPSError } from '../utils/RPSError'
-import { WSManProcessor } from '../WSManProcessor'
 import { AMTConfiguration, AMTKeyUsage, CertAttributes, TLSCerts } from '../models'
 import got from 'got'
 
 import * as forge from 'node-forge'
 import { devices } from '../WebSocketListener'
+import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
+import { Methods } from '@open-amt-cloud-toolkit/wsman-messages/amt'
+import { HttpHandler } from '../HttpHandler'
+import { parseBody } from '../utils/parseWSManResponseBody'
 
 export class TLSConfigurator implements IExecutor {
-  clientObj: ClientObject
-  amtwsman: WSManProcessor
   responseMsg: ClientResponseMsg
+  amt: AMT.Messages
+  httpHandler: HttpHandler
   constructor (
     private readonly logger: ILogger,
     private readonly certManager: CertManager,
-    private readonly _responseMsg: ClientResponseMsg,
-    private readonly _amtwsman: WSManProcessor
+    private readonly _responseMsg: ClientResponseMsg
   ) {
     this.responseMsg = _responseMsg
-    this.amtwsman = _amtwsman
+    this.amt = new AMT.Messages()
+    this.httpHandler = new HttpHandler()
   }
 
   async execute (message: any, clientId: string): Promise<ClientMsg> {
+    const clientObj = devices[clientId]
     try {
-      this.clientObj = devices[clientId]
-
-      await this.processWSManJsonResponses(message, clientId)
-      // Trusted Root Certificates
-      await this.trustedRootCertificates(clientId)
-      // Generate Key Pair at Intel AMT
-      await this.generateKeyPair(clientId)
-      // Create TLS Credential Context
-      await this.createTLSCredentialContext(clientId)
-      // synchronize time
-      await this.synchronizeTime(clientId)
-      // Set TLS data
-      await this.setTLSData(clientId)
-      // Update the TLS Configuration status and responsed to AMT
-      if (this.clientObj.tls.commitLocalTLS) {
-        await this.updateDeviceVersion(this.clientObj)
-        this.clientObj.status.TLSConfiguration = 'Configured'
-        MqttProvider.publishEvent('success', ['TLSConfigurator'], 'TLS Configured', this.clientObj.uuid)
-        return this.responseMsg.get(clientId, null, 'success', 'success', JSON.stringify(this.clientObj.status))
+      let clientMessage: ClientMsg
+      // Process response message if not null
+      if (message != null) {
+        const msg = await this.processWSManJsonResponses(message, clientId)
+        if (msg) {
+          return msg
+        }
       }
+
+      // Trusted Root Certificates
+      clientMessage = await this.trustedRootCertificates(clientId)
+      if (clientMessage) {
+        return clientMessage
+      }
+      // Generate Key Pair at Intel AMT
+      clientMessage = await this.generateKeyPair(clientId)
+      if (clientMessage) {
+        return clientMessage
+      }
+      // Create TLS Credential Context
+      clientMessage = await this.createTLSCredentialContext(clientId)
+      if (clientMessage) {
+        return clientMessage
+      }
+      // synchronize time
+      clientMessage = await this.synchronizeTime(clientId)
+      if (clientMessage) {
+        return clientMessage
+      }
+      // Set TLS data
+      clientMessage = await this.setTLSData(clientId)
+      if (clientMessage) {
+        return clientMessage
+      }
+      // Update the TLS Configuration status and respond to AMT
+      if (clientObj.tls.commitLocalTLS) {
+        await this.updateDeviceVersion(clientObj)
+        clientObj.status.TLSConfiguration = 'Configured'
+        MqttProvider.publishEvent('success', ['TLSConfigurator'], 'TLS Configured', clientObj.uuid)
+        return this.responseMsg.get(clientId, null, 'success', 'success', JSON.stringify(clientObj.status))
+      }
+      return clientMessage
     } catch (error) {
       this.logger.error(`${clientId} : Failed to configure TLS : ${error}`)
       if (error instanceof RPSError) {
-        this.clientObj.status.TLSConfiguration = error.message
+        clientObj.status.TLSConfiguration = error.message
       } else {
-        this.clientObj.status.TLSConfiguration = 'Failed'
+        clientObj.status.TLSConfiguration = 'Failed'
       }
-      MqttProvider.publishEvent('fail', ['TLSConfigurator'], 'Failed to configure TLS', this.clientObj.uuid)
-      return this.responseMsg.get(clientId, null, 'error', 'failed', JSON.stringify(this.clientObj.status))
+      MqttProvider.publishEvent('fail', ['TLSConfigurator'], 'Failed to configure TLS', clientObj.uuid)
+      return this.responseMsg.get(clientId, null, 'error', 'failed', JSON.stringify(clientObj.status))
     }
-    return null
   }
 
-  async createTLSCredentialContext (clientId: string): Promise<void> {
-    if (this.clientObj.tls.confirmPublicPrivateKeyPair && !this.clientObj.tls.getTLSCredentialContext) {
-      await this.amtwsman.batchEnum(clientId, 'AMT_TLSCredentialContext', AMTUserName, this.clientObj.ClientData.payload.password)
-      this.clientObj.tls.getTLSCredentialContext = true
-    } else if (this.clientObj.tls.TLSCredentialContext != null && !this.clientObj.tls.addCredentialContext) {
+  async createTLSCredentialContext (clientId: string): Promise<ClientMsg> {
+    const clientObj = devices[clientId]
+    if (clientObj.tls.getTLSCredentialContext && clientObj.tls.addCredentialContext) {
+      return null
+    }
+    let xmlRequestBody = ''
+    if (clientObj.tls.confirmPublicPrivateKeyPair && !clientObj.tls.getTLSCredentialContext) {
+      xmlRequestBody = this.amt.TLSCredentialContext(Methods.ENUMERATE)
+      clientObj.tls.getTLSCredentialContext = true
+    } else if (clientObj.tls.TLSCredentialContext != null && !clientObj.tls.addCredentialContext) {
       const amtPrefix = 'http://intel.com/wbem/wscim/1/amt-schema/1/'
       // TBD: Need to pull certHandle from WSMan response object
       const certHandle = 'Intel(r) AMT Certificate: Handle: 1'
@@ -80,98 +109,128 @@ export class TLSConfigurator implements IExecutor {
         ElementInContext: `<a:Address>/wsman</a:Address><a:ReferenceParameters><w:ResourceURI>${amtPrefix}AMT_PublicKeyCertificate</w:ResourceURI><w:SelectorSet><w:Selector Name="InstanceID">${certHandle}</w:Selector></w:SelectorSet></a:ReferenceParameters>`,
         ElementProvidingContext: `<a:Address>/wsman</a:Address><a:ReferenceParameters><w:ResourceURI>${amtPrefix}AMT_TLSProtocolEndpointCollection</w:ResourceURI><w:SelectorSet><w:Selector Name="ElementName">TLSProtocolEndpointInstances Collection</w:Selector></w:SelectorSet></a:ReferenceParameters>`
       }
-      await this.amtwsman.create(clientId, 'AMT_TLSCredentialContext', putObj, null, AMTUserName, this.clientObj.ClientData.payload.password)
-      this.clientObj.tls.addCredentialContext = true
+      // TODO: TEST ME, LIKE FOR REAL
+      xmlRequestBody = this.amt.TLSCredentialContext(Methods.CREATE, null, putObj as any)
+      clientObj.tls.addCredentialContext = true
     }
+    const wsmanRequest = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
+    return this.responseMsg.get(clientId, wsmanRequest, 'wsman', 'ok')
   }
 
-  async trustedRootCertificates (clientId: string): Promise<void> {
-    const tlsCerts: TLSCerts = this.clientObj.ClientData.payload.profile.tlsCerts
-    if (!this.clientObj.tls.getPublicKeyCertificate) {
+  async trustedRootCertificates (clientId: string): Promise<ClientMsg> {
+    const clientObj = devices[clientId]
+    if (clientObj.tls.getPublicKeyCertificate && clientObj.tls.createdTrustedRootCert && clientObj.tls.checkPublicKeyCertificate) {
+      return null
+    }
+    const tlsCerts: TLSCerts = clientObj.ClientData.payload.profile.tlsCerts
+    let xmlRequestBody = ''
+    if (!clientObj.tls.getPublicKeyCertificate) {
       // Get existing Public Key Certificate, which are created using the AMT_PublicKeyManagementService AddCertificate and AddTrustedRootCertificate methods.
-      await this.amtwsman.batchEnum(clientId, 'AMT_PublicKeyCertificate', AMTUserName, this.clientObj.ClientData.payload.password)
-      this.clientObj.tls.getPublicKeyCertificate = true
-    } else if (this.clientObj.tls.PublicKeyCertificate?.responses?.length >= 0 && !this.clientObj.tls.addTrustedRootCert) {
+      xmlRequestBody = this.amt.PublicKeyCertificate(Methods.ENUMERATE)
+      clientObj.tls.getPublicKeyCertificate = true
+    } else if (clientObj.tls.PublicKeyCertificate.length >= 0 && !clientObj.tls.addTrustedRootCert) {
       // Add Trusted Root Certificate to AMT
-      await this.amtwsman.execute(clientId, 'AMT_PublicKeyManagementService', 'AddTrustedRootCertificate', { CertificateBlob: tlsCerts.ROOT_CERTIFICATE.certbin }, null, AMTUserName, this.clientObj.ClientData.payload.password)
-      this.clientObj.tls.addTrustedRootCert = true
-    } else if (this.clientObj.tls.createdTrustedRootCert && !this.clientObj.tls.checkPublicKeyCertificate) {
+      xmlRequestBody = this.amt.PublicKeyManagementService(Methods.ADD_TRUSTED_ROOT_CERTIFICATE, { CertificateBlob: tlsCerts.ROOT_CERTIFICATE.certbin })
+      clientObj.tls.addTrustedRootCert = true
+    } else if (clientObj.tls.createdTrustedRootCert && !clientObj.tls.checkPublicKeyCertificate) {
       // Get Public Key Certificates, to make sure the cert added in the above is in AMT
-      await this.amtwsman.batchEnum(clientId, 'AMT_PublicKeyCertificate', AMTUserName, this.clientObj.ClientData.payload.password)
-      this.clientObj.tls.checkPublicKeyCertificate = true
+      xmlRequestBody = this.amt.PublicKeyCertificate(Methods.ENUMERATE)
+      clientObj.tls.checkPublicKeyCertificate = true
     }
+    const wsmanRequest = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
+    return this.responseMsg.get(clientId, wsmanRequest, 'wsman', 'ok')
   }
 
-  async generateKeyPair (clientId: string): Promise<void> {
-    if (this.clientObj.tls.confirmPublicKeyCertificate && !this.clientObj.tls.getPublicPrivateKeyPair) {
-      // Get existing key pairs
-      await this.amtwsman.batchEnum(clientId, 'AMT_PublicPrivateKeyPair', AMTUserName, this.clientObj.ClientData.payload.password)
-      this.clientObj.tls.getPublicPrivateKeyPair = true
-    } else if (this.clientObj.tls.PublicPrivateKeyPair?.responses?.length >= 0 && !this.clientObj.tls.generateKeyPair) {
-      // generate a key pair
-      await this.amtwsman.execute(clientId, 'AMT_PublicKeyManagementService', 'GenerateKeyPair', { KeyAlgorithm: 0, KeyLength: 2048 }, null, AMTUserName, this.clientObj.ClientData.payload.password)
-      this.clientObj.tls.generateKeyPair = true
-    } else if (this.clientObj.tls.addCert && !this.clientObj.tls.checkPublicPrivateKeyPair) {
-      await this.amtwsman.batchEnum(clientId, 'AMT_PublicPrivateKeyPair', AMTUserName, this.clientObj.ClientData.payload.password)
-      this.clientObj.tls.checkPublicPrivateKeyPair = true
+  async generateKeyPair (clientId: string): Promise<ClientMsg> {
+    const clientObj = devices[clientId]
+    if (clientObj.tls.getPublicPrivateKeyPair && clientObj.tls.generateKeyPair && clientObj.tls.checkPublicPrivateKeyPair) {
+      return null
     }
+    let xmlRequestBody = ''
+    if (clientObj.tls.confirmPublicKeyCertificate && !clientObj.tls.getPublicPrivateKeyPair) {
+      // Get existing key pairs
+      xmlRequestBody = this.amt.PublicPrivateKeyPair(Methods.ENUMERATE)
+      clientObj.tls.getPublicPrivateKeyPair = true
+    } else if (clientObj.tls.PublicPrivateKeyPair?.length >= 0 && !clientObj.tls.generateKeyPair) {
+      // generate a key pair
+      xmlRequestBody = this.amt.PublicKeyManagementService(Methods.GENERATE_KEY_PAIR, { KeyAlgorithm: 0, KeyLength: 2048 })
+      clientObj.tls.generateKeyPair = true
+    } else if (clientObj.tls.addCert && !clientObj.tls.checkPublicPrivateKeyPair) {
+      xmlRequestBody = this.amt.PublicPrivateKeyPair(Methods.ENUMERATE)
+      clientObj.tls.checkPublicPrivateKeyPair = true
+    }
+    const wsmanRequest = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
+    return this.responseMsg.get(clientId, wsmanRequest, 'wsman', 'ok')
   }
 
   /**
    * @description Synchronize time
    * @param {string} clientId Id to keep track of connections
    **/
-  async synchronizeTime (clientId: string): Promise<void> {
-    if (this.clientObj.tls.resCredentialContext && !this.clientObj.tls.getTimeSynch) {
-      await this.amtwsman.execute(clientId, 'AMT_TimeSynchronizationService', 'GetLowAccuracyTimeSynch', {}, null, AMTUserName, this.clientObj.ClientData.payload.password)
-      this.clientObj.tls.getTimeSynch = true
+  async synchronizeTime (clientId: string): Promise<ClientMsg> {
+    const clientObj = devices[clientId]
+    if (clientObj.tls.getTimeSynch) {
+      return null
     }
+    let xmlRequestBody = ''
+    if (clientObj.tls.resCredentialContext && !clientObj.tls.getTimeSynch) {
+      xmlRequestBody = this.amt.TimeSynchronizationService(Methods.GET_LOW_ACCURACY_TIME_SYNCH)
+      clientObj.tls.getTimeSynch = true
+    }
+    const wsmanRequest = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
+    return this.responseMsg.get(clientId, wsmanRequest, 'wsman', 'ok')
   }
 
-  async setTLSData (clientId: string): Promise<void> {
-    const profile: AMTConfiguration = this.clientObj.ClientData.payload.profile
+  async setTLSData (clientId: string): Promise<ClientMsg> {
+    const clientObj = devices[clientId]
+    if (clientObj.tls.getTLSSettingData && clientObj.tls.putRemoteTLS && clientObj.tls.putLocalTLS) {
+      return null
+    }
+    const profile: AMTConfiguration = clientObj.ClientData.payload.profile
+    let xmlRequestBody = ''
 
-    if (this.clientObj.tls.setTimeSynch && !this.clientObj.tls.getTLSSettingData) {
+    if (clientObj.tls.setTimeSynch && !clientObj.tls.getTLSSettingData) {
       // Get the existing TLS data from AMT
-      await this.amtwsman.batchEnum(clientId, 'AMT_TLSSettingData', AMTUserName, this.clientObj.ClientData.payload.password)
-      this.clientObj.tls.getTLSSettingData = true
-    } else if (this.clientObj.tls.TLSSettingData != null && !this.clientObj.tls.putRemoteTLS) {
+      xmlRequestBody = this.amt.TLSSettingData(Methods.ENUMERATE)
+      clientObj.tls.getTLSSettingData = true
+    } else if (clientObj.tls.TLSSettingData != null && !clientObj.tls.putRemoteTLS) {
       // Set remote TLS data on AMT
-      this.clientObj.tls.TLSSettingData.responses[0].Enabled = true
-      this.clientObj.tls.TLSSettingData.responses[0].AcceptNonSecureConnections = (profile.tlsMode !== 1 && profile.tlsMode !== 3) // TODO: check what these values should explicitly be
-      this.clientObj.tls.TLSSettingData.responses[0].MutualAuthentication = (profile.tlsMode === 3 || profile.tlsMode === 4)
+      clientObj.tls.TLSSettingData[0].Enabled = true
+      clientObj.tls.TLSSettingData[0].AcceptNonSecureConnections = (profile.tlsMode !== 1 && profile.tlsMode !== 3) // TODO: check what these values should explicitly be
+      clientObj.tls.TLSSettingData[0].MutualAuthentication = (profile.tlsMode === 3 || profile.tlsMode === 4)
       if (profile.tlsMode === 3 || profile.tlsMode === 4) {
         const certificate = forge.pki.certificateFromPem(profile.tlsCerts.ISSUED_CERTIFICATE.pem)
         const commonName = certificate.subject.getField('CN').value
-        if (Array.isArray(this.clientObj.tls.TLSSettingData.responses[0].TrustedCN) && this.clientObj.tls.TLSSettingData.responses[0].TrustedCN.length > 0) {
-          this.clientObj.tls.TLSSettingData.responses[0].TrustedCN.push(commonName)
+        if (Array.isArray(clientObj.tls.TLSSettingData[0].TrustedCN) && clientObj.tls.TLSSettingData[0].TrustedCN.length > 0) {
+          clientObj.tls.TLSSettingData[0].TrustedCN.push(commonName)
         } else {
-          this.clientObj.tls.TLSSettingData.responses[0].TrustedCN = [commonName]
+          clientObj.tls.TLSSettingData[0].TrustedCN = [commonName]
         }
       }
-      this.logger.debug(`Remote TLSSetting Data : ${JSON.stringify(this.clientObj.tls.TLSSettingData.responses[0], null, '\t')}`)
-      await this.amtwsman.put(clientId, 'AMT_TLSSettingData', this.clientObj.tls.TLSSettingData.responses[0], AMTUserName, this.clientObj.ClientData.payload.password)
-      this.clientObj.tls.putRemoteTLS = true
-    } else if (this.clientObj.tls.commitRemoteTLS && !this.clientObj.tls.putLocalTLS) {
+      this.logger.debug(`Remote TLSSetting Data : ${JSON.stringify(clientObj.tls.TLSSettingData[0], null, '\t')}`)
+      xmlRequestBody = this.amt.TLSSettingData(Methods.PUT, null, clientObj.tls.TLSSettingData[0])
+      clientObj.tls.putRemoteTLS = true
+    } else if (clientObj.tls.commitRemoteTLS && !clientObj.tls.putLocalTLS) {
       // Since committing changes may cause an internal restart sequence, remote applications should allow sufficient time for Intel AMT to reload before issuing the next command.
       await new Promise(resolve => setTimeout(resolve, 5000))
       // Set local TLS data on AMT
-      this.clientObj.tls.TLSSettingData.responses[1].Enabled = true
+      clientObj.tls.TLSSettingData[1].Enabled = true
       if (profile.tlsMode === 3 || profile.tlsMode === 4) {
         const certificate = forge.pki.certificateFromPem(profile.tlsCerts.ISSUED_CERTIFICATE.pem)
         const commonName = certificate.subject.getField('CN').value
 
-        if (Array.isArray(this.clientObj.tls.TLSSettingData.responses[1].TrustedCN) && this.clientObj.tls.TLSSettingData.responses[1].TrustedCN.length > 0) {
-          this.clientObj.tls.TLSSettingData.responses[1].TrustedCN.push(commonName)
+        if (Array.isArray(clientObj.tls.TLSSettingData[1].TrustedCN) && clientObj.tls.TLSSettingData[1].TrustedCN.length > 0) {
+          clientObj.tls.TLSSettingData[1].TrustedCN.push(commonName)
         } else {
-          this.clientObj.tls.TLSSettingData.responses[1].TrustedCN = [commonName]
+          clientObj.tls.TLSSettingData[1].TrustedCN = [commonName]
         }
       }
-      this.logger.debug(`Local TLSSetting Data : ${JSON.stringify(this.clientObj.tls.TLSSettingData.responses[1], null, '\t')}`)
-      await this.amtwsman.put(clientId, 'AMT_TLSSettingData', this.clientObj.tls.TLSSettingData.responses[1], AMTUserName, this.clientObj.ClientData.payload.password)
-      this.clientObj.tls.putLocalTLS = true
+      this.logger.debug(`Local TLSSetting Data : ${JSON.stringify(clientObj.tls.TLSSettingData[1], null, '\t')}`)
+      xmlRequestBody = this.amt.TLSSettingData(Methods.PUT, null, clientObj.tls.TLSSettingData[1])
+      clientObj.tls.putLocalTLS = true
     }
-    devices[clientId] = this.clientObj
+    const wsmanRequest = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
+    return this.responseMsg.get(clientId, wsmanRequest, 'wsman', 'ok')
   }
 
   /**
@@ -179,95 +238,211 @@ export class TLSConfigurator implements IExecutor {
    * @param {string} clientId Id to keep track of connections
    * @param {string} message
    */
-  async processWSManJsonResponses (message: any, clientId: string): Promise<void> {
+  async processWSManJsonResponses (message: any, clientId: string): Promise<ClientMsg> {
+    const clientObj = devices[clientId]
     const wsmanResponse = message?.payload
     if (wsmanResponse == null) {
       return
     }
-    if (wsmanResponse.AMT_PublicKeyCertificate != null) {
-      this.processAMTPublicKeyCertificate(wsmanResponse.AMT_PublicKeyCertificate)
-    } else if (wsmanResponse.AMT_PublicPrivateKeyPair != null) {
-      await this.processAMTPublicPrivateKeyPair(wsmanResponse.AMT_PublicPrivateKeyPair, clientId)
-    } else if (wsmanResponse.AMT_TLSCredentialContext != null) {
-      this.processAMTTLSCredentialContext(wsmanResponse.AMT_TLSCredentialContext)
-    } else if (wsmanResponse.AMT_TLSSettingData != null) {
-      this.processAMTTLSSettingsData(wsmanResponse.AMT_TLSSettingData)
-    } else if (wsmanResponse.Header?.Method) {
-      if (wsmanResponse.Body?.ReturnValue !== 0 && wsmanResponse.Header.Method !== 'ResourceCreated' && wsmanResponse.Header.Method !== 'AMT_TLSSettingData') {
-        throw new RPSError(`${wsmanResponse.Header.Method} failed for ${this.clientObj.uuid}`)
+    switch (wsmanResponse.statusCode) {
+      case 401: {
+        const xmlRequestBody = this.amt.PublicKeyCertificate(Methods.ENUMERATE)
+        const wsmanRequest = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
+        return this.responseMsg.get(clientId, wsmanRequest, 'wsman', 'ok')
       }
-      switch (wsmanResponse.Header.Method) {
-        case 'AddTrustedRootCertificate':
-          this.logger.info(`Created a Trusted Root Certificate: ${this.clientObj.uuid} : ${JSON.stringify(wsmanResponse?.Body?.CreatedCertificate)} `)
-          this.clientObj.tls.createdTrustedRootCert = true
-          break
-        case 'GenerateKeyPair':
-          this.clientObj.tls.generatedPublicPrivateKeyPair = true
-          await this.amtwsman.batchEnum(clientId, 'AMT_PublicPrivateKeyPair', AMTUserName, this.clientObj.ClientData.payload.password,
-        `${wsmanResponse.Body.KeyPair}${wsmanResponse.Body.ReferenceParameters}${wsmanResponse.Body.SelectorSet}${wsmanResponse.Body.Selector}${wsmanResponse.Body.Value}`)
-          break
-        case 'AddCertificate':
-          this.clientObj.tls.addCert = true
-          break
-        case 'ResourceCreated':
-          this.clientObj.tls.resCredentialContext = true
-          break
-        case 'AMT_TLSSettingData':
-          if (wsmanResponse.Body.ElementName === 'Intel(r) AMT 802.3 TLS Settings') {
-            this.clientObj.tls.setRemoteTLS = true
-            await this.amtwsman.execute(clientId, 'AMT_SetupAndConfigurationService', 'CommitChanges', { _method_dummy: null }, null, AMTUserName, this.clientObj.ClientData.payload.password)
-          } else if (wsmanResponse.Body.ElementName === 'Intel(r) AMT LMS TLS Settings') {
-            this.clientObj.tls.setLocalTLS = true
-            await this.amtwsman.execute(clientId, 'AMT_SetupAndConfigurationService', 'CommitChanges', { _method_dummy: null }, null, AMTUserName, this.clientObj.ClientData.payload.password)
-          } else {
-            throw new RPSError(`Failed to set TLS data: ${this.clientObj.uuid}`)
+      case 200: {
+        const xmlBody = parseBody(wsmanResponse)
+        // pares WSMan xml response to json
+        const response = this.httpHandler.parseXML(xmlBody)
+        const method = response.Envelope.Header.ResourceURI.split('/').pop()
+        switch (method) {
+          case 'AMT_PublicKeyCertificate': {
+            return this.validateAMTPublicKeyCertificate(clientId, response)
           }
-          break
-        case 'CommitChanges':
-          if (this.clientObj.tls.setRemoteTLS && !this.clientObj.tls.commitRemoteTLS) {
-            this.clientObj.tls.commitRemoteTLS = true
-          } else if (this.clientObj.tls.commitRemoteTLS && this.clientObj.tls.setLocalTLS && !this.clientObj.tls.commitLocalTLS) {
-            this.clientObj.tls.commitLocalTLS = true
+          case 'AMT_PublicKeyManagementService': {
+            return this.validateAMTPublicKeyManagementService(clientId, response)
           }
-          break
-        case 'GetLowAccuracyTimeSynch': {
-          const Tm1 = Math.round(new Date().getTime() / 1000)
-          await this.amtwsman.execute(clientId, 'AMT_TimeSynchronizationService', 'SetHighAccuracyTimeSynch', { Ta0: wsmanResponse?.Body?.Ta0, Tm1: Tm1, Tm2: Tm1 }, null, AMTUserName, this.clientObj.ClientData.payload.password)
-          break
+          case 'AMT_PublicPrivateKeyPair': {
+            return this.validatePublicPrivateKeyPair(clientId, response)
+          }
+          case 'AMT_TLSCredentialContext':
+            return this.validateTLSCredentialContext(clientId, response)
+          case 'AMT_TimeSynchronizationService':
+            return this.validateTimeSynchronizationService(clientId, response)
+          case 'AMT_TLSSettingData':
+            return this.validateTLSSettingData(clientId, response)
+          case 'AMT_SetupAndConfigurationService':
+            return this.validateSetupAndConfigurationService(clientId, response)
         }
-        case 'SetHighAccuracyTimeSynch':
-          this.clientObj.tls.setTimeSynch = true
-          break
+        break
       }
-      devices[clientId] = this.clientObj
+      default:
+        return null
     }
   }
 
-  processAMTTLSSettingsData (wsmanResponse: any): void {
-    if (wsmanResponse.status !== 200) {
-      throw new RPSError(`Failed to get AMT TLS Data: ${this.clientObj.uuid}`)
+  validateSetupAndConfigurationService (clientId: string, response: any): ClientMsg {
+    const clientObj = devices[clientId]
+    if (clientObj.tls.setRemoteTLS && !clientObj.tls.commitRemoteTLS) {
+      clientObj.tls.commitRemoteTLS = true
+    } else if (clientObj.tls.commitRemoteTLS && clientObj.tls.setLocalTLS && !clientObj.tls.commitLocalTLS) {
+      clientObj.tls.commitLocalTLS = true
     }
-    this.clientObj.tls.TLSSettingData = wsmanResponse
-    devices[this.clientObj.ClientId] = this.clientObj
+    return null
   }
 
-  processAMTTLSCredentialContext (wsmanResponse: any): void {
-    if (wsmanResponse.status !== 200) {
-      throw new RPSError(`Failed to get TLS Credential Context: ${this.clientObj.uuid}`)
+  validateTLSSettingData (clientId: string, response: any): ClientMsg {
+    const clientObj = devices[clientId]
+    let xmlRequestBody = null
+    const action = response.Envelope.Header.Action.split('/').pop()
+    switch (action) {
+      case 'EnumerateResponse':
+        xmlRequestBody = this.amt.TLSSettingData(Methods.PULL, response.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+        break
+      case 'PullResponse':
+        this.processAMTTLSSettingsData(response, clientId)
+        return null
+      case 'PutResponse': {
+        const whatever: any = response.Envelope.Body.AMT_TLSSettingData
+        if (whatever.ElementName === 'Intel(r) AMT 802.3 TLS Settings') {
+          clientObj.tls.setRemoteTLS = true
+        } else if (whatever.ElementName === 'Intel(r) AMT LMS TLS Settings') {
+          clientObj.tls.setLocalTLS = true
+        } else {
+          throw new RPSError(`Failed to set TLS data: ${clientObj.uuid}`)
+        }
+
+        xmlRequestBody = this.amt.SetupAndConfigurationService(Methods.COMMIT_CHANGES)
+      }
     }
-    this.clientObj.tls.TLSCredentialContext = wsmanResponse
-    devices[this.clientObj.ClientId] = this.clientObj
+
+    const data = this.httpHandler.wrapIt(xmlRequestBody, devices[clientId].connectionParams)
+    return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
   }
 
-  async processAMTPublicPrivateKeyPair (wsmanResponse: any, clientId: string): Promise<void> {
-    if (wsmanResponse.status !== 200) {
-      throw new RPSError(`Failed to get AMT Public Private KeyPair: ${this.clientObj.uuid}`)
+  validateTimeSynchronizationService (clientId: string, response: any): ClientMsg {
+    let xmlRequestBody = null
+    const action = response.Envelope.Header.Action.split('/').pop()
+    switch (action) {
+      case 'GetLowAccuracyTimeSynchResponse': {
+        const Tm1 = Math.round(new Date().getTime() / 1000)
+        xmlRequestBody = this.amt.TimeSynchronizationService(Methods.SET_HIGH_ACCURACY_TIME_SYNCH, response.Envelope?.Body?.GetLowAccuracyTimeSynch_OUTPUT?.Ta0, Tm1, Tm1)
+        break
+      }
+      case 'SetHighAccuracyTimeSynchResponse':
+        devices[clientId].tls.setTimeSynch = true
+        return null
     }
-    this.clientObj.tls.PublicPrivateKeyPair = wsmanResponse
-    if (this.clientObj.tls.PublicPrivateKeyPair.responses.length >= 1 && this.clientObj.tls.generatedPublicPrivateKeyPair && !this.clientObj.tls.addCert) {
-      const DERKey = this.clientObj.tls.PublicPrivateKeyPair.responses[0]?.DERKey
+    const data = this.httpHandler.wrapIt(xmlRequestBody, devices[clientId].connectionParams)
+    return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+  }
+
+  validateTLSCredentialContext (clientId: string, response: any): ClientMsg {
+    let xmlRequestBody = null
+    const action = response.Envelope.Header.Action.split('/').pop()
+    switch (action) {
+      case 'EnumerateResponse': {
+        xmlRequestBody = this.amt.TLSCredentialContext(Methods.PULL, response.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+        break
+      }
+      case 'PullResponse': {
+        this.processAMTTLSCredentialContext(response, clientId)
+        return null
+      }
+      case 'CreateResponse': {
+        devices[clientId].tls.resCredentialContext = true
+        return null
+      }
+    }
+    const data = this.httpHandler.wrapIt(xmlRequestBody, devices[clientId].connectionParams)
+    return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+  }
+
+  validatePublicPrivateKeyPair (clientId: string, response: any): ClientMsg {
+    let xmlRequestBody = null
+    let data = null
+    const action = response.Envelope.Header.Action.split('/').pop()
+    switch (action) {
+      case 'EnumerateResponse': {
+        xmlRequestBody = this.amt.PublicPrivateKeyPair(Methods.PULL, response.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+        break
+      }
+      case 'PullResponse': {
+        return this.processAMTPublicPrivateKeyPair(response, clientId)
+      }
+    }
+    data = this.httpHandler.wrapIt(xmlRequestBody, devices[clientId].connectionParams)
+    return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+  }
+
+  validateAMTPublicKeyManagementService (clientId: string, response: any): ClientMsg {
+    const clientObj = devices[clientId]
+    const action = response.Envelope.Header.Action.split('/').pop()
+    switch (action) {
+      case 'AddCertificateResponse':
+        clientObj.tls.addCert = true
+        break
+      case 'GenerateKeyPairResponse': {
+        clientObj.tls.generatedPublicPrivateKeyPair = true
+        const xmlRequestBody = this.amt.PublicPrivateKeyPair(Methods.ENUMERATE)
+        const data = this.httpHandler.wrapIt(xmlRequestBody, devices[clientId].connectionParams)
+        return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+      }
+      case 'AddTrustedRootCertificateResponse':
+        this.logger.info(`Created a Trusted Root Certificate: ${clientObj.uuid} : ${JSON.stringify(response.Envelope.Body)} `)
+        clientObj.tls.createdTrustedRootCert = true
+        break
+    }
+    return null
+  }
+
+  validateAMTPublicKeyCertificate (clientId: string, response: any): ClientMsg {
+    let xmlRequestBody = null
+    let data = null
+    const action = response.Envelope.Header.Action.split('/').pop()
+    switch (action) {
+      case 'EnumerateResponse': {
+        xmlRequestBody = this.amt.PublicKeyCertificate(Methods.PULL, response.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+        break
+      }
+      case 'PullResponse': {
+        this.processAMTPublicKeyCertificate(response, clientId)
+        return null
+      }
+    }
+    data = this.httpHandler.wrapIt(xmlRequestBody, devices[clientId].connectionParams)
+    return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+  }
+
+  processAMTTLSSettingsData (wsmanResponse: any, clientId: string): void {
+    const clientObj = devices[clientId]
+    clientObj.tls.TLSSettingData = wsmanResponse.Envelope.Body.PullResponse.Items.AMT_TLSSettingData
+  }
+
+  processAMTTLSCredentialContext (wsmanResponse: any, clientId: string): void {
+    const clientObj = devices[clientId]
+
+    clientObj.tls.TLSCredentialContext = wsmanResponse.Envelope.Body.PullResponse.Items
+  }
+
+  processAMTPublicPrivateKeyPair (wsmanResponse: any, clientId: string): ClientMsg {
+    const clientObj = devices[clientId]
+    let xmlRequestBody = ''
+    if (wsmanResponse.Envelope.Body.PullResponse.Items === '') {
+      clientObj.tls.PublicPrivateKeyPair = []
+    } else {
+      const potentialArray = wsmanResponse.Envelope.Body.PullResponse.Items.AMT_PublicPrivateKeyPair
+      if (Array.isArray(potentialArray)) {
+        clientObj.tls.PublicPrivateKeyPair = potentialArray
+      } else {
+        clientObj.tls.PublicPrivateKeyPair = [potentialArray]
+      }
+    }
+
+    if (clientObj.tls.PublicPrivateKeyPair.length >= 1 && clientObj.tls.generatedPublicPrivateKeyPair && !clientObj.tls.addCert) {
+      const DERKey = clientObj.tls.PublicPrivateKeyPair[0]?.DERKey
       const certAttributes: CertAttributes = { CN: 'AMT', O: 'None', ST: 'None', C: 'None' }
-      const issuerAttributes: CertAttributes = { CN: this.clientObj.uuid ?? 'Untrusted Root Certificate' }
+      const issuerAttributes: CertAttributes = { CN: clientObj.uuid ?? 'Untrusted Root Certificate' }
 
       const keyUsages: AMTKeyUsage = {
         name: 'extKeyUsage',
@@ -282,30 +457,35 @@ export class TLSConfigurator implements IExecutor {
       }
 
       const cert = this.certManager.amtCertSignWithCAKey(DERKey, null, certAttributes, issuerAttributes, keyUsages)
-      await this.amtwsman.execute(clientId, 'AMT_PublicKeyManagementService', 'AddCertificate', { CertificateBlob: cert.pem.substring(27, cert.pem.length - 25) }, null, AMTUserName, this.clientObj.ClientData.payload.password)
-      this.clientObj.tls.createdPublicPrivateKeyPair = true
-    } else if (this.clientObj.tls.checkPublicPrivateKeyPair && !this.clientObj.tls.confirmPublicPrivateKeyPair) {
-      this.clientObj.tls.confirmPublicPrivateKeyPair = true
+      xmlRequestBody = this.amt.PublicKeyManagementService(Methods.ADD_CERTIFICATE, { CertificateBlob: cert.pem.substring(27, cert.pem.length - 25) })
+      clientObj.tls.createdPublicPrivateKeyPair = true
+
+      const wsmanRequest = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
+      return this.responseMsg.get(clientId, wsmanRequest, 'wsman', 'ok')
+    } else if (clientObj.tls.checkPublicPrivateKeyPair && !clientObj.tls.confirmPublicPrivateKeyPair) {
+      clientObj.tls.confirmPublicPrivateKeyPair = true
     }
-    devices[this.clientObj.ClientId] = this.clientObj
+    return null
   }
 
-  processAMTPublicKeyCertificate (wsmanResponse: any): void {
-    if (wsmanResponse.status !== 200) {
-      throw new RPSError(`Failed to get AMT Public Key Certificate: ${this.clientObj.uuid}`)
-    }
-    this.logger.debug(`Number of public key certs for device ${this.clientObj.uuid} : ${wsmanResponse.responses.length}`)
+  processAMTPublicKeyCertificate (wsmanResponse: any, clientId: string): void {
+    const clientObj = devices[clientId]
     // Store Public Key Certificates
-    this.clientObj.tls.PublicKeyCertificate = wsmanResponse
-    if (this.clientObj.tls.checkPublicKeyCertificate) {
-      const length = wsmanResponse.responses?.length
-      const tlsConfig: TLSCerts = this.clientObj.ClientData.payload.profile.tlsCerts
+    if (wsmanResponse.Envelope.Body.PullResponse.Items === '') {
+      clientObj.tls.PublicKeyCertificate = []
+    } else {
+      // TODO: determine if there is multiple if this will already be an array
+      clientObj.tls.PublicKeyCertificate = [wsmanResponse.Envelope.Body.PullResponse.Items.AMT_PublicKeyCertificate]
+    }
+    this.logger.debug(`Number of public key certs for device ${clientObj.uuid} : ${clientObj.tls.PublicKeyCertificate.length}`)
+    if (clientObj.tls.checkPublicKeyCertificate) {
+      const length = clientObj.tls.PublicKeyCertificate.length
+      const tlsConfig: TLSCerts = clientObj.ClientData.payload.profile.tlsCerts
       // Make sure the Trusted root certificate added
-      if (wsmanResponse.responses[length - 1].X509Certificate === tlsConfig.ROOT_CERTIFICATE.certbin) {
-        this.clientObj.tls.confirmPublicKeyCertificate = true
+      if (clientObj.tls.PublicKeyCertificate[length - 1].X509Certificate === tlsConfig.ROOT_CERTIFICATE.certbin) {
+        clientObj.tls.confirmPublicKeyCertificate = true
       }
     }
-    devices[this.clientObj.ClientId] = this.clientObj
   }
 
   async updateDeviceVersion (clientObj: ClientObject): Promise<void> {
@@ -314,13 +494,13 @@ export class TLSConfigurator implements IExecutor {
       await got(`${EnvReader.GlobalEnvConfig.mpsServer}/api/v1/devices`, {
         method: 'POST',
         json: {
-          guid: this.clientObj.uuid,
-          tenantId: this.clientObj.ClientData.payload.profile.tenantId,
-          tlsCertVersion: this.clientObj.ClientData.payload.profile.tlsCerts.version
+          guid: clientObj.uuid,
+          tenantId: clientObj.ClientData.payload.profile.tenantId,
+          tlsCertVersion: clientObj.ClientData.payload.profile.tlsCerts.version
         }
       })
     } catch (err) {
-      MqttProvider.publishEvent('fail', ['TLSConfigurator'], 'unable to register metadata with MPS', this.clientObj.uuid)
+      MqttProvider.publishEvent('fail', ['TLSConfigurator'], 'unable to register metadata with MPS', clientObj.uuid)
       this.logger.error('unable to register metadata with MPS', err)
     }
   }
