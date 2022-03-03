@@ -91,7 +91,7 @@ export class WebSocketListener implements IWebSocketListener {
       if (this.dataProcessor) {
         responseMsg = await this.dataProcessor.processData(message, clientId)
         if (responseMsg) {
-          this.onSendMessage(responseMsg, clientId)
+          this.sendMessage(responseMsg, clientId)
         }
       }
     } catch (error) {
@@ -105,7 +105,7 @@ export class WebSocketListener implements IWebSocketListener {
    * @param {string} clientId Index of the connected client
    * @param {ClientMsg} message Message to be sent to client
    */
-  onSendMessage (message: ClientMsg, clientId: string): void {
+  sendMessage (message: ClientMsg, clientId: string): void {
     try {
       this.logger.debug(`${clientId} : response message sent to device: ${JSON.stringify(message, null, '\t')}`)
       if (devices[clientId] != null) {

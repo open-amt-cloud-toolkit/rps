@@ -11,7 +11,6 @@ import { Validator } from './Validator'
 import { NodeForge } from './NodeForge'
 import { CertManager } from './CertManager'
 import { Configurator } from './Configurator'
-import { WSManProcessor } from './WSManProcessor'
 import { DataProcessor } from './DataProcessor'
 import { SignatureHelper } from './utils/SignatureHelper'
 import { ClientResponseMsg } from './utils/ClientResponseMsg'
@@ -27,9 +26,8 @@ const helper = new SignatureHelper(nodeForge)
 const certManager = new CertManager(new Logger('CertManager'), nodeForge)
 const configurator = new Configurator()
 const responseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'))
-const amtwsman = new WSManProcessor(new Logger('WSManProcessor'), responseMsg)
 const validator = new Validator(new Logger('Validator'), configurator)
-const dataProcessor = new DataProcessor(new Logger('DataProcessor'), helper, configurator, validator, certManager, responseMsg, amtwsman)
+const dataProcessor = new DataProcessor(new Logger('DataProcessor'), helper, configurator, validator, certManager, responseMsg)
 const digestChallenge = {
   realm: 'Digest:AF541D9BC94CFF7ADFA073F492F355E6',
   nonce: 'dxNzCQ9JBAAAAAAAd2N7c6tYmUl0FFzQ',
@@ -178,7 +176,7 @@ describe('deactivate Device', () => {
         appVersion: '1.2.0',
         protocolVersion: '4.0.0',
         status: 'ok',
-        message: 'alls good!',
+        message: '',
         payload: 'W52ZWxvcGU+DQowDQoNCg=='
       }
     })
@@ -301,7 +299,7 @@ describe('activate Device', () => {
     }
     devices[clientId] = { ClientId: clientId, activationStatus: ActivationStatus, action: ClientAction.ADMINCTLMODE, ClientSocket: null, ClientData: clientData, messageId: 2, connectionParams: connectionParams }
     const validatorSpy = jest.spyOn(dataProcessor.validator, 'validateActivationMsg').mockImplementation(async () => {})
-    jest.spyOn(dataProcessor, 'setConnectionParams').mockImplementation().mockReturnValue(devices[clientId])
+    jest.spyOn(dataProcessor, 'setConnectionParams').mockImplementation()
     jest.spyOn(dataProcessor.amt, 'GeneralSettings').mockImplementation()
     jest.spyOn(dataProcessor.httpHandler, 'wrapIt').mockImplementation().mockReturnValue('abcdef')
     VersionChecker.setCurrentVersion('4.0.0')
@@ -352,7 +350,7 @@ describe('activate Device', () => {
     }
     devices[clientId] = { ClientId: clientId, activationStatus: ActivationStatus, action: ClientAction.CLIENTCTLMODE, ClientSocket: null, ClientData: clientData, messageId: 2, connectionParams: connectionParams }
     const validatorSpy = jest.spyOn(dataProcessor.validator, 'validateActivationMsg').mockImplementation(async () => {})
-    jest.spyOn(dataProcessor, 'setConnectionParams').mockImplementation().mockReturnValue(devices[clientId])
+    jest.spyOn(dataProcessor, 'setConnectionParams').mockImplementation()
     jest.spyOn(dataProcessor.amt, 'GeneralSettings').mockImplementation()
     jest.spyOn(dataProcessor.httpHandler, 'wrapIt').mockImplementation().mockReturnValue('abcdef')
     VersionChecker.setCurrentVersion('4.0.0')
@@ -406,7 +404,7 @@ describe('activate Device', () => {
     VersionChecker.setCurrentVersion('4.0.0')
     const responseMsg = await dataProcessor.activateDevice(clientMsg, clientId)
     expect(validatorSpy).toHaveBeenCalled()
-    expect(responseMsg.method).toContain('wsman')
+    expect(responseMsg.method).toContain('success')
   })
   it('try activate in ccm with digestRealm', async () => {
     const clientData = {

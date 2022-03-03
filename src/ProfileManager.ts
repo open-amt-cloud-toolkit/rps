@@ -12,7 +12,6 @@ import { PasswordHelper } from './utils/PasswordHelper'
 import { CIRAConfig } from './models/RCS.Config'
 import { IConfigurator } from './interfaces/IConfigurator'
 import { IProfilesTable } from './interfaces/database/IProfilesDb'
-import { EnvReader } from './utils/EnvReader'
 import { AMTRandomPasswordLength } from './utils/constants'
 
 export class ProfileManager implements IProfileManager {
@@ -180,14 +179,8 @@ export class ProfileManager implements IProfileManager {
       }
       // If the TLS Config associated with profile, retrieves from DB
       if (amtProfile.tlsMode != null) {
-        // amtProfile.tlsConfigObject = await this.amtConfigurations.getTLSConfigForProfile(amtProfile.tlsConfigName)
         if (this.configurator?.secretsManager) {
-          const path = `${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}TLS/${amtProfile.profileName}`
-
-          // if (amtProfile.tlsConfigObject.certVersion) {
-          //   path += `?version=${amtProfile.tlsConfigObject.certVersion}`
-          // }
-          const results = await this.configurator.secretsManager.getSecretAtPath(path)
+          const results = await this.configurator.secretsManager.getSecretAtPath(`TLS/${amtProfile.profileName}`)
           amtProfile.tlsCerts = results.data
           amtProfile.tlsCerts.version = results?.metadata?.version
         }

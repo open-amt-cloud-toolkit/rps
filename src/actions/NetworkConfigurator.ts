@@ -60,22 +60,22 @@ export class NetworkConfigurator implements IExecutor {
       const payload: any = clientObj.ClientData.payload
       // gets all the existing wifi profiles from the device
       if (!clientObj.network?.getWiFiPortCapabilities) {
-        const xmlRequestBody = this.cim.WiFiEndpointSettings(CIM.Methods.ENUMERATE, (clientObj.messageId++).toString())
+        const xmlRequestBody = this.cim.WiFiEndpointSettings(CIM.Methods.ENUMERATE)
         const data = this.httpHandler.wrapIt(xmlRequestBody, devices[clientId].connectionParams)
         return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
       } else if (clientObj.network?.WiFiPortCapabilities?.length >= 0 && !clientObj.network?.isWiFiConfigsDeleted) {
         // if one or more wifi profiles exists in device, they will be deleted
-        await this.deleteWiFiConfigs(clientId)
+        return this.deleteWiFiConfigs(clientId)
       } else if (!clientObj.network?.setWiFiPort && clientObj.network.setEthernetPortSettings && payload.profile.wifiConfigs?.length > 0 && payload.profile.dhcpEnabled) {
         // Enumeration 32769 - WiFi is enabled in S0 + Sx/AC
-        const xmlRequestBody = this.cim.WiFiPort(CIM.Methods.REQUEST_STATE_CHANGE, (devices[clientId].messageId++).toString(), 32769)
+        const xmlRequestBody = this.cim.WiFiPort(CIM.Methods.REQUEST_STATE_CHANGE, 32769)
         const data = this.httpHandler.wrapIt(xmlRequestBody, devices[clientId].connectionParams)
         return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
       } else if (clientObj.network.setWiFiPort && payload.profile.wifiConfigs?.length > 0 && clientObj.network.count <= payload.profile.wifiConfigs?.length - 1 && payload.profile.dhcpEnabled) {
-        await this.addWifiConfigs(clientId, payload.profile.wifiConfigs)
+        return await this.addWifiConfigs(clientId, payload.profile.wifiConfigs)
       } else if (devices[clientId].network?.getWiFiPortConfigurationService) {
         // If all wiFi configs are added, then move to CIRA config.
-        await this.callCIRAConfig(clientId, 'ethernet and wifi settings are updated', message)
+        return await this.callCIRAConfig(clientId, 'ethernet and wifi settings are updated', message)
       }
     } catch (error) {
       this.logger.error(`${clientId} : Failed to configure network settings : ${error}`)
@@ -90,12 +90,11 @@ export class NetworkConfigurator implements IExecutor {
   }
 
   async processWSManJsonResponse (message: any, clientId: string): Promise<ClientMsg> {
-    console.log(message)
     const clientObj = devices[clientId]
     const wsmanResponse = message.payload
     switch (wsmanResponse.statusCode) {
       case 401: {
-        const xmlRequestBody = this.cim.WiFiEndpointSettings(CIM.Methods.ENUMERATE, (clientObj.messageId++).toString())
+        const xmlRequestBody = this.cim.WiFiEndpointSettings(CIM.Methods.ENUMERATE)
         const data = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
         return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
       }
@@ -121,8 +120,7 @@ export class NetworkConfigurator implements IExecutor {
         break
       }
       case 400: {
-        await this.callCIRAConfig(clientId, 'Failed', message)
-        break
+        return await this.callCIRAConfig(clientId, 'Failed', message)
       }
       default: {
         return null
@@ -130,14 +128,13 @@ export class NetworkConfigurator implements IExecutor {
     }
   }
 
-  async callCIRAConfig (clientId: string, status: string, message: any): Promise<void> {
+  async callCIRAConfig (clientId: string, status: string, message: any): Promise<ClientMsg> {
     const clientObj = devices[clientId]
     this.logger.debug(`Device ${clientObj.uuid} ${status} with the profile : ${clientObj.ClientData.payload.profile.profileName}`)
     clientObj.status.Network = `${status}.`
     MqttProvider.publishEvent('success', ['NetworkConfigurator'], `Status : ${status}`, clientObj.uuid)
     clientObj.action = ClientAction.CIRACONFIG
-    devices[clientId] = clientObj
-    await this.CIRAConfigurator.execute(message, clientId)
+    return await this.CIRAConfigurator.execute(message, clientId)
   }
 
   async validateWiFiPort (clientId: string, response: any): Promise<ClientMsg> {
@@ -146,10 +143,9 @@ export class NetworkConfigurator implements IExecutor {
     switch (action) {
       case 'RequestStateChangeResponse': {
         if (response.Envelope.Body.RequestStateChange_OUTPUT.ReturnValue !== 0) {
-          await this.callCIRAConfig(clientId, 'Ethernet Configured. WiFi Failed', null)
+          return await this.callCIRAConfig(clientId, 'Ethernet Configured. WiFi Failed', null)
         }
-        devices[clientId].network.setWiFiPort = true
-        devices[clientId] = clientObj
+        clientObj.network.setWiFiPort = true
         return null
       }
     }
@@ -162,7 +158,7 @@ export class NetworkConfigurator implements IExecutor {
     let data = null
     switch (action) {
       case 'EnumerateResponse': {
-        xmlRequestBody = this.amt.EthernetPortSettings(AMT.Methods.PULL, (clientObj.messageId++).toString(), response.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+        xmlRequestBody = this.amt.EthernetPortSettings(AMT.Methods.PULL, response.Envelope.Body?.EnumerateResponse?.EnumerationContext)
         data = this.httpHandler.wrapIt(xmlRequestBody, devices[clientId].connectionParams)
         return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
       }
@@ -199,9 +195,8 @@ export class NetworkConfigurator implements IExecutor {
           // ethernetPortSettings.SecondaryDNS = "192.168.1.1";
         }
         this.logger.debug(`Updated Network configuration to set on device :  ${JSON.stringify(response, null, '\t')}`)
-        devices[clientId] = clientObj
         // put request to update ethernet port settings on the device
-        xmlRequestBody = this.amt.EthernetPortSettings(AMT.Methods.PUT, (devices[clientId].messageId++).toString(), null, ethernetPortSettings)
+        xmlRequestBody = this.amt.EthernetPortSettings(AMT.Methods.PUT, null, ethernetPortSettings)
         data = this.httpHandler.wrapIt(xmlRequestBody, devices[clientId].connectionParams)
         return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
       }
@@ -211,23 +206,29 @@ export class NetworkConfigurator implements IExecutor {
         if (!amtEthernetPortSettings.IpSyncEnabled) {
           // If the IpSyncEnabled is not set to true in the response to the put request of ethernet port settings, then it is considered as failed and move to CIRA config.
           this.logger.debug(`Device ${devices[clientId].uuid} Failed to set IpSyncEnabled to true `)
-          await this.callCIRAConfig(clientId, 'Failed', null)
+          // Set the flag that ethernet port settings is updated.
+          clientObj.network.setEthernetPortSettings = true
+          return await this.callCIRAConfig(clientId, 'Failed', null)
         } else if (amtEthernetPortSettings.SharedStaticIp && amtEthernetPortSettings.IpSyncEnabled) {
           // If the IpSyncEnabled is true and SharedStaticIp is true in the response to the put request of ethernet port settings, then move to CIRA config.
-          await this.callCIRAConfig(clientId, 'Ethernet Configured', null)
+          // Set the flag that ethernet port settings is updated.
+          clientObj.network.setEthernetPortSettings = true
+          return await this.callCIRAConfig(clientId, 'Ethernet Configured', null)
         } else if (amtEthernetPortSettings.DHCPEnabled && amtEthernetPortSettings.IpSyncEnabled) {
           // If the IpSyncEnabled, DHCPEnabled is true and profile has no wifi configs
           if (payload.profile.wifiConfigs.length === 0) {
-            await this.callCIRAConfig(clientId, 'Ethernet Configured', null)
+            // Set the flag that ethernet port settings is updated.
+            clientObj.network.setEthernetPortSettings = true
+            return await this.callCIRAConfig(clientId, 'Ethernet Configured', null)
           } else if (devices[clientId].network.ethernetSettingsWifiObj == null && payload.profile.wifiConfigs.length > 0) {
             // If the IpSyncEnabled, DHCPEnabled is true and profile has wifi configs but no wifi capabilities
             this.logger.debug(`Device ${devices[clientId].uuid} Ethernet Configured. No wireless interface`)
-            await this.callCIRAConfig(clientId, 'Ethernet Configured. WiFi Failed', null)
+            // Set the flag that ethernet port settings is updated.
+            clientObj.network.setEthernetPortSettings = true
+            return await this.callCIRAConfig(clientId, 'Ethernet Configured. WiFi Failed', null)
           }
         }
-        // Set the flag that ethernet port settings is updated.
-        clientObj.network.setEthernetPortSettings = true
-        devices[clientId] = clientObj
+
         break
       }
     }
@@ -248,7 +249,7 @@ export class NetworkConfigurator implements IExecutor {
           settings.SharedFQDN = true
           settings.AMTNetworkEnabled = 1
           settings.RmcpPingResponseEnabled = true
-          xmlRequestBody = this.amt.GeneralSettings(AMT.Methods.PUT, (devices[clientId].messageId++).toString(), settings)
+          xmlRequestBody = this.amt.GeneralSettings(AMT.Methods.PUT, settings)
         } else {
           // If the network is enabled, get call to AMT_EthernetPortSettings
           xmlRequestBody = this.amt.EthernetPortSettings(AMT.Methods.ENUMERATE, (devices[clientId].messageId++).toString())
@@ -269,7 +270,7 @@ export class NetworkConfigurator implements IExecutor {
     const action = response.Envelope.Header.Action.split('/').pop()
     switch (action) {
       case 'EnumerateResponse': {
-        xmlRequestBody = this.cim.WiFiEndpointSettings(CIM.Methods.PULL, (devices[clientId].messageId++).toString(), response.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+        xmlRequestBody = this.cim.WiFiEndpointSettings(CIM.Methods.PULL, response.Envelope.Body?.EnumerateResponse?.EnumerationContext)
         break
       }
       case 'PullResponse': {
@@ -279,7 +280,7 @@ export class NetworkConfigurator implements IExecutor {
           // if one or more wifi profiles exists in device, they will be deleted
           return this.deleteWiFiConfigs(clientId)
         } else {
-          xmlRequestBody = this.amt.GeneralSettings(AMT.Methods.GET, (devices[clientId].messageId++).toString())
+          xmlRequestBody = this.amt.GeneralSettings(AMT.Methods.GET)
         }
         break
       }
@@ -304,12 +305,12 @@ export class NetworkConfigurator implements IExecutor {
     wifiEndpoints = wifiProfiles
     if (wifiEndpoints?.length > 0) {
       const selector = { name: 'InstanceID', value: wifiEndpoints[0].InstanceID }
-      xmlRequestBody = this.cim.WiFiEndpointSettings(CIM.Methods.DELETE, (devices[clientId].messageId++).toString(), null, selector)
+      xmlRequestBody = this.cim.WiFiEndpointSettings(CIM.Methods.DELETE, null, selector)
       wifiEndpoints = wifiEndpoints.slice(1)
       clientObj.network.WiFiPortCapabilities = wifiEndpoints
     } else {
       clientObj.network.isWiFiConfigsDeleted = true
-      xmlRequestBody = this.amt.GeneralSettings(AMT.Methods.GET, (clientObj.messageId++).toString())
+      xmlRequestBody = this.amt.GeneralSettings(AMT.Methods.GET)
     }
     const data = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
     return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
@@ -345,8 +346,7 @@ export class NetworkConfigurator implements IExecutor {
       }
       // Increment the count to keep track of profiles added to AMT
       ++clientObj.network.count
-      devices[clientId] = clientObj
-      const xmlRequestBody = this.amt.WiFiPortConfigurationService(AMT.Methods.ADD_WIFI_SETTINGS, (clientObj.messageId++).toString(), wifiEndpointSettings, selector)
+      const xmlRequestBody = this.amt.WiFiPortConfigurationService(AMT.Methods.ADD_WIFI_SETTINGS, wifiEndpointSettings, selector)
       const data = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
       return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
     }
