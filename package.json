@@ -60,7 +60,7 @@
     "pg": "^8.7.3",
     "pg-format": "^1.0.4",
     "rc": "^1.2.8",
-    "request": "^2.88.2",
+    "uuid": "^8.3.2",
     "winston": "^3.6.0",
     "ws": "^8.5.0",
     "xml2js": "^0.4.23"
@@ -81,7 +81,6 @@
     "eslint-plugin-import": "^2.25.4",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.0.0",
-    "eslint-plugin-standard": "^5.0.0",
     "jest": "^27.5.1",
     "jest-junit": "^13.0.0",
     "jest-sinon": "^1.0.4",
