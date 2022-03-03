@@ -79,21 +79,21 @@ describe('Websocket Listener', () => {
       message: 'success',
       payload: null
     }
-    const onSendMessage = jest.spyOn(server, 'onSendMessage')
+    const sendMessage = jest.spyOn(server, 'sendMessage')
     const processMessageSpy = jest.spyOn(server.dataProcessor, 'processData').mockResolvedValue(clientMsg)
     const message: WebSocket.Data = 'abcd'
     await server.onMessageReceived(message, clientid)
-    expect(onSendMessage).toHaveBeenCalledTimes(1)
+    expect(sendMessage).toHaveBeenCalledTimes(1)
     expect(processMessageSpy).toHaveBeenCalled()
   })
   it('Should process client message and not respond when no response to send', async () => {
     const clientid = 'abcd'
-    const onSendMessage = jest.spyOn(server, 'onSendMessage')
+    const sendMessage = jest.spyOn(server, 'sendMessage')
     const processMessageSpy = jest.spyOn(server.dataProcessor, 'processData').mockResolvedValue(null)
     const message: WebSocket.Data = 'abcd'
     await server.onMessageReceived(message, clientid)
     expect(processMessageSpy).toHaveBeenCalled()
-    expect(onSendMessage).not.toHaveBeenCalled()
+    expect(sendMessage).not.toHaveBeenCalled()
   })
   it('Should send message if client is defined in devices list', () => {
     const clientid = 'test'
@@ -104,13 +104,13 @@ describe('Websocket Listener', () => {
     } as any
     const spy = jest.spyOn(devices[clientid].ClientSocket, 'send')
     const message: ClientMsg = {} as any
-    server.onSendMessage(message, clientid)
+    server.sendMessage(message, clientid)
     expect(spy).toHaveBeenCalled()
   })
 
   it('Should NOT send message if client is not defined in devices list', () => {
     const clientid = 'test'
     const message: ClientMsg = {} as any
-    server.onSendMessage(message, clientid)
+    server.sendMessage(message, clientid)
   })
 })

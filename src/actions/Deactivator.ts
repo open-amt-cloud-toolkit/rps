@@ -46,10 +46,9 @@ export class Deactivator implements IExecutor {
 
       switch (wsmanResponse.statusCode) {
         case 401: {
-          const messageId = (clientObj.messageId++).toString()
-          const xmlRequestBody = this.amt.SetupAndConfigurationService(AMT.Methods.UNPROVISION, messageId, null, 2)
+          const xmlRequestBody = this.amt.SetupAndConfigurationService(AMT.Methods.UNPROVISION, null, 2)
           const data = httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
-          return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+          return this.responseMsg.get(clientId, data, 'wsman', 'ok', '')
         }
         case 200: {
           this.logger.debug(`Deleting secret from vault for ${clientObj.uuid}`)

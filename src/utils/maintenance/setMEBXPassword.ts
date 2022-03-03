@@ -22,15 +22,15 @@ export const setMEBXPassword = async (clientId: string, message: any, responseMs
   const clientObj = devices[clientId]
   const mebxPassword: string = await configurator.profileManager.getMEBxPassword(clientObj.ClientData.payload.profile.profileName)
   if (message === '') {
-    const xmlRequestBody = amt.SetupAndConfigurationService(AMT.Methods.SET_MEBX_PASSWORD, (clientObj.messageId++).toString(), mebxPassword)
+    const xmlRequestBody = amt.SetupAndConfigurationService(AMT.Methods.SET_MEBX_PASSWORD, mebxPassword)
     const wsmanRequest = httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
-    return responseMsg.get(clientId, wsmanRequest, 'wsman', 'ok', 'alls good!')
+    return responseMsg.get(clientId, wsmanRequest, 'wsman', 'ok', '')
   }
   switch (message.statusCode) {
     case 401: {
-      const xmlRequestBody = amt.SetupAndConfigurationService(AMT.Methods.SET_MEBX_PASSWORD, (clientObj.messageId++).toString(), mebxPassword)
+      const xmlRequestBody = amt.SetupAndConfigurationService(AMT.Methods.SET_MEBX_PASSWORD, mebxPassword)
       const wsmanRequest = httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
-      return responseMsg.get(clientId, wsmanRequest, 'wsman', 'ok', 'alls good!')
+      return responseMsg.get(clientId, wsmanRequest, 'wsman', 'ok', '')
     }
     case 200: {
       const xmlBody = parseBody(message)

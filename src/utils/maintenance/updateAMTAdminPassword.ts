@@ -26,9 +26,9 @@ export const updateAMTAdminPassword = async (clientId: string, message: any, res
   const clientObj = devices[clientId]
   switch (message.statusCode) {
     case 401: {
-      const xmlRequestBody = amt.GeneralSettings(AMT.Methods.GET, (clientObj.messageId++).toString())
+      const xmlRequestBody = amt.GeneralSettings(AMT.Methods.GET)
       const data = httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
-      return responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+      return responseMsg.get(clientId, data, 'wsman', 'ok', '')
     }
     case 200: {
       let xmlBody
@@ -94,9 +94,9 @@ export const updateAMTAdminPassword = async (clientId: string, message: any, res
           const result = hash.match(/../g).map((v) => String.fromCharCode(parseInt(v, 16))).join('')
           // Encode to base64
           const password = Buffer.from(result, 'binary').toString('base64')
-          const xmlRequestBody = amt.AuthorizationService(AMT.Methods.SET_ADMIN_ACL_ENTRY_EX, (clientObj.messageId++).toString(), AMTUserName, password)
+          const xmlRequestBody = amt.AuthorizationService(AMT.Methods.SET_ADMIN_ACL_ENTRY_EX, AMTUserName, password)
           const wsmanRequest = httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
-          return responseMsg.get(clientId, wsmanRequest, 'wsman', 'ok', 'alls good!')
+          return responseMsg.get(clientId, wsmanRequest, 'wsman', 'ok', '')
         }
         case 'AMT_AuthorizationService': {
           if (response.Envelope.Body.SetAdminAclEntryEx_OUTPUT.ReturnValue !== 0) {

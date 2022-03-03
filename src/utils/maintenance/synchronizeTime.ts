@@ -17,15 +17,15 @@ export const synchronizeTime = async (clientId: string, message: any, responseMs
   const clientObj = devices[clientId]
   const wsmanResponse = message?.payload
   if (wsmanResponse.statusCode == null) {
-    const xmlRequestBody = amt.TimeSynchronizationService(AMT.Methods.GET_LOW_ACCURACY_TIME_SYNCH, (clientObj.messageId++).toString())
+    const xmlRequestBody = amt.TimeSynchronizationService(AMT.Methods.GET_LOW_ACCURACY_TIME_SYNCH)
     const wsmanRequest = httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
-    return responseMsg.get(clientId, wsmanRequest, 'wsman', 'ok', 'alls good!')
+    return responseMsg.get(clientId, wsmanRequest, 'wsman', 'ok', '')
   }
   switch (wsmanResponse.statusCode) {
     case 401: {
-      const xmlRequestBody = amt.TimeSynchronizationService(AMT.Methods.GET_LOW_ACCURACY_TIME_SYNCH, (clientObj.messageId++).toString())
+      const xmlRequestBody = amt.TimeSynchronizationService(AMT.Methods.GET_LOW_ACCURACY_TIME_SYNCH)
       const wsmanRequest = httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
-      return responseMsg.get(clientId, wsmanRequest, 'wsman', 'ok', 'alls good!')
+      return responseMsg.get(clientId, wsmanRequest, 'wsman', 'ok', '')
     }
     case 200: {
       const xmlBody = parseBody(wsmanResponse)
@@ -39,9 +39,9 @@ export const synchronizeTime = async (clientId: string, message: any, responseMs
         }
         const Tm1 = Math.round(new Date().getTime() / 1000)
         const Ta0 = response.Envelope.Body.GetLowAccuracyTimeSynch_OUTPUT.Ta0
-        const xmlRequestBody = amt.TimeSynchronizationService(AMT.Methods.SET_HIGH_ACCURACY_TIME_SYNCH, (clientObj.messageId++).toString(), Ta0, Tm1, Tm1)
+        const xmlRequestBody = amt.TimeSynchronizationService(AMT.Methods.SET_HIGH_ACCURACY_TIME_SYNCH, Ta0, Tm1, Tm1)
         const wsmanRequest = httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
-        return responseMsg.get(clientId, wsmanRequest, 'wsman', 'ok', 'alls good!')
+        return responseMsg.get(clientId, wsmanRequest, 'wsman', 'ok', '')
       } else if (method === 'AMT_TimeSynchronizationService' && action === 'SetHighAccuracyTimeSynchResponse') {
         if (response.Envelope.Body.SetHighAccuracyTimeSynch_OUTPUT.ReturnValue !== 0) {
           return failureResponse(clientId, clientObj, responseMsg)

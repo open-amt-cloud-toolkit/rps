@@ -51,7 +51,7 @@ export class CIRAConfigurator implements IExecutor {
         }
       }
       // Delete existing CIRA Config
-      const msg = this.removeRemoteAccessPolicyRule(clientId, clientObj)
+      const msg = this.removeRemoteAccessPolicyRule(clientId)
       if (msg) {
         return msg
       }
@@ -60,15 +60,16 @@ export class CIRAConfigurator implements IExecutor {
         // Add trusted root certificate and MPS server
         if (!clientObj.ciraconfig.addTrustedRootCert) {
           const configScript: CIRAConfig = clientObj.ClientData.payload.profile.ciraConfigObject
-          const xmlRequestBody = this.amt.PublicKeyManagementService(AMT.Methods.ADD_TRUSTED_ROOT_CERTIFICATE, (clientObj.messageId++).toString(), configScript.mpsRootCertificate)
+          const xmlRequestBody = this.amt.PublicKeyManagementService(AMT.Methods.ADD_TRUSTED_ROOT_CERTIFICATE, { CertificateBlob: configScript.mpsRootCertificate })
           const data = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
-          return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+          return this.responseMsg.get(clientId, data, 'wsman', 'ok')
         }
       } else if (clientObj.ciraconfig.setENVSettingData) {
         MqttProvider.publishEvent('success', ['CIRAConfigurator'], 'CIRA Configured', clientObj.uuid)
         if (clientObj.ClientData.payload.profile.tlsCerts != null) {
           clientObj.action = ClientAction.TLSCONFIG
-          await this.tlsConfigurator.execute(message, clientId)
+          // TODO: check with madhavi if this is ok to send null here  (was message -- which would be the response for the last call (EnvironmentDetection))
+          return await this.tlsConfigurator.execute(null, clientId)
         } else {
           return this.responseMsg.get(clientId, null, 'success', 'success', JSON.stringify(clientObj.status))
         }
@@ -90,9 +91,9 @@ export class CIRAConfigurator implements IExecutor {
     const wsmanResponse = message.payload
     switch (wsmanResponse.statusCode) {
       case 401: {
-        const xmlRequestBody = this.amt.RemoteAccessPolicyRule(AMT.Methods.DELETE, (clientObj.messageId++).toString(), { name: 'PolicyRuleName', value: 'User Initiated' })
+        const xmlRequestBody = this.amt.RemoteAccessPolicyRule(AMT.Methods.DELETE, { name: 'PolicyRuleName', value: 'User Initiated' })
         const data = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
-        return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+        return this.responseMsg.get(clientId, data, 'wsman', 'ok')
       }
       case 200: {
         const xmlBody = parseBody(wsmanResponse)
@@ -101,35 +102,35 @@ export class CIRAConfigurator implements IExecutor {
         const method = response.Envelope.Header.ResourceURI.split('/').pop()
         switch (method) {
           case 'AMT_RemoteAccessPolicyRule': {
-            return this.validateRemoteAccessPolicyRule(clientId, clientObj, response)
+            return this.validateRemoteAccessPolicyRule(clientId, response)
           }
           case 'AMT_ManagementPresenceRemoteSAP': {
-            return this.validateManagementPresenceRemoteSAP(clientId, clientObj, response)
+            return this.validateManagementPresenceRemoteSAP(clientId, response)
           }
           case 'AMT_PublicKeyCertificate': {
-            return this.validatePublicKeyCertificate(clientId, clientObj, response)
+            return this.validatePublicKeyCertificate(clientId, response)
           }
           case 'AMT_EnvironmentDetectionSettingData': {
-            return await this.ValidateEnvironmentDetectionSettingData(clientId, clientObj, response)
+            return await this.ValidateEnvironmentDetectionSettingData(clientId, response)
           }
           case 'AMT_PublicKeyManagementService': {
-            return await this.ValidatePublicKeyManagementService(clientId, clientObj, response)
+            return await this.ValidatePublicKeyManagementService(clientId, response)
           }
           case 'AMT_RemoteAccessService': {
-            return this.ValidateRemoteAccessService(clientId, clientObj, response)
+            return this.ValidateRemoteAccessService(clientId, response)
           }
           case 'AMT_UserInitiatedConnectionService': {
-            return this.ValidateUserInitiatedConnectionService(clientId, clientObj, response)
+            return this.ValidateUserInitiatedConnectionService(clientId, response)
           }
         }
         break
       }
       case 400: {
-        const msg = this.removeRemoteAccessPolicyRule(clientId, clientObj)
+        const msg = this.removeRemoteAccessPolicyRule(clientId)
         if (msg == null) {
-          const xmlRequestBody = this.amt.ManagementPresenceRemoteSAP(AMT.Methods.ENUMERATE, (clientObj.messageId++).toString())
+          const xmlRequestBody = this.amt.ManagementPresenceRemoteSAP(AMT.Methods.ENUMERATE)
           const data = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
-          return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+          return this.responseMsg.get(clientId, data, 'wsman', 'ok')
         } else {
           return msg
         }
@@ -140,7 +141,8 @@ export class CIRAConfigurator implements IExecutor {
     }
   }
 
-  removeRemoteAccessPolicyRule (clientId: string, clientObj: ClientObject): ClientMsg {
+  removeRemoteAccessPolicyRule (clientId: string): ClientMsg {
+    const clientObj = devices[clientId]
     if (clientObj.ciraconfig.policyRuleUserInitiate && clientObj.ciraconfig.policyRuleAlert && clientObj.ciraconfig.policyRulePeriodic) {
       return null
     }
@@ -156,50 +158,53 @@ export class CIRAConfigurator implements IExecutor {
       clientObj.ciraconfig.policyRulePeriodic = true
       selector.value = 'Periodic'
     }
-    const xmlRequestBody = this.amt.RemoteAccessPolicyRule(AMT.Methods.DELETE, (clientObj.messageId++).toString(), selector)
+    const xmlRequestBody = this.amt.RemoteAccessPolicyRule(AMT.Methods.DELETE, selector)
     const data = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
-    return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+    return this.responseMsg.get(clientId, data, 'wsman', 'ok')
   }
 
-  ValidateUserInitiatedConnectionService (clientId: string, clientObj: ClientObject, response: any): ClientMsg {
+  ValidateUserInitiatedConnectionService (clientId: string, response: any): ClientMsg {
     let xmlRequestBody = null
     let data = null
+    const clientObj = devices[clientId]
     const action = response.Envelope.Header.Action.split('/').pop()
     switch (action) {
       case 'RequestStateChangeResponse': {
         if (response.Envelope.Body?.RequestStateChange_OUTPUT?.ReturnValue !== 0) {
           throw new RPSError(`Device ${clientObj.uuid} failed to update User Initiated Connection Service.`)
         }
-        xmlRequestBody = this.amt.EnvironmentDetectionSettingData(AMT.Methods.GET, (clientObj.messageId++).toString())
+        xmlRequestBody = this.amt.EnvironmentDetectionSettingData(AMT.Methods.GET)
         clientObj.ciraconfig.userInitConnectionService = true
         break
       }
     }
     data = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
-    return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+    return this.responseMsg.get(clientId, data, 'wsman', 'ok')
   }
 
-  validateRemoteAccessPolicyRule (clientId: string, clientObj: ClientObject, response: any): ClientMsg {
+  validateRemoteAccessPolicyRule (clientId: string, response: any): ClientMsg {
     let xmlRequestBody = null
     let data = null
+    const clientObj = devices[clientId]
     const action = response.Envelope.Header.Action.split('/').pop()
     switch (action) {
       case 'DeleteResponse': {
-        xmlRequestBody = this.amt.ManagementPresenceRemoteSAP(AMT.Methods.ENUMERATE, (clientObj.messageId++).toString())
+        xmlRequestBody = this.amt.ManagementPresenceRemoteSAP(AMT.Methods.ENUMERATE)
         break
       }
     }
     data = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
-    return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+    return this.responseMsg.get(clientId, data, 'wsman', 'ok')
   }
 
-  validateManagementPresenceRemoteSAP (clientId: string, clientObj: ClientObject, response: any): ClientMsg {
+  validateManagementPresenceRemoteSAP (clientId: string, response: any): ClientMsg {
     let xmlRequestBody = null
     let data = null
+    const clientObj = devices[clientId]
     const action = response.Envelope.Header.Action.split('/').pop()
     switch (action) {
       case 'EnumerateResponse': {
-        xmlRequestBody = this.amt.ManagementPresenceRemoteSAP(AMT.Methods.PULL, (clientObj.messageId++).toString(), response.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+        xmlRequestBody = this.amt.ManagementPresenceRemoteSAP(AMT.Methods.PULL, response.Envelope.Body?.EnumerateResponse?.EnumerationContext)
         break
       }
       case 'PullResponse': {
@@ -212,54 +217,56 @@ export class CIRAConfigurator implements IExecutor {
               TunnelLifeTime: 0, // 0 means that the tunnel should stay open until it is closed
               ExtendedData: 'AAAAAAAAABk=' // Equals to 25 seconds in base 64 with network order.
             }
-            xmlRequestBody = this.amt.RemoteAccessService(AMT.Methods.ADD_REMOTE_ACCESS_POLICY_RULE, (clientObj.messageId++).toString(), null, policy, selector)
+            xmlRequestBody = this.amt.RemoteAccessService(AMT.Methods.ADD_REMOTE_ACCESS_POLICY_RULE, null, policy, selector)
           } else {
             this.logger.debug(`MPS: ${JSON.stringify(selector, null, '\t')}`)
-            xmlRequestBody = this.amt.ManagementPresenceRemoteSAP(AMT.Methods.DELETE, (clientObj.messageId++).toString(), null, selector)
+            xmlRequestBody = this.amt.ManagementPresenceRemoteSAP(AMT.Methods.DELETE, null, selector)
           }
         } else {
-          xmlRequestBody = this.amt.PublicKeyCertificate(AMT.Methods.ENUMERATE, (clientObj.messageId++).toString())
+          xmlRequestBody = this.amt.PublicKeyCertificate(AMT.Methods.ENUMERATE)
         }
         break
       }
       case 'DeleteResponse': {
-        xmlRequestBody = this.amt.PublicKeyCertificate(AMT.Methods.ENUMERATE, (clientObj.messageId++).toString())
+        xmlRequestBody = this.amt.PublicKeyCertificate(AMT.Methods.ENUMERATE)
         break
       }
     }
     data = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
-    return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+    return this.responseMsg.get(clientId, data, 'wsman', 'ok')
   }
 
-  validatePublicKeyCertificate (clientId: string, clientObj: ClientObject, response: any): ClientMsg {
+  validatePublicKeyCertificate (clientId: string, response: any): ClientMsg {
     const action = response.Envelope.Header.Action.split('/').pop()
+    const clientObj = devices[clientId]
     let xmlRequestBody = null
     let data = null
     switch (action) {
       case 'EnumerateResponse': {
-        xmlRequestBody = this.amt.PublicKeyCertificate(AMT.Methods.PULL, (clientObj.messageId++).toString(), response.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+        xmlRequestBody = this.amt.PublicKeyCertificate(AMT.Methods.PULL, response.Envelope.Body?.EnumerateResponse?.EnumerationContext)
         break
       }
       case 'PullResponse': {
         if (response.Envelope.Body.PullResponse.Items?.AMT_PublicKeyCertificate != null) {
           this.logger.debug(`Public Key Certificate InstanceID : ${response.Envelope.Body.PullResponse.Items.AMT_PublicKeyCertificate.InstanceID}`)
           const selector = { name: 'InstanceID', value: response.Envelope.Body.PullResponse.Items.AMT_PublicKeyCertificate.InstanceID }
-          xmlRequestBody = this.amt.PublicKeyCertificate(AMT.Methods.DELETE, (clientObj.messageId++).toString(), null, selector)
+          xmlRequestBody = this.amt.PublicKeyCertificate(AMT.Methods.DELETE, null, selector)
         } else {
-          xmlRequestBody = this.amt.EnvironmentDetectionSettingData(AMT.Methods.GET, (clientObj.messageId++).toString())
+          xmlRequestBody = this.amt.EnvironmentDetectionSettingData(AMT.Methods.GET)
         }
         break
       }
       case 'DeleteResponse': {
-        xmlRequestBody = this.amt.EnvironmentDetectionSettingData(AMT.Methods.GET, (clientObj.messageId++).toString())
+        xmlRequestBody = this.amt.EnvironmentDetectionSettingData(AMT.Methods.GET)
         break
       }
     }
     data = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
-    return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+    return this.responseMsg.get(clientId, data, 'wsman', 'ok')
   }
 
-  async ValidateEnvironmentDetectionSettingData (clientId: string, clientObj: ClientObject, response: any): Promise<ClientMsg> {
+  async ValidateEnvironmentDetectionSettingData (clientId: string, response: any): Promise<ClientMsg> {
+    const clientObj = devices[clientId]
     const action = response.Envelope.Header.Action.split('/').pop()
     let xmlRequestBody = null
     let data = null
@@ -273,16 +280,16 @@ export class CIRAConfigurator implements IExecutor {
             envSettings.DetectionStrings = [`${randomUUID()}.com`]
           }
           clientObj.ciraconfig.setENVSettingDataCIRA = true
-          xmlRequestBody = this.amt.EnvironmentDetectionSettingData(AMT.Methods.PUT, (clientObj.messageId++).toString(), envSettings)
+          xmlRequestBody = this.amt.EnvironmentDetectionSettingData(AMT.Methods.PUT, envSettings)
           data = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
-          return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+          return this.responseMsg.get(clientId, data, 'wsman', 'ok')
         }
         if (envSettings.DetectionStrings != null && !clientObj.ciraconfig.userInitConnectionService) {
           envSettings.DetectionStrings = []
           clientObj.ciraconfig.setENVSettingData = true
-          xmlRequestBody = this.amt.EnvironmentDetectionSettingData(AMT.Methods.PUT, (clientObj.messageId++).toString(), envSettings)
+          xmlRequestBody = this.amt.EnvironmentDetectionSettingData(AMT.Methods.PUT, envSettings)
           data = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
-          return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+          return this.responseMsg.get(clientId, data, 'wsman', 'ok')
         }
         clientObj.ciraconfig.setENVSettingData = true
         return null
@@ -297,7 +304,7 @@ export class CIRAConfigurator implements IExecutor {
           MqttProvider.publishEvent('success', ['CIRAConfigurator'], 'CIRA Configured', clientObj.uuid)
           if (clientObj.ClientData.payload.profile.tlsCerts != null && clientObj.ClientData.payload.profile.tlsCerts != null) {
             clientObj.action = ClientAction.TLSCONFIG
-            await this.tlsConfigurator.execute(null, clientId)
+            return await this.tlsConfigurator.execute(null, clientId)
           } else {
             return this.responseMsg.get(clientId, null, 'success', 'success', JSON.stringify(clientObj.status))
           }
@@ -308,7 +315,8 @@ export class CIRAConfigurator implements IExecutor {
     return null
   }
 
-  async ValidatePublicKeyManagementService (clientId: string, clientObj: ClientObject, response: any): Promise<ClientMsg> {
+  async ValidatePublicKeyManagementService (clientId: string, response: any): Promise<ClientMsg> {
+    const clientObj = devices[clientId]
     if (response.Envelope.Body.AddTrustedRootCertificate_OUTPUT.ReturnValue !== 0) {
       throw new RPSError(`Device ${clientObj.uuid} failed to add Trusted Root Certificate.`)
     }
@@ -329,14 +337,15 @@ export class CIRAConfigurator implements IExecutor {
     if (configScript.serverAddressFormat === 3 && configScript.commonName) {
       server.CommonName = configScript.commonName
     }
-    const xmlRequestBody = this.amt.RemoteAccessService(AMT.Methods.ADD_MPS, (clientObj.messageId++).toString(), server)
+    const xmlRequestBody = this.amt.RemoteAccessService(AMT.Methods.ADD_MPS, server)
     const data = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
-    return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+    return this.responseMsg.get(clientId, data, 'wsman', 'ok')
   }
 
-  ValidateRemoteAccessService (clientId: string, clientObj: ClientObject, response: any): ClientMsg {
+  ValidateRemoteAccessService (clientId: string, response: any): ClientMsg {
     let xmlRequestBody = null
     let data = null
+    const clientObj = devices[clientId]
     const action = response.Envelope.Header.Action.split('/').pop()
     switch (action) {
       case 'AddMpServerResponse': {
@@ -344,19 +353,19 @@ export class CIRAConfigurator implements IExecutor {
           throw new RPSError(`Device ${clientObj.uuid} failed to add MPS server.`)
         }
         clientObj.ciraconfig.addRemoteAccessPolicyRule = true
-        xmlRequestBody = this.amt.ManagementPresenceRemoteSAP(AMT.Methods.ENUMERATE, (clientObj.messageId++).toString())
+        xmlRequestBody = this.amt.ManagementPresenceRemoteSAP(AMT.Methods.ENUMERATE)
         break
       }
       case 'AddRemoteAccessPolicyRuleResponse': {
         if (response.Envelope.Body.AddRemoteAccessPolicyRule_OUTPUT.ReturnValue !== 0) {
           throw new RPSError(`Device ${clientObj.uuid} failed to add access policy rule.`)
         }
-        xmlRequestBody = this.amt.UserInitiatedConnectionService(AMT.Methods.REQUEST_STATE_CHANGE, (clientObj.messageId++).toString(), 32771)
+        xmlRequestBody = this.amt.UserInitiatedConnectionService(AMT.Methods.REQUEST_STATE_CHANGE, 32771)
         break
       }
     }
     data = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
-    return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+    return this.responseMsg.get(clientId, data, 'wsman', 'ok')
   }
 
   async setMPSPasswordInVault (clientObj: ClientObject): Promise<void> {
