@@ -6,19 +6,50 @@
 import { TLSConfigurator } from './TLSConfigurator'
 import Logger from '../Logger'
 import { devices } from '../WebSocketListener'
+import { EnvReader } from '../utils/EnvReader'
+import { ClientResponseMsg } from '../utils/ClientResponseMsg'
 describe('TLS Configurator', () => {
   let tlsConfigurator: TLSConfigurator
+  const wsmanResponse = {
+    Envelope: {
+      Body: {
+
+      },
+      Header: {
+        Action: '',
+        ResourceURI: ''
+      }
+    }
+  }
   // let responseMsgSpy: jest.SpyInstance
   const clientId = '123'
+  jest.setTimeout(6000)
 
   beforeEach(() => {
-    tlsConfigurator = new TLSConfigurator(new Logger('TLS Configurator'), null, { get: () => {} } as any)
-    // responseMsgSpy = jest.spyOn(tlsConfigurator.responseMsg, 'get')
+    jest.mock('../utils/parseWSManResponseBody', () => {
+      return {
+        __esModule: true,
+        parseBody: jest.fn(() => '')
+      }
+    })
+    tlsConfigurator = new TLSConfigurator(new Logger('TLS Configurator'), null, new ClientResponseMsg(new Logger('ClientResponseMsg')))
     devices[clientId] = {
+      connectionParams: {
+
+      } as any,
       ClientId: clientId,
       status: {},
       ClientData: {
         payload: {
+          profile: {
+            tlsMode: 2,
+            tenantId: '',
+            tlsCerts: {
+              ROOT_CERTIFICATE: {
+                certbin: ''
+              }
+            }
+          },
           password: 'password'
         }
       },
@@ -28,396 +59,354 @@ describe('TLS Configurator', () => {
   //   jest.setTimeout(30000)
 
   test('should create TLS Configurator', () => {
-    expect(tlsConfigurator).toBeDefined()
+    expect(tlsConfigurator).not.toBeNull()
   })
 
-  //   test('should execute', async () => {
-  //     const processWSManJsonResponsesSpy = jest.spyOn(tlsConfigurator, 'processWSManJsonResponses').mockResolvedValue()
-  //     const trustedRootCertificatesSpy = jest.spyOn(tlsConfigurator, 'trustedRootCertificates').mockResolvedValue()
-  //     const generateKeyPairSpy = jest.spyOn(tlsConfigurator, 'generateKeyPair').mockResolvedValue()
-  //     const createTLSCredentialContextSpy = jest.spyOn(tlsConfigurator, 'createTLSCredentialContext').mockResolvedValue()
-  //     const synchronizeTimeSpy = jest.spyOn(tlsConfigurator, 'synchronizeTime').mockResolvedValue()
-  //     const setTLSDataSpy = jest.spyOn(tlsConfigurator, 'setTLSData').mockResolvedValue()
-  //     const result = await tlsConfigurator.execute('', clientId)
-  //     expect(result).toBeNull()
-  //     expect(processWSManJsonResponsesSpy).toHaveBeenCalled()
-  //     expect(trustedRootCertificatesSpy).toHaveBeenCalled()
-  //     expect(generateKeyPairSpy).toHaveBeenCalled()
-  //     expect(createTLSCredentialContextSpy).toHaveBeenCalled()
-  //     expect(synchronizeTimeSpy).toHaveBeenCalled()
-  //     expect(setTLSDataSpy).toHaveBeenCalled()
-  //   })
-  //   test('should execute when commitLocalTLS', async () => {
-  //     tlsConfigurator.clientObj.tls.commitLocalTLS = true
+  test('should execute', async () => {
+    const processWSManJsonResponsesSpy = jest.spyOn(tlsConfigurator, 'processWSManJsonResponses').mockReturnValue(null)
+    const trustedRootCertificatesSpy = jest.spyOn(tlsConfigurator, 'trustedRootCertificates').mockReturnValue(null)
+    const generateKeyPairSpy = jest.spyOn(tlsConfigurator, 'generateKeyPair').mockReturnValue(null)
+    const createTLSCredentialContextSpy = jest.spyOn(tlsConfigurator, 'createTLSCredentialContext').mockReturnValue(null)
+    const synchronizeTimeSpy = jest.spyOn(tlsConfigurator, 'synchronizeTime').mockReturnValue(null)
+    const setTLSDataSpy = jest.spyOn(tlsConfigurator, 'setTLSData').mockResolvedValue(null)
+    const result = await tlsConfigurator.execute(null, clientId)
+    expect(result).toBeNull()
+    expect(processWSManJsonResponsesSpy).not.toHaveBeenCalled()
+    expect(trustedRootCertificatesSpy).toHaveBeenCalled()
+    expect(generateKeyPairSpy).toHaveBeenCalled()
+    expect(createTLSCredentialContextSpy).toHaveBeenCalled()
+    expect(synchronizeTimeSpy).toHaveBeenCalled()
+    expect(setTLSDataSpy).toHaveBeenCalled()
+  })
+  it('should synchronize time', () => {
+    devices[clientId].tls.resCredentialContext = true
+    const result = tlsConfigurator.synchronizeTime(clientId)
+    expect(devices[clientId].tls.getTimeSynch).toBe(true)
+    expect(result).not.toBeNull()
+  })
+  it('should enumerate TLS Credential Context', () => {
+    devices[clientId].tls.confirmPublicPrivateKeyPair = true
+    const result = tlsConfigurator.createTLSCredentialContext(clientId)
+    expect(devices[clientId].tls.getTLSCredentialContext).toBe(true)
+    expect(result).not.toBeNull()
+  })
+  it('should create TLS Credential Context', () => {
+    devices[clientId].tls.getTLSCredentialContext = true
+    devices[clientId].tls.TLSCredentialContext = {}
+    const result = tlsConfigurator.createTLSCredentialContext(clientId)
+    expect(devices[clientId].tls.addCredentialContext).toBe(true)
+    expect(result).not.toBeNull()
+  })
+  it('should get TLS Setting Data', () => {
+    devices[clientId].tls.setTimeSynch = true
+    const result = tlsConfigurator.setTLSData(clientId)
+    expect(devices[clientId].tls.getTLSSettingData).toBe(true)
+    expect(result).not.toBeNull()
+  })
+  it('should store TLS Setting Data when tlsMode is 2', () => {
+    devices[clientId].tls.getTLSSettingData = true
+    devices[clientId].tls.TLSSettingData = [
+      {}
+    ]
+    const result = tlsConfigurator.setTLSData(clientId)
+    expect(devices[clientId].tls.putRemoteTLS).toBe(true)
+    expect(devices[clientId].tls.TLSSettingData[0].Enabled).toBe(true)
+    expect(devices[clientId].tls.TLSSettingData[0].AcceptNonSecureConnections).toBe(true)
+    expect(devices[clientId].tls.TLSSettingData[0].MutualAuthentication).toBe(false)
+    expect(result).not.toBeNull()
+  })
+  it('should enable local TLS when setting TLSSettingData', async () => {
+    devices[clientId].tls.putRemoteTLS = true
+    devices[clientId].tls.commitRemoteTLS = true
+    devices[clientId].tls.TLSSettingData = [
+      {}, {}
+    ]
+    const result = await tlsConfigurator.setTLSData(clientId)
+    expect(devices[clientId].tls.putRemoteTLS).toBe(true)
+    expect(devices[clientId].tls.TLSSettingData[1].Enabled).toBe(true)
+    expect(result).not.toBeNull()
+  })
+  it('should get existing public key certificates', () => {
+    const result = tlsConfigurator.trustedRootCertificates(clientId)
+    expect(devices[clientId].tls.getPublicKeyCertificate).toBe(true)
+    expect(result).not.toBeNull()
+  })
+  it('should add trusted root cert', () => {
+    devices[clientId].tls.getPublicKeyCertificate = true
+    devices[clientId].tls.PublicKeyCertificate = []
+    const result = tlsConfigurator.trustedRootCertificates(clientId)
+    expect(devices[clientId].tls.addTrustedRootCert).toBe(true)
+    expect(result).not.toBeNull()
+  })
+  it('should ensure that trusted root cert is added in AMT', () => {
+    devices[clientId].tls.getPublicKeyCertificate = true
+    devices[clientId].tls.addTrustedRootCert = true
+    devices[clientId].tls.PublicKeyCertificate = []
+    devices[clientId].tls.createdTrustedRootCert = true
+    const result = tlsConfigurator.trustedRootCertificates(clientId)
+    expect(result).not.toBeNull()
+  })
+  it('should ensure public certificate before generating public private keypair', () => {
+    devices[clientId].tls.confirmPublicKeyCertificate = true
+    const result = tlsConfigurator.generateKeyPair(clientId)
+    expect(devices[clientId].tls.getPublicPrivateKeyPair).toBe(true)
+    expect(result).not.toBeNull()
+  })
+  it('should generatePublicPrivateKeyPair ', () => {
+    devices[clientId].tls.getPublicPrivateKeyPair = true
+    devices[clientId].tls.PublicPrivateKeyPair = []
+    const result = tlsConfigurator.generateKeyPair(clientId)
+    expect(devices[clientId].tls.generateKeyPair).toBe(true)
+    expect(result).not.toBeNull()
+  })
+  it('should generateKeyPair ', () => {
+    devices[clientId].tls.addCert = true
+    const result = tlsConfigurator.generateKeyPair(clientId)
+    expect(devices[clientId].tls.checkPublicPrivateKeyPair).toBe(true)
+    expect(result).not.toBeNull()
+  })
+  it('should processWSManJsonResponses receives 200 when AMT_PublicKeyCertificate', () => {
+    wsmanResponse.Envelope.Header.ResourceURI = '/AMT_PublicKeyCertificate'
+    jest.spyOn(tlsConfigurator.httpHandler, 'parseXML').mockReturnValue(wsmanResponse)
+    const result = tlsConfigurator.processWSManJsonResponses({ payload: { statusCode: 200, body: { text: '' } } }, clientId)
+    expect(result).not.toBeNull()
+  })
+  it('should processWSManJsonResponses receives 200 when AMT_PublicKeyManagementService', () => {
+    wsmanResponse.Envelope.Header.ResourceURI = '/AMT_PublicKeyManagementService'
+    jest.spyOn(tlsConfigurator.httpHandler, 'parseXML').mockReturnValue(wsmanResponse)
+    const result = tlsConfigurator.processWSManJsonResponses({ payload: { statusCode: 200, body: { text: '' } } }, clientId)
+    expect(result).toBeNull()
+  })
+  it('should processWSManJsonResponses receives 200 when AMT_PublicPrivateKeyPair', () => {
+    wsmanResponse.Envelope.Header.ResourceURI = '/AMT_PublicPrivateKeyPair'
+    jest.spyOn(tlsConfigurator.httpHandler, 'parseXML').mockReturnValue(wsmanResponse)
+    const result = tlsConfigurator.processWSManJsonResponses({ payload: { statusCode: 200, body: { text: '' } } }, clientId)
+    expect(result).not.toBeNull()
+  })
+  it('should processWSManJsonResponses receives 200 when AMT_TLSCredentialContext', () => {
+    wsmanResponse.Envelope.Header.ResourceURI = '/AMT_TLSCredentialContext'
+    jest.spyOn(tlsConfigurator.httpHandler, 'parseXML').mockReturnValue(wsmanResponse)
+    const result = tlsConfigurator.processWSManJsonResponses({ payload: { statusCode: 200, body: { text: '' } } }, clientId)
+    expect(result).not.toBeNull()
+  })
+  it('should processWSManJsonResponses receives 200 when AMT_TimeSynchronizationService', () => {
+    wsmanResponse.Envelope.Header.ResourceURI = '/AMT_TimeSynchronizationService'
+    jest.spyOn(tlsConfigurator.httpHandler, 'parseXML').mockReturnValue(wsmanResponse)
+    const result = tlsConfigurator.processWSManJsonResponses({ payload: { statusCode: 200, body: { text: '' } } }, clientId)
+    expect(result).not.toBeNull()
+  })
+  it('should processWSManJsonResponses receives 200 when AMT_TLSSettingData', () => {
+    wsmanResponse.Envelope.Header.ResourceURI = '/AMT_TLSSettingData'
+    jest.spyOn(tlsConfigurator.httpHandler, 'parseXML').mockReturnValue(wsmanResponse)
+    const result = tlsConfigurator.processWSManJsonResponses({ payload: { statusCode: 200, body: { text: '' } } }, clientId)
+    expect(result).not.toBeNull()
+  })
+  it('should processWSManJsonResponses receives 200 when AMT_SetupAndConfigurationService', () => {
+    wsmanResponse.Envelope.Header.ResourceURI = '/AMT_SetupAndConfigurationService'
+    jest.spyOn(tlsConfigurator.httpHandler, 'parseXML').mockReturnValue(wsmanResponse)
+    const result = tlsConfigurator.processWSManJsonResponses({ payload: { statusCode: 200, body: { text: '' } } }, clientId)
+    expect(result).toBeNull()
+  })
 
-  //     const processWSManJsonResponsesSpy = jest.spyOn(tlsConfigurator, 'processWSManJsonResponses').mockResolvedValue()
-  //     const trustedRootCertificatesSpy = jest.spyOn(tlsConfigurator, 'trustedRootCertificates').mockResolvedValue()
-  //     const generateKeyPairSpy = jest.spyOn(tlsConfigurator, 'generateKeyPair').mockResolvedValue()
-  //     const createTLSCredentialContextSpy = jest.spyOn(tlsConfigurator, 'createTLSCredentialContext').mockResolvedValue()
-  //     const synchronizeTimeSpy = jest.spyOn(tlsConfigurator, 'synchronizeTime').mockResolvedValue()
-  //     const setTLSDataSpy = jest.spyOn(tlsConfigurator, 'setTLSData').mockResolvedValue()
-  //     const updateDeviceVersionSpy = jest.spyOn(tlsConfigurator, 'updateDeviceVersion').mockResolvedValue()
-  //     const result = await tlsConfigurator.execute('', clientId)
-  //     expect(result).not.toBeNull()
+  it('should enumerate public key cert when processWSManJsonResponses receives 401', () => {
+    const result = tlsConfigurator.processWSManJsonResponses({ payload: { statusCode: 401 } }, clientId)
+    expect(result).not.toBeNull()
+  })
 
-  //     expect(processWSManJsonResponsesSpy).toHaveBeenCalled()
-  //     expect(trustedRootCertificatesSpy).toHaveBeenCalled()
-  //     expect(generateKeyPairSpy).toHaveBeenCalled()
-  //     expect(createTLSCredentialContextSpy).toHaveBeenCalled()
-  //     expect(synchronizeTimeSpy).toHaveBeenCalled()
-  //     expect(setTLSDataSpy).toHaveBeenCalled()
-  //     expect(updateDeviceVersionSpy).toHaveBeenCalled()
-  //     expect(responseMsgSpy).toHaveBeenCalled() // With(clientId, null, 'success', 'success', '{"TLSConfiguration": "Configured"}')
-  //   })
-  //   test('should synchronize time', async () => {
-  //     tlsConfigurator.clientObj.tls = {
-  //       resCredentialContext: true,
-  //       getTimeSynch: false
-  //     }
-  //     await tlsConfigurator.synchronizeTime(clientId)
-  //     expect(amtwsmanExecuteSpy).toHaveBeenCalledWith(clientId, 'AMT_TimeSynchronizationService', 'GetLowAccuracyTimeSynch', {}, null, AMTUserName, 'password')
-  //     expect(tlsConfigurator.clientObj.tls.getTimeSynch).toBe(true)
-  //   })
-  //   test('should create tls credential context when getTLSCredentialContext is falsy', async () => {
-  //     tlsConfigurator.clientObj.tls.confirmPublicPrivateKeyPair = true
-  //     expect(tlsConfigurator.clientObj.tls.getTLSCredentialContext).toBeFalsy()
-  //     await tlsConfigurator.createTLSCredentialContext(clientId)
-  //     expect(tlsConfigurator.clientObj.tls.getTLSCredentialContext).toBe(true)
-  //   })
-  //   test('should create tls credential context when addCredentialContext is falsy', async () => {
-  //     tlsConfigurator.clientObj.tls.getTLSCredentialContext = true
-  //     tlsConfigurator.clientObj.tls.TLSCredentialContext = {}
-  //     const amtPrefix = 'http://intel.com/wbem/wscim/1/amt-schema/1/'
-  //     const certHandle = 'Intel(r) AMT Certificate: Handle: 1'
-  //     const putObj = {
-  //       ElementInContext: `<a:Address>/wsman</a:Address><a:ReferenceParameters><w:ResourceURI>${amtPrefix}AMT_PublicKeyCertificate</w:ResourceURI><w:SelectorSet><w:Selector Name="InstanceID">${certHandle}</w:Selector></w:SelectorSet></a:ReferenceParameters>`,
-  //       ElementProvidingContext: `<a:Address>/wsman</a:Address><a:ReferenceParameters><w:ResourceURI>${amtPrefix}AMT_TLSProtocolEndpointCollection</w:ResourceURI><w:SelectorSet><w:Selector Name="ElementName">TLSProtocolEndpointInstances Collection</w:Selector></w:SelectorSet></a:ReferenceParameters>`
-  //     }
-  //     expect(tlsConfigurator.clientObj.tls.addCredentialContext).toBeFalsy()
-  //     await tlsConfigurator.createTLSCredentialContext(clientId)
-  //     expect(amtwsmanCreateSpy).toHaveBeenCalledWith(clientId, 'AMT_TLSCredentialContext', putObj, null, AMTUserName, 'password')
-  //     expect(tlsConfigurator.clientObj.tls.addCredentialContext).toBe(true)
-  //   })
-  //   test('should add trusted root certificates when not getPublicKeyCertificate', async () => {
-  //     tlsConfigurator.clientObj.ClientData.payload.profile = {
-  //       tlsConfigObject: {
+  it('should validateSetupAndConfigurationService when setRemote', () => {
+    devices[clientId].tls.setRemoteTLS = true
+    const result = tlsConfigurator.validateSetupAndConfigurationService(clientId, wsmanResponse)
+    expect(result).toBeNull()
+    expect(devices[clientId].tls.commitRemoteTLS).toBe(true)
+  })
 
-  //       }
-  //     }
-  //     expect(tlsConfigurator.clientObj.tls.getPublicKeyCertificate).toBeFalsy()
-  //     await tlsConfigurator.trustedRootCertificates(clientId)
-  //     expect(tlsConfigurator.clientObj.tls.getPublicKeyCertificate).toBe(true)
-  //     expect(amtwsmanBatchEnumSpy).toHaveBeenCalledWith(clientId, 'AMT_PublicKeyCertificate', AMTUserName, 'password')
-  //   })
-  //   test('should add trusted root certificates when not addTrustedRootCert', async () => {
-  //     tlsConfigurator.clientObj.tls.getPublicKeyCertificate = true
-  //     tlsConfigurator.clientObj.tls.PublicKeyCertificate = {
-  //       responses: [{}]
-  //     }
-  //     const ROOT_CERTIFICATE = { certbin: '' }
-  //     tlsConfigurator.clientObj.ClientData.payload.profile = {
-  //       tlsCerts: {
-  //         ROOT_CERTIFICATE
-  //       }
-  //     }
-  //     expect(tlsConfigurator.clientObj.tls.getPublicKeyCertificate).toBeTruthy()
-  //     expect(tlsConfigurator.clientObj.tls.addTrustedRootCert).toBeFalsy()
-  //     await tlsConfigurator.trustedRootCertificates(clientId)
-  //     expect(tlsConfigurator.clientObj.tls.addTrustedRootCert).toBe(true)
+  it('should validateSetupAndConfigurationService when setLocal', () => {
+    devices[clientId].tls.setLocalTLS = true
+    devices[clientId].tls.commitRemoteTLS = true
+    const result = tlsConfigurator.validateSetupAndConfigurationService(clientId, wsmanResponse)
+    expect(result).toBeNull()
+    expect(devices[clientId].tls.commitLocalTLS).toBe(true)
+  })
 
-  //     expect(amtwsmanExecuteSpy).toHaveBeenCalledWith(clientId, 'AMT_PublicKeyManagementService', 'AddTrustedRootCertificate', { CertificateBlob: ROOT_CERTIFICATE.certbin }, null, AMTUserName, 'password')
-  //   })
-  //   test('should add trusted root certificates when not checkPublicKeyCertificate ', async () => {
-  //     tlsConfigurator.clientObj.tls.getPublicKeyCertificate = true
-  //     tlsConfigurator.clientObj.tls.createdTrustedRootCert = true
-  //     tlsConfigurator.clientObj.tls.addTrustedRootCert = true
-  //     tlsConfigurator.clientObj.tls.PublicKeyCertificate = {
-  //       responses: [{}]
-  //     }
-  //     tlsConfigurator.clientObj.ClientData.payload.profile = {
-  //       tlsConfigObject: {
+  it('should validateTLSSettingData when Enumerate', () => {
+    wsmanResponse.Envelope.Header.Action = '/EnumerateResponse'
+    wsmanResponse.Envelope.Body = { EnumerateResponse: { EnumerationContext: '' } }
+    const result = tlsConfigurator.validateTLSSettingData(clientId, wsmanResponse)
+    expect(result).not.toBeNull()
+  })
+  it('should validateTLSSettingData when Put when remote', () => {
+    wsmanResponse.Envelope.Header.Action = '/PutResponse'
+    wsmanResponse.Envelope.Body = { AMT_TLSSettingData: { ElementName: 'Intel(r) AMT 802.3 TLS Settings' } }
+    const result = tlsConfigurator.validateTLSSettingData(clientId, wsmanResponse)
+    expect(result).not.toBeNull()
+    expect(devices[clientId].tls.setRemoteTLS).toBe(true)
+  })
+  it('should validateTLSSettingData when Put when local', () => {
+    wsmanResponse.Envelope.Header.Action = '/PutResponse'
+    wsmanResponse.Envelope.Body = { AMT_TLSSettingData: { ElementName: 'Intel(r) AMT LMS TLS Settings' } }
+    const result = tlsConfigurator.validateTLSSettingData(clientId, wsmanResponse)
+    expect(result).not.toBeNull()
+    expect(devices[clientId].tls.setLocalTLS).toBe(true)
+  })
+  it('should validateTLSSettingData when Pull', () => {
+    wsmanResponse.Envelope.Header.Action = '/PullResponse'
+    const processSpy = jest.spyOn(tlsConfigurator, 'processAMTTLSSettingsData').mockImplementation(() => { return {} as any })
+    const result = tlsConfigurator.validateTLSSettingData(clientId, wsmanResponse)
+    expect(result).toBeNull()
+    expect(processSpy).toHaveBeenCalled()
+  })
 
-  //       }
-  //     }
+  it('should validateTimeSynchronizationService when GetLowAccuracyTimeSynchResponse', () => {
+    wsmanResponse.Envelope.Header.Action = '/GetLowAccuracyTimeSynchResponse'
+    wsmanResponse.Envelope.Body = { GetLowAccuracyTimeSynch_OUTPUT: { Ta0: 123456789 } }
+    const message = tlsConfigurator.validateTimeSynchronizationService(clientId, wsmanResponse)
+    expect(message).not.toBeNull()
+  })
 
-  //     expect(tlsConfigurator.clientObj.tls.checkPublicKeyCertificate).toBeFalsy()
-  //     await tlsConfigurator.trustedRootCertificates(clientId)
-  //     expect(tlsConfigurator.clientObj.tls.checkPublicKeyCertificate).toBe(true)
-  //     expect(amtwsmanBatchEnumSpy).toHaveBeenCalledWith(clientId, 'AMT_PublicKeyCertificate', AMTUserName, 'password')
-  //   })
-  //   test('should generate key pair when confirmPublicKeyCertificate', async () => {
-  //     tlsConfigurator.clientObj.tls.confirmPublicKeyCertificate = true
-  //     expect(tlsConfigurator.clientObj.tls.getPublicPrivateKeyPair).toBeFalsy()
-  //     await tlsConfigurator.generateKeyPair(clientId)
-  //     expect(tlsConfigurator.clientObj.tls.getPublicPrivateKeyPair).toBe(true)
-  //     expect(amtwsmanBatchEnumSpy).toHaveBeenCalledWith(clientId, 'AMT_PublicPrivateKeyPair', AMTUserName, 'password')
-  //   })
-  //   test('should generate key pair when PublicPrivateKeyPair', async () => {
-  //     tlsConfigurator.clientObj.tls.PublicPrivateKeyPair = { responses: [{}] }
-  //     expect(tlsConfigurator.clientObj.tls.generateKeyPair).toBeFalsy()
-  //     await tlsConfigurator.generateKeyPair(clientId)
-  //     expect(tlsConfigurator.clientObj.tls.generateKeyPair).toBe(true)
-  //     expect(amtwsmanExecuteSpy).toHaveBeenCalledWith(clientId, 'AMT_PublicKeyManagementService', 'GenerateKeyPair', { KeyAlgorithm: 0, KeyLength: 2048 }, null, AMTUserName, 'password')
-  //   })
+  it('should validateTimeSynchronizationService when GetLowAccuracyTimeSynchResponse', () => {
+    wsmanResponse.Envelope.Header.Action = '/SetHighAccuracyTimeSynchResponse'
+    const message = tlsConfigurator.validateTimeSynchronizationService(clientId, wsmanResponse)
+    expect(devices[clientId].tls.setTimeSynch).toBe(true)
+    expect(message).toBeNull()
+  })
 
-  //   test('should generate key pair when addCert ', async () => {
-  //     tlsConfigurator.clientObj.tls.addCert = true
-  //     expect(tlsConfigurator.clientObj.tls.checkPublicPrivateKeyPair).toBeFalsy()
-  //     await tlsConfigurator.generateKeyPair(clientId)
-  //     expect(tlsConfigurator.clientObj.tls.checkPublicPrivateKeyPair).toBe(true)
-  //     expect(amtwsmanBatchEnumSpy).toHaveBeenCalledWith(clientId, 'AMT_PublicPrivateKeyPair', AMTUserName, 'password')
-  //   })
-  //   test('should set tls data when setTimeSync', async () => {
-  //     tlsConfigurator.clientObj.tls.setTimeSynch = true
-  //     tlsConfigurator.clientObj.ClientData.payload.profile = {
-  //       tlsConfigObject: {
+  it('should validateTLSCredentialContext when Enumerate', () => {
+    wsmanResponse.Envelope.Header.Action = '/EnumerateResponse'
+    wsmanResponse.Envelope.Body = { EnumerateResponse: { EnumerationContext: '' } }
+    const result = tlsConfigurator.validateTLSCredentialContext(clientId, wsmanResponse)
+    expect(result).not.toBeNull()
+  })
 
-  //       }
-  //     }
-  //     expect(tlsConfigurator.clientObj.tls.getTLSSettingData).toBeFalsy()
-  //     await tlsConfigurator.setTLSData(clientId)
-  //     expect(tlsConfigurator.clientObj.tls.getTLSSettingData).toBe(true)
-  //     expect(amtwsmanBatchEnumSpy).toHaveBeenCalledWith(clientId, 'AMT_TLSSettingData', AMTUserName, 'password')
-  //   })
+  it('should validateTLSCredentialContext when Pull', () => {
+    wsmanResponse.Envelope.Header.Action = '/PullResponse'
+    const processSpy = jest.spyOn(tlsConfigurator, 'processAMTTLSCredentialContext').mockImplementation(() => { return {} as any })
+    const result = tlsConfigurator.validateTLSCredentialContext(clientId, wsmanResponse)
+    expect(result).toBeNull()
+    expect(processSpy).toHaveBeenCalled()
+  })
 
-  //   test('should set tls data when TLSSettingData ', async () => {
-  //     tlsConfigurator.clientObj.ClientData.payload.profile = {
-  //       tlsConfigObject: {
+  it('should validateTLSCredentialContext when Create', () => {
+    wsmanResponse.Envelope.Header.Action = '/CreateResponse'
+    const result = tlsConfigurator.validateTLSCredentialContext(clientId, wsmanResponse)
+    expect(result).toBeNull()
+  })
 
-  //       }
-  //     }
-  //     tlsConfigurator.clientObj.tls.TLSSettingData = {
-  //       responses: [{}]
-  //     }
-  //     expect(tlsConfigurator.clientObj.tls.putRemoteTLS).toBeFalsy()
-  //     await tlsConfigurator.setTLSData(clientId)
-  //     expect(tlsConfigurator.clientObj.tls.TLSSettingData.responses[0].Enabled).toBe(true)
-  //     expect(tlsConfigurator.clientObj.tls.TLSSettingData.responses[0].AcceptNonSecureConnections).toBe(true)
-  //     expect(tlsConfigurator.clientObj.tls.TLSSettingData.responses[0].MutualAuthentication).toBe(false)
-  //     expect(tlsConfigurator.clientObj.tls.putRemoteTLS).toBe(true)
-  //     expect(amtwsmanPutSpy).toHaveBeenCalledWith(clientId, 'AMT_TLSSettingData', tlsConfigurator.clientObj.tls.TLSSettingData.responses[0], AMTUserName, 'password')
-  //   })
-  //   test('should set tls data when commitRemoteTLS  ', async () => {
-  //     tlsConfigurator.clientObj.tls.commitRemoteTLS = true
-  //     tlsConfigurator.clientObj.tls.putRemoteTLS = true
-  //     tlsConfigurator.clientObj.ClientData.payload.profile = {
-  //       tlsConfigObject: {
+  it('should validatePublicPrivateKeyPair when Enumerate', () => {
+    wsmanResponse.Envelope.Header.Action = '/EnumerateResponse'
+    wsmanResponse.Envelope.Body = { EnumerateResponse: { EnumerationContext: '' } }
+    const result = tlsConfigurator.validatePublicPrivateKeyPair(clientId, wsmanResponse)
+    expect(result).not.toBeNull()
+  })
 
-  //       }
-  //     }
-  //     tlsConfigurator.clientObj.tls.TLSSettingData = {
-  //       responses: [{}, {}]
-  //     }
-  //     expect(tlsConfigurator.clientObj.tls.putLocalTLS).toBeFalsy()
+  it('should validatePublicPrivateKeyPair when pull', () => {
+    wsmanResponse.Envelope.Header.Action = '/PullResponse'
+    const processSpy = jest.spyOn(tlsConfigurator, 'processAMTPublicPrivateKeyPair').mockImplementation(() => { return {} as any })
+    const result = tlsConfigurator.validatePublicPrivateKeyPair(clientId, wsmanResponse)
+    expect(result).not.toBeNull()
+    expect(processSpy).toHaveBeenCalled()
+  })
 
-  //     await tlsConfigurator.setTLSData(clientId)
-  //     expect(tlsConfigurator.clientObj.tls.TLSSettingData.responses[1].Enabled).toBe(true)
-  //     expect(tlsConfigurator.clientObj.tls.putLocalTLS).toBe(true)
-  //     expect(amtwsmanPutSpy).toHaveBeenCalledWith(clientId, 'AMT_TLSSettingData', tlsConfigurator.clientObj.tls.TLSSettingData.responses[1], AMTUserName, 'password')
-  //   })
+  it('should validateAMTPublicKeyManagementService', () => {
+    wsmanResponse.Envelope.Header.Action = '/AddCertificateResponse'
+    const result = tlsConfigurator.validateAMTPublicKeyManagementService(clientId, wsmanResponse)
+    expect(result).toBeNull()
+    expect(devices[clientId].tls.addCert).toBe(true)
+  })
+  it('should validateAMTPublicKeyManagementService when GenerateKeyPairResponse', () => {
+    wsmanResponse.Envelope.Header.Action = '/GenerateKeyPairResponse'
+    const result = tlsConfigurator.validateAMTPublicKeyManagementService(clientId, wsmanResponse)
+    expect(result).not.toBeNull()
+  })
+  it('should validateAMTPublicKeyManagementService when AddTrustedRootCertificateResponse', () => {
+    wsmanResponse.Envelope.Header.Action = '/AddTrustedRootCertificateResponse'
+    const result = tlsConfigurator.validateAMTPublicKeyManagementService(clientId, wsmanResponse)
+    expect(result).toBeNull()
+    expect(devices[clientId].tls.createdTrustedRootCert).toBe(true)
+  })
+  it('should validateAMTPublicKeyCertificate when enumerate', () => {
+    wsmanResponse.Envelope.Header.Action = '/EnumerateResponse'
+    wsmanResponse.Envelope.Body = { EnumerateResponse: { EnumerationContext: '' } }
+    const result = tlsConfigurator.validateAMTPublicKeyCertificate(clientId, wsmanResponse)
+    expect(result).not.toBeNull()
+  })
+  it('should validateAMTPublicKeyCertificate when pull', () => {
+    const processSpy = jest.spyOn(tlsConfigurator, 'processAMTPublicKeyCertificate').mockImplementation(() => {})
+    wsmanResponse.Envelope.Header.Action = '/PullResponse'
+    const result = tlsConfigurator.validateAMTPublicKeyCertificate(clientId, wsmanResponse)
+    expect(result).toBeNull()
+    expect(processSpy).toHaveBeenCalled()
+  })
 
-  //   test('should process WSMan response when AMT_PublicKeyCertificate', async () => {
-  //     tlsConfigurator.clientObj.tls.checkPublicKeyCertificate = true
-  //     const message = {
-  //       payload: {
-  //         AMT_PublicKeyCertificate: { status: 200, responses: [{ X509Certificate: '' }] }
-  //       }
-  //     }
-  //     const ROOT_CERTIFICATE = { certbin: '' }
-  //     tlsConfigurator.clientObj.ClientData.payload.profile = {
-  //       tlsCerts: {
-  //         ROOT_CERTIFICATE
-  //       }
-  //     }
-  //     const spy = jest.spyOn(tlsConfigurator, 'processAMTPublicKeyCertificate')
-  //     await tlsConfigurator.processWSManJsonResponses(message, clientId)
-  //     expect(spy).toHaveBeenCalledTimes(1)
-  //     expect(spy).toHaveBeenCalledWith(message.payload.AMT_PublicKeyCertificate)
-  //     expect(tlsConfigurator.clientObj.tls.confirmPublicKeyCertificate).toBe(true)
-  //   })
-  //   test('should process WSMan response when AMTPublicPrivateKeyPair', async () => {
-  //     const message = {
-  //       payload: {
-  //         AMT_PublicPrivateKeyPair: { status: 200, responses: [] }
-  //       }
-  //     }
-  //     const spy = jest.spyOn(tlsConfigurator, 'processAMTPublicPrivateKeyPair')
-  //     await tlsConfigurator.processWSManJsonResponses(message, clientId)
-  //     expect(spy).toHaveBeenCalledTimes(1)
-  //     expect(spy).toHaveBeenCalledWith(message.payload.AMT_PublicPrivateKeyPair, clientId)
-  //   })
-  //   test('should process WSMan response when AMTTLSCredentialContext', async () => {
-  //     const message = {
-  //       payload: {
-  //         AMT_TLSCredentialContext: { status: 200, responses: [] }
-  //       }
-  //     }
-  //     const spy = jest.spyOn(tlsConfigurator, 'processAMTTLSCredentialContext')
-  //     await tlsConfigurator.processWSManJsonResponses(message, clientId)
-  //     expect(spy).toHaveBeenCalledTimes(1)
-  //     expect(spy).toHaveBeenCalledWith(message.payload.AMT_TLSCredentialContext)
-  //   })
-  //   test('should process WSMan response when AMTTLSSettingsData', async () => {
-  //     const message = {
-  //       payload: {
-  //         AMT_TLSSettingData: { status: 200, responses: [] }
-  //       }
-  //     }
-  //     const spy = jest.spyOn(tlsConfigurator, 'processAMTTLSSettingsData')
-  //     await tlsConfigurator.processWSManJsonResponses(message, clientId)
-  //     expect(spy).toHaveBeenCalledTimes(1)
-  //     expect(spy).toHaveBeenCalledWith(message.payload.AMT_TLSSettingData)
-  //   })
-  //   test('should process WSMan response when header method AddTrustedRootCertificate', async () => {
-  //     const message = {
-  //       payload: {
-  //         Header: {
-  //           Method: 'AddTrustedRootCertificate'
-  //         },
-  //         Body: {
-  //           ReturnValue: 0
-  //         }
-  //       }
-  //     }
-  //     await tlsConfigurator.processWSManJsonResponses(message, clientId)
-  //     expect(tlsConfigurator.clientObj.tls.createdTrustedRootCert).toBe(true)
-  //   })
-  //   test('should process WSMan response when header method GenerateKeyPair', async () => {
-  //     const message = {
-  //       payload: {
-  //         Header: {
-  //           Method: 'GenerateKeyPair'
-  //         },
-  //         Body: {
-  //           ReturnValue: 0
-  //         }
-  //       }
-  //     }
-  //     await tlsConfigurator.processWSManJsonResponses(message, clientId)
-  //     expect(tlsConfigurator.clientObj.tls.generatedPublicPrivateKeyPair).toBe(true)
-  //   })
-  //   test('should process WSMan response when header method AddCertificate', async () => {
-  //     const message = {
-  //       payload: {
-  //         Header: {
-  //           Method: 'AddCertificate'
-  //         },
-  //         Body: {
-  //           ReturnValue: 0
-  //         }
-  //       }
-  //     }
-  //     await tlsConfigurator.processWSManJsonResponses(message, clientId)
-  //     expect(tlsConfigurator.clientObj.tls.addCert).toBe(true)
-  //   })
-  //   test('should process WSMan response when header method ResourceCreated', async () => {
-  //     const message = {
-  //       payload: {
-  //         Header: {
-  //           Method: 'ResourceCreated'
-  //         },
-  //         Body: {
-  //           ReturnValue: 0
-  //         }
-  //       }
-  //     }
-  //     await tlsConfigurator.processWSManJsonResponses(message, clientId)
-  //     expect(tlsConfigurator.clientObj.tls.resCredentialContext).toBe(true)
-  //   })
-  //   test('should process WSMan response when header method AMT_TLSSettingData and Intel(r) AMT 802.3 TLS Settings', async () => {
-  //     const message = {
-  //       payload: {
-  //         Header: {
-  //           Method: 'AMT_TLSSettingData'
-  //         },
-  //         Body: {
-  //           ElementName: 'Intel(r) AMT 802.3 TLS Settings',
-  //           ReturnValue: 0
-  //         }
-  //       }
-  //     }
-  //     await tlsConfigurator.processWSManJsonResponses(message, clientId)
-  //     expect(tlsConfigurator.clientObj.tls.setRemoteTLS).toBe(true)
-  //     expect(tlsConfigurator.clientObj.tls.setLocalTLS).toBeFalsy()
-  //   })
-  //   test('should process WSMan response when header method AMT_TLSSettingData and Intel(r) AMT LMS TLS Settings', async () => {
-  //     const message = {
-  //       payload: {
-  //         Header: {
-  //           Method: 'AMT_TLSSettingData'
-  //         },
-  //         Body: {
-  //           ElementName: 'Intel(r) AMT LMS TLS Settings',
-  //           ReturnValue: 0
-  //         }
-  //       }
-  //     }
-  //     await tlsConfigurator.processWSManJsonResponses(message, clientId)
-  //     expect(tlsConfigurator.clientObj.tls.setRemoteTLS).toBeFalsy()
-  //     expect(tlsConfigurator.clientObj.tls.setLocalTLS).toBe(true)
-  //   })
-  //   test('should process WSMan response when header method CommitChanges and setRemoteTLS', async () => {
-  //     tlsConfigurator.clientObj.tls.setRemoteTLS = true
-  //     const message = {
-  //       payload: {
-  //         Header: {
-  //           Method: 'CommitChanges'
-  //         },
-  //         Body: {
-  //           ReturnValue: 0
-  //         }
-  //       }
-  //     }
-  //     expect(tlsConfigurator.clientObj.tls.commitRemoteTLS).toBeFalsy()
-  //     await tlsConfigurator.processWSManJsonResponses(message, clientId)
-  //     expect(tlsConfigurator.clientObj.tls.commitRemoteTLS).toBe(true)
-  //     expect(tlsConfigurator.clientObj.tls.commitLocalTLS).toBeFalsy()
-  //   })
-  //   test('should process WSMan response when header method CommitChanges and setLocalTLS', async () => {
-  //     tlsConfigurator.clientObj.tls.setLocalTLS = true
-  //     tlsConfigurator.clientObj.tls.commitRemoteTLS = true
-  //     const message = {
-  //       payload: {
-  //         Header: {
-  //           Method: 'CommitChanges'
-  //         },
-  //         Body: {
-  //           ReturnValue: 0
-  //         }
-  //       }
-  //     }
-  //     expect(tlsConfigurator.clientObj.tls.commitLocalTLS).toBeFalsy()
-  //     await tlsConfigurator.processWSManJsonResponses(message, clientId)
-  //     expect(tlsConfigurator.clientObj.tls.commitRemoteTLS).toBe(true)
-  //     expect(tlsConfigurator.clientObj.tls.commitLocalTLS).toBe(true)
-  //   })
-  //   test('should process WSMan response when header method GetLowAccuracyTimeSynch', async () => {
-  //     const message = {
-  //       payload: {
-  //         Header: {
-  //           Method: 'GetLowAccuracyTimeSynch'
-  //         },
-  //         Body: {
-  //           ReturnValue: 0
-  //         }
-  //       }
-  //     }
-  //     await tlsConfigurator.processWSManJsonResponses(message, clientId)
-  //     // expect(tlsConfigurator.clientObj.tls.createdTrustedRootCert).toBe(true)
-  //   })
-//   test('should process WSMan response when header method SetHighAccuracyTimeSynch', async () => {
-//     const message = {
-//       statusCode: 200,
-//       payload: {
-//         Header: {
-//           Method: 'SetHighAccuracyTimeSynch'
-//         },
-//         Body: {
-//           ReturnValue: 0
-//         }
-//       }
-//     }
-//     await tlsConfigurator.processWSManJsonResponses(message, clientId)
-//     expect(devices[clientId].tls.setTimeSynch).toBe(true)
-//   })
+  it('should process AMT TLS Setting Data', () => {
+    wsmanResponse.Envelope.Body = { PullResponse: { Items: { AMT_TLSSettingData: {} } } }
+    tlsConfigurator.processAMTTLSSettingsData(wsmanResponse, clientId)
+    expect(devices[clientId].tls.TLSSettingData).toEqual({})
+  })
+
+  it('should process AMT TLS Credential Context', () => {
+    wsmanResponse.Envelope.Body = { PullResponse: { Items: '' } }
+    tlsConfigurator.processAMTTLSCredentialContext(wsmanResponse, clientId)
+    expect(devices[clientId].tls.TLSCredentialContext).toEqual('')
+  })
+
+  it('should process AMT Public Private Key Pair when no Items', () => {
+    wsmanResponse.Envelope.Body = {
+      PullResponse: {
+        Items: ''
+      }
+    }
+    tlsConfigurator.processAMTPublicPrivateKeyPair(wsmanResponse, clientId)
+    expect(devices[clientId].tls.PublicPrivateKeyPair).toEqual([])
+  })
+  it('should process AMT Public Private Key Pair when single item', () => {
+    wsmanResponse.Envelope.Body = {
+      PullResponse: {
+        Items: { AMT_PublicPrivateKeyPair: {} }
+      }
+    }
+    tlsConfigurator.processAMTPublicPrivateKeyPair(wsmanResponse, clientId)
+    expect(devices[clientId].tls.PublicPrivateKeyPair).toEqual([{}])
+  })
+  it('should process AMT Public Private Key Pair when single item', () => {
+    wsmanResponse.Envelope.Body = {
+      PullResponse: {
+        Items: { AMT_PublicPrivateKeyPair: [{}, {}] }
+      }
+    }
+    tlsConfigurator.processAMTPublicPrivateKeyPair(wsmanResponse, clientId)
+    expect(devices[clientId].tls.PublicPrivateKeyPair).toEqual([{}, {}])
+  })
+  it('should process AMT Public Key Certificate when no Items', () => {
+    wsmanResponse.Envelope.Body = {
+      PullResponse: {
+        Items: ''
+      }
+    }
+    tlsConfigurator.processAMTPublicKeyCertificate(wsmanResponse, clientId)
+    expect(devices[clientId].tls.PublicKeyCertificate).toEqual([])
+  })
+  it('should process AMT Public Key Certificate when single item', () => {
+    wsmanResponse.Envelope.Body = {
+      PullResponse: {
+        Items: { AMT_PublicKeyCertificate: {} }
+      }
+    }
+    tlsConfigurator.processAMTPublicKeyCertificate(wsmanResponse, clientId)
+    expect(devices[clientId].tls.PublicKeyCertificate).toEqual([{}])
+  })
+  it('should process AMT Public Key Certificate when single item', () => {
+    wsmanResponse.Envelope.Body = {
+      PullResponse: {
+        Items: { AMT_PublicKeyCertificate: [{}, {}] }
+      }
+    }
+    tlsConfigurator.processAMTPublicKeyCertificate(wsmanResponse, clientId)
+    expect(devices[clientId].tls.PublicKeyCertificate).toEqual([{}, {}])
+  })
+  it('should update device version', async () => {
+    EnvReader.GlobalEnvConfig = { mpsServer: 'http://localhost' } as any
+    const gotSpy = jest.spyOn(tlsConfigurator.gotClient, 'post').mockResolvedValue(null)
+    await tlsConfigurator.updateDeviceVersion(devices[clientId])
+    expect(gotSpy).toHaveBeenCalled()
+  })
 })

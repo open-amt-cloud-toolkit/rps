@@ -12,7 +12,7 @@ import { EnvReader } from '../utils/EnvReader'
 import { MqttProvider } from '../utils/MqttProvider'
 import { RPSError } from '../utils/RPSError'
 import { AMTConfiguration, AMTKeyUsage, CertAttributes, TLSCerts } from '../models'
-import got from 'got'
+import got, { Got } from 'got'
 
 import * as forge from 'node-forge'
 import { devices } from '../WebSocketListener'
@@ -22,6 +22,7 @@ import { HttpHandler } from '../HttpHandler'
 import { parseBody } from '../utils/parseWSManResponseBody'
 
 export class TLSConfigurator implements IExecutor {
+  gotClient: Got
   responseMsg: ClientResponseMsg
   amt: AMT.Messages
   httpHandler: HttpHandler
@@ -33,6 +34,7 @@ export class TLSConfigurator implements IExecutor {
     this.responseMsg = _responseMsg
     this.amt = new AMT.Messages()
     this.httpHandler = new HttpHandler()
+    this.gotClient = got
   }
 
   async execute (message: any, clientId: string): Promise<ClientMsg> {
@@ -48,22 +50,22 @@ export class TLSConfigurator implements IExecutor {
       }
 
       // Trusted Root Certificates
-      clientMessage = await this.trustedRootCertificates(clientId)
+      clientMessage = this.trustedRootCertificates(clientId)
       if (clientMessage) {
         return clientMessage
       }
       // Generate Key Pair at Intel AMT
-      clientMessage = await this.generateKeyPair(clientId)
+      clientMessage = this.generateKeyPair(clientId)
       if (clientMessage) {
         return clientMessage
       }
       // Create TLS Credential Context
-      clientMessage = await this.createTLSCredentialContext(clientId)
+      clientMessage = this.createTLSCredentialContext(clientId)
       if (clientMessage) {
         return clientMessage
       }
       // synchronize time
-      clientMessage = await this.synchronizeTime(clientId)
+      clientMessage = this.synchronizeTime(clientId)
       if (clientMessage) {
         return clientMessage
       }
@@ -92,7 +94,7 @@ export class TLSConfigurator implements IExecutor {
     }
   }
 
-  async createTLSCredentialContext (clientId: string): Promise<ClientMsg> {
+  createTLSCredentialContext (clientId: string): ClientMsg {
     const clientObj = devices[clientId]
     if (clientObj.tls.getTLSCredentialContext && clientObj.tls.addCredentialContext) {
       return null
@@ -117,7 +119,7 @@ export class TLSConfigurator implements IExecutor {
     return this.responseMsg.get(clientId, wsmanRequest, 'wsman', 'ok')
   }
 
-  async trustedRootCertificates (clientId: string): Promise<ClientMsg> {
+  trustedRootCertificates (clientId: string): ClientMsg {
     const clientObj = devices[clientId]
     if (clientObj.tls.getPublicKeyCertificate && clientObj.tls.createdTrustedRootCert && clientObj.tls.checkPublicKeyCertificate) {
       return null
@@ -128,7 +130,7 @@ export class TLSConfigurator implements IExecutor {
       // Get existing Public Key Certificate, which are created using the AMT_PublicKeyManagementService AddCertificate and AddTrustedRootCertificate methods.
       xmlRequestBody = this.amt.PublicKeyCertificate(Methods.ENUMERATE)
       clientObj.tls.getPublicKeyCertificate = true
-    } else if (clientObj.tls.PublicKeyCertificate.length >= 0 && !clientObj.tls.addTrustedRootCert) {
+    } else if (clientObj.tls.PublicKeyCertificate?.length >= 0 && !clientObj.tls.addTrustedRootCert) {
       // Add Trusted Root Certificate to AMT
       xmlRequestBody = this.amt.PublicKeyManagementService(Methods.ADD_TRUSTED_ROOT_CERTIFICATE, { CertificateBlob: tlsCerts.ROOT_CERTIFICATE.certbin })
       clientObj.tls.addTrustedRootCert = true
@@ -141,7 +143,7 @@ export class TLSConfigurator implements IExecutor {
     return this.responseMsg.get(clientId, wsmanRequest, 'wsman', 'ok')
   }
 
-  async generateKeyPair (clientId: string): Promise<ClientMsg> {
+  generateKeyPair (clientId: string): ClientMsg {
     const clientObj = devices[clientId]
     if (clientObj.tls.getPublicPrivateKeyPair && clientObj.tls.generateKeyPair && clientObj.tls.checkPublicPrivateKeyPair) {
       return null
@@ -167,7 +169,7 @@ export class TLSConfigurator implements IExecutor {
    * @description Synchronize time
    * @param {string} clientId Id to keep track of connections
    **/
-  async synchronizeTime (clientId: string): Promise<ClientMsg> {
+  synchronizeTime (clientId: string): ClientMsg {
     const clientObj = devices[clientId]
     if (clientObj.tls.getTimeSynch) {
       return null
@@ -238,7 +240,7 @@ export class TLSConfigurator implements IExecutor {
    * @param {string} clientId Id to keep track of connections
    * @param {string} message
    */
-  async processWSManJsonResponses (message: any, clientId: string): Promise<ClientMsg> {
+  processWSManJsonResponses (message: any, clientId: string): ClientMsg {
     const clientObj = devices[clientId]
     const wsmanResponse = message?.payload
     if (wsmanResponse == null) {
@@ -321,12 +323,12 @@ export class TLSConfigurator implements IExecutor {
   }
 
   validateTimeSynchronizationService (clientId: string, response: any): ClientMsg {
-    let xmlRequestBody = null
+    let xmlRequestBody = ''
     const action = response.Envelope.Header.Action.split('/').pop()
     switch (action) {
       case 'GetLowAccuracyTimeSynchResponse': {
         const Tm1 = Math.round(new Date().getTime() / 1000)
-        xmlRequestBody = this.amt.TimeSynchronizationService(Methods.SET_HIGH_ACCURACY_TIME_SYNCH, response.Envelope?.Body?.GetLowAccuracyTimeSynch_OUTPUT?.Ta0, Tm1, Tm1)
+        xmlRequestBody = this.amt.TimeSynchronizationService(Methods.SET_HIGH_ACCURACY_TIME_SYNCH, response.Envelope.Body.GetLowAccuracyTimeSynch_OUTPUT.Ta0, Tm1, Tm1)
         break
       }
       case 'SetHighAccuracyTimeSynchResponse':
@@ -338,11 +340,11 @@ export class TLSConfigurator implements IExecutor {
   }
 
   validateTLSCredentialContext (clientId: string, response: any): ClientMsg {
-    let xmlRequestBody = null
+    let xmlRequestBody = ''
     const action = response.Envelope.Header.Action.split('/').pop()
     switch (action) {
       case 'EnumerateResponse': {
-        xmlRequestBody = this.amt.TLSCredentialContext(Methods.PULL, response.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+        xmlRequestBody = this.amt.TLSCredentialContext(Methods.PULL, response.Envelope.Body.EnumerateResponse.EnumerationContext)
         break
       }
       case 'PullResponse': {
@@ -359,12 +361,12 @@ export class TLSConfigurator implements IExecutor {
   }
 
   validatePublicPrivateKeyPair (clientId: string, response: any): ClientMsg {
-    let xmlRequestBody = null
+    let xmlRequestBody = ''
     let data = null
     const action = response.Envelope.Header.Action.split('/').pop()
     switch (action) {
       case 'EnumerateResponse': {
-        xmlRequestBody = this.amt.PublicPrivateKeyPair(Methods.PULL, response.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+        xmlRequestBody = this.amt.PublicPrivateKeyPair(Methods.PULL, response.Envelope.Body.EnumerateResponse.EnumerationContext)
         break
       }
       case 'PullResponse': {
@@ -402,7 +404,7 @@ export class TLSConfigurator implements IExecutor {
     const action = response.Envelope.Header.Action.split('/').pop()
     switch (action) {
       case 'EnumerateResponse': {
-        xmlRequestBody = this.amt.PublicKeyCertificate(Methods.PULL, response.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+        xmlRequestBody = this.amt.PublicKeyCertificate(Methods.PULL, response.Envelope.Body.EnumerateResponse.EnumerationContext)
         break
       }
       case 'PullResponse': {
@@ -474,8 +476,12 @@ export class TLSConfigurator implements IExecutor {
     if (wsmanResponse.Envelope.Body.PullResponse.Items === '') {
       clientObj.tls.PublicKeyCertificate = []
     } else {
-      // TODO: determine if there is multiple if this will already be an array
-      clientObj.tls.PublicKeyCertificate = [wsmanResponse.Envelope.Body.PullResponse.Items.AMT_PublicKeyCertificate]
+      const potentialArray = wsmanResponse.Envelope.Body.PullResponse.Items.AMT_PublicKeyCertificate
+      if (Array.isArray(potentialArray)) {
+        clientObj.tls.PublicKeyCertificate = potentialArray
+      } else {
+        clientObj.tls.PublicKeyCertificate = [potentialArray]
+      }
     }
     this.logger.debug(`Number of public key certs for device ${clientObj.uuid} : ${clientObj.tls.PublicKeyCertificate.length}`)
     if (clientObj.tls.checkPublicKeyCertificate) {
@@ -491,8 +497,7 @@ export class TLSConfigurator implements IExecutor {
   async updateDeviceVersion (clientObj: ClientObject): Promise<void> {
     /* Register cert version with MPS */
     try {
-      await got(`${EnvReader.GlobalEnvConfig.mpsServer}/api/v1/devices`, {
-        method: 'POST',
+      await this.gotClient.post(`${EnvReader.GlobalEnvConfig.mpsServer}/api/v1/devices`, {
         json: {
           guid: clientObj.uuid,
           tenantId: clientObj.ClientData.payload.profile.tenantId,
