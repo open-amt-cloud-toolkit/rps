@@ -97,6 +97,7 @@ export class CIRAConfigurator implements IExecutor {
       }
       case 200: {
         const xmlBody = parseBody(wsmanResponse)
+        if (xmlBody === '') { return null }
         // pares WSMan xml response to json
         const response = this.httpHandler.parseXML(xmlBody)
         const method = response.Envelope.Header.ResourceURI.split('/').pop()

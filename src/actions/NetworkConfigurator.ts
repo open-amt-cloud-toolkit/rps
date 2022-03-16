@@ -18,11 +18,10 @@ import { devices } from '../WebSocketListener'
 import { AMT, CIM } from '@open-amt-cloud-toolkit/wsman-messages'
 import { HttpHandler } from '../HttpHandler'
 import { parseBody } from '../utils/parseWSManResponseBody'
-import { AMTEthernetPortSettings, WiFiEndPointSettings } from '../models/WSManResponse'
+import { AMTEthernetPortSettings, AMT_WiFiPortConfigurationServiceResponse, WiFiEndPointSettings } from '../models/WSManResponse'
 import { AMTConfiguration } from '../models'
 import { EnvReader } from '../utils/EnvReader'
 import { DbCreatorFactory } from '../repositories/factories/DbCreatorFactory'
-import { GeneralSettings } from '@open-amt-cloud-toolkit/wsman-messages/amt/models'
 
 export class NetworkConfigurator implements IExecutor {
   amt: AMT.Messages
@@ -116,6 +115,9 @@ export class NetworkConfigurator implements IExecutor {
           case 'CIM_WiFiPort': {
             return await this.validateWiFiPort(clientId, response)
           }
+          case 'AMT_WiFiPortConfigurationService': {
+            return await this.validateWifiPortConfiguration(clientId, response)
+          }
         }
         break
       }
@@ -137,18 +139,60 @@ export class NetworkConfigurator implements IExecutor {
     return await this.CIRAConfigurator.execute(message, clientId)
   }
 
+  async validateWifiPortConfiguration (clientId: string, response: any): Promise<ClientMsg> {
+    const clientObj = devices[clientId]
+    const action = response.Envelope.Header.Action.split('/').pop()
+    switch (action) {
+      case 'AddWiFiSettingsResponse': {
+        const xmlRequestBody = this.amt.WiFiPortConfigurationService(AMT.Methods.GET, null, null)
+        const data = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
+        return this.responseMsg.get(clientId, data, 'wsman', 'ok')
+      }
+      case 'PutResponse':
+        if (response.Envelope.Body.AMT_WiFiPortConfigurationService?.localProfileSynchronizationEnabled !== 1) {
+          this.logger.warn(`Failed to update localProfileSynchronization for device: ${clientObj.uuid}`)
+        }
+        clientObj.network.getWiFiPortConfigurationService = true
+        break
+      case 'GetResponse': {
+        const wifiPortConfigurationService: AMT_WiFiPortConfigurationServiceResponse = response.Envelope.Body.AMT_WiFiPortConfigurationService
+        if (wifiPortConfigurationService?.localProfileSynchronizationEnabled === 0) {
+          wifiPortConfigurationService.localProfileSynchronizationEnabled = 1
+          // TODO: do this
+          const xmlRequestBody = this.amt.WiFiPortConfigurationService(AMT.Methods.PUT, wifiPortConfigurationService, null)
+          const data = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
+          return this.responseMsg.get(clientId, data, 'wsman', 'ok')
+        } else if (wifiPortConfigurationService?.localProfileSynchronizationEnabled === 1) {
+          clientObj.network.getWiFiPortConfigurationService = true
+        }
+        break
+      }
+    }
+    return null
+  }
+
   async validateWiFiPort (clientId: string, response: any): Promise<ClientMsg> {
     const clientObj = devices[clientId]
     const action = response.Envelope.Header.Action.split('/').pop()
     switch (action) {
       case 'RequestStateChangeResponse': {
         if (response.Envelope.Body.RequestStateChange_OUTPUT.ReturnValue !== 0) {
-          return await this.callCIRAConfig(clientId, 'Ethernet Configured. WiFi Failed', null)
+          return await this.callCIRAConfig(clientId, 'Ethernet Configured. WiFi Failed', response)
         }
         clientObj.network.setWiFiPort = true
-        return null
+        break
+      }
+      case 'GetResponse': {
+        if (response.Envelope.Body.AMT_WiFiPort.EnabledState !== 32769 || response.Envelope.Body.AMT_WiFiPort.RequestedState !== 32769) {
+          await this.callCIRAConfig(clientId, 'Ethernet Configured. WiFi Failed', response)
+        } else {
+          clientObj.network.setWiFiPortResponse = true
+          clientObj.network.count = 0
+        }
+        break
       }
     }
+    return null
   }
 
   async validateEthernetPortSettings (clientId: string, response: any): Promise<ClientMsg> {
@@ -220,12 +264,15 @@ export class NetworkConfigurator implements IExecutor {
             // Set the flag that ethernet port settings is updated.
             clientObj.network.setEthernetPortSettings = true
             return await this.callCIRAConfig(clientId, 'Ethernet Configured', null)
-          } else if (devices[clientId].network.ethernetSettingsWifiObj == null && payload.profile.wifiConfigs.length > 0) {
+          } else if (clientObj.network.ethernetSettingsWifiObj == null && payload.profile.wifiConfigs.length > 0) {
             // If the IpSyncEnabled, DHCPEnabled is true and profile has wifi configs but no wifi capabilities
-            this.logger.debug(`Device ${devices[clientId].uuid} Ethernet Configured. No wireless interface`)
+            this.logger.debug(`Device ${clientObj.uuid} Ethernet Configured. No wireless interface`)
             // Set the flag that ethernet port settings is updated.
             clientObj.network.setEthernetPortSettings = true
             return await this.callCIRAConfig(clientId, 'Ethernet Configured. WiFi Failed', null)
+          } else {
+            clientObj.network.setEthernetPortSettings = true
+            return null
           }
         }
 
@@ -244,7 +291,7 @@ export class NetworkConfigurator implements IExecutor {
         // 0 : Disabled, 1 - Enabled
         // SharedFQDN -Defines Whether the FQDN (HostName.DomainName) is shared with the Host or dedicated to ME. (The default value for this property is shared - TRUE).
         // RmcpPingResponseEnabled - Indicates whether Intel(R) AMT should respond to RMCP ping Echo Request messages.
-        const settings: GeneralSettings = response.Envelope.Body.AMT_GeneralSettings
+        const settings: AMT.Models.GeneralSettings = response.Envelope.Body.AMT_GeneralSettings
         if (!settings.SharedFQDN || settings.AMTNetworkEnabled !== 1 || !settings.RmcpPingResponseEnabled) {
           settings.SharedFQDN = true
           settings.AMTNetworkEnabled = 1
@@ -295,7 +342,7 @@ export class NetworkConfigurator implements IExecutor {
   deleteWiFiConfigs (clientId: string): ClientMsg {
     let xmlRequestBody = ''
     const clientObj = devices[clientId]
-    let wifiEndpoints = clientObj.network?.WiFiPortCapabilities
+    let wifiEndpoints = Array.isArray(clientObj.network?.WiFiPortCapabilities) ? clientObj.network?.WiFiPortCapabilities : [clientObj.network?.WiFiPortCapabilities]
     const wifiProfiles: WiFiEndPointSettings[] = []
     wifiEndpoints.forEach(wifi => {
       if (wifi.InstanceID != null && wifi.Priority !== 0) {
