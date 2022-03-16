@@ -13,11 +13,9 @@ import { MqttProvider } from '../utils/MqttProvider'
 import { RPSError } from '../utils/RPSError'
 import { AMTConfiguration, AMTKeyUsage, CertAttributes, TLSCerts } from '../models'
 import got, { Got } from 'got'
-
 import * as forge from 'node-forge'
 import { devices } from '../WebSocketListener'
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
-import { Methods } from '@open-amt-cloud-toolkit/wsman-messages/amt'
 import { HttpHandler } from '../HttpHandler'
 import { parseBody } from '../utils/parseWSManResponseBody'
 
@@ -101,7 +99,7 @@ export class TLSConfigurator implements IExecutor {
     }
     let xmlRequestBody = ''
     if (clientObj.tls.confirmPublicPrivateKeyPair && !clientObj.tls.getTLSCredentialContext) {
-      xmlRequestBody = this.amt.TLSCredentialContext(Methods.ENUMERATE)
+      xmlRequestBody = this.amt.TLSCredentialContext(AMT.Methods.ENUMERATE)
       clientObj.tls.getTLSCredentialContext = true
     } else if (clientObj.tls.TLSCredentialContext != null && !clientObj.tls.addCredentialContext) {
       const amtPrefix = 'http://intel.com/wbem/wscim/1/amt-schema/1/'
@@ -112,7 +110,7 @@ export class TLSConfigurator implements IExecutor {
         ElementProvidingContext: `<a:Address>/wsman</a:Address><a:ReferenceParameters><w:ResourceURI>${amtPrefix}AMT_TLSProtocolEndpointCollection</w:ResourceURI><w:SelectorSet><w:Selector Name="ElementName">TLSProtocolEndpointInstances Collection</w:Selector></w:SelectorSet></a:ReferenceParameters>`
       }
       // TODO: TEST ME, LIKE FOR REAL
-      xmlRequestBody = this.amt.TLSCredentialContext(Methods.CREATE, null, putObj as any)
+      xmlRequestBody = this.amt.TLSCredentialContext(AMT.Methods.CREATE, null, putObj as any)
       clientObj.tls.addCredentialContext = true
     }
     const wsmanRequest = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
@@ -128,15 +126,15 @@ export class TLSConfigurator implements IExecutor {
     let xmlRequestBody = ''
     if (!clientObj.tls.getPublicKeyCertificate) {
       // Get existing Public Key Certificate, which are created using the AMT_PublicKeyManagementService AddCertificate and AddTrustedRootCertificate methods.
-      xmlRequestBody = this.amt.PublicKeyCertificate(Methods.ENUMERATE)
+      xmlRequestBody = this.amt.PublicKeyCertificate(AMT.Methods.ENUMERATE)
       clientObj.tls.getPublicKeyCertificate = true
     } else if (clientObj.tls.PublicKeyCertificate?.length >= 0 && !clientObj.tls.addTrustedRootCert) {
       // Add Trusted Root Certificate to AMT
-      xmlRequestBody = this.amt.PublicKeyManagementService(Methods.ADD_TRUSTED_ROOT_CERTIFICATE, { CertificateBlob: tlsCerts.ROOT_CERTIFICATE.certbin })
+      xmlRequestBody = this.amt.PublicKeyManagementService(AMT.Methods.ADD_TRUSTED_ROOT_CERTIFICATE, { CertificateBlob: tlsCerts.ROOT_CERTIFICATE.certbin })
       clientObj.tls.addTrustedRootCert = true
     } else if (clientObj.tls.createdTrustedRootCert && !clientObj.tls.checkPublicKeyCertificate) {
       // Get Public Key Certificates, to make sure the cert added in the above is in AMT
-      xmlRequestBody = this.amt.PublicKeyCertificate(Methods.ENUMERATE)
+      xmlRequestBody = this.amt.PublicKeyCertificate(AMT.Methods.ENUMERATE)
       clientObj.tls.checkPublicKeyCertificate = true
     }
     const wsmanRequest = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
@@ -151,14 +149,14 @@ export class TLSConfigurator implements IExecutor {
     let xmlRequestBody = ''
     if (clientObj.tls.confirmPublicKeyCertificate && !clientObj.tls.getPublicPrivateKeyPair) {
       // Get existing key pairs
-      xmlRequestBody = this.amt.PublicPrivateKeyPair(Methods.ENUMERATE)
+      xmlRequestBody = this.amt.PublicPrivateKeyPair(AMT.Methods.ENUMERATE)
       clientObj.tls.getPublicPrivateKeyPair = true
     } else if (clientObj.tls.PublicPrivateKeyPair?.length >= 0 && !clientObj.tls.generateKeyPair) {
       // generate a key pair
-      xmlRequestBody = this.amt.PublicKeyManagementService(Methods.GENERATE_KEY_PAIR, { KeyAlgorithm: 0, KeyLength: 2048 })
+      xmlRequestBody = this.amt.PublicKeyManagementService(AMT.Methods.GENERATE_KEY_PAIR, { KeyAlgorithm: 0, KeyLength: 2048 })
       clientObj.tls.generateKeyPair = true
     } else if (clientObj.tls.addCert && !clientObj.tls.checkPublicPrivateKeyPair) {
-      xmlRequestBody = this.amt.PublicPrivateKeyPair(Methods.ENUMERATE)
+      xmlRequestBody = this.amt.PublicPrivateKeyPair(AMT.Methods.ENUMERATE)
       clientObj.tls.checkPublicPrivateKeyPair = true
     }
     const wsmanRequest = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
@@ -176,7 +174,7 @@ export class TLSConfigurator implements IExecutor {
     }
     let xmlRequestBody = ''
     if (clientObj.tls.resCredentialContext && !clientObj.tls.getTimeSynch) {
-      xmlRequestBody = this.amt.TimeSynchronizationService(Methods.GET_LOW_ACCURACY_TIME_SYNCH)
+      xmlRequestBody = this.amt.TimeSynchronizationService(AMT.Methods.GET_LOW_ACCURACY_TIME_SYNCH)
       clientObj.tls.getTimeSynch = true
     }
     const wsmanRequest = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
@@ -193,7 +191,7 @@ export class TLSConfigurator implements IExecutor {
 
     if (clientObj.tls.setTimeSynch && !clientObj.tls.getTLSSettingData) {
       // Get the existing TLS data from AMT
-      xmlRequestBody = this.amt.TLSSettingData(Methods.ENUMERATE)
+      xmlRequestBody = this.amt.TLSSettingData(AMT.Methods.ENUMERATE)
       clientObj.tls.getTLSSettingData = true
     } else if (clientObj.tls.TLSSettingData != null && !clientObj.tls.putRemoteTLS) {
       // Set remote TLS data on AMT
@@ -210,7 +208,7 @@ export class TLSConfigurator implements IExecutor {
         }
       }
       this.logger.debug(`Remote TLSSetting Data : ${JSON.stringify(clientObj.tls.TLSSettingData[0], null, '\t')}`)
-      xmlRequestBody = this.amt.TLSSettingData(Methods.PUT, null, clientObj.tls.TLSSettingData[0])
+      xmlRequestBody = this.amt.TLSSettingData(AMT.Methods.PUT, null, clientObj.tls.TLSSettingData[0])
       clientObj.tls.putRemoteTLS = true
     } else if (clientObj.tls.commitRemoteTLS && !clientObj.tls.putLocalTLS) {
       // Since committing changes may cause an internal restart sequence, remote applications should allow sufficient time for Intel AMT to reload before issuing the next command.
@@ -228,7 +226,7 @@ export class TLSConfigurator implements IExecutor {
         }
       }
       this.logger.debug(`Local TLSSetting Data : ${JSON.stringify(clientObj.tls.TLSSettingData[1], null, '\t')}`)
-      xmlRequestBody = this.amt.TLSSettingData(Methods.PUT, null, clientObj.tls.TLSSettingData[1])
+      xmlRequestBody = this.amt.TLSSettingData(AMT.Methods.PUT, null, clientObj.tls.TLSSettingData[1])
       clientObj.tls.putLocalTLS = true
     }
     const wsmanRequest = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
@@ -248,7 +246,7 @@ export class TLSConfigurator implements IExecutor {
     }
     switch (wsmanResponse.statusCode) {
       case 401: {
-        const xmlRequestBody = this.amt.PublicKeyCertificate(Methods.ENUMERATE)
+        const xmlRequestBody = this.amt.PublicKeyCertificate(AMT.Methods.ENUMERATE)
         const wsmanRequest = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
         return this.responseMsg.get(clientId, wsmanRequest, 'wsman', 'ok')
       }
@@ -299,7 +297,7 @@ export class TLSConfigurator implements IExecutor {
     const action = response.Envelope.Header.Action.split('/').pop()
     switch (action) {
       case 'EnumerateResponse':
-        xmlRequestBody = this.amt.TLSSettingData(Methods.PULL, response.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+        xmlRequestBody = this.amt.TLSSettingData(AMT.Methods.PULL, response.Envelope.Body?.EnumerateResponse?.EnumerationContext)
         break
       case 'PullResponse':
         this.processAMTTLSSettingsData(response, clientId)
@@ -314,7 +312,7 @@ export class TLSConfigurator implements IExecutor {
           throw new RPSError(`Failed to set TLS data: ${clientObj.uuid}`)
         }
 
-        xmlRequestBody = this.amt.SetupAndConfigurationService(Methods.COMMIT_CHANGES)
+        xmlRequestBody = this.amt.SetupAndConfigurationService(AMT.Methods.COMMIT_CHANGES)
       }
     }
 
@@ -328,7 +326,7 @@ export class TLSConfigurator implements IExecutor {
     switch (action) {
       case 'GetLowAccuracyTimeSynchResponse': {
         const Tm1 = Math.round(new Date().getTime() / 1000)
-        xmlRequestBody = this.amt.TimeSynchronizationService(Methods.SET_HIGH_ACCURACY_TIME_SYNCH, response.Envelope.Body.GetLowAccuracyTimeSynch_OUTPUT.Ta0, Tm1, Tm1)
+        xmlRequestBody = this.amt.TimeSynchronizationService(AMT.Methods.SET_HIGH_ACCURACY_TIME_SYNCH, response.Envelope.Body.GetLowAccuracyTimeSynch_OUTPUT.Ta0, Tm1, Tm1)
         break
       }
       case 'SetHighAccuracyTimeSynchResponse':
@@ -344,7 +342,7 @@ export class TLSConfigurator implements IExecutor {
     const action = response.Envelope.Header.Action.split('/').pop()
     switch (action) {
       case 'EnumerateResponse': {
-        xmlRequestBody = this.amt.TLSCredentialContext(Methods.PULL, response.Envelope.Body.EnumerateResponse.EnumerationContext)
+        xmlRequestBody = this.amt.TLSCredentialContext(AMT.Methods.PULL, response.Envelope.Body.EnumerateResponse.EnumerationContext)
         break
       }
       case 'PullResponse': {
@@ -366,7 +364,7 @@ export class TLSConfigurator implements IExecutor {
     const action = response.Envelope.Header.Action.split('/').pop()
     switch (action) {
       case 'EnumerateResponse': {
-        xmlRequestBody = this.amt.PublicPrivateKeyPair(Methods.PULL, response.Envelope.Body.EnumerateResponse.EnumerationContext)
+        xmlRequestBody = this.amt.PublicPrivateKeyPair(AMT.Methods.PULL, response.Envelope.Body.EnumerateResponse.EnumerationContext)
         break
       }
       case 'PullResponse': {
@@ -386,7 +384,7 @@ export class TLSConfigurator implements IExecutor {
         break
       case 'GenerateKeyPairResponse': {
         clientObj.tls.generatedPublicPrivateKeyPair = true
-        const xmlRequestBody = this.amt.PublicPrivateKeyPair(Methods.ENUMERATE)
+        const xmlRequestBody = this.amt.PublicPrivateKeyPair(AMT.Methods.ENUMERATE)
         const data = this.httpHandler.wrapIt(xmlRequestBody, devices[clientId].connectionParams)
         return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
       }
@@ -404,7 +402,7 @@ export class TLSConfigurator implements IExecutor {
     const action = response.Envelope.Header.Action.split('/').pop()
     switch (action) {
       case 'EnumerateResponse': {
-        xmlRequestBody = this.amt.PublicKeyCertificate(Methods.PULL, response.Envelope.Body.EnumerateResponse.EnumerationContext)
+        xmlRequestBody = this.amt.PublicKeyCertificate(AMT.Methods.PULL, response.Envelope.Body.EnumerateResponse.EnumerationContext)
         break
       }
       case 'PullResponse': {
@@ -459,7 +457,7 @@ export class TLSConfigurator implements IExecutor {
       }
 
       const cert = this.certManager.amtCertSignWithCAKey(DERKey, null, certAttributes, issuerAttributes, keyUsages)
-      xmlRequestBody = this.amt.PublicKeyManagementService(Methods.ADD_CERTIFICATE, { CertificateBlob: cert.pem.substring(27, cert.pem.length - 25) })
+      xmlRequestBody = this.amt.PublicKeyManagementService(AMT.Methods.ADD_CERTIFICATE, { CertificateBlob: cert.pem.substring(27, cert.pem.length - 25) })
       clientObj.tls.createdPublicPrivateKeyPair = true
 
       const wsmanRequest = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
