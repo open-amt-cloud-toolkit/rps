@@ -56,7 +56,7 @@ describe('Parse the message received from client', () => {
     }
 
     const clientId = uuid()
-    devices[clientId] = { ClientId: clientId, ClientSocket: null }
+    devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
     const clientMsg = jsonParser.parse(msg)
     expect(clientMsg).toEqual(activationmsg)
   })
@@ -74,7 +74,7 @@ describe('Parse the message received from client', () => {
     let rpsError
     try {
       const clientId = uuid()
-      devices[clientId] = { ClientId: clientId, ClientSocket: null }
+      devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
       jsonParser.convertClientMsg(msg)
     } catch (error) {
       rpsError = error
@@ -96,7 +96,7 @@ describe('Parse the message received from client', () => {
     }
 
     const clientId = uuid()
-    devices[clientId] = { ClientId: clientId, ClientSocket: null }
+    devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
     const clientMsg = jsonParser.parse(msg)
     expect(clientMsg).toEqual(activationmsg)
   })
@@ -114,7 +114,7 @@ describe('Parse the message received from client', () => {
     }
 
     const clientId = uuid()
-    devices[clientId] = { ClientId: clientId, ClientSocket: null }
+    devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
     const clientMsg = jsonParser.parse(msg)
     expect(clientMsg).toEqual(heartbeatResponse)
   })

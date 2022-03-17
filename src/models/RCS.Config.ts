@@ -106,7 +106,7 @@ export interface ClientObject {
   network?: NetworkConfigFlow
   tls?: TLSConfigFlow
   status?: Status
-  unauthCount?: number
+  unauthCount: number
   connectionParams?: connectionParams
   messageId?: number
 }

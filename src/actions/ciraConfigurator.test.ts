@@ -78,6 +78,7 @@ beforeAll(() => {
     qop: 'auth'
   }
   devices[clientId] = {
+    unauthCount: 0,
     ClientId: clientId,
     uuid: '4bac9510-04a6-4321-bae2-d45ddf07b684',
     ClientSocket: null,
