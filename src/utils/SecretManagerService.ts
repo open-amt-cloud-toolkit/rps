@@ -74,9 +74,11 @@ export class SecretManagerService implements ISecretManagerService {
 
   async deleteSecretWithPath (path: string): Promise<void> {
     // to permanently delete the key, we use metadata path
-    path = path.replace('/data/', '/metadata/')
+    const basePath = EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath.replace('/data/', '/metadata/')
     this.logger.verbose(`Deleting data from vault:${path}`)
-    await this.gotClient.delete(`v1/${path}`)
+    await this.gotClient.delete(`${path}`, {
+      prefixUrl: `${EnvReader.GlobalEnvConfig.VaultConfig.address}/v1/${basePath}`
+    }).json()
     this.logger.debug(`Successfully Deleted data from vault: ${path}`)
   }
 
