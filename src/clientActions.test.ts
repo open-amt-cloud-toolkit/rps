@@ -87,7 +87,7 @@ describe('Client Actions', () => {
     }
     let rpsError
     const clientId = uuid()
-    devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: activationmsg }
+    devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: activationmsg, unauthCount: 0 }
     try {
       await clientActions.buildResponseMessage(clientMsg, clientId)
     } catch (error) {
@@ -108,7 +108,7 @@ describe('Client Actions', () => {
     }
     let rpsError
     const clientId = uuid()
-    devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: activationmsg, action: ClientAction.INVALID }
+    devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: activationmsg, action: ClientAction.INVALID, unauthCount: 0 }
 
     devices[clientId].uuid = activationmsg.payload.uuid
 
