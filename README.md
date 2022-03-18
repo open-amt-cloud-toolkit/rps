@@ -77,5 +77,3 @@ We leverage [Postman](https://www.postman.com/) and Docker for executing RESTful
 
 5. Run the tests using the Collection Runner in postman. If any of the tests fail, file a github issue here: https://github.com/open-amt-cloud-toolkit/rps/pull/34
 
-
-
