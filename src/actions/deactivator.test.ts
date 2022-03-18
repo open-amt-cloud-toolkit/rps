@@ -50,6 +50,7 @@ beforeAll(() => {
     qop: 'auth'
   }
   devices[clientId] = {
+    unauthCount: 0,
     ClientId: clientId,
     ClientSocket: null,
     ClientData: deactivatemsg,
