@@ -13,6 +13,7 @@ import { RPSError } from './utils/RPSError'
 import { EnvReader } from './utils/EnvReader'
 import { VersionChecker } from './VersionChecker'
 import { devices } from './WebSocketListener'
+import { ClientAction, ClientObject } from './models/RCS.Config'
 
 EnvReader.GlobalEnvConfig = config
 const configurator: Configurator = new Configurator()
@@ -443,5 +444,97 @@ describe('verifyActivationMsgForACM', () => {
     }
     expect(rpsError).toBeInstanceOf(RPSError)
     expect(rpsError.message).toEqual(`Device ${msg.payload.uuid} activation failed. Missing DNS Suffix.`)
+  })
+})
+describe('setNextStepsForConfiguration', () => {
+  beforeEach(() => {
+    msg = {
+      method: 'activation',
+      apiKey: 'key',
+      appVersion: '1.2.0',
+      protocolVersion: '4.0.0',
+      status: 'ok',
+      message: "all's good!",
+      payload: {
+        ver: '11.8.50',
+        build: '3425',
+        fqdn: 'vprodemo.com',
+        password: 'KQGnH+N5qJ8YLqjEFJMnGSgcnFLMv0Tk',
+        currentMode: 0,
+        certHashes: [
+          'e7685634efacf69ace939a6b255b7b4fabef42935b50a265acb5cb6027e44e70',
+          'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244',
+          'c3846bf24b9e93ca64274c0ec67c1ecc5e024ffcacd2d74019350e81fe546ae4'
+        ],
+        sku: '16392',
+        uuid: '4bac9510-04a6-4321-bae2-d45ddf07b684',
+        username: '$$OsAdmin',
+        client: 'RPC',
+        profile: 'profile1'
+      }
+    }
+  })
+  test('should set next action NETWORKCONFIG if MEBX is already set', async () => {
+    const clientId = uuid()
+    const clientObj: ClientObject = {
+      ClientId: clientId,
+      ClientData: null,
+      action: ClientAction.ADMINCTLMODE,
+      activationStatus: { activated: false, missingMebxPassword: false, changePassword: false },
+      amtPassword: null,
+      unauthCount: 0
+    }
+    devices[clientId] = clientObj
+    const getDevcieCredentialsSpy = jest.spyOn(validator, 'getDeviceCredentials').mockResolvedValue({ guid: msg.uuid, amtpass: msg.payload.password, mebxpass: 'TestP{assw0rd' })
+    const updateTagsSpy = jest.spyOn(validator, 'updateTags').mockResolvedValue()
+    await validator.setNextStepsForConfiguration(msg, clientObj.ClientId)
+    expect(clientObj.action).toBe(ClientAction.NETWORKCONFIG)
+    expect(clientObj.amtPassword).toBe(msg.payload.password)
+    expect(clientObj.activationStatus.missingMebxPassword).toBeFalsy()
+    expect(clientObj.ClientData).toBe(msg)
+    expect(getDevcieCredentialsSpy).toHaveBeenCalled()
+    expect(updateTagsSpy).toHaveBeenCalled()
+  })
+  test('should set next action NETWORKCONFIG if ClientAction is CCM', async () => {
+    const clientId = uuid()
+    const clientObj: ClientObject = {
+      ClientId: clientId,
+      ClientData: null,
+      action: ClientAction.CLIENTCTLMODE,
+      activationStatus: { activated: false, missingMebxPassword: false, changePassword: false },
+      amtPassword: null,
+      unauthCount: 0
+    }
+    devices[clientId] = clientObj
+    const getDevcieCredentialsSpy = jest.spyOn(validator, 'getDeviceCredentials').mockResolvedValue({ guid: msg.uuid, amtpass: msg.payload.password })
+    const updateTagsSpy = jest.spyOn(validator, 'updateTags').mockResolvedValue()
+    await validator.setNextStepsForConfiguration(msg, clientObj.ClientId)
+    expect(clientObj.action).toBe(ClientAction.NETWORKCONFIG)
+    expect(clientObj.amtPassword).toBe(msg.payload.password)
+    expect(clientObj.ClientData).toBe(msg)
+    expect(getDevcieCredentialsSpy).toHaveBeenCalled()
+    expect(updateTagsSpy).toHaveBeenCalled()
+  })
+  test('should set missingMebxPassword true if ClientAction is ACM and amtDevice.mebxpass is false', async () => {
+    const clientId = uuid()
+    const clientObj: ClientObject = {
+      ClientId: clientId,
+      ClientData: null,
+      action: ClientAction.ADMINCTLMODE,
+      activationStatus: { activated: false, missingMebxPassword: false, changePassword: false },
+      amtPassword: null,
+      unauthCount: 0
+    }
+    devices[clientId] = clientObj
+    msg.mebxpass = 'TestP{assw0rd'
+    const getDevcieCredentialsSpy = jest.spyOn(validator, 'getDeviceCredentials').mockResolvedValue({ guid: msg.uuid, amtpass: msg.payload.password, mebxpass: null })
+    const updateTagsSpy = jest.spyOn(validator, 'updateTags').mockResolvedValue()
+    await validator.setNextStepsForConfiguration(msg, clientObj.ClientId)
+    expect(clientObj.amtPassword).toBe(msg.payload.password)
+    expect(clientObj.action).toBe(ClientAction.ADMINCTLMODE)
+    expect(clientObj.ClientData).toBe(msg)
+    expect(getDevcieCredentialsSpy).toHaveBeenCalled()
+    expect(updateTagsSpy).toHaveBeenCalled()
+    expect(clientObj.activationStatus.missingMebxPassword).toBeTruthy()
   })
 })
