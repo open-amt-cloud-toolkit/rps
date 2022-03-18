@@ -61,14 +61,14 @@ describe('execute', () => {
   }
   test('should return success response for successful timesync response', async () => {
     const clientId = uuid()
-    devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg, connectionParams: connectionParams }
+    devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg, connectionParams: connectionParams, unauthCount: 0 }
     const result = await maintenance.execute(maintenanceMsg, clientId, httpHandler)
     expect(result.method).toBe('wsman')
   })
   test('should return failure message for maintenance task does not exists', async () => {
     const clientId = uuid()
     maintenanceMsg.payload.task = 'setMEBXPassword'
-    devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg }
+    devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: maintenanceMsg, unauthCount: 0 }
     const result = await maintenance.execute(maintenanceMsg, clientId, httpHandler)
     expect(result.method).toBe('error')
   })

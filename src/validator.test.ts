@@ -13,6 +13,7 @@ import { RPSError } from './utils/RPSError'
 import { EnvReader } from './utils/EnvReader'
 import { VersionChecker } from './VersionChecker'
 import { devices } from './WebSocketListener'
+import { ClientAction, ClientObject } from './models/RCS.Config'
 
 EnvReader.GlobalEnvConfig = config
 const configurator: Configurator = new Configurator()
@@ -67,7 +68,7 @@ describe('parseClientMsg function', () => {
   test('should parse and return a client activation message', () => {
     const msg = '{"apiKey":"key","appVersion":"1.2.0","message":"all\'s good!","method":"activation","payload":"eyJidWlsZCI6IjM0MjUiLCJjZXJ0SGFzaGVzIjpbImU3Njg1NjM0ZWZhY2Y2OWFjZTkzOWE2YjI1NWI3YjRmYWJlZjQyOTM1YjUwYTI2NWFjYjVjYjYwMjdlNDRlNzAiLCJlYjA0Y2Y1ZWIxZjM5YWZhNzYyZjJiYjEyMGYyOTZjYmE1MjBjMWI5N2RiMTU4OTU2NWI4MWNiOWExN2I3MjQ0IiwiYzM4NDZiZjI0YjllOTNjYTY0Mjc0YzBlYzY3YzFlY2M1ZTAyNGZmY2FjZDJkNzQwMTkzNTBlODFmZTU0NmFlNCIsImQ3YTdhMGZiNWQ3ZTI3MzFkNzcxZTk0ODRlYmNkZWY3MWQ1ZjBjM2UwYTI5NDg3ODJiYzgzZWUwZWE2OTllZjQiLCIxNDY1ZmEyMDUzOTdiODc2ZmFhNmYwYTk5NThlNTU5MGU0MGZjYzdmYWE0ZmI3YzJjODY3NzUyMWZiNWZiNjU4IiwiODNjZTNjMTIyOTY4OGE1OTNkNDg1ZjgxOTczYzBmOTE5NTQzMWVkYTM3Y2M1ZTM2NDMwZTc5YzdhODg4NjM4YiIsImE0YjZiMzk5NmZjMmYzMDZiM2ZkODY4MWJkNjM0MTNkOGM1MDA5Y2M0ZmEzMjljMmNjZjBlMmZhMWIxNDAzMDUiLCI5YWNmYWI3ZTQzYzhkODgwZDA2YjI2MmE5NGRlZWVlNGI0NjU5OTg5YzNkMGNhZjE5YmFmNjQwNWU0MWFiN2RmIiwiYTUzMTI1MTg4ZDIxMTBhYTk2NGIwMmM3YjdjNmRhMzIwMzE3MDg5NGU1ZmI3MWZmZmI2NjY3ZDVlNjgxMGEzNiIsIjE2YWY1N2E5ZjY3NmIwYWIxMjYwOTVhYTVlYmFkZWYyMmFiMzExMTlkNjQ0YWM5NWNkNGI5M2RiZjNmMjZhZWIiLCI5NjBhZGYwMDYzZTk2MzU2NzUwYzI5NjVkZDBhMDg2N2RhMGI5Y2JkNmU3NzcxNGFlYWZiMjM0OWFiMzkzZGEzIiwiNjhhZDUwOTA5YjA0MzYzYzYwNWVmMTM1ODFhOTM5ZmYyYzk2MzcyZTNmMTIzMjViMGE2ODYxZTFkNTlmNjYwMyIsIjZkYzQ3MTcyZTAxY2JjYjBiZjYyNTgwZDg5NWZlMmI4YWM5YWQ0Zjg3MzgwMWUwYzEwYjljODM3ZDIxZWIxNzciLCI3M2MxNzY0MzRmMWJjNmQ1YWRmNDViMGU3NmU3MjcyODdjOGRlNTc2MTZjMWU2ZTYxNDFhMmIyY2JjN2Q4ZTRjIiwiMjM5OTU2MTEyN2E1NzEyNWRlOGNlZmVhNjEwZGRmMmZhMDc4YjVjODA2N2Y0ZTgyODI5MGJmYjg2MGU4NGIzYyIsIjQ1MTQwYjMyNDdlYjljYzhjNWI0ZjBkN2I1MzA5MWY3MzI5MjA4OWU2ZTVhNjNlMjc0OWRkM2FjYTkxOThlZGEiLCI0M2RmNTc3NGIwM2U3ZmVmNWZlNDBkOTMxYTdiZWRmMWJiMmU2YjQyNzM4YzRlNmQzODQxMTAzZDNhYTdmMzM5IiwiMmNlMWNiMGJmOWQyZjllMTAyOTkzZmJlMjE1MTUyYzNiMmRkMGNhYmRlMWM2OGU1MzE5YjgzOTE1NGRiYjdmNSIsIjcwYTczZjdmMzc2YjYwMDc0MjQ4OTA0NTM0YjExNDgyZDViZjBlNjk4ZWNjNDk4ZGY1MjU3N2ViZjJlOTNiOWEiXSwiY2xpZW50IjoiUFBDIiwiY3VycmVudE1vZGUiOjAsImZxZG4iOiJ2cHJvZGVtby5jb20iLCJwYXNzd29yZCI6IktRR25IK041cUo4WUxxakVGSk1uR1NnY25GTE12MFRrIiwicHJvZmlsZSI6InByb2ZpbGUxIiwic2t1IjoiMTYzOTIiLCJ1c2VybmFtZSI6IiQkT3NBZG1pbiIsInV1aWQiOlsxNiwxNDksMTcyLDc1LDE2Niw0LDMzLDY3LDE4NiwyMjYsMjEyLDkzLDIyMyw3LDE4MiwxMzJdLCJ2ZXIiOiIxMS44LjUwIn0=","protocolVersion":"4.0.0","status":"ok"}'
     const clientId = uuid()
-    devices[clientId] = { ClientId: clientId, ClientSocket: null }
+    devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
     VersionChecker.setCurrentVersion('4.0.0')
     const clientMsg = validator.parseClientMsg(msg, clientId)
     expect(clientMsg).toEqual(activationmsg)
@@ -76,7 +77,7 @@ describe('parseClientMsg function', () => {
   test('check protocol version of message', () => {
     const msg = '{"apiKey":"key","appVersion":"1.2.0","message":"all\'s good!","method":"activation","payload":"eyJidWlsZCI6IjM0MjUiLCJjZXJ0SGFzaGVzIjpbImU3Njg1NjM0ZWZhY2Y2OWFjZTkzOWE2YjI1NWI3YjRmYWJlZjQyOTM1YjUwYTI2NWFjYjVjYjYwMjdlNDRlNzAiLCJlYjA0Y2Y1ZWIxZjM5YWZhNzYyZjJiYjEyMGYyOTZjYmE1MjBjMWI5N2RiMTU4OTU2NWI4MWNiOWExN2I3MjQ0IiwiYzM4NDZiZjI0YjllOTNjYTY0Mjc0YzBlYzY3YzFlY2M1ZTAyNGZmY2FjZDJkNzQwMTkzNTBlODFmZTU0NmFlNCIsImQ3YTdhMGZiNWQ3ZTI3MzFkNzcxZTk0ODRlYmNkZWY3MWQ1ZjBjM2UwYTI5NDg3ODJiYzgzZWUwZWE2OTllZjQiLCIxNDY1ZmEyMDUzOTdiODc2ZmFhNmYwYTk5NThlNTU5MGU0MGZjYzdmYWE0ZmI3YzJjODY3NzUyMWZiNWZiNjU4IiwiODNjZTNjMTIyOTY4OGE1OTNkNDg1ZjgxOTczYzBmOTE5NTQzMWVkYTM3Y2M1ZTM2NDMwZTc5YzdhODg4NjM4YiIsImE0YjZiMzk5NmZjMmYzMDZiM2ZkODY4MWJkNjM0MTNkOGM1MDA5Y2M0ZmEzMjljMmNjZjBlMmZhMWIxNDAzMDUiLCI5YWNmYWI3ZTQzYzhkODgwZDA2YjI2MmE5NGRlZWVlNGI0NjU5OTg5YzNkMGNhZjE5YmFmNjQwNWU0MWFiN2RmIiwiYTUzMTI1MTg4ZDIxMTBhYTk2NGIwMmM3YjdjNmRhMzIwMzE3MDg5NGU1ZmI3MWZmZmI2NjY3ZDVlNjgxMGEzNiIsIjE2YWY1N2E5ZjY3NmIwYWIxMjYwOTVhYTVlYmFkZWYyMmFiMzExMTlkNjQ0YWM5NWNkNGI5M2RiZjNmMjZhZWIiLCI5NjBhZGYwMDYzZTk2MzU2NzUwYzI5NjVkZDBhMDg2N2RhMGI5Y2JkNmU3NzcxNGFlYWZiMjM0OWFiMzkzZGEzIiwiNjhhZDUwOTA5YjA0MzYzYzYwNWVmMTM1ODFhOTM5ZmYyYzk2MzcyZTNmMTIzMjViMGE2ODYxZTFkNTlmNjYwMyIsIjZkYzQ3MTcyZTAxY2JjYjBiZjYyNTgwZDg5NWZlMmI4YWM5YWQ0Zjg3MzgwMWUwYzEwYjljODM3ZDIxZWIxNzciLCI3M2MxNzY0MzRmMWJjNmQ1YWRmNDViMGU3NmU3MjcyODdjOGRlNTc2MTZjMWU2ZTYxNDFhMmIyY2JjN2Q4ZTRjIiwiMjM5OTU2MTEyN2E1NzEyNWRlOGNlZmVhNjEwZGRmMmZhMDc4YjVjODA2N2Y0ZTgyODI5MGJmYjg2MGU4NGIzYyIsIjQ1MTQwYjMyNDdlYjljYzhjNWI0ZjBkN2I1MzA5MWY3MzI5MjA4OWU2ZTVhNjNlMjc0OWRkM2FjYTkxOThlZGEiLCI0M2RmNTc3NGIwM2U3ZmVmNWZlNDBkOTMxYTdiZWRmMWJiMmU2YjQyNzM4YzRlNmQzODQxMTAzZDNhYTdmMzM5IiwiMmNlMWNiMGJmOWQyZjllMTAyOTkzZmJlMjE1MTUyYzNiMmRkMGNhYmRlMWM2OGU1MzE5YjgzOTE1NGRiYjdmNSIsIjcwYTczZjdmMzc2YjYwMDc0MjQ4OTA0NTM0YjExNDgyZDViZjBlNjk4ZWNjNDk4ZGY1MjU3N2ViZjJlOTNiOWEiXSwiY2xpZW50IjoiUFBDIiwiY3VycmVudE1vZGUiOjAsImZxZG4iOiJ2cHJvZGVtby5jb20iLCJwYXNzd29yZCI6IktRR25IK041cUo4WUxxakVGSk1uR1NnY25GTE12MFRrIiwicHJvZmlsZSI6InByb2ZpbGUxIiwic2t1IjoiMTYzOTIiLCJ1c2VybmFtZSI6IiQkT3NBZG1pbiIsInV1aWQiOlsxNiwxNDksMTcyLDc1LDE2Niw0LDMzLDY3LDE4NiwyMjYsMjEyLDkzLDIyMyw3LDE4MiwxMzJdLCJ2ZXIiOiIxMS44LjUwIn0=","protocolVersion":"3.0.0","status":"ok"}'
     const clientId = uuid()
-    devices[clientId] = { ClientId: clientId, ClientSocket: null }
+    devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
     VersionChecker.setCurrentVersion('4.0.0')
 
     let rpsError = null
@@ -125,7 +126,7 @@ describe('verifyPayload function', () => {
   })
   test('Should return payload', async () => {
     const clientId = uuid()
-    devices[clientId] = { ClientId: clientId, ClientSocket: null }
+    devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
     const result = await validator.verifyPayload(msg, clientId)
     expect(result).toEqual(msg.payload)
   })
@@ -134,7 +135,7 @@ describe('verifyPayload function', () => {
     let rpsError = null
     const clientId = uuid()
     try {
-      devices[clientId] = { ClientId: clientId, ClientSocket: null }
+      devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
       await validator.verifyPayload(null, clientId)
     } catch (error) {
       rpsError = error
@@ -147,7 +148,7 @@ describe('verifyPayload function', () => {
     let rpsError = null
     const clientId = uuid()
     try {
-      devices[clientId] = { ClientId: clientId, ClientSocket: null }
+      devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
       msg.payload.uuid = ''
       await validator.verifyPayload(msg, clientId)
     } catch (error) {
@@ -191,7 +192,7 @@ describe('validateMaintenanceMsg function', () => {
     let rpsError = null
     const clientId = uuid()
     try {
-      devices[clientId] = { ClientId: clientId, ClientSocket: null }
+      devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
       await validator.validateMaintenanceMsg(msg, clientId)
     } catch (error) {
       rpsError = error
@@ -264,7 +265,7 @@ describe('validateActivationMsg function', () => {
     let rpsError = null
     try {
       const clientId = uuid()
-      devices[clientId] = { ClientId: clientId, ClientSocket: null }
+      devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
       activationmsg.payload.password = undefined
       await validator.validateActivationMsg(activationmsg, clientId)
     } catch (error) {
@@ -277,7 +278,7 @@ describe('validateActivationMsg function', () => {
     let rpsError = null
     try {
       const clientId = uuid()
-      devices[clientId] = { ClientId: clientId, ClientSocket: null }
+      devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
       activationmsg.payload.profile = 'profile5'
       await validator.validateActivationMsg(activationmsg, clientId)
     } catch (error) {
@@ -323,7 +324,7 @@ describe('validateDeactivationMsg function', () => {
     let rpsError = null
     try {
       const clientId = uuid()
-      devices[clientId] = { ClientId: clientId, ClientSocket: null }
+      devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
       await validator.validateDeactivationMsg(msg, clientId)
     } catch (error) {
       rpsError = error
@@ -365,7 +366,7 @@ describe('verifyAMTVersion', () => {
     let rpsError = null
     try {
       const clientId = uuid()
-      devices[clientId] = { ClientId: clientId, ClientSocket: null }
+      devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
       msg.payload.ver = '6.8.50'
       await validator.verifyAMTVersion(msg.payload, 'activation')
     } catch (error) {
@@ -379,7 +380,7 @@ describe('verifyAMTVersion', () => {
     let rpsError = null
     try {
       const clientId = uuid()
-      devices[clientId] = { ClientId: clientId, ClientSocket: null }
+      devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
       msg.payload.build = '2425'
       await validator.verifyAMTVersion(msg.payload, 'activation')
     } catch (error) {
@@ -422,7 +423,7 @@ describe('verifyActivationMsgForACM', () => {
     let rpsError = null
     try {
       const clientId = uuid()
-      devices[clientId] = { ClientId: clientId, ClientSocket: null }
+      devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
       msg.payload.certHashes = undefined
       await validator.verifyActivationMsgForACM(msg.payload)
     } catch (error) {
@@ -435,7 +436,7 @@ describe('verifyActivationMsgForACM', () => {
     let rpsError = null
     try {
       const clientId = uuid()
-      devices[clientId] = { ClientId: clientId, ClientSocket: null }
+      devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
       msg.payload.fqdn = undefined
       await validator.verifyActivationMsgForACM(msg.payload)
     } catch (error) {
@@ -443,5 +444,97 @@ describe('verifyActivationMsgForACM', () => {
     }
     expect(rpsError).toBeInstanceOf(RPSError)
     expect(rpsError.message).toEqual(`Device ${msg.payload.uuid} activation failed. Missing DNS Suffix.`)
+  })
+})
+describe('setNextStepsForConfiguration', () => {
+  beforeEach(() => {
+    msg = {
+      method: 'activation',
+      apiKey: 'key',
+      appVersion: '1.2.0',
+      protocolVersion: '4.0.0',
+      status: 'ok',
+      message: "all's good!",
+      payload: {
+        ver: '11.8.50',
+        build: '3425',
+        fqdn: 'vprodemo.com',
+        password: 'KQGnH+N5qJ8YLqjEFJMnGSgcnFLMv0Tk',
+        currentMode: 0,
+        certHashes: [
+          'e7685634efacf69ace939a6b255b7b4fabef42935b50a265acb5cb6027e44e70',
+          'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244',
+          'c3846bf24b9e93ca64274c0ec67c1ecc5e024ffcacd2d74019350e81fe546ae4'
+        ],
+        sku: '16392',
+        uuid: '4bac9510-04a6-4321-bae2-d45ddf07b684',
+        username: '$$OsAdmin',
+        client: 'RPC',
+        profile: 'profile1'
+      }
+    }
+  })
+  test('should set next action NETWORKCONFIG if MEBX is already set', async () => {
+    const clientId = uuid()
+    const clientObj: ClientObject = {
+      ClientId: clientId,
+      ClientData: null,
+      action: ClientAction.ADMINCTLMODE,
+      activationStatus: { activated: false, missingMebxPassword: false, changePassword: false },
+      amtPassword: null,
+      unauthCount: 0
+    }
+    devices[clientId] = clientObj
+    const getDevcieCredentialsSpy = jest.spyOn(validator, 'getDeviceCredentials').mockResolvedValue({ guid: msg.uuid, amtpass: msg.payload.password, mebxpass: 'TestP{assw0rd' })
+    const updateTagsSpy = jest.spyOn(validator, 'updateTags').mockResolvedValue()
+    await validator.setNextStepsForConfiguration(msg, clientObj.ClientId)
+    expect(clientObj.action).toBe(ClientAction.NETWORKCONFIG)
+    expect(clientObj.amtPassword).toBe(msg.payload.password)
+    expect(clientObj.activationStatus.missingMebxPassword).toBeFalsy()
+    expect(clientObj.ClientData).toBe(msg)
+    expect(getDevcieCredentialsSpy).toHaveBeenCalled()
+    expect(updateTagsSpy).toHaveBeenCalled()
+  })
+  test('should set next action NETWORKCONFIG if ClientAction is CCM', async () => {
+    const clientId = uuid()
+    const clientObj: ClientObject = {
+      ClientId: clientId,
+      ClientData: null,
+      action: ClientAction.CLIENTCTLMODE,
+      activationStatus: { activated: false, missingMebxPassword: false, changePassword: false },
+      amtPassword: null,
+      unauthCount: 0
+    }
+    devices[clientId] = clientObj
+    const getDevcieCredentialsSpy = jest.spyOn(validator, 'getDeviceCredentials').mockResolvedValue({ guid: msg.uuid, amtpass: msg.payload.password })
+    const updateTagsSpy = jest.spyOn(validator, 'updateTags').mockResolvedValue()
+    await validator.setNextStepsForConfiguration(msg, clientObj.ClientId)
+    expect(clientObj.action).toBe(ClientAction.NETWORKCONFIG)
+    expect(clientObj.amtPassword).toBe(msg.payload.password)
+    expect(clientObj.ClientData).toBe(msg)
+    expect(getDevcieCredentialsSpy).toHaveBeenCalled()
+    expect(updateTagsSpy).toHaveBeenCalled()
+  })
+  test('should set missingMebxPassword true if ClientAction is ACM and amtDevice.mebxpass is false', async () => {
+    const clientId = uuid()
+    const clientObj: ClientObject = {
+      ClientId: clientId,
+      ClientData: null,
+      action: ClientAction.ADMINCTLMODE,
+      activationStatus: { activated: false, missingMebxPassword: false, changePassword: false },
+      amtPassword: null,
+      unauthCount: 0
+    }
+    devices[clientId] = clientObj
+    msg.mebxpass = 'TestP{assw0rd'
+    const getDevcieCredentialsSpy = jest.spyOn(validator, 'getDeviceCredentials').mockResolvedValue({ guid: msg.uuid, amtpass: msg.payload.password, mebxpass: null })
+    const updateTagsSpy = jest.spyOn(validator, 'updateTags').mockResolvedValue()
+    await validator.setNextStepsForConfiguration(msg, clientObj.ClientId)
+    expect(clientObj.amtPassword).toBe(msg.payload.password)
+    expect(clientObj.action).toBe(ClientAction.ADMINCTLMODE)
+    expect(clientObj.ClientData).toBe(msg)
+    expect(getDevcieCredentialsSpy).toHaveBeenCalled()
+    expect(updateTagsSpy).toHaveBeenCalled()
+    expect(clientObj.activationStatus.missingMebxPassword).toBeTruthy()
   })
 })

@@ -118,13 +118,20 @@ export class DataProcessor implements IDataProcessor {
     const payload = clientObj.ClientData.payload
     const message = parse(clientMsg.payload) as HttpZResponseModel
     if (message.statusCode === 401) {
+      clientObj.unauthCount++
+      if (clientObj.unauthCount < 4) {
       // For Digest authentication, RPS first receives 401 unauthorized error.
-      clientObj.connectionParams.digestChallenge = this.handleAuth(message)
-      clientMsg.payload = message
+        clientObj.connectionParams.digestChallenge = this.handleAuth(message)
+        clientMsg.payload = message
+      } else {
+        throw new RPSError('Unable to authenticate with AMT. Exceeded Retry Attempts')
+      }
     } else if (message.statusCode === 200) {
+      clientObj.unauthCount = 0
       this.logger.debug(`Device ${payload.uuid} wsman response ${message.statusCode}: ${JSON.stringify(clientMsg.payload, null, '\t')}`)
       clientMsg.payload = message
     } else {
+      clientObj.unauthCount = 0
       this.logger.debug(`Device ${payload.uuid} wsman response ${message.statusCode}: ${JSON.stringify(clientMsg.payload, null, '\t')}`)
       clientMsg.payload = message
       if (clientObj.action !== ClientAction.CIRACONFIG) {

@@ -74,7 +74,7 @@ beforeEach(() => {
 test('should return wsman message if incoming message is empty', async () => {
   const getMEBxPasswordSpy = jest.spyOn(configurator.profileManager, 'getMEBxPassword').mockImplementation(async () => 'P@ssw0rd')
   const clientId = uuid()
-  devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: msg, status: {}, connectionParams: connectionParams, messageId: 0 }
+  devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: msg, status: {}, connectionParams: connectionParams, messageId: 0, unauthCount: 0 }
   const response = await setMEBXPassword(clientId, '', responseMsg, configurator, httpHandler)
   expect(getMEBxPasswordSpy).toHaveBeenCalled()
   expect(response.method).toEqual('wsman')
@@ -88,7 +88,7 @@ test('should return wsman message if status code is 401', async () => {
     body: {}
   }
   const clientId = uuid()
-  devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: msg, status: {}, connectionParams: connectionParams, messageId: 0 }
+  devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: msg, status: {}, connectionParams: connectionParams, messageId: 0, unauthCount: 0 }
   const response = await setMEBXPassword(clientId, message, responseMsg, configurator, httpHandler)
   expect(getMEBxPasswordSpy).toHaveBeenCalled()
   expect(response.method).toEqual('wsman')
@@ -98,7 +98,7 @@ test('should return success message if ReturnValue is zero', async () => {
   const getMEBxPasswordSpy = jest.spyOn(configurator.profileManager, 'getMEBxPassword').mockImplementation(async () => 'P@ssw0rd')
   const insertSpy = jest.spyOn(configurator.amtDeviceRepository, 'insert').mockImplementation(async () => true)
   const clientId = uuid()
-  devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: msg, status: {}, connectionParams: connectionParams, messageId: 0 }
+  devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: msg, status: {}, connectionParams: connectionParams, messageId: 0, unauthCount: 0 }
   const response = await setMEBXPassword(clientId, SetMEBxPasswordOutPut(0), responseMsg, configurator, httpHandler)
   expect(getMEBxPasswordSpy).toHaveBeenCalled()
   expect(insertSpy).toHaveBeenCalled()
@@ -109,7 +109,7 @@ test('should return success message if ReturnValue is zero', async () => {
 test('should return error message if ReturnValue is not zero', async () => {
   const getMEBxPasswordSpy = jest.spyOn(configurator.profileManager, 'getMEBxPassword').mockImplementation(async () => 'P@ssw0rd')
   const clientId = uuid()
-  devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: msg, status: {}, connectionParams: connectionParams, messageId: 0 }
+  devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: msg, status: {}, connectionParams: connectionParams, messageId: 0, unauthCount: 0 }
   const response = await setMEBXPassword(clientId, SetMEBxPasswordOutPut(1), responseMsg, configurator, httpHandler)
   expect(getMEBxPasswordSpy).toHaveBeenCalled()
   expect(response.method).toEqual('error')
@@ -119,7 +119,7 @@ test('should return error message if ReturnValue is not zero', async () => {
 test('should return success message if ReturnValue is not zero and client message status is activated', async () => {
   const getMEBxPasswordSpy = jest.spyOn(configurator.profileManager, 'getMEBxPassword').mockImplementation(async () => 'P@ssw0rd')
   const clientId = uuid()
-  devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: msg, status: { Status: 'Admin control mode' }, connectionParams: connectionParams, messageId: 0 }
+  devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: msg, status: { Status: 'Admin control mode' }, connectionParams: connectionParams, messageId: 0, unauthCount: 0 }
   const response = await setMEBXPassword(clientId, SetMEBxPasswordOutPut(1), responseMsg, configurator, httpHandler)
   expect(getMEBxPasswordSpy).toHaveBeenCalled()
   expect(response.method).toEqual('error')
@@ -128,7 +128,7 @@ test('should return success message if ReturnValue is not zero and client messag
 test('should not insert into vault if configurator is null', async () => {
   const getMEBxPasswordSpy = jest.spyOn(configurator.profileManager, 'getMEBxPassword').mockImplementation(async () => 'P@ssw0rd')
   const clientId = uuid()
-  devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: msg, status: {}, connectionParams: connectionParams, messageId: 0 }
+  devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: msg, status: {}, connectionParams: connectionParams, messageId: 0, unauthCount: 0 }
   configurator.amtDeviceRepository = null
   const response = await setMEBXPassword(clientId, SetMEBxPasswordOutPut(0), responseMsg, configurator, httpHandler)
   expect(getMEBxPasswordSpy).toHaveBeenCalled()
@@ -141,7 +141,7 @@ test('should return error message if status code is not 401 or 200', async () =>
     statusCode: 400
   }
   const clientId = uuid()
-  devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: msg, status: {}, connectionParams: connectionParams, messageId: 0 }
+  devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: msg, status: {}, connectionParams: connectionParams, messageId: 0, unauthCount: 0 }
   const response = await setMEBXPassword(clientId, message, responseMsg, configurator, httpHandler)
   expect(getMEBxPasswordSpy).toHaveBeenCalled()
   expect(response.method).toEqual('error')
@@ -154,7 +154,7 @@ test('should return error message if status code is not 401 or 200, client statu
     statusCode: 400
   }
   const clientId = uuid()
-  devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: msg, status: { Status: 'Admin control mode' }, connectionParams: connectionParams, messageId: 0 }
+  devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: msg, status: { Status: 'Admin control mode' }, connectionParams: connectionParams, messageId: 0, unauthCount: 0 }
   const response = await setMEBXPassword(clientId, message, responseMsg, configurator, httpHandler)
   expect(getMEBxPasswordSpy).toHaveBeenCalled()
   expect(response.method).toEqual('error')

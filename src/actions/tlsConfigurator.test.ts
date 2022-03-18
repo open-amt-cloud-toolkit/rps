@@ -34,6 +34,7 @@ describe('TLS Configurator', () => {
     })
     tlsConfigurator = new TLSConfigurator(new Logger('TLS Configurator'), null, new ClientResponseMsg(new Logger('ClientResponseMsg')))
     devices[clientId] = {
+      unauthCount: 0,
       connectionParams: {
 
       } as any,
