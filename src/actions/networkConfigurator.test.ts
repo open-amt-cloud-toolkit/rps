@@ -93,6 +93,7 @@ beforeAll(() => {
     qop: 'auth'
   }
   devices[clientId] = {
+    unauthCount: 0,
     ClientId: clientId,
     ClientSocket: null,
     ClientData: activationmsg,
@@ -276,7 +277,65 @@ describe('validate AMT General Settings', () => {
     expect(result.method).toBe('wsman')
   })
 })
-
+describe('validate WifiPortConfigurationService', () => {
+  it('should handle AddWiFiSettingsResponse', async () => {
+    const message = {
+      Envelope: {
+        Header: {
+          Action: '/AddWiFiSettingsResponse'
+        }
+      }
+    }
+    const result = await networkConfigurator.validateWifiPortConfiguration(clientId, message)
+    expect(result).not.toBeNull()
+  })
+  it('should handle PutResponse', async () => {
+    const message = {
+      Envelope: {
+        Header: {
+          Action: '/PutResponse'
+        },
+        Body: {
+          AMT_WiFiPortConfigurationService: { localProfileSynchronizationEnabled: 1 }
+        }
+      }
+    }
+    const result = await networkConfigurator.validateWifiPortConfiguration(clientId, message)
+    expect(result).toBeNull()
+  })
+  it('should handle GetResponse when localProfileSynchronizationEnabled is 0', async () => {
+    const message = {
+      Envelope: {
+        Header: {
+          Action: '/GetResponse'
+        },
+        Body: {
+          AMT_WiFiPortConfigurationService: {
+            localProfileSynchronizationEnabled: 0
+          }
+        }
+      }
+    }
+    const result = await networkConfigurator.validateWifiPortConfiguration(clientId, message)
+    expect(result).not.toBeNull()
+  })
+  it('should handle GetResponse when localProfileSynchronizationEnabled is 1', async () => {
+    const message = {
+      Envelope: {
+        Header: {
+          Action: '/GetResponse'
+        },
+        Body: {
+          AMT_WiFiPortConfigurationService: {
+            localProfileSynchronizationEnabled: 1
+          }
+        }
+      }
+    }
+    const result = await networkConfigurator.validateWifiPortConfiguration(clientId, message)
+    expect(result).toBeNull()
+  })
+})
 describe('validate Ethernet Port Settings', () => {
   test('should return a wsman to put ethernet port settings', async () => {
     const message = {

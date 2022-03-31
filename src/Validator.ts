@@ -308,11 +308,11 @@ export class Validator implements IValidator {
       msg.payload.password = amtDevice.amtpass
       this.logger.debug(`AMT password found for Device ${msg.payload.uuid}`)
       await this.updateTags(msg.payload.uuid, msg.payload.profile)
-      if (clientObj.action === ClientAction.ADMINCTLMODE) {
-        if (!amtDevice.mebxpass) {
-          clientObj.activationStatus.activated = true
+      if (clientObj.action === ClientAction.ADMINCTLMODE || clientObj.action === ClientAction.CLIENTCTLMODE) {
+        clientObj.activationStatus.activated = true
+        clientObj.amtPassword = amtDevice.amtpass
+        if (!amtDevice.mebxpass && clientObj.action === ClientAction.ADMINCTLMODE) {
           clientObj.activationStatus.missingMebxPassword = true
-          clientObj.amtPassword = amtDevice.amtpass
         } else {
           clientObj.action = ClientAction.NETWORKCONFIG
         }
