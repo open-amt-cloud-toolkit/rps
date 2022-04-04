@@ -20,7 +20,7 @@ export class HttpHandler {
   logger: Logger
   constructor () {
     this.stripPrefix = xml2js.processors.stripPrefix
-    this.parser = new xml2js.Parser({ ignoreAttrs: true, mergeAttrs: false, explicitArray: false, tagNameProcessors: [this.stripPrefix], valueProcessors: [xml2js.processors.parseNumbers, xml2js.processors.parseBooleans] })
+    this.parser = new xml2js.Parser({ ignoreAttrs: false, mergeAttrs: false, explicitArray: false, tagNameProcessors: [this.stripPrefix], valueProcessors: [xml2js.processors.parseNumbers, xml2js.processors.parseBooleans] })
     this.logger = new Logger('HttpHandler')
   }
 

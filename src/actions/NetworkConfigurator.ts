@@ -141,7 +141,7 @@ export class NetworkConfigurator implements IExecutor {
 
   async validateWifiPortConfiguration (clientId: string, response: any): Promise<ClientMsg> {
     const clientObj = devices[clientId]
-    const action = response.Envelope.Header.Action.split('/').pop()
+    const action = response.Envelope.Header.Action._.split('/').pop()
     switch (action) {
       case 'AddWiFiSettingsResponse': {
         const xmlRequestBody = this.amt.WiFiPortConfigurationService(AMT.Methods.GET, null, null)
@@ -173,7 +173,7 @@ export class NetworkConfigurator implements IExecutor {
 
   async validateWiFiPort (clientId: string, response: any): Promise<ClientMsg> {
     const clientObj = devices[clientId]
-    const action = response.Envelope.Header.Action.split('/').pop()
+    const action = response.Envelope.Header.Action._.split('/').pop()
     switch (action) {
       case 'RequestStateChangeResponse': {
         if (response.Envelope.Body.RequestStateChange_OUTPUT.ReturnValue !== 0) {
@@ -197,7 +197,7 @@ export class NetworkConfigurator implements IExecutor {
 
   async validateEthernetPortSettings (clientId: string, response: any): Promise<ClientMsg> {
     const clientObj = devices[clientId]
-    const action = response.Envelope.Header.Action.split('/').pop()
+    const action = response.Envelope.Header.Action._.split('/').pop()
     let xmlRequestBody = null
     let data = null
     switch (action) {
@@ -214,7 +214,7 @@ export class NetworkConfigurator implements IExecutor {
           ethernetPortSettings.DHCPEnabled = true
           ethernetPortSettings.SharedStaticIp = false
           if (response.Envelope.Body.PullResponse.Items.AMT_EthernetPortSettings.length > 1) {
-            // If the array length is greater than one, device has WiFi capabilities and storing temporarly for next steps if the profile has wifi configs to be configured.
+            // If the array length is greater than one, device has WiFi capabilities and storing temporarily for next steps if the profile has wifi configs to be configured.
             clientObj.network.ethernetSettingsWifiObj = response.Envelope.Body.PullResponse.Items.AMT_EthernetPortSettings[1]
           }
         } else {
@@ -282,7 +282,7 @@ export class NetworkConfigurator implements IExecutor {
   }
 
   validateGeneralSettings (clientId: string, response: any): ClientMsg {
-    const action = response.Envelope.Header.Action.split('/').pop()
+    const action = response.Envelope.Header.Action._.split('/').pop()
     let xmlRequestBody = null
     let data = null
     switch (action) {
@@ -314,7 +314,7 @@ export class NetworkConfigurator implements IExecutor {
   validateWiFiEndpointSettings (clientId: string, response: any): ClientMsg {
     let xmlRequestBody = null
     let data = null
-    const action = response.Envelope.Header.Action.split('/').pop()
+    const action = response.Envelope.Header.Action._.split('/').pop()
     switch (action) {
       case 'EnumerateResponse': {
         xmlRequestBody = this.cim.WiFiEndpointSettings(CIM.Methods.PULL, response.Envelope.Body?.EnumerateResponse?.EnumerationContext)

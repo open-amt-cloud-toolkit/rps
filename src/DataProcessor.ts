@@ -120,7 +120,7 @@ export class DataProcessor implements IDataProcessor {
     if (message.statusCode === 401) {
       clientObj.unauthCount++
       if (clientObj.unauthCount < 4) {
-      // For Digest authentication, RPS first receives 401 unauthorized error.
+        // For Digest authentication, RPS first receives 401 unauthorized error.
         clientObj.connectionParams.digestChallenge = this.handleAuth(message)
         clientMsg.payload = message
       } else {

@@ -196,7 +196,7 @@ export class Activator implements IExecutor {
 
   async validateHostBasedSetupService (clientId: string, response: any, httpHandler: HttpHandler): Promise<ClientMsg> {
     const clientObj = devices[clientId]
-    const action = response.Envelope.Header.Action.split('/').pop()
+    const action = response.Envelope.Header.Action._.split('/').pop()
     switch (action) {
       case 'GetResponse': {
         clientObj.ClientData.payload.fwNonce = Buffer.from(response.Envelope.Body.IPS_HostBasedSetupService.ConfigurationNonce, 'base64')
