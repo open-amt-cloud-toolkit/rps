@@ -47,7 +47,7 @@ export class HttpHandler {
           uri: url,
           qop: connectionParams.digestChallenge.qop,
           response: responseDigest,
-          nc: this.nonceCounter++,
+          nc: ('00000000' + (this.nonceCounter++).toString(16)).slice(-8),
           cnonce: connectionParams.consoleNonce
         })
         message += `Authorization: ${authorizationRequestHeader}\r\n`
