@@ -294,7 +294,7 @@ export class TLSConfigurator implements IExecutor {
   validateTLSSettingData (clientId: string, response: any): ClientMsg {
     const clientObj = devices[clientId]
     let xmlRequestBody = null
-    const action = response.Envelope.Header.Action.split('/').pop()
+    const action = response.Envelope.Header.Action._.split('/').pop()
     switch (action) {
       case 'EnumerateResponse':
         xmlRequestBody = this.amt.TLSSettingData(AMT.Methods.PULL, response.Envelope.Body?.EnumerateResponse?.EnumerationContext)
@@ -322,7 +322,7 @@ export class TLSConfigurator implements IExecutor {
 
   validateTimeSynchronizationService (clientId: string, response: any): ClientMsg {
     let xmlRequestBody = ''
-    const action = response.Envelope.Header.Action.split('/').pop()
+    const action = response.Envelope.Header.Action._.split('/').pop()
     switch (action) {
       case 'GetLowAccuracyTimeSynchResponse': {
         const Tm1 = Math.round(new Date().getTime() / 1000)
@@ -339,7 +339,7 @@ export class TLSConfigurator implements IExecutor {
 
   validateTLSCredentialContext (clientId: string, response: any): ClientMsg {
     let xmlRequestBody = ''
-    const action = response.Envelope.Header.Action.split('/').pop()
+    const action = response.Envelope.Header.Action._.split('/').pop()
     switch (action) {
       case 'EnumerateResponse': {
         xmlRequestBody = this.amt.TLSCredentialContext(AMT.Methods.PULL, response.Envelope.Body.EnumerateResponse.EnumerationContext)
@@ -361,7 +361,7 @@ export class TLSConfigurator implements IExecutor {
   validatePublicPrivateKeyPair (clientId: string, response: any): ClientMsg {
     let xmlRequestBody = ''
     let data = null
-    const action = response.Envelope.Header.Action.split('/').pop()
+    const action = response.Envelope.Header.Action._.split('/').pop()
     switch (action) {
       case 'EnumerateResponse': {
         xmlRequestBody = this.amt.PublicPrivateKeyPair(AMT.Methods.PULL, response.Envelope.Body.EnumerateResponse.EnumerationContext)
@@ -377,7 +377,7 @@ export class TLSConfigurator implements IExecutor {
 
   validateAMTPublicKeyManagementService (clientId: string, response: any): ClientMsg {
     const clientObj = devices[clientId]
-    const action = response.Envelope.Header.Action.split('/').pop()
+    const action = response.Envelope.Header.Action._.split('/').pop()
     switch (action) {
       case 'AddCertificateResponse':
         clientObj.tls.addCert = true
@@ -399,7 +399,7 @@ export class TLSConfigurator implements IExecutor {
   validateAMTPublicKeyCertificate (clientId: string, response: any): ClientMsg {
     let xmlRequestBody = null
     let data = null
-    const action = response.Envelope.Header.Action.split('/').pop()
+    const action = response.Envelope.Header.Action._.split('/').pop()
     switch (action) {
       case 'EnumerateResponse': {
         xmlRequestBody = this.amt.PublicKeyCertificate(AMT.Methods.PULL, response.Envelope.Body.EnumerateResponse.EnumerationContext)
