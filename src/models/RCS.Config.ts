@@ -129,6 +129,7 @@ export interface CIRAConfigFlow {
   publicCerts?: any
   addTrustedRootCert?: boolean
   addMPSServer?: boolean
+  setMpsType?: boolean
   addRemoteAccessPolicyRule?: boolean
   userInitConnectionService?: boolean
   getENVSettingData?: boolean
@@ -234,19 +235,19 @@ export enum ClientAction {
   DEACTIVATE = 'deactivate',
   CIRACONFIG = 'ciraconfig',
   NETWORKCONFIG = 'networkConfig',
-  TLSCONFIG ='tlsConfig',
+  TLSCONFIG = 'tlsConfig',
   MAINTENANCE = 'maintenance'
 }
 
-export enum ClientMethods{
+export enum ClientMethods {
   INVALID = 'invalid',
   WSMAN = 'wsman',
   RESPONSE = 'response',
   ACTIVATION = 'activate',
   DEACTIVATION = 'deactivate',
-  CIRACONFIG= 'ciraconfig',
-  HEARTBEAT='heartbeat_response',
-  MAINTENANCE='maintenance'
+  CIRACONFIG = 'ciraconfig',
+  HEARTBEAT = 'heartbeat_response',
+  MAINTENANCE = 'maintenance'
 }
 
 export interface apiResponse {
@@ -259,12 +260,12 @@ export interface HealthCheck {
   db: HealthCheckStatus
   secretStore: HealthCheckStatus
 }
-export interface HealthCheckStatus{
+export interface HealthCheckStatus {
   name: string
   status: any
 }
 
-export enum TlsMode{
+export enum TlsMode {
   INVALID = -1,
   NONE = 0,
   SERVERONLY = 1,

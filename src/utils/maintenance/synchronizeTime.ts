@@ -31,7 +31,7 @@ export const synchronizeTime = async (clientId: string, message: any, responseMs
       const xmlBody = parseBody(wsmanResponse)
       const response = httpHandler.parseXML(xmlBody)
       const method = response.Envelope.Header.ResourceURI.split('/').pop()
-      const action = response.Envelope.Header.Action.split('/').pop()
+      const action = response.Envelope.Header.Action._.split('/').pop()
       logger.silly(`Device ${clientObj.uuid} : ${JSON.stringify(response, null, '\t')}`)
       if (method === 'AMT_TimeSynchronizationService' && action === 'GetLowAccuracyTimeSynchResponse') {
         if (response.Envelope.Body.GetLowAccuracyTimeSynch_OUTPUT.ReturnValue !== 0) {

@@ -220,7 +220,9 @@ describe('validate WiFi Endpoint Settings', () => {
     const message = {
       Envelope: {
         Header: {
-          Action: 'http://schemas.xmlsoap.org/ws/2004/09/enumeration/EnumerateResponse',
+          Action: {
+            _: 'http://schemas.xmlsoap.org/ws/2004/09/enumeration/EnumerateResponse'
+          },
           ResourceURI: 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_WiFiEndpointSettings'
         },
         Body: {
@@ -239,7 +241,9 @@ describe('validate WiFi Endpoint Settings', () => {
       Envelope: {
         Header: {
           RelatesTo: 2,
-          Action: 'http://schemas.xmlsoap.org/ws/2004/09/enumeration/PullResponse',
+          Action: {
+            _: 'http://schemas.xmlsoap.org/ws/2004/09/enumeration/PullResponse'
+          },
           ResourceURI: 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_WiFiEndpointSettings'
         },
         Body: {
@@ -261,7 +265,9 @@ describe('validate AMT General Settings', () => {
     const message = {
       Envelope: {
         Header: {
-          Action: 'http://schemas.xmlsoap.org/ws/2004/09/transfer/GetResponse',
+          Action: {
+            _: 'http://schemas.xmlsoap.org/ws/2004/09/transfer/GetResponse'
+          },
           ResourceURI: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_GeneralSettings'
         },
         Body: {
@@ -282,7 +288,9 @@ describe('validate WifiPortConfigurationService', () => {
     const message = {
       Envelope: {
         Header: {
-          Action: '/AddWiFiSettingsResponse'
+          Action: {
+            _: '/AddWiFiSettingsResponse'
+          }
         }
       }
     }
@@ -293,7 +301,9 @@ describe('validate WifiPortConfigurationService', () => {
     const message = {
       Envelope: {
         Header: {
-          Action: '/PutResponse'
+          Action: {
+            _: '/PutResponse'
+          }
         },
         Body: {
           AMT_WiFiPortConfigurationService: { localProfileSynchronizationEnabled: 1 }
@@ -307,7 +317,9 @@ describe('validate WifiPortConfigurationService', () => {
     const message = {
       Envelope: {
         Header: {
-          Action: '/GetResponse'
+          Action: {
+            _: '/GetResponse'
+          }
         },
         Body: {
           AMT_WiFiPortConfigurationService: {
@@ -323,7 +335,9 @@ describe('validate WifiPortConfigurationService', () => {
     const message = {
       Envelope: {
         Header: {
-          Action: '/GetResponse'
+          Action: {
+            _: '/GetResponse'
+          }
         },
         Body: {
           AMT_WiFiPortConfigurationService: {
@@ -341,7 +355,9 @@ describe('validate Ethernet Port Settings', () => {
     const message = {
       Envelope: {
         Header: {
-          Action: 'http://schemas.xmlsoap.org/ws/2004/09/enumeration/PullResponse',
+          Action: {
+            _: 'http://schemas.xmlsoap.org/ws/2004/09/enumeration/PullResponse'
+          },
           ResourceURI: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_EthernetPortSettings'
         },
         Body: {

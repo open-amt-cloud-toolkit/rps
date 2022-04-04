@@ -20,6 +20,12 @@ import { devices } from '../WebSocketListener'
 import { HttpHandler } from '../HttpHandler'
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 import { parseBody } from '../utils/parseWSManResponseBody'
+
+export enum MpsType {
+  ExternalMPS = 0,
+  InternalMPS = 1,
+  Both = 2
+}
 export class CIRAConfigurator implements IExecutor {
   amt: AMT.Messages
   httpHandler: HttpHandler
@@ -123,6 +129,9 @@ export class CIRAConfigurator implements IExecutor {
           case 'AMT_UserInitiatedConnectionService': {
             return this.ValidateUserInitiatedConnectionService(clientId, response)
           }
+          case 'AMT_RemoteAccessPolicyAppliesToMPS': {
+            return this.ValidateRemoteAccessPolicyAppliesToMPS(clientId, response)
+          }
         }
         break
       }
@@ -168,7 +177,7 @@ export class CIRAConfigurator implements IExecutor {
     let xmlRequestBody = null
     let data = null
     const clientObj = devices[clientId]
-    const action = response.Envelope.Header.Action.split('/').pop()
+    const action = response.Envelope.Header.Action._.split('/').pop()
     switch (action) {
       case 'RequestStateChangeResponse': {
         if (response.Envelope.Body?.RequestStateChange_OUTPUT?.ReturnValue !== 0) {
@@ -187,7 +196,7 @@ export class CIRAConfigurator implements IExecutor {
     let xmlRequestBody = null
     let data = null
     const clientObj = devices[clientId]
-    const action = response.Envelope.Header.Action.split('/').pop()
+    const action = response.Envelope.Header.Action._.split('/').pop()
     switch (action) {
       case 'DeleteResponse': {
         xmlRequestBody = this.amt.ManagementPresenceRemoteSAP(AMT.Methods.ENUMERATE)
@@ -202,7 +211,7 @@ export class CIRAConfigurator implements IExecutor {
     let xmlRequestBody = null
     let data = null
     const clientObj = devices[clientId]
-    const action = response.Envelope.Header.Action.split('/').pop()
+    const action = response.Envelope.Header.Action._.split('/').pop()
     switch (action) {
       case 'EnumerateResponse': {
         xmlRequestBody = this.amt.ManagementPresenceRemoteSAP(AMT.Methods.PULL, response.Envelope.Body?.EnumerateResponse?.EnumerationContext)
@@ -238,7 +247,7 @@ export class CIRAConfigurator implements IExecutor {
   }
 
   validatePublicKeyCertificate (clientId: string, response: any): ClientMsg {
-    const action = response.Envelope.Header.Action.split('/').pop()
+    const action = response.Envelope.Header.Action._.split('/').pop()
     const clientObj = devices[clientId]
     let xmlRequestBody = null
     let data = null
@@ -268,7 +277,7 @@ export class CIRAConfigurator implements IExecutor {
 
   async ValidateEnvironmentDetectionSettingData (clientId: string, response: any): Promise<ClientMsg> {
     const clientObj = devices[clientId]
-    const action = response.Envelope.Header.Action.split('/').pop()
+    const action = response.Envelope.Header.Action._.split('/').pop()
     let xmlRequestBody = null
     let data = null
     switch (action) {
@@ -347,7 +356,7 @@ export class CIRAConfigurator implements IExecutor {
     let xmlRequestBody = null
     let data = null
     const clientObj = devices[clientId]
-    const action = response.Envelope.Header.Action.split('/').pop()
+    const action = response.Envelope.Header.Action._.split('/').pop()
     switch (action) {
       case 'AddMpServerResponse': {
         if (response.Envelope.Body.AddMpServer_OUTPUT.ReturnValue !== 0) {
@@ -361,6 +370,33 @@ export class CIRAConfigurator implements IExecutor {
         if (response.Envelope.Body.AddRemoteAccessPolicyRule_OUTPUT.ReturnValue !== 0) {
           throw new RPSError(`Device ${clientObj.uuid} failed to add access policy rule.`)
         }
+        // xmlRequestBody = this.amt.UserInitiatedConnectionService(AMT.Methods.REQUEST_STATE_CHANGE, 32771)
+        xmlRequestBody = this.amt.RemoteAccessPolicyAppliesToMPS(AMT.Methods.ENUMERATE)
+        break
+      }
+    }
+    data = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
+    return this.responseMsg.get(clientId, data, 'wsman', 'ok')
+  }
+
+  ValidateRemoteAccessPolicyAppliesToMPS (clientId: string, response: any): ClientMsg {
+    let xmlRequestBody = null
+    let data = null
+    const clientObj = devices[clientId]
+    const action = response.Envelope.Header.Action._.split('/').pop()
+    switch (action) {
+      case 'EnumerateResponse': {
+        xmlRequestBody = this.amt.RemoteAccessPolicyAppliesToMPS(AMT.Methods.PULL, response.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+        break
+      }
+      case 'PullResponse': {
+        const data = response.Envelope.Body.PullResponse.Items.AMT_RemoteAccessPolicyAppliesToMPS
+        data.MpsType = MpsType.Both
+        xmlRequestBody = this.amt.RemoteAccessPolicyAppliesToMPS(AMT.Methods.PUT, null, data)
+        break
+      }
+      case 'PutResponse': {
+        clientObj.ciraconfig.setMpsType = true
         xmlRequestBody = this.amt.UserInitiatedConnectionService(AMT.Methods.REQUEST_STATE_CHANGE, 32771)
         break
       }
