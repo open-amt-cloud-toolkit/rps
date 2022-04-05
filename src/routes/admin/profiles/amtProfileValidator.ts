@@ -88,9 +88,6 @@ export const amtProfileValidator = (): ValidationChain[] => {
     check('ciraConfigName')
       .optional({ nullable: true })
       .custom((value, { req }) => {
-        if (!req.body.dhcpEnabled) {
-          throw new Error('CIRA cannot be configured if DHCP is disabled')
-        }
         if (req.body.tlsMode != null) {
           throw new Error('CIRA cannot be configured if TLS is enabled')
         }
@@ -217,9 +214,6 @@ export const profileUpdateValidator = (): any => {
     check('ciraConfigName')
       .optional({ nullable: true })
       .custom((value, { req }) => {
-        if (!req.body.dhcpEnabled) {
-          throw new Error('CIRA cannot be configured if DHCP is disabled')
-        }
         if (req.body.tlsMode != null) {
           throw new Error('CIRA cannot be configured if TLS is enabled')
         }

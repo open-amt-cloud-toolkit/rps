@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "4addfd2b-9651-4762-baec-10e4c7c0f8d0",
+		"_postman_id": "37ab773e-40c8-44cb-a1f0-deababf96154",
 		"name": "RPS API Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -5725,20 +5725,24 @@
 							"response": []
 						},
 						{
-							"name": "Create Profile with CIRA config and DHCP disabled",
+							"name": "Create Profile with CIRA config and Static",
 							"event": [
 								{
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 400\", function () {\r",
-											"    pm.response.to.have.status(400);\r",
+											"pm.test(\"Status code is 201\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
 											"});\r",
-											"pm.test(\"Creation should fail when DHCP is disabled and CIRA config name is given\", function () {\r",
+											"pm.test(\"Creation should pass when DHCP is disabled and CIRA config name is given\", function () {\r",
 											"    var result = pm.response.json();\r",
-											"    pm.expect(result.errors[0].msg).to.eql(\"CIRA cannot be configured if DHCP is disabled\"),\r",
-											"    pm.expect(result.errors[0].param).to.eql(\"ciraConfigName\"),\r",
-											"    pm.expect(result.errors[0].value).to.eql(\"ciraconfig\")\r",
+											"    pm.expect(result.profileName).to.eql(\"profile-ciraconfig-static\"),\r",
+											"    pm.expect(result.amtPassword).to.eql(),\r",
+											"    pm.expect(result.mebxPassword).to.eql(),\r",
+											"    pm.expect(result.activation).to.eql(\"acmactivate\"),\r",
+											"    pm.expect(result.ciraConfigName).to.eql(\"ciraconfig\")\r",
+											"    pm.expect(result.dhcpEnabled).to.eql(false),\r",
+											"    pm.expect(result.ciraConfigName).to.eql(\"ciraconfig\")\r",
 											"});"
 										],
 										"type": "text/javascript"
@@ -5762,7 +5766,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\",\r\n    \"dhcpEnabled\": false\r\n}"
+									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig-static\",\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\",\r\n    \"dhcpEnabled\": false\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5960,20 +5964,23 @@
 							"response": []
 						},
 						{
-							"name": "Update Profile with CIRA config and DHCP disabled",
+							"name": "Update Profile with CIRA config and Static",
 							"event": [
 								{
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 400\", function () {\r",
-											"    pm.response.to.have.status(400);\r",
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
 											"});\r",
-											"pm.test(\"Creation should fail when DHCP is disabled and CIRA config name is given\", function () {\r",
+											"pm.test(\"Creation should pass when DHCP is disabled and CIRA config name is given\", function () {\r",
 											"    var result = pm.response.json();\r",
-											"    pm.expect(result.errors[0].msg).to.eql(\"CIRA cannot be configured if DHCP is disabled\"),\r",
-											"    pm.expect(result.errors[0].param).to.eql(\"ciraConfigName\"),\r",
-											"    pm.expect(result.errors[0].value).to.eql(\"ciraconfig\")\r",
+											"    pm.expect(result.profileName).to.eql(\"profile-ciraconfig-static\"),\r",
+											"    pm.expect(result.amtPassword).to.eql(),\r",
+											"    pm.expect(result.mebxPassword).to.eql(),\r",
+											"    pm.expect(result.activation).to.eql(\"acmactivate\"),\r",
+											"    pm.expect(result.ciraConfigName).to.eql(\"ciraconfig\")\r",
+											"    pm.expect(result.dhcpEnabled).to.eql(false)\r",
 											"});"
 										],
 										"type": "text/javascript"
@@ -5997,7 +6004,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig\",\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\",\r\n    \"dhcpEnabled\": false\r\n}"
+									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig-static\",\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\",\r\n    \"dhcpEnabled\": false\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -6063,6 +6070,58 @@
 										"admin",
 										"profiles",
 										"profile-ciraconfig"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Remove Profile CIRA-Static",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 204\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"type": "text",
+										"value": "APIKEYFORRPS123!",
+										"disabled": true
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/profile-ciraconfig-static",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										"profile-ciraconfig-static"
 									]
 								}
 							},
