@@ -208,7 +208,7 @@ export class NetworkConfigurator implements IExecutor {
       }
       case 'PullResponse': {
         // Assume first entry is WIRED network port
-        const ethernetPortSettings: AMTEthernetPortSettings = response.Envelope.Body.PullResponse.Items.AMT_EthernetPortSettings[0]
+        const ethernetPortSettings: AMTEthernetPortSettings = Array.isArray(response.Envelope.Body.PullResponse.Items.AMT_EthernetPortSettings) ? response.Envelope.Body.PullResponse.Items.AMT_EthernetPortSettings[0] : response.Envelope.Body.PullResponse.Items.AMT_EthernetPortSettings
         const amtProfile: AMTConfiguration = clientObj.ClientData.payload.profile
         if (amtProfile.dhcpEnabled) {
           ethernetPortSettings.DHCPEnabled = true
