@@ -351,7 +351,7 @@ describe('validate WifiPortConfigurationService', () => {
   })
 })
 describe('validate Ethernet Port Settings', () => {
-  test('should return a wsman to put ethernet port settings', async () => {
+  test('should return a wsman to put ethernet port settings (array)', async () => {
     const message = {
       Envelope: {
         Header: {
@@ -399,6 +399,49 @@ describe('validate Ethernet Port Settings', () => {
                   WLANLinkProtectionLevel: 1
                 }
               ]
+            },
+            EndOfSequence: ''
+          }
+        }
+      }
+    }
+    const result = await networkConfigurator.validateEthernetPortSettings(clientId, message)
+    expect(result.method).toBe('wsman')
+  })
+  test('should return a wsman to put ethernet port settings (singular)', async () => {
+    const message = {
+      Envelope: {
+        Header: {
+          Action: {
+            _: 'http://schemas.xmlsoap.org/ws/2004/09/enumeration/PullResponse'
+          },
+          ResourceURI: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_EthernetPortSettings'
+        },
+        Body: {
+          PullResponse: {
+            Items: {
+              AMT_EthernetPortSettings:
+                {
+                  DHCPEnabled: true,
+                  DefaultGateway: '192.168.1.1',
+                  ElementName: 'Intel(r) AMT Ethernet Port Settings',
+                  IPAddress: '192.168.1.53',
+                  InstanceID: 'Intel(r) AMT Ethernet Port Settings 0',
+                  IpSyncEnabled: false,
+                  LinkIsUp: true,
+                  LinkPolicy: [
+                    1,
+                    14
+                  ],
+                  MACAddress: 'a4-bb-6d-89-52-e4',
+                  PhysicalConnectionType: 0,
+                  PrimaryDNS: '68.105.28.11',
+                  SecondaryDNS: '68.105.29.11',
+                  SharedDynamicIP: true,
+                  SharedMAC: true,
+                  SharedStaticIp: false,
+                  SubnetMask: '255.255.255.0'
+                }
             },
             EndOfSequence: ''
           }
