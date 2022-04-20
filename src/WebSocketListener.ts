@@ -6,7 +6,6 @@
  **********************************************************************/
 import * as WebSocket from 'ws'
 import { v4 as uuid } from 'uuid'
-
 import { ClientMsg, ClientObject, WebSocketConfig } from './models/RCS.Config'
 import { IWebSocketListener } from './interfaces/IWebSocketListener'
 import { IDataProcessor } from './interfaces/IDataProcessor'
