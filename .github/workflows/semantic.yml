@@ -6,7 +6,6 @@ on:
       - opened
       - edited
       - synchronize
-
 jobs:
   main:
     name: Validate PR title
@@ -15,3 +14,9 @@ jobs:
       - uses: amannn/action-semantic-pull-request@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: wagoid/commitlint-github-action@v4
+        with:
+          configFile: .github/commitlint.config.js
