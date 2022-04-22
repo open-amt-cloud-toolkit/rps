@@ -17,7 +17,15 @@ describe('Websocket Listener', () => {
   let server: WebSocketListener
   let isConnected: boolean
   let onSpy: jest.SpyInstance
+  let clientid: string
   beforeEach(() => {
+    clientid = 'abcd'
+    devices[clientid] = {} as any
+    const mockWebSocket: any = {
+      on: jest.fn(),
+      close: jest.fn()
+    }
+    devices[clientid].ClientSocket = mockWebSocket
     const stub = {
       processData: jest.fn()
     }
@@ -41,8 +49,6 @@ describe('Websocket Listener', () => {
   })
 
   it('Should remove client from devices on disconnect', async () => {
-    const clientid = 'abcd'
-    devices[clientid] = {} as any
     await server.onClientDisconnected(clientid)
     expect(devices[clientid]).toBeUndefined()
   })
@@ -54,11 +60,10 @@ describe('Websocket Listener', () => {
     const webSocketMock = jest.spyOn(mockWebSocket, 'on')
     await server.onClientConnected(mockWebSocket as any)
     expect(webSocketMock).toHaveBeenCalledTimes(3)
-    expect(Object.keys(devices).length).toBe(1)
+    expect(Object.keys(devices).length).toBe(2)
   })
 
   it('Should log on error', async () => {
-    const clientid = 'abcd'
     const error: Error = {
       name: 'abc',
       message: 'abcd'
@@ -69,7 +74,6 @@ describe('Websocket Listener', () => {
   })
 
   it('Should process client message and send response', async () => {
-    const clientid = 'abcd'
     const clientMsg: ClientMsg = {
       method: 'myMethod',
       apiKey: 'abcd',
@@ -86,8 +90,22 @@ describe('Websocket Listener', () => {
     expect(sendMessage).toHaveBeenCalledTimes(1)
     expect(processMessageSpy).toHaveBeenCalled()
   })
+  it('Should generate error when maximum message length exceeded', async () => {
+    const loggerSpy = jest.spyOn(server.logger, 'error')
+    const message: WebSocket.Data = 'X'.repeat(1024 * 10 + 1)
+    await server.onMessageReceived(message as any, clientid)
+    expect(loggerSpy).toHaveBeenCalled()
+    expect(loggerSpy).toHaveBeenCalledWith('Incoming message exceeds allowed length')
+  })
+
+  it('Should generate error when not a string', async () => {
+    const loggerSpy = jest.spyOn(server.logger, 'error')
+    const message: WebSocket.Data = Buffer.from('break the code')
+    await server.onMessageReceived(message, clientid)
+    expect(loggerSpy).toHaveBeenCalled()
+    expect(loggerSpy).toHaveBeenCalledWith('Incoming message exceeds allowed length')
+  })
   it('Should process client message and not respond when no response to send', async () => {
-    const clientid = 'abcd'
     const sendMessage = jest.spyOn(server, 'sendMessage')
     const processMessageSpy = jest.spyOn(server.dataProcessor, 'processData').mockResolvedValue(null)
     const message: WebSocket.Data = 'abcd'
@@ -96,7 +114,7 @@ describe('Websocket Listener', () => {
     expect(sendMessage).not.toHaveBeenCalled()
   })
   it('Should send message if client is defined in devices list', () => {
-    const clientid = 'test'
+    clientid = 'test'
     devices[clientid] = {
       ClientSocket: {
         send: jest.fn()
@@ -109,7 +127,7 @@ describe('Websocket Listener', () => {
   })
 
   it('Should NOT send message if client is not defined in devices list', () => {
-    const clientid = 'test'
+    clientid = 'test'
     const message: ClientMsg = {} as any
     server.sendMessage(message, clientid)
   })
