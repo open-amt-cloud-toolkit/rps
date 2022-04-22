@@ -6,6 +6,8 @@
  **********************************************************************/
 import * as WebSocket from 'ws'
 
+import { validate as uuidValidate } from 'uuid'
+
 import { IValidator } from './interfaces/IValidator'
 import { ILogger } from './interfaces/ILogger'
 import { ClientMsg, ClientAction, Payload, ClientMethods } from './models/RCS.Config'
@@ -83,7 +85,6 @@ export class Validator implements IValidator {
       throw new RPSError(`Device ${payload.uuid} activation failed. ${payload.profile} does not match list of available AMT profiles.`)
     }
     payload.profile = profile
-    // Store the client message
     clientObj.uuid = payload.uuid
     if (profile.activation === ClientAction.ADMINCTLMODE) {
       clientObj.action = ClientAction.ADMINCTLMODE
@@ -102,6 +103,7 @@ export class Validator implements IValidator {
     if (clientObj.action === ClientAction.ADMINCTLMODE) {
       await this.verifyActivationMsgForACM(payload)
     }
+    // }
   }
 
   /**
@@ -227,6 +229,12 @@ export class Validator implements IValidator {
     }
     if (!msg.payload.uuid) {
       throw new RPSError(`${clientId} - Missing uuid from payload`)
+    }
+    if (msg.payload.uuid.length !== 36) {
+      throw new RPSError(`${clientId} - uuid not valid length`)
+    }
+    if (!uuidValidate(msg.payload.uuid)) {
+      throw new RPSError(`${clientId} - uuid not valid format`)
     }
     return msg.payload
   }

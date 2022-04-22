@@ -12,6 +12,7 @@ import { IWebSocketListener } from './interfaces/IWebSocketListener'
 import { IDataProcessor } from './interfaces/IDataProcessor'
 import { ILogger } from './interfaces/ILogger'
 const devices: {[key: string]: ClientObject} = {}
+const maxMessageSize = 1024 * 10
 export { devices }
 export class WebSocketListener implements IWebSocketListener {
   dataProcessor: IDataProcessor
@@ -57,7 +58,6 @@ export class WebSocketListener implements IWebSocketListener {
     ws.on('error', (error) => {
       this.onError(error, clientId)
     })
-
     this.logger.debug(`client : ${clientId} Connection accepted.`)
   }
 
@@ -85,6 +85,16 @@ export class WebSocketListener implements IWebSocketListener {
    * @param {WSMessage} message Received from the client
    */
   async onMessageReceived (message: WebSocket.Data, clientId: string): Promise<void> {
+    let messageLength
+    if (typeof message === 'string') {
+      messageLength = Buffer.from(message).length
+    } else {
+      messageLength = maxMessageSize + 1
+    }
+    if (messageLength > maxMessageSize) {
+      this.logger.error('Incoming message exceeds allowed length')
+      devices[clientId].ClientSocket.close()
+    }
     try {
       // this.logger.debug(`Message from client ${clientId}: ${JSON.stringify(message, null, "\t")}`);
       let responseMsg: ClientMsg
