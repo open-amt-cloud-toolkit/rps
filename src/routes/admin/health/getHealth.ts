@@ -8,6 +8,8 @@ import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, POSTGRES_RESPONSE_CODES, VAULT_
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { HealthCheck } from '../../../models/RCS.Config'
 import { EnvReader } from '../../../utils/EnvReader'
+import { ISecretManagerService } from '../../../interfaces/ISecretManagerService'
+import { IDB } from '../../../interfaces/database/IDb'
 
 export async function getHealthCheck (req: Request, res: Response): Promise<void> {
   const log = new Logger('getHealthCheck')
@@ -22,21 +24,9 @@ export async function getHealthCheck (req: Request, res: Response): Promise<void
         status: 'OK'
       }
     }
-    try {
-      await req.db.query('SELECT 1')
-    } catch (dbError) {
-      status.db.status = POSTGRES_RESPONSE_CODES(dbError?.code)
-    }
-    try {
-      const secretManagerHealth = await req.secretsManager.health()
-      status.secretStore.status = secretManagerHealth
-    } catch (secretProviderError) {
-      if (secretProviderError.error) {
-        status.secretStore.status = secretProviderError.error.code
-      } else if (secretProviderError.response?.statusCode) {
-        status.secretStore.status = VAULT_RESPONSE_CODES(secretProviderError.response.statusCode)
-      }
-    }
+
+    status.db.status = await getDBHealth(req.db)
+    status.secretStore.status = await getSecretStoreHealth(req.secretsManager)
 
     res.status(200)
     if (status.db.status !== 'OK' || status.secretStore.status.initialized !== true || status.secretStore.status.sealed === true) {
@@ -48,5 +38,31 @@ export async function getHealthCheck (req: Request, res: Response): Promise<void
     MqttProvider.publishEvent('fail', ['getHealthCheck'], 'Failed to get health')
     log.error('Failed to get health', JSON.stringify(error))
     res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION('Health Check failed'))).end()
+  }
+}
+
+export async function getDBHealth (db: IDB): Promise<any> {
+  try {
+    await db.query('SELECT 1')
+    return 'OK'
+  } catch (dbError) {
+    if (dbError.code) {
+      return POSTGRES_RESPONSE_CODES(dbError?.code)
+    } else {
+      return POSTGRES_RESPONSE_CODES()
+    }
+  }
+}
+
+export async function getSecretStoreHealth (secretsManager: ISecretManagerService): Promise<any> {
+  try {
+    const secretProviderResponse = await secretsManager.health()
+    return secretProviderResponse
+  } catch (secretProviderError) {
+    if (secretProviderError.error) {
+      return VAULT_RESPONSE_CODES(secretProviderError.error.code)
+    } else {
+      return VAULT_RESPONSE_CODES(secretProviderError)
+    }
   }
 }
