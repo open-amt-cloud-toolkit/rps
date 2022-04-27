@@ -87,21 +87,21 @@ export const VAULT_RESPONSE_CODES = (statusCode: any = null): string => {
 }
 
 export const POSTGRES_RESPONSE_CODES = (statusCode: any = null): string => {
-  let vaultError: string
+  let postgresError: string
   if (statusCode != null) {
     switch (statusCode) {
       case '28P01':
-        vaultError = 'invalid_password'
+        postgresError = 'invalid_password'
         break
       default:
-        vaultError = 'unknown error'
+        postgresError = 'unknown error'
         break
     }
   } else {
-    vaultError = 'statusCode null'
+    postgresError = 'statusCode null'
   }
 
-  return vaultError
+  return postgresError
 }
 
 // Network Configurator
