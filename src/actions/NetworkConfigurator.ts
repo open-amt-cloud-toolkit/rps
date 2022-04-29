@@ -210,39 +210,45 @@ export class NetworkConfigurator implements IExecutor {
         // Assume first entry is WIRED network port
         const ethernetPortSettings: AMTEthernetPortSettings = Array.isArray(response.Envelope.Body.PullResponse.Items.AMT_EthernetPortSettings) ? response.Envelope.Body.PullResponse.Items.AMT_EthernetPortSettings[0] : response.Envelope.Body.PullResponse.Items.AMT_EthernetPortSettings
         const amtProfile: AMTConfiguration = clientObj.ClientData.payload.profile
-        if (amtProfile.dhcpEnabled) {
-          ethernetPortSettings.DHCPEnabled = true
-          ethernetPortSettings.SharedStaticIp = false
-          if (response.Envelope.Body.PullResponse.Items.AMT_EthernetPortSettings.length > 1) {
-            // If the array length is greater than one, device has WiFi capabilities and storing temporarily for next steps if the profile has wifi configs to be configured.
-            clientObj.network.ethernetSettingsWifiObj = response.Envelope.Body.PullResponse.Items.AMT_EthernetPortSettings[1]
+        // Check if this is a Wireless LAN device, exit wired LAN configuration flow if wired link is down or PhysicalConnectionType is 3 (wireless only device)
+        if (!ethernetPortSettings.LinkIsUp || ethernetPortSettings.PhysicalConnectionType === 3) {
+          clientObj.network.setEthernetPortSettings = true
+          return null
+        } else {
+          if (amtProfile.dhcpEnabled) {
+            ethernetPortSettings.DHCPEnabled = true
+            ethernetPortSettings.SharedStaticIp = false
+            if (response.Envelope.Body.PullResponse.Items.AMT_EthernetPortSettings.length > 1) {
+              // If the array length is greater than one, device has WiFi capabilities and storing temporarily for next steps if the profile has wifi configs to be configured.
+              clientObj.network.ethernetSettingsWifiObj = response.Envelope.Body.PullResponse.Items.AMT_EthernetPortSettings[1]
+            }
+          } else {
+            ethernetPortSettings.DHCPEnabled = false
+            ethernetPortSettings.SharedStaticIp = true
           }
-        } else {
-          ethernetPortSettings.DHCPEnabled = false
-          ethernetPortSettings.SharedStaticIp = true
+          ethernetPortSettings.IpSyncEnabled = true
+          if (ethernetPortSettings.DHCPEnabled || ethernetPortSettings.IpSyncEnabled) {
+            // When 'DHCPEnabled' property is set to true the following properties should be set to NULL:
+            // SubnetMask, DefaultGateway, IPAddress, PrimaryDNS, SecondaryDNS.
+            ethernetPortSettings.SubnetMask = null
+            ethernetPortSettings.DefaultGateway = null
+            ethernetPortSettings.IPAddress = null
+            ethernetPortSettings.PrimaryDNS = null
+            ethernetPortSettings.SecondaryDNS = null
+          } else {
+            // TBD: To set static IP address the values should be read from the REST API
+            // ethernetPortSettings.SubnetMask = "255.255.255.0";
+            // ethernetPortSettings.DefaultGateway = "192.168.1.1";
+            // ethernetPortSettings.IPAddress = "192.168.1.223";
+            // ethernetPortSettings.PrimaryDNS = "192.168.1.1";
+            // ethernetPortSettings.SecondaryDNS = "192.168.1.1";
+          }
+          this.logger.debug(`Updated Network configuration to set on device :  ${JSON.stringify(response, null, '\t')}`)
+          // put request to update ethernet port settings on the device
+          xmlRequestBody = this.amt.EthernetPortSettings(AMT.Methods.PUT, null, ethernetPortSettings)
+          data = this.httpHandler.wrapIt(xmlRequestBody, devices[clientId].connectionParams)
+          return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
         }
-        ethernetPortSettings.IpSyncEnabled = true
-        if (ethernetPortSettings.DHCPEnabled || ethernetPortSettings.IpSyncEnabled) {
-          // When 'DHCPEnabled' property is set to true the following properties should be set to NULL:
-          // SubnetMask, DefaultGateway, IPAddress, PrimaryDNS, SecondaryDNS.
-          ethernetPortSettings.SubnetMask = null
-          ethernetPortSettings.DefaultGateway = null
-          ethernetPortSettings.IPAddress = null
-          ethernetPortSettings.PrimaryDNS = null
-          ethernetPortSettings.SecondaryDNS = null
-        } else {
-          // TBD: To set static IP address the values should be read from the REST API
-          // ethernetPortSettings.SubnetMask = "255.255.255.0";
-          // ethernetPortSettings.DefaultGateway = "192.168.1.1";
-          // ethernetPortSettings.IPAddress = "192.168.1.223";
-          // ethernetPortSettings.PrimaryDNS = "192.168.1.1";
-          // ethernetPortSettings.SecondaryDNS = "192.168.1.1";
-        }
-        this.logger.debug(`Updated Network configuration to set on device :  ${JSON.stringify(response, null, '\t')}`)
-        // put request to update ethernet port settings on the device
-        xmlRequestBody = this.amt.EthernetPortSettings(AMT.Methods.PUT, null, ethernetPortSettings)
-        data = this.httpHandler.wrapIt(xmlRequestBody, devices[clientId].connectionParams)
-        return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
       }
       case 'PutResponse': {
         const amtEthernetPortSettings: AMTEthernetPortSettings = response.Envelope.Body.AMT_EthernetPortSettings
@@ -275,8 +281,14 @@ export class NetworkConfigurator implements IExecutor {
             return null
           }
         }
-
         break
+      }
+      case 'fault': {
+        // if we got an error setting EthernetPortSettings
+        const faultMessage = response.Envelope.Body.Fault?.Reason?.Text
+        this.logger.debug(`Device ${clientObj.uuid} Ethernet Configuration Failed. Reason: ${faultMessage}`)
+        devices[clientId].network.setEthernetPortSettings = true
+        return null
       }
     }
   }
