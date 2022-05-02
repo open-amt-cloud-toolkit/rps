@@ -42,7 +42,7 @@
     "lint": "eslint . --ext .ts"
   },
   "dependencies": {
-    "@open-amt-cloud-toolkit/wsman-messages": "^2.3.1",
+    "@open-amt-cloud-toolkit/wsman-messages": "^2.3.2",
     "body-parser": "^1.20.0",
     "cors": "^2.8.5",
     "crypto-random-string": "^3.3.1",
@@ -87,7 +87,7 @@
     "nodemon": "^2.0.15",
     "sinon": "^13.0.2",
     "ts-jest": "^27.1.4",
-    "typescript": "^4.6.3"
+    "typescript": "^4.6.4"
   },
   "optionalDependencies": {
     "fsevents": "^2.3.2"

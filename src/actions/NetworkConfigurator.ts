@@ -212,6 +212,10 @@ export class NetworkConfigurator implements IExecutor {
         const amtProfile: AMTConfiguration = clientObj.ClientData.payload.profile
         // Check if this is a Wireless LAN device, exit wired LAN configuration flow if wired link is down or PhysicalConnectionType is 3 (wireless only device)
         if (!ethernetPortSettings.LinkIsUp || ethernetPortSettings.PhysicalConnectionType === 3) {
+          if (ethernetPortSettings.PhysicalConnectionType === 3) {
+            // Device has WiFi capabilities and storing temporarily for next steps if the profile has wifi configs to be configured.
+            clientObj.network.ethernetSettingsWifiObj = response.Envelope.Body.PullResponse.Items.AMT_EthernetPortSettings[0]
+          }
           clientObj.network.setEthernetPortSettings = true
           return null
         } else {
@@ -228,13 +232,13 @@ export class NetworkConfigurator implements IExecutor {
           }
           ethernetPortSettings.IpSyncEnabled = true
           if (ethernetPortSettings.DHCPEnabled || ethernetPortSettings.IpSyncEnabled) {
-            // When 'DHCPEnabled' property is set to true the following properties should be set to NULL:
+            // When 'DHCPEnabled' property is set to true the following properties should be removed:
             // SubnetMask, DefaultGateway, IPAddress, PrimaryDNS, SecondaryDNS.
-            ethernetPortSettings.SubnetMask = null
-            ethernetPortSettings.DefaultGateway = null
-            ethernetPortSettings.IPAddress = null
-            ethernetPortSettings.PrimaryDNS = null
-            ethernetPortSettings.SecondaryDNS = null
+            delete ethernetPortSettings.SubnetMask
+            delete ethernetPortSettings.DefaultGateway
+            delete ethernetPortSettings.IPAddress
+            delete ethernetPortSettings.PrimaryDNS
+            delete ethernetPortSettings.SecondaryDNS
           } else {
             // TBD: To set static IP address the values should be read from the REST API
             // ethernetPortSettings.SubnetMask = "255.255.255.0";
