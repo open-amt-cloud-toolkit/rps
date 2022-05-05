@@ -299,11 +299,12 @@ export class NetworkConfigurator implements IExecutor {
           xmlRequestBody = this.amt.GeneralSettings(AMT.Methods.PUT, settings)
         } else {
           // If the network is enabled, get call to AMT_EthernetPortSettings
-          xmlRequestBody = this.amt.EthernetPortSettings(AMT.Methods.ENUMERATE, (devices[clientId].messageId++).toString())
+          xmlRequestBody = this.amt.EthernetPortSettings(AMT.Methods.ENUMERATE)
         }
         break
       }
       case 'PutResponse': {
+        xmlRequestBody = this.amt.EthernetPortSettings(AMT.Methods.ENUMERATE)
         break
       }
     }
