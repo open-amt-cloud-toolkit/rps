@@ -261,12 +261,33 @@ describe('validate WiFi Endpoint Settings', () => {
 })
 
 describe('validate AMT General Settings', () => {
-  test('should return a wsman to enumerate ethernet port settings', async () => {
+  test('should return a wsman to enumerate ethernet port settings when GetResponse', async () => {
     const message = {
       Envelope: {
         Header: {
           Action: {
             _: 'http://schemas.xmlsoap.org/ws/2004/09/transfer/GetResponse'
+          },
+          ResourceURI: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_GeneralSettings'
+        },
+        Body: {
+          AMT_GeneralSettings: {
+            AMTNetworkEnabled: 1,
+            RmcpPingResponseEnabled: true,
+            SharedFQDN: false
+          }
+        }
+      }
+    }
+    const result = await networkConfigurator.validateGeneralSettings(clientId, message)
+    expect(result.method).toBe('wsman')
+  })
+  test('should return a wsman to enumerate ethernet port settings when PutResponse', async () => {
+    const message = {
+      Envelope: {
+        Header: {
+          Action: {
+            _: 'http://schemas.xmlsoap.org/ws/2004/09/transfer/PutResponse'
           },
           ResourceURI: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_GeneralSettings'
         },
