@@ -1,4 +1,50 @@
 
+<a name="2.3.0"></a>
+## [2.3.0] - 2022-05-11
+### Build
+- **deps:** bump minimist from 1.2.5 to 1.2.6 (#24478f5) 
+- **deps:** bump [@open](https://github.com/open)-amt-cloud-toolkit/wsman-messages (#1d1fa34) 
+- **deps:** bump ws from 8.5.0 to 8.6.0 (#8960732) 
+- **deps:** bump node-forge from 1.0.0 to 1.3.0 (#9816439) 
+- **deps:** bump express from 4.18.0 to 4.18.1 (#bbf2cea) 
+- **deps:** bump node-forge from 1.0.0 to 1.3.0 test update (#7dd4d8b) 
+- **deps:** bump express from 4.17.3 to 4.18.0 (#51107d7) 
+- **deps:** bump body-parser from 1.19.2 to 1.20.0 (#72bc77d) 
+- **deps:** bump node-forge from 1.3.0 to 1.3.1 (#8c2b025) 
+- **deps:** bump [@open](https://github.com/open)-amt-cloud-toolkit/wsman-messages (#90150bb) 
+- **deps:** bump winston from 3.6.0 to 3.7.2 (#83c9bee) 
+- **deps-dev:** bump jest-junit from 13.0.0 to 13.1.0 (#488c91d) 
+- **deps-dev:** bump eslint-plugin-import from 2.25.4 to 2.26.0 (#d5cca6f) 
+- **deps-dev:** bump typescript from 4.6.2 to 4.6.3 (#ffad86d) 
+- **deps-dev:** bump sinon from 13.0.1 to 13.0.2 (#50ee496) 
+- **deps-dev:** bump jest-junit from 13.1.0 to 13.2.0 (#7abca19) 
+- **deps-dev:** bump [@types](https://github.com/types)/node-forge from 1.0.1 to 1.0.2 (#9594cfd) 
+- **deps-dev:** bump typescript from 4.6.3 to 4.6.4 (#0ce56c5) 
+- **deps-dev:** bump nodemon from 2.0.15 to 2.0.16 (#1a38228) 
+- **deps-dev:** bump [@types](https://github.com/types)/jest from 27.4.1 to 27.5.0 (#29eb85f) 
+- **deps-dev:** bump ts-jest from 27.1.3 to 27.1.4 (#7349936) 
+- **version:** bump to v2.3.0 (#c4ba4d3) 
+
+### Ci
+- swap our semantic pull request bot for Github Action (#2d66607) 
+- **lint:** adds semantic commit lints (#9ef4156) 
+
+### Feat
+- **cira:** adds setting MpsType to 'both' (#a4a0017) 
+
+### Fix
+- **cira:** removes DHCP check (#8ef1d52) 
+- **healthcheck:** handle vault missing (#5cd1627) 
+- **network:** handles put response for AMT_generalsettings ([#638](https://github.com/open-amt-cloud-toolkit/rps/issues/638)) (#5234e9b) 
+- **network:** handles when only one ethernet port setting (#5db81fc) 
+- **nonce:** set nonce to 8 character hexadecimal ([#609](https://github.com/open-amt-cloud-toolkit/rps/issues/609)) (#01fda14) 
+
+### Refactor
+- **websockets:** add input validation checks (#0725fce) 
+
+### Test
+- **network:** add tests for single and array ethernetportsettings (#6506cf1) 
+
 <a name="2.2.0"></a>
 ## [2.2.0] - 2022-03-18
 ### Build
