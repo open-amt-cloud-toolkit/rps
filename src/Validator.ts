@@ -5,9 +5,6 @@
  * Description: Helps to validate the client data
  **********************************************************************/
 import * as WebSocket from 'ws'
-
-import { validate as uuidValidate } from 'uuid'
-
 import { IValidator } from './interfaces/IValidator'
 import { ILogger } from './interfaces/ILogger'
 import { ClientMsg, ClientAction, Payload, ClientMethods } from './models/RCS.Config'
@@ -232,9 +229,6 @@ export class Validator implements IValidator {
     }
     if (msg.payload.uuid.length !== 36) {
       throw new RPSError(`${clientId} - uuid not valid length`)
-    }
-    if (!uuidValidate(msg.payload.uuid)) {
-      throw new RPSError(`${clientId} - uuid not valid format`)
     }
     return msg.payload
   }

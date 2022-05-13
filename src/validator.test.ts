@@ -313,19 +313,6 @@ describe('validateActivationMsg function', () => {
     expect(rpsError).toBeInstanceOf(RPSError)
     expect(rpsError.message).toEqual(`${clientId} - Missing uuid from payload`)
   })
-  test('Should throw an exception if uuid not in proper format', async () => {
-    let rpsError = null
-    const clientId = uuid()
-    try {
-      devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
-      activationmsg.payload.uuid = '4bac9510-04a6-4321-bae2-d45ddfO7b684'
-      await validator.validateActivationMsg(activationmsg, clientId)
-    } catch (error) {
-      rpsError = error
-    }
-    expect(rpsError).toBeInstanceOf(RPSError)
-    expect(rpsError.message).toEqual(`${clientId} - uuid not valid format`)
-  })
 })
 
 describe('validateDeactivationMsg function', () => {
