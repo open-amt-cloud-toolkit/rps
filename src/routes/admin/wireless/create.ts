@@ -2,12 +2,11 @@
  * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
-import { API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../../utils/constants'
 import { WirelessConfig } from '../../../models/RCS.Config'
 import Logger from '../../../Logger'
-import { RPSError } from '../../../utils/RPSError'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { Request, Response } from 'express'
+import handleError from '../../../utils/handleError'
 export async function createWirelessProfile (req: Request, res: Response): Promise<void> {
   const wirelessConfig: WirelessConfig = req.body
   wirelessConfig.tenantId = req.tenantId
@@ -29,12 +28,6 @@ export async function createWirelessProfile (req: Request, res: Response): Promi
     MqttProvider.publishEvent('success', ['createWirelessProfiles'], `Created wireless profile : ${wirelessConfig.profileName}`)
     res.status(201).json(results).end()
   } catch (error) {
-    MqttProvider.publishEvent('fail', ['createWirelessProfiles'], `Failed to create wireless profile : ${wirelessConfig.profileName}`)
-    log.error(`Failed to create a wireless profile : ${wirelessConfig.profileName}`, error)
-    if (error instanceof RPSError) {
-      res.status(400).json(API_RESPONSE(null, error.name, error.message)).end()
-    } else {
-      res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`Insert wireless profile ${wirelessConfig.profileName}`))).end()
-    }
+    handleError(log, 'wirelessConfig.profileName', req, res, error)
   }
 }

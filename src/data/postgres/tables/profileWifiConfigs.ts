@@ -5,17 +5,14 @@
 import { IProfilesWifiConfigsTable } from '../../../interfaces/database/IProfileWifiConfigsDb'
 import { ProfileWifiConfigs } from '../../../models/RCS.Config'
 import { API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
-import Logger from '../../../Logger'
 import { RPSError } from '../../../utils/RPSError'
 import * as format from 'pg-format'
 import PostgresDb from '..'
 
 export class ProfilesWifiConfigsTable implements IProfilesWifiConfigsTable {
   db: PostgresDb
-  log: Logger
   constructor (db: PostgresDb) {
     this.db = db
-    this.log = new Logger('ProfilesDb')
   }
 
   /**
@@ -26,9 +23,9 @@ export class ProfilesWifiConfigsTable implements IProfilesWifiConfigsTable {
   async getProfileWifiConfigs (profileName: string, tenantId: string = ''): Promise<ProfileWifiConfigs[]> {
     const results = await this.db.query<ProfileWifiConfigs>(`
     SELECT 
-      priority as "priority", 
+      priority as "priority",
       wireless_profile_name as "profileName"
-    FROM profiles_wirelessconfigs 
+    FROM profiles_wirelessconfigs
     WHERE profile_name = $1 and tenant_id = $2
     ORDER BY priority`, [profileName, tenantId])
     return results.rows
@@ -42,11 +39,14 @@ export class ProfilesWifiConfigsTable implements IProfilesWifiConfigsTable {
    */
   async createProfileWifiConfigs (wifiConfigs: ProfileWifiConfigs[], profileName: string, tenantId: string = ''): Promise<boolean> {
     try {
+      if (wifiConfigs.length < 1) {
+        throw new RPSError('No wificonfigs provided to insert')
+      }
       // Preparing data for inserting multiple rows
       const configs = wifiConfigs.map(config => [config.profileName, profileName, config.priority, tenantId])
       const wifiProfilesQueryResults = await this.db.query(format(`
-      INSERT INTO 
-      profiles_wirelessconfigs (wireless_profile_name, profile_name, priority, tenant_id) 
+      INSERT INTO
+      profiles_wirelessconfigs (wireless_profile_name, profile_name, priority, tenant_id)
       VALUES %L`, configs))
 
       return wifiProfilesQueryResults.rowCount > 0
@@ -65,8 +65,8 @@ export class ProfilesWifiConfigsTable implements IProfilesWifiConfigsTable {
   */
   async deleteProfileWifiConfigs (profileName: string, tenantId: string = ''): Promise<boolean> {
     const deleteProfileWifiResults = await this.db.query(`
-    DELETE 
-    FROM profiles_wirelessconfigs 
+    DELETE
+    FROM profiles_wirelessconfigs
     WHERE profile_name = $1 and tenant_id = $2`, [profileName, tenantId])
 
     return deleteProfileWifiResults.rowCount > 0

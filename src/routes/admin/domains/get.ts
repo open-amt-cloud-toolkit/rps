@@ -2,18 +2,20 @@
  * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
-import { DOMAIN_NOT_FOUND, API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../../utils/constants'
+import { API_RESPONSE, NOT_FOUND_MESSAGE, NOT_FOUND_EXCEPTION } from '../../../utils/constants'
 import { AMTDomain } from '../../../models'
 import Logger from '../../../Logger'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { Request, Response } from 'express'
+import handleError from '../../../utils/handleError'
+import { RPSError } from '../../../utils/RPSError'
 
 export async function getDomain (req: Request, res: Response): Promise<void> {
   const log = new Logger('getDomain')
   const { domainName } = req.params
   try {
     const result: AMTDomain = await req.db.domains.getByName(domainName)
-    if (result !== null) {
+    if (result != null) {
       // Return null. Check Security objectives around returning passwords.
       delete result.provisioningCertPassword
       delete result.provisioningCert
@@ -21,13 +23,9 @@ export async function getDomain (req: Request, res: Response): Promise<void> {
       log.verbose(`Domain : ${JSON.stringify(result)}`)
       res.status(200).json(API_RESPONSE(result)).end()
     } else {
-      MqttProvider.publishEvent('fail', ['getDomain'], `Domain Not Found : ${domainName}`)
-      log.debug(`Not found : ${domainName}`)
-      res.status(404).json(API_RESPONSE(null, 'Not Found', DOMAIN_NOT_FOUND(domainName))).end()
+      throw new RPSError(NOT_FOUND_MESSAGE('Domain', domainName), NOT_FOUND_EXCEPTION)
     }
   } catch (error) {
-    MqttProvider.publishEvent('fail', ['getDomain'], `Failed to get domain : ${domainName}`)
-    log.error(`Failed to get AMT Domain : ${domainName}`, error)
-    res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`GET ${domainName}`))).end()
+    handleError(log, domainName, req, res, error)
   }
 }

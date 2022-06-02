@@ -3,13 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 import Logger from '../../../Logger'
-import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, PROFILE_NOT_FOUND } from '../../../utils/constants'
+import { NOT_FOUND_EXCEPTION, NOT_FOUND_MESSAGE } from '../../../utils/constants'
 import { AMTConfiguration } from '../../../models'
 import { ClientAction, ProfileWifiConfigs } from '../../../models/RCS.Config'
-import { RPSError } from '../../../utils/RPSError'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { Request, Response } from 'express'
 import { IProfilesWifiConfigsTable } from '../../../interfaces/database/IProfileWifiConfigsDb'
+import handleError from '../../../utils/handleError'
+import { RPSError } from '../../../utils/RPSError'
 
 export async function editProfile (req: Request, res: Response): Promise<void> {
   const log = new Logger('editProfile')
@@ -19,9 +20,7 @@ export async function editProfile (req: Request, res: Response): Promise<void> {
     const oldConfig: AMTConfiguration = await req.db.profiles.getByName(newConfig.profileName)
 
     if (oldConfig == null) {
-      MqttProvider.publishEvent('fail', ['editProfile'], `Profile Not Found : ${newConfig.profileName}`)
-      log.debug(`Not found: ${newConfig.profileName}`)
-      res.status(404).json(API_RESPONSE(null, 'Not Found', PROFILE_NOT_FOUND(newConfig.profileName))).end()
+      throw new RPSError(NOT_FOUND_MESSAGE('AMT', newConfig.profileName), NOT_FOUND_EXCEPTION)
     } else {
       const amtConfig: AMTConfiguration = await getUpdatedData(newConfig, oldConfig)
       amtConfig.wifiConfigs = await handleWifiConfigs(newConfig, oldConfig, req.db.profileWirelessConfigs)
@@ -73,13 +72,7 @@ export async function editProfile (req: Request, res: Response): Promise<void> {
       }
     }
   } catch (error) {
-    MqttProvider.publishEvent('fail', ['editProfile'], `Failed to update profile : ${newConfig.profileName}`)
-    log.error(`Failed to update AMT profile: ${newConfig.profileName}`, error)
-    if (error instanceof RPSError) {
-      res.status(400).json(API_RESPONSE(null, error.name, error.message)).end()
-    } else {
-      res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`Update AMT profile ${newConfig.profileName}`))).end()
-    }
+    handleError(log, newConfig.profileName, req, res, error)
   }
 }
 
@@ -150,5 +143,6 @@ export const getUpdatedData = async (newConfig: any, oldConfig: AMTConfiguration
   amtConfig.dhcpEnabled = newConfig.dhcpEnabled ?? oldConfig.dhcpEnabled
   amtConfig.tenantId = newConfig.tenantId ?? oldConfig.tenantId
   amtConfig.tlsMode = newConfig.tlsMode
+  amtConfig.version = newConfig.version
   return amtConfig
 }

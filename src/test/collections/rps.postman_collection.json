@@ -1,8 +1,9 @@
 {
 	"info": {
-		"_postman_id": "37ab773e-40c8-44cb-a1f0-deababf96154",
+		"_postman_id": "51cf1f48-02e2-4326-b06b-9e50a2854e6d",
 		"name": "RPS API Tests",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "2229705"
 	},
 	"item": [
 		{
@@ -15,13 +16,73 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"var headerEtag = pm.response.headers.get('Etag');\r",
+									"pm.globals.set('etag', headerEtag);\r",
+									"\r",
 									"pm.test(\"Status code is 200\", function () {\r",
-									"    pm.response.to.have.status(200);\r",
+									"    pm.response.to.have.status(200);    \r",
 									"});\r",
 									"\r",
 									"pm.test(\"Result length should be equal to zero\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.length).to.eql(0)\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"domains",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Domains expect Not Modified",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 304\", function () {\r",
+									"    pm.response.to.have.status(304);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Result length should be equal to zero\", function () {\r",
+									"    var res = (_.isEmpty(responseBody));\r",
+									"    pm.expect(res).to.be.true\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -37,10 +98,14 @@
 								"type": "text"
 							},
 							{
-								"key": "X-RPS-API-Key",
-								"value": "APIKEYFORRPS123!",
-								"type": "text",
-								"disabled": true
+								"key": "Cache-Control",
+								"value": "max-age",
+								"type": "text"
+							},
+							{
+								"key": "If-None-Match",
+								"value": "{{etag}}",
+								"type": "text"
 							}
 						],
 						"url": {
@@ -73,7 +138,7 @@
 									"pm.test(\"Request should fail when domain doesn't exist\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.error).to.eql('Not Found')\r",
-									"    pm.expect(jsonData.message).to.equal('Domain dontexist not found')\r",
+									"    pm.expect(jsonData.message).to.equal('Domain profile dontexist Not Found')\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -87,12 +152,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"url": {
@@ -199,12 +258,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"url": {
@@ -252,12 +305,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -308,12 +355,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -364,12 +405,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -420,12 +455,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -480,12 +509,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -536,12 +559,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -594,12 +611,6 @@
 								"key": "Content-Type",
 								"value": "application/json",
 								"type": "text"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"value": "APIKEYFORRPS123!",
-								"type": "text",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -649,12 +660,6 @@
 								"key": "Content-Type",
 								"value": "application/json",
 								"type": "text"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"value": "APIKEYFORRPS123!",
-								"type": "text",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -704,12 +709,6 @@
 								"key": "Content-Type",
 								"value": "application/json",
 								"type": "text"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"value": "APIKEYFORRPS123!",
-								"type": "text",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -759,12 +758,6 @@
 								"key": "Content-Type",
 								"value": "application/json",
 								"type": "text"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"value": "APIKEYFORRPS123!",
-								"type": "text",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -815,12 +808,6 @@
 								"key": "Content-Type",
 								"value": "application/json",
 								"type": "text"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"value": "APIKEYFORRPS123!",
-								"type": "text",
-								"disabled": true
 							}
 						],
 						"url": {
@@ -883,12 +870,6 @@
 								"key": "Content-Type",
 								"value": "application/json",
 								"type": "text"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"value": "APIKEYFORRPS123!",
-								"type": "text",
-								"disabled": true
 							}
 						],
 						"url": {
@@ -949,12 +930,6 @@
 								"key": "Content-Type",
 								"value": "application/json",
 								"type": "text"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"value": "APIKEYFORRPS123!",
-								"type": "text",
-								"disabled": true
 							}
 						],
 						"url": {
@@ -1014,12 +989,6 @@
 								"key": "Content-Type",
 								"value": "application/json",
 								"type": "text"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"value": "APIKEYFORRPS123!",
-								"type": "text",
-								"disabled": true
 							}
 						],
 						"url": {
@@ -1076,17 +1045,116 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"newvprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"newvprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\",\r\n    \"version\": \"744\"\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"domains"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Domain Suffix returns Conflict",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 409\", function () {\r",
+									"    pm.response.to.have.status(409);\r",
+									"});\r",
+									"pm.test(\"Result should be equal to payload\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.profileName).to.eql(\"vprodemo\")\r",
+									"    pm.expect(jsonData.domainSuffix).to.eql(\"newvprodemo.com\")\r",
+									"    pm.expect(jsonData.provisioningCertStorageFormat).to.eql(\"raw\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"newvprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\",\r\n    \"version\": \"123\"\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"domains"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Domain Suffix returns Precondition",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 412\", function () {\r",
+									"    pm.response.to.have.status(412);\r",
+									"});\r",
+									"pm.test(\"Result should be equal to payload\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.profileName).to.eql(\"vprodemo\")\r",
+									"    pm.expect(jsonData.domainSuffix).to.eql(\"newvprodemo.com\")\r",
+									"    pm.expect(jsonData.provisioningCertStorageFormat).to.eql(\"raw\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "If-Match",
+								"type": "text",
+								"value": "123"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"newvprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\",\r\n    \"version\": \"123\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
@@ -1131,17 +1199,11 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"NewDomain.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"NewDomain.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\",\r\n    \"version\": \"748\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
@@ -1188,17 +1250,11 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"newvprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"Intel123!\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"newvprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"Intel123!\",\r\n    \"version\": \"748\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
@@ -1245,17 +1301,11 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"newvprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"01234567890123456789012345678901234567890123456789012345678901234\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"newvprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"01234567890123456789012345678901234567890123456789012345678901234\",\r\n    \"version\": \"750\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
@@ -1301,17 +1351,11 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"newvprodemo.com\",\r\n    \"provisioningCert\": \"provisioning certificate\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"Intel123!\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"newvprodemo.com\",\r\n    \"provisioningCert\": \"provisioning certificate\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"Intel123!\",\r\n    \"version\": \"750\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
@@ -1342,7 +1386,7 @@
 									"pm.test(\"Update should fail when it doesn't exists\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.error).to.eql('Not Found')\r",
-									"    pm.expect(result.message).to.eql('Domain Domain not found')\r",
+									"    pm.expect(result.message).to.eql('Domain profile Domain Not Found')\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -1356,17 +1400,11 @@
 								"key": "Content-Type",
 								"value": "application/json",
 								"type": "text"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"value": "APIKEYFORRPS123!",
-								"type": "text",
-								"disabled": true
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"Domain\",\r\n    \"domainSuffix\": \"newDomain.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"Domain\",\r\n    \"domainSuffix\": \"newDomain.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\",\r\n    \"version\": \"751\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
@@ -1406,12 +1444,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -1448,7 +1480,7 @@
 									"pm.test(\"Deletion should fail when domain doesn't exists\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.error).to.eql('Not Found')\r",
-									"    pm.expect(result.message).to.eql(\"Domain vprodemo not found\")\r",
+									"    pm.expect(result.message).to.eql(\"Domain profile vprodemo Not Found\")\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -1462,12 +1494,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -1513,12 +1539,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -1542,6 +1562,26 @@
 					},
 					"response": []
 				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
 			]
 		},
 		{
@@ -1556,12 +1596,72 @@
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
+									"    var headerEtag = pm.response.headers.get('ETag');\r",
+									"    pm.globals.set('etag', headerEtag);\r",
 									"});\r",
 									"\r",
 									"pm.test(\"Result length should be equal to zero\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.length).to.equal(0);\r",
-									"});"
+									"});\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"ciraconfigs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All CIRA Configs expect Not Modified",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 304\", function () {\r",
+									"    pm.response.to.have.status(304);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Result length should be equal to zero\", function () {\r",
+									"    var res = (_.isEmpty(responseBody));\r",
+									"    pm.expect(res).to.be.true\r",
+									"});\r",
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -1585,14 +1685,18 @@
 								"value": "application/json"
 							},
 							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
+								"key": "Cache-Control",
+								"value": "max-age",
+								"type": "text"
+							},
+							{
+								"key": "If-None-Match",
+								"value": "{{etag}}",
+								"type": "text"
 							}
 						],
 						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs?$top=10&$skip=0",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
@@ -1602,6 +1706,16 @@
 								"v1",
 								"admin",
 								"ciraconfigs"
+							],
+							"query": [
+								{
+									"key": "$top",
+									"value": "10"
+								},
+								{
+									"key": "$skip",
+									"value": "0"
+								}
 							]
 						}
 					},
@@ -1620,7 +1734,7 @@
 									"pm.test(\"Request should fail when CIRA config doesn't exists\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.error).to.eql('Not Found')\r",
-									"    pm.expect(result.message).to.eql('CIRA Config dontexist not found')\r",
+									"    pm.expect(result.message).to.eql('CIRA profile dontexist Not Found')\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -1634,12 +1748,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"url": {
@@ -1687,12 +1795,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -1747,12 +1849,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -1803,12 +1899,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -1859,12 +1949,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -1915,12 +1999,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -1971,12 +2049,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -2027,12 +2099,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -2083,12 +2149,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -2145,12 +2205,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -2209,12 +2263,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -2269,12 +2317,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -2325,12 +2367,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -2381,12 +2417,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -2437,12 +2467,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -2497,12 +2521,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -2553,12 +2571,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -2609,12 +2621,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -2672,12 +2678,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -2727,12 +2727,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -2790,12 +2784,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"url": {
@@ -2825,6 +2813,7 @@
 									"pm.test(\"Status code is 400\", function () {\r",
 									"    pm.response.to.have.status(400);\r",
 									"});\r",
+									"\r",
 									"pm.test(\"Creation should not succeed if exists\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.error).to.eql('Unique key violation')\r",
@@ -2842,12 +2831,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -2881,10 +2864,13 @@
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Result length should be equal to zero\", function () {\r",
+									"pm.test(\"Result length should be equal to two\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.length).to.equal(2);\r",
-									"});"
+									"});\r",
+									"\r",
+									"\r",
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -2906,12 +2892,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"url": {
@@ -2981,12 +2961,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"url": {
@@ -3056,12 +3030,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"url": {
@@ -3130,12 +3098,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"url": {
@@ -3191,12 +3153,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -3248,12 +3204,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -3304,12 +3254,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -3360,12 +3304,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -3416,12 +3354,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -3472,12 +3404,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -3528,12 +3454,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -3585,12 +3505,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -3647,17 +3561,128 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.55\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"commonName\": \"192.168.8.55\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\",\r\n    \"regeneratePassword\": false\r\n}\r\n"
+							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.55\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"commonName\": \"192.168.8.55\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\",\r\n    \"regeneratePassword\": false,\r\n    \"version\" : \"755\"\r\n}\r\n"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"ciraconfigs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Edit CIRA Config returns Conflict",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 409\", function () {\r",
+									"    pm.response.to.have.status(409);\r",
+									"});\r",
+									" pm.test(\"Result should be equal to example\", function () {\r",
+									"        var jsonData = pm.response.json();\r",
+									"        pm.expect(jsonData.configName).to.eql(\"ciraconfig2\")\r",
+									"        pm.expect(jsonData.mpsServerAddress).to.eql(\"192.168.8.55\")\r",
+									"        pm.expect(jsonData.mpsPort).to.eql(4433)\r",
+									"        pm.expect(jsonData.username).to.eql(\"admin\")\r",
+									"        pm.expect(jsonData.commonName).to.eql(\"192.168.8.55\")\r",
+									"        pm.expect(jsonData.serverAddressFormat).to.eql(3)\r",
+									"        pm.expect(jsonData.authMethod).to.eql(2)\r",
+									"        pm.expect(jsonData.mpsRootCertificate).to.eql(\"rootcert\")\r",
+									"        pm.expect(jsonData.proxyDetails).to.eql(\"\")\r",
+									"    });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.55\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"commonName\": \"192.168.8.55\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\",\r\n    \"regeneratePassword\": false,\r\n    \"version\" : \"123\"\r\n}\r\n"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"ciraconfigs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Edit CIRA Config returns Precondition",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 412\", function () {\r",
+									"    pm.response.to.have.status(412);\r",
+									"});\r",
+									"pm.test(\"Result should be equal to example\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.configName).to.eql(\"ciraconfig2\")\r",
+									"    pm.expect(jsonData.mpsServerAddress).to.eql(\"192.168.8.55\")\r",
+									"    pm.expect(jsonData.mpsPort).to.eql(4433)\r",
+									"    pm.expect(jsonData.username).to.eql(\"admin\")\r",
+									"    pm.expect(jsonData.commonName).to.eql(\"192.168.8.55\")\r",
+									"    pm.expect(jsonData.serverAddressFormat).to.eql(3)\r",
+									"    pm.expect(jsonData.authMethod).to.eql(2)\r",
+									"    pm.expect(jsonData.mpsRootCertificate).to.eql(\"rootcert\")\r",
+									"    pm.expect(jsonData.proxyDetails).to.eql(\"\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "If-Match",
+								"type": "text",
+								"value": "123"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.55\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"commonName\": \"192.168.8.55\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\",\r\n    \"regeneratePassword\": false,\r\n    \"version\" : \"123\"\r\n}\r\n"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -3709,17 +3734,11 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.55\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"commonName\": \"192.168.8.55\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\",\r\n    \"regeneratePassword\": true\r\n}\r\n"
+							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.55\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"commonName\": \"192.168.8.55\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\",\r\n    \"regeneratePassword\": true,\r\n    \"version\": \"759\"\r\n}\r\n"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -3771,17 +3790,11 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"configName\": \"ciraConfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.5\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"commonName\": \"192.168.8.5\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\"\r\n}\r\n"
+							"raw": "{\r\n    \"configName\": \"ciraConfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.5\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"commonName\": \"192.168.8.5\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\",\r\n    \"version\": \"760\"\r\n}\r\n"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -3822,12 +3835,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -3864,7 +3871,7 @@
 									"pm.test(\"Edit should not succeed if not exists\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.error).to.eql('Not Found')\r",
-									"    pm.expect(result.message).to.eql('CIRA Config ciraconfig2 not found')\r",
+									"    pm.expect(result.message).to.eql('CIRA profile ciraconfig2 Not Found')\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -3878,12 +3885,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -3919,7 +3920,7 @@
 									"pm.test(\"Deletion should fail with not found message\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.error).to.eql('Not Found')\r",
-									"    pm.expect(result.message).to.eql('CIRA Config ciraconfig2 not found')\r",
+									"    pm.expect(result.message).to.eql('CIRA profile ciraconfig2 Not Found')\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -3933,12 +3934,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -3962,6 +3957,26 @@
 					},
 					"response": []
 				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
 			]
 		},
 		{
@@ -3975,7 +3990,6 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {\r",
-									"    pm.environment.unset(\"variable_key\");\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
 									"pm.test(\"Result length should be equal to zero\", function () {\r",
@@ -3994,12 +4008,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"url": {
@@ -4032,7 +4040,7 @@
 									"pm.test(\"Request should succeed\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.error).to.eql('Not Found')\r",
-									"    pm.expect(result.message).to.eql('Profile profile1 not found')\r",
+									"    pm.expect(result.message).to.eql('AMT profile profile1 Not Found')\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -4046,11 +4054,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!"
 							}
 						],
 						"url": {
@@ -4159,12 +4162,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -4220,12 +4217,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -4277,12 +4268,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -4334,12 +4319,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -4662,14 +4641,75 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 200\", function () {\r",
-									"    pm.environment.unset(\"variable_key\");\r",
+									"headerEtag = pm.response.headers.get(\"ETag\");\r",
+									"pm.globals.set(\"etag\", headerEtag);\r",
+									"\r",
+									"pm.test(\"Status code is 200\", function () {    \r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
 									"pm.test(\"Result length should be equal to zero\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.length).to.eql(2);\r",
-									"});"
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles?$top=25&$skip=0",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"profiles"
+							],
+							"query": [
+								{
+									"key": "$top",
+									"value": "25"
+								},
+								{
+									"key": "$skip",
+									"value": "0"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Profiles expect Not Modified",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 304\", function () {\r",
+									"    pm.response.to.have.status(304);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Result length should be equal to zero\", function () {\r",
+									"    var res = (_.isEmpty(responseBody));\r",
+									"    pm.expect(res).to.be.true\r",
+									"});\r",
+									"\r",
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -4684,10 +4724,14 @@
 								"value": "application/json"
 							},
 							{
-								"key": "X-RPS-API-Key",
+								"key": "Cache-Control",
 								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
+								"value": "max-age"
+							},
+							{
+								"key": "If-None-Match",
+								"value": "{{etag}}",
+								"type": "text"
 							}
 						],
 						"url": {
@@ -4750,12 +4794,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"url": {
@@ -4796,7 +4834,6 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {\r",
-									"    pm.environment.unset(\"variable_key\");\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
 									"pm.test(\"Result length should be equal to zero\", function () {\r",
@@ -4816,12 +4853,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"url": {
@@ -4862,7 +4893,6 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {\r",
-									"    pm.environment.unset(\"variable_key\");\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
 									"pm.test(\"Result length should be equal to zero\", function () {\r",
@@ -4881,12 +4911,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"url": {
@@ -4942,12 +4966,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -4999,12 +5017,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -5056,12 +5068,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -5114,12 +5120,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -5172,12 +5172,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -5232,17 +5226,11 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag123\"],\r\n    \"generateRandomPassword\": true,\r\n    \"generateRanodomMEBxPassword\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag123\"],\r\n    \"generateRandomPassword\": true,\r\n    \"generateRanodomMEBxPassword\": false,\r\n    \"version\": \"763\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5293,12 +5281,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -5352,17 +5334,11 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"mebxPassword\": \"P@ssw0rd\",\r\n    \"activation\": \"acmactivate\",\r\n    \"generateRandomPassword\": true,\r\n    \"generateRanodomMEBxPassword\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"mebxPassword\": \"P@ssw0rd\",\r\n    \"activation\": \"acmactivate\",\r\n    \"generateRandomPassword\": true,\r\n    \"generateRanodomMEBxPassword\": false,\r\n    \"version\": \"766\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5411,17 +5387,122 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"acmactivate\",\r\n    \"mebxPassword\": \"P@ssw0rd\",\r\n    \"amtPassword\": \"P@ssw0rd\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRanodomMEBxPassword\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"acmactivate\",\r\n    \"mebxPassword\": \"P@ssw0rd\",\r\n    \"amtPassword\": \"P@ssw0rd\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRanodomMEBxPassword\": false,\r\n    \"version\": \"767\"\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"profiles",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile return Conflict",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 409\", function () {\r",
+									"    pm.response.to.have.status(409);\r",
+									"});\r",
+									"pm.test(\"Update should succeed\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
+									"    pm.expect(jsonData.activation).to.equal(\"acmactivate\")    \r",
+									"    pm.expect(jsonData.tags.length).to.equal(1)    \r",
+									"    pm.expect(jsonData.dhcpEnabled).to.equal(false)\r",
+									"    pm.expect(jsonData.ciraConfigName).to.eql(null)  \r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"acmactivate\",\r\n    \"mebxPassword\": \"P@ssw0rd\",\r\n    \"amtPassword\": \"P@ssw0rd\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRanodomMEBxPassword\": false,\r\n    \"version\": \"123\"\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"profiles",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile return Precondition",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 412\", function () {\r",
+									"    pm.response.to.have.status(412);\r",
+									"});\r",
+									"pm.test(\"Update should succeed\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
+									"    pm.expect(jsonData.activation).to.equal(\"acmactivate\")    \r",
+									"    pm.expect(jsonData.tags.length).to.equal(1)    \r",
+									"    pm.expect(jsonData.dhcpEnabled).to.equal(false)\r",
+									"    pm.expect(jsonData.ciraConfigName).to.eql(null)  \r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "If-Match",
+								"type": "text",
+								"value": "123"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"acmactivate\",\r\n    \"mebxPassword\": \"P@ssw0rd\",\r\n    \"amtPassword\": \"P@ssw0rd\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRanodomMEBxPassword\": false,\r\n    \"version\": \"123\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5462,12 +5543,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -5513,12 +5588,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -5555,7 +5624,7 @@
 									"pm.test(\"Deletion should fail when profile doesn't exists\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.error).to.eql('Not Found')\r",
-									"    pm.expect(result.message).to.eql('Profile profile6 not found')\r",
+									"    pm.expect(result.message).to.eql('AMT profile profile6 Not Found')\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -5569,12 +5638,6 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
@@ -5945,7 +6008,130 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"configName\": \"ciraconfig\",\r\n    \"regeneratePassword\": true\r\n}"
+									"raw": "{\r\n    \"configName\": \"ciraconfig\",\r\n    \"regeneratePassword\": true,\r\n    \"version\": \"771\"\r\n}"
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"ciraconfigs"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update CIRA Config return Conflict",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 409\", function () {\r",
+											"    pm.response.to.have.status(409);\r",
+											"});\r",
+											"pm.test(\"Update should succeed\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.configName).to.eql(\"ciraconfig\")\r",
+											"    pm.expect(jsonData.mpsServerAddress).to.equal(\"192.168.8.50\")\r",
+											"    pm.expect(jsonData.mpsPort).to.eql(4433)\r",
+											"    pm.expect(jsonData.username).to.equal(\"admin\")\r",
+											"    pm.expect(jsonData.commonName).to.eql(\"192.168.8.50\")\r",
+											"    pm.expect(jsonData.serverAddressFormat).to.equal(3)    \r",
+											"    pm.expect(jsonData.mpsRootCertificate).to.equal(\"rootcert\")\r",
+											"    pm.expect(jsonData.proxyDetails).to.equal(\"\")\r",
+											"    pm.expect(jsonData.authMethod).to.equal(2)\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"type": "text",
+										"value": "APIKEYFORRPS123!",
+										"disabled": true
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"configName\": \"ciraconfig\",\r\n    \"regeneratePassword\": true,\r\n    \"version\": \"123\"\r\n}"
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"ciraconfigs"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update CIRA Config return Precondition",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 412\", function () {\r",
+											"    pm.response.to.have.status(412);\r",
+											"});\r",
+											"pm.test(\"Update should succeed\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.configName).to.eql(\"ciraconfig\")\r",
+											"    pm.expect(jsonData.mpsServerAddress).to.equal(\"192.168.8.50\")\r",
+											"    pm.expect(jsonData.mpsPort).to.eql(4433)\r",
+											"    pm.expect(jsonData.username).to.equal(\"admin\")\r",
+											"    pm.expect(jsonData.commonName).to.eql(\"192.168.8.50\")\r",
+											"    pm.expect(jsonData.serverAddressFormat).to.equal(3)    \r",
+											"    pm.expect(jsonData.mpsRootCertificate).to.equal(\"rootcert\")\r",
+											"    pm.expect(jsonData.proxyDetails).to.equal(\"\")\r",
+											"    pm.expect(jsonData.authMethod).to.equal(2)\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "If-Match",
+										"type": "text",
+										"value": "123"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"configName\": \"ciraconfig\",\r\n    \"regeneratePassword\": true,\r\n    \"version\": \"123\"\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -6004,7 +6190,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig-static\",\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\",\r\n    \"dhcpEnabled\": false\r\n}"
+									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig-static\",\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\",\r\n    \"dhcpEnabled\": false,\r\n    \"version\": \"773\"\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -6192,7 +6378,6 @@
 									"script": {
 										"exec": [
 											"pm.test(\"Status code is 201\", function () {\r",
-											"    pm.environment.unset(\"variable_key\");\r",
 											"    pm.response.to.have.status(201);\r",
 											"});\r",
 											"pm.test(\"Request should return profile just created\", function () {\r",
@@ -6247,7 +6432,6 @@
 									"script": {
 										"exec": [
 											"pm.test(\"Status code is 201\", function () {\r",
-											"    pm.environment.unset(\"variable_key\");\r",
 											"    pm.response.to.have.status(201);\r",
 											"});\r",
 											"pm.test(\"Request should return profile just created\", function () {\r",
@@ -6959,7 +7143,126 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n   \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n   \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"version\": \"783\"\r\n}"
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update AMT Profile return Conflict",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 409\", function () {\r",
+											"    pm.response.to.have.status(409);\r",
+											"});\r",
+											"pm.test(\"Creation should succeed\", function () {\r",
+											"    var result = pm.response.json();\r",
+											"    pm.expect(result.profileName).to.eql(\"wifi-profile\"),\r",
+											"    pm.expect(result.amtPassword).to.eql(),\r",
+											"    pm.expect(result.mebxPassword).to.eql(),\r",
+											"    pm.expect(result.activation).to.eql(\"ccmactivate\")\r",
+											"    pm.expect(result.tags.length).to.equal(1)\r",
+											"    pm.expect(result.dhcpEnabled).to.equal(false)\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "X-RPS-API-Key",
+										"value": "APIKEYFORRPS123!",
+										"type": "text",
+										"disabled": true
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n   \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"version\": \"783\"\r\n}"
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update AMT Profile return Precondition",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 412\", function () {\r",
+											"    pm.response.to.have.status(412);\r",
+											"});\r",
+											"pm.test(\"Creation should succeed\", function () {\r",
+											"    var result = pm.response.json();\r",
+											"    pm.expect(result.profileName).to.eql(\"wifi-profile\"),\r",
+											"    pm.expect(result.amtPassword).to.eql(),\r",
+											"    pm.expect(result.mebxPassword).to.eql(),\r",
+											"    pm.expect(result.activation).to.eql(\"ccmactivate\")\r",
+											"    pm.expect(result.tags.length).to.equal(1)\r",
+											"    pm.expect(result.dhcpEnabled).to.equal(false)\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "If-Match",
+										"value": "123",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n   \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"version\": \"783\"\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -7080,7 +7383,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"version\": \"786\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -7107,7 +7410,6 @@
 									"script": {
 										"exec": [
 											"pm.test(\"Status code is 201\", function () {\r",
-											"    pm.environment.unset(\"variable_key\");\r",
 											"    pm.response.to.have.status(201);\r",
 											"});\r",
 											"pm.test(\"Request should return profile just created\", function () {\r",
@@ -7202,7 +7504,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        },\r\n        {\r\n            \"priority\": 3,\r\n            \"profileName\": \"business\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"dhcpEnabled\": true,\r\n    \"version\": \"787\",\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        },\r\n        {\r\n            \"priority\": 3,\r\n            \"profileName\": \"business\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -7518,7 +7820,6 @@
 									"script": {
 										"exec": [
 											"pm.test(\"Status code is 204\", function () {\r",
-											"    pm.environment.unset(\"variable_key\");\r",
 											"    pm.response.to.have.status(204);\r",
 											"});"
 										],
@@ -7554,7 +7855,6 @@
 									"script": {
 										"exec": [
 											"pm.test(\"Status code is 204\", function () {\r",
-											"    pm.environment.unset(\"variable_key\");\r",
 											"    pm.response.to.have.status(204);\r",
 											"});"
 										],
@@ -7590,7 +7890,6 @@
 									"script": {
 										"exec": [
 											"pm.test(\"Status code is 204\", function () {\r",
-											"    pm.environment.unset(\"variable_key\");\r",
 											"    pm.response.to.have.status(204);\r",
 											"});"
 										],
@@ -7633,7 +7932,6 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {\r",
-									"    pm.environment.unset(\"variable_key\");\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
 									"pm.test(\"Result length should be equal to zero\", function () {\r",
@@ -7673,13 +7971,12 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 404\", function () {\r",
-									"    pm.environment.unset(\"variable_key\");\r",
 									"    pm.response.to.have.status(404);\r",
 									"});\r",
 									"pm.test(\"Result should contain an error and message\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.error).to.eql(\"Not Found\");\r",
-									"    pm.expect(jsonData.message).to.eql(\"Wireless profile sampleProfile not found\");\r",
+									"    pm.expect(jsonData.message).to.eql(\"Wireless profile sampleProfile Not Found\");\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -7714,7 +8011,6 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.environment.unset(\"variable_key\");\r",
 									"    pm.response.to.have.status(400);\r",
 									"});\r",
 									"pm.test(\"Result should contain an error and message\", function () {\r",
@@ -7764,7 +8060,6 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.environment.unset(\"variable_key\");\r",
 									"    pm.response.to.have.status(400);\r",
 									"});\r",
 									"pm.test(\"Result should contain an error and message\", function () {\r",
@@ -7814,7 +8109,6 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.environment.unset(\"variable_key\");\r",
 									"    pm.response.to.have.status(400);\r",
 									"});\r",
 									"pm.test(\"Result should contain an error and message\", function () {\r",
@@ -7864,7 +8158,6 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.environment.unset(\"variable_key\");\r",
 									"    pm.response.to.have.status(400);\r",
 									"});\r",
 									"pm.test(\"Result should contain an error and message\", function () {\r",
@@ -7914,7 +8207,6 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.environment.unset(\"variable_key\");\r",
 									"    pm.response.to.have.status(400);\r",
 									"});\r",
 									"pm.test(\"Result should contain an error and message\", function () {\r",
@@ -7964,7 +8256,6 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 201\", function () {\r",
-									"    pm.environment.unset(\"variable_key\");\r",
 									"    pm.response.to.have.status(201);\r",
 									"});\r",
 									"pm.test(\"Request should return profile just created\", function () {\r",
@@ -8019,7 +8310,6 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.environment.unset(\"variable_key\");\r",
 									"    pm.response.to.have.status(400);\r",
 									"});\r",
 									"pm.test(\"Request should return an error message\", function () {\r",
@@ -8069,7 +8359,6 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {\r",
-									"    pm.environment.unset(\"variable_key\");\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
 									"pm.test(\"Result should wifi profile\", function () {\r",
@@ -8115,9 +8404,11 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"headerEtag = pm.response.headers.get(\"ETag\");\r",
+									"pm.globals.set(\"etag\", headerEtag);\r",
+									"\r",
 									"pm.test(\"Status code is 200\", function () {\r",
-									"    pm.environment.unset(\"variable_key\");\r",
-									"    pm.response.to.have.status(200);\r",
+									"    pm.response.to.have.status(200);    \r",
 									"});\r",
 									"pm.test(\"Result length should be equal to zero\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
@@ -8131,6 +8422,65 @@
 					"request": {
 						"method": "GET",
 						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs?$top=25&$skip=0",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"wirelessconfigs"
+							],
+							"query": [
+								{
+									"key": "$top",
+									"value": "25"
+								},
+								{
+									"key": "$skip",
+									"value": "0"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "All profiles (Cached)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 304\", function () {\r",
+									"    pm.response.to.have.status(304);\r",
+									"});\r",
+									"pm.test(\"Result length should be equal to zero\", function () {\r",
+									"    var res = (_.isEmpty(responseBody));\r",
+									"    pm.expect(res).to.be.true\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cache-Control",
+								"value": "max-age",
+								"type": "text"
+							},
+							{
+								"key": "If-None-Match",
+								"value": "{{etag}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs?$top=25&$skip=0",
 							"protocol": "{{protocol}}",
@@ -8225,7 +8575,6 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {\r",
-									"    pm.environment.unset(\"variable_key\");\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
 									"pm.test(\"Result length should be equal to zero\", function () {\r",
@@ -8279,7 +8628,6 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {\r",
-									"    pm.environment.unset(\"variable_key\");\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
 									"pm.test(\"Result length should be equal to zero\", function () {\r",
@@ -8332,7 +8680,6 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {\r",
-									"    pm.environment.unset(\"variable_key\");\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
 									"pm.test(\"Request should return profile just created\", function () {\r",
@@ -8387,7 +8734,6 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.environment.unset(\"variable_key\");\r",
 									"    pm.response.to.have.status(400);\r",
 									"});\r",
 									"pm.test(\"Result should contain an error and message\", function () {\r",
@@ -8437,7 +8783,6 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.environment.unset(\"variable_key\");\r",
 									"    pm.response.to.have.status(400);\r",
 									"});\r",
 									"pm.test(\"Result should contain an error and message\", function () {\r",
@@ -8487,7 +8832,6 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.environment.unset(\"variable_key\");\r",
 									"    pm.response.to.have.status(400);\r",
 									"});\r",
 									"pm.test(\"Result should contain an error and message\", function () {\r",
@@ -8537,7 +8881,6 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.environment.unset(\"variable_key\");\r",
 									"    pm.response.to.have.status(400);\r",
 									"});\r",
 									"pm.test(\"Result should contain an error and message\", function () {\r",
@@ -8587,7 +8930,6 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 400\", function () {\r",
-									"    pm.environment.unset(\"variable_key\");\r",
 									"    pm.response.to.have.status(400);\r",
 									"});\r",
 									"pm.test(\"Result should contain an error and message\", function () {\r",
@@ -8637,13 +8979,12 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 404\", function () {\r",
-									"    pm.environment.unset(\"variable_key\");\r",
 									"    pm.response.to.have.status(404);\r",
 									"});\r",
 									"pm.test(\"Result should contain an error and message\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.error).to.eql(\"Not Found\");\r",
-									"    pm.expect(jsonData.message).to.eql(\"Wireless profile P12 not found\");\r",
+									"    pm.expect(jsonData.message).to.eql(\"Wireless profile P12 Not Found\");\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -8687,7 +9028,6 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 204\", function () {\r",
-									"    pm.environment.unset(\"variable_key\");\r",
 									"    pm.response.to.have.status(204);\r",
 									"});"
 								],
@@ -8723,13 +9063,12 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 404\", function () {\r",
-									"    pm.environment.unset(\"variable_key\");\r",
 									"    pm.response.to.have.status(404);\r",
 									"});\r",
 									"pm.test(\"Result should wifi profile\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.error).to.eql(\"Not Found\");\r",
-									"    pm.expect(jsonData.message).to.eql(\"Wireless profile P11 not found\");\r",
+									"    pm.expect(jsonData.message).to.eql(\"Wireless profile P11 Not Found\");\r",
 									"});"
 								],
 								"type": "text/javascript"

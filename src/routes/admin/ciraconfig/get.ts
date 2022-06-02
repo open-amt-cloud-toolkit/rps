@@ -5,9 +5,11 @@
  **********************************************************************/
 import { CIRAConfig } from '../../../models/RCS.Config'
 import Logger from '../../../Logger'
-import { CIRA_CONFIG_NOT_FOUND, API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../../utils/constants'
+import { API_RESPONSE, NOT_FOUND_EXCEPTION, NOT_FOUND_MESSAGE } from '../../../utils/constants'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { Request, Response } from 'express'
+import handleError from '../../../utils/handleError'
+import { RPSError } from '../../../utils/RPSError'
 
 export async function getCiraConfig (req: Request, res: Response): Promise<void> {
   const log = new Logger('getCiraConfig')
@@ -21,13 +23,9 @@ export async function getCiraConfig (req: Request, res: Response): Promise<void>
       log.verbose(`CIRA config profile : ${JSON.stringify(results)}`)
       res.status(200).json(API_RESPONSE(results)).end()
     } else {
-      MqttProvider.publishEvent('fail', ['getCiraConfig'], `Not found : ${ciraConfigName}`)
-      log.debug(`Not found : ${ciraConfigName}`)
-      res.status(404).json(API_RESPONSE(null, 'Not Found', CIRA_CONFIG_NOT_FOUND(ciraConfigName))).end()
+      throw new RPSError(NOT_FOUND_MESSAGE('CIRA', ciraConfigName), NOT_FOUND_EXCEPTION)
     }
   } catch (error) {
-    MqttProvider.publishEvent('fail', ['getCiraConfig'], `Failed to get CIRA config profile : ${ciraConfigName}`)
-    log.error(`Failed to get CIRA config profile : ${ciraConfigName}`, error)
-    res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`GET ${ciraConfigName}`))).end()
+    handleError(log, ciraConfigName, req, res, error)
   }
 }

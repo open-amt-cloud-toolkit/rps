@@ -5,7 +5,7 @@
 import { IProfilesTable } from '../../../interfaces/database/IProfilesDb'
 import { CIRAConfig } from '../../../models/RCS.Config'
 import { AMTConfiguration } from '../../../models'
-import { PROFILE_INSERTION_FAILED_DUPLICATE, PROFILE_INSERTION_CIRA_CONSTRAINT, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP, PROFILE_INSERTION_GENERIC_CONSTRAINT } from '../../../utils/constants'
+import { PROFILE_INSERTION_FAILED_DUPLICATE, PROFILE_INSERTION_CIRA_CONSTRAINT, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP, PROFILE_INSERTION_GENERIC_CONSTRAINT, CONCURRENCY_EXCEPTION, CONCURRENCY_MESSAGE } from '../../../utils/constants'
 import Logger from '../../../Logger'
 import { RPSError } from '../../../utils/RPSError'
 import PostgresDb from '..'
@@ -28,8 +28,8 @@ export class ProfilesTable implements IProfilesTable {
     FROM profiles
     WHERE tenant_id = $1`, [tenantId])
     let count = 0
-    if (result != null) {
-      count = Number(result?.rows[0]?.total_count)
+    if (result != null && result.rows?.length > 0) {
+      count = Number(result.rows[0].total_count)
     }
     return count
   }
@@ -52,6 +52,7 @@ export class ProfilesTable implements IProfilesTable {
       dhcp_enabled as "dhcpEnabled", 
       tls_mode as "tlsMode",
       p.tenant_id as "tenantId",
+      p.xmin as "version",
       COALESCE(json_agg(json_build_object('profileName',wc.wireless_profile_name, 'priority', wc.priority)) FILTER (WHERE wc.wireless_profile_name IS NOT NULL), '[]') AS "wifiConfigs" 
     FROM profiles p
     LEFT JOIN profiles_wirelessconfigs wc ON wc.profile_name = p.profile_name AND wc.tenant_id = p.tenant_id
@@ -77,16 +78,17 @@ export class ProfilesTable implements IProfilesTable {
   async getByName (profileName: string, tenantId: string = ''): Promise<AMTConfiguration> {
     const results = await this.db.query<AMTConfiguration>(`
     SELECT 
-      p.profile_name as "profileName", 
-      activation as "activation", 
-      cira_config_name as "ciraConfigName", 
+      p.profile_name as "profileName",
+      activation as "activation",
+      cira_config_name as "ciraConfigName",
       generate_random_password as "generateRandomPassword",
       generate_random_mebx_password as "generateRandomMEBxPassword",
-      tags as "tags", 
-      dhcp_enabled as "dhcpEnabled", 
+      tags as "tags",
+      dhcp_enabled as "dhcpEnabled",
       tls_mode as "tlsMode",
       p.tenant_id as "tenantId",
-      COALESCE(json_agg(json_build_object('profileName',wc.wireless_profile_name, 'priority', wc.priority)) FILTER (WHERE wc.wireless_profile_name IS NOT NULL), '[]') AS "wifiConfigs" 
+      p.xmin as "version",
+      COALESCE(json_agg(json_build_object('profileName',wc.wireless_profile_name, 'priority', wc.priority)) FILTER (WHERE wc.wireless_profile_name IS NOT NULL), '[]') AS "wifiConfigs"
     FROM profiles p
     LEFT JOIN profiles_wirelessconfigs wc ON wc.profile_name = p.profile_name AND wc.tenant_id = p.tenant_id
     WHERE p.profile_name = $1 and p.tenant_id = $2
@@ -118,14 +120,15 @@ export class ProfilesTable implements IProfilesTable {
    * @returns {boolean} Return true on successful deletion
    */
   async delete (profileName: string, tenantId: string = ''): Promise<boolean> {
-    if (this.db.profileWirelessConfigs.deleteProfileWifiConfigs(profileName)) {
-      const results = await this.db.query(`
+    // delete any associations with wificonfigs
+    await this.db.profileWirelessConfigs.deleteProfileWifiConfigs(profileName)
+
+    const results = await this.db.query(`
       DELETE 
       FROM profiles 
       WHERE profile_name = $1 and tenant_id = $2`, [profileName, tenantId])
-      if (results.rowCount > 0) {
-        return true
-      }
+    if (results.rowCount > 0) {
+      return true
     }
     return false
   }
@@ -183,11 +186,12 @@ export class ProfilesTable implements IProfilesTable {
    * @returns {AMTConfiguration} Returns amtConfig object
    */
   async update (amtConfig: AMTConfiguration): Promise<AMTConfiguration> {
+    let latestItem: AMTConfiguration
     try {
       const results = await this.db.query(`
       UPDATE profiles 
       SET activation=$2, amt_password=$3, generate_random_password=$4, cira_config_name=$5, mebx_password=$6, generate_random_mebx_password=$7, tags=$8, dhcp_enabled=$9, tls_mode=$10
-      WHERE profile_name=$1 and tenant_id = $11`,
+      WHERE profile_name=$1 and tenant_id = $11 and xmin = $12`,
       [
         amtConfig.profileName,
         amtConfig.activation,
@@ -199,15 +203,18 @@ export class ProfilesTable implements IProfilesTable {
         amtConfig.tags,
         amtConfig.dhcpEnabled,
         amtConfig.tlsMode,
-        amtConfig.tenantId
+        amtConfig.tenantId,
+        amtConfig.version
       ])
       if (results.rowCount > 0) {
         if (amtConfig.wifiConfigs?.length > 0) {
           await this.db.profileWirelessConfigs.createProfileWifiConfigs(amtConfig.wifiConfigs, amtConfig.profileName)
         }
-        return await this.getByName(amtConfig.profileName)
+        latestItem = await this.getByName(amtConfig.profileName)
+        return latestItem
       }
-      return null
+      // if rowcount is 0, we assume update failed and grab the current reflection of the record in the DB to be returned in the Concurrency Error
+      latestItem = await this.getByName(amtConfig.profileName)
     } catch (error) {
       this.log.error(`Failed to update AMT profile: ${amtConfig.profileName}`, error)
       if (error.code === '23503') { // Foreign key constraint violation
@@ -217,5 +224,7 @@ export class ProfilesTable implements IProfilesTable {
       }
       throw new RPSError(API_UNEXPECTED_EXCEPTION(amtConfig.profileName))
     }
+    // making assumption that if no records are updated, that it is due to concurrency. We've already checked for if it doesn't exist before calling update.
+    throw new RPSError(CONCURRENCY_MESSAGE, CONCURRENCY_EXCEPTION, latestItem)
   }
 }

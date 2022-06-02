@@ -4,10 +4,11 @@
  **********************************************************************/
 import { AMTDomain } from '../../../models'
 import Logger from '../../../Logger'
-import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, DOMAIN_NOT_FOUND } from '../../../utils/constants'
-import { RPSError } from '../../../utils/RPSError'
+import { NOT_FOUND_EXCEPTION, NOT_FOUND_MESSAGE } from '../../../utils/constants'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { Request, Response } from 'express'
+import handleError from '../../../utils/handleError'
+import { RPSError } from '../../../utils/RPSError'
 
 export async function editDomain (req: Request, res: Response): Promise<void> {
   let amtDomain: AMTDomain = {} as AMTDomain
@@ -19,8 +20,7 @@ export async function editDomain (req: Request, res: Response): Promise<void> {
   try {
     const oldDomain: AMTDomain = await req.db.domains.getByName(newDomain.profileName)
     if (oldDomain == null) {
-      MqttProvider.publishEvent('fail', ['editDomain'], `Domain Not Found : ${newDomain.profileName}`)
-      res.status(404).json(API_RESPONSE(null, 'Not Found', DOMAIN_NOT_FOUND(newDomain.profileName))).end()
+      throw new RPSError(NOT_FOUND_MESSAGE('Domain', newDomain.profileName), NOT_FOUND_EXCEPTION)
     } else {
       amtDomain = getUpdatedData(newDomain, oldDomain)
       // store the cert and password key in database
@@ -51,13 +51,7 @@ export async function editDomain (req: Request, res: Response): Promise<void> {
       }
     }
   } catch (error) {
-    MqttProvider.publishEvent('fail', ['editDomain'], `Failed to update domain : ${amtDomain.profileName}`)
-    log.error(`Failed to update AMT Domain : ${amtDomain.profileName}`, error)
-    if (error instanceof RPSError) {
-      res.status(400).json(API_RESPONSE(null, error.name, error.message)).end()
-    } else {
-      res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`UPDATE ${amtDomain.profileName}`))).end()
-    }
+    handleError(log, amtDomain.profileName, req, res, error)
   }
 }
 
@@ -68,5 +62,6 @@ function getUpdatedData (newDomain: any, oldDomain: AMTDomain): AMTDomain {
   amtDomain.provisioningCertStorageFormat = newDomain.provisioningCertStorageFormat ?? oldDomain.provisioningCertStorageFormat
   amtDomain.provisioningCertPassword = newDomain.provisioningCertPassword ?? oldDomain.provisioningCertPassword
   amtDomain.tenantId = newDomain.tenantId ?? oldDomain.tenantId
+  amtDomain.version = newDomain.version
   return amtDomain
 }

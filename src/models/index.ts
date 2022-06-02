@@ -109,6 +109,7 @@ export class AMTConfiguration {
   tenantId: string
   tlsMode?: number
   tlsCerts?: TLSCerts
+  version?: string
 }
 export interface TLSCerts {
   ROOT_CERTIFICATE: CertCreationResult
@@ -128,6 +129,7 @@ export class AMTDomain {
   provisioningCertStorageFormat: string
   provisioningCertPassword: string
   tenantId: string
+  version?: string
 }
 
 export class WSMessage {

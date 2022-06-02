@@ -3,13 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 import Logger from '../../../Logger'
-import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
-import { RPSError } from '../../../utils/RPSError'
 import { AMTConfiguration, AMTKeyUsage, CertAttributes, TLSCerts } from '../../../models'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { Request, Response } from 'express'
 import { CertManager } from '../../../CertManager'
 import { NodeForge } from '../../../NodeForge'
+import handleError from '../../../utils/handleError'
 
 export async function createProfile (req: Request, res: Response): Promise<void> {
   const log = new Logger('createProfile')
@@ -56,13 +55,7 @@ export async function createProfile (req: Request, res: Response): Promise<void>
     MqttProvider.publishEvent('success', ['createProfile'], `Created Profile : ${amtConfig.profileName}`)
     res.status(201).json(results).end()
   } catch (error) {
-    MqttProvider.publishEvent('fail', ['createProfile'], `Failed to create profile : ${amtConfig.profileName}`)
-    log.error(`Failed to create a AMT profile: ${amtConfig.profileName}`, error)
-    if (error instanceof RPSError) {
-      res.status(400).json(API_RESPONSE(null, error.name, error.message)).end()
-    } else {
-      res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`Insert AMT profile ${amtConfig.profileName}`))).end()
-    }
+    handleError(log, amtConfig.profileName, req, res, error)
   }
 }
 

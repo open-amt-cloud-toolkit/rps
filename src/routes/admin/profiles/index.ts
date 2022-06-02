@@ -13,12 +13,13 @@ import { editProfile } from './edit'
 import { amtProfileValidator, profileUpdateValidator } from './amtProfileValidator'
 import { odataValidator } from '../odataValidator'
 import validateMiddleware from '../../../middleware/validate'
+import ifMatchMiddleware from '../../../middleware/if-match'
 const profileRouter: Router = Router()
 
 profileRouter.get('/', odataValidator(), validateMiddleware, allProfiles)
 profileRouter.get('/:profileName', getProfile)
 profileRouter.post('/', amtProfileValidator(), validateMiddleware, createProfile)
-profileRouter.patch('/', profileUpdateValidator(), validateMiddleware, editProfile)
+profileRouter.patch('/', profileUpdateValidator(), validateMiddleware, ifMatchMiddleware, editProfile)
 profileRouter.delete('/:profileName', deleteProfile)
 
 export default profileRouter
