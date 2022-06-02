@@ -2,11 +2,13 @@
  * Copyright (c) Intel Corporation 2021
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
-import { DOMAIN_NOT_FOUND, API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../../utils/constants'
+import { NOT_FOUND_EXCEPTION, NOT_FOUND_MESSAGE } from '../../../utils/constants'
 import { AMTDomain } from '../../../models'
 import Logger from '../../../Logger'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { Request, Response } from 'express'
+import { RPSError } from '../../../utils/RPSError'
+import handleError from '../../../utils/handleError'
 
 export async function deleteDomain (req: Request, res: Response): Promise<void> {
   const log = new Logger('deleteDomain')
@@ -14,8 +16,7 @@ export async function deleteDomain (req: Request, res: Response): Promise<void> 
   try {
     const domain: AMTDomain = await req.db.domains.getByName(domainName)
     if (domain == null) {
-      MqttProvider.publishEvent('fail', ['deleteDomain'], `Domain Not Found : ${domainName}`)
-      res.status(404).json(API_RESPONSE(null, 'Not Found', DOMAIN_NOT_FOUND(domainName))).end()
+      throw new RPSError(NOT_FOUND_MESSAGE('Domain', domainName), NOT_FOUND_EXCEPTION)
     } else {
       const results = await req.db.domains.delete(domainName)
       if (results) {
@@ -27,8 +28,6 @@ export async function deleteDomain (req: Request, res: Response): Promise<void> 
       }
     }
   } catch (error) {
-    MqttProvider.publishEvent('fail', ['deleteDomain'], `Failed to delete domain : ${domainName}`)
-    log.error(`Failed to delete AMT Domain : ${domainName}`, error)
-    res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(domainName))).end()
+    handleError(log, domainName, req, res, error)
   }
 }

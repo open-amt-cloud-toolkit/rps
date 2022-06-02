@@ -8,8 +8,8 @@ import { Router, Request, Response } from 'express'
 
 const router: Router = Router()
 
-const tenantMiddleware = (req, res, next): void => {
-  req.tenantId = ''
+const tenantMiddleware = (req: Request, res: Response, next): void => {
+  req.tenantId = req.headers['x-tenant-id'] as string ?? ''
   req.next()
 }
 

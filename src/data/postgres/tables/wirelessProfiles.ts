@@ -4,7 +4,7 @@
  **********************************************************************/
 import { WirelessConfig } from '../../../models/RCS.Config'
 import { IWirelessProfilesTable } from '../../../interfaces/database/IWirelessProfilesDB'
-import { API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP, NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT, NETWORK_CONFIG_ERROR, NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE, NETWORK_UPDATE_ERROR } from '../../../utils/constants'
+import { API_UNEXPECTED_EXCEPTION, CONCURRENCY_EXCEPTION, CONCURRENCY_MESSAGE, DEFAULT_SKIP, DEFAULT_TOP, NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT, NETWORK_CONFIG_ERROR, NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE, NETWORK_UPDATE_ERROR } from '../../../utils/constants'
 import { RPSError } from '../../../utils/RPSError'
 import Logger from '../../../Logger'
 import PostgresDb from '..'
@@ -27,8 +27,8 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
     FROM wirelessconfigs 
     WHERE tenant_id = $1`, [tenantId])
     let count = 0
-    if (result != null) {
-      count = Number(result?.rows[0]?.total_count)
+    if (result != null && result.rows?.length > 0) {
+      count = Number(result.rows[0].total_count)
     }
     return count
   }
@@ -50,7 +50,8 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
       psk_passphrase as "pskPassphrase", 
       link_policy as "linkPolicy", 
       count(*) OVER() AS "total_count", 
-      tenant_id as "tenantId"
+      tenant_id as "tenantId",
+      xmin as "version"
     FROM wirelessconfigs 
     WHERE tenant_id = $3
     ORDER BY wireless_profile_name 
@@ -73,7 +74,8 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
       psk_value as "pskValue",
       psk_passphrase as "pskPassphrase", 
       link_policy as "linkPolicy", 
-      tenant_id as "tenantId"
+      tenant_id as "tenantId",
+      xmin as "version"
     FROM wirelessconfigs 
     WHERE wireless_profile_name = $1 and tenant_id = $2`, [configName, tenantId])
 
@@ -101,16 +103,16 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
     */
   async delete (configName: string, tenantId = ''): Promise<boolean> {
     const profiles = await this.db.query(`
-    SELECT 1 
-    FROM profiles_wirelessconfigs 
+    SELECT 1
+    FROM profiles_wirelessconfigs
     WHERE wireless_profile_name = $1 and tenant_id = $2`, [configName, tenantId])
     if (profiles.rowCount > 0) {
       throw new RPSError(NETWORK_UPDATE_ERROR('Wireless', configName), 'Foreign key violation')
     }
     try {
       const results = await this.db.query(`
-      DELETE 
-      FROM wirelessconfigs 
+      DELETE
+      FROM wirelessconfigs
       WHERE wireless_profile_name = $1 and tenant_id = $2`, [configName, tenantId])
       return results.rowCount > 0
     } catch (error) {
@@ -165,11 +167,13 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
     * @returns {boolean} Returns wirelessConfig object
     */
   async update (wirelessConfig: WirelessConfig): Promise<WirelessConfig> {
+    let latestItem: WirelessConfig
+
     try {
       const results = await this.db.query(`
       UPDATE wirelessconfigs 
       SET authentication_method=$2, encryption_method=$3, ssid=$4, psk_value=$5, psk_passphrase=$6, link_policy=$7 
-      WHERE wireless_profile_name=$1 and tenant_id = $8`,
+      WHERE wireless_profile_name=$1 and tenant_id = $8 and xmin = $9`,
       [
         wirelessConfig.profileName,
         wirelessConfig.authenticationMethod,
@@ -178,16 +182,18 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
         wirelessConfig.pskValue,
         wirelessConfig.pskPassphrase,
         wirelessConfig.linkPolicy,
-        wirelessConfig.tenantId
+        wirelessConfig.tenantId,
+        wirelessConfig.version
       ])
+      latestItem = await this.getByName(wirelessConfig.profileName)
       if (results?.rowCount > 0) {
-        const profile = await this.getByName(wirelessConfig.profileName)
-        return profile
+        return latestItem
       }
-      return null
     } catch (error) {
       throw new RPSError(NETWORK_CONFIG_ERROR('Wireless', wirelessConfig.profileName)
       )
     }
+    // making assumption that if no records are updated, that it is due to concurrency. We've already checked for if it doesn't exist before calling update.
+    throw new RPSError(CONCURRENCY_MESSAGE, CONCURRENCY_EXCEPTION, latestItem)
   }
 }

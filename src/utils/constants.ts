@@ -16,32 +16,31 @@ export const mpsserver = (name: string): string => {
 }
 
 // Profile API
-export const PROFILE_NOT_FOUND = (profileName: string): string => `Profile ${profileName} not found`
 export const PROFILE_INSERTION_FAILED_DUPLICATE = (profileName: string): string => `AMT profile ${profileName} already exists`
 export const PROFILE_INSERTION_CIRA_CONSTRAINT = (config: string): string => `Referenced config ${config} doesn't exist`
 export const PROFILE_INSERTION_NETWORK_CONSTRAINT = (config: string): string => `Referenced network ${config} doesn't exist`
 export const PROFILE_INSERTION_GENERIC_CONSTRAINT = (name: string): string => `Referenced constraint ${name} doesn't exist`
 
 // CIRA REST API
-export const CIRA_CONFIG_NOT_FOUND = (ciraConfig: string): string => `CIRA Config ${ciraConfig} not found`
 export const CIRA_CONFIG_DELETION_FAILED_CONSTRAINT = (ciraConfig: string): string => `CIRA Config: ${ciraConfig} associated with an AMT profile`
 export const CIRA_CONFIG_INSERTION_FAILED = (ciraConfig: string): string => `CIRA Config insertion failed for ${ciraConfig}`
 export const CIRA_CONFIG_INSERTION_FAILED_DUPLICATE = (ciraConfig: string): string => `CIRA Config ${ciraConfig} already exists.`
 
 // Network configs REST API
-export const NETWORK_CONFIG_NOT_FOUND = (type: string, config: string): string => `${type} profile ${config} not found`
 export const NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT = (type: string, config: string): string => `${type} profile: ${config} is associated with an AMT Profile.`
 export const NETWORK_CONFIG_ERROR = (type: string, config: string): string => `Operation failed for ${type} profile: ${config}`
 export const NETWORK_UPDATE_ERROR = (type: string, config: string): string => `Operation failed for ${type} profile: ${config}. Cannot modify ${type} settings if its already associated with a profile.`
 export const NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE = (type: string, config: string): string => `${type} profile ${config} already exists`
 
 // Domain REST API
-export const DOMAIN_NOT_FOUND = (domain: string): string => `Domain ${domain} not found`
 export const DUPLICATE_DOMAIN_FAILED = (message: string): string => `Domain ${message} ID or Suffix already exists`
 
 // Generic REST API Error Message
 export const API_UNEXPECTED_EXCEPTION = (message: string): string => `Operation failed: ${message}`
-
+export const CONCURRENCY_EXCEPTION = 'Concurrency'
+export const CONCURRENCY_MESSAGE = 'No records were updated'
+export const NOT_FOUND_EXCEPTION = 'Not Found'
+export const NOT_FOUND_MESSAGE = (type: 'Domain' | 'Wireless' | 'CIRA' | 'AMT', name: string): string => `${type} profile ${name} Not Found`
 // JSON response
 export const API_RESPONSE = (data?: any, error?: string, message?: string): apiResponse => {
   const response: apiResponse = {}

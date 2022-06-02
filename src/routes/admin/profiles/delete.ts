@@ -5,9 +5,11 @@
  **********************************************************************/
 import Logger from '../../../Logger'
 import { AMTConfiguration } from '../../../models'
-import { PROFILE_NOT_FOUND, API_UNEXPECTED_EXCEPTION, API_RESPONSE } from '../../../utils/constants'
+import { API_UNEXPECTED_EXCEPTION, NOT_FOUND_EXCEPTION, NOT_FOUND_MESSAGE } from '../../../utils/constants'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { Request, Response } from 'express'
+import handleError from '../../../utils/handleError'
+import { RPSError } from '../../../utils/RPSError'
 
 export async function deleteProfile (req: Request, res: Response): Promise<void> {
   const log = new Logger('deleteProfile')
@@ -15,8 +17,7 @@ export async function deleteProfile (req: Request, res: Response): Promise<void>
   try {
     const profile: AMTConfiguration = await req.db.profiles.getByName(profileName)
     if (profile == null) {
-      MqttProvider.publishEvent('fail', ['deleteProfile'], `Profile Not Found : ${profileName}`)
-      res.status(404).json(API_RESPONSE(null, 'Not Found', PROFILE_NOT_FOUND(profileName))).end()
+      throw new RPSError(NOT_FOUND_MESSAGE('AMT', profileName), NOT_FOUND_EXCEPTION)
     } else {
       const results: boolean = await req.db.profiles.delete(profileName)
       if (results) {
@@ -29,11 +30,11 @@ export async function deleteProfile (req: Request, res: Response): Promise<void>
 
         MqttProvider.publishEvent('success', ['deleteProfile'], `Deleted Profile : ${profileName}`)
         res.status(204).end()
+      } else {
+        throw new RPSError(API_UNEXPECTED_EXCEPTION('Error deleting profile'))
       }
     }
   } catch (error) {
-    MqttProvider.publishEvent('fail', ['deleteProfile'], `Failed to delete profile : ${profileName}`)
-    log.error(`Failed to delete AMT profile : ${profileName}`, error)
-    res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`Delete AMT profile ${profileName}`))).end()
+    handleError(log, profileName, req, res, error)
   }
 }

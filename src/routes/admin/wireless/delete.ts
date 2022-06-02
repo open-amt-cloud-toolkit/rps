@@ -3,10 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 import Logger from '../../../Logger'
-import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, NETWORK_CONFIG_NOT_FOUND } from '../../../utils/constants'
+import { NOT_FOUND_EXCEPTION, NOT_FOUND_MESSAGE } from '../../../utils/constants'
 import { RPSError } from '../../../utils/RPSError'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { Request, Response } from 'express'
+import handleError from '../../../utils/handleError'
 
 export async function deleteWirelessProfile (req: Request, res: Response): Promise<void> {
   const log = new Logger('deleteWirelessProfile')
@@ -21,16 +22,9 @@ export async function deleteWirelessProfile (req: Request, res: Response): Promi
       log.verbose(`Deleted wireless profile : ${profileName}`)
       res.status(204).end()
     } else {
-      MqttProvider.publishEvent('fail', ['deleteWirelessProfiles'], `Wireless Profile Not Found : ${profileName}`)
-      res.status(404).json(API_RESPONSE(null, 'Not Found', NETWORK_CONFIG_NOT_FOUND('Wireless', profileName))).end()
+      throw new RPSError(NOT_FOUND_MESSAGE('Wireless', profileName), NOT_FOUND_EXCEPTION)
     }
   } catch (error) {
-    MqttProvider.publishEvent('fail', ['deleteWirelessProfiles'], `Failed to delete wireless profile : ${profileName}`)
-    log.error(`Failed to delete wireless profile : ${profileName}`, error)
-    if (error instanceof RPSError) {
-      res.status(400).json(API_RESPONSE(null, error.name, error.message)).end()
-    } else {
-      res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`Delete wireless profile ${profileName}`))).end()
-    }
+    handleError(log, profileName, req, res, error)
   }
 }

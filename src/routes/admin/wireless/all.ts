@@ -4,10 +4,11 @@
 **********************************************************************/
 import Logger from '../../../Logger'
 import { WirelessConfig } from '../../../models/RCS.Config'
-import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
+import { API_RESPONSE } from '../../../utils/constants'
 import { DataWithCount } from '../../../models'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { Request, Response } from 'express'
+import handleError from '../../../utils/handleError'
 
 export async function allProfiles (req: Request, res: Response): Promise<void> {
   const log = new Logger('allProfiles')
@@ -34,8 +35,6 @@ export async function allProfiles (req: Request, res: Response): Promise<void> {
     }
     MqttProvider.publishEvent('success', ['allWirelessProfiles'], 'Sent wireless profiles')
   } catch (error) {
-    MqttProvider.publishEvent('fail', ['allWirelessProfiles'], 'Failed to get all wireless profiles')
-    log.error('Failed to get all network profiles :', error)
-    res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION('GET all Network Configs'))).end()
+    handleError(log, '', req, res, error)
   }
 }

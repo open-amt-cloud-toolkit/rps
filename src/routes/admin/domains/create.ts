@@ -4,10 +4,9 @@
  **********************************************************************/
 import { AMTDomain } from '../../../models'
 import Logger from '../../../Logger'
-import { API_RESPONSE, API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
-import { RPSError } from '../../../utils/RPSError'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { Request, Response } from 'express'
+import handleError from '../../../utils/handleError'
 
 export async function createDomain (req: Request, res: Response): Promise<void> {
   const amtDomain: AMTDomain = req.body
@@ -44,12 +43,6 @@ export async function createDomain (req: Request, res: Response): Promise<void> 
       res.status(201).json(results).end()
     }
   } catch (error) {
-    MqttProvider.publishEvent('fail', ['createDomain'], `Failed to create a AMT Domain : ${amtDomain.profileName}`)
-    log.error(`Failed to create a AMT Domain : ${amtDomain.profileName}`, error)
-    if (error instanceof RPSError) {
-      res.status(400).json(API_RESPONSE(null, error.name, error.message)).end()
-    } else {
-      res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`Insert Domain ${amtDomain.profileName}`))).end()
-    }
+    handleError(log, amtDomain.profileName, req, res, error)
   }
 }

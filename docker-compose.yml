@@ -7,9 +7,9 @@ services:
   rps:
     image: rps
     networks:
-        - openamtnetwork1
+      - openamtnetwork1
     ports:
-        - 8081:8081
+      - 8081:8081
     build:
       context: .
       dockerfile: ./Dockerfile
@@ -23,27 +23,28 @@ services:
   db:
     image: postgres
     networks:
-        - openamtnetwork1
+      - openamtnetwork1
     restart: always
     ports:
-        - 5432:5432
+      - 5432:5432
+    command: '-c max_connections=200'
     environment:
       POSTGRES_DB: rpsdb
       POSTGRES_USER: postgresadmin
       POSTGRES_PASSWORD: admin123
-    volumes: 
+    volumes:
       - ./data:/docker-entrypoint-initdb.d
   vault:
     image: "vault"
     networks:
-        - openamtnetwork1
+      - openamtnetwork1
     ports:
-        - 8200:8200
-    environment: 
+      - 8200:8200
+    environment:
       VAULT_DEV_ROOT_TOKEN_ID: myroot
       VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
-    cap_add: 
+    cap_add:
       - IPC_LOCK
-networks: 
+networks:
   openamtnetwork1:
     driver: "bridge"

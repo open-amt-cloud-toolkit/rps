@@ -20,6 +20,7 @@ export interface WirelessConfig {
   pskPassphrase: string
   linkPolicy: string[]
   tenantId: string
+  version?: string
 }
 
 export interface ProfileWifiConfigs {
@@ -59,6 +60,7 @@ export interface CIRAConfig {
   tenantId: string
   /** Flag to regenerate a random password when editing a cira config */
   regeneratePassword?: boolean
+  version?: string
 }
 
 export interface RemoteConfig {

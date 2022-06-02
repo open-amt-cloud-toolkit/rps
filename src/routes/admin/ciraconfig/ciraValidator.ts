@@ -15,7 +15,7 @@ export const ciraInsertValidator = (): any => {
       .not()
       .isEmpty()
       .withMessage('CIRA profile name is required')
-      .matches('^[a-zA-Z0-9$@$!%*#?&-_~^]+$')
+      .matches('^[a-zA-Z0-9@!%*#&-_~^]+$')
       .withMessage('CIRA profile name accepts letters, numbers, special characters and no spaces'),
     check('serverAddressFormat')
       .not()

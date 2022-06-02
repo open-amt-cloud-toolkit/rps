@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 import { IDomainsTable } from '../../../interfaces/database/IDomainsDb'
-import { DUPLICATE_DOMAIN_FAILED, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP } from '../../../utils/constants'
+import { DUPLICATE_DOMAIN_FAILED, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP, CONCURRENCY_EXCEPTION, CONCURRENCY_MESSAGE } from '../../../utils/constants'
 import { AMTDomain } from '../../../models'
 import { RPSError } from '../../../utils/RPSError'
 import Logger from '../../../Logger'
@@ -48,7 +48,8 @@ export class DomainsTable implements IDomainsTable {
       provisioning_cert as "provisioningCert", 
       provisioning_cert_storage_format as "provisioningCertStorageFormat",
       provisioning_cert_key as "provisioningCertPassword", 
-      tenant_id as "tenantId"
+      tenant_id as "tenantId",
+      xmin as "version"
     FROM domains 
     WHERE tenant_id = $3
     ORDER BY name 
@@ -70,7 +71,8 @@ export class DomainsTable implements IDomainsTable {
       provisioning_cert as "provisioningCert", 
       provisioning_cert_storage_format as "provisioningCertStorageFormat", 
       provisioning_cert_key as "provisioningCertPassword", 
-      tenant_id as "tenantId"
+      tenant_id as "tenantId",
+      xmin as "version"
     FROM domains 
     WHERE domain_suffix = $1 and tenant_id = $2`, [domainSuffix, tenantId])
 
@@ -90,7 +92,8 @@ export class DomainsTable implements IDomainsTable {
       provisioning_cert as "provisioningCert", 
       provisioning_cert_storage_format as "provisioningCertStorageFormat", 
       provisioning_cert_key as "provisioningCertPassword", 
-      tenant_id as "tenantId"
+      tenant_id as "tenantId",
+      xmin as "version"
     FROM domains 
     WHERE Name = $1 and tenant_id = $2`, [domainName, tenantId])
 
@@ -149,24 +152,25 @@ export class DomainsTable implements IDomainsTable {
    * @returns {AMTDomain} Returns amtDomain object
    */
   async update (amtDomain: AMTDomain): Promise <AMTDomain> {
+    let latestItem: AMTDomain
     try {
       const results = await this.db.query(`
       UPDATE domains 
       SET domain_suffix=$2, provisioning_cert=$3, provisioning_cert_storage_format=$4, provisioning_cert_key=$5 
-      WHERE name=$1 and tenant_id = $6`,
+      WHERE name=$1 and tenant_id = $6 and xmin = $7`,
       [
         amtDomain.profileName,
         amtDomain.domainSuffix,
         amtDomain.provisioningCert,
         amtDomain.provisioningCertStorageFormat,
         amtDomain.provisioningCertPassword,
-        amtDomain.tenantId
+        amtDomain.tenantId,
+        amtDomain.version
       ])
+      latestItem = await this.getByName(amtDomain.profileName)
       if (results.rowCount > 0) {
-        const domain = await this.getByName(amtDomain.profileName)
-        return domain
+        return latestItem
       }
-      return null
     } catch (error) {
       this.log.error('Failed to update Domain :', error)
       if (error.code === '23505') { // Unique key violation
@@ -174,5 +178,7 @@ export class DomainsTable implements IDomainsTable {
       }
       throw new RPSError(API_UNEXPECTED_EXCEPTION(amtDomain.profileName))
     }
+    // making assumption that if no records are updated, that it is due to concurrency. We've already checked for if it doesn't exist before calling update.
+    throw new RPSError(CONCURRENCY_MESSAGE, CONCURRENCY_EXCEPTION, latestItem)
   }
 }

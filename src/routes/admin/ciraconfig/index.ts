@@ -12,12 +12,14 @@ import { deleteCiraConfig } from './delete'
 import { ciraInsertValidator, ciraUpdateValidator } from './ciraValidator'
 import { odataValidator } from '../odataValidator'
 import validateMiddleware from '../../../middleware/validate'
+// import etagMiddleware from '../../../middleware/etag'
+import ifMatchMiddleware from '../../../middleware/if-match'
 const CiraConfigRouter: Router = Router()
 
 CiraConfigRouter.get('/', odataValidator(), validateMiddleware, allCiraConfigs)
 CiraConfigRouter.get('/:ciraConfigName', getCiraConfig)
 CiraConfigRouter.post('/', ciraInsertValidator(), validateMiddleware, createCiraConfig)
-CiraConfigRouter.patch('/', ciraUpdateValidator(), validateMiddleware, editCiraConfig)
+CiraConfigRouter.patch('/', ciraUpdateValidator(), validateMiddleware, ifMatchMiddleware, editCiraConfig)
 CiraConfigRouter.delete('/:ciraConfigName', deleteCiraConfig)
 
 export default CiraConfigRouter

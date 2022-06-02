@@ -4,7 +4,7 @@
  **********************************************************************/
 import { ICiraConfigTable } from '../../../interfaces/database/ICiraConfigDb'
 import { CIRAConfig } from '../../../models/RCS.Config'
-import { CIRA_CONFIG_DELETION_FAILED_CONSTRAINT, API_UNEXPECTED_EXCEPTION, CIRA_CONFIG_INSERTION_FAILED_DUPLICATE, DEFAULT_TOP, DEFAULT_SKIP } from '../../../utils/constants'
+import { CIRA_CONFIG_DELETION_FAILED_CONSTRAINT, API_UNEXPECTED_EXCEPTION, CIRA_CONFIG_INSERTION_FAILED_DUPLICATE, DEFAULT_TOP, DEFAULT_SKIP, CONCURRENCY_EXCEPTION, CONCURRENCY_MESSAGE } from '../../../utils/constants'
 import { RPSError } from '../../../utils/RPSError'
 import Logger from '../../../Logger'
 import PostgresDb from '..'
@@ -50,7 +50,8 @@ export class CiraConfigTable implements ICiraConfigTable {
       auth_method as "authMethod", 
       mps_root_certificate as "mpsRootCertificate", 
       proxydetails as "proxyDetails", 
-      tenant_id  as "tenantId"
+      tenant_id  as "tenantId",
+      xmin as "version"
     FROM ciraconfigs 
     WHERE tenant_id = $3
     ORDER BY cira_config_name 
@@ -76,7 +77,8 @@ export class CiraConfigTable implements ICiraConfigTable {
       auth_method as "authMethod", 
       mps_root_certificate as "mpsRootCertificate", 
       proxydetails as "proxyDetails", 
-      tenant_id as "tenantId"
+      tenant_id as "tenantId",
+      xmin as "version"
     FROM ciraconfigs 
     WHERE cira_config_name = $1 and tenant_id = $2`, [configName, tenantId])
 
@@ -145,11 +147,12 @@ export class CiraConfigTable implements ICiraConfigTable {
    * @returns {CIRAConfig} Returns cira config object
    */
   async update (ciraConfig: CIRAConfig): Promise<CIRAConfig> {
+    let latestItem: CIRAConfig
     try {
       const results = await this.db.query(`
       UPDATE ciraconfigs 
       SET mps_server_address=$2, mps_port=$3, user_name=$4, password=$5, common_name=$6, server_address_format=$7, auth_method=$8, mps_root_certificate=$9, proxydetails=$10 
-      WHERE cira_config_name=$1 and tenant_id = $11`,
+      WHERE cira_config_name=$1 and tenant_id = $11 and xmin = $12`,
       [
         ciraConfig.configName,
         ciraConfig.mpsServerAddress,
@@ -161,15 +164,19 @@ export class CiraConfigTable implements ICiraConfigTable {
         ciraConfig.authMethod,
         ciraConfig.mpsRootCertificate,
         ciraConfig.proxyDetails,
-        ciraConfig.tenantId
+        ciraConfig.tenantId,
+        ciraConfig.version
       ])
+      latestItem = await this.getByName(ciraConfig.configName)
       if (results.rowCount > 0) {
-        return await this.getByName(ciraConfig.configName)
+        return latestItem
       }
-      return null
     } catch (error) {
       this.log.error('Failed to update CIRA config :', error)
       throw new RPSError(API_UNEXPECTED_EXCEPTION(ciraConfig.configName))
     }
+
+    // making assumption that if no records are updated, that it is due to concurrency. We've already checked for if it doesn't exist before calling update.
+    throw new RPSError(CONCURRENCY_MESSAGE, CONCURRENCY_EXCEPTION, latestItem)
   }
 }
