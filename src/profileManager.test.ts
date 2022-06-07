@@ -8,7 +8,7 @@ import { ProfileManager } from './ProfileManager'
 import { ILogger } from './interfaces/ILogger'
 import Logger from './Logger'
 import { IProfilesTable } from './interfaces/database/IProfilesDb'
-import { CIRAConfig } from './models/RCS.Config'
+import { CIRAConfig, ClientAction } from './models/RCS.Config'
 
 const logger: ILogger = new Logger('ProfileManagerTests')
 
@@ -68,7 +68,7 @@ const amtConfigurations: AMTConfiguration[] = [
     mebxPassword: 'P@ssw0rd',
     generateRandomPassword: false,
     generateRandomMEBxPassword: false,
-    activation: 'ccmactivate',
+    activation: ClientAction.CLIENTCTLMODE,
     ciraConfigName: 'ciraconfig1',
     ciraConfigObject: ciraConfigurations[0],
     tlsMode: 1,
@@ -80,7 +80,7 @@ const amtConfigurations: AMTConfiguration[] = [
     mebxPassword: 'P@ssw0rd',
     generateRandomPassword: false,
     generateRandomMEBxPassword: false,
-    activation: 'acmactivate',
+    activation: ClientAction.ADMINCTLMODE,
     ciraConfigName: 'ciraconfig1',
     ciraConfigObject: ciraConfigurations[0],
     tenantId: ''
@@ -133,7 +133,7 @@ test('test if profile exists', async () => {
 test('retrieve activation based on profile', async () => {
   const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub)
 
-  const expected = 'acmactivate'
+  const expected = ClientAction.ADMINCTLMODE
   const actual = await profileManager.getActivationMode('profile 2')
   expect(actual).toEqual(expected)
 })
@@ -141,7 +141,7 @@ test('retrieve activation based on profile', async () => {
 test('retrieve activation based on profile', async () => {
   const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub, rcsConfig)
 
-  const expected = 'ccmactivate'
+  const expected = ClientAction.CLIENTCTLMODE
   const actual = await profileManager.getActivationMode('profile 1')
   expect(actual).toEqual(expected)
 })

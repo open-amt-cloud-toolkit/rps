@@ -63,7 +63,7 @@ beforeAll(() => {
       username: '$$OsAdmin',
       client: 'PPC',
       profile: 'profile1',
-      action: 'acmactivate'
+      action: ClientAction.ADMINCTLMODE
     }
   }
   const digestChallenge = {
@@ -404,11 +404,11 @@ describe('activate device', () => {
 })
 
 describe('save Device Information to MPS database', () => {
-  test('should return true if saved for acmactivate', async () => {
+  test(`should return true if saved for ${ClientAction.ADMINCTLMODE}`, async () => {
     const insertSpy = jest.spyOn(configurator.profileManager, 'getAmtProfile').mockImplementation(async () => {
       return {
         profileName: 'acm',
-        activation: 'acmactivate',
+        activation: ClientAction.ADMINCTLMODE,
         tenantId: '',
         tags: ['acm']
       }
@@ -421,7 +421,7 @@ describe('save Device Information to MPS database', () => {
   //   const insertSpy = jest.spyOn(configurator.profileManager, 'getAmtProfile').mockImplementation(async () => {
   //     return {
   //       profileName: 'acm',
-  //       activation: 'acmactivate',
+  //       activation: ClientAction.ADMINCTLMODE,
   //       tenantId: '',
   //       tags: ['acm']
   //     }
@@ -437,13 +437,13 @@ describe('save Device Information to MPS database', () => {
 })
 
 describe('save Device Information to vault', () => {
-  test('should return true if saved for acmactivate', async () => {
+  test(`should return true if saved for ${ClientAction.ADMINCTLMODE}`, async () => {
     const insertSpy = jest.spyOn(configurator.amtDeviceRepository, 'insert').mockImplementation(async () => true)
     const response = await activator.saveDeviceInfoToVault(clientId)
     expect(insertSpy).toHaveBeenCalled()
     expect(response).toBe(true)
   })
-  test('should return true if saved for ccmactivate', async () => {
+  test(`should return true if saved for ${ClientAction.CLIENTCTLMODE}`, async () => {
     const insertSpy = jest.spyOn(configurator.amtDeviceRepository, 'insert').mockImplementation(async () => true)
     const clientObj = devices[clientId]
     clientObj.action = ClientAction.ADMINCTLMODE
@@ -553,7 +553,7 @@ describe('validate AMT GeneralSettings  response', () => {
     expect(rpsError).toBeInstanceOf(RPSError)
     expect(rpsError.message).toBe(`Device ${clientObj.uuid} activation failed. Not a valid digest realm.`)
   })
-  test('should return wsman message for acmactivate method', async () => {
+  test(`should return wsman message for ${ClientAction.ADMINCTLMODE} method`, async () => {
     const clientObj = devices[clientId]
     clientObj.ClientData.payload.fwNonce = null
     clientObj.action = ClientAction.ADMINCTLMODE
@@ -562,7 +562,7 @@ describe('validate AMT GeneralSettings  response', () => {
     expect(clientObj.ClientData.payload.digestRealm).toBe('Digest:E637970E01D8813AA21BA98C7589B883')
     expect(clientObj.hostname).toBe('DESKTOP-9CC12U7')
   })
-  test('should return null for ccmactivate method', async () => {
+  test(`should return null for ${ClientAction.CLIENTCTLMODE} method`, async () => {
     const clientObj = devices[clientId]
     clientObj.action = ClientAction.CLIENTCTLMODE
     const response = await activator.processWSManJsonResponse(response200GeneralSettingsMsg('Digest:E637970E01D8813AA21BA98C7589B883'), clientId, httpHandler)

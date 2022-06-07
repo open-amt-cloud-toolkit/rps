@@ -3,16 +3,17 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 import Logger from '../../../Logger'
-import { AMTConfiguration, AMTKeyUsage, CertAttributes, TLSCerts } from '../../../models'
+import { AMTConfiguration, AMTKeyUsage, AMTUserConsent, CertAttributes, TLSCerts } from '../../../models'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { Request, Response } from 'express'
 import { CertManager } from '../../../CertManager'
 import { NodeForge } from '../../../NodeForge'
+import { ClientAction } from '../../../models/RCS.Config'
 import handleError from '../../../utils/handleError'
 
 export async function createProfile (req: Request, res: Response): Promise<void> {
   const log = new Logger('createProfile')
-  const amtConfig: AMTConfiguration = req.body
+  let amtConfig: AMTConfiguration = req.body
   amtConfig.tenantId = req.tenantId
   try {
     const pwdBefore = amtConfig.amtPassword
@@ -21,10 +22,13 @@ export async function createProfile (req: Request, res: Response): Promise<void>
       if (!amtConfig.generateRandomPassword) {
         amtConfig.amtPassword = 'AMT_PASSWORD'
       }
-      if (!amtConfig.generateRandomMEBxPassword && amtConfig.activation === 'acmactivate') {
+      if (!amtConfig.generateRandomMEBxPassword && amtConfig.activation === ClientAction.ADMINCTLMODE) {
         amtConfig.mebxPassword = 'MEBX_PASSWORD'
       }
     }
+
+    // Check ReDirection settings
+    amtConfig = setRedirectionConfiguration(amtConfig)
 
     const results: AMTConfiguration = await req.db.profiles.insert(amtConfig)
     if (results == null) {
@@ -59,7 +63,7 @@ export async function createProfile (req: Request, res: Response): Promise<void>
   }
 }
 
-async function generateSelfSignedCertificate (req: Request, profileName: string): Promise<void> {
+export async function generateSelfSignedCertificate (req: Request, profileName: string): Promise<void> {
   // generate root certificate
   const cm = new CertManager(new Logger('CertManager'), new NodeForge())
   const certAttr: CertAttributes = {
@@ -99,4 +103,19 @@ async function generateSelfSignedCertificate (req: Request, profileName: string)
   }
 
   await req.secretsManager.writeSecretWithObject(`TLS/${profileName}`, certs)
+}
+
+export function setRedirectionConfiguration (amtConfig: AMTConfiguration): AMTConfiguration {
+  // sets to default AMT redirection configuration settings, inc ase the information is not given.
+  if (amtConfig.userConsent == null) {
+    if (amtConfig.activation === ClientAction.CLIENTCTLMODE) {
+      amtConfig.userConsent = AMTUserConsent.ALL
+    } else {
+      amtConfig.userConsent = AMTUserConsent.KVM
+    }
+  }
+  amtConfig.kvmEnabled = amtConfig.kvmEnabled ?? true
+  amtConfig.solEnabled = amtConfig.solEnabled ?? false
+  amtConfig.iderEnabled = amtConfig.iderEnabled ?? false
+  return amtConfig
 }

@@ -45,7 +45,7 @@ describe('ciraConfigurator tests', () => {
         client: 'PPC',
         profile: {
           profileName: 'acm',
-          activation: 'acmactivate',
+          activation: ClientAction.ADMINCTLMODE,
           ciraConfigName: 'config1',
           ciraConfigObject: {
             configName: 'config1',
@@ -59,7 +59,7 @@ describe('ciraConfigurator tests', () => {
             mpsRootCertificate: 'MIIEOzCCAqOgAwIBAgIDATghMA0GCSqGSIb3DQEBDAUAMD0xFzAVBgNVBAMTDk1QU1Jvb3QtZjI5NzdjMRAwDgYDVQQKEwd1bmtub3duMRAwDgYDVQQGEwd1bmtub3duMCAXDTIxMDIwOTE2NTA1NloYDzIwNTIwMjA5MTY1MDU2WjA9MRcwFQYDVQQDEw5NUFNSb290LWYyOTc3YzEQMA4GA1UEChMHdW5rbm93bjEQMA4GA1UEBhMHdW5rbm93bjCCAaIwDQYJKoZIhvcNAQEBBQADggGPADCCAYoCggGBALh5/XVfcshMOarCLJ4RHMZ6sGS8PGaDiCdL4V0SwxCju4n9ZJFr2O6Bv2/qNl1enjgC/YRguHeNlYa1usbJReNJXb6Mv7G4z7NCVnPmvJtCI78CIeZ0+r6H1VZyw0Jft7S6U0G6ZQue21Ycr6ELJhNz9b4QZUMujd863TWWtE3peejYGEY8hIgMk6YfNyzFx/Xd4wpQToYoN6kBrrKK8R0rYBVR19YZg36ZWhfdg9saLhPy+7L2ScE4KW92+DUK++aXxt3Aq1dMzjHewii98c//TwCpJQBEQhzTyyuSicfWj78Q61IgtLpHWlkKvoFldYcH4vHVZiMbjSyW6EA5tQET4GKef2fY4OnEIvfyJEn7P6WDHz4vbSMZBwBBgpzwWQGeU2+W5lAblmuL48gk5byED6qXSBt4BV2c8IAMEAnShBxjJRDkYJfjEg3t/Gd5lskrcwTSh6AqEGAJqM4251+jO84gvuTqGwwejC/kdiCi9lR+KNEb25S3REfTQQAxgwIDAQABo0IwQDAMBgNVHRMEBTADAQH/MBEGCWCGSAGG+EIBAQQEAwIABzAdBgNVHQ4EFgQU8pd839uyitiRmIpp2R1MvZtvhW0wDQYJKoZIhvcNAQEMBQADggGBAAcbf4vdlTz0ZJkOaW7NwILAvfqeRvn0bTr8PZKGLW9BOcovtKPa8VjoBAar/LjGBvhdXXRYKpQqYUsJcCf53OKVhUx5vX0B6TYZYQtu6KtlmdbxrSEz/wermV5mMYM7yONVeZSUZmOT9iNwE5hTiNzRXNFlx/1+cDCRt8ApsjmYNdoKgxNjoY+ynqmtMkTNXKWd0KKsietOEciPS4UZ5tx6WZ+BH+vEpWw9u3cLeX8iLJXfPHsDmqqHIyjkGNCDsZmDIeyPxBe9CXPGCcMLX1WhBfSma9NMiRI2l18vryo7SRME600RbnkBZyjlzquL9aILZnmiHQOCJ9d75P1MtUdpBYVpqR0Owd8JtAZOqnm+u54oU4OZ+IZmJDT7S5/qytf5lJdIfHKp2RNNL3PoNgmANLop8UKQMoZ2QHl+8L6xJuZSYZMzKDIYXJCCucZSHxx8G41P6rTCylorEjFudqk0OoEb+30vOUqrd5ib/nXp+opwQaEdXYkZ+Wxim9quVw=='
           }
         },
-        action: 'acmactivate',
+        action: ClientAction.ADMINCTLMODE,
         mpsUsername: 'admin',
         mpsPassword: 'OUUR#v1aq5EwLGg2'
       }
@@ -140,7 +140,7 @@ describe('ciraConfigurator tests', () => {
       const getAmtProfileSpy = jest.spyOn(configurator.profileManager, 'getAmtProfile').mockImplementation(async () => {
         return {
           profileName: 'acm',
-          activation: 'acmactivate',
+          activation: ClientAction.ADMINCTLMODE,
           tenantId: '',
           tags: ['acm']
         }

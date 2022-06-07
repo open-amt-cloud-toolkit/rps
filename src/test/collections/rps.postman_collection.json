@@ -1,9 +1,8 @@
 {
 	"info": {
-		"_postman_id": "51cf1f48-02e2-4326-b06b-9e50a2854e6d",
+		"_postman_id": "0fceb723-6616-4d10-a0e4-fa7e8cff251c",
 		"name": "RPS API Tests",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "2229705"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
@@ -1181,11 +1180,6 @@
 								"exec": [
 									"pm.test(\"Status code is 400\", function () {\r",
 									"    pm.response.to.have.status(400);\r",
-									"});\r",
-									"pm.test(\"Update should fail when unique key is violated\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"    pm.expect(result.error).to.eql('Unique key violation')\r",
-									"    pm.expect(result.message).to.eql('Domain vprodemo ID or Suffix already exists')\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -4089,7 +4083,7 @@
 									"    pm.expect(result.errors[0].param).to.eql(\"activation\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"\r",
-									"    pm.expect(result.errors[1].msg).to.eql(\"Activation accepts either acmactivate(admin control activation) or ccmactivate(client control mode activation)\")\r",
+									"    pm.expect(result.errors[1].msg).to.eql(\"Activation accepts either acmactivate (admin control activation) or ccmactivate (client control mode activation)\")\r",
 									"    pm.expect(result.errors[1].param).to.eql(\"activation\")\r",
 									"    pm.expect(result.errors[1].location).to.eql(\"body\")\r",
 									"});"
@@ -4146,7 +4140,7 @@
 									"});\r",
 									"pm.test(\"Creation should fail when activation is inavlid\", function () {\r",
 									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Activation accepts either acmactivate(admin control activation) or ccmactivate(client control mode activation)\")\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"Activation accepts either acmactivate (admin control activation) or ccmactivate (client control mode activation)\")\r",
 									"    pm.expect(result.errors[0].param).to.eql(\"activation\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
@@ -4186,7 +4180,7 @@
 					"response": []
 				},
 				{
-					"name": "Create ccmactivate profile without amt passwords",
+					"name": "Create Profile ccmactivate without amt passwords",
 					"event": [
 						{
 							"listen": "test",
@@ -4241,7 +4235,7 @@
 					"response": []
 				},
 				{
-					"name": "Create ccmactivate with invalid amtPassword",
+					"name": "Create Profile ccmactivate with invalid amtPassword",
 					"event": [
 						{
 							"listen": "test",
@@ -4292,7 +4286,7 @@
 					"response": []
 				},
 				{
-					"name": "Create Profile with acmactivate but no mebxPassword",
+					"name": "Create Profile acmactivate without mebxPassword",
 					"event": [
 						{
 							"listen": "test",
@@ -4343,7 +4337,7 @@
 					"response": []
 				},
 				{
-					"name": "Create acmactivate with invalid mebxPassword",
+					"name": "Create Profile acmactivate with invalid mebxPassword",
 					"event": [
 						{
 							"listen": "test",
@@ -4400,7 +4394,7 @@
 					"response": []
 				},
 				{
-					"name": "Create Profile",
+					"name": "Create Profile[CCM]",
 					"event": [
 						{
 							"listen": "test",
@@ -4416,6 +4410,69 @@
 									"    pm.expect(result.mebxPassword).to.eql(),\r",
 									"    pm.expect(result.activation).to.eql(\"ccmactivate\")\r",
 									"    pm.expect(result.tags.length).to.equal(1)\r",
+									"     pm.expect(result.userConsent).to.eql(\"All\")\r",
+									"    pm.expect(result.iderEnabled).to.eql(false)\r",
+									"    pm.expect(result.kvmEnabled).to.eql(true)\r",
+									"    pm.expect(result.solEnabled).to.eql(false)\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"value": "APIKEYFORRPS123!",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": true\r\n    }"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"profiles",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Profile with valid kvm options",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"pm.test(\"Creation should succeed\", function () {\r",
+									"    var result = pm.response.json();\r",
+									"    pm.expect(result.profileName).to.eql(\"profileKVMOptions\"),\r",
+									"    pm.expect(result.userConsent).to.eql(\"All\")\r",
+									"    pm.expect(result.iderEnabled).to.eql(false)\r",
+									"    pm.expect(result.kvmEnabled).to.eql(true)\r",
+									"    pm.expect(result.solEnabled).to.eql(false)\r",
 									"\r",
 									"});"
 								],
@@ -4440,7 +4497,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": true\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profileKVMOptions\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"userConsent\": \"All\",\r\n    \"iderEnabled\": false,\r\n    \"kvmEnabled\": true,\r\n    \"solEnabled\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -4460,7 +4517,71 @@
 					"response": []
 				},
 				{
-					"name": "Create Profile with tls",
+					"name": "Create Profile with invalid kvm options",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"pm.test(\"Creation should fail with invalid kvm options\", function () {\r",
+									"    var result = pm.response.json();\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"User Consenst must be one of None,All,KVM\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"userConsent\")\r",
+									"    pm.expect(result.errors[1].msg).to.eql(\"User consent is required for all the actions in client control mode\")\r",
+									"    pm.expect(result.errors[1].param).to.eql(\"userConsent\")\r",
+									"    pm.expect(result.errors[2].msg).to.eql(\"IDER enabled must be a boolean\")\r",
+									"    pm.expect(result.errors[2].param).to.eql(\"iderEnabled\")\r",
+									"    pm.expect(result.errors[3].msg).to.eql(\"KVM enabled must be a boolean\")\r",
+									"    pm.expect(result.errors[3].param).to.eql(\"kvmEnabled\")\r",
+									"    pm.expect(result.errors[4].msg).to.eql(\"Serial Over Lan (sol) enabled must be a boolean\")\r",
+									"    pm.expect(result.errors[4].param).to.eql(\"solEnabled\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"value": "APIKEYFORRPS123!",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"profileName\": \"profileKVMOptions\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"userConsent\": \"BadValue\",\r\n    \"iderEnabled\": \"foo\",\r\n    \"kvmEnabled\": \"foo\",\r\n    \"solEnabled\": \"foo\"\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"profiles",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Profile with valid tlsMode",
 					"event": [
 						{
 							"listen": "test",
@@ -4521,7 +4642,7 @@
 					"response": []
 				},
 				{
-					"name": "Create Profile with invalid tlsMode value",
+					"name": "Create Profile with invalid tlsMode",
 					"event": [
 						{
 							"listen": "test",
@@ -4647,9 +4768,9 @@
 									"pm.test(\"Status code is 200\", function () {    \r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
-									"pm.test(\"Result length should be equal to zero\", function () {\r",
+									"pm.test(\"Result length should equal 3\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
-									"    pm.expect(jsonData.length).to.eql(2);\r",
+									"    pm.expect(jsonData.length).to.eql(3);\r",
 									"});\r",
 									"\r",
 									""
@@ -4836,10 +4957,10 @@
 									"pm.test(\"Status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
-									"pm.test(\"Result length should be equal to zero\", function () {\r",
+									"pm.test(\"Result length should equal 3\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
-									"    pm.expect(jsonData.data.length).to.eql(2);\r",
-									"    pm.expect(jsonData.totalCount).to.eql(2);\r",
+									"    pm.expect(jsonData.data.length).to.eql(3);\r",
+									"    pm.expect(jsonData.totalCount).to.eql(3);\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -4895,9 +5016,9 @@
 									"pm.test(\"Status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
-									"pm.test(\"Result length should be equal to zero\", function () {\r",
+									"pm.test(\"Result length should equal 3\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
-									"    pm.expect(jsonData.length).to.eql(2);\r",
+									"    pm.expect(jsonData.length).to.eql(3);\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -4940,7 +5061,7 @@
 					"response": []
 				},
 				{
-					"name": "Create Profile Duplicate",
+					"name": "Create Profile[ACM]",
 					"event": [
 						{
 							"listen": "test",
@@ -5001,7 +5122,7 @@
 									"});\r",
 									"pm.test(\"Update should fail when payload contains invalid activation\", function () {\r",
 									"    var result = pm.response.json();\r",
-									"    pm.expect(result.errors[0].msg).to.eql(\"Activation accepts either acmactivate(admin control activation) or ccmactivate(client control mode activation)\")\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"Activation accepts either acmactivate (admin control activation) or ccmactivate (client control mode activation)\")\r",
 									"    pm.expect(result.errors[0].param).to.eql(\"activation\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
@@ -5041,7 +5162,7 @@
 					"response": []
 				},
 				{
-					"name": "Update profile with invalid amtPassword",
+					"name": "Update Profile with invalid amtPassword",
 					"event": [
 						{
 							"listen": "test",
@@ -5092,7 +5213,131 @@
 					"response": []
 				},
 				{
-					"name": "Update profile with invalid tlsMode value",
+					"name": "Update Profile with invalid kvm options",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"pm.test(\"Update (PATCH->edit) should fail with invalid kvm options\", function () {\r",
+									"    var result = pm.response.json();\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"User Consenst must be one of None,All,KVM\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"userConsent\")\r",
+									"    pm.expect(result.errors[1].msg).to.eql(\"User consent is required for all the actions in client control mode\")\r",
+									"    pm.expect(result.errors[1].param).to.eql(\"userConsent\")\r",
+									"    pm.expect(result.errors[2].msg).to.eql(\"IDER enabled must be a boolean\")\r",
+									"    pm.expect(result.errors[2].param).to.eql(\"iderEnabled\")\r",
+									"    pm.expect(result.errors[3].msg).to.eql(\"KVM enabled must be a boolean\")\r",
+									"    pm.expect(result.errors[3].param).to.eql(\"kvmEnabled\")\r",
+									"    pm.expect(result.errors[4].msg).to.eql(\"Serial Over Lan (sol) enabled must be a boolean\")\r",
+									"    pm.expect(result.errors[4].param).to.eql(\"solEnabled\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"value": "APIKEYFORRPS123!",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"profileName\": \"profileKVMOptions\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"userConsent\": \"BadValue\",\r\n    \"iderEnabled\": \"foo\",\r\n    \"kvmEnabled\": \"foo\",\r\n    \"solEnabled\": \"foo\"\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"profiles",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile with valid kvm options",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 409\", function () {\r",
+									"    pm.response.to.have.status(409);\r",
+									"});\r",
+									"pm.test(\"Update (PATCH->edit) should succeed\", function () {\r",
+									"    var result = pm.response.json();\r",
+									"    pm.expect(result.profileName).to.eql(\"profileKVMOptions\"),\r",
+									"    pm.expect(result.userConsent).to.eql(\"All\")\r",
+									"    pm.expect(result.iderEnabled).to.eql(false)\r",
+									"    pm.expect(result.kvmEnabled).to.eql(true)\r",
+									"    pm.expect(result.solEnabled).to.eql(false)\r",
+									"\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"profileName\": \"profileKVMOptions\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"userConsent\": \"All\",\r\n    \"iderEnabled\": false,\r\n    \"kvmEnabled\": false,\r\n    \"solEnabled\": false\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"profiles",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile with invalid tlsMode",
 					"event": [
 						{
 							"listen": "test",
@@ -5144,7 +5389,7 @@
 					"response": []
 				},
 				{
-					"name": "Update Profile with activation",
+					"name": "Update Profile ccmactivate with password combo false:missing",
 					"event": [
 						{
 							"listen": "test",
@@ -5212,7 +5457,7 @@
 									"    pm.expect(jsonData.dhcpEnabled).to.equal(false)\r",
 									"    pm.expect(jsonData.ciraConfigName).to.eql(null)\r",
 									"    pm.expect(jsonData.activation).to.equal(\"ccmactivate\")\r",
-									"    pm.expect(jsonData.tags.length).to.equal(1)    \r",
+									"    pm.expect(jsonData.tags.length).to.equal(1)\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -5311,13 +5556,13 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 200\", function () {\r",
-									"    pm.response.to.have.status(200);\r",
+									"pm.test(\"Status code is 409\", function () {\r",
+									"    pm.response.to.have.status(409);\r",
 									"});\r",
 									"pm.test(\"Result 1 should be equal to example\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
-									"    pm.expect(jsonData.activation).to.equal(\"acmactivate\") \r",
+									"    pm.expect(jsonData.activation).to.equal(\"ccmactivate\") \r",
 									"    pm.expect(jsonData.dhcpEnabled).to.equal(false)\r",
 									"    pm.expect(jsonData.ciraConfigName).to.eql(null)  \r",
 									"    pm.expect(jsonData.tags.length).to.equal(1)     \r",
@@ -5567,7 +5812,58 @@
 					"response": []
 				},
 				{
-					"name": "Remove tls Profile",
+					"name": "Remove Profile kvm options",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {\r",
+									"    pm.response.to.have.status(204);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "X-RPS-API-Key",
+								"type": "text",
+								"value": "APIKEYFORRPS123!",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/profileKVMOptions",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"profiles",
+								"profileKVMOptions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Profile tlsMode",
 					"event": [
 						{
 							"listen": "test",
@@ -5971,8 +6267,8 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 200\", function () {\r",
-											"    pm.response.to.have.status(200);\r",
+											"pm.test(\"Status code is 409\", function () {\r",
+											"    pm.response.to.have.status(409);\r",
 											"});\r",
 											"pm.test(\"Update should succeed\", function () {\r",
 											"    var jsonData = pm.response.json();\r",
@@ -6156,8 +6452,8 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 200\", function () {\r",
-											"    pm.response.to.have.status(200);\r",
+											"pm.test(\"Status code is 409\", function () {\r",
+											"    pm.response.to.have.status(409);\r",
 											"});\r",
 											"pm.test(\"Creation should pass when DHCP is disabled and CIRA config name is given\", function () {\r",
 											"    var result = pm.response.json();\r",
@@ -7109,8 +7405,8 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 200\", function () {\r",
-											"    pm.response.to.have.status(200);\r",
+											"pm.test(\"Status code is 409\", function () {\r",
+											"    pm.response.to.have.status(409);\r",
 											"});\r",
 											"pm.test(\"Creation should succeed\", function () {\r",
 											"    var result = pm.response.json();\r",
@@ -7119,7 +7415,7 @@
 											"    pm.expect(result.mebxPassword).to.eql(),\r",
 											"    pm.expect(result.activation).to.eql(\"ccmactivate\")\r",
 											"    pm.expect(result.tags.length).to.equal(1)\r",
-											"    pm.expect(result.dhcpEnabled).to.equal(false)\r",
+											"    pm.expect(result.dhcpEnabled).to.equal(true)\r",
 											"});"
 										],
 										"type": "text/javascript"
@@ -7179,7 +7475,7 @@
 											"    pm.expect(result.mebxPassword).to.eql(),\r",
 											"    pm.expect(result.activation).to.eql(\"ccmactivate\")\r",
 											"    pm.expect(result.tags.length).to.equal(1)\r",
-											"    pm.expect(result.dhcpEnabled).to.equal(false)\r",
+											"    pm.expect(result.dhcpEnabled).to.equal(true)\r",
 											"});"
 										],
 										"type": "text/javascript"
@@ -7239,7 +7535,7 @@
 											"    pm.expect(result.mebxPassword).to.eql(),\r",
 											"    pm.expect(result.activation).to.eql(\"ccmactivate\")\r",
 											"    pm.expect(result.tags.length).to.equal(1)\r",
-											"    pm.expect(result.dhcpEnabled).to.equal(false)\r",
+											"    pm.expect(result.dhcpEnabled).to.equal(true)\r",
 											"});"
 										],
 										"type": "text/javascript"
@@ -7344,8 +7640,8 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 200\", function () {\r",
-											"    pm.response.to.have.status(200);\r",
+											"pm.test(\"Status code is 409\", function () {\r",
+											"    pm.response.to.have.status(409);\r",
 											"});\r",
 											"pm.test(\"Creation should succeed\", function () {\r",
 											"    var result = pm.response.json();\r",
@@ -7355,11 +7651,7 @@
 											"    pm.expect(result.activation).to.eql(\"ccmactivate\")\r",
 											"    pm.expect(result.tags.length).to.equal(1)\r",
 											"    pm.expect(result.dhcpEnabled).to.equal(true)\r",
-											"    pm.expect(result.wifiConfigs.length).to.equal(2)\r",
-											"    pm.expect(result.wifiConfigs[0].priority).to.equal(1)\r",
-											"    pm.expect(result.wifiConfigs[0].profileName).to.equal(\"home\")\r",
-											"    pm.expect(result.wifiConfigs[1].priority).to.equal(2)\r",
-											"    pm.expect(result.wifiConfigs[1].profileName).to.equal(\"office\")\r",
+											"    pm.expect(result.wifiConfigs.length).to.equal(0)\r",
 											"});"
 										],
 										"type": "text/javascript"
@@ -7463,8 +7755,8 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 200\", function () {\r",
-											"    pm.response.to.have.status(200);\r",
+											"pm.test(\"Status code is 409\", function () {\r",
+											"    pm.response.to.have.status(409);\r",
 											"});\r",
 											"pm.test(\"Creation should succeed\", function () {\r",
 											"    var result = pm.response.json();\r",
@@ -7474,13 +7766,7 @@
 											"    pm.expect(result.activation).to.eql(\"ccmactivate\")\r",
 											"    pm.expect(result.tags.length).to.equal(1)\r",
 											"    pm.expect(result.dhcpEnabled).to.equal(true)\r",
-											"    pm.expect(result.wifiConfigs.length).to.equal(3)\r",
-											"    pm.expect(result.wifiConfigs[0].priority).to.equal(1)\r",
-											"    pm.expect(result.wifiConfigs[0].profileName).to.equal(\"home\")\r",
-											"    pm.expect(result.wifiConfigs[1].priority).to.equal(2)\r",
-											"    pm.expect(result.wifiConfigs[1].profileName).to.equal(\"office\")\r",
-											"    pm.expect(result.wifiConfigs[2].priority).to.equal(3)\r",
-											"    pm.expect(result.wifiConfigs[2].profileName).to.equal(\"business\")\r",
+											"    pm.expect(result.wifiConfigs.length).to.equal(0)\r",
 											"});"
 										],
 										"type": "text/javascript"
@@ -7610,11 +7896,7 @@
 											"    pm.expect(result[0].mebxPassword).to.eql(),\r",
 											"    pm.expect(result[0].activation).to.eql(\"ccmactivate\")\r",
 											"    pm.expect(result[0].tags.length).to.equal(1)\r",
-											"    pm.expect(result[0].wifiConfigs.length).to.equal(3)\r",
-											"    pm.expect(result[0].wifiConfigs[0].priority).to.equal(1)\r",
-											"    pm.expect(result[0].wifiConfigs[0].profileName).to.equal(\"home\")\r",
-											"    pm.expect(result[0].wifiConfigs[1].priority).to.equal(2)\r",
-											"    pm.expect(result[0].wifiConfigs[1].profileName).to.equal(\"office\")\r",
+											"    pm.expect(result[0].wifiConfigs.length).to.equal(0)\r",
 											"});\r",
 											"\r",
 											"pm.test(\"Profile two\", function () {\r",
@@ -8727,7 +9009,7 @@
 					"response": []
 				},
 				{
-					"name": "Update profile with invalid encryption method",
+					"name": "Update Profile with invalid encryption method",
 					"event": [
 						{
 							"listen": "test",
@@ -8776,7 +9058,7 @@
 					"response": []
 				},
 				{
-					"name": "Update profile with invalid auth method",
+					"name": "Update Profile with invalid auth method",
 					"event": [
 						{
 							"listen": "test",
@@ -8825,7 +9107,7 @@
 					"response": []
 				},
 				{
-					"name": "Update profile with SSID length greater than 32",
+					"name": "Update Profile with SSID length greater than 32",
 					"event": [
 						{
 							"listen": "test",
@@ -8874,7 +9156,7 @@
 					"response": []
 				},
 				{
-					"name": "Update profile with psk pass phrase less than 8",
+					"name": "Update Profile with psk pass phrase less than 8",
 					"event": [
 						{
 							"listen": "test",
@@ -8923,7 +9205,7 @@
 					"response": []
 				},
 				{
-					"name": "Update profile with psk pass phrase greater than 63",
+					"name": "Update Profile with psk pass phrase greater than 63",
 					"event": [
 						{
 							"listen": "test",
@@ -8972,7 +9254,7 @@
 					"response": []
 				},
 				{
-					"name": "Update profile that does not exits",
+					"name": "Update Profile that does not exits",
 					"event": [
 						{
 							"listen": "test",

@@ -1,5 +1,5 @@
 import PostgresDb from '..'
-import { AMTConfiguration } from '../../../models'
+import { AMTConfiguration, AMTUserConsent } from '../../../models'
 import { PROFILE_INSERTION_FAILED_DUPLICATE, PROFILE_INSERTION_CIRA_CONSTRAINT, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP, PROFILE_INSERTION_GENERIC_CONSTRAINT, CONCURRENCY_MESSAGE } from '../../../utils/constants'
 import { RPSError } from '../../../utils/RPSError'
 import { ProfilesTable } from './profiles'
@@ -22,7 +22,11 @@ describe('profiles tests', () => {
       tags: ['tags'],
       dhcpEnabled: true,
       tlsMode: null,
-      tenantId: ''
+      tenantId: '',
+      userConsent: AMTUserConsent.ALL,
+      iderEnabled: true,
+      kvmEnabled: true,
+      solEnabled: true
     }
     db = new PostgresDb('')
     profilesTable = new ProfilesTable(db)
@@ -58,19 +62,30 @@ describe('profiles tests', () => {
       tags as "tags", 
       dhcp_enabled as "dhcpEnabled", 
       tls_mode as "tlsMode",
+      user_consent as "userConsent",
+      ider_enabled as "iderEnabled",
+      kvm_enabled as "kvmEnabled",
+      sol_enabled as "solEnabled",
       p.tenant_id as "tenantId",
       p.xmin as "version",
       COALESCE(json_agg(json_build_object('profileName',wc.wireless_profile_name, 'priority', wc.priority)) FILTER (WHERE wc.wireless_profile_name IS NOT NULL), '[]') AS "wifiConfigs" 
     FROM profiles p
     LEFT JOIN profiles_wirelessconfigs wc ON wc.profile_name = p.profile_name AND wc.tenant_id = p.tenant_id
     WHERE p.tenant_id = $3
-    GROUP BY p.profile_name
-    ,activation
-    ,cira_config_name
-    ,tags
-    ,dhcp_enabled
-    ,tls_mode
-    ,p.tenant_id
+    GROUP BY
+      p.profile_name,
+      activation,
+      cira_config_name,
+      generate_random_password,
+      generate_random_mebx_password,
+      tags,
+      dhcp_enabled,
+      tls_mode,
+      user_consent,
+      ider_enabled,
+      kvm_enabled,
+      sol_enabled,
+      p.tenant_id
     ORDER BY p.profile_name 
     LIMIT $1 OFFSET $2`, [DEFAULT_TOP, DEFAULT_SKIP, ''])
     })
@@ -90,19 +105,29 @@ describe('profiles tests', () => {
       tags as "tags",
       dhcp_enabled as "dhcpEnabled",
       tls_mode as "tlsMode",
+      user_consent as "userConsent",
+      ider_enabled as "iderEnabled",
+      kvm_enabled as "kvmEnabled",
+      sol_enabled as "solEnabled",
       p.tenant_id as "tenantId",
       p.xmin as "version",
       COALESCE(json_agg(json_build_object('profileName',wc.wireless_profile_name, 'priority', wc.priority)) FILTER (WHERE wc.wireless_profile_name IS NOT NULL), '[]') AS "wifiConfigs"
     FROM profiles p
     LEFT JOIN profiles_wirelessconfigs wc ON wc.profile_name = p.profile_name AND wc.tenant_id = p.tenant_id
     WHERE p.profile_name = $1 and p.tenant_id = $2
-    GROUP BY 
+    GROUP BY
       p.profile_name,
       activation,
       cira_config_name,
+      generate_random_password,
+      generate_random_mebx_password,
       tags,
       dhcp_enabled,
       tls_mode,
+      user_consent,
+      ider_enabled,
+      kvm_enabled,
+      sol_enabled,
       p.tenant_id
     `, [profileName, ''])
     })
@@ -160,8 +185,16 @@ describe('profiles tests', () => {
       expect(profileWirelessConfigsSpy).toHaveBeenCalledWith(amtConfig.wifiConfigs, amtConfig.profileName, amtConfig.tenantId)
       expect(getByNameSpy).toHaveBeenCalledWith(amtConfig.profileName)
       expect(querySpy).toBeCalledTimes(1)
-      expect(querySpy).toBeCalledWith(`INSERT INTO profiles(profile_name, activation, amt_password, generate_random_password, cira_config_name, mebx_password, generate_random_mebx_password, tags, dhcp_enabled, tls_mode, tenant_id)
-        values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`, [
+      expect(querySpy).toBeCalledWith(`
+        INSERT INTO profiles(
+          profile_name, activation, 
+          amt_password, generate_random_password, 
+          cira_config_name, 
+          mebx_password, generate_random_mebx_password, 
+          tags, dhcp_enabled, tls_mode,
+          user_consent, ider_enabled, kvm_enabled, sol_enabled,
+          tenant_id)
+        values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`, [
         amtConfig.profileName,
         amtConfig.activation,
         amtConfig.amtPassword,
@@ -172,6 +205,10 @@ describe('profiles tests', () => {
         amtConfig.tags,
         amtConfig.dhcpEnabled,
         amtConfig.tlsMode,
+        amtConfig.userConsent,
+        amtConfig.iderEnabled,
+        amtConfig.kvmEnabled,
+        amtConfig.solEnabled,
         amtConfig.tenantId
       ])
     })
@@ -187,8 +224,16 @@ describe('profiles tests', () => {
       expect(profileWirelessConfigsSpy).not.toHaveBeenCalledWith(amtConfig.wifiConfigs, amtConfig.profileName, amtConfig.tenantId)
       expect(getByNameSpy).toHaveBeenCalledWith(amtConfig.profileName)
       expect(querySpy).toBeCalledTimes(1)
-      expect(querySpy).toBeCalledWith(`INSERT INTO profiles(profile_name, activation, amt_password, generate_random_password, cira_config_name, mebx_password, generate_random_mebx_password, tags, dhcp_enabled, tls_mode, tenant_id)
-        values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`, [
+      expect(querySpy).toBeCalledWith(`
+        INSERT INTO profiles(
+          profile_name, activation, 
+          amt_password, generate_random_password, 
+          cira_config_name, 
+          mebx_password, generate_random_mebx_password, 
+          tags, dhcp_enabled, tls_mode,
+          user_consent, ider_enabled, kvm_enabled, sol_enabled,
+          tenant_id)
+        values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`, [
         amtConfig.profileName,
         amtConfig.activation,
         amtConfig.amtPassword,
@@ -199,6 +244,10 @@ describe('profiles tests', () => {
         amtConfig.tags,
         amtConfig.dhcpEnabled,
         amtConfig.tlsMode,
+        amtConfig.userConsent,
+        amtConfig.iderEnabled,
+        amtConfig.kvmEnabled,
+        amtConfig.solEnabled,
         amtConfig.tenantId
       ])
     })
@@ -230,7 +279,8 @@ describe('profiles tests', () => {
       expect(querySpy).toBeCalledTimes(1)
       expect(querySpy).toBeCalledWith(`
       UPDATE profiles 
-      SET activation=$2, amt_password=$3, generate_random_password=$4, cira_config_name=$5, mebx_password=$6, generate_random_mebx_password=$7, tags=$8, dhcp_enabled=$9, tls_mode=$10
+      SET activation=$2, amt_password=$3, generate_random_password=$4, cira_config_name=$5, mebx_password=$6, generate_random_mebx_password=$7, tags=$8, dhcp_enabled=$9, tls_mode=$10, user_consent=$13,
+      ider_enabled=$14, kvm_enabled=$15, sol_enabled=$16
       WHERE profile_name=$1 and tenant_id = $11 and xmin = $12`,
       [
         amtConfig.profileName,
@@ -244,7 +294,11 @@ describe('profiles tests', () => {
         amtConfig.dhcpEnabled,
         amtConfig.tlsMode,
         amtConfig.tenantId,
-        amtConfig.version
+        amtConfig.version,
+        amtConfig.userConsent,
+        amtConfig.iderEnabled,
+        amtConfig.kvmEnabled,
+        amtConfig.solEnabled
       ])
     })
     test('should update with wificonfigs', async () => {
@@ -260,7 +314,8 @@ describe('profiles tests', () => {
       expect(querySpy).toBeCalledTimes(1)
       expect(querySpy).toBeCalledWith(`
       UPDATE profiles 
-      SET activation=$2, amt_password=$3, generate_random_password=$4, cira_config_name=$5, mebx_password=$6, generate_random_mebx_password=$7, tags=$8, dhcp_enabled=$9, tls_mode=$10
+      SET activation=$2, amt_password=$3, generate_random_password=$4, cira_config_name=$5, mebx_password=$6, generate_random_mebx_password=$7, tags=$8, dhcp_enabled=$9, tls_mode=$10, user_consent=$13,
+      ider_enabled=$14, kvm_enabled=$15, sol_enabled=$16
       WHERE profile_name=$1 and tenant_id = $11 and xmin = $12`,
       [
         amtConfig.profileName,
@@ -274,7 +329,11 @@ describe('profiles tests', () => {
         amtConfig.dhcpEnabled,
         amtConfig.tlsMode,
         amtConfig.tenantId,
-        amtConfig.version
+        amtConfig.version,
+        amtConfig.userConsent,
+        amtConfig.iderEnabled,
+        amtConfig.kvmEnabled,
+        amtConfig.solEnabled
       ])
     })
 
