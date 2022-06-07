@@ -14,6 +14,7 @@ import { EnvReader } from '../EnvReader'
 import { HttpHandler } from '../../HttpHandler'
 import { RPSError } from '../RPSError'
 import { devices } from '../../WebSocketListener'
+import { ClientAction } from '../../models/RCS.Config'
 
 EnvReader.GlobalEnvConfig = config
 const configurator = new Configurator()
@@ -115,7 +116,7 @@ test('should return wsman message if message is AMT_GeneralSettings and status c
   const getprofileSpy = jest.spyOn(configurator.profileManager, 'getAmtProfile').mockImplementation(async () => {
     return {
       profileName: 'acm',
-      activation: 'acmactivate',
+      activation: ClientAction.ADMINCTLMODE,
       tenantId: '',
       tags: ['acm']
     }
@@ -136,7 +137,7 @@ test('should not insert into vault if configurator is null', async () => {
   const getprofileSpy = jest.spyOn(configurator.profileManager, 'getAmtProfile').mockImplementation(async () => {
     return {
       profileName: 'acm',
-      activation: 'acmactivate',
+      activation: ClientAction.ADMINCTLMODE,
       tenantId: '',
       tags: ['acm']
     }

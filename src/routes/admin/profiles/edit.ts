@@ -33,7 +33,7 @@ export async function editProfile (req: Request, res: Response): Promise<void> {
           amtConfig.amtPassword = 'AMT_PASSWORD'
         }
         // store the MEBX password key into db
-        if (!amtConfig.generateRandomMEBxPassword && amtConfig.activation === 'acmactivate') {
+        if (!amtConfig.generateRandomMEBxPassword && amtConfig.activation === ClientAction.ADMINCTLMODE) {
           amtConfig.mebxPassword = 'MEBX_PASSWORD'
         }
       }
@@ -143,6 +143,10 @@ export const getUpdatedData = async (newConfig: any, oldConfig: AMTConfiguration
   amtConfig.dhcpEnabled = newConfig.dhcpEnabled ?? oldConfig.dhcpEnabled
   amtConfig.tenantId = newConfig.tenantId ?? oldConfig.tenantId
   amtConfig.tlsMode = newConfig.tlsMode
+  amtConfig.userConsent = newConfig.userConsent ?? oldConfig.userConsent
+  amtConfig.iderEnabled = newConfig.iderEnabled ?? oldConfig.iderEnabled
+  amtConfig.kvmEnabled = newConfig.kvmEnabled ?? oldConfig.kvmEnabled
+  amtConfig.solEnabled = newConfig.solEnabled ?? oldConfig.solEnabled
   amtConfig.version = newConfig.version
   return amtConfig
 }

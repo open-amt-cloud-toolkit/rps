@@ -94,6 +94,11 @@ export class RPSConfig {
     this.VaultConfig = new VaultConfig()
   }
 }
+export enum AMTUserConsent {
+  NONE = 'None',
+  ALL = 'All',
+  KVM = 'KVM'
+}
 export class AMTConfiguration {
   profileName?: string
   amtPassword?: string
@@ -109,6 +114,10 @@ export class AMTConfiguration {
   tenantId: string
   tlsMode?: number
   tlsCerts?: TLSCerts
+  userConsent?: AMTUserConsent
+  iderEnabled?: boolean
+  kvmEnabled?: boolean
+  solEnabled?: boolean
   version?: string
 }
 export interface TLSCerts {

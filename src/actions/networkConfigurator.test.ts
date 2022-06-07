@@ -71,7 +71,7 @@ beforeAll(() => {
       profile: {
         profileName: 'acm',
         generateRandomPassword: false,
-        activation: 'acmactivate',
+        activation: ClientAction.ADMINCTLMODE,
         ciraConfigName: 'config1',
         generateRandomMEBxPassword: false,
         tags: ['acm'],
@@ -83,7 +83,7 @@ beforeAll(() => {
           }
         ]
       },
-      action: 'acmactivate'
+      action: ClientAction.ADMINCTLMODE
     }
   }
   const digestChallenge = {
