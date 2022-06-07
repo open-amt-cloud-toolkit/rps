@@ -5,6 +5,7 @@
 import { Request } from 'express'
 import { check, ValidationChain } from 'express-validator'
 import { ClientAction } from '../../../models/RCS.Config'
+import { AMTUserConsent } from '../../../models'
 
 export const amtProfileValidator = (): ValidationChain[] => {
   return [
@@ -19,7 +20,7 @@ export const amtProfileValidator = (): ValidationChain[] => {
       .isEmpty()
       .withMessage('Activation is required')
       .isIn([ClientAction.ADMINCTLMODE, ClientAction.CLIENTCTLMODE])
-      .withMessage('Activation accepts either acmactivate(admin control activation) or ccmactivate(client control mode activation)')
+      .withMessage(`Activation accepts either ${ClientAction.ADMINCTLMODE} (admin control activation) or ${ClientAction.CLIENTCTLMODE} (client control mode activation)`)
       .custom((value, { req }) => {
         const pwd = req.body.amtPassword
         const randomPwd = req.body.generateRandomPassword
@@ -30,7 +31,7 @@ export const amtProfileValidator = (): ValidationChain[] => {
         const mebxRandomPwd = req.body.generateRandomMEBxPassword
         if (value === ClientAction.ADMINCTLMODE) {
           if (mebxPwd == null && !mebxRandomPwd) {
-            throw new Error('MEBx Password is required for acmactivate')
+            throw new Error(`MEBx Password is required for ${ClientAction.ADMINCTLMODE}`)
           }
         }
         return true
@@ -119,7 +120,30 @@ export const amtProfileValidator = (): ValidationChain[] => {
         if (wifiConfigs.length > 0) {
           throw new Error(`wifi configs ${wifiConfigs.toString()} does not exists in db`)
         }
-      })
+      }),
+    check('userConsent')
+      .optional({ nullable: true })
+      .isIn(Object.values(AMTUserConsent))
+      .withMessage(`User Consenst must be one of ${Object.values(AMTUserConsent)}`)
+      .custom((value, { req }) => {
+        const activation = req.body.activation
+        if ((activation === ClientAction.CLIENTCTLMODE && value !== AMTUserConsent.ALL)) {
+          throw new Error('User consent is required for all the actions in client control mode')
+        }
+        return true
+      }),
+    check('iderEnabled')
+      .optional({ nullable: true })
+      .isBoolean()
+      .withMessage('IDER enabled must be a boolean'),
+    check('kvmEnabled')
+      .optional({ nullable: true })
+      .isBoolean()
+      .withMessage('KVM enabled must be a boolean'),
+    check('solEnabled')
+      .optional({ nullable: true })
+      .isBoolean()
+      .withMessage('Serial Over Lan (sol) enabled must be a boolean')
   ]
 }
 
@@ -144,7 +168,7 @@ export const profileUpdateValidator = (): any => {
       .withMessage('AMT profile name accepts letters, numbers, special characters and no spaces'),
     check('activation')
       .isIn([ClientAction.ADMINCTLMODE, ClientAction.CLIENTCTLMODE])
-      .withMessage('Activation accepts either acmactivate(admin control activation) or ccmactivate(client control mode activation)')
+      .withMessage(`Activation accepts either ${ClientAction.ADMINCTLMODE} (admin control activation) or ${ClientAction.CLIENTCTLMODE} (client control mode activation)`)
       .custom((value, { req }) => {
         const pwd = req.body.amtPassword
         const randomPwd = req.body.generateRandomPassword
@@ -155,7 +179,7 @@ export const profileUpdateValidator = (): any => {
         const mebxRandomPwd = req.body.generateRandomMEBxPassword
         if (value === ClientAction.ADMINCTLMODE) {
           if (mebxPwd == null && !mebxRandomPwd) {
-            throw new Error('MEBx Password is required for acmactivate')
+            throw new Error(`MEBx Password is required for ${ClientAction.ADMINCTLMODE}`)
           }
         }
         return true
@@ -245,6 +269,29 @@ export const profileUpdateValidator = (): any => {
         if (wifiConfigs.length > 0) {
           throw new Error(`wifi configs ${wifiConfigs.toString()} does not exists in db`)
         }
-      })
+      }),
+    check('userConsent')
+      .optional({ nullable: true })
+      .isIn(Object.values(AMTUserConsent))
+      .withMessage(`User Consenst must be one of ${Object.values(AMTUserConsent)}`)
+      .custom((value, { req }) => {
+        const activation = req.body.activation
+        if ((activation === ClientAction.CLIENTCTLMODE && value !== AMTUserConsent.ALL)) {
+          throw new Error('User consent is required for all the actions in client control mode')
+        }
+        return true
+      }),
+    check('iderEnabled')
+      .optional({ nullable: true })
+      .isBoolean()
+      .withMessage('IDER enabled must be a boolean'),
+    check('kvmEnabled')
+      .optional({ nullable: true })
+      .isBoolean()
+      .withMessage('KVM enabled must be a boolean'),
+    check('solEnabled')
+      .optional({ nullable: true })
+      .isBoolean()
+      .withMessage('Serial Over Lan (sol) enabled must be a boolean')
   ]
 }

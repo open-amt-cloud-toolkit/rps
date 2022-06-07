@@ -11,9 +11,9 @@ CREATE TABLE IF NOT EXISTS ciraconfigs(
   user_name varchar(40),
   password varchar(63),
   common_name varchar(256),
-  server_address_format integer, 
-  auth_method integer, 
-  mps_root_certificate text, 
+  server_address_format integer,
+  auth_method integer,
+  mps_root_certificate text,
   proxydetails text,
   tenant_id varchar(36) NOT NULL,
   PRIMARY KEY (cira_config_name, tenant_id)
@@ -46,6 +46,10 @@ CREATE TABLE IF NOT EXISTS profiles(
   dhcp_enabled BOOLEAN,
   tenant_id varchar(36) NOT NULL,
   tls_mode integer NULL,
+  user_consent varchar(7) NULL,
+  ider_enabled BOOLEAN NULL,
+  kvm_enabled BOOLEAN NULL,
+  sol_enabled BOOLEAN NULL,
   PRIMARY KEY (profile_name, tenant_id)
 );
 CREATE TABLE IF NOT EXISTS profiles_wirelessconfigs(

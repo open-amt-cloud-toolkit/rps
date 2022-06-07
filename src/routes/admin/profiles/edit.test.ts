@@ -1,19 +1,93 @@
-import { AMTConfiguration } from '../../../models'
+import { AMTConfiguration, AMTUserConsent } from '../../../models'
+import { createSpyObj } from '../../../test/helper/jest'
 import {
+  editProfile,
+  getUpdatedData,
   handleAMTPassword,
-  handleMEBxPassword,
-  handleGenerateRandomPassword,
   handleGenerateRandomMEBxPassword,
-  getUpdatedData
+  handleGenerateRandomPassword,
+  handleMEBxPassword
 } from './edit'
+import { ClientAction } from '../../../models/RCS.Config'
+
+describe('AMT Profile - Edit', () => {
+  let resSpy
+  let req
+  let getByNameSpy: jest.SpyInstance
+
+  beforeEach(() => {
+    resSpy = createSpyObj('Response', ['status', 'json', 'end', 'send'])
+    req = {
+      db: { profiles: { getByName: jest.fn(), update: jest.fn() } },
+      body: { profileName: 'profileName' },
+      query: { }
+    }
+    getByNameSpy = jest.spyOn(req.db.profiles, 'getByName').mockResolvedValue({})
+    jest.spyOn(req.db.profiles, 'update').mockResolvedValue({})
+
+    resSpy.status.mockReturnThis()
+    resSpy.json.mockReturnThis()
+    resSpy.send.mockReturnThis()
+  })
+  it('should edit', async () => {
+    await editProfile(req, resSpy)
+    expect(getByNameSpy).toHaveBeenCalledWith('profileName')
+    expect(resSpy.status).toHaveBeenCalledWith(200)
+  })
+  it('should handle not found', async () => {
+    req.body = {
+      profileName: 'acm',
+      activation: ClientAction.ADMINCTLMODE,
+      tags: ['acm'],
+      tlsMode: 2,
+      dhcpEnabled: false,
+      generateRandomPassword: false,
+      password: 'password',
+      generateRandomMEBxPassword: false,
+      mebxPassword: 'password',
+      userConsent: 'None',
+      iderEnabled: true,
+      kvmEnabled: true,
+      solEnabled: true
+    }
+    jest.spyOn(req.db.profiles, 'getByName').mockResolvedValue({
+      profileName: 'acm',
+      activation: ClientAction.ADMINCTLMODE,
+      tags: ['acm'],
+      tlsMode: 2,
+      dhcpEnabled: false,
+      generateRandomPassword: true,
+      generateRandomMEBxPassword: true,
+      userConsent: 'None',
+      iderEnabled: true,
+      kvmEnabled: true,
+      solEnabled: true
+    })
+    await editProfile(req, resSpy)
+    expect(getByNameSpy).toHaveBeenCalledWith('acm')
+    expect(resSpy.status).toHaveBeenCalledWith(200)
+  })
+  it('should handle not found', async () => {
+    jest.spyOn(req.db.profiles, 'getByName').mockResolvedValue(null)
+    await editProfile(req, resSpy)
+    expect(getByNameSpy).toHaveBeenCalledWith('profileName')
+    expect(resSpy.status).toHaveBeenCalledWith(404)
+  })
+  it('should handle error', async () => {
+    jest.spyOn(req.db.profiles, 'getByName').mockRejectedValue(null)
+    await editProfile(req, resSpy)
+    expect(getByNameSpy).toHaveBeenCalledWith('profileName')
+    expect(resSpy.status).toHaveBeenCalledWith(500)
+  })
+})
 
 test('test handleAMTpassword when the request body amtPassword is null or undefined', () => {
-  const newConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', tenantId: '' }
-  const oldConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', amtPassword: 'P@ssw0rd', tenantId: '' }
-  const amtConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', tenantId: '' }
+  const newConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, tenantId: '' }
+  const oldConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, amtPassword: 'P@ssw0rd', tenantId: '' }
+  const amtConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, tenantId: '' }
   const expected: AMTConfiguration = {
     profileName: 'acm',
-    activation: 'acmactivate',
+    activation: ClientAction.ADMINCTLMODE,
     amtPassword: 'P@ssw0rd',
     generateRandomPassword: false,
     tenantId: ''
@@ -23,12 +97,12 @@ test('test handleAMTpassword when the request body amtPassword is null or undefi
 })
 
 test('test handleAMTpassword when the request body amtPassword is not null', () => {
-  const newConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', amtPassword: 'Intel@123', tenantId: '' }
-  const oldConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', amtPassword: 'P@ssw0rd', tenantId: '' }
-  const amtConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', tenantId: '' }
+  const newConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, amtPassword: 'Intel@123', tenantId: '' }
+  const oldConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, amtPassword: 'P@ssw0rd', tenantId: '' }
+  const amtConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, tenantId: '' }
   const expected: AMTConfiguration = {
     profileName: 'acm',
-    activation: 'acmactivate',
+    activation: ClientAction.ADMINCTLMODE,
     amtPassword: 'Intel@123',
     tenantId: ''
   }
@@ -37,12 +111,12 @@ test('test handleAMTpassword when the request body amtPassword is not null', () 
 })
 
 test('test handleMEBxPassword when the request body mebxPassword is null or undefined', () => {
-  const newConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', tenantId: '' }
-  const oldConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', mebxPassword: 'P@ssw0rd', tenantId: '' }
-  const amtConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', tenantId: '' }
+  const newConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, tenantId: '' }
+  const oldConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, mebxPassword: 'P@ssw0rd', tenantId: '' }
+  const amtConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, tenantId: '' }
   const expected: AMTConfiguration = {
     profileName: 'acm',
-    activation: 'acmactivate',
+    activation: ClientAction.ADMINCTLMODE,
     mebxPassword: 'P@ssw0rd',
     generateRandomMEBxPassword: false,
     tenantId: ''
@@ -52,12 +126,12 @@ test('test handleMEBxPassword when the request body mebxPassword is null or unde
 })
 
 test('test handleMEBxPassword when the request body mebxPassword is not null', () => {
-  const newConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', mebxPassword: 'Intel@123', tenantId: '' }
-  const oldConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', mebxPassword: 'P@ssw0rd', tenantId: '' }
-  const amtConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', tenantId: '' }
+  const newConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, mebxPassword: 'Intel@123', tenantId: '' }
+  const oldConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, mebxPassword: 'P@ssw0rd', tenantId: '' }
+  const amtConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, tenantId: '' }
   const expected: AMTConfiguration = {
     profileName: 'acm',
-    activation: 'acmactivate',
+    activation: ClientAction.ADMINCTLMODE,
     mebxPassword: 'Intel@123',
     tenantId: ''
   }
@@ -66,12 +140,12 @@ test('test handleMEBxPassword when the request body mebxPassword is not null', (
 })
 
 test('test handleGenerateRandomPassword when the request body generateRandomPassword is true', () => {
-  const newConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', generateRandomPassword: true, tenantId: '' }
-  const oldConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', amtPassword: 'P@ssw0rd', tenantId: '' }
-  const amtConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', tenantId: '' }
+  const newConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, generateRandomPassword: true, tenantId: '' }
+  const oldConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, amtPassword: 'P@ssw0rd', tenantId: '' }
+  const amtConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, tenantId: '' }
   const expected: AMTConfiguration = {
     profileName: 'acm',
-    activation: 'acmactivate',
+    activation: ClientAction.ADMINCTLMODE,
     generateRandomPassword: true,
     amtPassword: null,
     tenantId: ''
@@ -81,12 +155,12 @@ test('test handleGenerateRandomPassword when the request body generateRandomPass
 })
 
 test('test handleGenerateRandomPassword when passwordLength is updated', () => {
-  const newConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', generateRandomPassword: true, tenantId: '' }
-  const oldConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', generateRandomPassword: true, tenantId: '' }
-  const amtConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', tenantId: '' }
+  const newConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, generateRandomPassword: true, tenantId: '' }
+  const oldConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, generateRandomPassword: true, tenantId: '' }
+  const amtConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, tenantId: '' }
   const expected: AMTConfiguration = {
     profileName: 'acm',
-    activation: 'acmactivate',
+    activation: ClientAction.ADMINCTLMODE,
     generateRandomPassword: true,
     amtPassword: null,
     tenantId: ''
@@ -96,11 +170,11 @@ test('test handleGenerateRandomPassword when passwordLength is updated', () => {
 })
 
 test('test handleGenerateRandomPassword when the request body generateRandomPassword is undefined and profile created with amtPassword', () => {
-  const newConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', tenantId: '' }
-  const oldConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', amtPassword: 'P@ssw0rd', tenantId: '' }
-  const amtConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', tenantId: '' }
+  const newConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, tenantId: '' }
+  const oldConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, amtPassword: 'P@ssw0rd', tenantId: '' }
+  const amtConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, tenantId: '' }
   const expected: AMTConfiguration = {
-    activation: 'acmactivate',
+    activation: ClientAction.ADMINCTLMODE,
     generateRandomPassword: undefined,
     profileName: 'acm',
     tenantId: ''
@@ -110,11 +184,11 @@ test('test handleGenerateRandomPassword when the request body generateRandomPass
 })
 
 test('test handleGenerateRandomPassword when the request body generateRandomPassword is undefined and profile created with random amtPassword', () => {
-  const newConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', tenantId: '' }
-  const oldConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', generateRandomPassword: true, tenantId: '' }
-  const amtConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', tenantId: '' }
+  const newConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, tenantId: '' }
+  const oldConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, generateRandomPassword: true, tenantId: '' }
+  const amtConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, tenantId: '' }
   const expected: AMTConfiguration = {
-    activation: 'acmactivate',
+    activation: ClientAction.ADMINCTLMODE,
     generateRandomPassword: true,
     profileName: 'acm',
     tenantId: ''
@@ -124,12 +198,12 @@ test('test handleGenerateRandomPassword when the request body generateRandomPass
 })
 
 test('test handleGenerateRandomMEBxPassword when the request body generateRandomMEBxPassword is true', () => {
-  const newConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', generateRandomMEBxPassword: true, tenantId: '' }
-  const oldConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', mebxPassword: 'P@ssw0rd', tenantId: '' }
-  const amtConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', tenantId: '' }
+  const newConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, generateRandomMEBxPassword: true, tenantId: '' }
+  const oldConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, mebxPassword: 'P@ssw0rd', tenantId: '' }
+  const amtConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, tenantId: '' }
   const expected: AMTConfiguration = {
     profileName: 'acm',
-    activation: 'acmactivate',
+    activation: ClientAction.ADMINCTLMODE,
     generateRandomMEBxPassword: true,
     mebxPassword: null,
     tenantId: ''
@@ -139,12 +213,12 @@ test('test handleGenerateRandomMEBxPassword when the request body generateRandom
 })
 
 test('test handleGenerateRandomMEBxPassword when mebxPasswordLength is updated', () => {
-  const newConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', generateRandomMEBxPassword: true, tenantId: '' }
-  const oldConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', generateRandomMEBxPassword: true, tenantId: '' }
-  const amtConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', tenantId: '' }
+  const newConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, generateRandomMEBxPassword: true, tenantId: '' }
+  const oldConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, generateRandomMEBxPassword: true, tenantId: '' }
+  const amtConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, tenantId: '' }
   const expected: AMTConfiguration = {
     profileName: 'acm',
-    activation: 'acmactivate',
+    activation: ClientAction.ADMINCTLMODE,
     generateRandomMEBxPassword: true,
     mebxPassword: null,
     tenantId: ''
@@ -154,11 +228,11 @@ test('test handleGenerateRandomMEBxPassword when mebxPasswordLength is updated',
 })
 
 test('test handleGenerateRandomMEBxPassword when the request body generateRandomMEBxPassword is undefined and profile created with mebxPassword', () => {
-  const newConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', tenantId: '' }
-  const oldConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', mebxPassword: 'P@ssw0rd', tenantId: '' }
-  const amtConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', tenantId: '' }
+  const newConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, tenantId: '' }
+  const oldConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, mebxPassword: 'P@ssw0rd', tenantId: '' }
+  const amtConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, tenantId: '' }
   const expected: AMTConfiguration = {
-    activation: 'acmactivate',
+    activation: ClientAction.ADMINCTLMODE,
     generateRandomMEBxPassword: undefined,
     profileName: 'acm',
     tenantId: ''
@@ -168,11 +242,11 @@ test('test handleGenerateRandomMEBxPassword when the request body generateRandom
 })
 
 test('test getUpdatedData when the request body when activation changed', () => {
-  const newConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', tenantId: '' }
-  const oldConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', generateRandomMEBxPassword: true, tenantId: '' }
-  const amtConfig: AMTConfiguration = { profileName: 'acm', activation: 'acmactivate', tenantId: '' }
+  const newConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, tenantId: '' }
+  const oldConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, generateRandomMEBxPassword: true, tenantId: '' }
+  const amtConfig: AMTConfiguration = { profileName: 'acm', activation: ClientAction.ADMINCTLMODE, tenantId: '' }
   const expected: AMTConfiguration = {
-    activation: 'acmactivate',
+    activation: ClientAction.ADMINCTLMODE,
     generateRandomMEBxPassword: true,
     profileName: 'acm',
     tenantId: ''
@@ -184,21 +258,21 @@ test('test getUpdatedData when the request body when activation changed', () => 
 test('test getUpdatedData when static passwords are changed to random', async () => {
   const newConfig: AMTConfiguration = {
     profileName: 'acm',
-    activation: 'acmactivate',
+    activation: ClientAction.ADMINCTLMODE,
     generateRandomMEBxPassword: true,
     generateRandomPassword: true,
     tenantId: ''
   }
   const oldConfig: AMTConfiguration = {
     profileName: 'acm',
-    activation: 'acmactivate',
+    activation: ClientAction.ADMINCTLMODE,
     mebxPassword: 'P@ssw0rd',
     amtPassword: 'P@ssw0rd',
     tenantId: ''
   }
   const amtConfig: AMTConfiguration = {
     profileName: 'acm',
-    activation: 'acmactivate',
+    activation: ClientAction.ADMINCTLMODE,
     amtPassword: null,
     ciraConfigName: undefined,
     generateRandomMEBxPassword: true,
@@ -213,21 +287,21 @@ test('test getUpdatedData when static passwords are changed to random', async ()
 test('test getUpdatedData when random passwords are changed to static', async () => {
   const newConfig: AMTConfiguration = {
     profileName: 'acm',
-    activation: 'acmactivate',
+    activation: ClientAction.ADMINCTLMODE,
     mebxPassword: 'P@ssw0rd',
     amtPassword: 'P@ssw0rd',
     tenantId: ''
   }
   const oldConfig: AMTConfiguration = {
     profileName: 'acm',
-    activation: 'acmactivate',
+    activation: ClientAction.ADMINCTLMODE,
     generateRandomMEBxPassword: true,
     generateRandomPassword: true,
     tenantId: ''
   }
   const amtConfig: AMTConfiguration = {
     profileName: 'acm',
-    activation: 'acmactivate',
+    activation: ClientAction.ADMINCTLMODE,
     amtPassword: 'P@ssw0rd',
     ciraConfigName: undefined,
     generateRandomMEBxPassword: false,
@@ -240,22 +314,22 @@ test('test getUpdatedData when random passwords are changed to static', async ()
   expect(result).toEqual(amtConfig)
 })
 
-test('test getUpdatedData when activation messaged changed from acmactivate to ccmactivate', async () => {
+test(`test getUpdatedData when activation messaged changed from ${ClientAction.ADMINCTLMODE} to ${ClientAction.CLIENTCTLMODE}`, async () => {
   const newConfig: AMTConfiguration = {
     profileName: 'acm',
-    activation: 'ccmactivate',
+    activation: ClientAction.CLIENTCTLMODE,
     tenantId: ''
   }
   const oldConfig: AMTConfiguration = {
     profileName: 'acm',
-    activation: 'acmactivate',
+    activation: ClientAction.ADMINCTLMODE,
     mebxPassword: 'P@ssw0rd',
     amtPassword: 'P@ssw0rd',
     tenantId: ''
   }
   const amtConfig: AMTConfiguration = {
     profileName: 'acm',
-    activation: 'ccmactivate',
+    activation: ClientAction.CLIENTCTLMODE,
     amtPassword: 'P@ssw0rd',
     ciraConfigName: undefined,
     dhcpEnabled: undefined,
@@ -267,4 +341,58 @@ test('test getUpdatedData when activation messaged changed from acmactivate to c
   }
   const result: AMTConfiguration = await getUpdatedData(newConfig, oldConfig)
   expect(result).toEqual(amtConfig)
+})
+
+test('test getUpdatedData with kvm options', async () => {
+  const newConfig: AMTConfiguration = {
+    profileName: 'acm',
+    activation: ClientAction.ADMINCTLMODE,
+    generateRandomMEBxPassword: true,
+    generateRandomPassword: true,
+    mebxPassword: 'P@ssw0rd',
+    amtPassword: 'P@ssw0rd',
+    tenantId: ''
+  }
+  const oldConfig: AMTConfiguration = {
+    profileName: 'acm',
+    activation: ClientAction.ADMINCTLMODE,
+    generateRandomMEBxPassword: true,
+    generateRandomPassword: true,
+    mebxPassword: 'P@ssw0rd',
+    amtPassword: 'P@ssw0rd',
+    tenantId: ''
+  }
+  const amtConfig: AMTConfiguration = {
+    profileName: 'acm',
+    activation: ClientAction.ADMINCTLMODE,
+    amtPassword: null,
+    ciraConfigName: undefined,
+    generateRandomMEBxPassword: true,
+    generateRandomPassword: true,
+    mebxPassword: null,
+    tenantId: ''
+  }
+  let result: AMTConfiguration
+  result = await getUpdatedData(newConfig, oldConfig)
+  expect(result).toEqual(amtConfig)
+
+  oldConfig.userConsent = AMTUserConsent.KVM
+  oldConfig.iderEnabled = true
+  oldConfig.kvmEnabled = true
+  oldConfig.solEnabled = true
+  result = await getUpdatedData(newConfig, oldConfig)
+  expect(result.userConsent).toEqual('KVM')
+  expect(result.iderEnabled).toEqual(true)
+  expect(result.kvmEnabled).toEqual(true)
+  expect(result.solEnabled).toEqual(true)
+
+  newConfig.userConsent = AMTUserConsent.ALL
+  newConfig.iderEnabled = false
+  newConfig.kvmEnabled = true
+  newConfig.solEnabled = false
+  result = await getUpdatedData(newConfig, oldConfig)
+  expect(result.userConsent).toEqual('All')
+  expect(result.iderEnabled).toEqual(false)
+  expect(result.kvmEnabled).toEqual(true)
+  expect(result.solEnabled).toEqual(false)
 })

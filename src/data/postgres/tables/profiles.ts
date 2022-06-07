@@ -51,19 +51,30 @@ export class ProfilesTable implements IProfilesTable {
       tags as "tags", 
       dhcp_enabled as "dhcpEnabled", 
       tls_mode as "tlsMode",
+      user_consent as "userConsent",
+      ider_enabled as "iderEnabled",
+      kvm_enabled as "kvmEnabled",
+      sol_enabled as "solEnabled",
       p.tenant_id as "tenantId",
       p.xmin as "version",
       COALESCE(json_agg(json_build_object('profileName',wc.wireless_profile_name, 'priority', wc.priority)) FILTER (WHERE wc.wireless_profile_name IS NOT NULL), '[]') AS "wifiConfigs" 
     FROM profiles p
     LEFT JOIN profiles_wirelessconfigs wc ON wc.profile_name = p.profile_name AND wc.tenant_id = p.tenant_id
     WHERE p.tenant_id = $3
-    GROUP BY p.profile_name
-    ,activation
-    ,cira_config_name
-    ,tags
-    ,dhcp_enabled
-    ,tls_mode
-    ,p.tenant_id
+    GROUP BY
+      p.profile_name,
+      activation,
+      cira_config_name,
+      generate_random_password,
+      generate_random_mebx_password,
+      tags,
+      dhcp_enabled,
+      tls_mode,
+      user_consent,
+      ider_enabled,
+      kvm_enabled,
+      sol_enabled,
+      p.tenant_id
     ORDER BY p.profile_name 
     LIMIT $1 OFFSET $2`, [top, skip, tenantId])
 
@@ -86,19 +97,29 @@ export class ProfilesTable implements IProfilesTable {
       tags as "tags",
       dhcp_enabled as "dhcpEnabled",
       tls_mode as "tlsMode",
+      user_consent as "userConsent",
+      ider_enabled as "iderEnabled",
+      kvm_enabled as "kvmEnabled",
+      sol_enabled as "solEnabled",
       p.tenant_id as "tenantId",
       p.xmin as "version",
       COALESCE(json_agg(json_build_object('profileName',wc.wireless_profile_name, 'priority', wc.priority)) FILTER (WHERE wc.wireless_profile_name IS NOT NULL), '[]') AS "wifiConfigs"
     FROM profiles p
     LEFT JOIN profiles_wirelessconfigs wc ON wc.profile_name = p.profile_name AND wc.tenant_id = p.tenant_id
     WHERE p.profile_name = $1 and p.tenant_id = $2
-    GROUP BY 
+    GROUP BY
       p.profile_name,
       activation,
       cira_config_name,
+      generate_random_password,
+      generate_random_mebx_password,
       tags,
       dhcp_enabled,
       tls_mode,
+      user_consent,
+      ider_enabled,
+      kvm_enabled,
+      sol_enabled,
       p.tenant_id
     `, [profileName, tenantId])
 
@@ -140,8 +161,16 @@ export class ProfilesTable implements IProfilesTable {
    */
   async insert (amtConfig: AMTConfiguration): Promise<AMTConfiguration> {
     try {
-      const results = await this.db.query(`INSERT INTO profiles(profile_name, activation, amt_password, generate_random_password, cira_config_name, mebx_password, generate_random_mebx_password, tags, dhcp_enabled, tls_mode, tenant_id)
-        values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+      const results = await this.db.query(`
+        INSERT INTO profiles(
+          profile_name, activation, 
+          amt_password, generate_random_password, 
+          cira_config_name, 
+          mebx_password, generate_random_mebx_password, 
+          tags, dhcp_enabled, tls_mode,
+          user_consent, ider_enabled, kvm_enabled, sol_enabled,
+          tenant_id)
+        values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
       [
         amtConfig.profileName,
         amtConfig.activation,
@@ -153,6 +182,10 @@ export class ProfilesTable implements IProfilesTable {
         amtConfig.tags,
         amtConfig.dhcpEnabled,
         amtConfig.tlsMode,
+        amtConfig.userConsent,
+        amtConfig.iderEnabled,
+        amtConfig.kvmEnabled,
+        amtConfig.solEnabled,
         amtConfig.tenantId
       ])
 
@@ -190,7 +223,8 @@ export class ProfilesTable implements IProfilesTable {
     try {
       const results = await this.db.query(`
       UPDATE profiles 
-      SET activation=$2, amt_password=$3, generate_random_password=$4, cira_config_name=$5, mebx_password=$6, generate_random_mebx_password=$7, tags=$8, dhcp_enabled=$9, tls_mode=$10
+      SET activation=$2, amt_password=$3, generate_random_password=$4, cira_config_name=$5, mebx_password=$6, generate_random_mebx_password=$7, tags=$8, dhcp_enabled=$9, tls_mode=$10, user_consent=$13,
+      ider_enabled=$14, kvm_enabled=$15, sol_enabled=$16
       WHERE profile_name=$1 and tenant_id = $11 and xmin = $12`,
       [
         amtConfig.profileName,
@@ -204,7 +238,11 @@ export class ProfilesTable implements IProfilesTable {
         amtConfig.dhcpEnabled,
         amtConfig.tlsMode,
         amtConfig.tenantId,
-        amtConfig.version
+        amtConfig.version,
+        amtConfig.userConsent,
+        amtConfig.iderEnabled,
+        amtConfig.kvmEnabled,
+        amtConfig.solEnabled
       ])
       if (results.rowCount > 0) {
         if (amtConfig.wifiConfigs?.length > 0) {
