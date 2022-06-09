@@ -1,0 +1,58 @@
+[
+  {
+    "_TEST_CASE_6695": "RPS: Rest API - Use GET method for rps api's (positive test)",
+    "url": "{{protocol}}://{{host}}/api/v1/admin/domains",
+    "verb": "GET",
+    "body": "{}",
+    "expected": "200"
+  },
+  {
+    "_TEST_CASE_6595": "RPS: Rest API- Use POST method for rps api's instead of GET (negative test)",
+    "url": "{{protocol}}://{{host}}/api/v1/admin/domains",
+    "verb": "POST",
+    "body": "{}",
+    "expected": "400"
+  },
+  {
+    "_TEST_CASE_6598": "RPS: Rest API-  Use POST method for rps api's (positive test)",
+    "url": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs",
+    "verb": "POST",
+    "body": "{\r\n  \"profileName\": \"homeWifiConfig\",\r\n  \"authenticationMethod\": 4,\r\n  \"encryptionMethod\": 4,\r\n  \"ssid\": \"home\",\r\n  \"pskPassphrase\": \"P@ssw0rd\"\r\n}",
+    "expected": "201"
+  },
+  {
+    "_TEST_CASE_6598": "RPS: Rest API- Use PUT method for rps api's instead of POST (negative test)",
+    "url": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs",
+    "verb": "PUT",
+    "body": "{\r\n  \"profileName\": \"homeWifiConfig\",\r\n  \"authenticationMethod\": 4,\r\n  \"encryptionMethod\": 4,\r\n  \"ssid\": \"home\",\r\n  \"pskPassphrase\": \"P@ssw0rd\"\r\n}",
+    "expected": "404"
+  },
+  {
+    "_TEST_CASE_6600": "RPS: Rest API- Use POST method for rps api's (positive test)",
+    "url": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
+    "verb": "POST",
+    "body": "{  \"configName\": \"ciraconfig\",  \"mpsServerAddress\": \"192.168.8.50\",  \"mpsPort\": 4433,  \"username\": \"mpsname\",  \"password\": \"G@ppm0ym\",  \"commonName\": \"192.168.8.50\",  \"serverAddressFormat\": 3,  \"authMethod\": 2,  \"mpsRootCertificate\": \"U3dhZ2dlciByb2Nrcw==\",  \"proxyDetails\": \"\"}",
+    "expected": "201"
+  },
+  {
+    "_TEST_CASE_6600": "RPS: Rest API- Use DELETE method for rps api's instead of POST (negative test)",
+    "url": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
+    "verb": "DELETE",
+    "body": "{\"profileName\": \"NewDomain3n\",\"domainSuffix\": \"NewDomain3n.com\",\"provisioningCertStorageFormat\": \"string\",\"provisioningCert\": \"U3dhZ2dlciByb2Nrcw==\",\"provisioningCertPassword\": \"G@ppm0ym\"}",
+    "expected": "404"
+  },
+  {
+    "_TEST_CASE_6602": "RPS: Rest API- POST method for rps api's (positive test)",
+    "url": "{{protocol}}://{{host}}/api/v1/admin/domains",
+    "verb": "POST",
+    "body": "{\"profileName\": \"NewDomain4\",\"domainSuffix\": \"NewDomain4.com\",\"provisioningCertStorageFormat\": \"string\",\"provisioningCert\": \"U3dhZ2dlciByb2Nrcw==\",\"provisioningCertPassword\": \"G@ppm0ym\"}",
+    "expected": "201"
+  },
+  {
+    "_TEST_CASE_6602": "RPS: Rest API-  Using COPY method for rps api's instead of POST (negative test)",
+    "url": "{{protocol}}://{{host}}/api/v1/admin/domains",
+    "verb": "COPY",
+    "body": "{\"profileName\": \"NewDomain4n\",\"domainSuffix\": \"NewDomain4n.com\",\"provisioningCertStorageFormat\": \"string\",\"provisioningCert\": \"U3dhZ2dlciByb2Nrcw==\",\"provisioningCertPassword\": \"G@ppm0ym\"}",
+    "expected": "404"
+  }
+]

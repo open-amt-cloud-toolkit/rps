@@ -18,3 +18,4 @@ jobs:
       with:
         collection: ./src/test/collections/rps.postman_collection.json
         environment: ./src/test/collections/rps.postman_environment.json
+    - run: docker run --network=host -v  /home/runner/work/rps/rps/src/test/collections/:/collections postman/newman run /collections/rps_security_api_test.postman_collection.json -e /collections/rps.postman_environment.json -d /collections/data/rps_security_api_test.data.json --insecure
