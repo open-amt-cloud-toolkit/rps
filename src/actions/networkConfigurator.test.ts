@@ -113,6 +113,46 @@ beforeAll(() => {
   }
 })
 
+describe('execute network configurator', () => {
+  test('should return a wsman if the message is null and getWiFiPortCapabilities is false', async () => {
+    const result = await networkConfigurator.execute(null, clientId)
+    expect(result.method).toBe('wsman')
+  })
+  test('should return a wsman if the message is null and getWiFiPortCapabilities is true', async () => {
+    devices[clientId].network.getWiFiPortCapabilities = true
+    devices[clientId].network.WiFiPortCapabilities = [
+      {
+        priority: 1,
+        profileName: 'home'
+      }
+    ]
+    const result = await networkConfigurator.execute(null, clientId)
+    expect(result.method).toBe('wsman')
+  })
+  test('should return a wsman to request wifi port state change', async () => {
+    devices[clientId].network.getWiFiPortCapabilities = true
+    devices[clientId].network.setEthernetPortSettings = false
+    devices[clientId].network.WiFiPortCapabilities = []
+    const result = await networkConfigurator.execute(null, clientId)
+    expect(result.method).toBe('wsman')
+  })
+  test('should set the network status to Wifi settings are updates', async () => {
+    devices[clientId].network.count = 1
+    devices[clientId].network.setWiFiPort = true
+    devices[clientId].network.setEthernetPortSettings = false
+    devices[clientId].network.getWiFiPortConfigurationService = true
+    await networkConfigurator.execute(null, clientId)
+    expect(devices[clientId].status.Network).toBe('wifi settings are updated.')
+  })
+  test('should set the network status to ethernet and wifi settings are updated', async () => {
+    devices[clientId].network.count = 1
+    devices[clientId].network.setEthernetPortSettings = true
+    devices[clientId].network.getWiFiPortConfigurationService = true
+    await networkConfigurator.execute(null, clientId)
+    expect(devices[clientId].status.Network).toBe('ethernet and wifi settings are updated.')
+  })
+})
+
 describe('process WSMan Response', () => {
   test('should return a wsman if the status code 401', async () => {
     const message = {
@@ -304,6 +344,7 @@ describe('validate AMT General Settings', () => {
     expect(result.method).toBe('wsman')
   })
 })
+
 describe('validate WifiPortConfigurationService', () => {
   it('should handle AddWiFiSettingsResponse', async () => {
     const message = {
@@ -371,6 +412,7 @@ describe('validate WifiPortConfigurationService', () => {
     expect(result).toBeNull()
   })
 })
+
 describe('validate Ethernet Port Settings', () => {
   test('should return a wsman to put ethernet port settings (array)', async () => {
     const message = {
@@ -442,27 +484,27 @@ describe('validate Ethernet Port Settings', () => {
           PullResponse: {
             Items: {
               AMT_EthernetPortSettings:
-                {
-                  DHCPEnabled: true,
-                  DefaultGateway: '192.168.1.1',
-                  ElementName: 'Intel(r) AMT Ethernet Port Settings',
-                  IPAddress: '192.168.1.53',
-                  InstanceID: 'Intel(r) AMT Ethernet Port Settings 0',
-                  IpSyncEnabled: false,
-                  LinkIsUp: true,
-                  LinkPolicy: [
-                    1,
-                    14
-                  ],
-                  MACAddress: 'a4-bb-6d-89-52-e4',
-                  PhysicalConnectionType: 0,
-                  PrimaryDNS: '68.105.28.11',
-                  SecondaryDNS: '68.105.29.11',
-                  SharedDynamicIP: true,
-                  SharedMAC: true,
-                  SharedStaticIp: false,
-                  SubnetMask: '255.255.255.0'
-                }
+              {
+                DHCPEnabled: true,
+                DefaultGateway: '192.168.1.1',
+                ElementName: 'Intel(r) AMT Ethernet Port Settings',
+                IPAddress: '192.168.1.53',
+                InstanceID: 'Intel(r) AMT Ethernet Port Settings 0',
+                IpSyncEnabled: false,
+                LinkIsUp: true,
+                LinkPolicy: [
+                  1,
+                  14
+                ],
+                MACAddress: 'a4-bb-6d-89-52-e4',
+                PhysicalConnectionType: 0,
+                PrimaryDNS: '68.105.28.11',
+                SecondaryDNS: '68.105.29.11',
+                SharedDynamicIP: true,
+                SharedMAC: true,
+                SharedStaticIp: false,
+                SubnetMask: '255.255.255.0'
+              }
             },
             EndOfSequence: ''
           }
@@ -471,5 +513,185 @@ describe('validate Ethernet Port Settings', () => {
     }
     const result = await networkConfigurator.validateEthernetPortSettings(clientId, message)
     expect(result.method).toBe('wsman')
+  })
+  test('should return a failed status for network when IpSyncEnabled is not set to true', async () => {
+    const clientObj = devices[clientId]
+    const message = {
+      Envelope: {
+        Header: {
+          Action: {
+            _: 'http://schemas.xmlsoap.org/ws/2004/09/enumeration/PutResponse'
+          },
+          ResourceURI: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_EthernetPortSettings'
+        },
+        Body: {
+          AMT_EthernetPortSettings: {
+            IpSyncEnabled: false,
+            SharedStaticIp: false
+          }
+        }
+      }
+    }
+    await networkConfigurator.validateEthernetPortSettings(clientId, message)
+    expect(clientObj.status.Network).toBe('Failed.')
+    expect(clientObj.network.setEthernetPortSettings).toBe(true)
+  })
+  test('should return a ethernet configured status for network when IpSyncEnabled is true and SharedStaticIp is true', async () => {
+    const clientObj = devices[clientId]
+    const message = {
+      Envelope: {
+        Header: {
+          Action: {
+            _: 'http://schemas.xmlsoap.org/ws/2004/09/enumeration/PutResponse'
+          },
+          ResourceURI: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_EthernetPortSettings'
+        },
+        Body: {
+          AMT_EthernetPortSettings: {
+            IpSyncEnabled: true,
+            SharedStaticIp: true
+          }
+        }
+      }
+    }
+    await networkConfigurator.validateEthernetPortSettings(clientId, message)
+    expect(clientObj.status.Network).toBe('Ethernet Configured.')
+    expect(clientObj.network.setEthernetPortSettings).toBe(true)
+  })
+  test('should return a ethernet configured status for network when IpSyncEnabled is true and SharedStaticIp is true', async () => {
+    const clientObj = devices[clientId]
+    const message = {
+      Envelope: {
+        Header: {
+          Action: {
+            _: 'http://schemas.xmlsoap.org/ws/2004/09/enumeration/PutResponse'
+          },
+          ResourceURI: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_EthernetPortSettings'
+        },
+        Body: {
+          AMT_EthernetPortSettings: {
+            IpSyncEnabled: true,
+            DHCPEnabled: true,
+            SharedStaticIp: false
+          }
+        }
+      }
+    }
+    activationmsg.payload.profile.wifiConfigs = []
+    await networkConfigurator.validateEthernetPortSettings(clientId, message)
+    activationmsg.payload.profile.wifiConfigs = [
+      {
+        priority: 1,
+        profileName: 'home'
+      }
+    ]
+    expect(clientObj.status.Network).toBe('Ethernet Configured.')
+    expect(clientObj.network.setEthernetPortSettings).toBe(true)
+  })
+  test('should return a fault', async () => {
+    const clientObj = devices[clientId]
+    const message = {
+      Envelope: {
+        Header: {
+          Action: {
+            _: 'http://schemas.xmlsoap.org/ws/2004/09/enumeration/fault'
+          }
+        },
+        Body: {
+          Fault: {
+            Reason: {
+              Text: 'The service cannot comply with the request due to internal processing errors.'
+            }
+          }
+        }
+      }
+    }
+    const result = await networkConfigurator.validateEthernetPortSettings(clientId, message)
+    expect(result).toBe(null)
+    expect(clientObj.network.setEthernetPortSettings).toBe(true)
+  })
+})
+
+describe('validate delete wifi profiles from AMT', () => {
+  test('should return a wsman to delete wifi profile', async () => {
+    const message = {
+      Envelope: {
+        Header: {
+          Action: {
+            _: '/PullResponse'
+          }
+        },
+        Body: {
+          PullResponse: {
+            Items: {
+              CIM_WiFiEndpointSettings: {
+                InstanceID: 'home',
+                Priority: 1
+              }
+            }
+          }
+        }
+      }
+    }
+    const result = await networkConfigurator.validateWiFiEndpointSettings(clientId, message)
+    expect(result.method).toEqual('wsman')
+  })
+  test('should return a wsman to get AMT General settings', async () => {
+    const clientObj = devices[clientId]
+    const message = {
+      Envelope: {
+        Header: {
+          Action: {
+            _: '/DeleteResponse'
+          }
+        }
+      }
+    }
+    const result = await networkConfigurator.validateWiFiEndpointSettings(clientId, message)
+    expect(result.method).toEqual('wsman')
+    expect(clientObj.network.isWiFiConfigsDeleted).toBe(true)
+  })
+})
+
+describe('validate AMT WiFi Port Settings', () => {
+  test('should set WiFiPortResponse to true', async () => {
+    const clientObj = devices[clientId]
+    const message = {
+      Envelope: {
+        Header: {
+          Action: {
+            _: '/GetResponse'
+          }
+        },
+        Body: {
+          AMT_WiFiPort: {
+            EnabledState: 32769,
+            RequestedState: 32769
+          }
+        }
+      }
+    }
+    await networkConfigurator.validateWiFiPort(clientId, message)
+    expect(clientObj.network.setWiFiPortResponse).toBe(true)
+  })
+  test('should set a failed status for network wifi', async () => {
+    const clientObj = devices[clientId]
+    const message = {
+      Envelope: {
+        Header: {
+          Action: {
+            _: '/GetResponse'
+          }
+        },
+        Body: {
+          AMT_WiFiPort: {
+            EnabledState: 32768,
+            RequestedState: 32766
+          }
+        }
+      }
+    }
+    await networkConfigurator.validateWiFiPort(clientId, message)
+    expect(clientObj.status.Network).toBe('Ethernet Configured. WiFi Failed.')
   })
 })
