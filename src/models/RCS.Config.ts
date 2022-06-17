@@ -146,7 +146,7 @@ export interface NetworkConfigFlow {
   isWiFiConfigsDeleted?: boolean
   getGeneralSettings?: boolean
   setEthernetPortSettings?: boolean
-  ethernetSettingsWifiObj?: AMTEthernetPortSettings
+  WirelessObj?: AMTEthernetPortSettings
   setWiFiPort?: boolean
   setWiFiPortResponse?: boolean
   getWiFiPortConfigurationService?: boolean

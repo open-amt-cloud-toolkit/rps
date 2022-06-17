@@ -27,6 +27,8 @@ export class NetworkConfigurator implements IExecutor {
   amt: AMT.Messages
   cim: CIM.Messages
   httpHandler: HttpHandler
+  dbFactory: DbCreatorFactory
+  db: any
   constructor (
     private readonly logger: ILogger,
     private readonly configurator: IConfigurator,
@@ -37,6 +39,11 @@ export class NetworkConfigurator implements IExecutor {
     this.amt = new AMT.Messages()
     this.cim = new CIM.Messages()
     this.httpHandler = new HttpHandler()
+  }
+
+  async getDB (): Promise<void> {
+    this.dbFactory = new DbCreatorFactory(EnvReader.GlobalEnvConfig)
+    this.db = await this.dbFactory.getDb()
   }
 
   /**
@@ -65,7 +72,7 @@ export class NetworkConfigurator implements IExecutor {
       } else if (clientObj.network?.WiFiPortCapabilities?.length >= 0 && !clientObj.network?.isWiFiConfigsDeleted) {
         // if one or more wifi profiles exists in device, they will be deleted
         return this.deleteWiFiConfigs(clientId)
-      } else if (!clientObj.network?.setWiFiPort && clientObj.network.setEthernetPortSettings && payload.profile.wifiConfigs?.length > 0 && payload.profile.dhcpEnabled) {
+      } else if (!clientObj.network?.setWiFiPort && clientObj.network.setEthernetPortSettings != null && payload.profile.wifiConfigs?.length > 0 && payload.profile.dhcpEnabled) {
         // Enumeration 32769 - WiFi is enabled in S0 + Sx/AC
         const xmlRequestBody = this.cim.WiFiPort(CIM.Methods.REQUEST_STATE_CHANGE, 32769)
         const data = this.httpHandler.wrapIt(xmlRequestBody, devices[clientId].connectionParams)
@@ -74,7 +81,11 @@ export class NetworkConfigurator implements IExecutor {
         return await this.addWifiConfigs(clientId, payload.profile.wifiConfigs)
       } else if (devices[clientId].network?.getWiFiPortConfigurationService) {
         // If all wiFi configs are added, then move to CIRA config.
-        return await this.callCIRAConfig(clientId, 'ethernet and wifi settings are updated', message)
+        if (clientObj.network.setEthernetPortSettings) {
+          return await this.callCIRAConfig(clientId, 'ethernet and wifi settings are updated', message)
+        } else {
+          return await this.callCIRAConfig(clientId, 'wifi settings are updated', message)
+        }
       }
     } catch (error) {
       this.logger.error(`${clientId} : Failed to configure network settings : ${error}`)
@@ -207,42 +218,70 @@ export class NetworkConfigurator implements IExecutor {
         return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
       }
       case 'PullResponse': {
-        // Assume first entry is WIRED network port
-        const ethernetPortSettings: AMTEthernetPortSettings = Array.isArray(response.Envelope.Body.PullResponse.Items.AMT_EthernetPortSettings) ? response.Envelope.Body.PullResponse.Items.AMT_EthernetPortSettings[0] : response.Envelope.Body.PullResponse.Items.AMT_EthernetPortSettings
-        const amtProfile: AMTConfiguration = clientObj.ClientData.payload.profile
-        if (amtProfile.dhcpEnabled) {
-          ethernetPortSettings.DHCPEnabled = true
-          ethernetPortSettings.SharedStaticIp = false
-          if (response.Envelope.Body.PullResponse.Items.AMT_EthernetPortSettings.length > 1) {
-            // If the array length is greater than one, device has WiFi capabilities and storing temporarily for next steps if the profile has wifi configs to be configured.
-            clientObj.network.ethernetSettingsWifiObj = response.Envelope.Body.PullResponse.Items.AMT_EthernetPortSettings[1]
+        // As per AMT SDK first entry is WIRED network port
+        const pullResponse = response.Envelope.Body.PullResponse.Items.AMT_EthernetPortSettings
+        let wiredSettings: AMTEthernetPortSettings
+        if (Array.isArray(pullResponse)) {
+          if (pullResponse[0].InstanceID.includes('Settings 0')) {
+            wiredSettings = pullResponse[0]
+          } else if (pullResponse[0].InstanceID.includes('Settings 1')) {
+            clientObj.network.WirelessObj = pullResponse[0]
+          }
+
+          if (pullResponse[1].InstanceID.includes('Settings 0')) {
+            wiredSettings = pullResponse[1]
+          } else if (pullResponse[1].InstanceID.includes('Settings 1')) {
+            clientObj.network.WirelessObj = pullResponse[1]
           }
         } else {
-          ethernetPortSettings.DHCPEnabled = false
-          ethernetPortSettings.SharedStaticIp = true
+          if (pullResponse.InstanceID.includes('Settings 0')) {
+            wiredSettings = pullResponse
+          } else if (pullResponse.InstanceID.includes('Settings 1')) {
+            clientObj.network.WirelessObj = pullResponse
+          }
         }
-        ethernetPortSettings.IpSyncEnabled = true
-        if (ethernetPortSettings.DHCPEnabled || ethernetPortSettings.IpSyncEnabled) {
-          // When 'DHCPEnabled' property is set to true the following properties should be set to NULL:
-          // SubnetMask, DefaultGateway, IPAddress, PrimaryDNS, SecondaryDNS.
-          ethernetPortSettings.SubnetMask = null
-          ethernetPortSettings.DefaultGateway = null
-          ethernetPortSettings.IPAddress = null
-          ethernetPortSettings.PrimaryDNS = null
-          ethernetPortSettings.SecondaryDNS = null
+        const amtProfile: AMTConfiguration = clientObj.ClientData.payload.profile
+        // Check if this is a Wireless LAN device, exit wired LAN configuration flow if wired link is down or PhysicalConnectionType is 3 (wireless only device)
+        if (clientObj.network.WirelessObj != null && wiredSettings?.MACAddress == null) {
+          // Device has WiFi capabilities and storing temporarily for next steps if the profile has wifi configs to be configured.
+          this.logger.debug(`Device ${devices[clientId].uuid} supports only wireless`)
+          clientObj.network.setEthernetPortSettings = false
+          return null
         } else {
-          // TBD: To set static IP address the values should be read from the REST API
-          // ethernetPortSettings.SubnetMask = "255.255.255.0";
-          // ethernetPortSettings.DefaultGateway = "192.168.1.1";
-          // ethernetPortSettings.IPAddress = "192.168.1.223";
-          // ethernetPortSettings.PrimaryDNS = "192.168.1.1";
-          // ethernetPortSettings.SecondaryDNS = "192.168.1.1";
+          if (amtProfile.dhcpEnabled) {
+            wiredSettings.DHCPEnabled = true
+            wiredSettings.SharedStaticIp = false
+            if (response.Envelope.Body.PullResponse.Items.AMT_EthernetPortSettings.length > 1) {
+              // If the array length is greater than one, device has WiFi capabilities and storing temporarily for next steps if the profile has wifi configs to be configured.
+              clientObj.network.WirelessObj = response.Envelope.Body.PullResponse.Items.AMT_EthernetPortSettings[1]
+            }
+          } else {
+            wiredSettings.DHCPEnabled = false
+            wiredSettings.SharedStaticIp = true
+          }
+          wiredSettings.IpSyncEnabled = true
+          if (wiredSettings.DHCPEnabled || wiredSettings.IpSyncEnabled) {
+            // When 'DHCPEnabled' property is set to true the following properties should be removed:
+            // SubnetMask, DefaultGateway, IPAddress, PrimaryDNS, SecondaryDNS.
+            delete wiredSettings.SubnetMask
+            delete wiredSettings.DefaultGateway
+            delete wiredSettings.IPAddress
+            delete wiredSettings.PrimaryDNS
+            delete wiredSettings.SecondaryDNS
+          } else {
+            // TBD: To set static IP address the values should be read from the REST API
+            // ethernetPortSettings.SubnetMask = "255.255.255.0";
+            // ethernetPortSettings.DefaultGateway = "192.168.1.1";
+            // ethernetPortSettings.IPAddress = "192.168.1.223";
+            // ethernetPortSettings.PrimaryDNS = "192.168.1.1";
+            // ethernetPortSettings.SecondaryDNS = "192.168.1.1";
+          }
+          this.logger.debug(`Updated Network configuration to set on device :  ${JSON.stringify(response, null, '\t')}`)
+          // put request to update ethernet port settings on the device
+          xmlRequestBody = this.amt.EthernetPortSettings(AMT.Methods.PUT, null, wiredSettings)
+          data = this.httpHandler.wrapIt(xmlRequestBody, devices[clientId].connectionParams)
+          return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
         }
-        this.logger.debug(`Updated Network configuration to set on device :  ${JSON.stringify(response, null, '\t')}`)
-        // put request to update ethernet port settings on the device
-        xmlRequestBody = this.amt.EthernetPortSettings(AMT.Methods.PUT, null, ethernetPortSettings)
-        data = this.httpHandler.wrapIt(xmlRequestBody, devices[clientId].connectionParams)
-        return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
       }
       case 'PutResponse': {
         const amtEthernetPortSettings: AMTEthernetPortSettings = response.Envelope.Body.AMT_EthernetPortSettings
@@ -264,7 +303,7 @@ export class NetworkConfigurator implements IExecutor {
             // Set the flag that ethernet port settings is updated.
             clientObj.network.setEthernetPortSettings = true
             return await this.callCIRAConfig(clientId, 'Ethernet Configured', null)
-          } else if (clientObj.network.ethernetSettingsWifiObj == null && payload.profile.wifiConfigs.length > 0) {
+          } else if (clientObj.network.WirelessObj == null && payload.profile.wifiConfigs.length > 0) {
             // If the IpSyncEnabled, DHCPEnabled is true and profile has wifi configs but no wifi capabilities
             this.logger.debug(`Device ${clientObj.uuid} Ethernet Configured. No wireless interface`)
             // Set the flag that ethernet port settings is updated.
@@ -275,8 +314,14 @@ export class NetworkConfigurator implements IExecutor {
             return null
           }
         }
-
         break
+      }
+      case 'fault': {
+        // if we got an error setting EthernetPortSettings
+        const faultMessage = response.Envelope.Body.Fault?.Reason?.Text
+        this.logger.debug(`Device ${clientObj.uuid} Ethernet Configuration Failed. Reason: ${faultMessage}`)
+        devices[clientId].network.setEthernetPortSettings = true
+        return null
       }
     }
   }
@@ -367,11 +412,9 @@ export class NetworkConfigurator implements IExecutor {
   async addWifiConfigs (clientId: string, wifiConfigs: ProfileWifiConfigs[]): Promise<ClientMsg> {
     const clientObj = devices[clientId]
     if (clientObj.network.count <= wifiConfigs.length - 1) {
-      // TODO: Don't love it
-      const dbf = new DbCreatorFactory(EnvReader.GlobalEnvConfig)
-      const db = await dbf.getDb()
       // Get WiFi profile information based on the profile name.
-      const wifiConfig = await db.wirelessProfiles.getByName(wifiConfigs[clientObj.network.count].profileName)
+      await this.getDB()
+      const wifiConfig = await this.db.wirelessProfiles.getByName(wifiConfigs[clientObj.network.count].profileName)
       if (this.configurator?.secretsManager) {
         const data: any = await this.configurator.secretsManager.getSecretAtPath(`Wireless/${wifiConfig.profileName}`)
         if (data != null) {
