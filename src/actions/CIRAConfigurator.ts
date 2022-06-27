@@ -258,6 +258,9 @@ export class CIRAConfigurator implements IExecutor {
       }
       case 'PullResponse': {
         if (response.Envelope.Body.PullResponse.Items?.AMT_PublicKeyCertificate != null) {
+          if (Array.isArray(response.Envelope.Body.PullResponse.Items?.AMT_PublicKeyCertificate)) {
+            throw new RPSError('Failed to remove certificates that were configured previously')
+          }
           this.logger.debug(`Public Key Certificate InstanceID : ${response.Envelope.Body.PullResponse.Items.AMT_PublicKeyCertificate.InstanceID}`)
           const selector = { name: 'InstanceID', value: response.Envelope.Body.PullResponse.Items.AMT_PublicKeyCertificate.InstanceID }
           xmlRequestBody = this.amt.PublicKeyCertificate(AMT.Methods.DELETE, null, selector)
