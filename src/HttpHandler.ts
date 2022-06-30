@@ -23,7 +23,7 @@ export class HttpHandler {
     this.parser = new xml2js.Parser({ ignoreAttrs: false, mergeAttrs: false, explicitArray: false, tagNameProcessors: [this.stripPrefix], valueProcessors: [xml2js.processors.parseNumbers, xml2js.processors.parseBooleans] })
     this.logger = new Logger('HttpHandler')
   }
-
+ 
   wrapIt (data: string, connectionParams: connectionParams): string {
     try {
       const url = '/wsman'
