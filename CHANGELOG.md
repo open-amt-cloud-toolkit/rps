@@ -1,6 +1,51 @@
+<a name="2.4.0"></a>
+## [2.4.0] - 2022-07-05
+### Build
+- **deps:** bump ws from 8.7.0 to 8.8.0 (#1fe1bde) 
+- **deps:** bump ws from 8.6.0 to 8.7.0 (#e2877cb) 
+- **deps:** bump got from 11.8.3 to 11.8.5 (#30e0670) 
+- **deps:** bump express-validator from 6.14.0 to 6.14.1 (#7ec4d07) 
+- **deps-dev:** bump typescript from 4.7.2 to 4.7.3 (#a2e6cd1) 
+- **deps-dev:** bump typescript from 4.6.4 to 4.7.2 (#103fa24) 
 
-<a name="2.3.0"></a>
-## [2.3.0] - 2022-05-11
+### Ci
+- rename test output files (#95a4d22) 
+- remove node 12 and add 18 for build (#a98387c) 
+- **codedql:** upgrade codeql to v2 (#ff43898) 
+- **jest:** upload junit results as built artifact (#ddd5953) 
+- **postman:** add test result output in json and junit (#b683971) 
+
+### Feat
+- **concurrency:** adds 409/412 response codes for resource conflicts (#13a1522) 
+- **network:** support WiFi only activation and provisioning ([#655](https://github.com/open-amt-cloud-toolkit/rps/issues/655)) (#c3ce5ed) 
+- **profile:** added user consent, kvm, sol and ider to AMT profile ([#651](https://github.com/open-amt-cloud-toolkit/rps/issues/651)) (#3306ae3) 
+
+### Fix
+- **cira:** added an error message when failed to remove certs ([#664](https://github.com/open-amt-cloud-toolkit/rps/issues/664)) (#645d28a) 
+
+### Test
+- **postman:** automated rps (#1d59926) 
+
+
+<a name="v2.3.2"></a>
+## [v2.3.2] - 2022-06-15
+### Fix
+- **dependencies:** resolve peer dependencies for eslint (#e595d4e) 
+
+
+<a name="v2.3.1"></a>
+## [v2.3.1] - 2022-05-13
+### Build
+- **deps:** bump [@open](https://github.com/open)-amt-cloud-toolkit/wsman-messages (#f6625cc) 
+- **deps:** bump [@open](https://github.com/open)-amt-cloud-toolkit/wsman-messages (#0d6f9e1) 
+- **deps-dev:** bump sinon from 13.0.2 to 14.0.0 (#c9f61e6) 
+
+### Fix
+- **validator:** remove uuid format check (#c0b0600) 
+
+
+<a name="v2.3.0"></a>
+## [v2.3.0] - 2022-05-11
 ### Build
 - **deps:** bump minimist from 1.2.5 to 1.2.6 (#24478f5) 
 - **deps:** bump [@open](https://github.com/open)-amt-cloud-toolkit/wsman-messages (#1d1fa34) 
@@ -23,11 +68,14 @@
 - **deps-dev:** bump nodemon from 2.0.15 to 2.0.16 (#1a38228) 
 - **deps-dev:** bump [@types](https://github.com/types)/jest from 27.4.1 to 27.5.0 (#29eb85f) 
 - **deps-dev:** bump ts-jest from 27.1.3 to 27.1.4 (#7349936) 
-- **version:** bump to v2.3.0 (#c4ba4d3) 
+- **version:** bump to v2.3.0 (#51e13a6) 
 
 ### Ci
 - swap our semantic pull request bot for Github Action (#2d66607) 
 - **lint:** adds semantic commit lints (#9ef4156) 
+
+### Docs
+- update changelog for v2.3.0 (#a8f6f67) 
 
 ### Feat
 - **cira:** adds setting MpsType to 'both' (#a4a0017) 
@@ -45,8 +93,9 @@
 ### Test
 - **network:** add tests for single and array ethernetportsettings (#6506cf1) 
 
-<a name="2.2.0"></a>
-## [2.2.0] - 2022-03-18
+
+<a name="v2.2.0"></a>
+## [v2.2.0] - 2022-03-18
 ### Build
 - **deps:** bump ws from 8.4.0 to 8.4.2 (#5841c98) 
 - **deps:** bump mqtt from 4.3.6 to 4.3.7 (#2fd7a96) 
@@ -118,7 +167,7 @@
 - **workflow:** optimizes node CI (#c8f18a1) 
 
 ### Docs
-- update changelog (#287d61a) 
+- update changelog (#f399ae4) 
 - **swagger:** removes swagger from source control (#2c8e117) 
 
 ### Feat
@@ -162,8 +211,8 @@
 - **version:** Adding test to version (#8430d76) 
 
 
-<a name="2.1.0"></a>
-## [2.1.0] - 2021-11-08
+<a name="v2.1.0"></a>
+## [v2.1.0] - 2021-11-08
 ### Build
 - **deps:** bump express-validator from 6.12.2 to 6.13.0 (#51cb84a) 
 - **deps:** bump express-validator from 6.12.1 to 6.12.2 (#e7f01f5) 
@@ -191,6 +240,7 @@
 ### Docs
 - adds issue template (#1958a08) 
 - add contributing guidlines (#05b3843) 
+- **changelog:** update changelog (#2fe5a1e) 
 - **github:** add pull request template (#72aa4d8) 
 - **swagger:** update version to 2.0.0 (#5425a27) 
 
@@ -692,8 +742,13 @@ API responses are structured and no longer return string messages
 - **docker:** optimize dockerfile (#ad2319d) 
 
 
-[Unreleased]: https://github.com/open-amt-cloud-toolkit/rps/compare/2.1.0...HEAD
-[2.1.0]: https://github.com/open-amt-cloud-toolkit/rps/compare/v2.0.1...2.1.0
+[Unreleased]: https://github.com/open-amt-cloud-toolkit/rps/compare/2.3.0...HEAD
+[2.3.0]: https://github.com/open-amt-cloud-toolkit/rps/compare/v2.3.2...2.3.0
+[v2.3.2]: https://github.com/open-amt-cloud-toolkit/rps/compare/v2.3.1...v2.3.2
+[v2.3.1]: https://github.com/open-amt-cloud-toolkit/rps/compare/v2.3.0...v2.3.1
+[v2.3.0]: https://github.com/open-amt-cloud-toolkit/rps/compare/v2.2.0...v2.3.0
+[v2.2.0]: https://github.com/open-amt-cloud-toolkit/rps/compare/v2.1.0...v2.2.0
+[v2.1.0]: https://github.com/open-amt-cloud-toolkit/rps/compare/v2.0.1...v2.1.0
 [v2.0.1]: https://github.com/open-amt-cloud-toolkit/rps/compare/v2.0.0...v2.0.1
 [v2.0.0]: https://github.com/open-amt-cloud-toolkit/rps/compare/v1.5.0...v2.0.0
 [v1.5.0]: https://github.com/open-amt-cloud-toolkit/rps/compare/v1.4.0...v1.5.0
