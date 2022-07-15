@@ -7,7 +7,7 @@
 import * as WebSocket from 'ws'
 import { IValidator } from './interfaces/IValidator'
 import { ILogger } from './interfaces/ILogger'
-import { ClientMsg, ClientAction, Payload, ClientMethods } from './models/RCS.Config'
+import { ClientAction, ClientMethods, ClientMsg, Payload } from './models/RCS.Config'
 import { IConfigurator } from './interfaces/IConfigurator'
 import { IClientMessageParser } from './interfaces/IClientMessageParser'
 import { ClientMsgJsonParser } from './utils/ClientMsgJsonParser'
@@ -19,6 +19,7 @@ import { EnvReader } from './utils/EnvReader'
 import got from 'got'
 import { devices } from './WebSocketListener'
 import { AMTConfiguration, AMTDeviceDTO } from './models'
+
 export class Validator implements IValidator {
   jsonParser: IClientMessageParser
 
@@ -318,6 +319,8 @@ export class Validator implements IValidator {
         } else {
           clientObj.action = ClientAction.NETWORKCONFIG
         }
+      } else if (clientObj.action === ClientAction.NETWORKCONFIG) {
+        clientObj.action = ClientAction.FEATURESCONFIG
       }
     } else {
       clientObj.activationStatus.activated = true

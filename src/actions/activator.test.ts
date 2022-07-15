@@ -23,6 +23,7 @@ import { HttpHandler } from '../HttpHandler'
 import { ClientAction, ClientObject } from '../models/RCS.Config'
 import { RPSError } from '../utils/RPSError'
 import { devices } from '../WebSocketListener'
+import { FeaturesConfigurator } from './FeaturesConfigurator'
 
 EnvReader.GlobalEnvConfig = config
 const nodeForge = new NodeForge()

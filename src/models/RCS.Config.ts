@@ -83,6 +83,7 @@ export interface Status {
   Network?: string
   CIRAConnection?: string
   TLSConfiguration?: string
+  Features?: string
 }
 export interface ClientObject {
   ClientId: string
@@ -111,6 +112,7 @@ export interface ClientObject {
   unauthCount: number
   connectionParams?: connectionParams
   messageId?: number
+  features?: FeaturesConfigFlow
 }
 
 export interface ActivationStatus {
@@ -151,6 +153,26 @@ export interface NetworkConfigFlow {
   setWiFiPortResponse?: boolean
   getWiFiPortConfigurationService?: boolean
   count?: number
+}
+
+export interface FeaturesConfigFlow {
+  // 3 requests to the device
+  // to get the current configuration
+  // get saved here
+  AMT_RedirectionService?: any
+  IPS_OptInService?: any
+  CIM_KVMRedirectionSAP?: any
+  // once all 3 responses are received
+  // figure out what needs to be set/configured
+  transitionFromGetToSet?: boolean
+  // these are the potential configuration messages
+  // that need to be sent
+  // determined by current client configuration
+  // and features configuration of the provisioning profile
+  setRedirectionServiceXml?: any
+  setKvmRedirectionSapXml?: any
+  putRedirectionServiceXml?: any
+  putIpsOptInServiceXml?: any
 }
 
 export interface TLSConfigFlow {
@@ -238,6 +260,7 @@ export enum ClientAction {
   CIRACONFIG = 'ciraconfig',
   NETWORKCONFIG = 'networkConfig',
   TLSCONFIG = 'tlsConfig',
+  FEATURESCONFIG = 'featureConfig',
   MAINTENANCE = 'maintenance'
 }
 

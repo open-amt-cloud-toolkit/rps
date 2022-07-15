@@ -541,6 +541,25 @@ describe('setNextStepsForConfiguration', () => {
     expect(getDevcieCredentialsSpy).toHaveBeenCalled()
     expect(updateTagsSpy).toHaveBeenCalled()
   })
+  test(`should set next action ${ClientAction.FEATURESCONFIG} if ClientAction is ${ClientAction.NETWORKCONFIG}`, async () => {
+    const clientId = uuid()
+    const clientObj: ClientObject = {
+      ClientId: clientId,
+      ClientData: null,
+      action: ClientAction.NETWORKCONFIG,
+      activationStatus: { activated: false, missingMebxPassword: false, changePassword: false },
+      amtPassword: null,
+      unauthCount: 0
+    }
+    devices[clientId] = clientObj
+    const getDevcieCredentialsSpy = jest.spyOn(validator, 'getDeviceCredentials').mockResolvedValue({ guid: msg.uuid, amtpass: msg.payload.password })
+    const updateTagsSpy = jest.spyOn(validator, 'updateTags').mockResolvedValue()
+    await validator.setNextStepsForConfiguration(msg, clientObj.ClientId)
+    expect(clientObj.action).toBe(ClientAction.FEATURESCONFIG)
+    expect(clientObj.ClientData).toBe(msg)
+    expect(getDevcieCredentialsSpy).toHaveBeenCalled()
+    expect(updateTagsSpy).toHaveBeenCalled()
+  })
   test('should set missingMebxPassword true if ClientAction is ACM and amtDevice.mebxpass is false', async () => {
     const clientId = uuid()
     const clientObj: ClientObject = {

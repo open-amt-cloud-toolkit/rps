@@ -49,6 +49,14 @@ export class Activator implements IExecutor {
    * @param {string} clientId Id to keep track of connections
    * @returns {RCSMessage} message to sent to client
    */
+  // TODO: this is where activation messages get kicked off
+  // create Featureconfigurator.ts (template look at NetworkConfigurator)
+  // wsman messaging should exist from MPS stuff, need to reuse, same calls but different context.
+  // MPS.setAMTFeatures ...
+  // typical flow
+  // send msg on line 105...
+  //
+  // in that file handle the calls
   async execute (message: any, clientId: string, httpHandler?: HttpHandler): Promise<ClientMsg> {
     let clientObj: ClientObject
     try {
@@ -93,6 +101,8 @@ export class Activator implements IExecutor {
         if (clientObj.action === ClientAction.ADMINCTLMODE) {
           this.createSignedString(clientId)
           // Activate in ACM
+          // TODO: this is the wsman xml message
+          // well formed html message with wsman xml body ...etc.
           xmlRequestBody = this.ips.HostBasedSetupService(IPS.Methods.ADMIN_SETUP, 2, password, clientObj.nonce.toString('base64'), 2, clientObj.signature)
         } else {
           // Activate in CCM
@@ -159,6 +169,7 @@ export class Activator implements IExecutor {
         // pares WSMan xml response to json
         const response = httpHandler.parseXML(xmlBody)
         const method = response.Envelope.Header.ResourceURI.split('/').pop()
+        // TODO: will be new Feature message method to add as it's asynchronous
         switch (method) {
           case 'AMT_GeneralSettings': {
             return await this.validateGeneralSettings(clientId, response, httpHandler)
@@ -177,6 +188,10 @@ export class Activator implements IExecutor {
     }
   }
 
+  // todo: these are handling RESPONSES from AMT to make sure things did what we expect and handle
+  // unexpected states or problems etc.
+  // perhaps do another message etc.
+  // return null if there's if not further stuff going on ... no next thing...
   async validateGeneralSettings (clientId: string, response: any, httpHandler: HttpHandler): Promise<ClientMsg> {
     const clientObj = devices[clientId]
     const digestRealm = response.Envelope.Body.AMT_GeneralSettings.DigestRealm

@@ -6,7 +6,7 @@
  **********************************************************************/
 
 import Logger from './Logger'
-import { ClientMsg, ClientAction } from './models/RCS.Config'
+import { ClientAction, ClientMsg } from './models/RCS.Config'
 import { IConfigurator } from './interfaces/IConfigurator'
 import { ILogger } from './interfaces/ILogger'
 import { SignatureHelper } from './utils/SignatureHelper'
@@ -22,6 +22,7 @@ import { CertManager } from './CertManager'
 import { Maintenance } from './actions/Maintenance'
 import { HttpHandler } from './HttpHandler'
 import { devices } from './WebSocketListener'
+import { FeaturesConfigurator } from './actions/FeaturesConfigurator'
 
 export class ClientActions {
   actions: any
@@ -43,6 +44,9 @@ export class ClientActions {
 
     const networkConfig = new NetworkConfigurator(new Logger('NetworkConfig'), configurator, responseMsg, validator, ciraConfig)
     this.actions[ClientAction.NETWORKCONFIG] = networkConfig
+
+    this.actions[ClientAction.FEATURESCONFIG] =
+      new FeaturesConfigurator(new Logger('FeaturesConfig'), configurator, responseMsg, ClientAction.NETWORKCONFIG, networkConfig)
 
     this.actions[ClientAction.MAINTENANCE] = new Maintenance(new Logger('Maintenance'), responseMsg)
     this.actions[ClientAction.ADMINCTLMODE] = new Activator(new Logger('Activator'), configurator, certManager, helper, responseMsg, validator, networkConfig)
