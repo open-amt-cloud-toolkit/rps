@@ -34,8 +34,9 @@ const responseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'))
 const validator = new Validator(new Logger('Validator'), configurator)
 const tlsConfig = new TLSConfigurator(new Logger('CIRAConfig'), certManager, responseMsg)
 const ciraConfig = new CIRAConfigurator(new Logger('CIRAConfig'), configurator, responseMsg, tlsConfig)
-const networkConfigurator = new NetworkConfigurator(new Logger('NetworkConfig'), configurator, responseMsg, validator, ciraConfig)
-const activator = new Activator(new Logger('Activator'), configurator, certManager, helper, responseMsg, validator, networkConfigurator)
+const networkConfig = new NetworkConfigurator(new Logger('NetworkConfig'), configurator, responseMsg, validator, ciraConfig)
+const featuresConfig = new FeaturesConfigurator(new Logger('FeaturesConfig'), configurator, responseMsg, ClientAction.NETWORKCONFIG, networkConfig)
+const activator = new Activator(new Logger('Activator'), configurator, certManager, helper, responseMsg, validator, featuresConfig)
 const httpHandler = new HttpHandler()
 let clientId, activationmsg
 
@@ -655,25 +656,25 @@ describe('validate Host Based Setup Service response', () => {
 })
 
 describe('wait for Activation', () => {
-  test('should set next action as NETWORKCONFIG once heartbeat has ended for ACM', async () => {
+  test('should set next action as FEATURESCONFIG once heartbeat has ended for ACM', async () => {
     const clientObj = devices[clientId]
     const currentTime = new Date().getTime()
     clientObj.action = ClientAction.ADMINCTLMODE
     clientObj.delayEndTime = currentTime + 1000000000000
     clientObj.delayEndTime = currentTime
     await activator.waitAfterActivation(clientId, response200SetMEBxPassword(0), httpHandler)
-    expect(clientObj.action).toBe(ClientAction.NETWORKCONFIG)
+    expect(clientObj.action).toBe(ClientAction.FEATURESCONFIG)
   })
-  test('should set next action as NETWORKCONFIG once heartbeat has ended for ACM', async () => {
+  test('should set next action as FEATURESCONFIG once heartbeat has ended for ACM', async () => {
     const clientObj = devices[clientId]
     const currentTime = new Date().getTime()
     clientObj.action = ClientAction.ADMINCTLMODE
     clientObj.delayEndTime = currentTime + 1000000000000
     clientObj.delayEndTime = currentTime
     await activator.waitAfterActivation(clientId, response200SetMEBxPassword(1), httpHandler)
-    expect(clientObj.action).toBe(ClientAction.NETWORKCONFIG)
+    expect(clientObj.action).toBe(ClientAction.FEATURESCONFIG)
   })
-  test('should set next action as NETWORKCONFIG once heartbeat has ended for ACM', async () => {
+  test('should set next action as FEATURESCONFIG once heartbeat has ended for ACM', async () => {
     const clientObj = devices[clientId]
     const currentTime = new Date().getTime()
     clientObj.action = ClientAction.ADMINCTLMODE
@@ -683,13 +684,13 @@ describe('wait for Activation', () => {
     const response = await activator.waitAfterActivation(clientId, message, httpHandler)
     expect(response.method).toBe('wsman')
   })
-  test('should set next action as NETWORKCONFIG once heartbeat has ended for CCM', async () => {
+  test('should set next action as FEATURESCONFIG once heartbeat has ended for CCM', async () => {
     const clientObj = devices[clientId]
     const currentTime = new Date().getTime()
     clientObj.action = ClientAction.CLIENTCTLMODE
     clientObj.delayEndTime = currentTime
     await activator.waitAfterActivation(clientId, null, httpHandler)
-    expect(clientObj.action).toBe(ClientAction.NETWORKCONFIG)
+    expect(clientObj.action).toBe(ClientAction.FEATURESCONFIG)
   })
 })
 

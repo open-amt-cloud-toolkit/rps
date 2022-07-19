@@ -500,7 +500,7 @@ describe('setNextStepsForConfiguration', () => {
       }
     }
   })
-  test('should set next action NETWORKCONFIG if MEBX is already set', async () => {
+  test('should set next action FEATURESCONFIG if MEBX is already set', async () => {
     const clientId = uuid()
     const clientObj: ClientObject = {
       ClientId: clientId,
@@ -514,14 +514,14 @@ describe('setNextStepsForConfiguration', () => {
     const getDevcieCredentialsSpy = jest.spyOn(validator, 'getDeviceCredentials').mockResolvedValue({ guid: msg.uuid, amtpass: msg.payload.password, mebxpass: 'TestP{assw0rd' })
     const updateTagsSpy = jest.spyOn(validator, 'updateTags').mockResolvedValue()
     await validator.setNextStepsForConfiguration(msg, clientObj.ClientId)
-    expect(clientObj.action).toBe(ClientAction.NETWORKCONFIG)
+    expect(clientObj.action).toBe(ClientAction.FEATURESCONFIG)
     expect(clientObj.amtPassword).toBe(msg.payload.password)
     expect(clientObj.activationStatus.missingMebxPassword).toBeFalsy()
     expect(clientObj.ClientData).toBe(msg)
     expect(getDevcieCredentialsSpy).toHaveBeenCalled()
     expect(updateTagsSpy).toHaveBeenCalled()
   })
-  test('should set next action NETWORKCONFIG if ClientAction is CCM', async () => {
+  test('should set next action FEATURESCONFIG if ClientAction is CCM', async () => {
     const clientId = uuid()
     const clientObj: ClientObject = {
       ClientId: clientId,
@@ -535,27 +535,8 @@ describe('setNextStepsForConfiguration', () => {
     const getDevcieCredentialsSpy = jest.spyOn(validator, 'getDeviceCredentials').mockResolvedValue({ guid: msg.uuid, amtpass: msg.payload.password })
     const updateTagsSpy = jest.spyOn(validator, 'updateTags').mockResolvedValue()
     await validator.setNextStepsForConfiguration(msg, clientObj.ClientId)
-    expect(clientObj.action).toBe(ClientAction.NETWORKCONFIG)
-    expect(clientObj.amtPassword).toBe(msg.payload.password)
-    expect(clientObj.ClientData).toBe(msg)
-    expect(getDevcieCredentialsSpy).toHaveBeenCalled()
-    expect(updateTagsSpy).toHaveBeenCalled()
-  })
-  test(`should set next action ${ClientAction.FEATURESCONFIG} if ClientAction is ${ClientAction.NETWORKCONFIG}`, async () => {
-    const clientId = uuid()
-    const clientObj: ClientObject = {
-      ClientId: clientId,
-      ClientData: null,
-      action: ClientAction.NETWORKCONFIG,
-      activationStatus: { activated: false, missingMebxPassword: false, changePassword: false },
-      amtPassword: null,
-      unauthCount: 0
-    }
-    devices[clientId] = clientObj
-    const getDevcieCredentialsSpy = jest.spyOn(validator, 'getDeviceCredentials').mockResolvedValue({ guid: msg.uuid, amtpass: msg.payload.password })
-    const updateTagsSpy = jest.spyOn(validator, 'updateTags').mockResolvedValue()
-    await validator.setNextStepsForConfiguration(msg, clientObj.ClientId)
     expect(clientObj.action).toBe(ClientAction.FEATURESCONFIG)
+    expect(clientObj.amtPassword).toBe(msg.payload.password)
     expect(clientObj.ClientData).toBe(msg)
     expect(getDevcieCredentialsSpy).toHaveBeenCalled()
     expect(updateTagsSpy).toHaveBeenCalled()

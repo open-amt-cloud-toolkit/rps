@@ -15,7 +15,7 @@ import { ClientResponseMsg } from '../utils/ClientResponseMsg'
 import { IValidator } from '../interfaces/IValidator'
 import { RPSError } from '../utils/RPSError'
 import { EnvReader } from '../utils/EnvReader'
-import { NetworkConfigurator } from './NetworkConfigurator'
+import { FeaturesConfigurator } from './FeaturesConfigurator'
 import { AMTUserName } from '../utils/constants'
 import { AMTDeviceDTO, AMTDomain, ProvisioningCertObj } from '../models'
 import got from 'got'
@@ -37,7 +37,7 @@ export class Activator implements IExecutor {
     readonly signatureHelper: SignatureHelper,
     private readonly responseMsg: ClientResponseMsg,
     private readonly validator: IValidator,
-    private readonly networkConfigurator: NetworkConfigurator
+    private readonly featuresConfigurator: FeaturesConfigurator
   ) {
     this.amt = new AMT.Messages()
     this.ips = new IPS.Messages()
@@ -286,11 +286,11 @@ export class Activator implements IExecutor {
         } else if (result.method === 'error') {
           this.logger.debug(`Device ${clientObj.uuid} failed to update MEBx password.`)
         }
-        clientObj.action = ClientAction.NETWORKCONFIG
-        return await this.networkConfigurator.execute(null, clientId)
+        clientObj.action = ClientAction.FEATURESCONFIG
+        return await this.featuresConfigurator.execute(null, clientId)
       } else if (clientObj.action === ClientAction.CLIENTCTLMODE) {
-        clientObj.action = ClientAction.NETWORKCONFIG
-        return await this.networkConfigurator.execute(null, clientId)
+        clientObj.action = ClientAction.FEATURESCONFIG
+        return await this.featuresConfigurator.execute(null, clientId)
       }
     } else {
       this.logger.debug(`Current Time: ${currentTime} Delay end time : ${clientObj.delayEndTime}`)

@@ -317,10 +317,8 @@ export class Validator implements IValidator {
         if (!amtDevice.mebxpass && clientObj.action === ClientAction.ADMINCTLMODE) {
           clientObj.activationStatus.missingMebxPassword = true
         } else {
-          clientObj.action = ClientAction.NETWORKCONFIG
+          clientObj.action = ClientAction.FEATURESCONFIG
         }
-      } else if (clientObj.action === ClientAction.NETWORKCONFIG) {
-        clientObj.action = ClientAction.FEATURESCONFIG
       }
     } else {
       clientObj.activationStatus.activated = true

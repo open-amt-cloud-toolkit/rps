@@ -49,6 +49,9 @@ export class FeaturesConfigurator implements IExecutor {
   async execute (message: any, clientId: string): Promise<ClientMsg> {
     try {
       const clientObj: ClientObject = devices[clientId]
+      if (!clientObj.features) {
+        clientObj.features = {}
+      }
       const features: FeaturesConfigFlow = clientObj.features
       let nextClientMsg
       this.processWSManJsonResponse(message, clientObj)
@@ -58,7 +61,7 @@ export class FeaturesConfigurator implements IExecutor {
       } else if (!features?.IPS_OptInService) {
         nextClientMsg = this.buildWSManResponseMsg(clientId, this.ips.OptInService(IPS.Methods.GET))
       } else if (!features?.CIM_KVMRedirectionSAP) {
-        nextClientMsg = this.buildWSManResponseMsg(clientId, this.ips.OptInService(IPS.Methods.GET))
+        nextClientMsg = this.buildWSManResponseMsg(clientId, this.cim.KVMRedirectionSAP(CIM.Methods.GET))
       } else if (features.transitionFromGetToSet) {
         const nextXmlMsg = this.onTransitionFromGetToSet(features, clientObj.ClientData.payload.profile)
         // send back the first 'set configuration' message
@@ -122,9 +125,6 @@ export class FeaturesConfigurator implements IExecutor {
           this.logger.warn(`processWSManJsonResponse unhandled response ${method}, ${action}`)
         }
         break
-      }
-      default: {
-        throw new RPSError(`Request failed with status ${wsmanResponse.statusCode}`)
       }
     }
   }

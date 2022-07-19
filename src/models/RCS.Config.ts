@@ -7,6 +7,7 @@ import { DigestChallenge } from '@open-amt-cloud-toolkit/wsman-messages/models/c
 import * as WebSocket from 'ws'
 import { AMTConfiguration, AMTDomain, ProvisioningCertObj } from '.'
 import { AMTEthernetPortSettings } from './WSManResponse'
+import { AMT_RedirectionResponse } from '@open-amt-cloud-toolkit/wsman-messages/models/amt_models'
 
 export interface WebSocketConfig {
   WebSocketPort: number
@@ -162,6 +163,10 @@ export interface FeaturesConfigFlow {
   AMT_RedirectionService?: any
   IPS_OptInService?: any
   CIM_KVMRedirectionSAP?: any
+  // ugly, but need this reponse too although
+  // seems to be redundant. hopefully will be simplified
+  // in refactored state machine architecture
+  getAmtRedirectionResponse?: any
   // once all 3 responses are received
   // figure out what needs to be set/configured
   transitionFromGetToSet?: boolean
