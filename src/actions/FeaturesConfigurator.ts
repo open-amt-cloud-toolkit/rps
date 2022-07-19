@@ -16,6 +16,7 @@ import { devices } from '../WebSocketListener'
 import { AMT, CIM, Common, IPS } from '@open-amt-cloud-toolkit/wsman-messages'
 import { HttpHandler } from '../HttpHandler'
 import { parseBody } from '../utils/parseWSManResponseBody'
+import { AMTConfiguration } from '../models'
 
 export class FeaturesConfigurator implements IExecutor {
   amt: AMT.Messages
@@ -57,28 +58,39 @@ export class FeaturesConfigurator implements IExecutor {
       this.processWSManJsonResponse(message, clientObj)
 
       if (!features?.AMT_RedirectionService) {
+        this.logger.debug('getting AMT_RedirectionService')
         nextClientMsg = this.buildWSManResponseMsg(clientId, this.amt.RedirectionService(AMT.Methods.GET))
       } else if (!features?.IPS_OptInService) {
+        this.logger.debug('getting IPS_OptInService')
         nextClientMsg = this.buildWSManResponseMsg(clientId, this.ips.OptInService(IPS.Methods.GET))
       } else if (!features?.CIM_KVMRedirectionSAP) {
+        this.logger.debug('getting CIM_KVMRedirectionSAP')
         nextClientMsg = this.buildWSManResponseMsg(clientId, this.cim.KVMRedirectionSAP(CIM.Methods.GET))
       } else if (features.transitionFromGetToSet) {
+        this.logger.debug('transitionFromGetToSet')
         const nextXmlMsg = this.onTransitionFromGetToSet(features, clientObj.ClientData.payload.profile)
         // send back the first 'set configuration' message
         if (nextXmlMsg) {
+          this.logger.debug('setting nextXmlMsg')
           nextClientMsg = this.buildWSManResponseMsg(clientId, nextXmlMsg)
         } else {
-          nextClientMsg = await this.enterNextClientState(clientId)
+          this.logger.debug('onNextClientState')
+          nextClientMsg = await this.onNextClientState(clientId)
         }
       } else if (features.setKvmRedirectionSapXml) {
+        this.logger.debug('setting features.setKvmRedirectionSapXml')
+        this.logger.debug('')
         nextClientMsg = this.buildWSManResponseMsg(clientId, features.setKvmRedirectionSapXml)
       } else if (features.putRedirectionServiceXml) {
+        this.logger.debug('putRedirectionServiceXml')
         nextClientMsg = this.buildWSManResponseMsg(clientId, features.putRedirectionServiceXml)
       } else if (features.putIpsOptInServiceXml) {
+        this.logger.debug('putIpsOptInServiceXml')
         nextClientMsg = this.buildWSManResponseMsg(clientId, features.putIpsOptInServiceXml)
       } else {
         // flow is complete so enter the next executor
-        nextClientMsg = await this.enterNextClientState(clientId)
+        this.logger.debug('onNextClientState')
+        nextClientMsg = await this.onNextClientState(clientId)
       }
       return nextClientMsg
     } catch (error) {
@@ -135,7 +147,7 @@ export class FeaturesConfigurator implements IExecutor {
   }
 
   // transitions control to the next action and executor
-  async enterNextClientState (clientId: string): Promise<ClientMsg> {
+  async onNextClientState (clientId: string): Promise<ClientMsg> {
     if (this.nextClientAction) {
       const clientObj: ClientObject = devices[clientId]
       clientObj.action = this.nextClientAction
@@ -153,7 +165,7 @@ export class FeaturesConfigurator implements IExecutor {
     }
   }
 
-  onTransitionFromGetToSet (features: FeaturesConfigFlow, profile: any): string {
+  onTransitionFromGetToSet (features: FeaturesConfigFlow, profile: AMTConfiguration): string {
     // this step in the flow will figure out which (if any) configuration changes
     // need to be made on the client. The messages to send are put into the features flow.
     let isRedirectionChanged = false
@@ -167,12 +179,12 @@ export class FeaturesConfigurator implements IExecutor {
       features.CIM_KVMRedirectionSAP.EnabledState === Common.Models.AMT_REDIRECTION_SERVICE_ENABLE_STATE.EnabledButOffline)
 
     if (profile.solEnabled !== solEnabled) {
-      solEnabled = profile.enableSOL
+      solEnabled = profile.solEnabled
       isRedirectionChanged = true
     }
 
     if (profile.iderEnabled !== iderEnabled) {
-      iderEnabled = profile.enableIDER
+      iderEnabled = profile.iderEnabled
       isRedirectionChanged = true
     }
 
@@ -181,7 +193,7 @@ export class FeaturesConfigurator implements IExecutor {
     }
 
     if (profile.kvmEnabled !== kvmEnabled) {
-      kvmEnabled = profile.enableKVM
+      kvmEnabled = profile.kvmEnabled
       isRedirectionChanged = true
     }
 
@@ -203,7 +215,7 @@ export class FeaturesConfigurator implements IExecutor {
       features.setKvmRedirectionSapXml = this.cim.KVMRedirectionSAP(CIM.Methods.REQUEST_STATE_CHANGE, requestedState)
       // and don't forget the put
       const redirectionResponse: AMT.Models.RedirectionResponse = {
-        AMT_RedirectionService: features.AMT_RedirectionService
+        AMT_RedirectionService: JSON.parse(JSON.stringify(features.AMT_RedirectionService))
       }
       features.putRedirectionServiceXml = this.amt.RedirectionService(AMT.Methods.PUT, null, redirectionResponse)
       nextXmlMsg = features.setRedirectionServiceXml
@@ -217,7 +229,10 @@ export class FeaturesConfigurator implements IExecutor {
     const key = profile.userConsent.toLowerCase()
     if (features.IPS_OptInService.OptInRequired !== UserConsentOptions[key]) {
       features.IPS_OptInService.OptInRequired = UserConsentOptions[key]
-      features.putIpsOptInServiceXml = this.ips.OptInService(IPS.Methods.PUT, null, features.IPS_OptInService)
+      const ipsOptInSvcResponse: IPS.Models.OptInServiceResponse = {
+        IPS_OptInService: JSON.parse(JSON.stringify(features.IPS_OptInService))
+      }
+      features.putIpsOptInServiceXml = this.ips.OptInService(IPS.Methods.PUT, null, ipsOptInSvcResponse)
       if (!nextXmlMsg) {
         nextXmlMsg = features.putIpsOptInServiceXml
       }

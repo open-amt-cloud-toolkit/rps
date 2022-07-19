@@ -156,7 +156,7 @@ beforeAll(() => {
 describe('testing execute', () => {
   let testMatrix: FeaturesTestMatrix
   let result: ClientMsg
-  const enterNextClientStateSpy: jest.SpyInstance = jest.spyOn(feturesConfigurator, 'enterNextClientState')
+  const onNextClientStateSpy: jest.SpyInstance = jest.spyOn(feturesConfigurator, 'onNextClientState')
 
   beforeEach(() => {
     setDefaultMessages()
@@ -215,7 +215,7 @@ describe('testing execute', () => {
     testMatrix.putIpsOptInServiceXml = false
     confirmFeaturesFlowState(devices[clientId].features, testMatrix)
     expect(result).toBe(null)
-    expect(enterNextClientStateSpy).toHaveBeenCalled()
+    expect(onNextClientStateSpy).toHaveBeenCalled()
   })
   test('should call enterNextState early if no configuration changes', async () => {
     setDefaultResponses()
@@ -236,7 +236,7 @@ describe('testing execute', () => {
     testMatrix.transitionFromGetToSet = false
     confirmFeaturesFlowState(devices[clientId].features, testMatrix)
     expect(result).toBeFalsy()
-    expect(enterNextClientStateSpy).toHaveBeenCalled()
+    expect(onNextClientStateSpy).toHaveBeenCalled()
   })
   test('should catch general and RPSErrors and return error message', async () => {
     jest
@@ -284,7 +284,7 @@ describe('testing enterNextClientState', () => {
     devices[clientId].features.AMT_RedirectionService = amtRedirectionSvcJson
     devices[clientId].features.IPS_OptInService = ipsOptInsSvcJson
     devices[clientId].features.CIM_KVMRedirectionSAP = kvmRedirectionSvcJson
-    const result = await feturesConfigurator.enterNextClientState(clientId)
+    const result = await feturesConfigurator.onNextClientState(clientId)
     expect(result.message).toEqual(testString)
   })
 })
