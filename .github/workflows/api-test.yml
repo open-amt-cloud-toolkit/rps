@@ -14,8 +14,15 @@ jobs:
     - uses: actions/checkout@v2
     - run: docker build -f Dockerfile -t rps:${GITHUB_SHA} .
     - run: docker-compose up -d
-    - uses: matt-ball/newman-action@master
+    
+    - name: Let Docker Spin up
+      run: sleep 5
+    - name: Run RPS API Tests
+      run: docker run --network=host -v  /home/runner/work/rps/rps/src/test/collections/:/collections -v /home/runner/work/mps/mps/src/test/results/:/results postman/newman run /collections/rps.postman_collection.json -e /collections/rps.postman_environment.json --insecure --reporters cli,json,junit --reporter-json-export /results/rps_api_results.json --reporter-junit-export /results/rps_api_results_junit.xml
+    - name: Run RPS Security Tests
+      run: docker run --network=host -v  /home/runner/work/rps/rps/src/test/collections/:/collections -v /home/runner/work/mps/mps/src/test/results/:/results postman/newman run /collections/rps_security_api_test.postman_collection.json -e /collections/rps.postman_environment.json -d /collections/data/rps_security_api_test.data.json --insecure --reporters cli,json,junit --reporter-json-export /results/rps_api_security_results.json --reporter-junit-export /results/rps_api_security_results_junit.xml
+    - name: Upload Postman Results
+      uses: actions/upload-artifact@v3
       with:
-        collection: ./src/test/collections/rps.postman_collection.json
-        environment: ./src/test/collections/rps.postman_environment.json
-    - run: docker run --network=host -v  /home/runner/work/rps/rps/src/test/collections/:/collections postman/newman run /collections/rps_security_api_test.postman_collection.json -e /collections/rps.postman_environment.json -d /collections/data/rps_security_api_test.data.json --insecure
+        name: rps-api
+        path: /home/runner/work/mps/mps/src/test/results

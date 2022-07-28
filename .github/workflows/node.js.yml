@@ -40,3 +40,9 @@ jobs:
     - uses: codecov/codecov-action@v1.0.14
       name: Upload Coverage Results
       if: ${{ matrix.node-version == '16.x' }}
+    - run: mv junit.xml rps-unit.xml
+    - name: Upload JEST Results
+      uses: actions/upload-artifact@v3
+      with:
+        name: rps-unit
+        path: rps-unit.xml
