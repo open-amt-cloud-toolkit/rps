@@ -45,7 +45,7 @@
     "@open-amt-cloud-toolkit/wsman-messages": "^2.3.4",
     "body-parser": "^1.20.0",
     "cors": "^2.8.5",
-    "crypto-random-string": "^3.3.1",
+    "crypto-random-string": "^5.0.0",
     "dot-object": "^2.1.4",
     "express": "^4.18.1",
     "express-promise-router": "^4.1.1",
