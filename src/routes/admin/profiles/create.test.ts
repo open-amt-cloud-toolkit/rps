@@ -13,7 +13,7 @@ describe('Profiles - Create', () => {
   beforeEach(() => {
     resSpy = createSpyObj('Response', ['status', 'json', 'end', 'send'])
     req = {
-      db: { profiles: { insert: jest.fn() } },
+      db: { profiles: { insert: jest.fn(), delete: jest.fn() } },
       secretsManager: {
         writeSecretWithObject: jest.fn()
       },
@@ -39,6 +39,34 @@ describe('Profiles - Create', () => {
     })
     expect(resSpy.status).toHaveBeenCalledWith(201)
   })
+  it('should handle error with create with write in vault fails', async () => {
+    jest.spyOn(req.db.profiles, 'delete').mockResolvedValue(true)
+    secretManagerSpy = jest.spyOn(req.secretsManager, 'writeSecretWithObject').mockResolvedValue(null)
+    await createProfile(req, resSpy)
+    expect(insertSpy).toHaveBeenCalledWith({
+      amtPassword: 'AMT_PASSWORD',
+      iderEnabled: false,
+      kvmEnabled: true,
+      solEnabled: false,
+      userConsent: AMTUserConsent.KVM,
+      tenantId: undefined
+    })
+    expect(resSpy.status).toHaveBeenCalledWith(500)
+  })
+  it('should handle error with create with write in vault fails and undo db.delete fail', async () => {
+    jest.spyOn(req.db.profiles, 'delete').mockResolvedValue(null)
+    secretManagerSpy = jest.spyOn(req.secretsManager, 'writeSecretWithObject').mockResolvedValue(null)
+    await createProfile(req, resSpy)
+    expect(insertSpy).toHaveBeenCalledWith({
+      amtPassword: 'AMT_PASSWORD',
+      iderEnabled: false,
+      kvmEnabled: true,
+      solEnabled: false,
+      userConsent: AMTUserConsent.KVM,
+      tenantId: undefined
+    })
+    expect(resSpy.status).toHaveBeenCalledWith(500)
+  })
   it('should create when generate random password false for acm', async () => {
     req.body = {
       profileName: 'acm',
@@ -49,6 +77,25 @@ describe('Profiles - Create', () => {
       generateRandomPassword: false,
       password: 'password',
       generateRandomMEBxPassword: false,
+      mebxPassword: 'password',
+      userConsent: AMTUserConsent.NONE,
+      iderEnabled: true,
+      kvmEnabled: true,
+      solEnabled: true
+    }
+    await createProfile(req, resSpy)
+    expect(resSpy.status).toHaveBeenCalledWith(201)
+  })
+  it('should create when generate random password and generate MEBX password true for acm', async () => {
+    req.body = {
+      profileName: 'acm',
+      activation: ClientAction.ADMINCTLMODE,
+      tags: ['acm'],
+      tlsMode: 2,
+      dhcpEnabled: false,
+      generateRandomPassword: true,
+      password: 'password',
+      generateRandomMEBxPassword: true,
       mebxPassword: 'password',
       userConsent: AMTUserConsent.NONE,
       iderEnabled: true,
@@ -114,7 +161,7 @@ describe('Profiles - Create', () => {
     expect(result.solEnabled).toEqual(false)
   })
   it('should handle error', async () => {
-    jest.spyOn(req.db.profiles, 'insert').mockRejectedValue(null)
+    jest.spyOn(req.db.profiles, 'insert').mockResolvedValue(null)
     await createProfile(req, resSpy)
     expect(insertSpy).toHaveBeenCalledWith({
       amtPassword: 'AMT_PASSWORD',
@@ -125,5 +172,10 @@ describe('Profiles - Create', () => {
       tenantId: undefined
     })
     expect(resSpy.status).toHaveBeenCalledWith(500)
+  })
+  it('should create even when no secretsManager', async () => {
+    req.secretsManager = null
+    await createProfile(req, resSpy)
+    expect(resSpy.status).toHaveBeenCalledWith(201)
   })
 })

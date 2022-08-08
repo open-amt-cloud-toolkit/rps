@@ -12,6 +12,7 @@ import { ClientAction } from '../../../models/RCS.Config'
 import handleError from '../../../utils/handleError'
 
 export async function createProfile (req: Request, res: Response): Promise<void> {
+  let vaultStatus: any
   const log = new Logger('createProfile')
   let amtConfig: AMTConfiguration = req.body
   amtConfig.tenantId = req.tenantId
@@ -34,6 +35,10 @@ export async function createProfile (req: Request, res: Response): Promise<void>
     if (results == null) {
       throw new Error('AMT Profile not inserted')
     }
+    // don't return secrets to the client
+    delete results.amtPassword
+    delete results.mebxPassword
+
     // profile inserted  into db successfully.
     if (req.secretsManager) {
       if (!amtConfig.generateRandomPassword || !amtConfig.generateRandomMEBxPassword) {
@@ -47,15 +52,21 @@ export async function createProfile (req: Request, res: Response): Promise<void>
           data.data.MEBX_PASSWORD = mebxPwdBefore
           log.debug('MEBX Password written to vault')
         }
-        await req.secretsManager.writeSecretWithObject(`profiles/${amtConfig.profileName}`, data)
+        vaultStatus = await req.secretsManager.writeSecretWithObject(`profiles/${amtConfig.profileName}`, data)
+        if (vaultStatus == null) {
+          const dbResults: any = await req.db.profiles.delete(amtConfig.profileName)
+          if (dbResults == null) {
+            throw new Error('Error saving password to secret provider. AMT Profile inserted but unable to undo')
+          }
+          throw new Error('Error saving password to secret provider. AMT Profile not inserted')
+        }
       }
       // generate self signed certificates for use with TLS config if applicable
       if (amtConfig.tlsMode != null) {
         await generateSelfSignedCertificate(req, amtConfig.profileName)
       }
     }
-    delete results.amtPassword
-    delete results.mebxPassword
+
     MqttProvider.publishEvent('success', ['createProfile'], `Created Profile : ${amtConfig.profileName}`)
     res.status(201).json(results).end()
   } catch (error) {
