@@ -7,7 +7,6 @@ import { DigestChallenge } from '@open-amt-cloud-toolkit/wsman-messages/models/c
 import * as WebSocket from 'ws'
 import { AMTConfiguration, AMTDomain, ProvisioningCertObj } from '.'
 import { AMTEthernetPortSettings } from './WSManResponse'
-import { AMT_RedirectionResponse } from '@open-amt-cloud-toolkit/wsman-messages/models/amt_models'
 
 export interface WebSocketConfig {
   WebSocketPort: number
