@@ -14,7 +14,6 @@ import { Activator } from './actions/Activator'
 import { ClientResponseMsg } from './utils/ClientResponseMsg'
 import { IValidator } from './interfaces/IValidator'
 import { RPSError } from './utils/RPSError'
-import { Deactivator } from './actions/Deactivator'
 import { CIRAConfigurator } from './actions/CIRAConfigurator'
 import { NetworkConfigurator } from './actions/NetworkConfigurator'
 import { TLSConfigurator } from './actions/TLSConfigurator'
@@ -47,7 +46,6 @@ export class ClientActions {
     this.actions[ClientAction.MAINTENANCE] = new Maintenance(new Logger('Maintenance'), responseMsg)
     this.actions[ClientAction.ADMINCTLMODE] = new Activator(new Logger('Activator'), configurator, certManager, helper, responseMsg, validator, networkConfig)
     this.actions[ClientAction.CLIENTCTLMODE] = new Activator(new Logger('Activator'), configurator, certManager, helper, responseMsg, validator, networkConfig)
-    this.actions[ClientAction.DEACTIVATE] = new Deactivator(new Logger('Deactivator'), responseMsg, configurator)
   }
 
   /**

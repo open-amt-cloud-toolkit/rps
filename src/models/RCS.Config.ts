@@ -111,6 +111,9 @@ export interface ClientObject {
   unauthCount: number
   connectionParams?: connectionParams
   messageId?: number
+  pendingPromise?: Promise<any>
+  resolve?: (message: any) => any
+  reject?: (message: any) => any
 }
 
 export interface ActivationStatus {
