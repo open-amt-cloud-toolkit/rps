@@ -132,6 +132,7 @@ export interface CIRAConfigFlow {
   mpsRemoteSAPGet?: boolean
   mpsPublicCertDelete?: boolean
   publicCerts?: any
+  privateCerts?: any
   addTrustedRootCert?: boolean
   addMPSServer?: boolean
   setMpsType?: boolean
@@ -141,6 +142,7 @@ export interface CIRAConfigFlow {
   setENVSettingData?: boolean
   getENVSettingDataCIRA?: boolean
   setENVSettingDataCIRA?: boolean
+  TLSSettingData?: any
 }
 
 export interface NetworkConfigFlow {
