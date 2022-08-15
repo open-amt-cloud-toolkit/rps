@@ -112,8 +112,8 @@ export interface ClientObject {
   connectionParams?: connectionParams
   messageId?: number
   pendingPromise?: Promise<any>
-  resolve?: (message: any) => any
-  reject?: (message: any) => any
+  resolve?: any
+  reject?: any
 }
 
 export interface ActivationStatus {

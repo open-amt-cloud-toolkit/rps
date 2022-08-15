@@ -34,7 +34,7 @@ log.silly(`Updated config... ${JSON.stringify(config, null, 2)}`)
 EnvReader.GlobalEnvConfig = config
 const app = express()
 app.use(cors())
-app.use(express.urlencoded())
+app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 
 const configurator: IConfigurator = new Configurator()
