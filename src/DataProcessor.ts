@@ -8,7 +8,7 @@ import * as WebSocket from 'ws'
 
 import { ILogger } from './interfaces/ILogger'
 import { IDataProcessor } from './interfaces/IDataProcessor'
-import { ClientMsg, ClientAction, ClientMethods } from './models/RCS.Config'
+import { ClientMsg, ClientMethods } from './models/RCS.Config'
 import { ClientActions } from './ClientActions'
 import { SignatureHelper } from './utils/SignatureHelper'
 import Logger from './Logger'
@@ -22,6 +22,7 @@ import { HttpHandler } from './HttpHandler'
 import { parse, HttpZResponseModel } from 'http-z'
 import { devices } from './WebSocketListener'
 import { Deactivation } from './stateMachines/deactivation'
+import { Activation } from './stateMachines/activation'
 export class DataProcessor implements IDataProcessor {
   readonly clientActions: ClientActions
   amt: AMT.Messages
@@ -56,7 +57,8 @@ export class DataProcessor implements IDataProcessor {
       }
       switch (clientMsg.method) {
         case ClientMethods.ACTIVATION: {
-          return await this.activateDevice(clientMsg, clientId)
+          await this.activateDevice(clientMsg, clientId)
+          break
         }
         case ClientMethods.DEACTIVATION: {
           await this.deactivateDevice(clientMsg, clientId)
@@ -87,22 +89,14 @@ export class DataProcessor implements IDataProcessor {
     }
   }
 
-  async activateDevice (clientMsg: ClientMsg, clientId: string): Promise<ClientMsg> {
+  async activateDevice (clientMsg: ClientMsg, clientId: string): Promise<void> {
     this.logger.debug(`ProcessData: Parsed Message received from device ${clientMsg.payload.uuid}: ${JSON.stringify(clientMsg, null, '\t')}`)
-
     await this.validator.validateActivationMsg(clientMsg, clientId) // Validate the activation message payload
-
     // Makes the first wsman call
-    const clientObj = devices[clientId]
     this.setConnectionParams(clientId)
-    if ((clientObj.action === ClientAction.ADMINCTLMODE || clientObj.action === ClientAction.CLIENTCTLMODE) && !clientMsg.payload.digestRealm && !clientObj.activationStatus.missingMebxPassword) {
-      const xmlRequestBody = this.amt.GeneralSettings(AMT.Methods.GET)
-      const data = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
-      return this.responseMsg.get(clientId, data, 'wsman', 'ok')
-    } else {
-      const response = await this.clientActions.buildResponseMessage(clientMsg, clientId)
-      return response
-    }
+    const activation = new Activation()
+    activation.service.start()
+    activation.service.send({ type: 'ACTIVATION', clientId: clientId })
   }
 
   async deactivateDevice (clientMsg: ClientMsg, clientId: string): Promise<void> {
