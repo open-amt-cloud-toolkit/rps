@@ -42,7 +42,7 @@
     "lint": "eslint . --ext .ts"
   },
   "dependencies": {
-    "@open-amt-cloud-toolkit/wsman-messages": "^2.3.4",
+    "@open-amt-cloud-toolkit/wsman-messages": "^2.4.0",
     "body-parser": "^1.20.0",
     "cors": "^2.8.5",
     "crypto-random-string": "^3.3.1",
@@ -68,7 +68,7 @@
     "@types/body-parser": "^1.19.2",
     "@types/express": "^4.17.13",
     "@types/jest": "^27.5.0",
-    "@types/node": "^16.11.47",
+    "@types/node": "^16.11.48",
     "@types/node-forge": "^1.0.4",
     "@types/pg": "^8.6.5",
     "@types/ws": "^8.5.3",
