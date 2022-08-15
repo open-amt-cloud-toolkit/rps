@@ -40,11 +40,11 @@ export class CIRAConfigurator implements IExecutor {
   }
 
   /**
-     * @description configure CIRA
-     * @param {any} message valid client message
-     * @param {string} clientId Id to keep track of connections
-     * @returns {ClientMsg} message to sent to client
-     */
+      * @description configure CIRA
+      * @param {any} message valid client message
+      * @param {string} clientId Id to keep track of connections
+      * @returns {ClientMsg} message to sent to client
+      */
   async execute (message: any, clientId: string): Promise<ClientMsg> {
     let clientObj: ClientObject
     try {
@@ -132,6 +132,14 @@ export class CIRAConfigurator implements IExecutor {
           case 'AMT_RemoteAccessPolicyAppliesToMPS': {
             return this.ValidateRemoteAccessPolicyAppliesToMPS(clientId, response)
           }
+          case 'AMT_TLSSettingData':
+            return this.validateTLSSettingData(clientId, response)
+          case 'AMT_SetupAndConfigurationService':
+            return await this.validateSetupAndConfigurationService(clientId, response)
+          case 'AMT_TLSCredentialContext':
+            return this.validateTLSCredentialContext(clientId, response)
+          case 'AMT_PublicPrivateKeyPair':
+            return this.validatePublicPrivateKeyPair(clientId, response)
         }
         break
       }
@@ -233,12 +241,12 @@ export class CIRAConfigurator implements IExecutor {
             xmlRequestBody = this.amt.ManagementPresenceRemoteSAP(AMT.Methods.DELETE, null, selector)
           }
         } else {
-          xmlRequestBody = this.amt.PublicKeyCertificate(AMT.Methods.ENUMERATE)
+          xmlRequestBody = this.amt.TLSSettingData(AMT.Methods.ENUMERATE)
         }
         break
       }
       case 'DeleteResponse': {
-        xmlRequestBody = this.amt.PublicKeyCertificate(AMT.Methods.ENUMERATE)
+        xmlRequestBody = this.amt.TLSSettingData(AMT.Methods.ENUMERATE)
         break
       }
     }
@@ -257,12 +265,15 @@ export class CIRAConfigurator implements IExecutor {
         break
       }
       case 'PullResponse': {
-        if (response.Envelope.Body.PullResponse.Items?.AMT_PublicKeyCertificate != null) {
-          if (Array.isArray(response.Envelope.Body.PullResponse.Items?.AMT_PublicKeyCertificate)) {
-            throw new RPSError('Failed to remove certificates that were configured previously')
+        const publicKeyCertificates = response.Envelope.Body.PullResponse.Items?.AMT_PublicKeyCertificate
+        if (publicKeyCertificates != null) {
+          let selector
+          if (Array.isArray(publicKeyCertificates)) {
+            selector = { name: 'InstanceID', value: publicKeyCertificates[0].InstanceID }
+          } else {
+            selector = { name: 'InstanceID', value: publicKeyCertificates.InstanceID }
           }
-          this.logger.debug(`Public Key Certificate InstanceID : ${response.Envelope.Body.PullResponse.Items.AMT_PublicKeyCertificate.InstanceID}`)
-          const selector = { name: 'InstanceID', value: response.Envelope.Body.PullResponse.Items.AMT_PublicKeyCertificate.InstanceID }
+          this.logger.debug(`Public Key Certificate InstanceID : ${selector}`)
           xmlRequestBody = this.amt.PublicKeyCertificate(AMT.Methods.DELETE, null, selector)
         } else {
           xmlRequestBody = this.amt.EnvironmentDetectionSettingData(AMT.Methods.GET)
@@ -270,12 +281,131 @@ export class CIRAConfigurator implements IExecutor {
         break
       }
       case 'DeleteResponse': {
-        xmlRequestBody = this.amt.EnvironmentDetectionSettingData(AMT.Methods.GET)
+        xmlRequestBody = this.amt.PublicKeyCertificate(AMT.Methods.ENUMERATE)
         break
       }
     }
     data = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
     return this.responseMsg.get(clientId, data, 'wsman', 'ok')
+  }
+
+  validatePublicPrivateKeyPair (clientId: string, response: any): ClientMsg {
+    let xmlRequestBody = ''
+    let data = null
+    const action = response.Envelope.Header.Action._.split('/').pop()
+    switch (action) {
+      case 'EnumerateResponse': {
+        xmlRequestBody = this.amt.PublicPrivateKeyPair(AMT.Methods.PULL, response.Envelope.Body.EnumerateResponse.EnumerationContext)
+        break
+      }
+      case 'PullResponse': {
+        const publicPrivateKeyPair = response.Envelope.Body.PullResponse.Items?.AMT_PublicPrivateKeyPair
+        if (publicPrivateKeyPair != null) {
+          let selector
+          if (Array.isArray(publicPrivateKeyPair)) {
+            selector = { name: 'InstanceID', value: publicPrivateKeyPair[0].InstanceID }
+            devices[clientId].ciraconfig.privateCerts = publicPrivateKeyPair.slice(1)
+          } else {
+            this.logger.debug(`Private Key Certificate InstanceID : ${publicPrivateKeyPair.InstanceID}`)
+            selector = { name: 'InstanceID', value: publicPrivateKeyPair.InstanceID }
+          }
+          xmlRequestBody = this.amt.PublicPrivateKeyPair(AMT.Methods.DELETE, null, selector)
+        } else {
+          xmlRequestBody = this.amt.PublicKeyCertificate(AMT.Methods.ENUMERATE)
+        }
+        break
+      }
+      case 'DeleteResponse': {
+        if (devices[clientId].ciraconfig.privateCerts?.length > 0) {
+          this.logger.debug(`Private Key Certificate InstanceID : ${devices[clientId].ciraconfig.privateCerts[0].InstanceID}`)
+          const selector = { name: 'InstanceID', value: devices[clientId].ciraconfig.privateCerts[0].InstanceID }
+          devices[clientId].ciraconfig.privateCerts = devices[clientId].ciraconfig.privateCerts.slice(1)
+          xmlRequestBody = this.amt.PublicPrivateKeyPair(AMT.Methods.DELETE, null, selector)
+        } else {
+          xmlRequestBody = this.amt.PublicKeyCertificate(AMT.Methods.ENUMERATE)
+        }
+        break
+      }
+    }
+    data = this.httpHandler.wrapIt(xmlRequestBody, devices[clientId].connectionParams)
+    return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+  }
+
+  validateTLSSettingData (clientId: string, response: any): ClientMsg {
+    const clientObj = devices[clientId]
+    let xmlRequestBody = null
+    const action = response.Envelope.Header.Action._.split('/').pop()
+    switch (action) {
+      case 'EnumerateResponse':
+        xmlRequestBody = this.amt.TLSSettingData(AMT.Methods.PULL, response.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+        break
+      case 'PullResponse':
+        clientObj.ciraconfig.TLSSettingData = response.Envelope.Body.PullResponse.Items.AMT_TLSSettingData
+        if (clientObj.ciraconfig.TLSSettingData[0].Enabled || clientObj.ciraconfig.TLSSettingData[1].Enabled) {
+          clientObj.ciraconfig.TLSSettingData[0].Enabled = false
+          clientObj.ciraconfig.TLSSettingData[0].AcceptNonSecureConnections = true
+          clientObj.ciraconfig.TLSSettingData[0].MutualAuthentication = false
+          delete clientObj.ciraconfig.TLSSettingData[0].TrustedCN
+          xmlRequestBody = this.amt.TLSSettingData(AMT.Methods.PUT, null, clientObj.ciraconfig.TLSSettingData[0])
+        } else {
+          xmlRequestBody = this.amt.PublicKeyCertificate(AMT.Methods.ENUMERATE)
+        }
+        devices[clientId] = clientObj
+        break
+      case 'PutResponse': {
+        const whatever: any = response.Envelope.Body.AMT_TLSSettingData
+        if (whatever.ElementName === 'Intel(r) AMT 802.3 TLS Settings' && clientObj.ciraconfig.TLSSettingData[1].Enabled) {
+          this.logger.debug(`${whatever.ElementName} : are disabled`)
+          clientObj.ciraconfig.TLSSettingData[1].Enabled = false
+          delete clientObj.ciraconfig.TLSSettingData[1].TrustedCN
+          xmlRequestBody = this.amt.TLSSettingData(AMT.Methods.PUT, null, clientObj.ciraconfig.TLSSettingData[1])
+        } else if (whatever.ElementName === 'Intel(r) AMT LMS TLS Settings') {
+          this.logger.debug(`${whatever.ElementName} :  are disabled`)
+          xmlRequestBody = this.amt.SetupAndConfigurationService(AMT.Methods.COMMIT_CHANGES)
+        } else {
+          throw new RPSError(`Failed to set TLS data: ${clientObj.uuid}`)
+        }
+      }
+    }
+    const data = this.httpHandler.wrapIt(xmlRequestBody, devices[clientId].connectionParams)
+    return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+  }
+
+  async validateSetupAndConfigurationService (clientId: string, response: any): Promise<ClientMsg> {
+    const tlsSettingData = devices[clientId].ciraconfig.TLSSettingData
+    if (!tlsSettingData[0].Enabled && !tlsSettingData[1].Enabled) {
+      await new Promise(resolve => setTimeout(resolve, 5000))
+      const xmlRequestBody = this.amt.TLSCredentialContext(AMT.Methods.ENUMERATE)
+      const data = this.httpHandler.wrapIt(xmlRequestBody, devices[clientId].connectionParams)
+      return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
+    }
+    return null
+  }
+
+  validateTLSCredentialContext (clientId: string, response: any): ClientMsg {
+    let xmlRequestBody = ''
+    const action = response.Envelope.Header.Action._.split('/').pop()
+    switch (action) {
+      case 'EnumerateResponse': {
+        xmlRequestBody = this.amt.TLSCredentialContext(AMT.Methods.PULL, response.Envelope.Body.EnumerateResponse.EnumerationContext)
+        break
+      }
+      case 'PullResponse': {
+        const tlsCredentialContext = response.Envelope.Body.PullResponse.Items?.AMT_TLSCredentialContext
+        if (tlsCredentialContext != null) {
+          xmlRequestBody = this.amt.TLSCredentialContext(AMT.Methods.DELETE, null, null, tlsCredentialContext)
+        } else {
+          xmlRequestBody = this.amt.PublicPrivateKeyPair(AMT.Methods.ENUMERATE)
+        }
+        break
+      }
+      case 'DeleteResponse': {
+        xmlRequestBody = this.amt.PublicPrivateKeyPair(AMT.Methods.ENUMERATE)
+        break
+      }
+    }
+    const data = this.httpHandler.wrapIt(xmlRequestBody, devices[clientId].connectionParams)
+    return this.responseMsg.get(clientId, data, 'wsman', 'ok', 'alls good!')
   }
 
   async ValidateEnvironmentDetectionSettingData (clientId: string, response: any): Promise<ClientMsg> {

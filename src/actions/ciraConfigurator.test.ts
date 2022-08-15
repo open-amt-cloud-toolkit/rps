@@ -1088,4 +1088,214 @@ describe('ciraConfigurator tests', () => {
       expect(createdBody).toStrictEqual(expectedXmlRequestBody)
     })
   })
+
+  describe('validate Public Private Key Certificate', () => {
+    test('should return a wsman to pull Public Key Certificates from AMT', async () => {
+      const response = {
+        Envelope: {
+          Header: {
+            Action: {
+              _: 'http://schemas.xmlsoap.org/ws/2004/09/enumeration/EnumerateResponse'
+            },
+            ResourceURI: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_PublicPrivateKeyPair'
+          },
+          Body: { EnumerateResponse: { EnumerationContext: 'A6060000-0000-0000-0000-000000000000' } }
+        }
+      }
+      const result = ciraConfig.validatePublicPrivateKeyPair(clientId, response)
+      expect(result.method).toBe('wsman')
+    })
+    test('should return a wsman to delete Public Key Certificates from AMT', async () => {
+      const response = {
+        Envelope: {
+          Header: {
+            Action: {
+              _: 'http://schemas.xmlsoap.org/ws/2004/09/enumeration/PullResponse'
+            },
+            ResourceURI: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_PublicPrivateKeyPair'
+          },
+          Body: {
+            PullResponse: {
+              Items: {
+                AMT_PublicPrivateKeyPair:
+                [
+                  { InstanceID: 'Intel(r) AMT Certificate: Handle: 0' },
+                  { InstanceID: 'Intel(r) AMT Certificate: Handle: 1' }
+                ]
+              }
+            }
+          }
+        }
+      }
+      const result = ciraConfig.validatePublicPrivateKeyPair(clientId, response)
+      expect(result.method).toBe('wsman')
+    })
+    test('should return wsman to make enumerate call to Public Key certificates', async () => {
+      const response = {
+        Envelope: {
+          Header: {
+            Action: {
+              _: 'http://schemas.xmlsoap.org/ws/2004/09/enumeration/PullResponse'
+            },
+            ResourceURI: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_PublicPrivateKeyPair'
+          },
+          Body: {
+            PullResponse: {
+              Items: ''
+            }
+          }
+        }
+      }
+      const result = ciraConfig.validatePublicPrivateKeyPair(clientId, response)
+      expect(result.method).toBe('wsman')
+    })
+    test('should return wsman to make enumerate call to Public Key certificates', async () => {
+      const response = {
+        Envelope: {
+          Header: {
+            Action: {
+              _: 'http://schemas.xmlsoap.org/ws/2004/09/transfer/DeleteResponse'
+            },
+            ResourceURI: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_PublicPrivateKeyPair'
+          },
+          Body: ''
+        }
+      }
+      const result = ciraConfig.validatePublicPrivateKeyPair(clientId, response)
+      expect(result.method).toBe('wsman')
+    })
+  })
+
+  describe('validate TLS Setting Data', () => {
+    test('should return a wsman to pull TLSSetting Data from AMT', async () => {
+      const response = {
+        Envelope: {
+          Header: {
+            Action: {
+              _: 'http://schemas.xmlsoap.org/ws/2004/09/enumeration/EnumerateResponse'
+            },
+            ResourceURI: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_TLSSettingData'
+          },
+          Body: { EnumerateResponse: { EnumerationContext: 'A6060000-0000-0000-0000-000000000000' } }
+        }
+      }
+      const result = ciraConfig.validateTLSSettingData(clientId, response)
+      expect(result.method).toBe('wsman')
+    })
+    test('should return a wsman to put/disable TLS Setting Data from AMT', async () => {
+      const response = {
+        Envelope: {
+          Header: {
+            Action: {
+              _: 'http://schemas.xmlsoap.org/ws/2004/09/enumeration/PullResponse'
+            },
+            ResourceURI: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_TLSSettingData'
+          },
+          Body: {
+            PullResponse: {
+              Items: {
+                AMT_TLSSettingData: [
+                  {
+                    AcceptNonSecureConnections: true,
+                    ElementName: 'Intel(r) AMT 802.3 TLS Settings',
+                    Enabled: true,
+                    InstanceID: 'Intel(r) AMT 802.3 TLS Settings',
+                    'MutualAuthenti\\r\\n01C5\\r\\ncation': false
+                  },
+                  {
+                    AcceptNonSecureConnections: true,
+                    ElementName: 'Intel(r) AMT LMS TLS Settings',
+                    Enabled: true,
+                    InstanceID: 'Intel(r) AMT LMS TLS Settings',
+                    MutualAuthentication: false
+                  }
+                ]
+              },
+              EndOfSequence: ''
+            }
+          }
+        }
+      }
+      const result = ciraConfig.validateTLSSettingData(clientId, response)
+      expect(result.method).toBe('wsman')
+    })
+    test('should return a wsman to put/disable TLS Setting Data from AMT', async () => {
+      const response = {
+        Envelope: {
+          Header: {
+            To: 'http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous',
+            RelatesTo: 8,
+            Action: {
+              _: 'http://schemas.xmlsoap.org/ws/2004/09/transfer/PutResponse'
+            },
+            MessageID: 'uuid:00000000-8086-8086-8086-0000000030E8',
+            ResourceURI: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_TLSSettingData'
+          },
+          Body: {
+            AMT_TLSSettingData: {
+              AcceptNonSecureConnections: true,
+              ElementName: 'Intel(r) AMT 802.3 TLS Settings',
+              Enabled: true,
+              InstanceID: 'Intel(r) AMT 802.3 TLS Settings',
+              MutualAuthentication: false
+            }
+          }
+        }
+      }
+      const result = ciraConfig.validateTLSSettingData(clientId, response)
+      expect(result.method).toBe('wsman')
+    })
+  })
+
+  describe('validate TLS Credential Context', () => {
+    test('should return a wsman to pull TLS Credential Context from AMT', async () => {
+      const response = {
+        Envelope: {
+          Header: {
+            Action: {
+              _: 'http://schemas.xmlsoap.org/ws/2004/09/enumeration/EnumerateResponse'
+            },
+            ResourceURI: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_TLSCredentialContext'
+          },
+          Body: { EnumerateResponse: { EnumerationContext: 'A6060000-0000-0000-0000-000000000000' } }
+        }
+      }
+      const result = ciraConfig.validateTLSCredentialContext(clientId, response)
+      expect(result.method).toBe('wsman')
+    })
+    test('should return wsman to make enumerate call to Public private Key pair', async () => {
+      const response = {
+        Envelope: {
+          Header: {
+            Action: {
+              _: 'http://schemas.xmlsoap.org/ws/2004/09/enumeration/PullResponse'
+            },
+            ResourceURI: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_TLSCredentialContext'
+          },
+          Body: {
+            PullResponse: {
+              Items: ''
+            }
+          }
+        }
+      }
+      const result = ciraConfig.validateTLSCredentialContext(clientId, response)
+      expect(result.method).toBe('wsman')
+    })
+    test('should return wsman to make enumerate call to Public Private Key pair', async () => {
+      const response = {
+        Envelope: {
+          Header: {
+            Action: {
+              _: 'http://schemas.xmlsoap.org/ws/2004/09/transfer/DeleteResponse'
+            },
+            ResourceURI: 'http://intel.com/wbem/wscim/1/amt-schema/1/AMT_TLSCredentialContext'
+          },
+          Body: ''
+        }
+      }
+      const result = ciraConfig.validateTLSCredentialContext(clientId, response)
+      expect(result.method).toBe('wsman')
+    })
+  })
 })
