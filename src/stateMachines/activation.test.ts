@@ -65,21 +65,14 @@ devices[clientId] = {
   messageId: 1
 }
 
-describe('Get Provisioning Certificate Object', () => {
+describe('Get profiles', () => {
   let activation
   let context
   beforeEach(() => {
     activation = new Activation()
     context = {
       profile: null,
-      amtDomain: {
-        profileName: 'vpro',
-        domainSuffix: 'vprodemo.com',
-        provisioningCert: cert,
-        provisioningCertStorageFormat: 'raw',
-        provisioningCertPassword: 'P@ssw0rd',
-        tenantId: ''
-      },
+      amtDomain: null,
       message: '',
       clientId: clientId,
       xmlMessage: '',
@@ -88,10 +81,46 @@ describe('Get Provisioning Certificate Object', () => {
       errorMessage: ''
     }
   })
-  test('should return null if unable to get provisioning certificate', async () => {
-    context.amtDomain.provisioningCertPassword = 'Intel123!'
-    activation.GetProvisioningCertObj(context, null)
-    // expect(devices[clientId].certObj).toBeNull()
+  test('should return AMT Profile', async () => {
+    const expectedProfile = {
+      profileName: 'profile1',
+      activation: ClientAction.ADMINCTLMODE,
+      tenantId: '',
+      tags: ['acm']
+    }
+    const getAMTProfileSpy = jest.spyOn(activation.configurator.profileManager, 'getAmtProfile').mockImplementation(async () => {
+      return expectedProfile
+    })
+    const profile = await activation.getAMTProfile(context, null)
+    expect(profile).toBe(expectedProfile)
+    expect(getAMTProfileSpy).toHaveBeenCalled()
+  })
+  test('should return AMT Password', async () => {
+    const getAMTPasswordSpy = jest.spyOn(activation.configurator.profileManager, 'getAmtPassword').mockImplementation(async () => {
+      return 'P@ssw0rd'
+    })
+    const profile = await activation.getPassword(clientId)
+    expect(profile).toBeDefined()
+    expect(getAMTPasswordSpy).toHaveBeenCalled()
+  })
+  test('should return Domain Profile', async () => {
+    const expectedProfile = {
+      profileName: 'vpro',
+      domainSuffix: 'vprodemo.com',
+      provisioningCert: cert,
+      provisioningCertStorageFormat: 'raw',
+      provisioningCertPassword: 'P@ssw0rd',
+      tenantId: ''
+    }
+    const getProvisioningCertSpy = jest.spyOn(activation.configurator.domainCredentialManager, 'getProvisioningCert').mockImplementation(async () => {
+      return expectedProfile
+    })
+    const profile = await activation.getAMTDomainCert(context, null)
+    expect(profile).toBe(expectedProfile)
+    expect(getProvisioningCertSpy).toHaveBeenCalled()
+  })
+  afterEach(() => {
+    jest.clearAllMocks()
   })
 })
 
@@ -116,18 +145,129 @@ describe('createSignedString', () => {
     expect(clientObj.signature).toBeDefined()
     expect(clientObj.signature).not.toBe('')
   })
-  // test('should throw error message when certificate is invalid', async () => {
-  //   const clientObj = devices[clientId]
-  //   clientObj.ClientData.payload.fwNonce = PasswordHelper.generateNonce()
-  //   clientObj.nonce = PasswordHelper.generateNonce()
-  //   // const signStringSpy = jest.spyOn(activation.signatureHelper, 'signString').mockImplementation(() => {
-  //   //   throw new Error('Unable to create Digital Signature')
-  //   // })
-  //   const result = await activation.createSignedString(clientId)
-  //   expect(result).toBeFalsy()
-  //   expect(clientObj.signature).toBeUndefined()
-  //   // expect(signStringSpy).toHaveBeenCalled()
+
+  test('should throw error message when certificate is invalid', async () => {
+    const clientObj = devices[clientId]
+    clientObj.signature = undefined
+    clientObj.ClientData.payload.fwNonce = PasswordHelper.generateNonce()
+    clientObj.nonce = PasswordHelper.generateNonce()
+    const signStringSpy = jest.spyOn(activation.signatureHelper, 'signString').mockImplementation(() => {
+      throw new Error('Unable to create Digital Signature')
+    })
+    const result = await activation.createSignedString(clientId)
+    expect(result).toBeFalsy()
+    expect(clientObj.signature).toBeUndefined()
+    expect(signStringSpy).toHaveBeenCalled()
+  })
+})
+
+describe('send wsman message from RPS to AMT', () => {
+  let activation
+  let invokeWsmanCallSpy
+  let getPasswordSpy
+  beforeEach(() => {
+    activation = new Activation()
+    invokeWsmanCallSpy = jest.spyOn(activation, 'invokeWsmanCall').mockImplementation().mockResolvedValue('done')
+    getPasswordSpy = jest.spyOn(activation, 'getPassword').mockImplementation().mockReturnValue('abcdef')
+  })
+  it('should send WSMan to get amt general settings', async () => {
+    const context = { profile: null, amtDomain: null, message: '', clientId: clientId, xmlMessage: '', response: '', status: 'wsman', errorMessage: '' }
+    const generalSettingsSpy = jest.spyOn(activation.amt, 'GeneralSettings').mockImplementation().mockReturnValue('abcdef')
+    await activation.getGeneralSettings(context)
+    expect(generalSettingsSpy).toHaveBeenCalled()
+    expect(invokeWsmanCallSpy).toHaveBeenCalled()
+  })
+
+  it('should send WSMan to get host based setup service', async () => {
+    const context = { profile: null, amtDomain: null, message: '', clientId: clientId, xmlMessage: '', response: '', status: 'wsman', errorMessage: '' }
+    const hostBasedSetupServiceSpy = jest.spyOn(activation.ips, 'HostBasedSetupService').mockImplementation().mockReturnValue('abcdef')
+    await activation.getHostBasedSetupService(context)
+    expect(hostBasedSetupServiceSpy).toHaveBeenCalled()
+    expect(invokeWsmanCallSpy).toHaveBeenCalled()
+  })
+
+  it('should send WSMan to add certificate from domain certificate chain', async () => {
+    const context = { profile: null, amtDomain: null, message: '', clientId: clientId, xmlMessage: '', response: '', status: 'wsman', errorMessage: '' }
+    const injectCertificateSpy = jest.spyOn(activation, 'injectCertificate').mockImplementation().mockReturnValue('abcdef')
+    await activation.getNextCERTInChain(context)
+    expect(injectCertificateSpy).toHaveBeenCalled()
+    expect(invokeWsmanCallSpy).toHaveBeenCalled()
+  })
+
+  it('should send WSMan to set up admin mode', async () => {
+    const context = { profile: null, amtDomain: null, message: '', clientId: clientId, xmlMessage: '', response: '', status: 'wsman', errorMessage: '' }
+    const createSignedStringSpy = jest.spyOn(activation, 'createSignedString').mockImplementation(
+      () => {
+        devices[clientId].signature = 'abcdefgh'
+      }
+    )
+    await activation.getAdminSetup(context)
+    expect(getPasswordSpy).toHaveBeenCalled()
+    expect(createSignedStringSpy).toHaveBeenCalled()
+    expect(invokeWsmanCallSpy).toHaveBeenCalled()
+  })
+
+  it('should send WSMan to set up client mode', async () => {
+    const context = { profile: null, amtDomain: null, message: '', clientId: clientId, xmlMessage: '', response: '', status: 'wsman', errorMessage: '' }
+    await activation.getClientSetup(context)
+    expect(getPasswordSpy).toHaveBeenCalled()
+    expect(invokeWsmanCallSpy).toHaveBeenCalled()
+  })
+  afterEach(() => {
+    jest.clearAllMocks()
+  })
+})
+
+describe('Get Provisioning Certificate Object', () => {
+  let activation
+  let context
+  beforeEach(() => {
+    activation = new Activation()
+    context = {
+      profile: null,
+      amtDomain: {
+        profileName: 'vpro',
+        domainSuffix: 'vprodemo.com',
+        provisioningCert: cert,
+        provisioningCertStorageFormat: 'raw',
+        provisioningCertPassword: 'P@ssw0rd',
+        tenantId: ''
+      },
+      message: '',
+      clientId: clientId,
+      xmlMessage: '',
+      response: '',
+      status: 'wsman',
+      errorMessage: ''
+    }
+  })
+  test('should assign null if unable to convert pfx to object', async () => {
+    const convertPfxToObjectSpy = jest.spyOn(activation.certManager, 'convertPfxToObject').mockImplementation(() => {
+      throw new Error('Decrypting provisioning certificate failed.')
+    })
+    await activation.GetProvisioningCertObj(context, null)
+    expect(devices[clientId].certObj).toBeNull()
+    expect(convertPfxToObjectSpy).toHaveBeenCalled()
+  })
+  // test('should return null if unable to get provisioning certificate', async () => {
+  //   const message = activationmsg
+  //   const password = 'Intel123!'
+  //   const result = activator.GetProvisioningCertObj(message, cert, password, clientId)
+  //   expect(result).toBeNull()
   // })
+  test('should assign return valid certificate object', async () => {
+    const certObject = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprint: 'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244' }
+    const convertPfxToObjectSpy = jest.spyOn(activation.certManager, 'convertPfxToObject').mockImplementation(() => {
+      return { certs: null, keys: null }
+    })
+    const dumpPfxSpy = jest.spyOn(activation.certManager, 'dumpPfx').mockImplementation(() => {
+      return certObject
+    })
+    await activation.GetProvisioningCertObj(context, null)
+    expect(convertPfxToObjectSpy).toHaveBeenCalled()
+    expect(dumpPfxSpy).toHaveBeenCalled()
+    expect(devices[clientId].certObj).toBe(certObject.provisioningCertificateObj)
+  })
 })
 
 describe('save Device Information to MPS database', () => {
@@ -275,6 +415,25 @@ describe('read response', () => {
     expect(devices[clientId].ClientData.payload.digestRealm).toBe('Digest:A3829B3827DE4D33D4449B366831FD01')
     expect(devices[clientId].hostname).toBe('DESKTOP-9CC12U7')
   })
+  test('should read ips host based set up', async () => {
+    context.message = {
+      statusCode: 200,
+      body: {
+        contentType: 'application/octet-stream',
+        text: '0514\r\n' +
+            '<?xml version="1.0" encoding="UTF-8"?><a:Envelope xmlns:a="http://www.w3.org/2003/05/soap-envelope" xmlns:b="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:c="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" xmlns:d="http://schemas.xmlsoap.org/ws/2005/02/trust" xmlns:e="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:f="http://schemas.dmtf.org/wbem/wsman/1/cimbinding.xsd" xmlns:g="http://intel.com/wbem/wscim/1/ips-schema/1/IPS_HostBasedSetupService" xmlns:h="http://schemas.dmtf.org/wbem/wscim/1/common" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><a:Header><b:To>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</b:To><b:RelatesTo>2</b:RelatesTo><b:Action a:mustUnderstand="true">http://schemas.xmlsoap.org/ws/2004/09/transfer/GetResponse</b:Action><b:MessageID>uuid:00000000-8086-8086-8086-000000000025</b:MessageID><c:ResourceURI>http://intel.com/wbem/wscim/1/ips-schema/1/IPS_HostBasedSetupService</c:ResourceURI></a:Header><a:Body><g:IPS_HostBasedSetupService><g:AllowedControlModes>2</g:AllowedControlModes><g:AllowedControlModes>1</g:AllowedControlModes><g:CertChainStatus>0</g:CertChainStatus><g:ConfigurationNonce>SkqopmngrtkhdvcteznRbEdgqpc=</g:ConfigurationNonce><g:CreationClassName>IPS_HostBasedSetupService</\r\n' +
+            '0162\r\n' +
+            'g:CreationClassName><g:CurrentControlMode>0</g:CurrentControlMode><g:ElementName>Intel(r) AMT Host Based Setup Service</g:ElementName><g:Name>Intel(r) AMT Host Based Setup Service</g:Name><g:SystemCreationClassName>CIM_ComputerSystem</g:SystemCreationClassName><g:SystemName>Intel(r) AMT</g:SystemName></g:IPS_HostBasedSetupService></a:Body></a:Envelope>\r\n' +
+            '0\r\n' +
+            '\r\n'
+      }
+    }
+    activation.convertToJson(context, null)
+    activation.readHostBasedSetupService(context, null)
+    expect(devices[clientId].ClientData.payload.fwNonce).toBeDefined()
+    expect(devices[clientId].ClientData.payload.modes).toBeDefined()
+  })
+
   test('should set activation status', () => {
     devices[context.clientId].status.Status = 'Admin control mode.'
     activation.setActivationStatus(context, null)
@@ -286,16 +445,13 @@ describe('Activation State Machine', () => {
   let activation: Activation
   //   let config
   //   let currentStateIndex: number
-  //   let wrapItSpy
+  let wrapItSpy
   let sendSpy
   let responseMessageSpy
-  //   let generalSettingsSpy
-  let invokeWsmanCallSpy
   beforeEach(() => {
     activation = new Activation()
-    // wrapItSpy = jest.spyOn(activation.httpHandler, 'wrapIt').mockImplementation().mockReturnValue('abcdef')
+    wrapItSpy = jest.spyOn(activation.httpHandler, 'wrapIt').mockImplementation().mockReturnValue('abcdef')
     responseMessageSpy = jest.spyOn(activation.responseMsg, 'get').mockImplementation().mockReturnValue({} as any)
-    invokeWsmanCallSpy = jest.spyOn(activation, 'invokeWsmanCall').mockImplementation().mockResolvedValue('done')
     sendSpy = jest.spyOn(devices[clientId].ClientSocket, 'send').mockImplementation().mockReturnValue()
     // currentStateIndex = 0
     // config = {
@@ -406,28 +562,12 @@ describe('Activation State Machine', () => {
     expect(sendSpy).toHaveBeenCalled()
   })
 
-  //   it('should send a WSMan message', async () => {
-  //     const context = { profile: null, amtDomain: null, message: '', clientId: clientId, xmlMessage: '', response: '', status: 'wsman', errorMessage: '' }
-  //     await activation.invokeWsmanCall(context)
-  //     expect(wrapItSpy).toHaveBeenCalled()
-  //     expect(responseMessageSpy).toHaveBeenCalled()
-  //     expect(sendSpy).toHaveBeenCalled()
-  //     expect(devices[clientId].pendingPromise).toBeDefined()
-  //   })
-
-  it('should send a WSMan message to get amt general settings', async () => {
+  it('should send a WSMan message', async () => {
     const context = { profile: null, amtDomain: null, message: '', clientId: clientId, xmlMessage: '', response: '', status: 'wsman', errorMessage: '' }
-    const generalSettingsSpy = jest.spyOn(activation.amt, 'GeneralSettings').mockImplementation().mockReturnValue('abcdef')
-    await activation.getGeneralSettings(context)
-    expect(generalSettingsSpy).toHaveBeenCalled()
-    expect(invokeWsmanCallSpy).toHaveBeenCalled()
-  })
-
-  it('should send a WSMan message to get host based setup service', async () => {
-    const context = { profile: null, amtDomain: null, message: '', clientId: clientId, xmlMessage: '', response: '', status: 'wsman', errorMessage: '' }
-    const hostBasedSetupServiceSpy = jest.spyOn(activation.ips, 'HostBasedSetupService').mockImplementation().mockReturnValue('abcdef')
-    await activation.getHostBasedSetupService(context)
-    expect(hostBasedSetupServiceSpy).toHaveBeenCalled()
-    expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    void activation.invokeWsmanCall(context)
+    expect(wrapItSpy).toHaveBeenCalled()
+    expect(responseMessageSpy).toHaveBeenCalled()
+    expect(sendSpy).toHaveBeenCalled()
+    expect(devices[clientId].pendingPromise).toBeDefined()
   })
 })
