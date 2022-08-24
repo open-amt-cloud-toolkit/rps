@@ -1,11 +1,12 @@
 import { ClientMsg } from '../models/RCS.Config'
 import { ILogger } from '../interfaces/ILogger'
 import { AppVersion, ProtocolVersion } from './constants'
+import Logger from '../Logger'
 
 export class ClientResponseMsg {
   logger: ILogger
 
-  constructor (logger: ILogger) {
+  constructor (logger = new Logger('ClientResponseMsg')) {
     this.logger = logger
   }
 
@@ -32,7 +33,7 @@ export class ClientResponseMsg {
         msg.payload = Buffer.from(payload).toString('base64')
       }
     } catch (error) {
-      this.logger.error(`${clientId} : Failed to create the error message`, error)
+      this.logger.error(`${clientId} : Failed to create the message`, error)
     }
     return msg
   }
