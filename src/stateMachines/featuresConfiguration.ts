@@ -1,7 +1,7 @@
 import { AMT, CIM, Common, IPS } from '@open-amt-cloud-toolkit/wsman-messages'
 import { HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
-import { assign, createMachine } from 'xstate'
+import { assign, createMachine, interpret } from 'xstate'
 import { AMTConfiguration } from '../models'
 import { devices } from '../WebSocketListener'
 import { ClientResponseMsg } from '../utils/ClientResponseMsg'
@@ -10,19 +10,25 @@ import { AMT_REDIRECTION_SERVICE_ENABLE_STATE } from '@open-amt-cloud-toolkit/ws
 import { RedirectionService } from '@open-amt-cloud-toolkit/wsman-messages/amt/models'
 import { IPS_OptInService } from '@open-amt-cloud-toolkit/wsman-messages/models/ips_models'
 
-interface FeaturesContext {
-  // 3 requests to the device
-  // to get the current configuration
-  // get saved here
-  AMT_RedirectionService?: any
-  IPS_OptInService?: any
-  CIM_KVMRedirectionSAP?: any
-  // transient values for computing
-  // what configuration changes should be made
-  // on the client device
-  isRedirectionChanged?: boolean
-  isOptInServiceChanged?: boolean
-}
+// interface FeaturesContext {
+//   // 3 requests to the device
+//   // to get the current configuration
+//   // get saved here
+//   AMT_RedirectionService?: any
+//   IPS_OptInService?: any
+//   CIM_KVMRedirectionSAP?: any
+//   // transient values for computing
+//   // what configuration changes should be made
+//   // on the client device
+//   isRedirectionChanged?: boolean
+//   isOptInServiceChanged?: boolean
+// }
+//
+// interface FeaturesEvents {
+//   type: 'ACTIVATION' | 'ONFAILED'
+//   clientId: string
+//   data?: any
+// }
 
 export class FeaturesConfiguration {
   amt: AMT.Messages
@@ -44,24 +50,40 @@ export class FeaturesConfiguration {
     this.ips = new IPS.Messages()
     this.clientMsgBuilder = new ClientResponseMsg()
     this.httpHandler = new HttpHandler()
+    this.logger = new Logger('FeaturesConfiguration')
   }
 
-  machine = createMachine<FeaturesContext, any>({
+  machine = createMachine({
     id: 'features-configuration-fsm',
     predictableActionArguments: true,
-    initial: 'GET_AMT_REDIRECTION_SERVICE',
-    context: {
-      AMT_RedirectionService: null,
-      isRedirectionChanged: false
+    schema: {
+      context: {} as {
+        // 3 requests to the device
+        // to get the current configuration
+        // get saved here
+        AMT_RedirectionService?: any
+        IPS_OptInService?: any
+        CIM_KVMRedirectionSAP?: any
+        // transient values for computing
+        // what configuration changes should be made
+        // on the client device
+        isRedirectionChanged?: boolean
+        isOptInServiceChanged?: boolean
+        errorMessage: string
+      },
+      events: {} as {
+        type: 'NOT_USED'
+        clientId: string
+        data?: any
+      }
     },
+    initial: 'GET_AMT_REDIRECTION_SERVICE',
     states: {
       GET_AMT_REDIRECTION_SERVICE: {
         invoke: {
-          src: this.getAmtRedirectionService.bind(this),
+          src: async (context, _) => await this.getAmtRedirectionService(),
           onDone: {
-            actions: assign({
-              AMT_RedirectionService: (_, event) => event.data.Envelope.Body
-            }),
+            actions: ['cacheAmtRedirectionService'],
             target: 'GET_IPS_OPT_IN_SERVICE'
           },
           onError: 'FAILED'
@@ -69,11 +91,9 @@ export class FeaturesConfiguration {
       },
       GET_IPS_OPT_IN_SERVICE: {
         invoke: {
-          src: this.getIpsOptInService.bind(this),
+          src: async (context, _) => await this.getIpsOptInService(),
           onDone: {
-            actions: assign({
-              IPS_OptInService: (_, event) => event.data.Envelope.Body
-            }),
+            actions: ['cacheIpsOptInService'],
             target: 'GET_CIM_KVM_REDIRECTION_SAP'
           },
           onError: 'FAILED'
@@ -81,94 +101,28 @@ export class FeaturesConfiguration {
       },
       GET_CIM_KVM_REDIRECTION_SAP: {
         invoke: {
-          src: this.getCimKvmRedirectionSAP.bind(this),
+          src: async (context, _) => await this.getCimKvmRedirectionSAP(),
           onDone: {
-            actions: assign({
-              CIM_KVMRedirectionSAP: (_, event) => event.data.Envelope.Body
-            }),
+            actions: ['cacheCimKvmRedirectionSAP'],
             target: 'COMPUTE_UPDATES'
           },
-          onError: 'FAILED'
-        }
-      },
-      COMPUTE_UPDATES: {
-        on: {
-          '': {
-            actions: assign((context: FeaturesContext, _) => {
-              const amtRedirectionService = context.AMT_RedirectionService
-              const cimKVMRedirectionSAP = context.CIM_KVMRedirectionSAP
-
-              let isRedirectionChanged = false
-              let solEnabled = (context.AMT_RedirectionService.EnabledState & Common.Models.AMT_REDIRECTION_SERVICE_ENABLE_STATE.Enabled) !== 0
-              let iderEnabled = (context.AMT_RedirectionService.EnabledState & Common.Models.AMT_REDIRECTION_SERVICE_ENABLE_STATE.Other) !== 0
-              const kvmEnabled = (
-                (context.CIM_KVMRedirectionSAP.EnabledState === Common.Models.AMT_REDIRECTION_SERVICE_ENABLE_STATE.EnabledButOffline &&
-                  context.CIM_KVMRedirectionSAP.RequestedState === Common.Models.AMT_REDIRECTION_SERVICE_ENABLE_STATE.Enabled) ||
-                context.CIM_KVMRedirectionSAP.EnabledState === Common.Models.AMT_REDIRECTION_SERVICE_ENABLE_STATE.Enabled ||
-                context.CIM_KVMRedirectionSAP.EnabledState === Common.Models.AMT_REDIRECTION_SERVICE_ENABLE_STATE.EnabledButOffline)
-
-              if (this.amtCfg.solEnabled !== solEnabled) {
-                solEnabled = this.amtCfg.solEnabled
-                isRedirectionChanged = true
-              }
-
-              if (this.amtCfg.iderEnabled !== iderEnabled) {
-                iderEnabled = this.amtCfg.iderEnabled
-                isRedirectionChanged = true
-              }
-
-              if ((solEnabled || iderEnabled) && !amtRedirectionService.ListenerEnabled) {
-                isRedirectionChanged = true
-              }
-
-              if (this.amtCfg.kvmEnabled !== kvmEnabled) {
-                cimKVMRedirectionSAP.EnabledState = this.amtCfg.kvmEnabled
-                  ? Common.Models.AMT_REDIRECTION_SERVICE_ENABLE_STATE.Enabled
-                  : Common.Models.AMT_REDIRECTION_SERVICE_ENABLE_STATE.Disabled
-                isRedirectionChanged = true
-              }
-
-              if (isRedirectionChanged) {
-                // what is this magic numbers going on?
-                amtRedirectionService.EnabledState = 32768 + ((iderEnabled ? 1 : 0) + (solEnabled ? 2 : 0))
-                if (solEnabled || iderEnabled || kvmEnabled) {
-                  amtRedirectionService.ListenerEnabled = true
-                } else {
-                  amtRedirectionService.ListenerEnabled = true
-                }
-              }
-
-              const UserConsentOptions = {
-                none: 0,
-                kvm: 1,
-                all: 4294967295
-              }
-              const ipsOptInService = context.IPS_OptInService
-              const key = this.amtCfg.userConsent.toLowerCase()
-              const isOptInServiceChanged = (ipsOptInService.OptInRequired !== UserConsentOptions[key])
-              if (isOptInServiceChanged) {
-                ipsOptInService.OptInRequired = UserConsentOptions[key]
-              }
-
-              return {
-                AMT_RedirectionService: amtRedirectionService,
-                IPS_OptInService: ipsOptInService,
-                CIM_KVMRedirectionSAP: cimKVMRedirectionSAP,
-                isRedirectionChanged: isRedirectionChanged,
-                isOptInServiceChanged: isOptInServiceChanged
-              }
-            }),
-            target: 'UPDATE_REDIRECT_CFG'
+          onError: {
+            actions: assign({ errorMessage: 'Failed to get amt profile from database' }),
+            target: 'FAILED'
           }
         }
       },
+      COMPUTE_UPDATES: {
+        always: {
+          actions: ['computeUpdates'],
+          target: 'UPDATE_REDIRECT_CFG'
+        }
+      },
       UPDATE_REDIRECT_CFG: {
-        on: {
-          '': [
-            { target: 'SET_REDIRECTION_SERVICE', cond: 'isRedirectionChanged' },
-            { target: 'UPDATE_OPT_IN_CFG' }
-          ]
-        },
+        always: [
+          { target: '.SET_REDIRECTION_SERVICE', cond: 'isRedirectionChanged' },
+          { target: 'UPDATE_OPT_IN_CFG' }
+        ],
         states: {
           SET_REDIRECTION_SERVICE: {
             invoke: {
@@ -211,16 +165,83 @@ export class FeaturesConfiguration {
         type: 'final'
       },
       FAILED: {
+        entry: (context, _) => this.logger.error(`FeaturesConfiguration failed: ${context.errorMessage}`),
         type: 'final'
       }
     }
   },
   {
-    actions: { },
-    guards: {
-      isRedirectionChanged: (context: FeaturesContext, _) => {
-        return context.isRedirectionChanged
+    actions: {
+      cacheAmtRedirectionService: (_, event) => { assign({ AMT_RedirectionService: event.data.Envelope.Body }) },
+      cacheIpsOptInService: (_, event) => { assign({ IPS_OptInService: event.data.Envelope.Body }) },
+      cacheCimKvmRedirectionSAP: (context, event) => { assign({ CIM_KVMRedirectionSAP: event.data.Envelope.Body }) },
+      computeUpdates: (context, _) => {
+        const amtRedirectionService = context.AMT_RedirectionService
+        const cimKVMRedirectionSAP = context.CIM_KVMRedirectionSAP
+
+        let isRedirectionChanged = false
+        let solEnabled = (context.AMT_RedirectionService.EnabledState & Common.Models.AMT_REDIRECTION_SERVICE_ENABLE_STATE.Enabled) !== 0
+        let iderEnabled = (context.AMT_RedirectionService.EnabledState & Common.Models.AMT_REDIRECTION_SERVICE_ENABLE_STATE.Other) !== 0
+        const kvmEnabled = (
+          (context.CIM_KVMRedirectionSAP.EnabledState === Common.Models.AMT_REDIRECTION_SERVICE_ENABLE_STATE.EnabledButOffline &&
+              context.CIM_KVMRedirectionSAP.RequestedState === Common.Models.AMT_REDIRECTION_SERVICE_ENABLE_STATE.Enabled) ||
+            context.CIM_KVMRedirectionSAP.EnabledState === Common.Models.AMT_REDIRECTION_SERVICE_ENABLE_STATE.Enabled ||
+            context.CIM_KVMRedirectionSAP.EnabledState === Common.Models.AMT_REDIRECTION_SERVICE_ENABLE_STATE.EnabledButOffline)
+
+        if (this.amtCfg.solEnabled !== solEnabled) {
+          solEnabled = this.amtCfg.solEnabled
+          isRedirectionChanged = true
+        }
+
+        if (this.amtCfg.iderEnabled !== iderEnabled) {
+          iderEnabled = this.amtCfg.iderEnabled
+          isRedirectionChanged = true
+        }
+
+        if ((solEnabled || iderEnabled) && !amtRedirectionService.ListenerEnabled) {
+          isRedirectionChanged = true
+        }
+
+        if (this.amtCfg.kvmEnabled !== kvmEnabled) {
+          cimKVMRedirectionSAP.EnabledState = this.amtCfg.kvmEnabled
+            ? Common.Models.AMT_REDIRECTION_SERVICE_ENABLE_STATE.Enabled
+            : Common.Models.AMT_REDIRECTION_SERVICE_ENABLE_STATE.Disabled
+          isRedirectionChanged = true
+        }
+
+        if (isRedirectionChanged) {
+          // what is this magic numbers going on?
+          amtRedirectionService.EnabledState = 32768 + ((iderEnabled ? 1 : 0) + (solEnabled ? 2 : 0))
+          if (solEnabled || iderEnabled || kvmEnabled) {
+            amtRedirectionService.ListenerEnabled = true
+          } else {
+            amtRedirectionService.ListenerEnabled = true
+          }
+        }
+
+        const UserConsentOptions = {
+          none: 0,
+          kvm: 1,
+          all: 4294967295
+        }
+        const ipsOptInService = context.IPS_OptInService
+        const key = this.amtCfg.userConsent.toLowerCase()
+        const isOptInServiceChanged = (ipsOptInService.OptInRequired !== UserConsentOptions[key])
+        if (isOptInServiceChanged) {
+          ipsOptInService.OptInRequired = UserConsentOptions[key]
+        }
+
+        return {
+          AMT_RedirectionService: amtRedirectionService,
+          IPS_OptInService: ipsOptInService,
+          CIM_KVMRedirectionSAP: cimKVMRedirectionSAP,
+          isRedirectionChanged: isRedirectionChanged,
+          isOptInServiceChanged: isOptInServiceChanged
+        }
       }
+    },
+    guards: {
+      isRedirectionChanged: (context, _) => context.isRedirectionChanged
     }
   })
 
@@ -271,4 +292,18 @@ export class FeaturesConfiguration {
     })
     return await clientObj.pendingPromise
   }
+
+  service = interpret(this.machine).onTransition((state) => {
+    const data = {
+      state: state.value,
+      context: state.context
+    }
+    this.logger.info(`onTransition: ${JSON.stringify(data, null, 2)}`)
+  }).onChange((data) => {
+    this.logger.info(`onChange: ${JSON.stringify(data, null, 2)}`)
+  }).onDone((data) => {
+    this.logger.info(`onDone: ${JSON.stringify(data, null, 2)}`)
+  }).onEvent((data) => {
+    this.logger.info(`onEvent: ${JSON.stringify(data, null, 2)}`)
+  })
 }
