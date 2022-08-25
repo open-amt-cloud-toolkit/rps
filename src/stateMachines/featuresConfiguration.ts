@@ -10,26 +10,6 @@ import { AMT_REDIRECTION_SERVICE_ENABLE_STATE } from '@open-amt-cloud-toolkit/ws
 import { RedirectionService } from '@open-amt-cloud-toolkit/wsman-messages/amt/models'
 import { IPS_OptInService } from '@open-amt-cloud-toolkit/wsman-messages/models/ips_models'
 
-// interface FeaturesContext {
-//   // 3 requests to the device
-//   // to get the current configuration
-//   // get saved here
-//   AMT_RedirectionService?: any
-//   IPS_OptInService?: any
-//   CIM_KVMRedirectionSAP?: any
-//   // transient values for computing
-//   // what configuration changes should be made
-//   // on the client device
-//   isRedirectionChanged?: boolean
-//   isOptInServiceChanged?: boolean
-// }
-//
-// interface FeaturesEvents {
-//   type: 'ACTIVATION' | 'ONFAILED'
-//   clientId: string
-//   data?: any
-// }
-
 export class FeaturesConfiguration {
   amt: AMT.Messages
   cim: CIM.Messages
@@ -67,17 +47,22 @@ export class FeaturesConfiguration {
         // transient values for computing
         // what configuration changes should be made
         // on the client device
-        isRedirectionChanged?: boolean
-        isOptInServiceChanged?: boolean
+        isRedirectionChanged: boolean
+        isOptInServiceChanged: boolean
         errorMessage: string
       },
       events: {} as {
-        type: 'NOT_USED'
+        type: ''
         clientId: string
         data?: any
       }
     },
     initial: 'GET_AMT_REDIRECTION_SERVICE',
+    context: {
+      isRedirectionChanged: false,
+      isOptInServiceChanged: false,
+      errorMessage: ''
+    },
     states: {
       GET_AMT_REDIRECTION_SERVICE: {
         invoke: {
@@ -86,7 +71,10 @@ export class FeaturesConfiguration {
             actions: ['cacheAmtRedirectionService'],
             target: 'GET_IPS_OPT_IN_SERVICE'
           },
-          onError: 'FAILED'
+          onError: {
+            actions: assign({ errorMessage: (_, event) => JSON.stringify(event.data) }),
+            target: 'FAILED'
+          }
         }
       },
       GET_IPS_OPT_IN_SERVICE: {
@@ -96,7 +84,10 @@ export class FeaturesConfiguration {
             actions: ['cacheIpsOptInService'],
             target: 'GET_CIM_KVM_REDIRECTION_SAP'
           },
-          onError: 'FAILED'
+          onError: {
+            actions: assign({ errorMessage: (_, event) => JSON.stringify(event.data) }),
+            target: 'FAILED'
+          }
         }
       },
       GET_CIM_KVM_REDIRECTION_SAP: {
@@ -107,58 +98,60 @@ export class FeaturesConfiguration {
             target: 'COMPUTE_UPDATES'
           },
           onError: {
-            actions: assign({ errorMessage: 'Failed to get amt profile from database' }),
+            actions: assign({ errorMessage: (_, event) => JSON.stringify(event.data) }),
             target: 'FAILED'
           }
         }
       },
       COMPUTE_UPDATES: {
-        always: {
-          actions: ['computeUpdates'],
-          target: 'UPDATE_REDIRECT_CFG'
+        entry: ['computeUpdates'],
+        always: [
+          { target: 'SET_REDIRECTION_SERVICE', cond: (context, _) => context.isRedirectionChanged },
+          { target: 'PUT_IPS_OPT_IN_SERVICE', cond: (context, _) => context.isOptInServiceChanged },
+          { target: 'SUCCESS' }
+        ]
+      },
+      SET_REDIRECTION_SERVICE: {
+        invoke: {
+          src: async (context, _) => await this.setRedirectionService(context.AMT_RedirectionService.EnabledState),
+          onDone: 'SET_KVM_REDIRECTION_SAP',
+          onError: {
+            actions: assign({ errorMessage: (_, event) => JSON.stringify(event.data) }),
+            target: 'FAILED'
+          }
         }
       },
-      UPDATE_REDIRECT_CFG: {
-        always: [
-          { target: '.SET_REDIRECTION_SERVICE', cond: 'isRedirectionChanged' },
-          { target: 'UPDATE_OPT_IN_CFG' }
-        ],
-        states: {
-          SET_REDIRECTION_SERVICE: {
-            invoke: {
-              src: async (context, _) => await this.setRedirectionService(context.AMT_RedirectionService.enabled),
-              onDone: 'SET_KVM_REDIRECTION_SAP',
-              onError: 'FAILED'
-            }
-          },
-          SET_KVM_REDIRECTION_SAP: {
-            invoke: {
-              src: async (context, _) => await this.setKvmRedirectionSap(context.CIM_KVMRedirectionSAP.EnabledState),
-              onDone: 'PUT_REDIRECTION_SERVICE',
-              onError: 'FAILED'
-            }
-          },
-          PUT_REDIRECTION_SERVICE: {
-            invoke: {
-              src: async (context, _) => await this.putRedirectionService(context.AMT_RedirectionService),
-              onDone: 'SUCCESS',
-              onError: 'FAILED'
-            }
-          },
-          SUCCESS: {
-            type: 'final'
-          },
-          FAILED: {
-            type: 'final'
+      SET_KVM_REDIRECTION_SAP: {
+        invoke: {
+          src: async (context, _) => await this.setKvmRedirectionSap(context.CIM_KVMRedirectionSAP.EnabledState),
+          onDone: 'PUT_REDIRECTION_SERVICE',
+          onError: {
+            actions: assign({ errorMessage: (_, event) => JSON.stringify(event.data) }),
+            target: 'FAILED'
           }
-        },
-        onDone: 'UPDATE_OPT_IN_CFG'
+        }
       },
-      UPDATE_OPT_IN_CFG: {
+      PUT_REDIRECTION_SERVICE: {
+        invoke: {
+          src: async (context, _) => await this.putRedirectionService(context.AMT_RedirectionService),
+          onDone: [
+            { target: 'PUT_IPS_OPT_IN_SERVICE', cond: (context, _) => context.isOptInServiceChanged },
+            { target: 'SUCCESS' }
+          ],
+          onError: {
+            actions: assign({ errorMessage: (_, event) => JSON.stringify(event.data) }),
+            target: 'FAILED'
+          }
+        }
+      },
+      PUT_IPS_OPT_IN_SERVICE: {
         invoke: {
           src: async (context, _) => await this.putIpsOptInService(context.IPS_OptInService),
           onDone: 'SUCCESS',
-          onError: 'FAILED'
+          onError: {
+            actions: assign({ errorMessage: (_, event) => JSON.stringify(event.data) }),
+            target: 'FAILED'
+          }
         }
       },
       SUCCESS: {
@@ -172,10 +165,10 @@ export class FeaturesConfiguration {
   },
   {
     actions: {
-      cacheAmtRedirectionService: (_, event) => { assign({ AMT_RedirectionService: event.data.Envelope.Body }) },
-      cacheIpsOptInService: (_, event) => { assign({ IPS_OptInService: event.data.Envelope.Body }) },
-      cacheCimKvmRedirectionSAP: (context, event) => { assign({ CIM_KVMRedirectionSAP: event.data.Envelope.Body }) },
-      computeUpdates: (context, _) => {
+      cacheAmtRedirectionService: assign({ AMT_RedirectionService: (_, event) => event.data.Envelope.Body.AMT_RedirectionService }),
+      cacheIpsOptInService: assign({ IPS_OptInService: (_, event) => event.data.Envelope.Body.IPS_OptInService }),
+      cacheCimKvmRedirectionSAP: assign({ CIM_KVMRedirectionSAP: (_, event) => event.data.Envelope.Body.CIM_KVMRedirectionSAP }),
+      computeUpdates: assign((context, _) => {
         const amtRedirectionService = context.AMT_RedirectionService
         const cimKVMRedirectionSAP = context.CIM_KVMRedirectionSAP
 
@@ -238,12 +231,11 @@ export class FeaturesConfiguration {
           isRedirectionChanged: isRedirectionChanged,
           isOptInServiceChanged: isOptInServiceChanged
         }
-      }
-    },
-    guards: {
-      isRedirectionChanged: (context, _) => context.isRedirectionChanged
+      })
     }
   })
+
+  service = interpret(this.machine)
 
   async getAmtRedirectionService (): Promise<any> {
     return await this.invokeWsmanCall(this.clientId, this.amt.RedirectionService(AMT.Methods.GET))
@@ -292,18 +284,4 @@ export class FeaturesConfiguration {
     })
     return await clientObj.pendingPromise
   }
-
-  service = interpret(this.machine).onTransition((state) => {
-    const data = {
-      state: state.value,
-      context: state.context
-    }
-    this.logger.info(`onTransition: ${JSON.stringify(data, null, 2)}`)
-  }).onChange((data) => {
-    this.logger.info(`onChange: ${JSON.stringify(data, null, 2)}`)
-  }).onDone((data) => {
-    this.logger.info(`onDone: ${JSON.stringify(data, null, 2)}`)
-  }).onEvent((data) => {
-    this.logger.info(`onEvent: ${JSON.stringify(data, null, 2)}`)
-  })
 }
