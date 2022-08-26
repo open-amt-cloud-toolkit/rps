@@ -15,11 +15,13 @@ import { PasswordHelper } from '../utils/PasswordHelper'
 import { SignatureHelper } from '../utils/SignatureHelper'
 import { send } from 'xstate/lib/actions'
 import { Error } from './error'
+import { NetworkConfiguration } from './networkConfiguration'
 import { NodeForge } from '../NodeForge'
 import { Configurator } from '../Configurator'
 import { Validator } from '../Validator'
 import { HttpZResponseModel } from 'http-z'
 import { DbCreatorFactory } from '../repositories/factories/DbCreatorFactory'
+import { AMTUserName } from '../utils/constants'
 
 interface ActivationContext {
   profile: AMTConfiguration
@@ -30,6 +32,7 @@ interface ActivationContext {
   response: any
   status: 'success' | 'error'
   errorMessage: string
+  generalSettings?: AMT.Models.GeneralSettings
 }
 
 interface ActivationEvent {
@@ -51,6 +54,8 @@ export class Activation {
   dbFactory: DbCreatorFactory
   db: any
   error: Error = new Error()
+  networkConfiguration: NetworkConfiguration = new NetworkConfiguration()
+  provisioned_state = 'PROVISIONED'
 
   machine =
 
@@ -66,7 +71,8 @@ export class Activation {
       xmlMessage: '',
       response: '',
       status: 'success',
-      errorMessage: ''
+      errorMessage: '',
+      generalSettings: null
     },
     id: 'activation-machine',
     initial: 'UNPROVISIONED',
@@ -301,7 +307,7 @@ export class Activation {
         invoke: {
           src: this.saveDeviceInfoToMPS.bind(this),
           id: 'save-device-mps',
-          onDone: 'PROVISIONED',
+          onDone: 'DELAYED_TRANSITION',
           onError: 'SAVE_DEVICE_TO_MPS_FAILURE'
         }
       },
@@ -312,6 +318,27 @@ export class Activation {
       SAVE_DEVICE_TO_MPS_FAILURE: {
         entry: assign({ errorMessage: 'Failed to save device information to MPS' }),
         always: 'FAILED'
+      },
+      DELAYED_TRANSITION: {
+        after: {
+          10000: { target: 'UPDATE_CREDENTIALS' }
+        }
+      },
+      NETWORKCONFIGURATION: {
+        entry: send({ type: 'NETWORKCONFIGURATION' }, { to: 'network-configuration-machine' }),
+        invoke: {
+          src: this.networkConfiguration.machine,
+          id: 'network-configuration-machine',
+          data: {
+            amtProfile: (context, event) => context.profile,
+            generalSettings: (context, event) => context.generalSettings,
+            clientId: (context, event) => context.clientId
+          },
+          onDone: 'PROVISIONED'
+        },
+        on: {
+          ONFAILED: 'FAILED'
+        }
       },
       ERROR: {
         entry: send({ type: 'PARSE' }, { to: 'error-machine' }),
@@ -365,7 +392,8 @@ export class Activation {
       'Read Host Based Setup Service': this.readHostBasedSetupService.bind(this),
       'Set activation status': this.setActivationStatus.bind(this),
       'Send Message to Device': this.sendMessageToDevice.bind(this),
-      'Get Provisioning CertObj': this.GetProvisioningCertObj.bind(this)
+      'Get Provisioning CertObj': this.GetProvisioningCertObj.bind(this),
+      'Update AMT Credentials': this.updateCredentials.bind(this)
     }
   })
 
@@ -396,6 +424,11 @@ export class Activation {
     this.logger = new Logger('Activation_State_Machine')
   }
 
+  updateCredentials (context: ActivationContext, event: ActivationEvent): void {
+    devices[context.clientId].connectionParams.username = AMTUserName
+    devices[context.clientId].connectionParams.password = devices[context.clientId].amtPassword
+  }
+
   async getAMTProfile (context: ActivationContext, event: ActivationEvent): Promise<AMTConfiguration> {
     this.db = await this.dbFactory.getDb()
     const profile = await this.configurator.profileManager.getAmtProfile(devices[context.clientId].ClientData.payload.profile.profileName)
@@ -411,7 +444,6 @@ export class Activation {
     const { clientId, status } = context
     const clientObj = devices[clientId]
     let method = null
-    // TODO: Get rid of redundant data (i.e. Method and Status)
     if (status === 'success') {
       method = 'success'
     } else if (status === 'error') {
@@ -537,8 +569,8 @@ export class Activation {
 
   readGeneralSettings (context: ActivationContext, event: ActivationEvent): void {
     const clientObj = devices[context.clientId]
-    const digestRealm = context.response.Envelope.Body.AMT_GeneralSettings.DigestRealm
-    clientObj.ClientData.payload.digestRealm = digestRealm
+    context.generalSettings = context.response.Envelope.Body.AMT_GeneralSettings
+    clientObj.ClientData.payload.digestRealm = context.generalSettings.DigestRealm
     clientObj.hostname = clientObj.ClientData.payload.hostname
   }
 
