@@ -94,7 +94,33 @@ export class RPSConfig {
     this.VaultConfig = new VaultConfig()
   }
 }
+export enum AMTRedirectionServiceEnabledStates {
+  DISABLED = 32768,
+  ONLY_IDER = 32769,
+  ONLY_SOL = 32770,
+  BOTH_IDER_SOL = 32771
+}
 export enum AMTUserConsent {
+  NONE = 'None',
+  ALL = 'All',
+  KVM = 'KVM'
+}
+export enum AMTUserConsentValues {
+  NONE = 0,
+  KVM = 1,
+  ALL = 4294967295
+}
+export function mapAMTUserConsent (e: AMTUserConsent): AMTUserConsentValues {
+  switch (e) {
+    case AMTUserConsent.ALL:
+      return AMTUserConsentValues.ALL
+    case AMTUserConsent.KVM:
+      return AMTUserConsentValues.KVM
+    case AMTUserConsent.NONE:
+      return AMTUserConsentValues.NONE
+  }
+}
+export enum AMTUserConsentWsmanValues {
   NONE = 'None',
   ALL = 'All',
   KVM = 'KVM'

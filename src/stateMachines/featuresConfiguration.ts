@@ -2,7 +2,7 @@ import { AMT, CIM, Common, IPS } from '@open-amt-cloud-toolkit/wsman-messages'
 import { HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
 import { assign, createMachine, interpret } from 'xstate'
-import { AMTConfiguration } from '../models'
+import { AMTConfiguration, AMTRedirectionServiceEnabledStates, mapAMTUserConsent } from '../models'
 import { devices } from '../WebSocketListener'
 import { ClientResponseMsg } from '../utils/ClientResponseMsg'
 import { parseBody } from '../utils/parseWSManResponseBody'
@@ -173,14 +173,22 @@ export class FeaturesConfiguration {
         const amtRedirectionService = context.AMT_RedirectionService
         const cimKVMRedirectionSAP = context.CIM_KVMRedirectionSAP
 
-        let isRedirectionChanged = false
-        let solEnabled = (context.AMT_RedirectionService.EnabledState & Common.Models.AMT_REDIRECTION_SERVICE_ENABLE_STATE.Enabled) !== 0
-        let iderEnabled = (context.AMT_RedirectionService.EnabledState & Common.Models.AMT_REDIRECTION_SERVICE_ENABLE_STATE.Other) !== 0
+        let solEnabled = false
+        let iderEnabled = false
+        let enabledState = context.AMT_RedirectionService.EnabledState
+        if (enabledState === AMTRedirectionServiceEnabledStates.BOTH_IDER_SOL) {
+          solEnabled = true
+          iderEnabled = true
+        } else if (enabledState === AMTRedirectionServiceEnabledStates.ONLY_IDER) {
+          iderEnabled = true
+        } else if (enabledState === AMTRedirectionServiceEnabledStates.ONLY_SOL) {
+          solEnabled = true
+        }
         const kvmEnabled = (
-          (context.CIM_KVMRedirectionSAP.EnabledState === Common.Models.AMT_REDIRECTION_SERVICE_ENABLE_STATE.EnabledButOffline &&
-              context.CIM_KVMRedirectionSAP.RequestedState === Common.Models.AMT_REDIRECTION_SERVICE_ENABLE_STATE.Enabled) ||
-            context.CIM_KVMRedirectionSAP.EnabledState === Common.Models.AMT_REDIRECTION_SERVICE_ENABLE_STATE.Enabled ||
-            context.CIM_KVMRedirectionSAP.EnabledState === Common.Models.AMT_REDIRECTION_SERVICE_ENABLE_STATE.EnabledButOffline)
+          context.CIM_KVMRedirectionSAP.EnabledState === Common.Models.AMT_REDIRECTION_SERVICE_ENABLE_STATE.Enabled ||
+          context.CIM_KVMRedirectionSAP.EnabledState === Common.Models.AMT_REDIRECTION_SERVICE_ENABLE_STATE.EnabledButOffline
+        )
+        let isRedirectionChanged = false
 
         if (this.amtCfg.solEnabled !== solEnabled) {
           solEnabled = this.amtCfg.solEnabled
@@ -204,25 +212,23 @@ export class FeaturesConfiguration {
         }
 
         if (isRedirectionChanged) {
-          // what is this magic numbers going on?
-          amtRedirectionService.EnabledState = 32768 + ((iderEnabled ? 1 : 0) + (solEnabled ? 2 : 0))
-          if (solEnabled || iderEnabled || kvmEnabled) {
-            amtRedirectionService.ListenerEnabled = true
-          } else {
-            amtRedirectionService.ListenerEnabled = false
+          enabledState = AMTRedirectionServiceEnabledStates.DISABLED
+          if (iderEnabled && solEnabled) {
+            enabledState = AMTRedirectionServiceEnabledStates.BOTH_IDER_SOL
+          } else if (iderEnabled) {
+            enabledState = AMTRedirectionServiceEnabledStates.ONLY_IDER
+          } else if (solEnabled) {
+            enabledState = AMTRedirectionServiceEnabledStates.ONLY_SOL
           }
+          amtRedirectionService.EnabledState = enabledState
+          amtRedirectionService.ListenerEnabled = (solEnabled || iderEnabled || kvmEnabled)
         }
 
-        const UserConsentOptions = {
-          none: 0,
-          kvm: 1,
-          all: 4294967295
-        }
         const ipsOptInService = context.IPS_OptInService
-        const key = this.amtCfg.userConsent.toLowerCase()
-        const isOptInServiceChanged = (ipsOptInService.OptInRequired !== UserConsentOptions[key])
+        const cfgOptInValue = mapAMTUserConsent(this.amtCfg.userConsent)
+        const isOptInServiceChanged = (ipsOptInService.OptInRequired !== cfgOptInValue)
         if (isOptInServiceChanged) {
-          ipsOptInService.OptInRequired = UserConsentOptions[key]
+          ipsOptInService.OptInRequired = cfgOptInValue
         }
 
         return {
@@ -295,12 +301,5 @@ export class FeaturesConfiguration {
           }
         )
     })
-    // clientObj.pendingPromise = new Promise<any>((resolve, reject) => {
-    //   clientObj.resolve = resolve
-    //   clientObj.reject = reject
-    // }).then((wsmanMsg) => {
-    //   return this.httpHandler.parseXML(parseBody(wsmanMsg))
-    // }).catch((err) => { return err })
-    // return await clientObj.pendingPromise
   }
 }

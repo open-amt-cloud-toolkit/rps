@@ -1,10 +1,9 @@
 import { FeaturesConfiguration } from './featuresConfiguration'
 import { ClientAction } from '../models/RCS.Config'
-import { AMTUserConsent } from '../models'
+import { AMTRedirectionServiceEnabledStates, AMTUserConsent, AMTUserConsentValues } from '../models'
 import { v4 as uuid } from 'uuid'
 import { devices } from '../WebSocketListener'
 import { waitFor } from 'xstate/lib/waitFor'
-import { Common } from '@open-amt-cloud-toolkit/wsman-messages'
 
 let clientId
 let amtCfgProfile
@@ -60,20 +59,22 @@ beforeEach(() => {
     ciraConfigName: 'config1'
   }
   setDefaultMessages()
+  setDefaultResponses()
   featuresCfg = new FeaturesConfiguration(clientId, amtCfgProfile)
   wrapItSpy = jest.spyOn(featuresCfg.httpHandler, 'wrapIt')
   responseMessageSpy = jest.spyOn(featuresCfg.clientMsgBuilder, 'get')
   sendSpy = jest.spyOn(devices[clientId].ClientSocket, 'send').mockImplementation().mockReturnValue()
   service = featuresCfg.service
-  service.onTransition((state) => {
-    console.log(`onTransition: state: ${JSON.stringify(state.value)}`)
-    // }).onChange((data) => {
-    //   console.log(`onChange: ${JSON.stringify(data, null, 2)}`)
-    // }).onDone((data) => {
-    //   console.log(`onDone: ${JSON.stringify(data, null, 2)}`)
-  }).onEvent((event) => {
-    console.log(`onEvent: ${JSON.stringify(event, null, 2)}`)
-  })
+  // helpful for debugging
+  // service.onTransition((state) => {
+  //   console.log(`onTransition: state: ${JSON.stringify(state.value)}`)
+  // }).onChange((data) => {
+  //   console.log(`onChange: ${JSON.stringify(data, null, 2)}`)
+  // }).onDone((data) => {
+  //   console.log(`onDone: ${JSON.stringify(data, null, 2)}`)
+  // }).onEvent((event) => {
+  //   console.log(`onEvent: ${JSON.stringify(event, null, 2)}`)
+  // })
 })
 
 it('should work for the happy path', async () => {
@@ -101,11 +102,96 @@ it('should work for the happy path', async () => {
   await waitFor(service, (state) => state.matches('SUCCESS'))
 })
 
-it('should not send any updates and skip to success', async () => {
-  setDefaultResponses()
-  amtRedirectionSvcJson.EnabledState = Common.Models.AMT_REDIRECTION_SERVICE_ENABLE_STATE.Enabled
+it('should set redirection - enable the listener', async () => {
+  amtRedirectionSvcJson.ListenerEnabled = false
+  jest.spyOn(featuresCfg.httpHandler, 'parseXML')
+    .mockReturnValueOnce({ Envelope: { Body: { AMT_RedirectionService: amtRedirectionSvcJson } } })
+    .mockReturnValueOnce({ Envelope: { Body: { IPS_OptInService: ipsOptInsSvcJson } } })
+    .mockReturnValueOnce({ Envelope: { Body: { CIM_KVMRedirectionSAP: kvmRedirectionSvcJson } } })
+  service.start()
+  const clientObj = devices[clientId]
+  await waitFor(service, (state) => state.matches('GET_AMT_REDIRECTION_SERVICE'))
+  clientObj.resolve(deviceGetAmtRedirectionSvcRsp.payload)
+  await waitFor(service, (state) => state.matches('GET_IPS_OPT_IN_SERVICE'))
+  clientObj.resolve(deviceGetIpsOptInSvcRsp.payload)
+  await waitFor(service, (state) => state.matches('GET_CIM_KVM_REDIRECTION_SAP'))
+  clientObj.resolve(deviceGetCimKvmRedirectionSapRsp.payload)
+  await waitFor(service, (state) => state.matches('SET_REDIRECTION_SERVICE'))
+  // just error out now to finish the state machine
+  clientObj.reject('some fake error for test coverage')
+  await waitFor(service, (state) => state.matches('FAILED'))
+})
+
+it('should set redirection - ONLY_IDER', async () => {
+  amtCfgProfile.solEnabled = false
+  amtRedirectionSvcJson.EnabledState = AMTRedirectionServiceEnabledStates.ONLY_IDER
+  jest.spyOn(featuresCfg.httpHandler, 'parseXML')
+    .mockReturnValueOnce({ Envelope: { Body: { AMT_RedirectionService: amtRedirectionSvcJson } } })
+    .mockReturnValueOnce({ Envelope: { Body: { IPS_OptInService: ipsOptInsSvcJson } } })
+    .mockReturnValueOnce({ Envelope: { Body: { CIM_KVMRedirectionSAP: kvmRedirectionSvcJson } } })
+  service.start()
+  const clientObj = devices[clientId]
+  await waitFor(service, (state) => state.matches('GET_AMT_REDIRECTION_SERVICE'))
+  clientObj.resolve(deviceGetAmtRedirectionSvcRsp.payload)
+  await waitFor(service, (state) => state.matches('GET_IPS_OPT_IN_SERVICE'))
+  clientObj.resolve(deviceGetIpsOptInSvcRsp.payload)
+  await waitFor(service, (state) => state.matches('GET_CIM_KVM_REDIRECTION_SAP'))
+  clientObj.resolve(deviceGetCimKvmRedirectionSapRsp.payload)
+  await waitFor(service, (state) => state.matches('SET_REDIRECTION_SERVICE'))
+  // just error out now to finish the state machine
+  clientObj.reject('some fake error for test coverage')
+  await waitFor(service, (state) => state.matches('FAILED'))
+})
+
+it('should set redirection - ONLY_SOL', async () => {
+  amtCfgProfile.iderEnabled = false
+  amtRedirectionSvcJson.EnabledState = AMTRedirectionServiceEnabledStates.ONLY_SOL
+  jest.spyOn(featuresCfg.httpHandler, 'parseXML')
+    .mockReturnValueOnce({ Envelope: { Body: { AMT_RedirectionService: amtRedirectionSvcJson } } })
+    .mockReturnValueOnce({ Envelope: { Body: { IPS_OptInService: ipsOptInsSvcJson } } })
+    .mockReturnValueOnce({ Envelope: { Body: { CIM_KVMRedirectionSAP: kvmRedirectionSvcJson } } })
+  service.start()
+  const clientObj = devices[clientId]
+  await waitFor(service, (state) => state.matches('GET_AMT_REDIRECTION_SERVICE'))
+  clientObj.resolve(deviceGetAmtRedirectionSvcRsp.payload)
+  await waitFor(service, (state) => state.matches('GET_IPS_OPT_IN_SERVICE'))
+  clientObj.resolve(deviceGetIpsOptInSvcRsp.payload)
+  await waitFor(service, (state) => state.matches('GET_CIM_KVM_REDIRECTION_SAP'))
+  clientObj.resolve(deviceGetCimKvmRedirectionSapRsp.payload)
+  await waitFor(service, (state) => state.matches('SET_REDIRECTION_SERVICE'))
+  // just error out now to finish the state machine
+  clientObj.reject('some fake error for test coverage')
+  await waitFor(service, (state) => state.matches('FAILED'))
+})
+
+it('should skip redirect and update opt in', async () => {
+  amtRedirectionSvcJson.EnabledState = AMTRedirectionServiceEnabledStates.BOTH_IDER_SOL
   amtRedirectionSvcJson.ListenerEnabled = true
-  ipsOptInsSvcJson.OptInRequired = 4294967295
+  kvmRedirectionSvcJson.RequestedState = 2
+  kvmRedirectionSvcJson.EnabledState = 2
+  // ipsOptInsSvcJson.OptInRequired = AMTUserConsentValues.NONE
+  jest.spyOn(featuresCfg.httpHandler, 'parseXML')
+    .mockReturnValueOnce({ Envelope: { Body: { AMT_RedirectionService: amtRedirectionSvcJson } } })
+    .mockReturnValueOnce({ Envelope: { Body: { IPS_OptInService: ipsOptInsSvcJson } } })
+    .mockReturnValueOnce({ Envelope: { Body: { CIM_KVMRedirectionSAP: kvmRedirectionSvcJson } } })
+  expect(featuresCfg.machine.id).toEqual('features-configuration-fsm')
+  service.start()
+  const clientObj = devices[clientId]
+  await waitFor(service, (state) => state.matches('GET_AMT_REDIRECTION_SERVICE'))
+  clientObj.resolve(deviceGetAmtRedirectionSvcRsp.payload)
+  await waitFor(service, (state) => state.matches('GET_IPS_OPT_IN_SERVICE'))
+  clientObj.resolve(deviceGetIpsOptInSvcRsp.payload)
+  await waitFor(service, (state) => state.matches('GET_CIM_KVM_REDIRECTION_SAP'))
+  clientObj.resolve(deviceGetCimKvmRedirectionSapRsp.payload)
+  await waitFor(service, (state) => state.matches('PUT_IPS_OPT_IN_SERVICE'))
+  clientObj.resolve(devicePutIpsOptInSvcRsp.payload)
+  await waitFor(service, (state) => state.matches('SUCCESS'))
+})
+
+it('should not update features and skip to success', async () => {
+  amtRedirectionSvcJson.EnabledState = AMTRedirectionServiceEnabledStates.BOTH_IDER_SOL
+  amtRedirectionSvcJson.ListenerEnabled = true
+  ipsOptInsSvcJson.OptInRequired = AMTUserConsentValues.ALL
   kvmRedirectionSvcJson.RequestedState = 2
   kvmRedirectionSvcJson.EnabledState = 2
   jest.spyOn(featuresCfg.httpHandler, 'parseXML')
@@ -116,10 +202,6 @@ it('should not send any updates and skip to success', async () => {
   service.start()
   const clientObj = devices[clientId]
   await waitFor(service, (state) => state.matches('GET_AMT_REDIRECTION_SERVICE'))
-  expect(wrapItSpy).toHaveBeenCalled()
-  expect(responseMessageSpy).toHaveBeenCalled()
-  expect(sendSpy).toHaveBeenCalled()
-  expect(clientObj.pendingPromise).toBeDefined()
   clientObj.resolve(deviceGetAmtRedirectionSvcRsp.payload)
   await waitFor(service, (state) => state.matches('GET_IPS_OPT_IN_SERVICE'))
   clientObj.resolve(deviceGetIpsOptInSvcRsp.payload)
@@ -234,22 +316,10 @@ it('should fail PUT_IPS_OPT_IN_SERVICE', async () => {
 })
 
 function setDefaultResponses (): void {
-  // "enabledState": {
-  //   "name": "SOL/IDER Feature",
-  //     "desc": "Enable or disable the Intel AMT Serial-over-LAN and IDER features",
-  //     "type": 3,
-  //     "values": {
-  //       "32768": "Disabled",
-  //       "32769": "IDER only",
-  //       "32770": "Serial-over-LAN only",
-  //       "32771": "IDER & SOL enabled"
-  //   },
-  //   "value": "32771"
-  // }
   amtRedirectionSvcJson = {
     CreationClassName: 'AMT_RedirectionService',
     ElementName: 'Intel(r) AMT Redirection Service',
-    EnabledState: 32771,
+    EnabledState: AMTRedirectionServiceEnabledStates.BOTH_IDER_SOL,
     ListenerEnabled: false,
     Name: 'Intel(r) AMT Redirection Service',
     SystemCreationClassName: 'CIM_ComputerSystem',
@@ -262,7 +332,7 @@ function setDefaultResponses (): void {
     Name: 'Intel(r) AMT OptIn Service',
     OptInCodeTimeout: 120,
     OptInDisplayTimeout: 300,
-    OptInRequired: 1,
+    OptInRequired: AMTUserConsentValues.KVM,
     OptInState: 0,
     SystemCreationClassName: 'CIM_ComputerSystem',
     SystemName: 'Intel(r) AMT'
@@ -307,7 +377,7 @@ function setDefaultMessages (): void {
           '<g:AMT_RedirectionService>' +
           '<g:CreationClassName>AMT_RedirectionService</g:CreationClassName>' +
           '<g:ElementName>Intel(r) AMT Redirection Service</g:ElementName>' +
-          '<g:EnabledState>32768</g:EnabledState>' +
+          `<g:EnabledState>${AMTRedirectionServiceEnabledStates.DISABLED}</g:EnabledState>` +
           '<g:ListenerEnabled>true</g:ListenerEnabled>' +
           '<g:Name>Intel(r) AMT Redirection Service</g:Name>' +
           '<g:SystemCreat\r\n' + '0095\r\n' + 'ionClassName>CIM_ComputerSystem</g:SystemCreationClassName>' +
@@ -351,7 +421,8 @@ function setDefaultMessages (): void {
           '<g:OptInCodeTimeout>120</g:OptInCodeTimeout>' +
           '<g:OptInDisplayTimeout>300' +
           '</g:OptInDi\r\n' + '00EC\r\n' + 'splayTimeout>' +
-          '<g:OptInRequired>1</g:OptInRequired><g:OptInState>0</g:OptInState>' +
+          `<g:OptInRequired>${AMTUserConsentValues.KVM}</g:OptInRequired>` +
+          '<g:OptInState>0</g:OptInState>' +
           '<g:SystemCreationClassName>CIM_ComputerSystem</g:SystemCreationClassName>' +
           '<g:SystemName>Intel(r) AMT</g:SystemName>' +
           '</g:IPS_OptInService>' +
@@ -496,7 +567,7 @@ function setDefaultMessages (): void {
           '<g:AMT_RedirectionService>' +
           '<g:CreationClassName>AMT_RedirectionService</g:CreationClassName>' +
           '<g:ElementName>Intel(r) AMT Redirection Service</g:ElementName>' +
-          '<g:EnabledState>32770</g:EnabledState>' +
+          `<g:EnabledState>${AMTRedirectionServiceEnabledStates.BOTH_IDER_SOL}</g:EnabledState>` +
           '<g:ListenerEnabled>true</g:ListenerEnabled>' +
           '<g:Name>Intel(r) AMT Redirection Service</g:Name>' +
           '<g:SystemCreat\r\n' + '0095\r\n' + 'ionClassName>CIM_ComputerSystem</g:SystemCreationClassName>' +
@@ -539,7 +610,7 @@ function setDefaultMessages (): void {
           '<g:Name>Intel(r) AMT OptIn Service</g:Name>' +
           '<g:OptInCodeTimeout>120</g:OptInCodeTimeout>' +
           '<g:OptInDisplayTimeout>300</g:OptInDi\r\n' + '00F5\r\n' + 'splayTimeout>' +
-          '<g:OptInRequired>4294967295</g:OptInRequired>' +
+          `<g:OptInRequired>${AMTUserConsentValues.ALL}</g:OptInRequired>` +
           '<g:OptInState>0</g:OptInState>' +
           '<g:SystemCreationClassName>CIM_ComputerSystem</g:SystemCreationClassName>' +
           '<g:SystemName>Intel(r) AMT</g:SystemName>' +
