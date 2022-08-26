@@ -4,6 +4,7 @@ import { AMTUserConsent } from '../models'
 import { v4 as uuid } from 'uuid'
 import { devices } from '../WebSocketListener'
 import { waitFor } from 'xstate/lib/waitFor'
+import { Common } from '@open-amt-cloud-toolkit/wsman-messages'
 
 let clientId
 let amtCfgProfile
@@ -15,6 +16,9 @@ let deviceSetRedirectionSvcRsp
 let deviceSetKvmRedirectionSvcRsp
 let devicePutRedirectionSvcRsp
 let devicePutIpsOptInSvcRsp
+let amtRedirectionSvcJson
+let ipsOptInsSvcJson
+let kvmRedirectionSvcJson
 let wrapItSpy
 let sendSpy
 let responseMessageSpy
@@ -49,7 +53,7 @@ beforeEach(() => {
     activation: ClientAction.ADMINCTLMODE,
     userConsent: AMTUserConsent.ALL,
     solEnabled: true,
-    iderEnabled: false,
+    iderEnabled: true,
     kvmEnabled: true,
     generateRandomPassword: false,
     generateRandomMEBxPassword: false,
@@ -67,8 +71,8 @@ beforeEach(() => {
     //   console.log(`onChange: ${JSON.stringify(data, null, 2)}`)
     // }).onDone((data) => {
     //   console.log(`onDone: ${JSON.stringify(data, null, 2)}`)
-    // }).onEvent((event) => {
-    //   console.log(`onEvent: ${JSON.stringify(event, null, 2)}`)
+  }).onEvent((event) => {
+    console.log(`onEvent: ${JSON.stringify(event, null, 2)}`)
   })
 })
 
@@ -81,7 +85,6 @@ it('should work for the happy path', async () => {
   expect(responseMessageSpy).toHaveBeenCalled()
   expect(sendSpy).toHaveBeenCalled()
   expect(clientObj.pendingPromise).toBeDefined()
-  clientObj.pendingPromise = null
   clientObj.resolve(deviceGetAmtRedirectionSvcRsp.payload)
   await waitFor(service, (state) => state.matches('GET_IPS_OPT_IN_SERVICE'))
   clientObj.resolve(deviceGetIpsOptInSvcRsp.payload)
@@ -97,6 +100,184 @@ it('should work for the happy path', async () => {
   clientObj.resolve(devicePutIpsOptInSvcRsp.payload)
   await waitFor(service, (state) => state.matches('SUCCESS'))
 })
+
+it('should not send any updates and skip to success', async () => {
+  setDefaultResponses()
+  amtRedirectionSvcJson.EnabledState = Common.Models.AMT_REDIRECTION_SERVICE_ENABLE_STATE.Enabled
+  amtRedirectionSvcJson.ListenerEnabled = true
+  ipsOptInsSvcJson.OptInRequired = 4294967295
+  kvmRedirectionSvcJson.RequestedState = 2
+  kvmRedirectionSvcJson.EnabledState = 2
+  jest.spyOn(featuresCfg.httpHandler, 'parseXML')
+    .mockReturnValueOnce({ Envelope: { Body: { AMT_RedirectionService: amtRedirectionSvcJson } } })
+    .mockReturnValueOnce({ Envelope: { Body: { IPS_OptInService: ipsOptInsSvcJson } } })
+    .mockReturnValueOnce({ Envelope: { Body: { CIM_KVMRedirectionSAP: kvmRedirectionSvcJson } } })
+  expect(featuresCfg.machine.id).toEqual('features-configuration-fsm')
+  service.start()
+  const clientObj = devices[clientId]
+  await waitFor(service, (state) => state.matches('GET_AMT_REDIRECTION_SERVICE'))
+  expect(wrapItSpy).toHaveBeenCalled()
+  expect(responseMessageSpy).toHaveBeenCalled()
+  expect(sendSpy).toHaveBeenCalled()
+  expect(clientObj.pendingPromise).toBeDefined()
+  clientObj.resolve(deviceGetAmtRedirectionSvcRsp.payload)
+  await waitFor(service, (state) => state.matches('GET_IPS_OPT_IN_SERVICE'))
+  clientObj.resolve(deviceGetIpsOptInSvcRsp.payload)
+  await waitFor(service, (state) => state.matches('GET_CIM_KVM_REDIRECTION_SAP'))
+  clientObj.resolve(deviceGetCimKvmRedirectionSapRsp.payload)
+  await waitFor(service, (state) => state.matches('SUCCESS'))
+})
+
+it('should fail GET_AMT_REDIRECTION_SERVICE', async () => {
+  expect(featuresCfg.machine.id).toEqual('features-configuration-fsm')
+  service.start()
+  const clientObj = devices[clientId]
+  await waitFor(service, (state) => state.matches('GET_AMT_REDIRECTION_SERVICE'))
+  clientObj.reject('some fake error for test coverage')
+  await waitFor(service, (state) => state.matches('FAILED'))
+})
+
+it('should fail GET_IPS_OPT_IN_SERVICE', async () => {
+  expect(featuresCfg.machine.id).toEqual('features-configuration-fsm')
+  service.start()
+  const clientObj = devices[clientId]
+  await waitFor(service, (state) => state.matches('GET_AMT_REDIRECTION_SERVICE'))
+  clientObj.resolve(deviceGetAmtRedirectionSvcRsp.payload)
+  await waitFor(service, (state) => state.matches('GET_IPS_OPT_IN_SERVICE'))
+  clientObj.reject('some fake error for test coverage')
+  await waitFor(service, (state) => state.matches('FAILED'))
+})
+
+it('should fail GET_CIM_KVM_REDIRECTION_SAP', async () => {
+  expect(featuresCfg.machine.id).toEqual('features-configuration-fsm')
+  service.start()
+  const clientObj = devices[clientId]
+  await waitFor(service, (state) => state.matches('GET_AMT_REDIRECTION_SERVICE'))
+  clientObj.resolve(deviceGetAmtRedirectionSvcRsp.payload)
+  await waitFor(service, (state) => state.matches('GET_IPS_OPT_IN_SERVICE'))
+  clientObj.resolve(deviceGetIpsOptInSvcRsp.payload)
+  await waitFor(service, (state) => state.matches('GET_CIM_KVM_REDIRECTION_SAP'))
+  clientObj.reject('some fake error for test coverage')
+  await waitFor(service, (state) => state.matches('FAILED'))
+})
+
+it('should fail SET_REDIRECTION_SERVICE', async () => {
+  expect(featuresCfg.machine.id).toEqual('features-configuration-fsm')
+  service.start()
+  const clientObj = devices[clientId]
+  await waitFor(service, (state) => state.matches('GET_AMT_REDIRECTION_SERVICE'))
+  clientObj.resolve(deviceGetAmtRedirectionSvcRsp.payload)
+  await waitFor(service, (state) => state.matches('GET_IPS_OPT_IN_SERVICE'))
+  clientObj.resolve(deviceGetIpsOptInSvcRsp.payload)
+  await waitFor(service, (state) => state.matches('GET_CIM_KVM_REDIRECTION_SAP'))
+  clientObj.resolve(deviceGetCimKvmRedirectionSapRsp.payload)
+  await waitFor(service, (state) => state.matches('SET_REDIRECTION_SERVICE'))
+  clientObj.reject('some fake error for test coverage')
+  await waitFor(service, (state) => state.matches('FAILED'))
+})
+
+it('should fail SET_KVM_REDIRECTION_SAP', async () => {
+  expect(featuresCfg.machine.id).toEqual('features-configuration-fsm')
+  service.start()
+  const clientObj = devices[clientId]
+  await waitFor(service, (state) => state.matches('GET_AMT_REDIRECTION_SERVICE'))
+  clientObj.resolve(deviceGetAmtRedirectionSvcRsp.payload)
+  await waitFor(service, (state) => state.matches('GET_IPS_OPT_IN_SERVICE'))
+  clientObj.resolve(deviceGetIpsOptInSvcRsp.payload)
+  await waitFor(service, (state) => state.matches('GET_CIM_KVM_REDIRECTION_SAP'))
+  clientObj.resolve(deviceGetCimKvmRedirectionSapRsp.payload)
+  await waitFor(service, (state) => state.matches('SET_REDIRECTION_SERVICE'))
+  clientObj.resolve(deviceSetRedirectionSvcRsp.payload)
+  await waitFor(service, (state) => state.matches('SET_KVM_REDIRECTION_SAP'))
+  clientObj.reject('some fake error for test coverage')
+  await waitFor(service, (state) => state.matches('FAILED'))
+})
+
+it('should fail PUT_REDIRECTION_SERVICE', async () => {
+  expect(featuresCfg.machine.id).toEqual('features-configuration-fsm')
+  service.start()
+  const clientObj = devices[clientId]
+  await waitFor(service, (state) => state.matches('GET_AMT_REDIRECTION_SERVICE'))
+  clientObj.resolve(deviceGetAmtRedirectionSvcRsp.payload)
+  await waitFor(service, (state) => state.matches('GET_IPS_OPT_IN_SERVICE'))
+  clientObj.resolve(deviceGetIpsOptInSvcRsp.payload)
+  await waitFor(service, (state) => state.matches('GET_CIM_KVM_REDIRECTION_SAP'))
+  clientObj.resolve(deviceGetCimKvmRedirectionSapRsp.payload)
+  await waitFor(service, (state) => state.matches('SET_REDIRECTION_SERVICE'))
+  clientObj.resolve(deviceSetRedirectionSvcRsp.payload)
+  await waitFor(service, (state) => state.matches('SET_KVM_REDIRECTION_SAP'))
+  clientObj.resolve(deviceSetKvmRedirectionSvcRsp.payload)
+  await waitFor(service, (state) => state.matches('PUT_REDIRECTION_SERVICE'))
+  clientObj.reject('some fake error for test coverage')
+  await waitFor(service, (state) => state.matches('FAILED'))
+})
+
+it('should fail PUT_IPS_OPT_IN_SERVICE', async () => {
+  expect(featuresCfg.machine.id).toEqual('features-configuration-fsm')
+  service.start()
+  const clientObj = devices[clientId]
+  await waitFor(service, (state) => state.matches('GET_AMT_REDIRECTION_SERVICE'))
+  clientObj.resolve(deviceGetAmtRedirectionSvcRsp.payload)
+  await waitFor(service, (state) => state.matches('GET_IPS_OPT_IN_SERVICE'))
+  clientObj.resolve(deviceGetIpsOptInSvcRsp.payload)
+  await waitFor(service, (state) => state.matches('GET_CIM_KVM_REDIRECTION_SAP'))
+  clientObj.resolve(deviceGetCimKvmRedirectionSapRsp.payload)
+  await waitFor(service, (state) => state.matches('SET_REDIRECTION_SERVICE'))
+  clientObj.resolve(deviceSetRedirectionSvcRsp.payload)
+  await waitFor(service, (state) => state.matches('SET_KVM_REDIRECTION_SAP'))
+  clientObj.resolve(deviceSetKvmRedirectionSvcRsp.payload)
+  await waitFor(service, (state) => state.matches('PUT_REDIRECTION_SERVICE'))
+  clientObj.resolve(devicePutRedirectionSvcRsp.payload)
+  await waitFor(service, (state) => state.matches('PUT_IPS_OPT_IN_SERVICE'))
+  clientObj.reject('some fake error for test coverage')
+  await waitFor(service, (state) => state.matches('FAILED'))
+})
+
+function setDefaultResponses (): void {
+  // "enabledState": {
+  //   "name": "SOL/IDER Feature",
+  //     "desc": "Enable or disable the Intel AMT Serial-over-LAN and IDER features",
+  //     "type": 3,
+  //     "values": {
+  //       "32768": "Disabled",
+  //       "32769": "IDER only",
+  //       "32770": "Serial-over-LAN only",
+  //       "32771": "IDER & SOL enabled"
+  //   },
+  //   "value": "32771"
+  // }
+  amtRedirectionSvcJson = {
+    CreationClassName: 'AMT_RedirectionService',
+    ElementName: 'Intel(r) AMT Redirection Service',
+    EnabledState: 32771,
+    ListenerEnabled: false,
+    Name: 'Intel(r) AMT Redirection Service',
+    SystemCreationClassName: 'CIM_ComputerSystem',
+    SystemName: 'Intel(r) AMT'
+  }
+  ipsOptInsSvcJson = {
+    CanModifyOptInPolicy: 1,
+    CreationClassName: 'IPS_OptInService',
+    ElementName: 'Intel(r) AMT OptIn Service',
+    Name: 'Intel(r) AMT OptIn Service',
+    OptInCodeTimeout: 120,
+    OptInDisplayTimeout: 300,
+    OptInRequired: 1,
+    OptInState: 0,
+    SystemCreationClassName: 'CIM_ComputerSystem',
+    SystemName: 'Intel(r) AMT'
+  }
+  kvmRedirectionSvcJson = {
+    CreationClassName: 'CIM_KVMRedirectionSAP',
+    ElementName: 'KVM Redirection Service Access Point',
+    EnabledState: 3,
+    KVMProtocol: 4,
+    Name: 'KVM Redirection Service Access Point',
+    RequestedState: 5,
+    SystemCreationClassName: 'CIM_ComputerSystem',
+    SystemName: 'ManagedSystem'
+  }
+}
 
 function setDefaultMessages (): void {
   deviceGetAmtRedirectionSvcRsp = {
@@ -126,7 +307,7 @@ function setDefaultMessages (): void {
           '<g:AMT_RedirectionService>' +
           '<g:CreationClassName>AMT_RedirectionService</g:CreationClassName>' +
           '<g:ElementName>Intel(r) AMT Redirection Service</g:ElementName>' +
-          '<g:EnabledState>32771</g:EnabledState>' +
+          '<g:EnabledState>32768</g:EnabledState>' +
           '<g:ListenerEnabled>true</g:ListenerEnabled>' +
           '<g:Name>Intel(r) AMT Redirection Service</g:Name>' +
           '<g:SystemCreat\r\n' + '0095\r\n' + 'ionClassName>CIM_ComputerSystem</g:SystemCreationClassName>' +
@@ -209,7 +390,7 @@ function setDefaultMessages (): void {
           '<g:CIM_KVMRedirectionSAP>' +
           '<g:CreationClassName>CIM_KVMRedirectionSAP</g:CreationClassName>' +
           '<g:ElementName>KVM Redirection Service Access Point</g:ElementName>' +
-          '<g:EnabledState>6</g:EnabledState>' +
+          '<g:EnabledState>3</g:EnabledState>' +
           '<g:KVMProtocol>4</g:KVMProtocol>' +
           '<g:Name>KVM Redirection Service Access Point</g:Name>' +
           '<g:Requeste\r\n' +

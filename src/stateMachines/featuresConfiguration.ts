@@ -72,7 +72,7 @@ export class FeaturesConfiguration {
             target: 'GET_IPS_OPT_IN_SERVICE'
           },
           onError: {
-            actions: assign({ errorMessage: (_, event) => JSON.stringify(event.data) }),
+            actions: ['cacheErrorMessage'],
             target: 'FAILED'
           }
         }
@@ -85,7 +85,7 @@ export class FeaturesConfiguration {
             target: 'GET_CIM_KVM_REDIRECTION_SAP'
           },
           onError: {
-            actions: assign({ errorMessage: (_, event) => JSON.stringify(event.data) }),
+            actions: ['cacheErrorMessage'],
             target: 'FAILED'
           }
         }
@@ -98,7 +98,7 @@ export class FeaturesConfiguration {
             target: 'COMPUTE_UPDATES'
           },
           onError: {
-            actions: assign({ errorMessage: (_, event) => JSON.stringify(event.data) }),
+            actions: ['cacheErrorMessage'],
             target: 'FAILED'
           }
         }
@@ -116,7 +116,7 @@ export class FeaturesConfiguration {
           src: async (context, _) => await this.setRedirectionService(context.AMT_RedirectionService.EnabledState),
           onDone: 'SET_KVM_REDIRECTION_SAP',
           onError: {
-            actions: assign({ errorMessage: (_, event) => JSON.stringify(event.data) }),
+            actions: ['cacheErrorMessage'],
             target: 'FAILED'
           }
         }
@@ -126,7 +126,7 @@ export class FeaturesConfiguration {
           src: async (context, _) => await this.setKvmRedirectionSap(context.CIM_KVMRedirectionSAP.EnabledState),
           onDone: 'PUT_REDIRECTION_SERVICE',
           onError: {
-            actions: assign({ errorMessage: (_, event) => JSON.stringify(event.data) }),
+            actions: ['cacheErrorMessage'],
             target: 'FAILED'
           }
         }
@@ -139,7 +139,7 @@ export class FeaturesConfiguration {
             { target: 'SUCCESS' }
           ],
           onError: {
-            actions: assign({ errorMessage: (_, event) => JSON.stringify(event.data) }),
+            actions: ['cacheErrorMessage'],
             target: 'FAILED'
           }
         }
@@ -149,7 +149,7 @@ export class FeaturesConfiguration {
           src: async (context, _) => await this.putIpsOptInService(context.IPS_OptInService),
           onDone: 'SUCCESS',
           onError: {
-            actions: assign({ errorMessage: (_, event) => JSON.stringify(event.data) }),
+            actions: ['cacheErrorMessage'],
             target: 'FAILED'
           }
         }
@@ -168,6 +168,7 @@ export class FeaturesConfiguration {
       cacheAmtRedirectionService: assign({ AMT_RedirectionService: (_, event) => event.data.Envelope.Body.AMT_RedirectionService }),
       cacheIpsOptInService: assign({ IPS_OptInService: (_, event) => event.data.Envelope.Body.IPS_OptInService }),
       cacheCimKvmRedirectionSAP: assign({ CIM_KVMRedirectionSAP: (_, event) => event.data.Envelope.Body.CIM_KVMRedirectionSAP }),
+      cacheErrorMessage: assign({ errorMessage: (_, event) => JSON.stringify(event.data) }),
       computeUpdates: assign((context, _) => {
         const amtRedirectionService = context.AMT_RedirectionService
         const cimKVMRedirectionSAP = context.CIM_KVMRedirectionSAP
@@ -208,7 +209,7 @@ export class FeaturesConfiguration {
           if (solEnabled || iderEnabled || kvmEnabled) {
             amtRedirectionService.ListenerEnabled = true
           } else {
-            amtRedirectionService.ListenerEnabled = true
+            amtRedirectionService.ListenerEnabled = false
           }
         }
 
@@ -279,9 +280,27 @@ export class FeaturesConfiguration {
     clientObj.pendingPromise = new Promise<any>((resolve, reject) => {
       clientObj.resolve = resolve
       clientObj.reject = reject
-    }).then((wsmanMsg) => {
-      return this.httpHandler.parseXML(parseBody(wsmanMsg))
     })
-    return await clientObj.pendingPromise
+
+    return await new Promise<any>((resolve, reject) => {
+      clientObj
+        .pendingPromise
+        .then(
+          (wsmanMsg) => {
+            resolve(this.httpHandler.parseXML(parseBody(wsmanMsg)))
+          },
+          (err) => {
+            this.logger.info(`pending promise rejected ${JSON.stringify(err)}`)
+            reject(err)
+          }
+        )
+    })
+    // clientObj.pendingPromise = new Promise<any>((resolve, reject) => {
+    //   clientObj.resolve = resolve
+    //   clientObj.reject = reject
+    // }).then((wsmanMsg) => {
+    //   return this.httpHandler.parseXML(parseBody(wsmanMsg))
+    // }).catch((err) => { return err })
+    // return await clientObj.pendingPromise
   }
 }
