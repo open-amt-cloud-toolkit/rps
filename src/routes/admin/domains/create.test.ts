@@ -1,7 +1,7 @@
 import { createSpyObj } from '../../../test/helper/jest'
 import { createDomain } from './create'
 
-describe('CIRA Config - Create', () => {
+describe('Domain - Create', () => {
   let resSpy
   let req
   let insertSpy: jest.SpyInstance
@@ -14,11 +14,11 @@ describe('CIRA Config - Create', () => {
       secretsManager: {
         writeSecretWithObject: jest.fn()
       },
-      body: {},
+      body: { },
       query: { }
     }
-    insertSpy = jest.spyOn(req.db.domains, 'insert').mockResolvedValue({})
-    secretManagerSpy = jest.spyOn(req.secretsManager, 'writeSecretWithObject').mockResolvedValue({})
+    insertSpy = jest.spyOn(req.db.domains, 'insert').mockResolvedValue({ })
+    secretManagerSpy = jest.spyOn(req.secretsManager, 'writeSecretWithObject').mockResolvedValue({ })
     resSpy.status.mockReturnThis()
     resSpy.json.mockReturnThis()
     resSpy.send.mockReturnThis()
@@ -48,6 +48,7 @@ describe('CIRA Config - Create', () => {
   it('should handle error', async () => {
     jest.spyOn(req.db.domains, 'insert').mockResolvedValue(null)
     await createDomain(req, resSpy)
+    expect(insertSpy).toHaveBeenCalledTimes(1)
     expect(resSpy.status).toHaveBeenCalledWith(500)
   })
   it('should create even when no secretsManager', async () => {
