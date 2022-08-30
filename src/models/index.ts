@@ -77,7 +77,6 @@ export class VaultConfig {
 }
 export class RPSConfig {
   VaultConfig: VaultConfig
-  amtusername: string
   webport: number
   credentialspath: string
   WSConfiguration: WebSocketConfig

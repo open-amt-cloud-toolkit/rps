@@ -8,12 +8,12 @@ import { IConfigurator } from '../../interfaces/IConfigurator'
 import Logger from '../../Logger'
 import { ClientMsg } from '../../models/RCS.Config'
 import { ClientResponseMsg } from '../ClientResponseMsg'
-import { EnvReader } from '../EnvReader'
 import { MqttProvider } from '../MqttProvider'
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 import { parseBody } from '../parseWSManResponseBody'
 import { devices } from '../../WebSocketListener'
 import { AMTDeviceDTO } from '../../models'
+import { AMTUserName } from '../constants'
 
 const logger = new Logger('setMEBXPassword')
 const amt = new AMT.Messages()
@@ -45,7 +45,7 @@ export const setMEBXPassword = async (clientId: string, message: any, responseMs
           name: clientObj.hostname,
           mpsuser: clientObj.mpsUsername,
           mpspass: clientObj.mpsPassword,
-          amtuser: EnvReader.GlobalEnvConfig.amtusername,
+          amtuser: AMTUserName,
           amtpass: clientObj.amtPassword,
           mebxpass: clientObj.mebxPassword
         }
