@@ -7,7 +7,6 @@ export const config: RPSConfig = {
     token: '',
     address: 'http://localhost:8200'
   },
-  amtusername: 'admin',
   webport: 8081,
   credentialspath: '../../../MPS_MicroService/private/data.json',
   corsHeaders: '*',
