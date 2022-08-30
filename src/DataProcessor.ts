@@ -113,18 +113,21 @@ export class DataProcessor implements IDataProcessor {
     const payload = clientObj.ClientData.payload
     const message = parse(clientMsg.payload) as HttpZResponseModel
     if (message.statusCode === 200) {
-      if (devices[clientId].pendingPromise != null) {
-        devices[clientId].resolve(message)
+      if (clientObj.pendingPromise != null) {
+        clientObj.resolve(message)
       }
       this.logger.debug(`Device ${payload.uuid} wsman response ${message.statusCode}: ${JSON.stringify(clientMsg.payload, null, '\t')}`)
       clientMsg.payload = message
     } else {
-      if (devices[clientId].pendingPromise != null) {
-        devices[clientId].reject(message)
+      if (clientObj.pendingPromise != null) {
+        clientObj.reject(message)
       }
       this.logger.debug(`Device ${payload.uuid} wsman response ${message.statusCode}: ${JSON.stringify(clientMsg.payload, null, '\t')}`)
       clientMsg.payload = message
     }
+    clientObj.pendingPromise = null
+    clientObj.resolve = null
+    clientObj.reject = null
   }
 
   async heartbeat (clientMsg: ClientMsg, clientId: string): Promise<ClientMsg> {

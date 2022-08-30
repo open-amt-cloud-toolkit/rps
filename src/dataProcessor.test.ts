@@ -90,7 +90,7 @@ describe('handle AMT reponse', () => {
     VersionChecker.setCurrentVersion('4.0.0')
     const message = parse(clientMsg.payload) as HttpZResponseModel
     await dataProcessor.handleResponse(clientMsg, clientId)
-    await expect(devices[clientId].pendingPromise).rejects.toEqual(message)
+    await expect(promise).rejects.toEqual(message)
   })
   it('should resolve on 200', async () => {
     const clientMsg = {
@@ -114,7 +114,7 @@ describe('handle AMT reponse', () => {
     VersionChecker.setCurrentVersion('4.0.0')
     const message = parse(clientMsg.payload) as HttpZResponseModel
     await dataProcessor.handleResponse(clientMsg, clientId)
-    await expect(devices[clientId].pendingPromise).resolves.toEqual(message)
+    await expect(promise).resolves.toEqual(message)
   })
 })
 
