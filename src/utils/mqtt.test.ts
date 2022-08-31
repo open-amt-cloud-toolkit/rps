@@ -10,7 +10,6 @@ describe('MQTT Turned ON Tests', () => {
     WSConfiguration: {
       WebSocketPort: 8080
     },
-    amtusername: 'admin',
     VaultConfig: {
       usevault: false,
       SecretsPath: 'kv/data/rcs/',
@@ -110,7 +109,6 @@ describe('MQTT Turned OFF Tests', () => {
     WSConfiguration: {
       WebSocketPort: 8080
     },
-    amtusername: 'admin',
     VaultConfig: {
       usevault: false,
       SecretsPath: 'kv/data/rcs/',

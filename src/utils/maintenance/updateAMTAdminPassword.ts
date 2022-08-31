@@ -58,7 +58,7 @@ export const updateAMTAdminPassword = async (clientId: string, message: any, res
             const amtDevice = {
               guid: clientObj.uuid,
               name: clientObj.hostname,
-              amtuser: EnvReader.GlobalEnvConfig.amtusername,
+              amtuser: AMTUserName,
               amtpass: clientObj.amtPassword
             }
             await configurator.amtDeviceRepository.insert(amtDevice)

@@ -16,7 +16,6 @@ const rcsConfig: RPSConfig = {
   WSConfiguration: {
     WebSocketPort: 8080
   },
-  amtusername: 'admin',
   VaultConfig: {
     usevault: false,
     SecretsPath: 'kv/data/rcs/',

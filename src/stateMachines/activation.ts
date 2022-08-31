@@ -596,7 +596,7 @@ export class Activation {
         name: clientObj.hostname,
         mpsuser: clientObj.mpsUsername,
         mpspass: clientObj.mpsPassword,
-        amtuser: EnvReader.GlobalEnvConfig.amtusername,
+        amtuser: AMTUserName,
         amtpass: clientObj.amtPassword,
         mebxpass: clientObj.action === ClientAction.ADMINCTLMODE ? clientObj.mebxPassword : null
       }
