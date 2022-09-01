@@ -12,15 +12,15 @@ describe('Deactivation State Machine', () => {
   let deactivation: Deactivation
   let config
   let currentStateIndex: number
-  let wrapItSpy
-  let setupAndConfigurationServiceSpy
-  let sendSpy
-  let responseMessageSpy
+  let wrapItSpy: jest.SpyInstance
+  let setupAndConfigurationServiceSpy: jest.SpyInstance
+  let sendSpy: jest.SpyInstance
+  let responseMessageSpy: jest.SpyInstance
   beforeEach(() => {
     deactivation = new Deactivation()
-    wrapItSpy = jest.spyOn(deactivation.httpHandler, 'wrapIt').mockImplementation().mockReturnValue('abcdef')
+    wrapItSpy = jest.spyOn(deactivation.httpHandler, 'wrapIt').mockReturnValue('abcdef')
     setupAndConfigurationServiceSpy = jest.spyOn(deactivation.amt, 'SetupAndConfigurationService').mockImplementation().mockReturnValue('abcdef')
-    responseMessageSpy = jest.spyOn(deactivation.responseMsg, 'get').mockImplementation().mockReturnValue({} as any)
+    responseMessageSpy = jest.spyOn(deactivation.responseMsg, 'get').mockReturnValue({} as any)
     devices[clientId] = {
       unauthCount: 0,
       ClientId: clientId,

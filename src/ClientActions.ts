@@ -18,7 +18,6 @@ import { CIRAConfigurator } from './actions/CIRAConfigurator'
 import { NetworkConfigurator } from './actions/NetworkConfigurator'
 import { TLSConfigurator } from './actions/TLSConfigurator'
 import { CertManager } from './CertManager'
-import { Maintenance } from './actions/Maintenance'
 import { HttpHandler } from './HttpHandler'
 import { devices } from './WebSocketListener'
 
@@ -42,8 +41,6 @@ export class ClientActions {
 
     const networkConfig = new NetworkConfigurator(new Logger('NetworkConfig'), configurator, responseMsg, validator, ciraConfig)
     this.actions[ClientAction.NETWORKCONFIG] = networkConfig
-
-    this.actions[ClientAction.MAINTENANCE] = new Maintenance(new Logger('Maintenance'), responseMsg)
     this.actions[ClientAction.ADMINCTLMODE] = new Activator(new Logger('Activator'), configurator, certManager, helper, responseMsg, validator, networkConfig)
     this.actions[ClientAction.CLIENTCTLMODE] = new Activator(new Logger('Activator'), configurator, certManager, helper, responseMsg, validator, networkConfig)
   }

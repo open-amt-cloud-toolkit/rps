@@ -66,7 +66,17 @@ describe('Network Configuration', () => {
       messageId: 1
     }
     networkConfig = new NetworkConfiguration()
-    context = { amtProfile: null, wifiProfiles: [], wifiProfileCount: 0, message: '', clientId: clientId, xmlMessage: '', response: '', status: 'wsman', errorMessage: '' }
+    context = {
+      amtProfile: null,
+      wifiProfiles: [],
+      wifiProfileCount: 0,
+      message: '',
+      clientId,
+      xmlMessage: '',
+      response: '',
+      status: 'wsman',
+      errorMessage: ''
+    }
     context.amtProfile = {
       profileName: 'acm',
       generateRandomPassword: false,
@@ -89,18 +99,18 @@ describe('Network Configuration', () => {
     currentStateIndex = 0
     config = {
       services: {
-        'put-general-settings': async (_, event) => await new Promise((resolve, reject) => { setTimeout(() => { resolve({ clientId: event.clientId }) }, 50) }),
-        'enumerate-ethernet-port-settings': async (_, event) => await new Promise((resolve, reject) => { setTimeout(() => { resolve({ clientId: event.clientId }) }, 50) }),
-        'error-machine': async (_, event) => await new Promise((resolve, reject) => { setTimeout(() => { resolve({ clientId: event.clientId }) }, 50) }),
-        'pull-ethernet-port-settings': async (_, event) => await new Promise((resolve, reject) => { setTimeout(() => { resolve({ clientId: event.clientId }) }, 50) }),
-        'put-ethernet-port-settings': async (_, event) => await new Promise((resolve, reject) => { setTimeout(() => { resolve({ clientId: event.clientId }) }, 50) }),
-        'enumerate-wifi-endpoint-settings': async (_, event) => await new Promise((resolve, reject) => { setTimeout(() => { resolve({ clientId: event.clientId }) }, 50) }),
-        'pull-wifi-endpoint-settings': async (_, event) => await new Promise((resolve, reject) => { setTimeout(() => { resolve({ clientId: event.clientId }) }, 50) }),
-        'delete-wifi-endpoint-settings': async (_, event) => await new Promise((resolve, reject) => { setTimeout(() => { resolve({ clientId: event.clientId }) }, 50) }),
-        'request-state-change-for-wifi-port': async (_, event) => await new Promise((resolve, reject) => { setTimeout(() => { resolve({ clientId: event.clientId }) }, 50) }),
-        'add-wifi-settings': async (_, event) => await new Promise((resolve, reject) => { setTimeout(() => { resolve({ clientId: event.clientId }) }, 50) }),
-        'get-wifi-port-configuration-service': async (_, event) => await new Promise((resolve, reject) => { setTimeout(() => { resolve({ clientId: event.clientId }) }, 50) }),
-        'put-wifi-port-configuration-service': async (_, event) => await new Promise((resolve, reject) => { setTimeout(() => { resolve({ clientId: event.clientId }) }, 50) })
+        'put-general-settings': async (_, event) => await Promise.resolve({ clientId: event.clientId }),
+        'enumerate-ethernet-port-settings': async (_, event) => await Promise.resolve({ clientId: event.clientId }),
+        'error-machine': async (_, event) => await Promise.resolve({ clientId: event.clientId }),
+        'pull-ethernet-port-settings': async (_, event) => await Promise.resolve({ clientId: event.clientId }),
+        'put-ethernet-port-settings': async (_, event) => await Promise.resolve({ clientId: event.clientId }),
+        'enumerate-wifi-endpoint-settings': async (_, event) => await Promise.resolve({ clientId: event.clientId }),
+        'pull-wifi-endpoint-settings': async (_, event) => await Promise.resolve({ clientId: event.clientId }),
+        'delete-wifi-endpoint-settings': async (_, event) => await Promise.resolve({ clientId: event.clientId }),
+        'request-state-change-for-wifi-port': async (_, event) => await Promise.resolve({ clientId: event.clientId }),
+        'add-wifi-settings': async (_, event) => await Promise.resolve({ clientId: event.clientId }),
+        'get-wifi-port-configuration-service': async (_, event) => await Promise.resolve({ clientId: event.clientId }),
+        'put-wifi-port-configuration-service': async (_, event) => await Promise.resolve({ clientId: event.clientId })
         // CHECK_GENERAL_SETTINGS: (_, event) => {},
         // CHECK_ETHERNET_PORT_SETTINGS_PULL_RESPONSE: (_, event) => {},
         // CHECK_ETHERNET_PORT_SETTINGS_PUT_RESPONSE: (_, event) => {},
@@ -132,8 +142,7 @@ describe('Network Configuration', () => {
 
   describe('State machines', () => {
     it('should eventually reach "NETWORKCONFIGURED" state', (done) => {
-      jest.setTimeout(15000)
-      const mockNetworkConfigurationMachine = networkConfig.machine.withConfig(config)
+      const mockNetworkConfigurationMachine = networkConfig.machine.withConfig(config).withContext(context)
       const flowStates = ['ACTIVATION', 'PUT_GENERAL_SETTINGS', 'ENUMERATE_ETHERNET_PORT_SETTINGS', 'PULL_ETHERNET_PORT_SETTINGS', 'PUT_ETHERNET_PORT_SETTINGS', 'NETWORKCONFIGURED']
       const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
         console.log(state.value)
