@@ -2,7 +2,11 @@ import { interpret } from 'xstate'
 import { Deactivation } from './deactivation'
 import { v4 as uuid } from 'uuid'
 import { devices } from '../WebSocketListener'
+import { config } from '../test/helper/Config'
+import { EnvReader } from '../utils/EnvReader'
+
 const clientId = uuid()
+EnvReader.GlobalEnvConfig = config
 
 describe('Deactivation State Machine', () => {
   let deactivation: Deactivation
@@ -46,6 +50,14 @@ describe('Deactivation State Machine', () => {
               resolve({ clientId: event.clientId })
             }, 50)
           }),
+        'remove-device-from-secret-provider': async (_, event) =>
+          await new Promise((resolve) => {
+            resolve(true)
+          }),
+        'remove-device-from-mps': async (_, event) =>
+          await new Promise((resolve) => {
+            resolve(true)
+          }),
         'error-machine': async (_, event) =>
           await new Promise((resolve, reject) => {
             setTimeout(() => {
@@ -61,7 +73,11 @@ describe('Deactivation State Machine', () => {
 
   it('should eventually reach "UNPROVISIONED"', (done) => {
     const mockdeactivationMachine = deactivation.machine.withConfig(config)
-    const flowStates = ['PROVISIONED', 'UNPROVISIONING', 'UNPROVISIONED']
+    const flowStates = ['PROVISIONED',
+      'UNPROVISIONING',
+      'REMOVE_DEVICE_FROM_SECRET_PROVIDER',
+      'REMOVE_DEVICE_FROM_MPS',
+      'UNPROVISIONED']
     const deactivationService = interpret(mockdeactivationMachine).onTransition((state) => {
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('UNPROVISIONED') && currentStateIndex === flowStates.length) {
@@ -70,7 +86,10 @@ describe('Deactivation State Machine', () => {
     })
 
     deactivationService.start()
-    deactivationService.send({ type: 'UNPROVISION', clientId: clientId })
+    deactivationService.send({
+      type: 'UNPROVISION',
+      clientId: clientId
+    })
   })
 
   it('should eventually reach "Failed"', (done) => {

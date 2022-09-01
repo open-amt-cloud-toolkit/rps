@@ -23,6 +23,7 @@ import { parse, HttpZResponseModel } from 'http-z'
 import { devices } from './WebSocketListener'
 import { Deactivation } from './stateMachines/deactivation'
 import { Activation } from './stateMachines/activation'
+import { parseBody } from './utils/parseWSManResponseBody'
 export class DataProcessor implements IDataProcessor {
   readonly clientActions: ClientActions
   amt: AMT.Messages
@@ -68,9 +69,6 @@ export class DataProcessor implements IDataProcessor {
           await this.handleResponse(clientMsg, clientId)
           break
         }
-        case ClientMethods.HEARTBEAT: {
-          return await this.heartbeat(clientMsg, clientId)
-        }
         case ClientMethods.MAINTENANCE: {
           return await this.maintainDevice(clientMsg, clientId)
         }
@@ -89,21 +87,19 @@ export class DataProcessor implements IDataProcessor {
     }
   }
 
-  async activateDevice (clientMsg: ClientMsg, clientId: string): Promise<void> {
+  async activateDevice (clientMsg: ClientMsg, clientId: string, activation: Activation = new Activation()): Promise<void> {
     this.logger.debug(`ProcessData: Parsed Message received from device ${clientMsg.payload.uuid}: ${JSON.stringify(clientMsg, null, '\t')}`)
     await this.validator.validateActivationMsg(clientMsg, clientId) // Validate the activation message payload
     // Makes the first wsman call
     this.setConnectionParams(clientId)
-    const activation = new Activation()
     activation.service.start()
     activation.service.send({ type: 'ACTIVATION', clientId: clientId })
   }
 
-  async deactivateDevice (clientMsg: ClientMsg, clientId: string): Promise<void> {
+  async deactivateDevice (clientMsg: ClientMsg, clientId: string, deactivation: Deactivation = new Deactivation()): Promise<void> {
     this.logger.debug(`ProcessData: Parsed DEACTIVATION Message received from device ${clientMsg.payload.uuid}: ${JSON.stringify(clientMsg, null, '\t')}`)
     await this.validator.validateDeactivationMsg(clientMsg, clientId) // Validate the deactivation message payload
     this.setConnectionParams(clientId, 'admin', clientMsg.payload.password, clientMsg.payload.uuid)
-    const deactivation = new Deactivation()
     deactivation.service.start()
     deactivation.service.send({ type: 'UNPROVISION', clientId: clientId })
   }
@@ -113,31 +109,24 @@ export class DataProcessor implements IDataProcessor {
     const payload = clientObj.ClientData.payload
     const message = parse(clientMsg.payload) as HttpZResponseModel
     if (message.statusCode === 200) {
+      const xmlBody = parseBody(message)
+      // pares WSMan xml response to json
+      const parsedMessage = this.httpHandler.parseXML(xmlBody)
       if (clientObj.pendingPromise != null) {
-        clientObj.resolve(message)
+        clientObj.resolve(parsedMessage)
       }
       this.logger.debug(`Device ${payload.uuid} wsman response ${message.statusCode}: ${JSON.stringify(clientMsg.payload, null, '\t')}`)
-      clientMsg.payload = message
     } else {
+      let parsedMessage = message
+      if (message.statusCode !== 401) { // won't be parsed if it is a 401 since it isn't XML
+        const xmlBody = parseBody(message)
+        // pares WSMan xml response to json
+        parsedMessage = this.httpHandler.parseXML(xmlBody)
+      }
       if (clientObj.pendingPromise != null) {
-        clientObj.reject(message)
+        clientObj.reject(parsedMessage)
       }
       this.logger.debug(`Device ${payload.uuid} wsman response ${message.statusCode}: ${JSON.stringify(clientMsg.payload, null, '\t')}`)
-      clientMsg.payload = message
-    }
-    clientObj.pendingPromise = null
-    clientObj.resolve = null
-    clientObj.reject = null
-  }
-
-  async heartbeat (clientMsg: ClientMsg, clientId: string): Promise<ClientMsg> {
-    const clientObj = devices[clientId]
-    const currentTime = new Date().getTime()
-    if (currentTime >= clientObj.delayEndTime) {
-      return await this.clientActions.buildResponseMessage(clientMsg, clientId, this.httpHandler)
-    } else {
-      await new Promise(resolve => setTimeout(resolve, 5000)) // TODO: make configurable rate if required by customers
-      return this.responseMsg.get(clientId, null, 'heartbeat_request', 'heartbeat')
     }
   }
 
