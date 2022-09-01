@@ -1,5 +1,5 @@
 import { AMT, CIM } from '@open-amt-cloud-toolkit/wsman-messages'
-import { assign, createMachine } from 'xstate'
+import { assign, createMachine, send } from 'xstate'
 import { WirelessConfig } from '../models/RCS.Config'
 import { HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
@@ -8,7 +8,6 @@ import { ClientResponseMsg } from '../utils/ClientResponseMsg'
 import { EnvReader } from '../utils/EnvReader'
 // import { MqttProvider } from '../utils/MqttProvider'
 import { devices } from '../WebSocketListener'
-import { send } from 'xstate/lib/actions'
 import { Error } from './error'
 import { Configurator } from '../Configurator'
 import { DbCreatorFactory } from '../repositories/factories/DbCreatorFactory'
@@ -368,11 +367,11 @@ export class NetworkConfiguration {
         }
       },
       FAILED: {
-        entry: [assign({ status: (context, event) => 'error' }), 'update configuration status'],
+        entry: [assign({ status: (context, event) => 'error' }), 'Update Configuration Status'],
         type: 'final'
       },
       NETWORKCONFIGURED: {
-        entry: [assign({ status: (context, event) => 'success' }), 'update configuration status'],
+        entry: [assign({ status: (context, event) => 'success' }), 'Update Configuration Status'],
         type: 'final'
       }
     }
@@ -390,7 +389,7 @@ export class NetworkConfiguration {
     },
     actions: {
       'Reset Unauth Count': (context, event) => { devices[context.clientId].unauthCount = 0 },
-      'update configuration status': this.updateConfigurationStatus.bind(this),
+      'Update Configuration Status': this.updateConfigurationStatus.bind(this),
       'Read Ethernet Port Settings': this.readEthernetPortSettings.bind(this),
       'Read Ethernet Port Settings Put Response': this.readEthernetPortSettingsPutResponse.bind(this),
       'Read WiFi Endpoint Settings Pull Response': this.readWiFiEndpointSettingsPullResponse.bind(this)

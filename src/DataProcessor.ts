@@ -22,6 +22,7 @@ import { HttpHandler } from './HttpHandler'
 import { parse, HttpZResponseModel } from 'http-z'
 import { devices } from './WebSocketListener'
 import { Deactivation } from './stateMachines/deactivation'
+import { Maintenance } from './stateMachines/maintenance'
 import { Activation } from './stateMachines/activation'
 import { parseBody } from './utils/parseWSManResponseBody'
 export class DataProcessor implements IDataProcessor {
@@ -70,7 +71,8 @@ export class DataProcessor implements IDataProcessor {
           break
         }
         case ClientMethods.MAINTENANCE: {
-          return await this.maintainDevice(clientMsg, clientId)
+          await this.maintainDevice(clientMsg, clientId)
+          break
         }
         default: {
           const uuid = clientMsg.payload.uuid ? clientMsg.payload.uuid : devices[clientId].ClientData.payload.uuid
@@ -130,11 +132,13 @@ export class DataProcessor implements IDataProcessor {
     }
   }
 
-  async maintainDevice (clientMsg: ClientMsg, clientId: string): Promise<ClientMsg> {
+  async maintainDevice (clientMsg: ClientMsg, clientId: string): Promise<void> {
     this.logger.debug(`ProcessData: Parsed Maintenance message received from device ${clientMsg.payload.uuid}: ${JSON.stringify(clientMsg, null, '\t')}`)
     await this.validator.validateMaintenanceMsg(clientMsg, clientId)
     this.setConnectionParams(clientId, 'admin', clientMsg.payload.password, clientMsg.payload.uuid)
-    return await this.clientActions.buildResponseMessage(clientMsg, clientId, this.httpHandler)
+    const maintenance = new Maintenance()
+    maintenance.service.start()
+    maintenance.service.send({ type: 'SYNCCLOCK', clientId })
   }
 
   setConnectionParams (clientId: string, username: string = null, password: string = null, uuid: string = null): void {

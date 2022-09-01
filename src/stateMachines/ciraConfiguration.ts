@@ -5,7 +5,7 @@ import { Configurator } from '../Configurator'
 import { HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
 import got from 'got'
-import { AMTRandomPasswordLength, AMTUserName } from '../utils/constants'
+import { AMTRandomPasswordLength } from '../utils/constants'
 import { CIRAConfig, ClientAction, mpsServer } from '../models/RCS.Config'
 import { NodeForge } from '../NodeForge'
 import { DbCreatorFactory } from '../repositories/factories/DbCreatorFactory'
@@ -728,12 +728,7 @@ export class CIRAConfiguration {
   }
 
   async addTrustedRootCertificate (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
-    // TODO: need to get the cira stuff
     const configScript: CIRAConfig = devices[context.clientId].ClientData.payload.profile.ciraConfigObject
-    // NOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
-    devices[context.clientId].connectionParams.username = AMTUserName
-    devices[context.clientId].connectionParams.password = 'P@ssw0rd'
-
     context.xmlMessage = this.amt.PublicKeyManagementService(AMT.Methods.ADD_TRUSTED_ROOT_CERTIFICATE, { CertificateBlob: configScript.mpsRootCertificate })
     return await this.invokeWsmanCall(context)
   }

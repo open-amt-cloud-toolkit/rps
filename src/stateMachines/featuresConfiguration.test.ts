@@ -75,7 +75,7 @@ describe('Features State Machine', () => {
     invokeSpy = jest.spyOn(featuresConfiguration, 'invokeWsmanCall').mockResolvedValue(null)
     wrapItSpy = jest.spyOn(context.httpHandler, 'wrapIt').mockReturnValue('message')
     responseMessageSpy = jest.spyOn(featuresConfiguration.responseMsg, 'get')
-    sendSpy = jest.spyOn(devices[clientId].ClientSocket, 'send').mockImplementation().mockReturnValue()
+    sendSpy = jest.spyOn(devices[clientId].ClientSocket, 'send').mockReturnValue()
     currentStateIndex = 0
     machineConfig = {
       services: {
