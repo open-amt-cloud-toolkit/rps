@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { CertManager } from '../CertManager'
+import { CertManager } from '../certManager'
 import { IExecutor } from '../interfaces/IExecutor'
 import { ILogger } from '../interfaces/ILogger'
 import { ClientMsg, ClientObject } from '../models/RCS.Config'

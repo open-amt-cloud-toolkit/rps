@@ -1,6 +1,6 @@
 import { passwordChecker, domainSuffixChecker, expirationChecker } from './domain'
 import { NodeForge } from '../../../NodeForge'
-import { CertManager } from '../../../CertManager'
+import { CertManager } from '../../../certManager'
 import Logger from '../../../Logger'
 
 describe('Domain Profile Validation', () => {

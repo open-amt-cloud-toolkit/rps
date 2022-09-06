@@ -6,7 +6,7 @@
 import { v4 as uuid } from 'uuid'
 import Logger from '../Logger'
 import { NodeForge } from '../NodeForge'
-import { CertManager } from '../CertManager'
+import { CertManager } from '../certManager'
 import { Configurator } from '../Configurator'
 import { config } from '../test/helper/Config'
 import { ClientResponseMsg } from '../utils/ClientResponseMsg'

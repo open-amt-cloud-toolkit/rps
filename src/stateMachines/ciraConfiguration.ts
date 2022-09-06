@@ -1,6 +1,6 @@
 import { AMT, IPS } from '@open-amt-cloud-toolkit/wsman-messages'
 import { createMachine, interpret, assign, send } from 'xstate'
-import { CertManager } from '../CertManager'
+import { CertManager } from '../certManager'
 import { Configurator } from '../Configurator'
 import { HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'

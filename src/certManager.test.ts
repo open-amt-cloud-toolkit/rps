@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { CertManager } from './CertManager'
+import { CertManager } from './certManager'
 import { NodeForge } from './NodeForge'
 import { AMTKeyUsage, CertAttributes, CertificateObject } from './models'
 import Logger from './Logger'

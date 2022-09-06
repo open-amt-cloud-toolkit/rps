@@ -17,7 +17,7 @@ import { RPSError } from './utils/RPSError'
 import { CIRAConfigurator } from './actions/CIRAConfigurator'
 import { NetworkConfigurator } from './actions/NetworkConfigurator'
 import { TLSConfigurator } from './actions/TLSConfigurator'
-import { CertManager } from './CertManager'
+import { CertManager } from './certManager'
 import { HttpHandler } from './HttpHandler'
 import { devices } from './WebSocketListener'
 

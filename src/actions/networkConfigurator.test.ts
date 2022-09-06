@@ -14,7 +14,7 @@ import { v4 as uuid } from 'uuid'
 import { EnvReader } from '../utils/EnvReader'
 import { config } from '../test/helper/Config'
 import { TLSConfigurator } from './TLSConfigurator'
-import { CertManager } from '../CertManager'
+import { CertManager } from '../certManager'
 import { devices } from '../WebSocketListener'
 import { ClientAction } from '../models/RCS.Config'
 EnvReader.GlobalEnvConfig = config
