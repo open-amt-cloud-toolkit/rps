@@ -5,7 +5,7 @@
  **********************************************************************/
 import { check, CustomValidator } from 'express-validator'
 import { NodeForge } from '../../../NodeForge'
-import { CertManager } from '../../../CertManager'
+import { CertManager } from '../../../certManager'
 import Logger from '../../../Logger'
 import { CertsAndKeys } from '../../../models'
 
