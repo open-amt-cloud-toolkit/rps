@@ -95,7 +95,11 @@ export class DataProcessor implements IDataProcessor {
     // Makes the first wsman call
     this.setConnectionParams(clientId)
     activation.service.start()
-    activation.service.send({ type: 'ACTIVATION', clientId: clientId })
+    if (devices[clientId].activationStatus.activated) {
+      activation.service.send({ type: 'ACTIVATED', clientId: clientId, isActivated: true })
+    } else {
+      activation.service.send({ type: 'ACTIVATION', clientId: clientId })
+    }
   }
 
   async deactivateDevice (clientMsg: ClientMsg, clientId: string, deactivation: Deactivation = new Deactivation()): Promise<void> {

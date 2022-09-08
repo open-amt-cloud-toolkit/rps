@@ -1,5 +1,5 @@
 import { interpret } from 'xstate'
-import { Error } from './error'
+import { Error, ErrorContext } from './error'
 import { v4 as uuid } from 'uuid'
 import { devices } from '../WebSocketListener'
 const clientId = uuid()
@@ -88,7 +88,26 @@ describe('Error State Machine', () => {
       }
     })
     errorService.start()
-    errorService.send({ type: 'PARSE', clientId: clientId })
+    errorService.send({ type: 'PARSE', clientId })
+  })
+
+  it('should eventually reach "AUTHORIZED"', (done) => {
+    config.guards = {}
+    const context: ErrorContext = {
+      message: unauthorizedResponse as any,
+      parsedMessage: null,
+      clientId
+    }
+    const mockerrorMachine = error.machine.withConfig(config).withContext(context)
+    const flowStates = ['ERRORED', 'AUTHORIZED']
+    const errorService = interpret(mockerrorMachine).onTransition((state) => {
+      expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+      if (state.matches('AUTHORIZED') && currentStateIndex === flowStates.length) {
+        done()
+      }
+    })
+    errorService.start()
+    errorService.send({ type: 'PARSE', clientId })
   })
 
   it('should add authorization header', () => {
@@ -101,13 +120,9 @@ describe('Error State Machine', () => {
     expect(devices[clientId].connectionParams.digestChallenge).not.toBeNull()
   })
 
-  // it('should respond for bad request', () => {
-  //   const respondSpy = jest.spyOn(error.machine, 'respond').mockImplementation().mockReturnValue()
-  //   const context = {
-  //     message: '',
-  //     parsedMessage: '',
-  //     clientId: clientId
-  //   }
-  //   error.addAuthorizationHeader(context)
-  // })
+  it('should respond for bad request', () => {
+    const context = { message: '', parsedMessage: '', clientId }
+    error.respondBadRequest(context)
+    expect(devices[context.clientId].unauthCount).toBe(0)
+  })
 })

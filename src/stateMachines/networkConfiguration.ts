@@ -377,14 +377,30 @@ export class NetworkConfiguration {
     }
   }, {
     guards: {
-      isWiFiProfilesExits: (context, event) => context.wifiProfileCount < context.amtProfile.wifiConfigs.length,
-      isWirelessOnlyDevice: (context, event) => context.wireLessSettings != null && context.wiredSettings?.MACAddress == null,
-      isWiredSupportedOnDevice: (context, event) => context.wiredSettings?.MACAddress != null,
-      isWirelessSupportedOnDevice: (context, event) => context.wireLessSettings?.MACAddress != null,
-      isWirelessProfilesExistsOnDevice: (context, event) => context.wifiEndPointSettings.length !== 0,
-      isWifiProfileAdded: (context, event) => context.message.Envelope.Body.AddWiFiSettings_OUTPUT.ReturnValue !== 0,
-      isWifiProfileDeleted: (context, event) => context.message.Envelope.Body == null,
-      islocalProfileSynchronizationNotEnabled: (context, event) => context.message.Envelope.Body.AMT_WiFiPortConfigurationService.localProfileSynchronizationEnabled === 0,
+      isWiFiProfilesExits: (context, event) => {
+        return context.wifiProfileCount < context.amtProfile.wifiConfigs.length
+      },
+      isWirelessOnlyDevice: (context, event) => {
+        return context.wireLessSettings != null && context.wiredSettings?.MACAddress == null
+      },
+      isWiredSupportedOnDevice: (context, event) => {
+        return context.wiredSettings?.MACAddress != null
+      },
+      isWirelessSupportedOnDevice: (context, event) => {
+        return context.wireLessSettings?.MACAddress != null
+      },
+      isWirelessProfilesExistsOnDevice: (context, event) => {
+        return context.wifiEndPointSettings.length !== 0
+      },
+      isWifiProfileAdded: (context, event) => {
+        return context.message.Envelope.Body.AddWiFiSettings_OUTPUT.ReturnValue !== 0
+      },
+      isWifiProfileDeleted: (context, event) => {
+        return context.message.Envelope.Body == null
+      },
+      islocalProfileSynchronizationNotEnabled: (context, event) => {
+        return context.message.Envelope.Body.AMT_WiFiPortConfigurationService.localProfileSynchronizationEnabled === 0
+      },
       isNotAMTNetworkEnabled: this.isNotAMTNetworkEnabled.bind(this)
     },
     actions: {
