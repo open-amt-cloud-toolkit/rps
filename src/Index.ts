@@ -10,7 +10,6 @@ import { WebSocketListener } from './WebSocketListener'
 import { Configurator } from './Configurator'
 import { EnvReader } from './utils/EnvReader'
 import { RPSConfig, mapConfig } from './models'
-import { IConfigurator } from './interfaces/IConfigurator'
 import { parseValue } from './utils/parseEnvValue'
 import dot = require('dot-object')
 import routes from './routes'
@@ -37,7 +36,7 @@ app.use(cors())
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 
-const configurator: IConfigurator = new Configurator()
+const configurator = new Configurator()
 log.silly(`WebSocket Cert Info ${JSON.stringify(EnvReader.GlobalEnvConfig.WSConfiguration)}`)
 const server: WebSocketListener = new WebSocketListener(new Logger('WebSocketListener'), EnvReader.GlobalEnvConfig.WSConfiguration, configurator.dataProcessor)
 

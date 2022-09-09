@@ -1,10 +1,9 @@
-import { CIRAConfiguration, CIRAConfigContext } from './ciraConfiguration'
+import { CIRAConfiguration, CIRAConfigContext, MPSType } from './ciraConfiguration'
 import { v4 as uuid } from 'uuid'
 import { devices } from '../WebSocketListener'
 import { EnvReader } from '../utils/EnvReader'
 import { config } from '../test/helper/Config'
 import { ClientAction } from '../models/RCS.Config'
-import { MpsType } from '../actions/CIRAConfigurator'
 import { HttpHandler } from '../HttpHandler'
 import { interpret } from 'xstate'
 
@@ -521,7 +520,7 @@ describe('CIRA Configuration State Machine', () => {
 
     it('should send wsman message to put Remote Access Policy Applies To MPS', async () => {
       ciraConfigContext.message = {
-        Envelope: { Body: { PullResponse: { Items: { AMT_RemoteAccessPolicyAppliesToMPS: MpsType } } } }
+        Envelope: { Body: { PullResponse: { Items: { AMT_RemoteAccessPolicyAppliesToMPS: MPSType } } } }
       }
       await ciraConfiguration.putRemoteAccessPolicyAppliesToMPS(ciraConfigContext, null)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
