@@ -8,8 +8,6 @@ import * as WebSocket from 'ws'
 import { IValidator } from './interfaces/IValidator'
 import { ILogger } from './interfaces/ILogger'
 import { ClientMsg, ClientAction, Payload, ClientMethods } from './models/RCS.Config'
-import { IConfigurator } from './interfaces/IConfigurator'
-import { IClientMessageParser } from './interfaces/IClientMessageParser'
 import { ClientMsgJsonParser } from './utils/ClientMsgJsonParser'
 import { RPSError } from './utils/RPSError'
 import { CommandParser } from './CommandParser'
@@ -19,12 +17,13 @@ import { EnvReader } from './utils/EnvReader'
 import got from 'got'
 import { devices } from './WebSocketListener'
 import { AMTConfiguration, AMTDeviceDTO } from './models'
+import { Configurator } from './Configurator'
 export class Validator implements IValidator {
-  jsonParser: IClientMessageParser
+  jsonParser: ClientMsgJsonParser
 
   constructor (
     private readonly logger: ILogger,
-    private readonly configurator: IConfigurator
+    private readonly configurator: Configurator
   ) {
     this.jsonParser = new ClientMsgJsonParser()
   }
@@ -40,7 +39,7 @@ export class Validator implements IValidator {
     try {
       // Parse and convert the message
       if (typeof message === 'string') {
-        msg = this.jsonParser.parse(message, clientId)
+        msg = this.jsonParser.parse(message)
 
         if (msg?.protocolVersion) {
           if (VersionChecker.isCompatible(msg.protocolVersion)) {

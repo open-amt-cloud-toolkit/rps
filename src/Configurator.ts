@@ -6,7 +6,6 @@
 
 import { IDomainCredentialManager } from './interfaces/IDomainCredentialManager'
 import { IProfileManager } from './interfaces/IProfileManager'
-import { IConfigurator } from './interfaces/IConfigurator'
 import { DomainCredentialManager } from './DomainCredentialManager'
 import { ProfileManager } from './ProfileManager'
 import Logger from './Logger'
@@ -15,16 +14,13 @@ import { IAMTDeviceRepository } from './interfaces/database/IAMTDeviceRepository
 import { SecretManagerService } from './utils/SecretManagerService'
 import { AmtDeviceFactory } from './repositories/factories/AmtDeviceFactory'
 import { EnvReader } from './utils/EnvReader'
-import { NodeForge } from './NodeForge'
 import { ClientResponseMsg } from './utils/ClientResponseMsg'
 import { IValidator } from './interfaces/IValidator'
 import { Validator } from './Validator'
-import { CertManager } from './certManager'
-import { SignatureHelper } from './utils/SignatureHelper'
 import { DataProcessor } from './DataProcessor'
 import { DbCreatorFactory } from './repositories/factories/DbCreatorFactory'
 
-export class Configurator implements IConfigurator {
+export class Configurator {
   amtDeviceRepository: IAMTDeviceRepository
   domainCredentialManager: IDomainCredentialManager
   profileManager: IProfileManager
@@ -34,13 +30,10 @@ export class Configurator implements IConfigurator {
   constructor () {
     const log = new Logger('Configurator')
     this.secretsManager = new SecretManagerService(new Logger('SecretManagerService'))
-    const nodeForge = new NodeForge()
     const responseMsg: ClientResponseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'))
     const validator: IValidator = new Validator(new Logger('Validator'), this)
-    const certManager = new CertManager(new Logger('CertManager'), nodeForge)
-    const helper = new SignatureHelper(nodeForge)
 
-    this.dataProcessor = new DataProcessor(new Logger('DataProcessor'), helper, this, validator, certManager, responseMsg)
+    this.dataProcessor = new DataProcessor(new Logger('DataProcessor'), validator, responseMsg)
     const dbf = new DbCreatorFactory(EnvReader.GlobalEnvConfig)
 
     this.amtDeviceRepository = AmtDeviceFactory.getAmtDeviceRepository(this)
