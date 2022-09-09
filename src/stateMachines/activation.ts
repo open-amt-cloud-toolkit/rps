@@ -22,6 +22,7 @@ import { Validator } from '../Validator'
 import { DbCreatorFactory } from '../repositories/factories/DbCreatorFactory'
 import { AMTUserName } from '../utils/constants'
 import { CIRAConfiguration } from './ciraConfiguration'
+import { Unconfiguration } from './unconfiguration'
 
 export interface ActivationContext {
   profile: AMTConfiguration
@@ -34,11 +35,13 @@ export interface ActivationContext {
   generalSettings?: AMT.Models.GeneralSettings
   targetAfterError: string
   httpHandler: HttpHandler
+  isActivated?: boolean
 }
 
 interface ActivationEvent {
-  type: 'ACTIVATION' | 'ONFAILED'
+  type: 'ACTIVATION' | 'ACTIVATED' | 'ONFAILED'
   clientId: string
+  isActivated?: boolean
   data?: any
 }
 export class Activation {
@@ -57,6 +60,7 @@ export class Activation {
   networkConfiguration: NetworkConfiguration = new NetworkConfiguration()
   featuresConfiguration: FeaturesConfiguration = new FeaturesConfiguration()
   cira: CIRAConfiguration = new CIRAConfiguration()
+  unconfiguration: Unconfiguration = new Unconfiguration()
 
   machine =
 
@@ -74,7 +78,8 @@ export class Activation {
       errorMessage: '',
       generalSettings: null,
       targetAfterError: null,
-      httpHandler: new HttpHandler()
+      httpHandler: new HttpHandler(),
+      isActivated: false
     },
     id: 'activation-machine',
     initial: 'UNPROVISIONED',
@@ -84,6 +89,13 @@ export class Activation {
           ACTIVATION: {
             actions: assign({ clientId: (context, event) => event.clientId }),
             target: 'GET_AMT_PROFILE'
+          },
+          ACTIVATED: {
+            actions: assign({
+              clientId: (context, event) => event.clientId,
+              isActivated: (context, event) => event.isActivated
+            }),
+            target: 'GET_AMT_PROFILE'
           }
         }
       },
@@ -91,14 +103,10 @@ export class Activation {
         invoke: {
           src: this.getAMTProfile.bind(this),
           id: 'get-amt-profile',
-          onDone: [
-            {
-              actions: assign({
-                profile: (context, event) => event.data
-              }),
-              target: 'CHECK_PROFILE_TYPE'
-            }
-          ],
+          onDone: {
+            actions: assign({ profile: (context, event) => event.data }),
+            target: 'CHECK_PROFILE_TYPE'
+          },
           onError: {
             actions: assign({ errorMessage: 'Failed to get amt profile from database' }),
             target: 'FAILED'
@@ -108,6 +116,9 @@ export class Activation {
       CHECK_PROFILE_TYPE: {
         always: [
           {
+            cond: 'isActivated',
+            target: 'GET_GENERAL_SETTINGS'
+          }, {
             cond: 'isAdminMode',
             target: 'GET_AMT_DOMAIN_CERT'
           }, {
@@ -152,10 +163,7 @@ export class Activation {
             target: 'READ_GENERAL_SETTINGS'
           },
           onError: {
-            actions: [assign({
-              message: (context, event) => event.data,
-              targetAfterError: (context, event) => 'GET_GENERAL_SETTINGS'
-            })],
+            actions: assign({ message: (context, event) => event.data, targetAfterError: (context, event) => 'GET_GENERAL_SETTINGS' }),
             target: 'ERROR'
           }
         }
@@ -171,12 +179,13 @@ export class Activation {
           {
             cond: 'isDigestRealmInvalid',
             target: 'INVALID_DIGEST_REALM'
-          },
-          {
+          }, {
+            cond: 'isActivated',
+            target: 'CHANGE_AMT_PASSWORD'
+          }, {
             cond: 'isAdminMode',
             target: 'IPS_HOST_BASED_SETUP_SERVICE'
-          },
-          {
+          }, {
             target: 'SETUP'
           }
         ]
@@ -185,33 +194,26 @@ export class Activation {
         invoke: {
           src: this.getHostBasedSetupService.bind(this),
           id: 'send-hostbasedsetup',
-          onDone: [
-            {
-              actions: [
-                assign({ message: (context, event) => event.data }),
-                'Read Host Based Setup Service'
-              ],
-              target: 'ADDNEXTCERTINCHAIN'
-            }
-          ],
-          onError: [
-            {
-              target: 'ERROR'
-            }
-          ]
+          onDone: {
+            actions: [assign({ message: (context, event) => event.data }), 'Read Host Based Setup Service'],
+            target: 'ADDNEXTCERTINCHAIN'
+          },
+          onError: {
+            target: 'ERROR'
+          }
         }
       },
       ADDNEXTCERTINCHAIN: {
         invoke: {
           src: this.getNextCERTInChain.bind(this),
           id: 'send-certificate',
-          onDone: [
-            {
-              actions: assign({ message: (context, event) => event.data }),
-              target: 'CHECKCERTCHAINRESPONSE'
-            }
-          ],
-          onError: 'ERROR'
+          onDone: {
+            actions: assign({ message: (context, event) => event.data }),
+            target: 'CHECKCERTCHAINRESPONSE'
+          },
+          onError: {
+            target: 'ERROR'
+          }
         }
       },
       CHECKCERTCHAINRESPONSE: {
@@ -220,12 +222,10 @@ export class Activation {
             cond: 'isCertNotAdded',
             actions: assign({ errorMessage: (context, event) => `Device ${devices[context.clientId].uuid} activation failed. Error while adding the certificates to AMT.` }),
             target: 'FAILED'
-          },
-          {
+          }, {
             cond: 'maxCertLength',
             target: 'ADDNEXTCERTINCHAIN'
-          },
-          {
+          }, {
             target: 'ADMINSETUP'
           }
         ]
@@ -234,26 +234,22 @@ export class Activation {
         invoke: {
           src: this.getAdminSetup.bind(this),
           id: 'send-adminsetup',
-          onDone: [
-            {
-              actions: assign({ message: (context, event) => event.data }),
-              target: 'CHECK_ADMINSETUP'
-            }
-          ],
-          onError: 'ERROR'
+          onDone: {
+            actions: assign({ message: (context, event) => event.data }),
+            target: 'CHECK_ADMINSETUP'
+          },
+          onError: {
+            target: 'ERROR'
+          }
         }
       },
       CHECK_ADMINSETUP: {
         always: [
           {
             cond: 'isDeviceAdminModeActivated',
-            actions: [
-              (context, event) => { devices[context.clientId].status.Status = 'Admin control mode.' },
-              'Set activation status'
-            ],
-            target: 'SAVE_DEVICE_TO_SECRET_PROVIDER'
-          },
-          {
+            actions: [(context, event) => { devices[context.clientId].status.Status = 'Admin control mode.' }, 'Set activation status'],
+            target: 'DELAYED_TRANSITION'
+          }, {
             actions: assign({ errorMessage: 'Failed to activate in admin control mode.' }),
             target: 'FAILED'
           }
@@ -263,30 +259,58 @@ export class Activation {
         invoke: {
           src: this.getClientSetup.bind(this),
           id: 'send-setup',
-          onDone: [
-            {
-              actions: assign({ message: (context, event) => event.data }),
-              target: 'CHECK_SETUP'
-            }
-          ],
-          onError: 'ERROR'
+          onDone: {
+            actions: assign({ message: (context, event) => event.data }),
+            target: 'CHECK_SETUP'
+          },
+          onError: {
+            target: 'ERROR'
+          }
         }
       },
       CHECK_SETUP: {
         always: [
           {
             cond: 'isDeviceClientModeActivated',
-            actions: [
-              (context, event) => { devices[context.clientId].status.Status = 'Client control mode.' },
-              'Set activation status'
-            ],
-            target: 'SAVE_DEVICE_TO_SECRET_PROVIDER'
-          },
-          {
+            actions: [(context, event) => { devices[context.clientId].status.Status = 'Client control mode.' }, 'Set activation status'],
+            target: 'DELAYED_TRANSITION'
+          }, {
             actions: assign({ errorMessage: 'Failed to activate in client control mode.' }),
             target: 'FAILED'
           }
         ]
+      },
+      DELAYED_TRANSITION: {
+        after: {
+          10000: { target: 'UPDATE_CREDENTIALS' }
+        }
+      },
+      UPDATE_CREDENTIALS: {
+        entry: ['Update AMT Credentials'],
+        always: [
+          {
+            cond: 'isAdminMode',
+            target: 'SET_MEBX_PASSWORD'
+          }, {
+            target: 'SAVE_DEVICE_TO_SECRET_PROVIDER'
+          }]
+      },
+      SET_MEBX_PASSWORD: {
+        invoke: {
+          src: this.setMEBxPassword.bind(this),
+          id: 'send-mebx-password',
+          onDone: {
+            actions: [assign({ message: (context, event) => event.data }), 'Reset Unauth Count'],
+            target: 'SAVE_DEVICE_TO_SECRET_PROVIDER'
+          },
+          onError: {
+            actions: assign({
+              message: (context, event) => event.data,
+              targetAfterError: (context, event) => 'SET_MEBX_PASSWORD'
+            }),
+            target: 'ERROR'
+          }
+        }
       },
       SAVE_DEVICE_TO_SECRET_PROVIDER: {
         invoke: {
@@ -300,7 +324,7 @@ export class Activation {
         invoke: {
           src: this.saveDeviceInfoToMPS.bind(this),
           id: 'save-device-mps',
-          onDone: 'DELAYED_TRANSITION',
+          onDone: 'UNCONFIGURATION',
           onError: 'SAVE_DEVICE_TO_MPS_FAILURE'
         }
       },
@@ -312,37 +336,31 @@ export class Activation {
         entry: assign({ errorMessage: 'Failed to save device information to MPS' }),
         always: 'FAILED'
       },
-      DELAYED_TRANSITION: {
-        after: {
-          10000: { target: 'UPDATE_CREDENTIALS' }
-        }
-      },
-      UPDATE_CREDENTIALS: {
-        entry: ['Update AMT Credentials'],
-        always: [
-          {
-            cond: 'isAdminMode',
-            target: 'SET_MEBX_PASSWORD'
-          },
-          {
-            target: 'NETWORK_CONFIGURATION'
-          }]
-      },
-      SET_MEBX_PASSWORD: {
+      CHANGE_AMT_PASSWORD: {
         invoke: {
-          src: this.setMEBxPassword.bind(this),
-          id: 'send-mebx-password',
+          src: this.changeAMTPassword.bind(this),
+          id: 'send-to-change-amt-password',
           onDone: {
-            actions: [assign({ message: (context, event) => event.data }), 'Reset Unauth Count'],
-            target: 'NETWORK_CONFIGURATION'
+            actions: assign({ message: (context, event) => event.data }),
+            target: 'SAVE_DEVICE_TO_SECRET_PROVIDER'
           },
           onError: {
-            actions: assign({
-              message: (context, event) => event.data,
-              targetAfterError: (context, event) => 'SET_MEBX_PASSWORD'
-            }),
+            actions: assign({ message: (context, event) => event.data }),
             target: 'ERROR'
           }
+        }
+      },
+      UNCONFIGURATION: {
+        entry: send({ type: 'REMOVEPOLICY' }, { to: 'unconfiguration-machine' }),
+        invoke: {
+          src: this.unconfiguration.machine,
+          id: 'unconfiguration-machine',
+          data: {
+            clientId: (context, event) => context.clientId,
+            profile: (context, event) => context.profile,
+            httpHandler: (context, _) => context.httpHandler
+          },
+          onDone: 'NETWORK_CONFIGURATION'
         }
       },
       NETWORK_CONFIGURATION: {
@@ -361,6 +379,39 @@ export class Activation {
         on: {
           ONFAILED: 'FAILED'
         }
+      },
+      FEATURES_CONFIGURATION: {
+        entry: send({ type: 'CONFIGURE_FEATURES' }, { to: 'features-configuration-machine' }),
+        invoke: {
+          src: this.featuresConfiguration.machine,
+          id: 'features-configuration-machine',
+          data: {
+            clientId: (context, event) => context.clientId,
+            amtConfiguration: (context, event) => context.profile,
+            httpHandler: (context, _) => context.httpHandler
+          },
+          onDone: 'CIRA'
+        }
+      },
+      CIRA: {
+        entry: send({ type: 'REMOVEPOLICY' }, { to: 'cira-machine' }),
+        invoke: {
+          src: this.cira.machine,
+          id: 'cira-machine',
+          data: {
+            clientId: (context, event) => context.clientId,
+            profile: (context, event) => context.profile,
+            httpHandler: (context, _) => context.httpHandler
+          },
+          onDone: 'PROVISIONED'
+        }
+      },
+      PROVISIONED: {
+        entry: [
+          assign({ status: (context, event) => 'success' }),
+          'Send Message to Device'
+        ],
+        type: 'final'
       },
       ERROR: {
         entry: send({ type: 'PARSE' }, { to: 'error-machine' }),
@@ -400,39 +451,6 @@ export class Activation {
           'Send Message to Device'
         ],
         type: 'final'
-      },
-      FEATURES_CONFIGURATION: {
-        entry: send({ type: 'CONFIGURE_FEATURES' }, { to: 'features-configuration-machine' }),
-        invoke: {
-          src: this.featuresConfiguration.machine,
-          id: 'features-configuration-machine',
-          data: {
-            clientId: (context, event) => context.clientId,
-            amtConfiguration: (context, event) => context.profile,
-            httpHandler: (context, _) => context.httpHandler
-          },
-          onDone: 'CIRA'
-        }
-      },
-      CIRA: {
-        entry: send({ type: 'REMOVEPOLICY' }, { to: 'cira-machine' }),
-        invoke: {
-          src: this.cira.machine,
-          id: 'cira-machine',
-          data: {
-            clientId: (context, event) => context.clientId,
-            profile: (context, event) => context.profile,
-            httpHandler: (context, _) => context.httpHandler
-          },
-          onDone: 'PROVISIONED'
-        }
-      },
-      PROVISIONED: {
-        entry: [
-          assign({ status: (context, event) => 'success' }),
-          'Send Message to Device'
-        ],
-        type: 'final'
       }
     }
   }, {
@@ -445,7 +463,8 @@ export class Activation {
       isDeviceClientModeActivated: (context, event) => context.message.Envelope.Body.Setup_OUTPUT.ReturnValue === 0,
       isCertNotAdded: (context, event) => context.message.Envelope.Body.AddNextCertInChain_OUTPUT.ReturnValue !== 0,
       isGeneralSettings: (context, event) => context.targetAfterError === 'GET_GENERAL_SETTINGS',
-      isMebxPassword: (context, event) => context.targetAfterError === 'SET_MEBX_PASSWORD'
+      isMebxPassword: (context, event) => context.targetAfterError === 'SET_MEBX_PASSWORD',
+      isActivated: (context, event) => context.isActivated
     },
     actions: {
       'Reset Unauth Count': (context, event) => { devices[context.clientId].unauthCount = 0 },
@@ -460,9 +479,9 @@ export class Activation {
 
   service = interpret(this.machine).onTransition((state) => {
     console.log(`Current state of Activation Machine: ${JSON.stringify(state.value)}`)
-    if (state.children['cira-machine'] != null) {
-      state.children['cira-machine'].subscribe((childState) => {
-        console.log(`CIRA State: ${childState.value}`)
+    if (state.children['unconfiguration-machine'] != null) {
+      state.children['unconfiguration-machine'].subscribe((childState) => {
+        console.log(`Unconfiguration State: ${childState.value}`)
       })
     }
     if (state.children['network-configuration-machine'] != null) {
@@ -473,6 +492,11 @@ export class Activation {
     if (state.children['features-configuration-machine'] != null) {
       state.children['features-configuration-machine'].subscribe((childState) => {
         console.log(`AMT Features State: ${childState.value}`)
+      })
+    }
+    if (state.children['cira-machine'] != null) {
+      state.children['cira-machine'].subscribe((childState) => {
+        console.log(`CIRA State: ${childState.value}`)
       })
     }
   }).onChange((data) => {
@@ -585,6 +609,16 @@ export class Activation {
     return await this.invokeWsmanCall(context)
   }
 
+  async changeAMTPassword (context): Promise<any> {
+    const password = await this.getPassword(context)
+    // Convert MD5 hash to raw string which utf16
+    const result = password.match(/../g).map((v) => String.fromCharCode(parseInt(v, 16))).join('')
+    // Encode to base64
+    const encodedPassword = Buffer.from(result, 'binary').toString('base64')
+    context.xmlMessage = this.amt.AuthorizationService(AMT.Methods.SET_ADMIN_ACL_ENTRY_EX, AMTUserName, encodedPassword)
+    return await this.invokeWsmanCall(context)
+  }
+
   async setMEBxPassword (context): Promise<any> {
     context.xmlMessage = this.amt.SetupAndConfigurationService(AMT.Methods.SET_MEBX_PASSWORD, devices[context.clientId].mebxPassword)
     return await this.invokeWsmanCall(context)
@@ -594,6 +628,7 @@ export class Activation {
     let { message, clientId, xmlMessage } = context
     const clientObj = devices[clientId]
     message = context.httpHandler.wrapIt(xmlMessage, clientObj.connectionParams)
+    this.logger.info(`message sent to client: ${message}`)
     const responseMessage = this.responseMsg.get(clientId, message, 'wsman', 'ok')
     devices[clientId].ClientSocket.send(JSON.stringify(responseMessage))
     clientObj.pendingPromise = new Promise<any>((resolve, reject) => {
@@ -670,6 +705,7 @@ export class Activation {
       const amtDevice: AMTDeviceDTO = {
         guid: clientObj.uuid,
         name: clientObj.hostname,
+        amtpass: clientObj.amtPassword,
         mebxpass: clientObj.action === ClientAction.ADMINCTLMODE ? clientObj.mebxPassword : null
       }
       await this.configurator.amtDeviceRepository.insert(amtDevice)

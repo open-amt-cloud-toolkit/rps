@@ -6,7 +6,7 @@ import { parseBody } from '../utils/parseWSManResponseBody'
 import { HttpZResponseModel } from 'http-z'
 
 const httpHandler = new HttpHandler()
-interface ErrorContext {
+export interface ErrorContext {
   message: HttpZResponseModel
   parsedMessage: any
   clientId: string
@@ -22,6 +22,7 @@ export class Error {
 
   /** @xstate-layout N4IgpgJg5mDOIC5RgE4oPYoLQFsCGAxgBYCWAdmAHQCiASrQPK3UAiAxAAoCCtAytYlAAHdLBIAXEujKCQAD0QBmAEwAOSgDYADAE5FGgKxqdqjQEYDAGhABPRKp2UdznQYAsy5fpWqzAXz9rVAxsfGJyKgBVADkuSIAVAAkmAEkALVY2WRExSWlZBQQdAHZ1RUUtZS13Yq1ig2LrOyLHOvKzNzcDA1Vq4o0AwJAydAg4WWDMXEJSChp6JlZs0QkpGSR5RCrFSmLFN0UdSp7So40mxDNis0o3FyNVfTda5QCgtCmw2ajYhOTadJLDY5Vb5DaFbTFShmKrHXRqXyNWz2Ny3e6PVQGGF1HRvcAfUIzCKUOJJVIZFjLXJrAqXZTmSj04r05TOerMxQXBAwjSMwzlDReNwaFy4oaTQnhOYAMS4KQAMqxSf9AZTgSs8utQIUYd1KKpiiUdB1lD1KqouRV1G4LB5DX09oo8RLplKqAAhLgsZgARUi1F48SpoK1mwQ5mUlEUZg0pS0Zi0IsUBh0lsOUZK1y0jwMdQ0XWdBNd30oMQA0tEGAB1aLBzW0hDKerQhpmXy5jSqDGW1xOXoI6OCizuQshYsROs08GXQ27faHY4GhyJrkwtFsswWYoHA2DPxAA */
   createMachine<ErrorContext, ErrorEvent>({
+    preserveActionOrder: true,
     predictableActionArguments: true,
     context: { message: null, clientId: '', parsedMessage: null },
     id: 'error-machine',
@@ -71,9 +72,15 @@ export class Error {
     }
   }, {
     guards: {
-      isMaxRetries: (context, event) => devices[context.clientId].unauthCount < 3,
-      isBadRequest: (context, event) => context.message?.statusCode === 400,
-      isUnauthorized: (context, event) => context.message?.statusCode === 401
+      isMaxRetries: (context, event) => {
+        return devices[context.clientId].unauthCount < 3
+      },
+      isBadRequest: (context, event) => {
+        return context.message?.statusCode === 400
+      },
+      isUnauthorized: (context, event) => {
+        return context.message?.statusCode === 401
+      }
     },
     actions: {
       respondUnauthorized: pure((context) => {
@@ -85,11 +92,7 @@ export class Error {
         devices[context.clientId].unauthCount = 0
         return sendParent({ type: 'ONFAILED', data: 'Unknown error has occured' })
       }),
-      parseError: (context) => {
-        const xmlBody = parseBody(context.message)
-        // pares WSMan xml response to json
-        context.parsedMessage = httpHandler.parseXML(xmlBody)
-      },
+      parseError: (context) => this.parseError(context),
       addAuthorizationHeader: (context) => this.addAuthorizationHeader(context)
     }
   })
@@ -110,5 +113,11 @@ export class Error {
   respondBadRequest (context): any {
     devices[context.clientId].unauthCount = 0
     return sendParent({ type: 'ONFAILED', data: context.parsedMessage })
+  }
+
+  parseError (context): void {
+    const xmlBody = parseBody(context.message)
+    // pares WSMan xml response to json
+    context.parsedMessage = httpHandler.parseXML(xmlBody)
   }
 }

@@ -7,6 +7,7 @@ import { ClientAction } from '../models/RCS.Config'
 // import { Configurator } from '../Configurator'
 import { NetworkConfiguration } from './networkConfiguration'
 import { interpret } from 'xstate'
+import { HttpHandler } from '../HttpHandler'
 
 const clientId = uuid()
 EnvReader.GlobalEnvConfig = config
@@ -20,6 +21,10 @@ describe('Network Configuration', () => {
   let ethernetPortSettingsSpy
   let WiFiPortConfigurationServiceSpy
   let WiFiEndpointSettingsSpy
+  let wrapItSpy: jest.SpyInstance
+  let responseMessageSpy: jest.SpyInstance
+  let sendSpy: jest.SpyInstance
+  jest.setTimeout(15000)
   beforeEach(() => {
     devices[clientId] = {
       unauthCount: 0,
@@ -68,6 +73,18 @@ describe('Network Configuration', () => {
     networkConfig = new NetworkConfiguration()
     context = {
       amtProfile: null,
+      generalSettings: {
+        AMTNetworkEnabled: 1,
+        RmcpPingResponseEnabled: true,
+        SharedFQDN: false
+      },
+      wiredSettings: {
+        DHCPEnabled: true,
+        ElementName: 'Intel(r) AMT Ethernet Port Settings',
+        InstanceID: 'Intel(r) AMT Ethernet Port Settings 0',
+        IpSyncEnabled: false,
+        MACAddress: 'a4-bb-6d-89-52-e4'
+      },
       wifiProfiles: [],
       wifiProfileCount: 0,
       message: '',
@@ -75,7 +92,8 @@ describe('Network Configuration', () => {
       xmlMessage: '',
       response: '',
       status: 'wsman',
-      errorMessage: ''
+      errorMessage: '',
+      httpHandler: new HttpHandler()
     }
     context.amtProfile = {
       profileName: 'acm',
@@ -96,46 +114,72 @@ describe('Network Configuration', () => {
     invokeWsmanCallSpy = jest.spyOn(networkConfig, 'invokeWsmanCall').mockImplementation().mockResolvedValue('done')
     ethernetPortSettingsSpy = jest.spyOn(networkConfig.amt, 'EthernetPortSettings').mockImplementation().mockReturnValue('abcdef')
     WiFiEndpointSettingsSpy = jest.spyOn(networkConfig.cim, 'WiFiEndpointSettings').mockReturnValue('done')
+    sendSpy = jest.spyOn(devices[clientId].ClientSocket, 'send').mockReturnValue()
+    wrapItSpy = jest.spyOn(context.httpHandler, 'wrapIt').mockReturnValue('message')
+    responseMessageSpy = jest.spyOn(networkConfig.responseMsg, 'get')
     currentStateIndex = 0
     config = {
       services: {
         'put-general-settings': async (_, event) => await Promise.resolve({ clientId: event.clientId }),
-        'enumerate-ethernet-port-settings': async (_, event) => await Promise.resolve({ clientId: event.clientId }),
+        'enumerate-ethernet-port-settings': Promise.resolve({
+          Envelope: {
+            Header: {},
+            Body: { EnumerateResponse: { EnumerationContext: '09000000-0000-0000-0000-000000000000' } }
+          }
+        }),
         'error-machine': async (_, event) => await Promise.resolve({ clientId: event.clientId }),
-        'pull-ethernet-port-settings': async (_, event) => await Promise.resolve({ clientId: event.clientId }),
-        'put-ethernet-port-settings': async (_, event) => await Promise.resolve({ clientId: event.clientId }),
+        'pull-ethernet-port-settings': Promise.resolve({
+          Envelope: {
+            Header: {},
+            Body: {
+              PullResponse: {
+                Items: {
+                  AMT_EthernetPortSettings: [
+                    { DHCPEnabled: true, ElementName: 'Intel(r) AMT Ethernet Port Settings', InstanceID: 'Intel(r) AMT Ethernet Port Settings 0', IpSyncEnabled: false },
+                    { ElementName: 'Intel(r) AMT Ethernet Port Settings', InstanceID: 'Intel(r) AMT Ethernet Port Settings 1', MACAddress: '00-00-00-00-00-00' }
+                  ]
+                }
+              }
+            }
+          }
+        }),
+        'put-ethernet-port-settings': Promise.resolve({
+          Envelope: {
+            Header: {},
+            Body: {
+              PullResponse: {
+                Items: {
+                  AMT_EthernetPortSettings: { DHCPEnabled: true, SharedStaticIp: false, ElementName: 'Intel(r) AMT Ethernet Port Settings', InstanceID: 'Intel(r) AMT Ethernet Port Settings 0', IpSyncEnabled: true }
+                }
+              }
+            }
+          }
+        }),
         'enumerate-wifi-endpoint-settings': async (_, event) => await Promise.resolve({ clientId: event.clientId }),
-        'pull-wifi-endpoint-settings': async (_, event) => await Promise.resolve({ clientId: event.clientId }),
+        'pull-wifi-endpoint-settings': Promise.resolve({ Envelope: { Body: { PullResponse: { Items: { CIM_WiFiEndpointSettings: null } } } } }),
         'delete-wifi-endpoint-settings': async (_, event) => await Promise.resolve({ clientId: event.clientId }),
         'request-state-change-for-wifi-port': async (_, event) => await Promise.resolve({ clientId: event.clientId }),
         'add-wifi-settings': async (_, event) => await Promise.resolve({ clientId: event.clientId }),
         'get-wifi-port-configuration-service': async (_, event) => await Promise.resolve({ clientId: event.clientId }),
-        'put-wifi-port-configuration-service': async (_, event) => await Promise.resolve({ clientId: event.clientId })
-        // CHECK_GENERAL_SETTINGS: (_, event) => {},
-        // CHECK_ETHERNET_PORT_SETTINGS_PULL_RESPONSE: (_, event) => {},
-        // CHECK_ETHERNET_PORT_SETTINGS_PUT_RESPONSE: (_, event) => {},
-        // CHECK_WIFI_ENDPOINT_SETTINGS_PULL_RESPONSE: (_, event) => {},
-        // CHECK_WIFI_ENDPOINT_SETTINGS_DELETE_RESPONSE: (_, event) => {},
-        // CHECK_ADD_WIFI_SETTINGS_RESPONSE: (_, event) => {},
-        // CHECK_WIFI_PORT_CONFIGURATION_SERVICE: (_, event) => {}
+        'put-wifi-port-configuration-service': async (_, event) => await Promise.resolve({ clientId: event.clientId }),
+        NETWORKCONFIGURED: () => { }
       },
       guards: {
         isWiFiProfilesExits: (context, event) => true,
         // isWirelessOnlyDevice: (context, event) => false,
-        isWiredSupportedOnDevice: (context, event) => true,
-        isWirelessSupportedOnDevice: (context, event) => false,
+        // isWiredSupportedOnDevice: (context, event) => true,
+        // isWirelessSupportedOnDevice: (context, event) => false,
         isWirelessProfilesExistsOnDevice: (context, event) => true,
         isWifiProfileAdded: (context, event) => false,
         isWifiProfileDeleted: (context, event) => true,
-        islocalProfileSynchronizationNotEnabled: (context, event) => true,
-        isNotAMTNetworkEnabled: (context, event) => true
+        islocalProfileSynchronizationNotEnabled: (context, event) => true
       },
       actions: {
-        'Reset Unauth Count': () => {},
-        'update configuration status': () => {},
-        'Read Ethernet Port Settings': () => {},
-        'Read Ethernet Port Settings Put Response': () => {},
-        'Read WiFi Endpoint Settings Pull Response': () => {}
+        'Reset Unauth Count': () => { },
+        'update configuration status': () => { },
+        'Read Ethernet Port Settings': () => { },
+        'Read Ethernet Port Settings Put Response': () => { },
+        'Read WiFi Endpoint Settings Pull Response': () => { }
       }
     }
   })
@@ -143,9 +187,15 @@ describe('Network Configuration', () => {
   describe('State machines', () => {
     it('should eventually reach "NETWORKCONFIGURED" state', (done) => {
       const mockNetworkConfigurationMachine = networkConfig.machine.withConfig(config).withContext(context)
-      const flowStates = ['ACTIVATION', 'PUT_GENERAL_SETTINGS', 'ENUMERATE_ETHERNET_PORT_SETTINGS', 'PULL_ETHERNET_PORT_SETTINGS', 'PUT_ETHERNET_PORT_SETTINGS', 'NETWORKCONFIGURED']
+      const flowStates = [
+        'ACTIVATION',
+        'PUT_GENERAL_SETTINGS',
+        'ENUMERATE_ETHERNET_PORT_SETTINGS',
+        'PULL_ETHERNET_PORT_SETTINGS',
+        'PUT_ETHERNET_PORT_SETTINGS',
+        'NETWORKCONFIGURED'
+      ]
       const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
-        console.log(state.value)
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('NETWORKCONFIGURED') && currentStateIndex === flowStates.length) {
           done()
@@ -153,6 +203,47 @@ describe('Network Configuration', () => {
       })
       service.start()
       service.send({ type: 'NETWORKCONFIGURATION', clientId })
+    })
+    it('should eventually reach "NETWORKCONFIGURED" state for WIRED devices', (done) => {
+      // config.services['delete-wifi-endpoint-settings'] = Promise.reject(new Error())
+      context.wireLessSettings = {
+        ElementName: 'Intel(r) AMT Ethernet Port Settings',
+        InstanceID: 'Intel(r) AMT Ethernet Port Settings 1',
+        MACAddress: '00-00-00-00-00-00'
+      }
+      const mockNetworkConfigurationMachine = networkConfig.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'ACTIVATION',
+        'PUT_GENERAL_SETTINGS',
+        'ENUMERATE_ETHERNET_PORT_SETTINGS',
+        'PULL_ETHERNET_PORT_SETTINGS',
+        'PUT_ETHERNET_PORT_SETTINGS',
+        'ENUMERATE_WIFI_ENDPOINT_SETTINGS',
+        'PULL_WIFI_ENDPOINT_SETTINGS',
+        'DELETE_WIFI_ENDPOINT_SETTINGS',
+        'FAILED'
+      ]
+      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+        console.log(state.value)
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
+          done()
+        }
+      })
+      service.start()
+      service.send({ type: 'NETWORKCONFIGURATION', clientId })
+    })
+    it('should update configuration status', () => {
+      context.status = 'error'
+      context.errorMessage = 'Failed to put WiFi Port Configuration Service'
+      networkConfig.updateConfigurationStatus(context, null)
+      expect(devices[context.clientId].status.Network).toBe('Failed to put WiFi Port Configuration Service')
+    })
+    it('should update configuration status', () => {
+      context.status = 'error'
+      context.errorMessage = ''
+      networkConfig.updateConfigurationStatus(context, null)
+      expect(devices[context.clientId].status.Network).toBe('Failed')
     })
   })
 
@@ -230,7 +321,6 @@ describe('Network Configuration', () => {
       expect(context.wiredSettings).toBeDefined()
       expect(context.wireLessSettings).toBeDefined()
     })
-
     test('should read ethernet port settings pull response', async () => {
       context.message = {
         Envelope: {
@@ -301,7 +391,7 @@ describe('Network Configuration', () => {
       expect(context.wireLessSettings).toBeNull()
       expect(context.wiredSettings).toBeDefined()
     })
-    test('should put ethernet port settings', async () => {
+    test('should put ethernet port settings, DHCPEnabled is set to true', async () => {
       context.wiredSettings = {
         DHCPEnabled: true,
         DefaultGateway: '192.168.1.1',
@@ -326,6 +416,78 @@ describe('Network Configuration', () => {
       expect(ethernetPortSettingsSpy).toHaveBeenCalled()
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
+    test('should put ethernet port settings, DHCPEnabled is set to true', async () => {
+      context.amtProfile.dhcpEnabled = false
+      context.wiredSettings = {
+        DHCPEnabled: true,
+        DefaultGateway: '192.168.1.1',
+        ElementName: 'Intel(r) AMT Ethernet Port Settings',
+        IPAddress: '192.168.1.139',
+        InstanceID: 'Intel(r) AMT Ethernet Port Settings 0',
+        IpSyncEnabled: false,
+        LinkIsUp: true,
+        LinkPolicy: [
+          1,
+          14
+        ],
+        MACAddress: 'a4-bb-6d-89-52-e4',
+        PhysicalConnectionType: 0,
+        PrimaryDNS: '192.168.1.1',
+        SharedDynamicIP: true,
+        SharedMAC: true,
+        SharedStaticIp: false,
+        SubnetMask: '255.255.255.0'
+      }
+      await networkConfig.putEthernetPortSettings(context)
+      expect(ethernetPortSettingsSpy).toHaveBeenCalled()
+      expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    })
+    test('should read put ethernet port settings and update status as configured', () => {
+      context.wiredSettings = {
+        DHCPEnabled: true,
+        ElementName: 'Intel(r) AMT Ethernet Port Settings',
+        InstanceID: 'Intel(r) AMT Ethernet Port Settings 0',
+        IpSyncEnabled: true,
+        MACAddress: 'a4-bb-6d-89-52-e4',
+        SharedStaticIp: false
+      }
+      context.message = {
+        Envelope: {
+          Body: {
+            AMT_EthernetPortSettings: {
+              DHCPEnabled: true,
+              IpSyncEnabled: true,
+              SharedStaticIp: false
+            }
+          }
+        }
+      }
+      networkConfig.readEthernetPortSettingsPutResponse(context, null)
+      expect(context.statusMessage).toBe('Wired Network Configured')
+    })
+    test('should read put ethernet port settings and update status as not configured', () => {
+      context.wiredSettings = {
+        DHCPEnabled: true,
+        ElementName: 'Intel(r) AMT Ethernet Port Settings',
+        InstanceID: 'Intel(r) AMT Ethernet Port Settings 0',
+        IpSyncEnabled: true,
+        MACAddress: 'a4-bb-6d-89-52-e4',
+        SharedStaticIp: false
+      }
+      context.message = {
+        Envelope: {
+          Body: {
+            AMT_EthernetPortSettings: {
+              DHCPEnabled: true,
+              IpSyncEnabled: false,
+              SharedStaticIp: false
+            }
+          }
+        }
+      }
+      networkConfig.readEthernetPortSettingsPutResponse(context, null)
+      expect(context.statusMessage).toBe('Wired Network Configuration Failed')
+    })
   })
 
   describe('WiFi Port Configuration Service', () => {
@@ -337,7 +499,7 @@ describe('Network Configuration', () => {
     test('should return WiFi Profiles', async () => {
       context.message = {
         Envelope: {
-          Header: { },
+          Header: {},
           Body: { AMT_WiFiPortConfigurationService: { localProfileSynchronizationEnabled: 1 } }
         }
       }
@@ -457,6 +619,14 @@ describe('Network Configuration', () => {
       await networkConfig.updateWifiPort(context, null)
       expect(wifiPortSpy).toHaveBeenCalled()
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    })
+    test('should send a WSMan message', async () => {
+      invokeWsmanCallSpy.mockRestore()
+      void networkConfig.invokeWsmanCall(context)
+      expect(wrapItSpy).toHaveBeenCalled()
+      expect(responseMessageSpy).toHaveBeenCalled()
+      expect(sendSpy).toHaveBeenCalled()
+      expect(devices[clientId].pendingPromise).toBeDefined()
     })
   })
 })

@@ -212,7 +212,8 @@ describe('Activate a device', () => {
     const activationStartSpy = jest.spyOn(activation.service, 'start').mockImplementation()
     const activationSendSpy = jest.spyOn(activation.service, 'send').mockImplementation()
     const clientId = uuid()
-    devices[clientId] = { ClientId: clientId, ClientSocket: null, messageId: 0, connectionParams: connectionParams, unauthCount: 0 }
+    devices[clientId] = { ClientId: clientId, ClientSocket: null, messageId: 0, connectionParams: connectionParams, unauthCount: 0, activationStatus: {} }
+    devices[clientId].activationStatus.activated = false
     VersionChecker.setCurrentVersion('4.0.0')
     await dataProcessor.activateDevice(clientMsg, clientId, activation)
     expect(validatorSpy).toHaveBeenCalled()

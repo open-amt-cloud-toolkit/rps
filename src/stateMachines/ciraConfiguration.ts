@@ -1,5 +1,5 @@
 import { AMT, IPS } from '@open-amt-cloud-toolkit/wsman-messages'
-import { createMachine, interpret, assign, send } from 'xstate'
+import { createMachine, assign, send } from 'xstate'
 import { CertManager } from '../certManager'
 import { Configurator } from '../Configurator'
 import { HttpHandler } from '../HttpHandler'
@@ -107,7 +107,7 @@ export class CIRAConfiguration {
             message: (context, event) => event.data,
             clientId: (context, event) => context.clientId
           },
-          onDone: 'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED'
+          onDone: 'ADD_TRUSTED_ROOT_CERTIFICATE'
         },
         on: {
           ONFAILED: 'FAILURE'
@@ -120,413 +120,17 @@ export class CIRAConfiguration {
             context.ciraConfig.password = PasswordHelper.generateRandomPassword(AMTRandomPasswordLength)
             return context
           }),
-          target: 'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED'
-        }
-      },
-      REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED: {
-        invoke: {
-          src: this.removeRemoteAccessPolicyRuleUserInitiated.bind(this),
-          id: 'remove-remote-access-policy-rule-user-initiated',
-          onDone: 'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT',
-          onError: [
-            {
-              cond: 'isExpectedBadRequest',
-              target: 'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT'
-            }, {
-              target: 'ERROR'
-            }
-          ]
-        }
-      },
-      REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT: {
-        invoke: {
-          src: this.removeRemoteAccessPolicyRuleAlert.bind(this),
-          id: 'remove-remote-access-policy-rule-rule-alert',
-          onDone: 'REMOVE_REMOTE_ACCESS_POLICY_RULE_PERIODIC',
-          onError: 'REMOVE_REMOTE_ACCESS_POLICY_RULE_PERIODIC'
-        }
-      },
-      REMOVE_REMOTE_ACCESS_POLICY_RULE_PERIODIC: {
-        invoke: {
-          src: this.removeRemoteAccessPolicyRulePeriodic.bind(this),
-          id: 'remove-remote-access-policy-rule-periodic',
-          onDone: 'ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP',
-          onError: 'ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP'
-        }
-      },
-      ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP: {
-        invoke: {
-          src: this.enumerateManagementPresenceRemoteSAP.bind(this),
-          id: 'enumerate-management-presence-remote-sap',
-          onDone: {
-            actions: [
-              assign({ message: (context, event) => event.data })
-            ],
-            target: 'PULL_MANAGEMENT_PRESENCE_REMOTE_SAP'
-          },
-          onError: 'FAILURE'
-        }
-      },
-      PULL_MANAGEMENT_PRESENCE_REMOTE_SAP: {
-        invoke: {
-          src: this.pullManagementPresenceRemoteSAP.bind(this),
-          id: 'pull-management-presence-remote-sap',
-          onDone: {
-            actions: [
-              assign({ message: (context, event) => event.data })
-            ],
-            target: 'PULL_MANAGEMENT_PRESENCE_REMOTE_SAP_RESPONSE'
-          }
-        }
-      },
-      PULL_MANAGEMENT_PRESENCE_REMOTE_SAP_RESPONSE: {
-        always: [{
-          cond: 'isNotDeleting',
-          target: 'ADD_REMOTE_POLICY_ACCESS_RULE'
-        }, {
-          cond: 'hasMPSEntries', // this could be problematic
-          target: 'DELETE_MANAGEMENT_PRESENCE_REMOTE_SAP'
-        },
-        'ENUMERATE_TLS_SETTING_DATA'
-        ]
-      },
-      ADD_REMOTE_POLICY_ACCESS_RULE: {
-        invoke: {
-          src: this.addRemoteAccessService.bind(this),
-          id: 'add-remote-policy-access-rule',
-          onDone: 'ENUMERATE_REMOTE_ACCESS_POLICY_RULE',
-          onError: 'FAILURE'
-        }
-      },
-      DELETE_MANAGEMENT_PRESENCE_REMOTE_SAP: {
-        invoke: {
-          src: this.deleteRemoteAccessService.bind(this),
-          id: 'delete-management-presence-remote-sap',
-          onDone: 'ENUMERATE_TLS_SETTING_DATA'
-        }
-      },
-      ENUMERATE_TLS_SETTING_DATA: {
-        invoke: {
-          src: this.enumerateTLSSettingData.bind(this),
-          id: 'enumerate-tls-setting-data',
-          onDone: {
-            actions: [
-              assign({ message: (context, event) => event.data })
-            ],
-            target: 'PULL_TLS_SETTING_DATA'
-          }
-        }
-      },
-      PULL_TLS_SETTING_DATA: {
-        invoke: {
-          src: this.pullTLSSettingData.bind(this),
-          id: 'pull-tls-setting-data',
-          onDone: {
-            actions: [
-              assign({ message: (context, event) => event.data })
-            ],
-            target: 'PULL_TLS_SETTING_DATA_RESPONSE'
-          }
-        }
-      },
-      PULL_TLS_SETTING_DATA_RESPONSE: {
-        always: [{
-          cond: 'tlsSettingDataEnabled',
-          target: 'DISABLE_TLS_SETTING_DATA'
-        }, 'ENUMERATE_PUBLIC_KEY_CERTIFICATE']
-      },
-      DISABLE_TLS_SETTING_DATA: {
-        invoke: {
-          src: this.disableTLSSettingData.bind(this),
-          id: 'disable-tls-setting-data',
-          onDone: {
-            actions: [
-              assign({ message: (context, event) => event.data })
-            ],
-            target: 'DISABLE_TLS_SETTING_DATA_RESPONSE'
-          }
-        }
-      },
-      DISABLE_TLS_SETTING_DATA_2: { // TODO: REFACTOR TO USE EXISITING PUT
-        invoke: {
-          src: this.disableTLSSettingData2.bind(this),
-          id: 'disable-tls-setting-data-2',
-          onDone: {
-            actions: [
-              assign({ message: (context, event) => event.data })
-            ],
-            target: 'DISABLE_TLS_SETTING_DATA_RESPONSE'
-          }
-        }
-      },
-      DISABLE_TLS_SETTING_DATA_RESPONSE: {
-        always: [
-          { cond: 'is8023TLS', target: 'DISABLE_TLS_SETTING_DATA_2' },
-          { cond: 'isLMSTLSSettings', target: 'SETUP_AND_CONFIGURATION_SERVICE_COMMIT_CHANGES' },
-          'FAILURE']
-      },
-      SETUP_AND_CONFIGURATION_SERVICE_COMMIT_CHANGES: {
-        invoke: {
-          src: this.commitSetupAndConfigurationService.bind(this),
-          id: 'setup-and-configuration-service-commit-changes',
-          onDone: {
-            actions: [
-              assign({ message: (context, event) => event.data })
-            ],
-            target: 'SETUP_AND_CONFIGURATION_SERVICE_COMMIT_CHANGES_RESPONSE'
-          }
-        }
-      },
-      SETUP_AND_CONFIGURATION_SERVICE_COMMIT_CHANGES_RESPONSE: {
-        after: {
-          5000: 'ENUMERATE_TLS_CREDENTIAL_CONTEXT'
-        }
-      },
-      ENUMERATE_TLS_CREDENTIAL_CONTEXT: {
-        invoke: {
-          src: this.enumerateTLSCredentialContext.bind(this),
-          id: 'enumerate-tls-credential-context',
-          onDone: {
-            actions: [
-              assign({ message: (context, event) => event.data })
-            ],
-            target: 'PULL_TLS_CREDENTIAL_CONTEXT'
-          }
-        }
-      },
-      PULL_TLS_CREDENTIAL_CONTEXT: {
-        invoke: {
-          src: this.pullTLSCredentialContext.bind(this),
-          id: 'pull-tls-credential-context',
-          onDone: {
-            actions: [
-              assign({ message: (context, event) => event.data })
-            ],
-            target: 'PULL_TLS_CREDENTIAL_CONTEXT_RESPONSE'
-          }
-        }
-      },
-      PULL_TLS_CREDENTIAL_CONTEXT_RESPONSE: {
-        always: [
-          {
-            cond: 'hasTLSCredentialContext', // should this be isNotDeleting
-            target: 'DELETE_TLS_CREDENTIAL_CONTEXT'
-          },
-          'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR']
-      },
-      DELETE_TLS_CREDENTIAL_CONTEXT: {
-        invoke: {
-          src: this.deleteTLSCredentialContext.bind(this),
-          id: 'delete-tls-credential-context',
-          onDone: 'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR'
-        }
-      },
-      ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR: {
-        invoke: {
-          src: this.enumeratePublicPrivateKeyPair.bind(this),
-          id: 'enumerate-public-private-key-pair',
-          onDone: {
-            actions: [
-              assign({ message: (context, event) => event.data })
-            ],
-            target: 'PULL_PUBLIC_PRIVATE_KEY_PAIR'
-          }
-        }
-      },
-      PULL_PUBLIC_PRIVATE_KEY_PAIR: {
-        invoke: {
-          src: this.pullPublicPrivateKeyPair.bind(this),
-          id: 'pull-public-private-key-pair',
-          onDone: {
-            actions: [
-              assign({ message: (context, event) => event.data })
-            ],
-            target: 'PULL_PUBLIC_PRIVATE_KEY_PAIR_RESPONSE'
-          }
-        }
-      },
-      PULL_PUBLIC_PRIVATE_KEY_PAIR_RESPONSE: {
-        always: [
-          {
-            cond: 'isNotDeleting',
-            target: 'ENUMERATE_PUBLIC_KEY_CERTIFICATE'
-          },
-          'DELETE_PUBLIC_PRIVATE_KEY_PAIR']
-      },
-      DELETE_PUBLIC_PRIVATE_KEY_PAIR: {
-        invoke: {
-          src: this.deletePublicPrivateKeyPair.bind(this),
-          id: 'delete-public-private-key-pair',
-          onDone: {
-            actions: [
-              assign({ message: (context, event) => event.data })
-            ],
-            target: 'DELETE_PUBLIC_PRIVATE_KEY_PAIR_RESPONSE'
-          }
-        }
-      },
-      DELETE_PUBLIC_PRIVATE_KEY_PAIR_RESPONSE: {
-        always: [{
-          cond: 'hasPrivateCerts',
-          target: 'DELETE_PUBLIC_PRIVATE_KEY_PAIR'
-        }, 'ENUMERATE_PUBLIC_KEY_CERTIFICATE']
-      },
-      ENUMERATE_REMOTE_ACCESS_POLICY_RULE: {
-        invoke: {
-          src: this.enumerateRemoteAccessPolicyAppliesToMPS.bind(this),
-          id: 'enumerate-remote-access-policy-rule',
-          onDone: {
-            actions: [
-              assign({ message: (context, event) => event.data })
-            ],
-            target: 'PULL_REMOTE_ACCESS_POLICY_RULE'
-          }
-        }
-      },
-      PULL_REMOTE_ACCESS_POLICY_RULE: {
-        invoke: {
-          src: this.pullRemoteAccessPolicyAppliesToMPS.bind(this),
-          id: 'pull-remote-access-policy-rule',
-          onDone: {
-            actions: [
-              assign({ message: (context, event) => event.data })
-            ],
-            target: 'PUT_REMOTE_ACCESS_POLICY_RULE'
-          }
-        }
-      },
-      PUT_REMOTE_ACCESS_POLICY_RULE: {
-        invoke: {
-          src: this.putRemoteAccessPolicyAppliesToMPS.bind(this),
-          id: 'put-remote-access-policy-rule',
-          onDone: {
-            actions: [
-              assign({ message: (context, event) => event.data })
-            ],
-            target: 'USER_INITIATED_CONNECTION_SERVICE'
-          }
-        }
-      },
-      USER_INITIATED_CONNECTION_SERVICE: {
-        invoke: {
-          src: this.userInitiatedConnectionService.bind(this),
-          id: 'user-initiated-connection-service',
-          onDone: {
-            actions: [
-              assign({ message: (context, event) => event.data })
-            ],
-            target: 'USER_INITIATED_CONNECTION_SERVICE_RESPONSE'
-          }
-        }
-      },
-      USER_INITIATED_CONNECTION_SERVICE_RESPONSE: {
-        always: [{
-          cond: 'successfulStateChange',
-          target: 'GET_ENVIRONMENT_DETECTION_SETTINGS'
-        }, 'FAILURE'] // throw new RPSError(`Device ${clientObj.uuid} failed to update User Initiated Connection Service.`)
-      },
-      ENUMERATE_PUBLIC_KEY_CERTIFICATE: {
-        invoke: {
-          src: this.enumeratePublicKeyCertificate.bind(this),
-          id: 'enumerate-public-key-certificate',
-          onDone: {
-            actions: [
-              assign({ message: (context, event) => event.data })
-            ],
-            target: 'PULL_PUBLIC_KEY_CERTIFICATE'
-          }
-        }
-      },
-      PULL_PUBLIC_KEY_CERTIFICATE: {
-        invoke: {
-          src: this.pullPublicKeyCertificate.bind(this),
-          id: 'pull-public-key-certificate',
-          onDone: {
-            actions: [
-              assign({ message: (context, event) => event.data })
-            ],
-            target: 'PULL_PUBLIC_KEY_CERTIFICATE_RESPONSE'
-          }
-        }
-      },
-      PULL_PUBLIC_KEY_CERTIFICATE_RESPONSE: {
-        always: [{
-          cond: 'hasPublicKeyCertificate',
-          target: 'DELETE_PUBLIC_KEY_CERTIFICATE'
-        },
-        'GET_ENVIRONMENT_DETECTION_SETTINGS'
-        ]
-      },
-      DELETE_PUBLIC_KEY_CERTIFICATE: {
-        invoke: {
-          src: this.deletePublicKeyCertificate.bind(this),
-          id: 'delete-public-key-certificate',
-          onDone: {
-            actions: [
-              assign({ message: (context, event) => event.data })
-            ],
-            target: 'GET_ENVIRONMENT_DETECTION_SETTINGS'
-          }
-        }
-      },
-      GET_ENVIRONMENT_DETECTION_SETTINGS: {
-        invoke: {
-          src: this.getEnvironmentDetectionSettings.bind(this),
-          id: 'get-environment-detection-settings',
-          onDone: {
-            actions: [
-              assign({ message: (context, event) => event.data })
-            ],
-            target: 'GET_ENVIRONMENT_DETECTION_SETTINGS_RESPONSE'
-          }
-        }
-      },
-      GET_ENVIRONMENT_DETECTION_SETTINGS_RESPONSE: {
-        always: [{
-          cond: 'isNotDeleting',
-          target: 'PUT_ENVIRONMENT_DETECTION_SETTINGS'
-        }, {
-          cond: 'hasEnvSettings', // TODO: NEed some verifivioantoidnfodfsjsdflji
-          actions: assign({ isDeleting: (context, event) => false }),
-          target: 'CLEAR_ENVIRONMENT_DETECTION_SETTINGS'
-        }, {
-          actions: assign({ isDeleting: (context, event) => false }),
           target: 'ADD_TRUSTED_ROOT_CERTIFICATE'
-        }]
-      },
-      PUT_ENVIRONMENT_DETECTION_SETTINGS: {
-        invoke: {
-          src: this.putEnvironmentDetectionSettings.bind(this),
-          id: 'put-environment-detection-settings',
-          onDone: {
-            actions: [
-              assign({ message: (context, event) => event.data, status: (context, event) => 'success', statusMessage: (context, event) => 'Configured' })
-            ],
-            target: 'SUCCESS'
-          }
-        }
-      },
-      CLEAR_ENVIRONMENT_DETECTION_SETTINGS: {
-        invoke: {
-          src: this.clearEnvironmentDetectionSettings.bind(this),
-          id: 'put-environment-detection-settings',
-          onDone: {
-            actions: [
-              assign({ message: (context, event) => event.data, isDeleting: false }) // IMPORTANT: This flags switches from clearing to configuring CIRA
-            ],
-            target: 'ADD_TRUSTED_ROOT_CERTIFICATE'
-          }
         }
       },
       ADD_TRUSTED_ROOT_CERTIFICATE: {
         invoke: {
           src: this.addTrustedRootCertificate.bind(this),
           id: 'add-trusted-root-certificate',
-          onDone: {
-            actions: [
-              assign({ message: (context, event) => event.data })
-            ],
-            target: 'SAVE_MPS_PASSWORD_TO_SECRET_PROVIDER'
+          onDone: { actions: assign({ message: (context, event) => event.data }), target: 'SAVE_MPS_PASSWORD_TO_SECRET_PROVIDER' },
+          onError: {
+            actions: assign({ message: (context, event) => event.data, statusMessage: (context, event) => 'Failed to add trusted root certificate' }),
+            target: 'FAILURE'
           }
         }
       },
@@ -540,7 +144,11 @@ export class CIRAConfiguration {
             }
           }),
           id: 'save-mps-password-to-secret-provider',
-          onDone: 'SAVE_DEVICE_TO_MPS'
+          onDone: 'SAVE_DEVICE_TO_MPS',
+          onError: {
+            actions: assign({ message: (context, event) => event.data, statusMessage: (context, event) => 'Failed to save mps password to secret provider' }),
+            target: 'FAILURE'
+          }
         }
       },
       SAVE_DEVICE_TO_MPS: {
@@ -556,23 +164,140 @@ export class CIRAConfiguration {
             }
           }),
           id: 'save-device-to-mps',
-          onDone: 'ADD_MPS'
+          onDone: 'ADD_MPS',
+          onError: {
+            actions: assign({ message: (context, event) => event.data, statusMessage: (context, event) => 'Failed to save device to mps' }),
+            target: 'FAILURE'
+          }
         }
       },
       ADD_MPS: {
         invoke: {
           src: this.addMPS.bind(this),
           id: 'add-mps',
+          onDone: { actions: assign({ message: (context, event) => event.data }), target: 'ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP' },
+          onError: {
+            actions: assign({ message: (context, event) => event.data, statusMessage: (context, event) => 'Failed to add mps' }),
+            target: 'FAILURE'
+          }
+        }
+      },
+      ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP: {
+        invoke: {
+          src: this.enumerateManagementPresenceRemoteSAP.bind(this),
+          id: 'enumerate-management-presence-remote-sap',
+          onDone: { actions: assign({ message: (context, event) => event.data }), target: 'PULL_MANAGEMENT_PRESENCE_REMOTE_SAP' },
+          onError: {
+            actions: assign({ message: (context, event) => event.data, statusMessage: (context, event) => 'Failed to enumerate Management Presence Remote SAP' }),
+            target: 'FAILURE'
+          }
+        }
+      },
+      PULL_MANAGEMENT_PRESENCE_REMOTE_SAP: {
+        invoke: {
+          src: this.pullManagementPresenceRemoteSAP.bind(this),
+          id: 'pull-management-presence-remote-sap',
+          onDone: { actions: assign({ message: (context, event) => event.data }), target: 'ADD_REMOTE_POLICY_ACCESS_RULE' },
+          onError: {
+            actions: assign({ message: (context, event) => event.data, statusMessage: (context, event) => 'Failed to Pull Management Presence Remote SAP' }),
+            target: 'FAILURE'
+          }
+        }
+      },
+      ADD_REMOTE_POLICY_ACCESS_RULE: {
+        invoke: {
+          src: this.addRemoteAccessService.bind(this),
+          id: 'add-remote-policy-access-rule',
+          onDone: 'ENUMERATE_REMOTE_ACCESS_POLICY_RULE',
+          onError: {
+            actions: assign({ message: (context, event) => event.data, statusMessage: (context, event) => 'Failed to add remote policy access rule' }),
+            target: 'FAILURE'
+          }
+        }
+      },
+      ENUMERATE_REMOTE_ACCESS_POLICY_RULE: {
+        invoke: {
+          src: this.enumerateRemoteAccessPolicyAppliesToMPS.bind(this),
+          id: 'enumerate-remote-access-policy-rule',
+          onDone: { actions: assign({ message: (context, event) => event.data }), target: 'PULL_REMOTE_ACCESS_POLICY_RULE' },
+          onError: {
+            actions: assign({ message: (context, event) => event.data, statusMessage: (context, event) => 'Failed to enumerate remote access policy rule' }),
+            target: 'FAILURE'
+          }
+        }
+      },
+      PULL_REMOTE_ACCESS_POLICY_RULE: {
+        invoke: {
+          src: this.pullRemoteAccessPolicyAppliesToMPS.bind(this),
+          id: 'pull-remote-access-policy-rule',
+          onDone: { actions: assign({ message: (context, event) => event.data }), target: 'PUT_REMOTE_ACCESS_POLICY_RULE' },
+          onError: {
+            actions: assign({ message: (context, event) => event.data, statusMessage: (context, event) => 'Failed to pull remote access policy rule' }),
+            target: 'FAILURE'
+          }
+        }
+      },
+      PUT_REMOTE_ACCESS_POLICY_RULE: {
+        invoke: {
+          src: this.putRemoteAccessPolicyAppliesToMPS.bind(this),
+          id: 'put-remote-access-policy-rule',
+          onDone: { actions: assign({ message: (context, event) => event.data }), target: 'USER_INITIATED_CONNECTION_SERVICE' },
+          onError: {
+            actions: assign({ message: (context, event) => event.data, statusMessage: (context, event) => 'Failed to put remote access policy rule' }),
+            target: 'FAILURE'
+          }
+        }
+      },
+      USER_INITIATED_CONNECTION_SERVICE: {
+        invoke: {
+          src: this.userInitiatedConnectionService.bind(this),
+          id: 'user-initiated-connection-service',
+          onDone: { actions: assign({ message: (context, event) => event.data }), target: 'USER_INITIATED_CONNECTION_SERVICE_RESPONSE' },
+          onError: {
+            actions: assign({ message: (context, event) => event.data, statusMessage: (context, event) => 'Failed to set user initiated connection service' }),
+            target: 'FAILURE'
+          }
+        }
+      },
+      USER_INITIATED_CONNECTION_SERVICE_RESPONSE: {
+        always: [{
+          cond: 'successfulStateChange',
+          target: 'GET_ENVIRONMENT_DETECTION_SETTINGS'
+        }, {
+          actions: assign({ message: (context, event) => event.data, statusMessage: (context, event) => 'Failed to set user initiated connection service' }),
+          target: 'FAILURE'
+        }]
+      },
+      GET_ENVIRONMENT_DETECTION_SETTINGS: {
+        invoke: {
+          src: this.getEnvironmentDetectionSettings.bind(this),
+          id: 'get-environment-detection-settings',
+          onDone: { actions: assign({ message: (context, event) => event.data }), target: 'PUT_ENVIRONMENT_DETECTION_SETTINGS' },
+          onError: {
+            actions: assign({ message: (context, event) => event.data, statusMessage: (context, event) => 'Failed to set user initiated connection service' }),
+            target: 'FAILURE'
+          }
+        }
+      },
+      PUT_ENVIRONMENT_DETECTION_SETTINGS: {
+        invoke: {
+          src: this.putEnvironmentDetectionSettings.bind(this),
+          id: 'put-environment-detection-settings',
           onDone: {
-            actions: [
-              assign({ message: (context, event) => event.data })
-            ],
-            target: 'ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP'
+            actions: assign({
+              status: (context, event) => 'success',
+              statusMessage: (context, event) => 'Configured'
+            }),
+            target: 'SUCCESS'
+          },
+          onError: {
+            actions: assign({ message: (context, event) => event.data, statusMessage: (context, event) => 'Failed to set user initiated connection service' }),
+            target: 'FAILURE'
           }
         }
       },
       FAILURE: {
-        entry: [assign({ statusMessage: (context, event) => 'Failed' }), 'Update Configuration Status'],
+        entry: 'Update Configuration Status',
         type: 'final'
       },
       SUCCESS: {
@@ -582,35 +307,14 @@ export class CIRAConfiguration {
     }
   }, {
     guards: {
-      isExpectedBadRequest: (context, event) => {
-        return event.data?.Envelope.Body.Fault != null
-      },
-      hasPrivateCerts: (context, event) => context.privateCerts.length > 0,
-      tlsEnabled: (context, event) => !(devices[context.clientId].ciraconfig.TLSSettingData[0].Enabled || devices[context.clientId].ciraconfig.TLSSettingData[1].Enabled), /// i dont know
-      isLMSTLSSettings: (context, event) => context.message.Envelope.Body.AMT_TLSSettingData?.ElementName === 'Intel(r) AMT LMS TLS Settings',
-      is8023TLS: (context, event) => context.message.Envelope.Body.AMT_TLSSettingData?.ElementName === 'Intel(r) AMT 802.3 TLS Settings' && devices[context.clientId].ciraconfig.TLSSettingData[1].Enabled,
-      tlsSettingDataEnabled: (context, event) => context.message.Envelope.Body.PullResponse.Items.AMT_TLSSettingData?.[0].Enabled || context.message.Envelope.Body.PullResponse.Items.AMT_TLSSettingData?.[1].Enabled,
       hasMPSEntries: (context, event) => context.message.Envelope.Body.PullResponse.Items?.AMT_ManagementPresenceRemoteSAP != null,
-      hasPublicKeyCertificate: (context, event) => context.message.Envelope.Body.PullResponse.Items?.AMT_PublicKeyCertificate != null,
       hasEnvSettings: (context, event) => context.message.Envelope.Body.AMT_EnvironmentDetectionSettingData.DetectionStrings != null,
-      isNotDeleting: (context, event) => !context.isDeleting,
       successfulStateChange: (context, event) => context.message.Envelope.Body?.RequestStateChange_OUTPUT?.ReturnValue === 0
-      // checkNoCertsExist: (context, event) => !Array.isArray(context.message.Envelope.Body.PullResponse.Items?.AMT_PublicKeyCertificate)
     },
     actions: {
       'Update Configuration Status': (context, event) => this.updateConfigurationStatus.bind(this),
       'Reset Unauth Count': (context, event) => { devices[context.clientId].unauthCount = 0 }
     }
-  })
-
-  service = interpret(this.machine).onTransition((state) => {
-    console.log(`Current state of CIRA Config State Machine: ${JSON.stringify(state.value)}`)
-  }).onChange((data) => {
-    console.log('ONCHANGE:')
-    console.log(data)
-  }).onDone((data) => {
-    console.log('ONDONE:')
-    console.log(data)
   })
 
   constructor () {
@@ -626,7 +330,7 @@ export class CIRAConfiguration {
     this.logger = new Logger('Activation_State_Machine')
   }
 
-  async invokeWsmanCall (context): Promise<any> {
+  async invokeWsmanCall (context: CIRAConfigContext): Promise<any> {
     let { message, clientId, xmlMessage } = context
     const clientObj = devices[clientId]
     message = context.httpHandler.wrapIt(xmlMessage, clientObj.connectionParams)
@@ -639,24 +343,6 @@ export class CIRAConfiguration {
     return await clientObj.pendingPromise
   }
 
-  async removeRemoteAccessPolicyRuleUserInitiated (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
-    const selector = { name: 'PolicyRuleName', value: 'User Initiated' }
-    context.xmlMessage = this.amt.RemoteAccessPolicyRule(AMT.Methods.DELETE, selector)
-    return await this.invokeWsmanCall(context)
-  }
-
-  async removeRemoteAccessPolicyRuleAlert (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
-    const selector = { name: 'PolicyRuleName', value: 'Alert' }
-    context.xmlMessage = this.amt.RemoteAccessPolicyRule(AMT.Methods.DELETE, selector)
-    return await this.invokeWsmanCall(context)
-  }
-
-  async removeRemoteAccessPolicyRulePeriodic (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
-    const selector = { name: 'PolicyRuleName', value: 'Periodic' }
-    context.xmlMessage = this.amt.RemoteAccessPolicyRule(AMT.Methods.DELETE, selector)
-    return await this.invokeWsmanCall(context)
-  }
-
   async enumerateManagementPresenceRemoteSAP (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
     context.xmlMessage = this.amt.ManagementPresenceRemoteSAP(AMT.Methods.ENUMERATE)
     return await this.invokeWsmanCall(context)
@@ -664,12 +350,6 @@ export class CIRAConfiguration {
 
   async pullManagementPresenceRemoteSAP (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
     context.xmlMessage = this.amt.ManagementPresenceRemoteSAP(AMT.Methods.PULL, context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
-    return await this.invokeWsmanCall(context)
-  }
-
-  async deleteRemoteAccessService (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
-    const selector = { name: 'Name', value: context.message.Envelope.Body.PullResponse.Items.AMT_ManagementPresenceRemoteSAP.Name }
-    context.xmlMessage = this.amt.ManagementPresenceRemoteSAP(AMT.Methods.DELETE, null, selector)
     return await this.invokeWsmanCall(context)
   }
 
@@ -684,35 +364,8 @@ export class CIRAConfiguration {
     return await this.invokeWsmanCall(context)
   }
 
-  async enumeratePublicKeyCertificate (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
-    context.xmlMessage = this.amt.PublicKeyCertificate(AMT.Methods.ENUMERATE)
-    return await this.invokeWsmanCall(context)
-  }
-
-  async pullPublicKeyCertificate (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
-    context.xmlMessage = this.amt.PublicKeyCertificate(AMT.Methods.PULL, context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
-    return await this.invokeWsmanCall(context)
-  }
-
-  async deletePublicKeyCertificate (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
-    const publicKeyCertificates = context.message.Envelope.Body.PullResponse.Items?.AMT_PublicKeyCertificate
-    const selector = { name: 'InstanceID', value: publicKeyCertificates.InstanceID }
-    if (Array.isArray(publicKeyCertificates)) {
-      selector.value = publicKeyCertificates[0].InstanceID
-    }
-    context.xmlMessage = this.amt.PublicKeyCertificate(AMT.Methods.DELETE, null, selector)
-    return await this.invokeWsmanCall(context)
-  }
-
   async getEnvironmentDetectionSettings (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
     context.xmlMessage = this.amt.EnvironmentDetectionSettingData(AMT.Methods.GET)
-    return await this.invokeWsmanCall(context)
-  }
-
-  async clearEnvironmentDetectionSettings (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
-    const envSettings = context.message.Envelope.Body.AMT_EnvironmentDetectionSettingData
-    envSettings.DetectionStrings = []
-    context.xmlMessage = this.amt.EnvironmentDetectionSettingData(AMT.Methods.PUT, envSettings)
     return await this.invokeWsmanCall(context)
   }
 
@@ -728,8 +381,7 @@ export class CIRAConfiguration {
   }
 
   async addTrustedRootCertificate (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
-    const configScript: CIRAConfig = devices[context.clientId].ClientData.payload.profile.ciraConfigObject
-    context.xmlMessage = this.amt.PublicKeyManagementService(AMT.Methods.ADD_TRUSTED_ROOT_CERTIFICATE, { CertificateBlob: configScript.mpsRootCertificate })
+    context.xmlMessage = this.amt.PublicKeyManagementService(AMT.Methods.ADD_TRUSTED_ROOT_CERTIFICATE, { CertificateBlob: context.ciraConfig.mpsRootCertificate })
     return await this.invokeWsmanCall(context)
   }
 
@@ -768,79 +420,6 @@ export class CIRAConfiguration {
 
   async userInitiatedConnectionService (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
     context.xmlMessage = this.amt.UserInitiatedConnectionService(AMT.Methods.REQUEST_STATE_CHANGE, 32771)
-    return await this.invokeWsmanCall(context)
-  }
-
-  async enumerateTLSSettingData (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
-    context.xmlMessage = this.amt.TLSSettingData(AMT.Methods.ENUMERATE)
-    return await this.invokeWsmanCall(context)
-  }
-
-  async pullTLSSettingData (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
-    context.xmlMessage = this.amt.TLSSettingData(AMT.Methods.PULL, context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
-    return await this.invokeWsmanCall(context)
-  }
-
-  async disableTLSSettingData (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
-    const clientObj = devices[context.clientId]
-    clientObj.ciraconfig.TLSSettingData[0].Enabled = false
-    clientObj.ciraconfig.TLSSettingData[0].AcceptNonSecureConnections = true
-    clientObj.ciraconfig.TLSSettingData[0].MutualAuthentication = false
-    delete clientObj.ciraconfig.TLSSettingData[0].TrustedCN
-    context.xmlMessage = this.amt.TLSSettingData(AMT.Methods.PUT, null, clientObj.ciraconfig.TLSSettingData[0])
-    return await this.invokeWsmanCall(context)
-  }
-
-  async commitSetupAndConfigurationService (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
-    context.xmlMessage = this.amt.SetupAndConfigurationService(AMT.Methods.COMMIT_CHANGES)
-    return await this.invokeWsmanCall(context)
-  }
-
-  async disableTLSSettingData2 (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
-    const clientObj = devices[context.clientId]
-    clientObj.ciraconfig.TLSSettingData[1].Enabled = false
-    delete clientObj.ciraconfig.TLSSettingData[1].TrustedCN
-    context.xmlMessage = this.amt.TLSSettingData(AMT.Methods.PUT, null, clientObj.ciraconfig.TLSSettingData[1])
-    return await this.invokeWsmanCall(context)
-  }
-
-  async enumerateTLSCredentialContext (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
-    context.xmlMessage = this.amt.TLSCredentialContext(AMT.Methods.ENUMERATE)
-    return await this.invokeWsmanCall(context)
-  }
-
-  async pullTLSCredentialContext (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
-    context.xmlMessage = this.amt.TLSCredentialContext(AMT.Methods.PULL, context.message.Envelope.Body.EnumerateResponse.EnumerationContext)
-    return await this.invokeWsmanCall(context)
-  }
-
-  async deleteTLSCredentialContext (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
-    context.xmlMessage = this.amt.TLSCredentialContext(AMT.Methods.DELETE, null, null, context.message.Envelope.Body.PullResponse.Items?.AMT_TLSCredentialContext)
-    return await this.invokeWsmanCall(context)
-  }
-
-  async enumeratePublicPrivateKeyPair (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
-    context.xmlMessage = this.amt.PublicPrivateKeyPair(AMT.Methods.ENUMERATE)
-    return await this.invokeWsmanCall(context)
-  }
-
-  async pullPublicPrivateKeyPair (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
-    context.xmlMessage = this.amt.PublicPrivateKeyPair(AMT.Methods.PULL, context.message.Envelope.Body.EnumerateResponse.EnumerationContext)
-    return await this.invokeWsmanCall(context)
-  }
-
-  async deletePublicPrivateKeyPair (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
-    // const selector = { name: 'InstanceID', value: devices[context.clientId].ciraconfig.privateCerts[0].InstanceID }
-    // devices[context.clientId].ciraconfig.privateCerts = devices[context.clientId].ciraconfig.privateCerts.slice(1)
-    const publicPrivateKeyPair = context.message.Envelope.Body.PullResponse.Items?.AMT_PublicPrivateKeyPair
-    const selector = { name: 'InstanceID', value: publicPrivateKeyPair.InstanceID }
-    if (Array.isArray(publicPrivateKeyPair)) {
-      selector.value = publicPrivateKeyPair[0].InstanceID
-      context.privateCerts = publicPrivateKeyPair.slice(1)
-    } else {
-      context.privateCerts = []
-    }
-    context.xmlMessage = this.amt.PublicPrivateKeyPair(AMT.Methods.DELETE, null, selector)
     return await this.invokeWsmanCall(context)
   }
 
