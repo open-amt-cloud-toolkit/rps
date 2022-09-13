@@ -4,7 +4,6 @@
  **********************************************************************/
 
 import { HttpHandler } from '../../HttpHandler'
-import { IConfigurator } from '../../interfaces/IConfigurator'
 import Logger from '../../Logger'
 import { ClientMsg } from '../../models/RCS.Config'
 import { ClientResponseMsg } from '../ClientResponseMsg'
@@ -14,11 +13,12 @@ import { parseBody } from '../parseWSManResponseBody'
 import { devices } from '../../WebSocketListener'
 import { AMTDeviceDTO } from '../../models'
 import { AMTUserName } from '../constants'
+import { Configurator } from '../../Configurator'
 
 const logger = new Logger('setMEBXPassword')
 const amt = new AMT.Messages()
 
-export const setMEBXPassword = async (clientId: string, message: any, responseMsg: ClientResponseMsg, configurator: IConfigurator, httpHandler: HttpHandler): Promise<ClientMsg> => {
+export const setMEBXPassword = async (clientId: string, message: any, responseMsg: ClientResponseMsg, configurator: Configurator, httpHandler: HttpHandler): Promise<ClientMsg> => {
   const clientObj = devices[clientId]
   const mebxPassword: string = await configurator.profileManager.getMEBxPassword(clientObj.ClientData.payload.profile.profileName)
   if (message === '') {
