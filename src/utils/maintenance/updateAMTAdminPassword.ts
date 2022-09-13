@@ -5,7 +5,6 @@
 
 import got from 'got'
 import { HttpHandler } from '../../HttpHandler'
-import { IConfigurator } from '../../interfaces/IConfigurator'
 import { IValidator } from '../../interfaces/IValidator'
 import Logger from '../../Logger'
 import { AMTUserName } from '../constants'
@@ -18,10 +17,11 @@ import { parseBody } from '../parseWSManResponseBody'
 import { ClientResponseMsg } from '../ClientResponseMsg'
 import { ClientMsg } from '../../models/RCS.Config'
 import { devices } from '../../WebSocketListener'
+import { Configurator } from '../../Configurator'
 
 const amt = new AMT.Messages()
 
-export const updateAMTAdminPassword = async (clientId: string, message: any, responseMsg: ClientResponseMsg, configurator: IConfigurator, validator: IValidator, httpHandler: HttpHandler): Promise<ClientMsg> => {
+export const updateAMTAdminPassword = async (clientId: string, message: any, responseMsg: ClientResponseMsg, configurator: Configurator, validator: IValidator, httpHandler: HttpHandler): Promise<ClientMsg> => {
   const logger = new Logger('updateAMTAdminPassword')
   const clientObj = devices[clientId]
   switch (message.statusCode) {

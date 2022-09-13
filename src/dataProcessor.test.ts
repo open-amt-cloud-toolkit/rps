@@ -8,11 +8,8 @@ import { v4 as uuid } from 'uuid'
 import Logger from './Logger'
 import { config } from './test/helper/Config'
 import { Validator } from './Validator'
-import { NodeForge } from './NodeForge'
-import { CertManager } from './certManager'
 import { Configurator } from './Configurator'
 import { DataProcessor } from './DataProcessor'
-import { SignatureHelper } from './utils/SignatureHelper'
 import { ClientResponseMsg } from './utils/ClientResponseMsg'
 import { EnvReader } from './utils/EnvReader'
 import { VersionChecker } from './VersionChecker'
@@ -25,13 +22,10 @@ import { Activation } from './stateMachines/activation'
 import { ClientMethods } from './models/RCS.Config'
 
 EnvReader.GlobalEnvConfig = config
-const nodeForge = new NodeForge()
-const helper = new SignatureHelper(nodeForge)
-const certManager = new CertManager(new Logger('CertManager'), nodeForge)
 const configurator = new Configurator()
 const responseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'))
 const validator = new Validator(new Logger('Validator'), configurator)
-const dataProcessor = new DataProcessor(new Logger('DataProcessor'), helper, configurator, validator, certManager, responseMsg)
+const dataProcessor = new DataProcessor(new Logger('DataProcessor'), validator, responseMsg)
 const httpHandler = new HttpHandler()
 const digestChallenge = {
   realm: 'Digest:AF541D9BC94CFF7ADFA073F492F355E6',

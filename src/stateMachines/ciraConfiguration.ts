@@ -16,7 +16,6 @@ import { SignatureHelper } from '../utils/SignatureHelper'
 import { Validator } from '../Validator'
 import { devices } from '../WebSocketListener'
 import { AMTConfiguration } from '../models'
-import { MpsType } from '../actions/CIRAConfigurator'
 import { randomUUID } from 'crypto'
 import { Error } from './error'
 
@@ -37,6 +36,12 @@ interface CIRAConfigEvent {
   type: 'REMOVEPOLICY' | 'ONFAILED'
   clientId: string
   data: any
+}
+
+export enum MPSType {
+  ExternalMPS = 0,
+  InternalMPS = 1,
+  Both = 2
 }
 export class CIRAConfiguration {
   nodeForge: NodeForge
@@ -413,7 +418,7 @@ export class CIRAConfiguration {
 
   async putRemoteAccessPolicyAppliesToMPS (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
     const data = context.message.Envelope.Body.PullResponse.Items.AMT_RemoteAccessPolicyAppliesToMPS
-    data.MpsType = MpsType.Both
+    data.MpsType = MPSType.Both
     context.xmlMessage = this.amt.RemoteAccessPolicyAppliesToMPS(AMT.Methods.PUT, null, data)
     return await this.invokeWsmanCall(context)
   }

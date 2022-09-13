@@ -5,11 +5,10 @@
  * Description: Helps to validate the client data
  **********************************************************************/
 
-import { IClientMessageParser } from '../interfaces/IClientMessageParser'
 import { ClientMsg, Payload, ClientMethods } from '../models/RCS.Config'
 import { RPSError } from './RPSError'
 
-export class ClientMsgJsonParser implements IClientMessageParser {
+export class ClientMsgJsonParser {
   /**
    * @description Parse client message and check for mandatory information
    * @param {WebSocket.Data} message the message coming in over the websocket connection

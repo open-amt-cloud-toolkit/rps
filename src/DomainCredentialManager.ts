@@ -7,16 +7,16 @@
 
 import { IDomainCredentialManager } from './interfaces/IDomainCredentialManager'
 import { ILogger } from './interfaces/ILogger'
-import { IConfigurator } from './interfaces/IConfigurator'
 import { IDomainsTable } from './interfaces/database/IDomainsDb'
 import { AMTDomain } from './models'
+import { Configurator } from './Configurator'
 
 export class DomainCredentialManager implements IDomainCredentialManager {
   private readonly amtDomains: IDomainsTable
   private readonly logger: ILogger
-  private readonly configurator: IConfigurator = null
+  private readonly configurator: Configurator = null
 
-  constructor (logger: ILogger, amtDomains: IDomainsTable, configurator?: IConfigurator) {
+  constructor (logger: ILogger, amtDomains: IDomainsTable, configurator?: Configurator) {
     this.amtDomains = amtDomains
     this.logger = logger
     this.configurator = configurator
