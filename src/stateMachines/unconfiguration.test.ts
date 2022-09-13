@@ -3,9 +3,9 @@ import { v4 as uuid } from 'uuid'
 import { devices } from '../WebSocketListener'
 import { EnvReader } from '../utils/EnvReader'
 import { config } from '../test/helper/Config'
-import { MpsType } from '../actions/CIRAConfigurator'
 import { HttpHandler } from '../HttpHandler'
 import { interpret } from 'xstate'
+import { MPSType } from './ciraConfiguration'
 
 const clientId = uuid()
 EnvReader.GlobalEnvConfig = config
@@ -517,7 +517,7 @@ describe('Unconfiguration State Machine', () => {
 
     it('should send wsman message to put Remote TLS Credential Context', async () => {
       unconfigContext.message = {
-        Envelope: { Body: { PullResponse: { Items: { AMT_TLSCredentialContext: MpsType } } } }
+        Envelope: { Body: { PullResponse: { Items: { AMT_TLSCredentialContext: MPSType } } } }
       }
       await unconfiguration.deleteTLSCredentialContext(unconfigContext, null)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()

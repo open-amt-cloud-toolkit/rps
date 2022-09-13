@@ -7,16 +7,16 @@
 
 import { ILogger } from '../../interfaces/ILogger'
 import { IAMTDeviceRepository } from '../../interfaces/database/IAMTDeviceRepository'
-import { IConfigurator } from '../../interfaces/IConfigurator'
 import { RPSError } from '../../utils/RPSError'
 import { AMTUserName } from '../../utils/constants'
 import { AMTDeviceDTO } from '../../models'
+import { Configurator } from '../../Configurator'
 
 export class AMTDeviceVaultRepository implements IAMTDeviceRepository {
   private readonly logger: ILogger
-  private readonly configurator: IConfigurator
+  private readonly configurator: Configurator
 
-  constructor (logger: ILogger, configurator: IConfigurator) {
+  constructor (logger: ILogger, configurator: Configurator) {
     this.logger = logger
     this.configurator = configurator
   }

@@ -28,7 +28,7 @@ describe('Websocket Listener', () => {
     devices[clientid].ClientSocket = mockWebSocket
     const stub = {
       processData: jest.fn()
-    }
+    } as any
     const serverStub = {
       on: jest.fn()
     } as any

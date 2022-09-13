@@ -8,19 +8,18 @@ import * as WebSocket from 'ws'
 import { v4 as uuid } from 'uuid'
 
 import { ClientMsg, ClientObject, WebSocketConfig } from './models/RCS.Config'
-import { IWebSocketListener } from './interfaces/IWebSocketListener'
-import { IDataProcessor } from './interfaces/IDataProcessor'
 import { ILogger } from './interfaces/ILogger'
+import { DataProcessor } from './DataProcessor'
 const devices: {[key: string]: ClientObject} = {}
 const maxMessageSize = 1024 * 10
 export { devices }
-export class WebSocketListener implements IWebSocketListener {
-  dataProcessor: IDataProcessor
+export class WebSocketListener {
+  dataProcessor: DataProcessor
   wsServer: WebSocket.Server
   wsConfig: WebSocketConfig
   logger: ILogger
 
-  constructor (logger: ILogger, wsConfig: WebSocketConfig, dataProcessor: IDataProcessor) {
+  constructor (logger: ILogger, wsConfig: WebSocketConfig, dataProcessor: DataProcessor) {
     this.logger = logger
     this.wsConfig = wsConfig
     this.dataProcessor = dataProcessor

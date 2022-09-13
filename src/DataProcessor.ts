@@ -7,16 +7,10 @@
 import * as WebSocket from 'ws'
 
 import { ILogger } from './interfaces/ILogger'
-import { IDataProcessor } from './interfaces/IDataProcessor'
 import { ClientMsg, ClientMethods } from './models/RCS.Config'
-import { ClientActions } from './ClientActions'
-import { SignatureHelper } from './utils/SignatureHelper'
-import Logger from './Logger'
-import { IConfigurator } from './interfaces/IConfigurator'
 import { RPSError } from './utils/RPSError'
 import { ClientResponseMsg } from './utils/ClientResponseMsg'
 import { IValidator } from './interfaces/IValidator'
-import { CertManager } from './certManager'
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 import { HttpHandler } from './HttpHandler'
 import { parse, HttpZResponseModel } from 'http-z'
@@ -25,19 +19,14 @@ import { Deactivation } from './stateMachines/deactivation'
 import { Maintenance } from './stateMachines/maintenance'
 import { Activation } from './stateMachines/activation'
 import { parseBody } from './utils/parseWSManResponseBody'
-export class DataProcessor implements IDataProcessor {
-  readonly clientActions: ClientActions
+export class DataProcessor {
   amt: AMT.Messages
   httpHandler: HttpHandler
   constructor (
     private readonly logger: ILogger,
-    private readonly signatureHelper: SignatureHelper,
-    private readonly configurator: IConfigurator,
     readonly validator: IValidator,
-    private readonly certManager: CertManager,
     private readonly responseMsg: ClientResponseMsg
   ) {
-    this.clientActions = new ClientActions(new Logger('ClientActions'), configurator, certManager, signatureHelper, responseMsg, validator)
     this.amt = new AMT.Messages()
     this.httpHandler = new HttpHandler()
   }
