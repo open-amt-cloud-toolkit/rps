@@ -14,7 +14,6 @@ import { IAMTDeviceRepository } from './interfaces/database/IAMTDeviceRepository
 import { SecretManagerService } from './utils/SecretManagerService'
 import { AmtDeviceFactory } from './repositories/factories/AmtDeviceFactory'
 import { EnvReader } from './utils/EnvReader'
-import { ClientResponseMsg } from './utils/ClientResponseMsg'
 import { IValidator } from './interfaces/IValidator'
 import { Validator } from './Validator'
 import { DataProcessor } from './DataProcessor'
@@ -30,10 +29,9 @@ export class Configurator {
   constructor () {
     const log = new Logger('Configurator')
     this.secretsManager = new SecretManagerService(new Logger('SecretManagerService'))
-    const responseMsg: ClientResponseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'))
     const validator: IValidator = new Validator(new Logger('Validator'), this)
 
-    this.dataProcessor = new DataProcessor(new Logger('DataProcessor'), validator, responseMsg)
+    this.dataProcessor = new DataProcessor(new Logger('DataProcessor'), validator)
     const dbf = new DbCreatorFactory(EnvReader.GlobalEnvConfig)
 
     this.amtDeviceRepository = AmtDeviceFactory.getAmtDeviceRepository(this)

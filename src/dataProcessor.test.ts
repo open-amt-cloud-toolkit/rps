@@ -10,7 +10,6 @@ import { config } from './test/helper/Config'
 import { Validator } from './Validator'
 import { Configurator } from './Configurator'
 import { DataProcessor } from './DataProcessor'
-import { ClientResponseMsg } from './utils/ClientResponseMsg'
 import { EnvReader } from './utils/EnvReader'
 import { VersionChecker } from './VersionChecker'
 import { devices } from './WebSocketListener'
@@ -23,9 +22,8 @@ import { ClientMethods } from './models/RCS.Config'
 
 EnvReader.GlobalEnvConfig = config
 const configurator = new Configurator()
-const responseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'))
 const validator = new Validator(new Logger('Validator'), configurator)
-const dataProcessor = new DataProcessor(new Logger('DataProcessor'), validator, responseMsg)
+const dataProcessor = new DataProcessor(new Logger('DataProcessor'), validator)
 const httpHandler = new HttpHandler()
 const digestChallenge = {
   realm: 'Digest:AF541D9BC94CFF7ADFA073F492F355E6',

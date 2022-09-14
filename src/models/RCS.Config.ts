@@ -81,7 +81,6 @@ export interface SocketConnection {
 export interface Status {
   Status?: string
   Network?: string
-  Unconfiguration?: string
   CIRAConnection?: string
   TLSConfiguration?: string
 }

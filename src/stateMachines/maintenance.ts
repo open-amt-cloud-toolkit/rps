@@ -2,9 +2,11 @@ import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 import { createMachine, interpret, send, assign } from 'xstate'
 import { HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
-import { ClientResponseMsg } from '../utils/ClientResponseMsg'
+import ClientResponseMsg from '../utils/ClientResponseMsg'
+
 import { devices } from '../WebSocketListener'
 import { Error } from './error'
+import { TimeSync } from './timeMachine'
 
 export interface MaintenanceContext {
   message: any
@@ -23,9 +25,9 @@ interface MaintenanceEvent {
 }/*  */
 
 export class Maintenance {
-  responseMsg: ClientResponseMsg
   amt: AMT.Messages
   logger: Logger
+  timeSync: TimeSync = new TimeSync()
   error: Error = new Error()
   machine =
   createMachine<MaintenanceContext, MaintenanceEvent>({
@@ -46,66 +48,21 @@ export class Maintenance {
         on: {
           SYNCCLOCK: {
             actions: [assign({ clientId: (context, event) => event.clientId }), 'Reset Unauth Count'],
-            target: 'GET_LOW_ACCURACY_TIME_SYNCH'
+            target: 'SYNC_TIME'
           }
         }
       },
-      GET_LOW_ACCURACY_TIME_SYNCH: {
+      SYNC_TIME: {
+        entry: send({ type: 'TIMETRAVEL' }, { to: 'time-machine' }),
         invoke: {
-          id: 'get-low-accuracy-time-synch',
-          src: this.getLowAccuracyTimeSynch.bind(this),
-          onDone: [{
-            actions: assign({ message: (context, event) => event.data }),
-            target: 'GET_LOW_ACCURACY_TIME_SYNCH_RESPONSE'
-          }],
-          onError: {
-            actions: assign({
-              message: (context, event) => event.data
-            }),
-            target: 'ERROR'
-          }
+          src: this.timeSync.machine,
+          id: 'time-machine',
+          data: {
+            clientId: (context, event) => context.clientId
+          },
+          onDone: 'SUCCESS',
+          onError: 'ERROR'
         }
-      },
-      GET_LOW_ACCURACY_TIME_SYNCH_RESPONSE: {
-        always: [{
-          cond: 'isGetLowAccuracyTimeSynchSuccessful',
-          target: 'SET_HIGH_ACCURACY_TIME_SYNCH'
-        }, {
-          actions: assign({
-            message: (context, event) => event.data,
-            errorMessage: 'Failed to GET_LOW_ACCURACY_TIME_SYNC'
-          }),
-          target: 'FAILURE'
-        }]
-      },
-      SET_HIGH_ACCURACY_TIME_SYNCH: {
-        invoke: {
-          id: 'set-high-accuracy-time-synch',
-          src: this.setHighAccuracyTimeSynch.bind(this),
-          onDone: [{
-            actions: assign({ message: (context, event) => event.data }),
-            target: 'SET_HIGH_ACCURACY_TIME_SYNCH_RESPONSE'
-          }],
-          onError: {
-            actions: assign({
-              message: (context, event) => event.data,
-              errorMessage: 'Failed to SET_HIGH_ACCURACY_TIME_SYNCH'
-            }),
-            target: 'FAILURE'
-          }
-        }
-      },
-      SET_HIGH_ACCURACY_TIME_SYNCH_RESPONSE: {
-        always: [{
-          cond: 'isSetHighAccuracyTimeSynchSuccessful',
-          target: 'SUCCESS'
-        }, {
-          actions: assign({
-            message: (context, event) => event.data,
-            errorMessage: 'Failed to SET_HIGH_ACCURACY_TIME_SYNCH'
-          }),
-          target: 'FAILURE'
-        }]
       },
       ERROR: {
         entry: send({ type: 'PARSE' }, { to: 'error-machine' }),
@@ -117,7 +74,7 @@ export class Maintenance {
             message: (context, event) => event.data,
             clientId: (context, event) => context.clientId
           },
-          onDone: 'GET_LOW_ACCURACY_TIME_SYNCH' // To do: Need to test as it might not require anymore.
+          onDone: 'SYNC_TIME' // To do: Need to test as it might not require anymore.
         },
         on: {
           ONFAILED: 'FAILURE'
@@ -133,12 +90,6 @@ export class Maintenance {
       }
     }
   }, {
-    guards: {
-      isGetLowAccuracyTimeSynchSuccessful: (context, event) => {
-        return context.message.Envelope.Body?.GetLowAccuracyTimeSynch_OUTPUT?.ReturnValue === 0
-      },
-      isSetHighAccuracyTimeSynchSuccessful: (context, event) => context.message.Envelope.Body?.SetHighAccuracyTimeSynch_OUTPUT?.ReturnValue === 0
-    },
     actions: {
       'Reset Unauth Count': (context, event) => { devices[context.clientId].unauthCount = 0 },
       'Send Message to Device': (context, event) => this.sendMessageToDevice(context, event),
@@ -148,7 +99,6 @@ export class Maintenance {
 
   constructor () {
     this.amt = new AMT.Messages()
-    this.responseMsg = new ClientResponseMsg()
   }
 
   service = interpret(this.machine).onTransition((state) => {
@@ -161,37 +111,12 @@ export class Maintenance {
     console.log(data)
   })
 
-  async getLowAccuracyTimeSynch (context: MaintenanceContext): Promise<void> {
-    context.xmlMessage = this.amt.TimeSynchronizationService(AMT.Methods.GET_LOW_ACCURACY_TIME_SYNCH)
-    return await this.invokeWsmanCall(context)
-  }
-
-  async setHighAccuracyTimeSynch (context: MaintenanceContext): Promise<void> {
-    const Tm1 = Math.round(new Date().getTime() / 1000)
-    const Ta0 = context.message.Envelope.Body.GetLowAccuracyTimeSynch_OUTPUT.Ta0
-    context.xmlMessage = this.amt.TimeSynchronizationService(AMT.Methods.SET_HIGH_ACCURACY_TIME_SYNCH, Ta0, Tm1, Tm1)
-    return await this.invokeWsmanCall(context)
-  }
-
   updateConfigurationStatus (context: MaintenanceContext): void {
     if (context.status === 'success') {
       devices[context.clientId].status.Status = context.statusMessage
     } else if (context.status === 'error') {
       devices[context.clientId].status.Status = context.errorMessage !== '' ? context.errorMessage : 'Failed'
     }
-  }
-
-  async invokeWsmanCall (context: MaintenanceContext): Promise<any> {
-    let { message, clientId, xmlMessage } = context
-    const clientObj = devices[clientId]
-    message = context.httpHandler.wrapIt(xmlMessage, clientObj.connectionParams)
-    const responseMessage = this.responseMsg.get(clientId, message, 'wsman', 'ok')
-    devices[clientId].ClientSocket.send(JSON.stringify(responseMessage))
-    clientObj.pendingPromise = new Promise<any>((resolve, reject) => {
-      clientObj.resolve = resolve
-      clientObj.reject = reject
-    })
-    return await clientObj.pendingPromise
   }
 
   sendMessageToDevice (context: MaintenanceContext, event): void {
@@ -205,7 +130,7 @@ export class Maintenance {
       clientObj.status.Status = message
       method = 'failed'
     }
-    const responseMessage = this.responseMsg.get(clientId, null, status as any, method, JSON.stringify(clientObj.status))
+    const responseMessage = ClientResponseMsg.get(clientId, null, status as any, method, JSON.stringify(clientObj.status))
     devices[clientId].ClientSocket.send(JSON.stringify(responseMessage))
   }
 }
