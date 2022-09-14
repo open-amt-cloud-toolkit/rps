@@ -5,7 +5,8 @@ import { v4 as uuid } from 'uuid'
 import { devices } from '../WebSocketListener'
 import { HttpHandler } from '../HttpHandler'
 import { interpret } from 'xstate'
-
+import { AMT, CIM, IPS } from '@open-amt-cloud-toolkit/wsman-messages'
+import * as common from './common'
 describe('Features State Machine', () => {
   let clientId: string
   let amtConfiguration: AMTConfiguration
@@ -13,9 +14,6 @@ describe('Features State Machine', () => {
   let amtRedirectionSvcJson
   let ipsOptInsSvcJson
   let kvmRedirectionSvcJson
-  let wrapItSpy: jest.SpyInstance
-  let sendSpy: jest.SpyInstance
-  let responseMessageSpy: jest.SpyInstance
   let currentStateIndex: number = 0
   let machineConfig
   let context: FeatureContext
@@ -67,15 +65,16 @@ describe('Features State Machine', () => {
       clientId,
       amtConfiguration: amtConfiguration,
       httpHandler: new HttpHandler(),
-      errorMessage: '',
+      statusMessage: '',
+      xmlMessage: '',
       isOptInServiceChanged: false,
-      isRedirectionChanged: false
+      isRedirectionChanged: false,
+      amt: new AMT.Messages(),
+      cim: new CIM.Messages(),
+      ips: new IPS.Messages()
     }
     featuresConfiguration = new FeaturesConfiguration()
-    invokeSpy = jest.spyOn(featuresConfiguration, 'invokeWsmanCall').mockResolvedValue(null)
-    wrapItSpy = jest.spyOn(context.httpHandler, 'wrapIt').mockReturnValue('message')
-    responseMessageSpy = jest.spyOn(featuresConfiguration.responseMsg, 'get')
-    sendSpy = jest.spyOn(devices[clientId].ClientSocket, 'send').mockReturnValue()
+    invokeSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue()
     currentStateIndex = 0
     machineConfig = {
       services: {
@@ -218,14 +217,6 @@ describe('Features State Machine', () => {
     await featuresConfiguration.putIpsOptInService(context)
     expect(invokeSpy).toHaveBeenCalled()
   })
-  it('invokeWsmanCall', async () => {
-    invokeSpy.mockRestore()
-    void featuresConfiguration.invokeWsmanCall(context, '')
-    expect(responseMessageSpy).toHaveBeenCalled()
-    expect(wrapItSpy).toHaveBeenCalled()
-    expect(sendSpy).toHaveBeenCalled()
-  })
-
   function setDefaultResponses (): void {
     amtRedirectionSvcJson = {
       CreationClassName: 'AMT_RedirectionService',

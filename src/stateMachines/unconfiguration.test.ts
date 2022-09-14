@@ -6,7 +6,8 @@ import { config } from '../test/helper/Config'
 import { HttpHandler } from '../HttpHandler'
 import { interpret } from 'xstate'
 import { MPSType } from './ciraConfiguration'
-
+import * as common from './common'
+import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 const clientId = uuid()
 EnvReader.GlobalEnvConfig = config
 
@@ -20,8 +21,7 @@ describe('Unconfiguration State Machine', () => {
   jest.setTimeout(15000)
   beforeEach(() => {
     unconfiguration = new Unconfiguration()
-    invokeWsmanCallSpy = jest.spyOn(unconfiguration, 'invokeWsmanCall').mockResolvedValue('done')
-    remoteAccessPolicyRuleSpy = jest.spyOn(unconfiguration.amt, 'RemoteAccessPolicyRule').mockReturnValue('abcdef')
+    invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue()
     unconfigContext = {
       clientId: clientId,
       httpHandler: new HttpHandler(),
@@ -33,9 +33,11 @@ describe('Unconfiguration State Machine', () => {
       ciraConfig: null,
       profile: null,
       privateCerts: [],
-      TLSSettingData: []
+      TLSSettingData: [],
+      publicKeyCertificates: [],
+      amt: new AMT.Messages()
     }
-
+    remoteAccessPolicyRuleSpy = jest.spyOn(unconfigContext.amt, 'RemoteAccessPolicyRule').mockReturnValue('abcdef')
     devices[clientId] = {
       unauthCount: 0,
       ClientId: clientId,
@@ -77,10 +79,9 @@ describe('Unconfiguration State Machine', () => {
         'delete-public-private-key-pair': Promise.resolve({ clientId }),
         'get-environment-detection-settings': Promise.resolve({ clientId }),
         'clear-environment-detection-settings': Promise.resolve({ clientId }),
-        'pull-public-key-certificate': Promise.resolve({ clientId })
+        'pull-public-key-certificate': Promise.resolve({ Envelope: { Body: { PullResponse: { Items: { AMT_PublicKeyCertificate: [{}] } } } } })
       },
       actions: {
-        'Update UnConfiguration Status': () => {},
         'Reset Unauth Count': () => {}
       },
       guards: {
@@ -97,15 +98,9 @@ describe('Unconfiguration State Machine', () => {
     }
   })
 
-  it('should update Configuration Status', () => {
-    unconfigContext.statusMessage = 'abcd'
-    unconfiguration.updateConfigurationStatus(unconfigContext, null)
-    expect(devices[clientId].status?.Unconfiguration).toEqual(unconfigContext.statusMessage)
-  })
-
   it('should eventually reach "FAILURE" after "ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP"', (done) => {
     configuration.services['enumerate-management-presence-remote-sap'] = Promise.reject(new Error())
-    const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration)
+    const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT',
@@ -115,6 +110,8 @@ describe('Unconfiguration State Machine', () => {
     const service = interpret(mockUnconfigurationMachine).onTransition((state) => {
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('FAILURE') && currentStateIndex === flowStates.length) {
+        const status = devices[clientId].status.Status
+        expect(status).toEqual('Failed to enumerate Management Presence Remote SAP')
         done()
       }
     })
@@ -124,7 +121,7 @@ describe('Unconfiguration State Machine', () => {
 
   it('should eventually reach "FAILURE" after "PULL_MANAGEMENT_PRESENCE_REMOTE_SAP"', (done) => {
     configuration.services['pull-management-presence-remote-sap'] = Promise.reject(new Error())
-    const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration)
+    const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT',
@@ -144,7 +141,7 @@ describe('Unconfiguration State Machine', () => {
 
   it('should eventually reach "FAILURE" after "ENUMERATE_TLS_SETTING_DATA"', (done) => {
     configuration.services['enumerate-tls-setting-data'] = Promise.reject(new Error())
-    const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration)
+    const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT',
@@ -165,7 +162,7 @@ describe('Unconfiguration State Machine', () => {
 
   it('should eventually reach "FAILURE" after "PULL_TLS_SETTING_DATA"', (done) => {
     configuration.services['pull-tls-setting-data'] = Promise.reject(new Error())
-    const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration)
+    const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT',
@@ -187,7 +184,7 @@ describe('Unconfiguration State Machine', () => {
 
   it('should eventually reach "FAILURE" after "ENUMERATE_PUBLIC_KEY_CERTIFICATE"', (done) => {
     configuration.services['enumerate-public-key-certificate'] = Promise.reject(new Error())
-    const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration)
+    const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT',
@@ -210,7 +207,7 @@ describe('Unconfiguration State Machine', () => {
 
   it('should eventually reach "FAILURE" after "PULL_PUBLIC_KEY_CERTIFICATE"', (done) => {
     configuration.services['pull-public-key-certificate'] = Promise.reject(new Error())
-    const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration)
+    const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT',
@@ -234,7 +231,7 @@ describe('Unconfiguration State Machine', () => {
 
   it('should eventually reach "FAILURE" after "GET_ENVIRONMENT_DETECTION_SETTINGS"', (done) => {
     configuration.services['get-environment-detection-settings'] = Promise.reject(new Error())
-    const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration)
+    const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT',
@@ -263,17 +260,18 @@ describe('Unconfiguration State Machine', () => {
     configuration.services['remove-remote-access-policy-rule-user-initiated'] = Promise.reject(fault)
     configuration.services['remove-remote-access-policy-rule-rule-alert'] = Promise.reject(fault)
     configuration.services['remove-remote-access-policy-rule-periodic'] = Promise.reject(fault)
-    configuration.services['pull-management-presence-remote-sap'] = Promise.resolve({ Envelope: { Body: { PullResponse: { Items: { AMT_ManagementPresenceRemoteSAP: null } } } } })
+    configuration.services['pull-management-presence-remote-sap'] = Promise.resolve({ Envelope: { Body: { PullResponse: { Items: { AMT_ManagementPresenceRemoteSAP: { Name: 'mps server name' } } } } } })
     configuration.services['pull-tls-setting-data'] = Promise.resolve({ Envelope: { Body: { PullResponse: { Items: { AMT_TLSSettingData: [{ Enabled: false }, { Enabled: false }] } } } } })
     configuration.services['pull-public-key-certificate'] = Promise.resolve({ Envelope: { Body: { PullResponse: { Items: { AMT_PublicKeyCertificate: { InstanceID: 'abcd' } } } } } })
     configuration.services['get-environment-detection-settings'] = Promise.resolve({ Envelope: { Body: { AMT_EnvironmentDetectionSettingData: { DetectionStrings: 'abcde' } } } })
-    const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration)
+    const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_PERIODIC',
       'ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP',
       'PULL_MANAGEMENT_PRESENCE_REMOTE_SAP',
+      'DELETE_MANAGEMENT_PRESENCE_REMOTE_SAP',
       'ENUMERATE_TLS_SETTING_DATA',
       'PULL_TLS_SETTING_DATA',
       'ENUMERATE_PUBLIC_KEY_CERTIFICATE',
@@ -285,6 +283,8 @@ describe('Unconfiguration State Machine', () => {
     const service = interpret(mockUnconfigurationMachine).onTransition((state) => {
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('SUCCESS') && currentStateIndex === flowStates.length) {
+        const status = devices[clientId].status.CIRAConnection
+        expect(status).toEqual('unconfigured')
         done()
       }
     })
@@ -323,7 +323,7 @@ describe('Unconfiguration State Machine', () => {
   })
 
   it('should eventually reach "FAILURE" after "SETUP_AND_CONFIGURATION_SERVICE_COMMIT_CHANGES"', (done) => {
-    devices[clientId].ciraconfig = { TLSSettingData: [{ Enabled: false }, { Enabled: true }] }
+    unconfigContext.TLSSettingData = [{ Enabled: false }, { Enabled: true }]
     configuration.guards = {
       isExpectedBadRequest: () => false,
       tlsSettingDataEnabled: () => true,
@@ -366,7 +366,7 @@ describe('Unconfiguration State Machine', () => {
     configuration.services['remove-remote-access-policy-rule-periodic'] = Promise.reject(fault)
     configuration.services['pull-management-presence-remote-sap'] = Promise.resolve({ Envelope: { Body: { PullResponse: { Items: { AMT_ManagementPresenceRemoteSAP: { Name: 'abcd' } } } } } })
     configuration.services['delete-management-presence-remote-sap'] = Promise.reject(new Error())
-    const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration)
+    const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT',
@@ -442,16 +442,12 @@ describe('Unconfiguration State Machine', () => {
     })
 
     it('should send wsman message to delete Public Private Key Pair', async () => {
-      unconfigContext.message = {
-        Envelope: { Body: { PullResponse: { Items: { AMT_PublicPrivateKeyPair: { InstanceID: 1234 } } } } }
-      }
+      unconfigContext.privateCerts = [{ InstanceID: 1234 }]
       await unconfiguration.deletePublicPrivateKeyPair(unconfigContext, null)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
     it('should send wsman message to delete Public Private Key Pair when there is more than one certificate', async () => {
-      unconfigContext.message = {
-        Envelope: { Body: { PullResponse: { Items: { AMT_PublicPrivateKeyPair: [{ InstanceID: 1234 }, { InstanceID: 5678 }] } } } }
-      }
+      unconfigContext.privateCerts = [{ InstanceID: 1234 }, { InstanceID: 5678 }]
       await unconfiguration.deletePublicPrivateKeyPair(unconfigContext, null)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
@@ -472,16 +468,12 @@ describe('Unconfiguration State Machine', () => {
     })
 
     it('should send to delete PublicKeyCertificate', async () => {
-      unconfigContext.message = {
-        Envelope: { Body: { PullResponse: { Items: { AMT_PublicKeyCertificate: 'abcd' } } } }
-      }
+      unconfigContext.publicKeyCertificates = ['abcd']
       await unconfiguration.deletePublicKeyCertificate(unconfigContext, null)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
     it('should send to delete PublicKeyCertificate when more than one certificate', async () => {
-      unconfigContext.message = {
-        Envelope: { Body: { PullResponse: { Items: { AMT_PublicKeyCertificate: [{ InstanceID: 'abcd' }, { InstanceID: 'efgh' }] } } } }
-      }
+      unconfigContext.publicKeyCertificates = ['abcd', 'cdefg']
       await unconfiguration.deletePublicKeyCertificate(unconfigContext, null)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })

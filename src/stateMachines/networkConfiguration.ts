@@ -4,14 +4,13 @@ import { WirelessConfig } from '../models/RCS.Config'
 import { HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
 import { AMTConfiguration } from '../models'
-import { ClientResponseMsg } from '../utils/ClientResponseMsg'
 import { EnvReader } from '../utils/EnvReader'
-// import { MqttProvider } from '../utils/MqttProvider'
 import { devices } from '../WebSocketListener'
 import { Error } from './error'
 import { Configurator } from '../Configurator'
 import { DbCreatorFactory } from '../repositories/factories/DbCreatorFactory'
 import { AMTEthernetPortSettings, AMT_WiFiPortConfigurationServiceResponse } from '../models/WSManResponse'
+import { invokeWsmanCall } from './common'
 
 interface NetworkConfigContext {
   amtProfile: AMTConfiguration
@@ -19,14 +18,14 @@ interface NetworkConfigContext {
   message: any
   clientId: string
   xmlMessage: any
-  status: 'success' | 'error'
-  errorMessage: string
   statusMessage: string
   generalSettings: AMT.Models.GeneralSettings
   wiredSettings: any
-  wireLessSettings: any
+  wirelessSettings: any
   wifiEndPointSettings?: any
   httpHandler: HttpHandler
+  amt?: AMT.Messages
+  cim?: CIM.Messages
 }
 
 interface NetworkConfigEvent {
@@ -36,9 +35,6 @@ interface NetworkConfigEvent {
 }
 export class NetworkConfiguration {
   configurator: Configurator
-  responseMsg: ClientResponseMsg
-  amt: AMT.Messages
-  cim: CIM.Messages
   logger: Logger
   dbFactory: DbCreatorFactory
   db: any
@@ -56,12 +52,10 @@ export class NetworkConfiguration {
       message: null,
       clientId: '',
       xmlMessage: null,
-      status: 'success',
-      errorMessage: '',
       statusMessage: '',
       generalSettings: null,
       wiredSettings: null,
-      wireLessSettings: null,
+      wirelessSettings: null,
       wifiEndPointSettings: []
     },
     id: 'network-configuration-machine',
@@ -70,7 +64,7 @@ export class NetworkConfiguration {
       ACTIVATION: {
         on: {
           NETWORKCONFIGURATION: {
-            actions: ['Reset Unauth Count'],
+            actions: [assign({ statusMessage: () => '', wifiProfileCount: () => 0 }), 'Reset Unauth Count'],
             target: 'CHECK_GENERAL_SETTINGS'
           }
         }
@@ -94,11 +88,8 @@ export class NetworkConfiguration {
             target: 'ENUMERATE_ETHERNET_PORT_SETTINGS'
           },
           onError: {
-            actions: assign({
-              message: (context, event) => event.data,
-              errorMessage: 'Failed to update amt general settings on device'
-            }),
-            target: 'ERROR'
+            actions: assign({ statusMessage: (context, event) => 'Failed to update amt general settings on device' }),
+            target: 'FAILED'
           }
         }
       },
@@ -111,11 +102,8 @@ export class NetworkConfiguration {
             target: 'PULL_ETHERNET_PORT_SETTINGS'
           },
           onError: {
-            actions: assign({
-              message: (context, event) => event.data,
-              errorMessage: 'Failed to get enumeration number to ethernet port settings'
-            }),
-            target: 'ERROR'
+            actions: assign({ statusMessage: (context, event) => 'Failed to get enumeration number to ethernet port settings' }),
+            target: 'FAILED'
           }
         }
       },
@@ -128,11 +116,8 @@ export class NetworkConfiguration {
             target: 'CHECK_ETHERNET_PORT_SETTINGS_PULL_RESPONSE'
           },
           onError: {
-            actions: assign({
-              message: (context, event) => event.data,
-              errorMessage: 'Failed to pull to ethernet port settings'
-            }),
-            target: 'ERROR'
+            actions: assign({ statusMessage: (context, event) => 'Failed to pull to ethernet port settings' }),
+            target: 'FAILED'
           }
         }
       },
@@ -157,11 +142,8 @@ export class NetworkConfiguration {
             target: 'CHECK_ETHERNET_PORT_SETTINGS_PUT_RESPONSE'
           },
           onError: {
-            actions: assign({
-              message: (context, event) => event.data,
-              errorMessage: 'Failed to put to ethernet port settings'
-            }),
-            target: 'ERROR'
+            actions: assign({ statusMessage: (context, event) => 'Failed to put to ethernet port settings' }),
+            target: 'FAILED'
           }
         }
       },
@@ -172,7 +154,7 @@ export class NetworkConfiguration {
             cond: 'isWirelessSupportedOnDevice',
             target: 'ENUMERATE_WIFI_ENDPOINT_SETTINGS'
           }, {
-            target: 'NETWORKCONFIGURED'
+            target: 'SUCCESS'
           }
         ]
       },
@@ -185,11 +167,8 @@ export class NetworkConfiguration {
             target: 'PULL_WIFI_ENDPOINT_SETTINGS'
           },
           onError: {
-            actions: assign({
-              message: (context, event) => event.data,
-              errorMessage: 'Failed to get enumeration number for wifi endpoint settings'
-            }),
-            target: 'ERROR'
+            actions: assign({ statusMessage: (context, event) => 'Failed to get enumeration number for wifi endpoint settings' }),
+            target: 'FAILED'
           }
         }
       },
@@ -202,11 +181,8 @@ export class NetworkConfiguration {
             target: 'CHECK_WIFI_ENDPOINT_SETTINGS_PULL_RESPONSE'
           },
           onError: {
-            actions: assign({
-              message: (context, event) => event.data,
-              errorMessage: 'Failed to pull wifi endpoint settings'
-            }),
-            target: 'ERROR'
+            actions: assign({ statusMessage: (context, event) => 'Failed to pull wifi endpoint settings' }),
+            target: 'FAILED'
           }
         }
       },
@@ -220,7 +196,7 @@ export class NetworkConfiguration {
             cond: 'isWiFiProfilesExits',
             target: 'REQUEST_STATE_CHANGE_FOR_WIFI_PORT'
           }, {
-            target: 'NETWORKCONFIGURED'
+            target: 'SUCCESS'
           }
         ]
       },
@@ -233,11 +209,8 @@ export class NetworkConfiguration {
             target: 'CHECK_WIFI_ENDPOINT_SETTINGS_DELETE_RESPONSE'
           },
           onError: {
-            actions: assign({
-              message: (context, event) => event.data,
-              errorMessage: 'Failed to delete wifi endpoint settings'
-            }),
-            target: 'ERROR'
+            actions: assign({ statusMessage: (context, event) => 'Failed to delete wifi endpoint settings' }),
+            target: 'FAILED'
           }
         }
       },
@@ -254,7 +227,7 @@ export class NetworkConfiguration {
             cond: 'isWiFiProfilesExits',
             target: 'REQUEST_STATE_CHANGE_FOR_WIFI_PORT'
           }, {
-            target: 'NETWORKCONFIGURED'
+            target: 'SUCCESS'
           }
         ]
       },
@@ -267,11 +240,8 @@ export class NetworkConfiguration {
             target: 'ADD_WIFI_SETTINGS'
           },
           onError: {
-            actions: assign({
-              message: (context, event) => event.data,
-              errorMessage: 'Failed to update state change for wifi port'
-            }),
-            target: 'ERROR'
+            actions: assign({ statusMessage: (context, event) => 'Failed to update state change for wifi port' }),
+            target: 'FAILED'
           }
         }
       },
@@ -284,8 +254,8 @@ export class NetworkConfiguration {
             target: 'CHECK_ADD_WIFI_SETTINGS_RESPONSE'
           },
           onError: {
-            actions: assign({ message: (context, event) => event.data }),
-            target: 'ERROR'
+            actions: assign({ statusMessage: (context, event) => 'Failed to add wifi settings' }),
+            target: 'FAILED'
           }
         }
       },
@@ -313,23 +283,20 @@ export class NetworkConfiguration {
             target: 'CHECK_WIFI_PORT_CONFIGURATION_SERVICE'
           },
           onError: {
-            actions: assign({
-              message: (context, event) => event.data,
-              errorMessage: 'Failed to get WiFi Port Configuration Service'
-            }),
-            target: 'ERROR'
+            actions: assign({ statusMessage: (context, event) => 'Failed to get WiFi Port Configuration Service' }),
+            target: 'FAILED'
           }
         }
       },
       CHECK_WIFI_PORT_CONFIGURATION_SERVICE: {
         always: [
           {
-            cond: 'islocalProfileSynchronizationNotEnabled',
+            cond: 'isLocalProfileSynchronizationNotEnabled',
             target: 'PUT_WIFI_PORT_CONFIGURATION_SERVICE'
           },
           {
-            actions: assign({ statusMessage: (context, event) => `${context.statusMessage} Wireless Configured` }),
-            target: 'NETWORKCONFIGURED'
+            actions: assign({ statusMessage: (context, event) => 'Wireless Configured' }),
+            target: 'SUCCESS'
           }
         ]
       },
@@ -339,14 +306,11 @@ export class NetworkConfiguration {
           id: 'put-wifi-port-configuration-service',
           onDone: {
             actions: assign({ message: (context, event) => event.data }),
-            target: 'NETWORKCONFIGURED'
+            target: 'CHECK_WIFI_PORT_CONFIGURATION_SERVICE'
           },
           onError: {
-            actions: assign({
-              message: (context, event) => event.data,
-              errorMessage: 'Failed to put WiFi Port Configuration Service'
-            }),
-            target: 'ERROR'
+            actions: assign({ statusMessage: (context, event) => 'Failed to put WiFi Port Configuration Service' }),
+            target: 'FAILED'
           }
         }
       },
@@ -367,11 +331,11 @@ export class NetworkConfiguration {
         }
       },
       FAILED: {
-        entry: [assign({ status: (context, event) => 'error' }), 'Update Configuration Status'],
+        entry: ['Update Configuration Status'],
         type: 'final'
       },
-      NETWORKCONFIGURED: {
-        entry: [assign({ status: (context, event) => 'success' }), 'Update Configuration Status'],
+      SUCCESS: {
+        entry: ['Update Configuration Status'],
         type: 'final'
       }
     }
@@ -381,13 +345,13 @@ export class NetworkConfiguration {
         return context.wifiProfileCount < context.amtProfile.wifiConfigs.length
       },
       isWirelessOnlyDevice: (context, event) => {
-        return context.wireLessSettings != null && context.wiredSettings?.MACAddress == null
+        return context.wirelessSettings != null && context.wiredSettings?.MACAddress == null
       },
       isWiredSupportedOnDevice: (context, event) => {
         return context.wiredSettings?.MACAddress != null
       },
       isWirelessSupportedOnDevice: (context, event) => {
-        return context.wireLessSettings?.MACAddress != null
+        return context.wirelessSettings?.MACAddress != null
       },
       isWirelessProfilesExistsOnDevice: (context, event) => {
         return context.wifiEndPointSettings.length !== 0
@@ -398,14 +362,17 @@ export class NetworkConfiguration {
       isWifiProfileDeleted: (context, event) => {
         return context.message.Envelope.Body == null
       },
-      islocalProfileSynchronizationNotEnabled: (context, event) => {
+      isLocalProfileSynchronizationNotEnabled: (context, event) => {
         return context.message.Envelope.Body.AMT_WiFiPortConfigurationService.localProfileSynchronizationEnabled === 0
       },
       isNotAMTNetworkEnabled: this.isNotAMTNetworkEnabled.bind(this)
     },
     actions: {
       'Reset Unauth Count': (context, event) => { devices[context.clientId].unauthCount = 0 },
-      'Update Configuration Status': this.updateConfigurationStatus.bind(this),
+      'Update Configuration Status': (context, event) => {
+        const status = devices[context.clientId].status.Network
+        devices[context.clientId].status.Network = status == null ? context.statusMessage : `${status}.${context.statusMessage}`
+      },
       'Read Ethernet Port Settings': this.readEthernetPortSettings.bind(this),
       'Read Ethernet Port Settings Put Response': this.readEthernetPortSettingsPutResponse.bind(this),
       'Read WiFi Endpoint Settings Pull Response': this.readWiFiEndpointSettingsPullResponse.bind(this)
@@ -414,39 +381,13 @@ export class NetworkConfiguration {
 
   constructor () {
     this.configurator = new Configurator()
-    this.responseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'))
-    this.amt = new AMT.Messages()
-    this.cim = new CIM.Messages()
     this.dbFactory = new DbCreatorFactory(EnvReader.GlobalEnvConfig)
     this.logger = new Logger('Network_Configuration_State_Machine')
   }
 
-  updateConfigurationStatus (context, event): void {
-    // TODO: Get rid of redundant data (i.e. Method and Status)
-    if (context.status === 'success') {
-      devices[context.clientId].status.Network = context.statusMessage
-    } else if (context.status === 'error') {
-      devices[context.clientId].status.Network = context.errorMessage !== '' ? context.errorMessage : 'Failed'
-    }
-    // return sendParent({ type: 'ONFAILED', data: 'Unknown error has occured' })
-  }
-
-  async invokeWsmanCall (context): Promise<any> {
-    let { message, clientId, xmlMessage } = context
-    const clientObj = devices[clientId]
-    message = context.httpHandler.wrapIt(xmlMessage, clientObj.connectionParams)
-    const responseMessage = this.responseMsg.get(clientId, message, 'wsman', 'ok')
-    devices[clientId].ClientSocket.send(JSON.stringify(responseMessage))
-    clientObj.pendingPromise = new Promise<any>((resolve, reject) => {
-      clientObj.resolve = resolve
-      clientObj.reject = reject
-    })
-    return await clientObj.pendingPromise
-  }
-
   async putGeneralSettings (context): Promise<any> {
-    context.xmlMessage = this.amt.GeneralSettings(AMT.Methods.PUT, context.generalSettings)
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.amt.GeneralSettings(AMT.Methods.PUT, context.generalSettings)
+    return await invokeWsmanCall(context)
   }
 
   isNotAMTNetworkEnabled (context: NetworkConfigContext, event: NetworkConfigEvent): boolean {
@@ -466,13 +407,13 @@ export class NetworkConfiguration {
   }
 
   async enumerateEthernetPortSettings (context): Promise<any> {
-    context.xmlMessage = this.amt.EthernetPortSettings(AMT.Methods.ENUMERATE)
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.amt.EthernetPortSettings(AMT.Methods.ENUMERATE)
+    return await invokeWsmanCall(context)
   }
 
   async pullEthernetPortSettings (context): Promise<any> {
-    context.xmlMessage = this.amt.EthernetPortSettings(AMT.Methods.PULL, context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.amt.EthernetPortSettings(AMT.Methods.PULL, context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+    return await invokeWsmanCall(context)
   }
 
   readEthernetPortSettings (context: NetworkConfigContext, event: NetworkConfigEvent): void {
@@ -482,19 +423,19 @@ export class NetworkConfiguration {
       if (pullResponse[0].InstanceID.includes('Settings 0')) {
         context.wiredSettings = pullResponse[0]
       } else if (pullResponse[0].InstanceID.includes('Settings 1')) {
-        context.wireLessSettings = pullResponse[0]
+        context.wirelessSettings = pullResponse[0]
       }
 
       if (pullResponse[1].InstanceID.includes('Settings 0')) {
         context.wiredSettings = pullResponse[1]
       } else if (pullResponse[1].InstanceID.includes('Settings 1')) {
-        context.wireLessSettings = pullResponse[1]
+        context.wirelessSettings = pullResponse[1]
       }
     } else {
       if (pullResponse.InstanceID.includes('Settings 0')) {
         context.wiredSettings = pullResponse
       } else if (pullResponse.InstanceID.includes('Settings 1')) {
-        context.wireLessSettings = pullResponse
+        context.wirelessSettings = pullResponse
       }
     }
   }
@@ -526,28 +467,28 @@ export class NetworkConfiguration {
     }
     // this.logger.debug(`Updated Network configuration to set on device :  ${JSON.stringify(context.message, null, '\t')}`)
     // put request to update ethernet port settings on the device
-    context.xmlMessage = this.amt.EthernetPortSettings(AMT.Methods.PUT, null, context.wiredSettings)
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.amt.EthernetPortSettings(AMT.Methods.PUT, null, context.wiredSettings)
+    return await invokeWsmanCall(context)
   }
 
   readEthernetPortSettingsPutResponse (context: NetworkConfigContext, event: NetworkConfigEvent): void {
     const amtEthernetPortSettings: AMTEthernetPortSettings = context.message.Envelope.Body.AMT_EthernetPortSettings
     if (context.amtProfile.dhcpEnabled === amtEthernetPortSettings.DHCPEnabled && !(context.amtProfile.dhcpEnabled) === amtEthernetPortSettings.SharedStaticIp && amtEthernetPortSettings.IpSyncEnabled) {
       // Check with status messages once
-      context.statusMessage = 'Wired Network Configured'
+      devices[context.clientId].status.Network = 'Wired Network Configured'
       return
     }
-    context.statusMessage = 'Wired Network Configuration Failed'
+    devices[context.clientId].status.Network = 'Wired Network Configuration Failed'
   }
 
   async enumerateWiFiEndpointSettings (context): Promise<any> {
-    context.xmlMessage = this.cim.WiFiEndpointSettings(CIM.Methods.ENUMERATE)
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.cim.WiFiEndpointSettings(CIM.Methods.ENUMERATE)
+    return await invokeWsmanCall(context)
   }
 
   async pullWiFiEndpointSettings (context): Promise<any> {
-    context.xmlMessage = this.cim.WiFiEndpointSettings(CIM.Methods.PULL, context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.cim.WiFiEndpointSettings(CIM.Methods.PULL, context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+    return await invokeWsmanCall(context)
   }
 
   readWiFiEndpointSettingsPullResponse (context: NetworkConfigContext, event: NetworkConfigEvent): void {
@@ -576,20 +517,21 @@ export class NetworkConfiguration {
     let wifiEndpoints = context.wifiEndPointSettings
     // Deletes first profile in the array
     const selector = { name: 'InstanceID', value: wifiEndpoints[0].InstanceID }
-    context.xmlMessage = this.cim.WiFiEndpointSettings(CIM.Methods.DELETE, null, selector)
+    context.xmlMessage = context.cim.WiFiEndpointSettings(CIM.Methods.DELETE, null, selector)
     wifiEndpoints = wifiEndpoints.slice(1)
     context.wifiEndPointSettings = wifiEndpoints
-    return await this.invokeWsmanCall(context)
+    return await invokeWsmanCall(context)
   }
 
   async updateWifiPort (context: NetworkConfigContext, event: NetworkConfigEvent): Promise<any> {
     // Enumeration 32769 - WiFi is enabled in S0 + Sx/AC
-    context.xmlMessage = this.cim.WiFiPort(CIM.Methods.REQUEST_STATE_CHANGE, 32769)
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.cim.WiFiPort(CIM.Methods.REQUEST_STATE_CHANGE, 32769)
+    return await invokeWsmanCall(context)
   }
 
   async getWifiProfile (profileName: string): Promise<WirelessConfig> {
     // Get WiFi profile information based on the profile name from db.
+    this.db = await this.dbFactory.getDb()
     const wifiConfig = await this.db.wirelessProfiles.getByName(profileName)
     if (this.configurator?.secretsManager) {
       // Get WiFi profile pskPassphrase from vault
@@ -615,21 +557,22 @@ export class NetworkConfiguration {
       Priority: context.amtProfile.wifiConfigs[context.wifiProfileCount].priority,
       PSKPassPhrase: wifiConfig.pskPassphrase
     }
+
     // Increment the count to keep track of profiles added to AMT
     ++context.wifiProfileCount
-    context.xmlMessage = this.amt.WiFiPortConfigurationService(AMT.Methods.ADD_WIFI_SETTINGS, wifiEndpointSettings, selector)
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.amt.WiFiPortConfigurationService(AMT.Methods.ADD_WIFI_SETTINGS, wifiEndpointSettings, selector)
+    return await invokeWsmanCall(context)
   }
 
   async getWiFiPortConfigurationService (context: NetworkConfigContext, event: NetworkConfigEvent): Promise<any> {
-    context.xmlMessage = this.amt.WiFiPortConfigurationService(AMT.Methods.GET, null, null)
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.amt.WiFiPortConfigurationService(AMT.Methods.GET, null, null)
+    return await invokeWsmanCall(context)
   }
 
   async putWiFiPortConfigurationService (context: NetworkConfigContext, event: NetworkConfigEvent): Promise<any> {
     const wifiPortConfigurationService: AMT_WiFiPortConfigurationServiceResponse = context.message.Envelope.Body.AMT_WiFiPortConfigurationService
     wifiPortConfigurationService.localProfileSynchronizationEnabled = 1
-    context.xmlMessage = this.amt.WiFiPortConfigurationService(AMT.Methods.PUT, wifiPortConfigurationService, null)
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.amt.WiFiPortConfigurationService(AMT.Methods.PUT, wifiPortConfigurationService, null)
+    return await invokeWsmanCall(context)
   }
 }

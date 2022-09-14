@@ -3,27 +3,24 @@ import { HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
 import { assign, createMachine, interpret } from 'xstate'
 import { AMTConfiguration, AMTRedirectionServiceEnabledStates, mapAMTUserConsent } from '../models'
-import { devices } from '../WebSocketListener'
-import { ClientResponseMsg } from '../utils/ClientResponseMsg'
 import { RedirectionService } from '@open-amt-cloud-toolkit/wsman-messages/amt/models'
 import { IPS_OptInService } from '@open-amt-cloud-toolkit/wsman-messages/models/ips_models'
+import { invokeWsmanCall } from './common'
 
 export interface FeatureContext {
-  // 3 requests to the device
-  // to get the current configuration
-  // get saved here
   clientId: string
   AMT_RedirectionService?: any
   IPS_OptInService?: any
   CIM_KVMRedirectionSAP?: any
-  // transient values for computing
-  // what configuration changes should be made
-  // on the client device
   isRedirectionChanged: boolean
   isOptInServiceChanged: boolean
-  errorMessage: string
+  statusMessage: string
   amtConfiguration: AMTConfiguration
   httpHandler: HttpHandler
+  xmlMessage: string
+  amt?: AMT.Messages
+  cim?: CIM.Messages
+  ips?: IPS.Messages
 }
 interface FeatureEvent {
   type: 'CONFIGURE_FEATURES'
@@ -31,17 +28,8 @@ interface FeatureEvent {
   data?: any
 }
 export class FeaturesConfiguration {
-  amt: AMT.Messages
-  cim: CIM.Messages
-  ips: IPS.Messages
-  responseMsg: ClientResponseMsg
   logger: Logger
-
   constructor () {
-    this.amt = new AMT.Messages()
-    this.cim = new CIM.Messages()
-    this.ips = new IPS.Messages()
-    this.responseMsg = new ClientResponseMsg()
     this.logger = new Logger('FeaturesConfiguration')
   }
 
@@ -58,7 +46,8 @@ export class FeaturesConfiguration {
       CIM_KVMRedirectionSAP: null,
       isRedirectionChanged: false,
       isOptInServiceChanged: false,
-      errorMessage: ''
+      statusMessage: '',
+      xmlMessage: ''
     },
     initial: 'DEFAULT_FEATURES',
     states: {
@@ -78,7 +67,7 @@ export class FeaturesConfiguration {
             target: 'GET_IPS_OPT_IN_SERVICE'
           },
           onError: {
-            actions: ['cacheErrorMessage'],
+            actions: assign({ statusMessage: (context, event) => 'Failed to get AMT redirection service' }),
             target: 'FAILED'
           }
         }
@@ -92,7 +81,7 @@ export class FeaturesConfiguration {
             target: 'GET_CIM_KVM_REDIRECTION_SAP'
           },
           onError: {
-            actions: ['cacheErrorMessage'],
+            actions: assign({ statusMessage: (context, event) => 'Failed to get ips opt in service' }),
             target: 'FAILED'
           }
         }
@@ -106,7 +95,7 @@ export class FeaturesConfiguration {
             target: 'COMPUTE_UPDATES'
           },
           onError: {
-            actions: ['cacheErrorMessage'],
+            actions: assign({ statusMessage: (context, event) => 'Failed to get cim kvm redirection sap' }),
             target: 'FAILED'
           }
         }
@@ -127,7 +116,7 @@ export class FeaturesConfiguration {
           src: this.setRedirectionService.bind(this),
           onDone: 'SET_KVM_REDIRECTION_SAP',
           onError: {
-            actions: ['cacheErrorMessage'],
+            actions: assign({ statusMessage: (context, event) => 'Failed to set redirection service' }),
             target: 'FAILED'
           }
         }
@@ -138,7 +127,7 @@ export class FeaturesConfiguration {
           src: this.setKvmRedirectionSap.bind(this),
           onDone: 'PUT_REDIRECTION_SERVICE',
           onError: {
-            actions: ['cacheErrorMessage'],
+            actions: assign({ statusMessage: (context, event) => 'Failed to set kvm redirection sap' }),
             target: 'FAILED'
           }
         }
@@ -152,7 +141,7 @@ export class FeaturesConfiguration {
             { target: 'SUCCESS' }
           ],
           onError: {
-            actions: ['cacheErrorMessage'],
+            actions: assign({ statusMessage: (context, event) => 'Failed to put redirection service' }),
             target: 'FAILED'
           }
         }
@@ -163,16 +152,17 @@ export class FeaturesConfiguration {
           src: this.putIpsOptInService.bind(this),
           onDone: 'SUCCESS',
           onError: {
-            actions: ['cacheErrorMessage'],
+            actions: assign({ statusMessage: (context, event) => 'Failed to put ips opt in service' }),
             target: 'FAILED'
           }
         }
       },
       SUCCESS: {
+        entry: (context, _) => this.logger.error(`AMT Features Configuration failed: ${context.statusMessage}`),
         type: 'final'
       },
       FAILED: {
-        entry: (context, _) => this.logger.error(`AMT Features Configuration failed: ${context.errorMessage}`),
+        entry: (context, _) => this.logger.error(`AMT Features Configuration failed: ${context.statusMessage}`),
         type: 'final'
       }
     }
@@ -184,7 +174,6 @@ export class FeaturesConfiguration {
       cacheCimKvmRedirectionSAP: assign({
         CIM_KVMRedirectionSAP: (_, event) => event.data.Envelope.Body.CIM_KVMRedirectionSAP
       }),
-      cacheErrorMessage: assign({ errorMessage: (_, event) => JSON.stringify(event.data) }),
       computeUpdates: assign((context, _) => {
         const amtRedirectionService = context.AMT_RedirectionService
         const cimKVMRedirectionSAP = context.CIM_KVMRedirectionSAP
@@ -263,23 +252,28 @@ export class FeaturesConfiguration {
   service = interpret(this.machine)
 
   async getAmtRedirectionService (context: FeatureContext): Promise<any> {
-    return await this.invokeWsmanCall(context, this.amt.RedirectionService(AMT.Methods.GET))
+    context.xmlMessage = context.amt.RedirectionService(AMT.Methods.GET)
+    return await invokeWsmanCall(context)
   }
 
   async getIpsOptInService (context: FeatureContext): Promise<any> {
-    return await this.invokeWsmanCall(context, this.ips.OptInService(IPS.Methods.GET))
+    context.xmlMessage = context.ips.OptInService(IPS.Methods.GET)
+    return await invokeWsmanCall(context)
   }
 
   async getCimKvmRedirectionSAP (context: FeatureContext): Promise<any> {
-    return await this.invokeWsmanCall(context, this.cim.KVMRedirectionSAP(CIM.Methods.GET))
+    context.xmlMessage = context.cim.KVMRedirectionSAP(CIM.Methods.GET)
+    return await invokeWsmanCall(context)
   }
 
   async setRedirectionService (context: FeatureContext): Promise<any> {
-    return await this.invokeWsmanCall(context, this.amt.RedirectionService(AMT.Methods.REQUEST_STATE_CHANGE, context.AMT_RedirectionService.EnabledState))
+    context.xmlMessage = context.amt.RedirectionService(AMT.Methods.REQUEST_STATE_CHANGE, context.AMT_RedirectionService.EnabledState)
+    return await invokeWsmanCall(context)
   }
 
   async setKvmRedirectionSap (context: FeatureContext): Promise<any> {
-    return await this.invokeWsmanCall(context, this.cim.KVMRedirectionSAP(CIM.Methods.REQUEST_STATE_CHANGE, context.CIM_KVMRedirectionSAP.EnabledState))
+    context.xmlMessage = context.cim.KVMRedirectionSAP(CIM.Methods.REQUEST_STATE_CHANGE, context.CIM_KVMRedirectionSAP.EnabledState)
+    return await invokeWsmanCall(context)
   }
 
   async putRedirectionService (context: FeatureContext): Promise<any> {
@@ -287,7 +281,8 @@ export class FeaturesConfiguration {
     const redirectionResponse: AMT.Models.RedirectionResponse = {
       AMT_RedirectionService: JSON.parse(JSON.stringify(redirectionService))
     }
-    return await this.invokeWsmanCall(context, this.amt.RedirectionService(AMT.Methods.PUT, null, redirectionResponse))
+    context.xmlMessage = context.amt.RedirectionService(AMT.Methods.PUT, null, redirectionResponse)
+    return await invokeWsmanCall(context)
   }
 
   async putIpsOptInService (context: FeatureContext): Promise<any> {
@@ -295,18 +290,7 @@ export class FeaturesConfiguration {
     const ipsOptInSvcResponse: IPS.Models.OptInServiceResponse = {
       IPS_OptInService: JSON.parse(JSON.stringify(ipsOptInService))
     }
-    return await this.invokeWsmanCall(context, this.ips.OptInService(IPS.Methods.PUT, null, ipsOptInSvcResponse))
-  }
-
-  async invokeWsmanCall (context: FeatureContext, xmlMessage): Promise<any> {
-    const clientObj = devices[context.clientId]
-    const message = context.httpHandler.wrapIt(xmlMessage, clientObj.connectionParams)
-    const clientMsg = this.responseMsg.get(context.clientId, message, 'wsman', 'ok')
-    devices[context.clientId].ClientSocket.send(JSON.stringify(clientMsg))
-    clientObj.pendingPromise = new Promise<any>((resolve, reject) => {
-      clientObj.resolve = resolve
-      clientObj.reject = reject
-    })
-    return await clientObj.pendingPromise
+    context.xmlMessage = context.ips.OptInService(IPS.Methods.PUT, null, ipsOptInSvcResponse)
+    return await invokeWsmanCall(context)
   }
 }
