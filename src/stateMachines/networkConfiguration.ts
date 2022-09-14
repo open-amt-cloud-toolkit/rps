@@ -371,7 +371,7 @@ export class NetworkConfiguration {
       'Reset Unauth Count': (context, event) => { devices[context.clientId].unauthCount = 0 },
       'Update Configuration Status': (context, event) => {
         const status = devices[context.clientId].status.Network
-        devices[context.clientId].status.Network = status == null ? context.statusMessage : `${status}.${context.statusMessage}`
+        devices[context.clientId].status.Network = status == null ? context.statusMessage : `${status}. ${context.statusMessage}`
       },
       'Read Ethernet Port Settings': this.readEthernetPortSettings.bind(this),
       'Read Ethernet Port Settings Put Response': this.readEthernetPortSettingsPutResponse.bind(this),
