@@ -1,3 +1,4 @@
+import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 import { CIRAConfiguration, CIRAConfigContext, MPSType } from './ciraConfiguration'
 import { v4 as uuid } from 'uuid'
 import { devices } from '../WebSocketListener'
@@ -6,6 +7,7 @@ import { config } from '../test/helper/Config'
 import { ClientAction } from '../models/RCS.Config'
 import { HttpHandler } from '../HttpHandler'
 import { interpret } from 'xstate'
+import * as common from './common'
 
 const clientId = uuid()
 EnvReader.GlobalEnvConfig = config
@@ -14,15 +16,11 @@ describe('CIRA Configuration State Machine', () => {
   let ciraConfiguration: CIRAConfiguration
   let currentStateIndex: number
   let invokeWsmanCallSpy: jest.SpyInstance
-  let sendSpy: jest.SpyInstance
-  let responseMessageSpy: jest.SpyInstance
-  let wrapItSpy: jest.SpyInstance
   let ciraConfigContext: CIRAConfigContext
   let configuration
 
   beforeEach(() => {
     ciraConfiguration = new CIRAConfiguration()
-    invokeWsmanCallSpy = jest.spyOn(ciraConfiguration, 'invokeWsmanCall').mockResolvedValue('done')
     ciraConfigContext = {
       clientId: clientId,
       httpHandler: new HttpHandler(),
@@ -45,8 +43,8 @@ describe('CIRA Configuration State Machine', () => {
         mpsRootCertificate: 'MIIEOzCCAqOgAwIBAgIDATghMA0GCSqGSIb3DQEBDAUAMD0xFzAVBgNVBAMTDk1QU1Jvb3QtZjI5NzdjMRAwDgYDVQQKEwd1bmtub3duMRAwDgYDVQQGEwd1bmtub3duMCAXDTIxMDIwOTE2NTA1NloYDzIwNTIwMjA5MTY1MDU2WjA9MRcwFQYDVQQDEw5NUFNSb290LWYyOTc3YzEQMA4GA1UEChMHdW5rbm93bjEQMA4GA1UEBhMHdW5rbm93bjCCAaIwDQYJKoZIhvcNAQEBBQADggGPADCCAYoCggGBALh5/XVfcshMOarCLJ4RHMZ6sGS8PGaDiCdL4V0SwxCju4n9ZJFr2O6Bv2/qNl1enjgC/YRguHeNlYa1usbJReNJXb6Mv7G4z7NCVnPmvJtCI78CIeZ0+r6H1VZyw0Jft7S6U0G6ZQue21Ycr6ELJhNz9b4QZUMujd863TWWtE3peejYGEY8hIgMk6YfNyzFx/Xd4wpQToYoN6kBrrKK8R0rYBVR19YZg36ZWhfdg9saLhPy+7L2ScE4KW92+DUK++aXxt3Aq1dMzjHewii98c//TwCpJQBEQhzTyyuSicfWj78Q61IgtLpHWlkKvoFldYcH4vHVZiMbjSyW6EA5tQET4GKef2fY4OnEIvfyJEn7P6WDHz4vbSMZBwBBgpzwWQGeU2+W5lAblmuL48gk5byED6qXSBt4BV2c8IAMEAnShBxjJRDkYJfjEg3t/Gd5lskrcwTSh6AqEGAJqM4251+jO84gvuTqGwwejC/kdiCi9lR+KNEb25S3REfTQQAxgwIDAQABo0IwQDAMBgNVHRMEBTADAQH/MBEGCWCGSAGG+EIBAQQEAwIABzAdBgNVHQ4EFgQU8pd839uyitiRmIpp2R1MvZtvhW0wDQYJKoZIhvcNAQEMBQADggGBAAcbf4vdlTz0ZJkOaW7NwILAvfqeRvn0bTr8PZKGLW9BOcovtKPa8VjoBAar/LjGBvhdXXRYKpQqYUsJcCf53OKVhUx5vX0B6TYZYQtu6KtlmdbxrSEz/wermV5mMYM7yONVeZSUZmOT9iNwE5hTiNzRXNFlx/1+cDCRt8ApsjmYNdoKgxNjoY+ynqmtMkTNXKWd0KKsietOEciPS4UZ5tx6WZ+BH+vEpWw9u3cLeX8iLJXfPHsDmqqHIyjkGNCDsZmDIeyPxBe9CXPGCcMLX1WhBfSma9NMiRI2l18vryo7SRME600RbnkBZyjlzquL9aILZnmiHQOCJ9d75P1MtUdpBYVpqR0Owd8JtAZOqnm+u54oU4OZ+IZmJDT7S5/qytf5lJdIfHKp2RNNL3PoNgmANLop8UKQMoZ2QHl+8L6xJuZSYZMzKDIYXJCCucZSHxx8G41P6rTCylorEjFudqk0OoEb+30vOUqrd5ib/nXp+opwQaEdXYkZ+Wxim9quVw=='
       },
       profile: null,
-      isDeleting: true,
-      privateCerts: []
+      privateCerts: [],
+      amt: new AMT.Messages()
     }
 
     devices[clientId] = {
@@ -108,9 +106,7 @@ describe('CIRA Configuration State Machine', () => {
       uuid: '4c4c4544-004b-4210-8033-b6c04f504633',
       messageId: 1
     }
-    sendSpy = jest.spyOn(devices[clientId].ClientSocket, 'send').mockReturnValue()
-    wrapItSpy = jest.spyOn(ciraConfigContext.httpHandler, 'wrapIt').mockReturnValue('message')
-    responseMessageSpy = jest.spyOn(ciraConfiguration.responseMsg, 'get')
+    invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue()
     currentStateIndex = 0
     configuration = {
       services: {
@@ -131,9 +127,7 @@ describe('CIRA Configuration State Machine', () => {
         'put-environment-detection-settings': Promise.resolve({ clientId })
       },
       actions: {
-        'Update Configuration Status': () => {},
-        'Reset Unauth Count': () => {},
-        'Convert WSMan XML response to JSON': () => {}
+        'Reset Unauth Count': () => {}
       }
     }
   })
@@ -161,17 +155,19 @@ describe('CIRA Configuration State Machine', () => {
     const ciraConfigurationService = interpret(mockCiraConfigurationMachine).onTransition((state) => {
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('SUCCESS') && currentStateIndex === flowStates.length) {
+        const status = devices[clientId].status.CIRAConnection
+        expect(status).toEqual('Configured')
         done()
       }
     })
 
     ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'REMOVEPOLICY', clientId: clientId, data: null })
+    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId: clientId, data: null })
   })
 
   it('should eventually reach "Failed"', (done) => {
     configuration.services['get-cira-config'] = Promise.reject(new Error())
-    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration)
+    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration).withContext(ciraConfigContext)
     const flowStates = ['CIRACONFIGURED', 'GET_CIRA_CONFIG', 'FAILURE']
     const ciraConfigurationService = interpret(mockCiraConfigurationMachine).onTransition((state) => {
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
@@ -181,12 +177,12 @@ describe('CIRA Configuration State Machine', () => {
     })
 
     ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'REMOVEPOLICY', clientId: clientId, data: null })
+    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId: clientId, data: null })
   })
 
   it('should eventually reach "Failed" at add-trusted-root-certificate state ', (done) => {
     configuration.services['add-trusted-root-certificate'] = Promise.reject(new Error())
-    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration)
+    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration).withContext(ciraConfigContext)
     const flowStates = [
       'CIRACONFIGURED',
       'GET_CIRA_CONFIG',
@@ -200,12 +196,12 @@ describe('CIRA Configuration State Machine', () => {
     })
 
     ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'REMOVEPOLICY', clientId: clientId, data: null })
+    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId: clientId, data: null })
   })
 
   it('should eventually reach "Failed" at enumerate-management-presence-remote-sap state ', (done) => {
     configuration.services['enumerate-management-presence-remote-sap'] = Promise.reject(new Error())
-    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration)
+    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration).withContext(ciraConfigContext)
     const flowStates = [
       'CIRACONFIGURED',
       'GET_CIRA_CONFIG',
@@ -223,12 +219,12 @@ describe('CIRA Configuration State Machine', () => {
     })
 
     ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'REMOVEPOLICY', clientId: clientId, data: null })
+    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId: clientId, data: null })
   })
 
   it('should eventually reach "Failed" at add-mps state ', (done) => {
     configuration.services['add-mps'] = Promise.reject(new Error())
-    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration)
+    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration).withContext(ciraConfigContext)
     const flowStates = [
       'CIRACONFIGURED',
       'GET_CIRA_CONFIG',
@@ -245,12 +241,12 @@ describe('CIRA Configuration State Machine', () => {
     })
 
     ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'REMOVEPOLICY', clientId: clientId, data: null })
+    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId: clientId, data: null })
   })
 
   it('should eventually reach "Failed" at pull-management-presence-remote-sap state ', (done) => {
     configuration.services['pull-management-presence-remote-sap'] = Promise.reject(new Error())
-    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration)
+    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration).withContext(ciraConfigContext)
     const flowStates = [
       'CIRACONFIGURED',
       'GET_CIRA_CONFIG',
@@ -269,12 +265,12 @@ describe('CIRA Configuration State Machine', () => {
     })
 
     ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'REMOVEPOLICY', clientId: clientId, data: null })
+    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId: clientId, data: null })
   })
 
   it('should eventually reach "Failed" at add-remote-policy-access-rule state ', (done) => {
     configuration.services['add-remote-policy-access-rule'] = Promise.reject(new Error())
-    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration)
+    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration).withContext(ciraConfigContext)
     const flowStates = [
       'CIRACONFIGURED',
       'GET_CIRA_CONFIG',
@@ -294,12 +290,12 @@ describe('CIRA Configuration State Machine', () => {
     })
 
     ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'REMOVEPOLICY', clientId: clientId, data: null })
+    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId: clientId, data: null })
   })
 
   it('should eventually reach "Failed" at enumerate-remote-access-policy-rule state ', (done) => {
     configuration.services['enumerate-remote-access-policy-rule'] = Promise.reject(new Error())
-    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration)
+    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration).withContext(ciraConfigContext)
     const flowStates = [
       'CIRACONFIGURED',
       'GET_CIRA_CONFIG',
@@ -320,12 +316,12 @@ describe('CIRA Configuration State Machine', () => {
     })
 
     ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'REMOVEPOLICY', clientId: clientId, data: null })
+    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId: clientId, data: null })
   })
 
   it('should eventually reach "Failed" at pull-remote-access-policy-rule state ', (done) => {
     configuration.services['pull-remote-access-policy-rule'] = Promise.reject(new Error())
-    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration)
+    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration).withContext(ciraConfigContext)
     const flowStates = [
       'CIRACONFIGURED',
       'GET_CIRA_CONFIG',
@@ -347,12 +343,12 @@ describe('CIRA Configuration State Machine', () => {
     })
 
     ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'REMOVEPOLICY', clientId: clientId, data: null })
+    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId: clientId, data: null })
   })
 
   it('should eventually reach "Failed" at put-remote-access-policy-rule state ', (done) => {
     configuration.services['put-remote-access-policy-rule'] = Promise.reject(new Error())
-    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration)
+    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration).withContext(ciraConfigContext)
     const flowStates = [
       'CIRACONFIGURED',
       'GET_CIRA_CONFIG',
@@ -375,12 +371,12 @@ describe('CIRA Configuration State Machine', () => {
     })
 
     ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'REMOVEPOLICY', clientId: clientId, data: null })
+    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId: clientId, data: null })
   })
 
   it('should eventually reach "Failed" at user-initiated-connection-service state ', (done) => {
     configuration.services['user-initiated-connection-service'] = Promise.reject(new Error())
-    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration)
+    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration).withContext(ciraConfigContext)
     const flowStates = [
       'CIRACONFIGURED',
       'GET_CIRA_CONFIG',
@@ -404,12 +400,12 @@ describe('CIRA Configuration State Machine', () => {
     })
 
     ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'REMOVEPOLICY', clientId: clientId, data: null })
+    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId: clientId, data: null })
   })
 
   it('should eventually reach "Failed" at get-environment-detection-settings state ', (done) => {
     configuration.services['get-environment-detection-settings'] = Promise.reject(new Error())
-    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration)
+    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration).withContext(ciraConfigContext)
     const flowStates = [
       'CIRACONFIGURED',
       'GET_CIRA_CONFIG',
@@ -434,12 +430,12 @@ describe('CIRA Configuration State Machine', () => {
     })
 
     ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'REMOVEPOLICY', clientId: clientId, data: null })
+    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId: clientId, data: null })
   })
 
   it('should eventually reach "Failed" at put-environment-detection-settings state ', (done) => {
     configuration.services['put-environment-detection-settings'] = Promise.reject(new Error())
-    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration)
+    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration).withContext(ciraConfigContext)
     const flowStates = [
       'CIRACONFIGURED',
       'GET_CIRA_CONFIG',
@@ -460,12 +456,14 @@ describe('CIRA Configuration State Machine', () => {
     const ciraConfigurationService = interpret(mockCiraConfigurationMachine).onTransition((state) => {
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('FAILURE') && currentStateIndex === flowStates.length) {
+        const status = devices[clientId].status.CIRAConnection
+        expect(status).toEqual('Failed to set user initiated connection service')
         done()
       }
     })
 
     ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'REMOVEPOLICY', clientId: clientId, data: null })
+    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId: clientId, data: null })
   })
 
   describe('send wsman message with Management Presence Remote SAP', () => {
@@ -540,22 +538,6 @@ describe('CIRA Configuration State Machine', () => {
     it('should send wsman message to add MPS server', async () => {
       await ciraConfiguration.addMPS(ciraConfigContext, null)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
-    })
-  })
-
-  it('invokeWsmanCall', async () => {
-    invokeWsmanCallSpy.mockRestore()
-    void ciraConfiguration.invokeWsmanCall(ciraConfigContext)
-    expect(responseMessageSpy).toHaveBeenCalled()
-    expect(wrapItSpy).toHaveBeenCalled()
-    expect(sendSpy).toHaveBeenCalled()
-  })
-
-  describe('update Configuration Status', () => {
-    it('should update Configuration Status', () => {
-      ciraConfigContext.statusMessage = 'abcd'
-      ciraConfiguration.updateConfigurationStatus(ciraConfigContext, null)
-      expect(devices[ciraConfigContext.clientId].status.CIRAConnection).toEqual(ciraConfigContext.statusMessage)
     })
   })
 })

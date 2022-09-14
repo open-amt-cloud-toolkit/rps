@@ -1,9 +1,10 @@
 import { interpret } from 'xstate'
-import { Deactivation } from './deactivation'
+import { Deactivation, DeactivationContext } from './deactivation'
 import { v4 as uuid } from 'uuid'
 import { devices } from '../WebSocketListener'
 import { config } from '../test/helper/Config'
 import { EnvReader } from '../utils/EnvReader'
+import ClientResponseMsg from '../utils/ClientResponseMsg'
 
 const clientId = uuid()
 EnvReader.GlobalEnvConfig = config
@@ -20,7 +21,7 @@ describe('Deactivation State Machine', () => {
     deactivation = new Deactivation()
     wrapItSpy = jest.spyOn(deactivation.httpHandler, 'wrapIt').mockReturnValue('abcdef')
     setupAndConfigurationServiceSpy = jest.spyOn(deactivation.amt, 'SetupAndConfigurationService').mockImplementation().mockReturnValue('abcdef')
-    responseMessageSpy = jest.spyOn(deactivation.responseMsg, 'get').mockReturnValue({} as any)
+    responseMessageSpy = jest.spyOn(ClientResponseMsg, 'get').mockReturnValue({} as any)
     devices[clientId] = {
       unauthCount: 0,
       ClientId: clientId,
@@ -72,13 +73,15 @@ describe('Deactivation State Machine', () => {
   })
 
   it('should eventually reach "UNPROVISIONED"', (done) => {
-    const mockdeactivationMachine = deactivation.machine.withConfig(config)
-    const flowStates = ['PROVISIONED',
+    const mockDeactivationMachine = deactivation.machine.withConfig(config)
+    const flowStates = [
+      'PROVISIONED',
       'UNPROVISIONING',
       'REMOVE_DEVICE_FROM_SECRET_PROVIDER',
       'REMOVE_DEVICE_FROM_MPS',
-      'UNPROVISIONED']
-    const deactivationService = interpret(mockdeactivationMachine).onTransition((state) => {
+      'UNPROVISIONED'
+    ]
+    const deactivationService = interpret(mockDeactivationMachine).onTransition((state) => {
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('UNPROVISIONED') && currentStateIndex === flowStates.length) {
         done()
@@ -88,7 +91,8 @@ describe('Deactivation State Machine', () => {
     deactivationService.start()
     deactivationService.send({
       type: 'UNPROVISION',
-      clientId: clientId
+      clientId,
+      data: null
     })
   })
 
@@ -101,13 +105,13 @@ describe('Deactivation State Machine', () => {
 
     config.services['error-machine'] = async (_, event) => await new Promise((resolve, reject) => {
       setTimeout(() => {
-        deactivationService.send({ type: 'ONFAILED', clientId: clientId })
+        deactivationService.send({ type: 'ONFAILED', clientId, data: null })
         reject(new Error())
       }, 50)
     })
-    const mockdeactivationMachine = deactivation.machine.withConfig(config)
+    const mockDeactivationMachine = deactivation.machine.withConfig(config)
     const flowStates = ['PROVISIONED', 'UNPROVISIONING', 'ERROR', 'FAILED']
-    const deactivationService = interpret(mockdeactivationMachine).onTransition((state) => {
+    const deactivationService = interpret(mockDeactivationMachine).onTransition((state) => {
     // assert that effects were executed
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
@@ -116,13 +120,15 @@ describe('Deactivation State Machine', () => {
     })
 
     deactivationService.start()
-    deactivationService.send({ type: 'UNPROVISION', clientId: clientId })
+    deactivationService.send({ type: 'UNPROVISION', clientId, data: null })
   })
 
   it('should invoke unprovision and return promise', async () => {
-    const context = {
+    const context: DeactivationContext = {
       message: '',
-      clientId: clientId
+      clientId,
+      unauthCount: 0,
+      status: ''
     }
 
     void deactivation.invokeUnprovision(context)
@@ -132,9 +138,10 @@ describe('Deactivation State Machine', () => {
   })
 
   it('should send success message to device', () => {
-    const context = {
+    const context: DeactivationContext = {
       message: '',
-      clientId: clientId,
+      clientId,
+      unauthCount: 0,
       status: 'success'
     }
     deactivation.sendMessageToDevice(context, null)
@@ -143,9 +150,10 @@ describe('Deactivation State Machine', () => {
   })
 
   it('should send error message to device', () => {
-    const context = {
+    const context: DeactivationContext = {
       message: '',
-      clientId: clientId,
+      clientId,
+      unauthCount: 0,
       status: 'error'
     }
     deactivation.sendMessageToDevice(context, null)
@@ -161,6 +169,6 @@ describe('Deactivation State Machine', () => {
       }
     })
     service.start()
-    service.send({ type: 'UNPROVISION', clientId: clientId })
+    service.send({ type: 'UNPROVISION', clientId, data: null })
   })
 })

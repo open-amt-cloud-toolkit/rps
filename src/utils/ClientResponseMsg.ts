@@ -1,15 +1,7 @@
 import { ClientMsg } from '../models/RCS.Config'
-import { ILogger } from '../interfaces/ILogger'
 import { AppVersion, ProtocolVersion } from './constants'
-import Logger from '../Logger'
 
-export class ClientResponseMsg {
-  logger: ILogger
-
-  constructor (logger = new Logger('ClientResponseMsg')) {
-    this.logger = logger
-  }
-
+export default {
   /**
  * @description builds response message to client
  * @param {string} payload
@@ -26,15 +18,13 @@ export class ClientResponseMsg {
       message: message,
       payload: payload
     }
-    try {
-      if (method === 'heartbeat_request') {
-        msg.payload = ''
-      } else if (method !== 'error' && method !== 'success') {
-        msg.payload = Buffer.from(payload).toString('base64')
-      }
-    } catch (error) {
-      this.logger.error(`${clientId} : Failed to create the message`, error)
+
+    if (method === 'heartbeat_request') {
+      msg.payload = ''
+    } else if (method !== 'error' && method !== 'success') {
+      msg.payload = Buffer.from(payload).toString('base64')
     }
+
     return msg
   }
 }

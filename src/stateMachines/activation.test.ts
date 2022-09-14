@@ -1,4 +1,4 @@
-// import { interpret } from 'xstate'
+import { AMT, CIM, IPS } from '@open-amt-cloud-toolkit/wsman-messages'
 import { Activation, ActivationContext } from './activation'
 import { v4 as uuid } from 'uuid'
 import { devices } from '../WebSocketListener'
@@ -7,13 +7,14 @@ import { config } from '../test/helper/Config'
 import { NodeForge } from '../NodeForge'
 import { CertManager } from '../certManager'
 import Logger from '../Logger'
-// import { SignatureHelper } from '../utils/SignatureHelper'
 import { PasswordHelper } from '../utils/PasswordHelper'
 import { ClientAction } from '../models/RCS.Config'
 import { Configurator } from '../Configurator'
 import { HttpHandler } from '../HttpHandler'
+import ClientResponseMsg from '../utils/ClientResponseMsg'
 import { interpret } from 'xstate'
 import { AMTUserName } from '../utils/constants'
+import * as common from './common'
 
 const clientId = uuid()
 EnvReader.GlobalEnvConfig = config
@@ -22,7 +23,6 @@ describe('Activation State Machine', () => {
   let context: ActivationContext
   let invokeWsmanCallSpy: jest.SpyInstance
   let hostBasedSetupServiceSpy: jest.SpyInstance
-  let wrapItSpy: jest.SpyInstance
   let responseMessageSpy: jest.SpyInstance
   let sendSpy: jest.SpyInstance
   let signStringSpy: jest.SpyInstance
@@ -104,13 +104,16 @@ describe('Activation State Machine', () => {
       xmlMessage: '',
       status: 'success',
       errorMessage: '',
-      targetAfterError: ''
+      targetAfterError: '',
+      amt: new AMT.Messages(),
+      ips: new IPS.Messages(),
+      cim: new CIM.Messages()
     }
-    invokeWsmanCallSpy = jest.spyOn(activation, 'invokeWsmanCall').mockResolvedValue('done')
+
+    invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue()
     getPasswordSpy = jest.spyOn(activation, 'getPassword').mockResolvedValue('abcdef')
-    hostBasedSetupServiceSpy = jest.spyOn(activation.ips, 'HostBasedSetupService').mockReturnValue('abcdef')
-    wrapItSpy = jest.spyOn(context.httpHandler, 'wrapIt').mockReturnValue('abcdef')
-    responseMessageSpy = jest.spyOn(activation.responseMsg, 'get').mockReturnValue({} as any)
+    hostBasedSetupServiceSpy = jest.spyOn(context.ips, 'HostBasedSetupService').mockReturnValue('abcdef')
+    responseMessageSpy = jest.spyOn(ClientResponseMsg, 'get').mockReturnValue({} as any)
     sendSpy = jest.spyOn(devices[clientId].ClientSocket, 'send').mockReturnValue()
     signStringSpy = jest.spyOn(activation.signatureHelper, 'signString').mockReturnValue('abcdef')
     currentStateIndex = 0
@@ -176,11 +179,13 @@ describe('Activation State Machine', () => {
           }
         }),
         'save-device-secret-provider': Promise.resolve(true),
-        'save-device-mps': Promise.resolve(true),
+        'save-device-to-mps': Promise.resolve(true),
         'unconfiguration-machine': Promise.resolve({ clientId }),
         'network-configuration-machine': Promise.resolve({ clientId }),
         'features-configuration-machine': Promise.resolve({ clientId }),
+        'tls-machine': Promise.resolve({ clientId }),
         'cira-machine': Promise.resolve({ clientId }),
+        'send-mebx-password': Promise.resolve({ clientId }),
         PROVISIONED: () => {},
         DELAYED_TRANSITION: () => {}
       },
@@ -192,6 +197,8 @@ describe('Activation State Machine', () => {
         'Read Client Setup Response': () => { },
         'Send Message to Device': () => { },
         'Get Provisioning CertObj': () => { }
+      },
+      guards: {
       }
     }
   })
@@ -275,16 +282,18 @@ describe('Activation State Machine', () => {
 
   describe('send wsman message from RPS to AMT', () => {
     it('should send WSMan to get amt general settings', async () => {
-      const context = { profile: null, amtDomain: null, message: '', clientId: clientId, xmlMessage: '', response: '', status: 'wsman', errorMessage: '' }
-      const generalSettingsSpy = jest.spyOn(activation.amt, 'GeneralSettings').mockImplementation().mockReturnValue('abcdef')
+      context.profile = null
+      context.amtDomain = null
+      const generalSettingsSpy = jest.spyOn(context.amt, 'GeneralSettings').mockImplementation().mockReturnValue('abcdef')
       await activation.getGeneralSettings(context)
       expect(generalSettingsSpy).toHaveBeenCalled()
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
 
     it('should send WSMan to get host based setup service', async () => {
-      const context = { profile: null, amtDomain: null, message: '', clientId: clientId, xmlMessage: '', response: '', status: 'wsman', errorMessage: '' }
-      const hostBasedSetupServiceSpy = jest.spyOn(activation.ips, 'HostBasedSetupService').mockImplementation().mockReturnValue('abcdef')
+      context.profile = null
+      context.amtDomain = null
+      const hostBasedSetupServiceSpy = jest.spyOn(context.ips, 'HostBasedSetupService').mockImplementation().mockReturnValue('abcdef')
       await activation.getHostBasedSetupService(context)
       expect(hostBasedSetupServiceSpy).toHaveBeenCalled()
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
@@ -392,7 +401,7 @@ describe('Activation State Machine', () => {
       clientObj.count = 1
       clientObj.certObj = {} as any
       clientObj.certObj.certChain = ['leaf', 'inter1', 'root']
-      const response = await activation.injectCertificate(clientId)
+      const response = await activation.injectCertificate(clientId, context.ips)
       expect(response).toBeDefined()
       expect(clientObj.count).toBe(2)
       expect(hostBasedSetupServiceSpy).toHaveBeenCalled()
@@ -402,7 +411,7 @@ describe('Activation State Machine', () => {
       clientObj.count = 2
       clientObj.certObj = {} as any
       clientObj.certObj.certChain = ['leaf', 'inter1', 'root']
-      const response = await activation.injectCertificate(clientId)
+      const response = await activation.injectCertificate(clientId, context.ips)
       expect(response).toBeDefined()
       expect(clientObj.count).toBe(3)
       expect(hostBasedSetupServiceSpy).toHaveBeenCalled()
@@ -412,7 +421,7 @@ describe('Activation State Machine', () => {
       clientObj.count = 3
       clientObj.certObj = {} as any
       clientObj.certObj.certChain = ['leaf', 'inter1', 'root']
-      const response = await activation.injectCertificate(clientId)
+      const response = await activation.injectCertificate(clientId, context.ips)
       expect(response).toBeDefined()
       expect(clientObj.count).toBe(4)
       expect(clientObj.certObj.certChain.length).toBeLessThan(clientObj.count)
@@ -462,14 +471,85 @@ describe('Activation State Machine', () => {
   })
 
   describe('test state machine', () => {
-    it('should eventually reach "PROVISIONED" for ccm activation', (done) => {
-      const mockActivationMachine = activation.machine.withConfig(config)
+    it('should eventually reach "PROVISIONED" for ccm activation TLS', (done) => {
+      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
       const flowStates = [
         'UNPROVISIONED',
         'GET_AMT_PROFILE',
         'GET_GENERAL_SETTINGS',
         'SETUP',
         'DELAYED_TRANSITION',
+        'SAVE_DEVICE_TO_SECRET_PROVIDER',
+        'SAVE_DEVICE_TO_MPS',
+        'UNCONFIGURATION',
+        'NETWORK_CONFIGURATION',
+        'FEATURES_CONFIGURATION',
+        'TLS',
+        'PROVISIONED'
+      ]
+      const ccmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('PROVISIONED') && currentStateIndex === flowStates.length) {
+          done()
+        }
+      })
+
+      ccmActivationService.start()
+      ccmActivationService.send({ type: 'ACTIVATION', clientId: clientId })
+    })
+
+    it('should eventually reach "PROVISIONED" in Admin mode', (done) => {
+      config.guards = {
+        isAdminMode: () => true,
+        maxCertLength: () => false
+      }
+      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'UNPROVISIONED',
+        'GET_AMT_PROFILE',
+        'GET_AMT_DOMAIN_CERT',
+        'GET_GENERAL_SETTINGS',
+        'IPS_HOST_BASED_SETUP_SERVICE',
+        'ADDNEXTCERTINCHAIN',
+        'ADMINSETUP',
+        'DELAYED_TRANSITION',
+        'SET_MEBX_PASSWORD',
+        'SAVE_DEVICE_TO_SECRET_PROVIDER',
+        'SAVE_DEVICE_TO_MPS',
+        'UNCONFIGURATION',
+        'NETWORK_CONFIGURATION',
+        'FEATURES_CONFIGURATION',
+        'TLS',
+        'PROVISIONED'
+      ]
+      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('PROVISIONED') && currentStateIndex === flowStates.length) {
+          done()
+        }
+      })
+
+      acmActivationService.start()
+      acmActivationService.send({ type: 'ACTIVATION', clientId: clientId })
+    })
+
+    it('should eventually reach "PROVISIONED" in Admin mode with CIRA profile', (done) => {
+      config.guards = {
+        isAdminMode: () => true,
+        maxCertLength: () => false,
+        hasCIRAProfile: () => true
+      }
+      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'UNPROVISIONED',
+        'GET_AMT_PROFILE',
+        'GET_AMT_DOMAIN_CERT',
+        'GET_GENERAL_SETTINGS',
+        'IPS_HOST_BASED_SETUP_SERVICE',
+        'ADDNEXTCERTINCHAIN',
+        'ADMINSETUP',
+        'DELAYED_TRANSITION',
+        'SET_MEBX_PASSWORD',
         'SAVE_DEVICE_TO_SECRET_PROVIDER',
         'SAVE_DEVICE_TO_MPS',
         'UNCONFIGURATION',
@@ -488,6 +568,81 @@ describe('Activation State Machine', () => {
       acmActivationService.start()
       acmActivationService.send({ type: 'ACTIVATION', clientId: clientId })
     })
+
+    it('should eventually reach "FAILED" at "GET_AMT_PROFILE"', (done) => {
+      config.guards = {
+        isAdminMode: () => true,
+        maxCertLength: () => false
+      }
+      config.services['get-amt-profile'] = Promise.reject(new Error())
+      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'UNPROVISIONED',
+        'GET_AMT_PROFILE',
+        'FAILED'
+      ]
+      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
+          done()
+        }
+      })
+
+      acmActivationService.start()
+      acmActivationService.send({ type: 'ACTIVATION', clientId: clientId })
+    })
+
+    it('should eventually reach "FAILED" at "GET_AMT_DOMAIN_CERT"', (done) => {
+      config.guards = {
+        isAdminMode: () => true,
+        maxCertLength: () => false
+      }
+      config.services['get-amt-domain'] = Promise.reject(new Error())
+      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'UNPROVISIONED',
+        'GET_AMT_PROFILE',
+        'GET_AMT_DOMAIN_CERT',
+        'FAILED'
+      ]
+      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
+          done()
+        }
+      })
+
+      acmActivationService.start()
+      acmActivationService.send({ type: 'ACTIVATION', clientId: clientId })
+    })
+
+    it('should eventually reach "FAILED" at "CHECKCERTCHAINRESPONSE"', (done) => {
+      config.guards = {
+        isAdminMode: () => true,
+        maxCertLength: () => false,
+        isCertNotAdded: () => true
+      }
+      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'UNPROVISIONED',
+        'GET_AMT_PROFILE',
+        'GET_AMT_DOMAIN_CERT',
+        'GET_GENERAL_SETTINGS',
+        'IPS_HOST_BASED_SETUP_SERVICE',
+        'ADDNEXTCERTINCHAIN',
+        'FAILED'
+      ]
+      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
+          done()
+        }
+      })
+
+      acmActivationService.start()
+      acmActivationService.send({ type: 'ACTIVATION', clientId: clientId })
+    })
+
     it('should send success message to device', () => {
       activation.sendMessageToDevice(context, null)
       expect(sendSpy).toHaveBeenCalled()
@@ -503,15 +658,6 @@ describe('Activation State Machine', () => {
       activation.sendMessageToDevice(context, null)
       expect(responseMessageSpy).toHaveBeenCalledWith(context.clientId, context.message, context.status, 'failed', JSON.stringify(devices[clientId].status))
       expect(sendSpy).toHaveBeenCalled()
-    })
-
-    it('should send a WSMan message', async () => {
-      invokeWsmanCallSpy.mockRestore()
-      void activation.invokeWsmanCall(context)
-      expect(wrapItSpy).toHaveBeenCalled()
-      expect(responseMessageSpy).toHaveBeenCalled()
-      expect(sendSpy).toHaveBeenCalled()
-      expect(devices[clientId].pendingPromise).toBeDefined()
     })
   })
 })

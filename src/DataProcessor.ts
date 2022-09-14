@@ -9,9 +9,7 @@ import * as WebSocket from 'ws'
 import { ILogger } from './interfaces/ILogger'
 import { ClientMsg, ClientMethods } from './models/RCS.Config'
 import { RPSError } from './utils/RPSError'
-import { ClientResponseMsg } from './utils/ClientResponseMsg'
 import { IValidator } from './interfaces/IValidator'
-import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 import { HttpHandler } from './HttpHandler'
 import { parse, HttpZResponseModel } from 'http-z'
 import { devices } from './WebSocketListener'
@@ -19,15 +17,13 @@ import { Deactivation } from './stateMachines/deactivation'
 import { Maintenance } from './stateMachines/maintenance'
 import { Activation } from './stateMachines/activation'
 import { parseBody } from './utils/parseWSManResponseBody'
+import ClientResponseMsg from './utils/ClientResponseMsg'
 export class DataProcessor {
-  amt: AMT.Messages
   httpHandler: HttpHandler
   constructor (
     private readonly logger: ILogger,
-    readonly validator: IValidator,
-    private readonly responseMsg: ClientResponseMsg
+    readonly validator: IValidator
   ) {
-    this.amt = new AMT.Messages()
     this.httpHandler = new HttpHandler()
   }
 
@@ -71,9 +67,9 @@ export class DataProcessor {
     } catch (error) {
       this.logger.error(`${clientId} : Failed to process data - ${error.message}`)
       if (error instanceof RPSError) {
-        return this.responseMsg.get(clientId, null, 'error', 'failed', error.message)
+        return ClientResponseMsg.get(clientId, null, 'error', 'failed', error.message)
       } else {
-        this.responseMsg.get(clientId, null, 'error', 'failed', 'request failed')
+        ClientResponseMsg.get(clientId, null, 'error', 'failed', 'request failed')
       }
     }
   }
@@ -96,7 +92,7 @@ export class DataProcessor {
     await this.validator.validateDeactivationMsg(clientMsg, clientId) // Validate the deactivation message payload
     this.setConnectionParams(clientId, 'admin', clientMsg.payload.password, clientMsg.payload.uuid)
     deactivation.service.start()
-    deactivation.service.send({ type: 'UNPROVISION', clientId: clientId })
+    deactivation.service.send({ type: 'UNPROVISION', clientId, data: null })
   }
 
   async handleResponse (clientMsg: ClientMsg, clientId: string): Promise<void> {
@@ -105,7 +101,7 @@ export class DataProcessor {
     const message = parse(clientMsg.payload) as HttpZResponseModel
     if (message.statusCode === 200) {
       const xmlBody = parseBody(message)
-      // pares WSMan xml response to json
+      // parse WSMan xml response to json
       const parsedMessage = this.httpHandler.parseXML(xmlBody)
       if (clientObj.pendingPromise != null) {
         clientObj.resolve(parsedMessage)

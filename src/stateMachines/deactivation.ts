@@ -4,14 +4,15 @@ import { send } from 'xstate/lib/actions'
 import { Configurator } from '../Configurator'
 import { HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
-import { ClientResponseMsg } from '../utils/ClientResponseMsg'
+import ClientResponseMsg from '../utils/ClientResponseMsg'
 import { EnvReader } from '../utils/EnvReader'
 import { devices } from '../WebSocketListener'
 import { Error } from './error'
 import got from 'got'
 
-interface DeactivationContext {
+export interface DeactivationContext {
   message: any
+  unauthCount: number
   clientId: string
   status: 'success' | 'error' | ''
 }
@@ -19,9 +20,9 @@ interface DeactivationContext {
 interface DeactivationEvent {
   type: 'UNPROVISION' | 'ONFAILED'
   clientId: string
+  data: any
 }
 export class Deactivation {
-  responseMsg: ClientResponseMsg
   configurator: Configurator
   httpHandler: HttpHandler
   amt: AMT.Messages
@@ -31,14 +32,14 @@ export class Deactivation {
   createMachine<DeactivationContext, DeactivationEvent>({
     predictableActionArguments: true,
     preserveActionOrder: true,
-    context: { message: '', clientId: '', status: '' },
+    context: { message: '', clientId: '', status: '', unauthCount: 0 },
     id: 'Deactivation Machine',
     initial: 'PROVISIONED',
     states: {
       PROVISIONED: {
         on: {
           UNPROVISION: {
-            actions: [assign({ clientId: (context, event) => event.clientId }), 'Reset Unauth Count'],
+            actions: [assign({ clientId: (context: DeactivationContext, event) => event.clientId }), 'Reset Unauth Count'],
             target: 'UNPROVISIONING'
           }
         }
@@ -77,16 +78,16 @@ export class Deactivation {
       },
       UNPROVISIONED: {
         type: 'final',
-        entry: [assign({ status: (context, event) => 'success' }), 'Send Message to Device']
+        entry: [assign({ status: (context: DeactivationContext, event) => 'success' }), 'Send Message to Device']
       },
       ERROR: {
         invoke: {
           id: 'error-machine',
           src: this.error.machine,
           data: {
-            unauthCount: (context, event) => context.unauthCount,
-            message: (context, event) => event.data,
-            clientId: (context, event) => context.clientId
+            unauthCount: (context: DeactivationContext, event) => context.unauthCount,
+            message: (context: DeactivationContext, event) => event.data,
+            clientId: (context: DeactivationContext, event) => context.clientId
           },
           onDone: [{
             target: 'UNPROVISIONING'
@@ -105,35 +106,30 @@ export class Deactivation {
     }
   }, {
     actions: {
-      'Reset Unauth Count': (context, event) => { devices[context.clientId].unauthCount = 0 },
-      'Send Message to Device': (context, event) => this.sendMessageToDevice(context, event)
+      'Reset Unauth Count': (context: DeactivationContext, event) => { devices[context.clientId].unauthCount = 0 },
+      'Send Message to Device': this.sendMessageToDevice.bind(this)
     }
   })
 
   service = interpret(this.machine).onTransition((state) => {
     console.log(`Current state of Deactivation State Machine: ${JSON.stringify(state.value)}`)
-    // console.log(state.children['error-machine'])
-  }).onChange((data) => {
-    console.log('ONCHANGE:')
-    console.log(data)
   }).onDone((data) => {
     console.log('ONDONE:')
     console.log(data)
   })
 
   constructor () {
-    this.responseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'))
     this.httpHandler = new HttpHandler()
     this.configurator = new Configurator()
     this.amt = new AMT.Messages()
-    this.logger = new Logger('Deactivation_State_Machine')
+    this.logger = new Logger('Deactivation State Machine')
   }
 
-  async removeDeviceFromSecretProvider (context, event): Promise<any> {
+  async removeDeviceFromSecretProvider (context: DeactivationContext): Promise<any> {
     return await this.configurator.amtDeviceRepository.delete(devices[context.clientId].uuid)
   }
 
-  async removeDeviceFromMPS (context, event): Promise<any> {
+  async removeDeviceFromMPS (context: DeactivationContext): Promise<any> {
     await got(`${EnvReader.GlobalEnvConfig.mpsServer}/api/v1/devices/${devices[context.clientId].uuid}`, {
       method: 'DELETE'
     })
@@ -145,7 +141,7 @@ export class Deactivation {
     const xmlRequestBody = this.amt.SetupAndConfigurationService(AMT.Methods.UNPROVISION, null, 2)
     message = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
     this.logger.debug(`Unprovisioning message to AMT ${clientObj.uuid} : ${message}`)
-    const responseMessage = this.responseMsg.get(clientId, message, 'wsman', 'ok')
+    const responseMessage = ClientResponseMsg.get(clientId, message, 'wsman', 'ok')
     devices[clientId].ClientSocket.send(JSON.stringify(responseMessage))
     clientObj.pendingPromise = new Promise<any>((resolve, reject) => {
       clientObj.resolve = resolve
@@ -154,7 +150,7 @@ export class Deactivation {
     return await clientObj.pendingPromise
   }
 
-  sendMessageToDevice (context, event): void {
+  sendMessageToDevice (context: DeactivationContext, event: DeactivationEvent): void {
     const { clientId, status } = context
     const message = event?.data
     const clientObj = devices[clientId]
@@ -166,7 +162,7 @@ export class Deactivation {
       clientObj.status.Status = message
       method = 'failed'
     }
-    const responseMessage = this.responseMsg.get(clientId, null, status, method, JSON.stringify(clientObj.status))
+    const responseMessage = ClientResponseMsg.get(clientId, null, status as any, method, JSON.stringify(clientObj.status))
     devices[clientId].ClientSocket.send(JSON.stringify(responseMessage))
   }
 }

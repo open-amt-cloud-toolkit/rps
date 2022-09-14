@@ -1,10 +1,9 @@
-import { AMT, IPS } from '@open-amt-cloud-toolkit/wsman-messages'
+import { AMT, IPS, CIM } from '@open-amt-cloud-toolkit/wsman-messages'
 import { assign, createMachine, interpret } from 'xstate'
 import { ClientAction } from '../models/RCS.Config'
 import { HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
 import { AMTConfiguration, AMTDeviceDTO, AMTDomain } from '../models'
-import { ClientResponseMsg } from '../utils/ClientResponseMsg'
 import { EnvReader } from '../utils/EnvReader'
 import { MqttProvider } from '../utils/MqttProvider'
 import { devices } from '../WebSocketListener'
@@ -22,6 +21,9 @@ import { Validator } from '../Validator'
 import { DbCreatorFactory } from '../repositories/factories/DbCreatorFactory'
 import { AMTUserName } from '../utils/constants'
 import { CIRAConfiguration } from './ciraConfiguration'
+import { TLS } from './tls'
+import { invokeWsmanCall } from './common'
+import ClientResponseMsg from '../utils/ClientResponseMsg'
 import { Unconfiguration } from './unconfiguration'
 
 export interface ActivationContext {
@@ -36,6 +38,9 @@ export interface ActivationContext {
   targetAfterError: string
   httpHandler: HttpHandler
   isActivated?: boolean
+  amt: AMT.Messages
+  ips: IPS.Messages
+  cim: CIM.Messages
 }
 
 interface ActivationEvent {
@@ -49,10 +54,7 @@ export class Activation {
   certManager: CertManager
   signatureHelper: SignatureHelper
   configurator: Configurator
-  responseMsg: ClientResponseMsg
   validator: Validator
-  amt: AMT.Messages
-  ips: IPS.Messages
   logger: Logger
   dbFactory: DbCreatorFactory
   db: any
@@ -61,6 +63,7 @@ export class Activation {
   featuresConfiguration: FeaturesConfiguration = new FeaturesConfiguration()
   cira: CIRAConfiguration = new CIRAConfiguration()
   unconfiguration: Unconfiguration = new Unconfiguration()
+  tls: TLS = new TLS()
 
   machine =
 
@@ -79,7 +82,10 @@ export class Activation {
       generalSettings: null,
       targetAfterError: null,
       httpHandler: new HttpHandler(),
-      isActivated: false
+      isActivated: false,
+      amt: new AMT.Messages(),
+      ips: new IPS.Messages(),
+      cim: new CIM.Messages()
     },
     id: 'activation-machine',
     initial: 'UNPROVISIONED',
@@ -323,7 +329,7 @@ export class Activation {
       SAVE_DEVICE_TO_MPS: {
         invoke: {
           src: this.saveDeviceInfoToMPS.bind(this),
-          id: 'save-device-mps',
+          id: 'save-device-to-mps',
           onDone: 'UNCONFIGURATION',
           onError: 'SAVE_DEVICE_TO_MPS_FAILURE'
         }
@@ -342,7 +348,7 @@ export class Activation {
           id: 'send-to-change-amt-password',
           onDone: {
             actions: assign({ message: (context, event) => event.data }),
-            target: 'SAVE_DEVICE_TO_SECRET_PROVIDER'
+            target: 'UPDATE_CREDENTIALS'
           },
           onError: {
             actions: assign({ message: (context, event) => event.data }),
@@ -358,7 +364,9 @@ export class Activation {
           data: {
             clientId: (context, event) => context.clientId,
             profile: (context, event) => context.profile,
-            httpHandler: (context, _) => context.httpHandler
+            httpHandler: (context, _) => context.httpHandler,
+            amt: (context, event) => context.amt,
+            ips: (context, event) => context.ips
           },
           onDone: 'NETWORK_CONFIGURATION'
         }
@@ -372,7 +380,9 @@ export class Activation {
             amtProfile: (context, event) => context.profile,
             generalSettings: (context, event) => context.generalSettings,
             clientId: (context, event) => context.clientId,
-            httpHandler: (context, _) => context.httpHandler
+            httpHandler: (context, _) => context.httpHandler,
+            amt: (context, event) => context.amt,
+            cim: (context, event) => context.cim
           },
           onDone: 'FEATURES_CONFIGURATION'
         },
@@ -388,20 +398,44 @@ export class Activation {
           data: {
             clientId: (context, event) => context.clientId,
             amtConfiguration: (context, event) => context.profile,
-            httpHandler: (context, _) => context.httpHandler
+            httpHandler: (context, _) => context.httpHandler,
+            amt: (context, event) => context.amt,
+            ips: (context, event) => context.ips,
+            cim: (context, event) => context.cim
           },
-          onDone: 'CIRA'
+          onDone: [
+            {
+              cond: 'hasCIRAProfile',
+              target: 'CIRA'
+            },
+            { target: 'TLS' }
+          ]
         }
       },
       CIRA: {
-        entry: send({ type: 'REMOVEPOLICY' }, { to: 'cira-machine' }),
+        entry: send({ type: 'CONFIGURE_CIRA' }, { to: 'cira-machine' }),
         invoke: {
           src: this.cira.machine,
           id: 'cira-machine',
           data: {
             clientId: (context, event) => context.clientId,
             profile: (context, event) => context.profile,
-            httpHandler: (context, _) => context.httpHandler
+            httpHandler: (context, _) => context.httpHandler,
+            amt: (context, event) => context.amt
+          },
+          onDone: 'PROVISIONED'
+        }
+      },
+      TLS: {
+        entry: send({ type: 'CONFIGURE_TLS' }, { to: 'tls-machine' }),
+        invoke: {
+          src: this.tls.machine,
+          id: 'tls-machine',
+          data: {
+            clientId: (context, event) => context.clientId,
+            amtProfile: (context, event) => context.profile,
+            httpHandler: (context, _) => context.httpHandler,
+            amt: (context, event) => context.amt
           },
           onDone: 'PROVISIONED'
         }
@@ -464,6 +498,7 @@ export class Activation {
       isCertNotAdded: (context, event) => context.message.Envelope.Body.AddNextCertInChain_OUTPUT.ReturnValue !== 0,
       isGeneralSettings: (context, event) => context.targetAfterError === 'GET_GENERAL_SETTINGS',
       isMebxPassword: (context, event) => context.targetAfterError === 'SET_MEBX_PASSWORD',
+      hasCIRAProfile: (context, event) => context.profile.ciraConfigName != null,
       isActivated: (context, event) => context.isActivated
     },
     actions: {
@@ -494,6 +529,11 @@ export class Activation {
         console.log(`AMT Features State: ${childState.value}`)
       })
     }
+    if (state.children['tls-configuration-machine'] != null) {
+      state.children['tls-configuration-machine'].subscribe((childState) => {
+        console.log(`TLS State: ${childState.value}`)
+      })
+    }
     if (state.children['cira-machine'] != null) {
       state.children['cira-machine'].subscribe((childState) => {
         console.log(`CIRA State: ${childState.value}`)
@@ -515,10 +555,7 @@ export class Activation {
     this.certManager = new CertManager(new Logger('CertManager'), this.nodeForge)
     this.signatureHelper = new SignatureHelper(this.nodeForge)
     this.configurator = new Configurator()
-    this.responseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'))
     this.validator = new Validator(new Logger('Validator'), this.configurator)
-    this.amt = new AMT.Messages()
-    this.ips = new IPS.Messages()
     this.dbFactory = new DbCreatorFactory(EnvReader.GlobalEnvConfig)
     this.logger = new Logger('Activation_State_Machine')
   }
@@ -549,7 +586,7 @@ export class Activation {
       clientObj.status.Status = context.errorMessage !== '' ? context.errorMessage : 'Failed'
       method = 'failed'
     }
-    const responseMessage = this.responseMsg.get(clientId, null, status, method, JSON.stringify(clientObj.status))
+    const responseMessage = ClientResponseMsg.get(clientId, null, status, method, JSON.stringify(clientObj.status))
     this.logger.info(JSON.stringify(responseMessage, null, '\t'))
     devices[clientId].ClientSocket.send(JSON.stringify(responseMessage))
   }
@@ -568,18 +605,18 @@ export class Activation {
   }
 
   async getGeneralSettings (context): Promise<any> {
-    context.xmlMessage = this.amt.GeneralSettings(AMT.Methods.GET)
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.amt.GeneralSettings(AMT.Methods.GET)
+    return await invokeWsmanCall(context)
   }
 
   async getHostBasedSetupService (context): Promise<any> {
-    context.xmlMessage = this.ips.HostBasedSetupService(IPS.Methods.GET)
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.ips.HostBasedSetupService(IPS.Methods.GET)
+    return await invokeWsmanCall(context)
   }
 
   async getNextCERTInChain (context): Promise<any> {
-    context.xmlMessage = await this.injectCertificate(context.clientId)
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = await this.injectCertificate(context.clientId, context.ips)
+    return await invokeWsmanCall(context)
   }
 
   async getPassword (context): Promise<string> {
@@ -599,14 +636,14 @@ export class Activation {
     const password = await this.getPassword(context)
     this.createSignedString(clientId)
     const clientObj = devices[clientId]
-    context.xmlMessage = this.ips.HostBasedSetupService(IPS.Methods.ADMIN_SETUP, 2, password, clientObj.nonce.toString('base64'), 2, clientObj.signature)
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.ips.HostBasedSetupService(IPS.Methods.ADMIN_SETUP, 2, password, clientObj.nonce.toString('base64'), 2, clientObj.signature)
+    return await invokeWsmanCall(context)
   }
 
   async getClientSetup (context): Promise<any> {
     const password = await this.getPassword(context)
-    context.xmlMessage = this.ips.HostBasedSetupService(IPS.Methods.SETUP, 2, password)
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.ips.HostBasedSetupService(IPS.Methods.SETUP, 2, password)
+    return await invokeWsmanCall(context)
   }
 
   async changeAMTPassword (context): Promise<any> {
@@ -615,30 +652,16 @@ export class Activation {
     const result = password.match(/../g).map((v) => String.fromCharCode(parseInt(v, 16))).join('')
     // Encode to base64
     const encodedPassword = Buffer.from(result, 'binary').toString('base64')
-    context.xmlMessage = this.amt.AuthorizationService(AMT.Methods.SET_ADMIN_ACL_ENTRY_EX, AMTUserName, encodedPassword)
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.amt.AuthorizationService(AMT.Methods.SET_ADMIN_ACL_ENTRY_EX, AMTUserName, encodedPassword)
+    return await invokeWsmanCall(context)
   }
 
   async setMEBxPassword (context): Promise<any> {
-    context.xmlMessage = this.amt.SetupAndConfigurationService(AMT.Methods.SET_MEBX_PASSWORD, devices[context.clientId].mebxPassword)
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.amt.SetupAndConfigurationService(AMT.Methods.SET_MEBX_PASSWORD, devices[context.clientId].mebxPassword)
+    return await invokeWsmanCall(context)
   }
 
-  async invokeWsmanCall (context): Promise<any> {
-    let { message, clientId, xmlMessage } = context
-    const clientObj = devices[clientId]
-    message = context.httpHandler.wrapIt(xmlMessage, clientObj.connectionParams)
-    this.logger.info(`message sent to client: ${message}`)
-    const responseMessage = this.responseMsg.get(clientId, message, 'wsman', 'ok')
-    devices[clientId].ClientSocket.send(JSON.stringify(responseMessage))
-    clientObj.pendingPromise = new Promise<any>((resolve, reject) => {
-      clientObj.resolve = resolve
-      clientObj.reject = reject
-    })
-    return await clientObj.pendingPromise
-  }
-
-  injectCertificate (clientId: string): string {
+  injectCertificate (clientId: string, ips: IPS.Messages): string {
     const clientObj = devices[clientId]
     // inject certificates in proper order with proper flags
     if (clientObj.count <= clientObj.certObj.certChain.length) {
@@ -650,7 +673,7 @@ export class Activation {
       } else if (clientObj.count === clientObj.certObj.certChain.length) {
         isRoot = true
       }
-      xmlRequestBody = this.ips.HostBasedSetupService(IPS.Methods.ADD_NEXT_CERT_IN_CHAIN, null, null, null, null, null, clientObj.certObj.certChain[clientObj.count - 1], isLeaf, isRoot)
+      xmlRequestBody = ips.HostBasedSetupService(IPS.Methods.ADD_NEXT_CERT_IN_CHAIN, null, null, null, null, null, clientObj.certObj.certChain[clientObj.count - 1], isLeaf, isRoot)
       ++devices[clientId].count
       this.logger.debug(`xmlRequestBody ${clientObj.uuid} : ${xmlRequestBody}`)
       return xmlRequestBody

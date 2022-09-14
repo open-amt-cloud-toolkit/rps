@@ -1,5 +1,5 @@
 import { AMT, IPS } from '@open-amt-cloud-toolkit/wsman-messages'
-import { createMachine, interpret, assign, send } from 'xstate'
+import { createMachine, assign, send } from 'xstate'
 import { CertManager } from '../certManager'
 import { Configurator } from '../Configurator'
 import { HttpHandler } from '../HttpHandler'
@@ -7,13 +7,13 @@ import Logger from '../Logger'
 import { CIRAConfig } from '../models/RCS.Config'
 import { NodeForge } from '../NodeForge'
 import { DbCreatorFactory } from '../repositories/factories/DbCreatorFactory'
-import { ClientResponseMsg } from '../utils/ClientResponseMsg'
 import { EnvReader } from '../utils/EnvReader'
 import { SignatureHelper } from '../utils/SignatureHelper'
 import { Validator } from '../Validator'
 import { devices } from '../WebSocketListener'
 import { AMTConfiguration } from '../models'
 import { Error } from './error'
+import { invokeWsmanCall } from './common'
 
 export interface UnconfigContext {
   clientId: string
@@ -27,6 +27,9 @@ export interface UnconfigContext {
   privateCerts: any[]
   httpHandler: HttpHandler
   TLSSettingData: any[]
+  publicKeyCertificates: any[]
+  amt?: AMT.Messages
+  ips?: IPS.Messages
 }
 interface UnconfigEvent {
   type: 'REMOVEPOLICY' | 'ONFAILED'
@@ -38,10 +41,7 @@ export class Unconfiguration {
   certManager: CertManager
   signatureHelper: SignatureHelper
   configurator: Configurator
-  responseMsg: ClientResponseMsg
   validator: Validator
-  amt: AMT.Messages
-  ips: IPS.Messages
   logger: Logger
   dbFactory: DbCreatorFactory
   db: any
@@ -64,7 +64,8 @@ export class Unconfiguration {
       ciraConfig: null,
       profile: null,
       privateCerts: [],
-      TLSSettingData: []
+      TLSSettingData: [],
+      publicKeyCertificates: []
     },
     id: 'unconfiuration-machine',
     initial: 'UNCONFIGURED',
@@ -133,7 +134,7 @@ export class Unconfiguration {
             target: 'PULL_MANAGEMENT_PRESENCE_REMOTE_SAP'
           },
           onError: {
-            actions: assign({ message: (context, event) => event.data, statusMessage: (context, event) => 'Failed to enumerate Management Presence Remote SAP' }),
+            actions: assign({ statusMessage: (context, event) => 'Failed to enumerate Management Presence Remote SAP' }),
             target: 'FAILURE'
           }
         }
@@ -147,7 +148,7 @@ export class Unconfiguration {
             target: 'PULL_MANAGEMENT_PRESENCE_REMOTE_SAP_RESPONSE'
           },
           onError: {
-            actions: assign({ message: (context, event) => event.data, statusMessage: (context, event) => 'Failed to Pull Management Presence Remote SAP' }),
+            actions: assign({ statusMessage: (context, event) => 'Failed to Pull Management Presence Remote SAP' }),
             target: 'FAILURE'
           }
         }
@@ -166,9 +167,12 @@ export class Unconfiguration {
         invoke: {
           src: this.deleteRemoteAccessService.bind(this),
           id: 'delete-management-presence-remote-sap',
-          onDone: 'ENUMERATE_TLS_SETTING_DATA',
+          onDone: {
+            actions: [assign({ statusMessage: (context, event) => 'unconfigured' }), 'Update CIRA Status'],
+            target: 'ENUMERATE_TLS_SETTING_DATA'
+          },
           onError: {
-            actions: assign({ message: (context, event) => event.data, statusMessage: (context, event) => 'Failed to delete Management Presence Remote SAP' }),
+            actions: assign({ statusMessage: (context, event) => 'Failed to delete Management Presence Remote SAP' }),
             target: 'FAILURE'
           }
         }
@@ -179,7 +183,7 @@ export class Unconfiguration {
           id: 'enumerate-tls-setting-data',
           onDone: { actions: assign({ message: (context, event) => event.data }), target: 'PULL_TLS_SETTING_DATA' },
           onError: {
-            actions: assign({ message: (context, event) => event.data, statusMessage: (context, event) => 'Failed to enumerate TLS Setting Data' }),
+            actions: assign({ statusMessage: (context, event) => 'Failed to enumerate TLS Setting Data' }),
             target: 'FAILURE'
           }
         }
@@ -190,7 +194,7 @@ export class Unconfiguration {
           id: 'pull-tls-setting-data',
           onDone: { actions: assign({ message: (context, event) => event.data }), target: 'PULL_TLS_SETTING_DATA_RESPONSE' },
           onError: {
-            actions: assign({ message: (context, event) => event.data, statusMessage: (context, event) => 'Failed to pull TLS Setting Data' }),
+            actions: assign({ statusMessage: (context, event) => 'Failed to pull TLS Setting Data' }),
             target: 'FAILURE'
           }
         }
@@ -207,7 +211,7 @@ export class Unconfiguration {
           id: 'disable-tls-setting-data',
           onDone: { actions: assign({ message: (context, event) => event.data }), target: 'DISABLE_TLS_SETTING_DATA_RESPONSE' },
           onError: {
-            actions: assign({ message: (context, event) => event.data, statusMessage: (context, event) => 'Failed to disable TLS Setting Data' }),
+            actions: assign({ statusMessage: (context, event) => 'Failed to disable TLS Setting Data' }),
             target: 'FAILURE'
           }
         }
@@ -218,7 +222,7 @@ export class Unconfiguration {
           id: 'disable-tls-setting-data-2',
           onDone: { actions: assign({ message: (context, event) => event.data }), target: 'DISABLE_TLS_SETTING_DATA_RESPONSE' },
           onError: {
-            actions: assign({ message: (context, event) => event.data, statusMessage: (context, event) => 'Failed to disable TLS Setting Data' }),
+            actions: assign({ statusMessage: (context, event) => 'Failed to disable TLS Setting Data' }),
             target: 'FAILURE'
           }
         }
@@ -234,9 +238,9 @@ export class Unconfiguration {
         invoke: {
           src: this.commitSetupAndConfigurationService.bind(this),
           id: 'setup-and-configuration-service-commit-changes',
-          onDone: { actions: assign({ message: (context, event) => event.data }), target: 'SETUP_AND_CONFIGURATION_SERVICE_COMMIT_CHANGES_RESPONSE' },
+          onDone: { actions: [assign({ statusMessage: (context, event) => 'unconfigured' }), 'Update TLS Status'], target: 'SETUP_AND_CONFIGURATION_SERVICE_COMMIT_CHANGES_RESPONSE' },
           onError: {
-            actions: assign({ message: (context, event) => event.data, statusMessage: (context, event) => 'Failed at setup and configuration service commit changes' }),
+            actions: assign({ statusMessage: (context, event) => 'Failed at setup and configuration service commit changes' }),
             target: 'FAILURE'
           }
         }
@@ -250,7 +254,7 @@ export class Unconfiguration {
           id: 'enumerate-tls-credential-context',
           onDone: { actions: assign({ message: (context, event) => event.data }), target: 'PULL_TLS_CREDENTIAL_CONTEXT' },
           onError: {
-            actions: assign({ message: (context, event) => event.data, statusMessage: (context, event) => 'Failed to enumerate TLS Credential context' }),
+            actions: assign({ statusMessage: (context, event) => 'Failed to enumerate TLS Credential context' }),
             target: 'FAILURE'
           }
         }
@@ -261,7 +265,7 @@ export class Unconfiguration {
           id: 'pull-tls-credential-context',
           onDone: { actions: assign({ message: (context, event) => event.data }), target: 'PULL_TLS_CREDENTIAL_CONTEXT_RESPONSE' },
           onError: {
-            actions: assign({ message: (context, event) => event.data, statusMessage: (context, event) => 'Failed to pull TLS Credential context' }),
+            actions: assign({ statusMessage: (context, event) => 'Failed to pull TLS Credential context' }),
             target: 'FAILURE'
           }
         }
@@ -278,7 +282,7 @@ export class Unconfiguration {
           id: 'delete-tls-credential-context',
           onDone: 'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR',
           onError: {
-            actions: assign({ message: (context, event) => event.data, statusMessage: (context, event) => 'Failed to delete TLS Credential context' }),
+            actions: assign({ statusMessage: (context, event) => 'Failed to delete TLS Credential context' }),
             target: 'FAILURE'
           }
         }
@@ -289,7 +293,7 @@ export class Unconfiguration {
           id: 'enumerate-public-private-key-pair',
           onDone: { actions: assign({ message: (context, event) => event.data }), target: 'PULL_PUBLIC_PRIVATE_KEY_PAIR' },
           onError: {
-            actions: assign({ message: (context, event) => event.data, statusMessage: (context, event) => 'Failed to enumerate public private key pair' }),
+            actions: assign({ statusMessage: (context, event) => 'Failed to enumerate public private key pair' }),
             target: 'FAILURE'
           }
         }
@@ -298,35 +302,41 @@ export class Unconfiguration {
         invoke: {
           src: this.pullPublicPrivateKeyPair.bind(this),
           id: 'pull-public-private-key-pair',
-          onDone: { actions: assign({ message: (context, event) => event.data }), target: 'PULL_PUBLIC_PRIVATE_KEY_PAIR_RESPONSE' },
+          onDone: {
+            actions: assign({
+              privateCerts: (context, event) => {
+                if (event.data.Envelope.Body.PullResponse.Items === '') return []
+                if (Array.isArray(event.data.Envelope.Body.PullResponse.Items?.AMT_PublicPrivateKeyPair)) {
+                  return event.data.Envelope.Body.PullResponse.Items.AMT_PublicPrivateKeyPair
+                } else {
+                  return [event.data.Envelope.Body.PullResponse.Items.AMT_PublicPrivateKeyPair]
+                }
+              }
+            }),
+            target: 'PULL_PUBLIC_PRIVATE_KEY_PAIR_RESPONSE'
+          },
           onError: {
-            actions: assign({ message: (context, event) => event.data, statusMessage: (context, event) => 'Failed to pull public private key pair' }),
+            actions: assign({ statusMessage: (context, event) => 'Failed to pull public private key pair' }),
             target: 'FAILURE'
           }
         }
       },
       PULL_PUBLIC_PRIVATE_KEY_PAIR_RESPONSE: {
         always: [
-          { cond: 'isNotDeleting', target: 'ENUMERATE_PUBLIC_KEY_CERTIFICATE' },
-          { target: 'DELETE_PUBLIC_PRIVATE_KEY_PAIR' }
+          { cond: 'hasPrivateCerts', target: 'DELETE_PUBLIC_PRIVATE_KEY_PAIR' },
+          { target: 'ENUMERATE_PUBLIC_KEY_CERTIFICATE' }
         ]
       },
       DELETE_PUBLIC_PRIVATE_KEY_PAIR: {
         invoke: {
           src: this.deletePublicPrivateKeyPair.bind(this),
           id: 'delete-public-private-key-pair',
-          onDone: { actions: assign({ message: (context, event) => event.data }), target: 'DELETE_PUBLIC_PRIVATE_KEY_PAIR_RESPONSE' },
+          onDone: { actions: assign({ message: (context, event) => event.data }), target: 'PULL_PUBLIC_PRIVATE_KEY_PAIR_RESPONSE' },
           onError: {
-            actions: assign({ message: (context, event) => event.data, statusMessage: (context, event) => 'Failed to delete public private key pair' }),
+            actions: assign({ statusMessage: (context, event) => 'Failed to delete public private key pair' }),
             target: 'FAILURE'
           }
         }
-      },
-      DELETE_PUBLIC_PRIVATE_KEY_PAIR_RESPONSE: {
-        always: [
-          { cond: 'hasPrivateCerts', target: 'DELETE_PUBLIC_PRIVATE_KEY_PAIR' },
-          { target: 'ENUMERATE_PUBLIC_KEY_CERTIFICATE' }
-        ]
       },
       ENUMERATE_PUBLIC_KEY_CERTIFICATE: {
         invoke: {
@@ -334,7 +344,7 @@ export class Unconfiguration {
           id: 'enumerate-public-key-certificate',
           onDone: { actions: assign({ message: (context, event) => event.data }), target: 'PULL_PUBLIC_KEY_CERTIFICATE' },
           onError: {
-            actions: assign({ message: (context, event) => event.data, statusMessage: (context, event) => 'Failed to enumerate public key certificate' }),
+            actions: assign({ statusMessage: (context, event) => 'Failed to enumerate public key certificate' }),
             target: 'FAILURE'
           }
         }
@@ -343,9 +353,21 @@ export class Unconfiguration {
         invoke: {
           src: this.pullPublicKeyCertificate.bind(this),
           id: 'pull-public-key-certificate',
-          onDone: { actions: assign({ message: (context, event) => event.data }), target: 'PULL_PUBLIC_KEY_CERTIFICATE_RESPONSE' },
+          onDone: {
+            actions: assign({
+              publicKeyCertificates: (context, event) => {
+                if (event.data.Envelope.Body.PullResponse.Items === '') return []
+                if (Array.isArray(event.data.Envelope.Body.PullResponse.Items?.AMT_PublicKeyCertificate)) {
+                  return event.data.Envelope.Body.PullResponse.Items.AMT_PublicKeyCertificate
+                } else {
+                  return [event.data.Envelope.Body.PullResponse.Items.AMT_PublicKeyCertificate]
+                }
+              }
+            }),
+            target: 'PULL_PUBLIC_KEY_CERTIFICATE_RESPONSE'
+          },
           onError: {
-            actions: assign({ message: (context, event) => event.data, statusMessage: (context, event) => 'Failed to pull public key certificate' }),
+            actions: assign({ statusMessage: (context, event) => 'Failed to pull public key certificate' }),
             target: 'FAILURE'
           }
         }
@@ -360,9 +382,12 @@ export class Unconfiguration {
         invoke: {
           src: this.deletePublicKeyCertificate.bind(this),
           id: 'delete-public-key-certificate',
-          onDone: { actions: assign({ message: (context, event) => event.data }), target: 'GET_ENVIRONMENT_DETECTION_SETTINGS' },
+          onDone: {
+            actions: assign({ publicKeyCertificates: (context, event) => context.publicKeyCertificates.slice(1) }),
+            target: 'PULL_PUBLIC_KEY_CERTIFICATE_RESPONSE'
+          }, // check if there is any more certificates
           onError: {
-            actions: assign({ message: (context, event) => event.data, statusMessage: (context, event) => 'Failed to delete public key certificate' }),
+            actions: assign({ statusMessage: (context, event) => 'Failed to delete public key certificate' }),
             target: 'FAILURE'
           }
         }
@@ -373,7 +398,7 @@ export class Unconfiguration {
           id: 'get-environment-detection-settings',
           onDone: { actions: assign({ message: (context, event) => event.data }), target: 'GET_ENVIRONMENT_DETECTION_SETTINGS_RESPONSE' },
           onError: {
-            actions: assign({ message: (context, event) => event.data, statusMessage: (context, event) => 'Failed to get environment detection settings' }),
+            actions: assign({ statusMessage: (context, event) => 'Failed to get environment detection settings' }),
             target: 'FAILURE'
           }
         }
@@ -393,21 +418,19 @@ export class Unconfiguration {
           src: this.clearEnvironmentDetectionSettings.bind(this),
           id: 'put-environment-detection-settings',
           onDone: {
-            actions: assign({ message: (context, event) => event.data, statusMessage: (context, event) => 'Done' }),
             target: 'SUCCESS'
           },
           onError: {
-            actions: assign({ message: (context, event) => event.data, statusMessage: (context, event) => 'Failed to put environment detection settings' }),
+            actions: assign({ statusMessage: (context, event) => 'Failed to put environment detection settings' }),
             target: 'FAILURE'
           }
         }
       },
       FAILURE: {
-        entry: [assign({ statusMessage: (context, event) => 'Failed' }), 'Update UnConfiguration Status'],
+        entry: ['Update Status'],
         type: 'final'
       },
       SUCCESS: {
-        entry: 'Update UnConfiguration Status',
         type: 'final'
       }
     }
@@ -423,7 +446,7 @@ export class Unconfiguration {
         return context.message.Envelope.Body.AMT_TLSSettingData?.ElementName === 'Intel(r) AMT LMS TLS Settings'
       },
       is8023TLS: (context, event) => {
-        return context.message.Envelope.Body.AMT_TLSSettingData?.ElementName === 'Intel(r) AMT 802.3 TLS Settings' && devices[context.clientId].ciraconfig.TLSSettingData[1].Enabled
+        return context.message.Envelope.Body.AMT_TLSSettingData?.ElementName === 'Intel(r) AMT 802.3 TLS Settings' && context.TLSSettingData[1].Enabled
       },
       tlsSettingDataEnabled: (context, event) => {
         return context.message.Envelope.Body.PullResponse.Items.AMT_TLSSettingData?.[0].Enabled || context.message.Envelope.Body.PullResponse.Items.AMT_TLSSettingData?.[1].Enabled
@@ -432,7 +455,7 @@ export class Unconfiguration {
         return context.message.Envelope.Body.PullResponse.Items?.AMT_ManagementPresenceRemoteSAP != null
       },
       hasPublicKeyCertificate: (context, event) => {
-        return context.message.Envelope.Body.PullResponse.Items?.AMT_PublicKeyCertificate != null
+        return context.publicKeyCertificates?.length > 0
       },
       hasEnvSettings: (context, event) => {
         return context.message.Envelope.Body.AMT_EnvironmentDetectionSettingData.DetectionStrings != null
@@ -442,19 +465,19 @@ export class Unconfiguration {
       }
     },
     actions: {
-      'Update UnConfiguration Status': (context, event) => this.updateConfigurationStatus.bind(this),
+      'Update CIRA Status': (context, event) => {
+        devices[context.clientId].status.CIRAConnection = context.statusMessage
+      },
+      'Update TLS Status': (context, event) => {
+        devices[context.clientId].status.TLSConfiguration = context.statusMessage
+      },
+      'Update Status': (context, event) => {
+        devices[context.clientId].status.TLSConfiguration = ''
+        devices[context.clientId].status.CIRAConnection = ''
+        devices[context.clientId].status.Status = context.statusMessage
+      },
       'Reset Unauth Count': (context, event) => { devices[context.clientId].unauthCount = 0 }
     }
-  })
-
-  service = interpret(this.machine).onTransition((state) => {
-    console.log(`Current state of CIRA Config State Machine: ${JSON.stringify(state.value)}`)
-  }).onChange((data) => {
-    console.log('ONCHANGE:')
-    console.log(data)
-  }).onDone((data) => {
-    console.log('ONDONE:')
-    console.log(data)
   })
 
   constructor () {
@@ -462,101 +485,81 @@ export class Unconfiguration {
     this.certManager = new CertManager(new Logger('CertManager'), this.nodeForge)
     this.signatureHelper = new SignatureHelper(this.nodeForge)
     this.configurator = new Configurator()
-    this.responseMsg = new ClientResponseMsg(new Logger('ClientResponseMsg'))
     this.validator = new Validator(new Logger('Validator'), this.configurator)
-    this.amt = new AMT.Messages()
-    this.ips = new IPS.Messages()
     this.dbFactory = new DbCreatorFactory(EnvReader.GlobalEnvConfig)
     this.logger = new Logger('Activation_State_Machine')
   }
 
-  async invokeWsmanCall (context): Promise<any> {
-    let { message, clientId, xmlMessage } = context
-    const clientObj = devices[clientId]
-    message = context.httpHandler.wrapIt(xmlMessage, clientObj.connectionParams)
-    const responseMessage = this.responseMsg.get(clientId, message, 'wsman', 'ok')
-    devices[clientId].ClientSocket.send(JSON.stringify(responseMessage))
-    clientObj.pendingPromise = new Promise<any>((resolve, reject) => {
-      clientObj.resolve = resolve
-      clientObj.reject = reject
-    })
-    return await clientObj.pendingPromise
-  }
-
   async removeRemoteAccessPolicyRuleUserInitiated (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
     const selector = { name: 'PolicyRuleName', value: 'User Initiated' }
-    context.xmlMessage = this.amt.RemoteAccessPolicyRule(AMT.Methods.DELETE, selector)
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.amt.RemoteAccessPolicyRule(AMT.Methods.DELETE, selector)
+    return await invokeWsmanCall(context)
   }
 
   async removeRemoteAccessPolicyRuleAlert (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
     const selector = { name: 'PolicyRuleName', value: 'Alert' }
-    context.xmlMessage = this.amt.RemoteAccessPolicyRule(AMT.Methods.DELETE, selector)
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.amt.RemoteAccessPolicyRule(AMT.Methods.DELETE, selector)
+    return await invokeWsmanCall(context)
   }
 
   async removeRemoteAccessPolicyRulePeriodic (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
     const selector = { name: 'PolicyRuleName', value: 'Periodic' }
-    context.xmlMessage = this.amt.RemoteAccessPolicyRule(AMT.Methods.DELETE, selector)
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.amt.RemoteAccessPolicyRule(AMT.Methods.DELETE, selector)
+    return await invokeWsmanCall(context)
   }
 
   async enumerateManagementPresenceRemoteSAP (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = this.amt.ManagementPresenceRemoteSAP(AMT.Methods.ENUMERATE)
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.amt.ManagementPresenceRemoteSAP(AMT.Methods.ENUMERATE)
+    return await invokeWsmanCall(context)
   }
 
   async pullManagementPresenceRemoteSAP (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = this.amt.ManagementPresenceRemoteSAP(AMT.Methods.PULL, context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.amt.ManagementPresenceRemoteSAP(AMT.Methods.PULL, context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+    return await invokeWsmanCall(context)
   }
 
   async deleteRemoteAccessService (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
     const selector = { name: 'Name', value: context.message.Envelope.Body.PullResponse.Items.AMT_ManagementPresenceRemoteSAP.Name }
-    context.xmlMessage = this.amt.ManagementPresenceRemoteSAP(AMT.Methods.DELETE, null, selector)
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.amt.ManagementPresenceRemoteSAP(AMT.Methods.DELETE, null, selector)
+    return await invokeWsmanCall(context)
   }
 
   async enumeratePublicKeyCertificate (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = this.amt.PublicKeyCertificate(AMT.Methods.ENUMERATE)
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.amt.PublicKeyCertificate(AMT.Methods.ENUMERATE)
+    return await invokeWsmanCall(context)
   }
 
   async pullPublicKeyCertificate (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = this.amt.PublicKeyCertificate(AMT.Methods.PULL, context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.amt.PublicKeyCertificate(AMT.Methods.PULL, context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+    return await invokeWsmanCall(context)
   }
 
   async deletePublicKeyCertificate (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    const publicKeyCertificates = context.message.Envelope.Body.PullResponse.Items?.AMT_PublicKeyCertificate
-    const selector = { name: 'InstanceID', value: publicKeyCertificates.InstanceID }
-    if (Array.isArray(publicKeyCertificates)) {
-      selector.value = publicKeyCertificates[0].InstanceID
-    }
-    context.xmlMessage = this.amt.PublicKeyCertificate(AMT.Methods.DELETE, null, selector)
-    return await this.invokeWsmanCall(context)
+    const selector = { name: 'InstanceID', value: context.publicKeyCertificates[0].InstanceID }
+    context.xmlMessage = context.amt.PublicKeyCertificate(AMT.Methods.DELETE, null, selector)
+    return await invokeWsmanCall(context)
   }
 
   async getEnvironmentDetectionSettings (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = this.amt.EnvironmentDetectionSettingData(AMT.Methods.GET)
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.amt.EnvironmentDetectionSettingData(AMT.Methods.GET)
+    return await invokeWsmanCall(context)
   }
 
   async clearEnvironmentDetectionSettings (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
     const envSettings = context.message.Envelope.Body.AMT_EnvironmentDetectionSettingData
     envSettings.DetectionStrings = []
-    context.xmlMessage = this.amt.EnvironmentDetectionSettingData(AMT.Methods.PUT, envSettings)
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.amt.EnvironmentDetectionSettingData(AMT.Methods.PUT, envSettings)
+    return await invokeWsmanCall(context)
   }
 
   async enumerateTLSSettingData (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = this.amt.TLSSettingData(AMT.Methods.ENUMERATE)
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.amt.TLSSettingData(AMT.Methods.ENUMERATE)
+    return await invokeWsmanCall(context)
   }
 
   async pullTLSSettingData (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = this.amt.TLSSettingData(AMT.Methods.PULL, context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.amt.TLSSettingData(AMT.Methods.PULL, context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+    return await invokeWsmanCall(context)
   }
 
   async disableTLSSettingData (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
@@ -565,61 +568,51 @@ export class Unconfiguration {
     context.TLSSettingData[0].AcceptNonSecureConnections = true
     context.TLSSettingData[0].MutualAuthentication = false
     delete context.TLSSettingData[0].TrustedCN
-    context.xmlMessage = this.amt.TLSSettingData(AMT.Methods.PUT, null, context.TLSSettingData[0])
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.amt.TLSSettingData(AMT.Methods.PUT, null, context.TLSSettingData[0])
+    return await invokeWsmanCall(context)
   }
 
   async commitSetupAndConfigurationService (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = this.amt.SetupAndConfigurationService(AMT.Methods.COMMIT_CHANGES)
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.amt.SetupAndConfigurationService(AMT.Methods.COMMIT_CHANGES)
+    return await invokeWsmanCall(context)
   }
 
   async disableTLSSettingData2 (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
     context.TLSSettingData[1].Enabled = false
     delete context.TLSSettingData[1].TrustedCN
-    context.xmlMessage = this.amt.TLSSettingData(AMT.Methods.PUT, null, context.TLSSettingData[1])
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.amt.TLSSettingData(AMT.Methods.PUT, null, context.TLSSettingData[1])
+    return await invokeWsmanCall(context)
   }
 
   async enumerateTLSCredentialContext (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = this.amt.TLSCredentialContext(AMT.Methods.ENUMERATE)
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.amt.TLSCredentialContext(AMT.Methods.ENUMERATE)
+    return await invokeWsmanCall(context)
   }
 
   async pullTLSCredentialContext (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = this.amt.TLSCredentialContext(AMT.Methods.PULL, context.message.Envelope.Body.EnumerateResponse.EnumerationContext)
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.amt.TLSCredentialContext(AMT.Methods.PULL, context.message.Envelope.Body.EnumerateResponse.EnumerationContext)
+    return await invokeWsmanCall(context)
   }
 
   async deleteTLSCredentialContext (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = this.amt.TLSCredentialContext(AMT.Methods.DELETE, null, null, context.message.Envelope.Body.PullResponse.Items?.AMT_TLSCredentialContext)
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.amt.TLSCredentialContext(AMT.Methods.DELETE, null, null, context.message.Envelope.Body.PullResponse.Items?.AMT_TLSCredentialContext)
+    return await invokeWsmanCall(context)
   }
 
   async enumeratePublicPrivateKeyPair (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = this.amt.PublicPrivateKeyPair(AMT.Methods.ENUMERATE)
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.amt.PublicPrivateKeyPair(AMT.Methods.ENUMERATE)
+    return await invokeWsmanCall(context)
   }
 
   async pullPublicPrivateKeyPair (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = this.amt.PublicPrivateKeyPair(AMT.Methods.PULL, context.message.Envelope.Body.EnumerateResponse.EnumerationContext)
-    return await this.invokeWsmanCall(context)
+    context.xmlMessage = context.amt.PublicPrivateKeyPair(AMT.Methods.PULL, context.message.Envelope.Body.EnumerateResponse.EnumerationContext)
+    return await invokeWsmanCall(context)
   }
 
   async deletePublicPrivateKeyPair (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    const publicPrivateKeyPair = context.message.Envelope.Body.PullResponse.Items?.AMT_PublicPrivateKeyPair
-    const selector = { name: 'InstanceID', value: publicPrivateKeyPair.InstanceID }
-    if (Array.isArray(publicPrivateKeyPair)) {
-      selector.value = publicPrivateKeyPair[0].InstanceID
-      context.privateCerts = publicPrivateKeyPair.slice(1)
-    } else {
-      context.privateCerts = []
-    }
-    context.xmlMessage = this.amt.PublicPrivateKeyPair(AMT.Methods.DELETE, null, selector)
-    return await this.invokeWsmanCall(context)
-  }
-
-  updateConfigurationStatus (context: UnconfigContext, event: UnconfigEvent): void {
-    devices[context.clientId].status.Unconfiguration = context.statusMessage
+    const selector = { name: 'InstanceID', value: context.privateCerts[0].InstanceID }
+    context.privateCerts = context.privateCerts.slice(1)
+    context.xmlMessage = context.amt.PublicPrivateKeyPair(AMT.Methods.DELETE, null, selector)
+    return await invokeWsmanCall(context)
   }
 }
