@@ -539,9 +539,6 @@ export class Activation {
         console.log(`CIRA State: ${childState.value}`)
       })
     }
-  }).onChange((data) => {
-    console.log('ONCHANGE:')
-    console.log(data)
   }).onDone((data) => {
     console.log('ONDONE:')
     console.log(data)

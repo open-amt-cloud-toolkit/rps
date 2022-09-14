@@ -190,7 +190,7 @@ describe('Network Configuration', () => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('SUCCESS') && currentStateIndex === flowStates.length) {
           const status = devices[clientId].status.Network
-          expect(status).toEqual('Wired Network Configured.')
+          expect(status).toEqual('Wired Network Configured. ')
           done()
         }
       })
@@ -221,7 +221,7 @@ describe('Network Configuration', () => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           const status = devices[clientId].status.Network
-          expect(status).toEqual('Wired Network Configured.Failed to delete wifi endpoint settings')
+          expect(status).toEqual('Wired Network Configured. Failed to delete wifi endpoint settings')
           done()
         }
       })
