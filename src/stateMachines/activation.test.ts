@@ -107,7 +107,8 @@ describe('Activation State Machine', () => {
       targetAfterError: '',
       amt: new AMT.Messages(),
       ips: new IPS.Messages(),
-      cim: new CIM.Messages()
+      cim: new CIM.Messages(),
+      certChainPfx: null
     }
 
     invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue()
@@ -195,6 +196,7 @@ describe('Activation State Machine', () => {
         'Read Host Based Setup Service': () => { },
         'Read Admin Setup Response': () => { },
         'Read Client Setup Response': () => { },
+        'Compare Domain Cert Hashes': () => { },
         'Send Message to Device': () => { },
         'Get Provisioning CertObj': () => { }
       },
@@ -345,12 +347,6 @@ describe('Activation State Machine', () => {
       expect(devices[clientId].certObj).toBeNull()
       expect(convertPfxToObjectSpy).toHaveBeenCalled()
     })
-    // test('should return null if unable to get provisioning certificate', async () => {
-    //   const message = activationmsg
-    //   const password = 'Intel123!'
-    //   const result = activator.GetProvisioningCertObj(message, cert, password, clientId)
-    //   expect(result).toBeNull()
-    // })
     test('should assign return valid certificate object', async () => {
       const certObject = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprint: 'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244' }
       const convertPfxToObjectSpy = jest.spyOn(activation.certManager, 'convertPfxToObject').mockImplementation(() => {
@@ -362,7 +358,12 @@ describe('Activation State Machine', () => {
       await activation.GetProvisioningCertObj(context, null)
       expect(convertPfxToObjectSpy).toHaveBeenCalled()
       expect(dumpPfxSpy).toHaveBeenCalled()
-      expect(devices[clientId].certObj).toBe(certObject.provisioningCertificateObj)
+      expect(context.certChainPfx).toBe(certObject)
+    })
+    test('should return valid provisioning certificate', async () => {
+      context.certChainPfx = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprint: 'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244' }
+      activation.compareCertHashes(context, null)
+      expect(devices[clientId].certObj).toBe(context.certChainPfx.provisioningCertificateObj)
     })
   })
 
@@ -499,6 +500,9 @@ describe('Activation State Machine', () => {
     })
 
     it('should eventually reach "PROVISIONED" in Admin mode', (done) => {
+      context.certChainPfx = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprint: 'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244' }
+      devices[context.clientId].certObj = context.certChainPfx.provisioningCertificateObj
+
       config.guards = {
         isAdminMode: () => true,
         maxCertLength: () => false
@@ -510,8 +514,8 @@ describe('Activation State Machine', () => {
         'GET_AMT_DOMAIN_CERT',
         'GET_GENERAL_SETTINGS',
         'IPS_HOST_BASED_SETUP_SERVICE',
-        'ADDNEXTCERTINCHAIN',
-        'ADMINSETUP',
+        'ADD_NEXT_CERT_IN_CHAIN',
+        'ADMIN_SETUP',
         'DELAYED_TRANSITION',
         'SET_MEBX_PASSWORD',
         'SAVE_DEVICE_TO_SECRET_PROVIDER',
@@ -523,6 +527,7 @@ describe('Activation State Machine', () => {
         'PROVISIONED'
       ]
       const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+        console.log(state.value)
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('PROVISIONED') && currentStateIndex === flowStates.length) {
           done()
@@ -534,6 +539,8 @@ describe('Activation State Machine', () => {
     })
 
     it('should eventually reach "PROVISIONED" in Admin mode with CIRA profile', (done) => {
+      context.certChainPfx = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprint: 'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244' }
+      devices[context.clientId].certObj = context.certChainPfx.provisioningCertificateObj
       config.guards = {
         isAdminMode: () => true,
         maxCertLength: () => false,
@@ -546,8 +553,8 @@ describe('Activation State Machine', () => {
         'GET_AMT_DOMAIN_CERT',
         'GET_GENERAL_SETTINGS',
         'IPS_HOST_BASED_SETUP_SERVICE',
-        'ADDNEXTCERTINCHAIN',
-        'ADMINSETUP',
+        'ADD_NEXT_CERT_IN_CHAIN',
+        'ADMIN_SETUP',
         'DELAYED_TRANSITION',
         'SET_MEBX_PASSWORD',
         'SAVE_DEVICE_TO_SECRET_PROVIDER',
@@ -617,6 +624,8 @@ describe('Activation State Machine', () => {
     })
 
     it('should eventually reach "FAILED" at "CHECKCERTCHAINRESPONSE"', (done) => {
+      context.certChainPfx = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprint: 'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244' }
+      devices[context.clientId].certObj = context.certChainPfx.provisioningCertificateObj
       config.guards = {
         isAdminMode: () => true,
         maxCertLength: () => false,
@@ -629,7 +638,7 @@ describe('Activation State Machine', () => {
         'GET_AMT_DOMAIN_CERT',
         'GET_GENERAL_SETTINGS',
         'IPS_HOST_BASED_SETUP_SERVICE',
-        'ADDNEXTCERTINCHAIN',
+        'ADD_NEXT_CERT_IN_CHAIN',
         'FAILED'
       ]
       const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
