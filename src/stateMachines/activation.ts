@@ -41,6 +41,7 @@ export interface ActivationContext {
   amt: AMT.Messages
   ips: IPS.Messages
   cim: CIM.Messages
+  certChainPfx: any
 }
 
 interface ActivationEvent {
@@ -83,6 +84,7 @@ export class Activation {
       targetAfterError: null,
       httpHandler: new HttpHandler(),
       isActivated: false,
+      certChainPfx: null,
       amt: new AMT.Messages(),
       ips: new IPS.Messages(),
       cim: new CIM.Messages()
@@ -152,10 +154,24 @@ export class Activation {
           {
             cond: 'isCertExtracted',
             actions: (context, event) => { devices[context.clientId].count = 1 },
-            target: 'GET_GENERAL_SETTINGS'
+            target: 'COMPARE_DEVICE_HASHES'
           },
           {
             actions: assign({ errorMessage: 'Failed to extract domain certificate' }),
+            target: 'FAILED'
+          }
+        ]
+      },
+      COMPARE_DEVICE_HASHES: {
+        entry: 'Compare Domain Cert Hashes',
+        always: [
+          {
+            cond: 'isValidCert',
+            actions: (context, event) => { devices[context.clientId].count = 1 },
+            target: 'GET_GENERAL_SETTINGS'
+          },
+          {
+            actions: assign({ errorMessage: 'Invalid domain certificate, hash does not exists in list of trusted root certificates on AMT' }),
             target: 'FAILED'
           }
         ]
@@ -202,27 +218,27 @@ export class Activation {
           id: 'send-hostbasedsetup',
           onDone: {
             actions: [assign({ message: (context, event) => event.data }), 'Read Host Based Setup Service'],
-            target: 'ADDNEXTCERTINCHAIN'
+            target: 'ADD_NEXT_CERT_IN_CHAIN'
           },
           onError: {
             target: 'ERROR'
           }
         }
       },
-      ADDNEXTCERTINCHAIN: {
+      ADD_NEXT_CERT_IN_CHAIN: {
         invoke: {
           src: this.getNextCERTInChain.bind(this),
           id: 'send-certificate',
           onDone: {
             actions: assign({ message: (context, event) => event.data }),
-            target: 'CHECKCERTCHAINRESPONSE'
+            target: 'CHECK_CERT_CHAIN_RESPONSE'
           },
           onError: {
             target: 'ERROR'
           }
         }
       },
-      CHECKCERTCHAINRESPONSE: {
+      CHECK_CERT_CHAIN_RESPONSE: {
         always: [
           {
             cond: 'isCertNotAdded',
@@ -230,26 +246,26 @@ export class Activation {
             target: 'FAILED'
           }, {
             cond: 'maxCertLength',
-            target: 'ADDNEXTCERTINCHAIN'
+            target: 'ADD_NEXT_CERT_IN_CHAIN'
           }, {
-            target: 'ADMINSETUP'
+            target: 'ADMIN_SETUP'
           }
         ]
       },
-      ADMINSETUP: {
+      ADMIN_SETUP: {
         invoke: {
           src: this.getAdminSetup.bind(this),
           id: 'send-adminsetup',
           onDone: {
             actions: assign({ message: (context, event) => event.data }),
-            target: 'CHECK_ADMINSETUP'
+            target: 'CHECK_ADMIN_SETUP'
           },
           onError: {
             target: 'ERROR'
           }
         }
       },
-      CHECK_ADMINSETUP: {
+      CHECK_ADMIN_SETUP: {
         always: [
           {
             cond: 'isDeviceAdminModeActivated',
@@ -490,7 +506,8 @@ export class Activation {
   }, {
     guards: {
       isAdminMode: (context, event) => context.profile.activation === ClientAction.ADMINCTLMODE,
-      isCertExtracted: (context, event) => devices[context.clientId].certObj != null,
+      isCertExtracted: (context, event) => context.certChainPfx != null,
+      isValidCert: (context, event) => devices[context.clientId].certObj != null,
       isDigestRealmInvalid: (context, event) => !this.validator.isDigestRealmValid(devices[context.clientId].ClientData.payload.digestRealm),
       maxCertLength: (context, event) => devices[context.clientId].count <= devices[context.clientId].certObj.certChain.length,
       isDeviceAdminModeActivated: (context, event) => context.message.Envelope.Body.AdminSetup_OUTPUT.ReturnValue === 0,
@@ -508,6 +525,7 @@ export class Activation {
       'Set activation status': this.setActivationStatus.bind(this),
       'Send Message to Device': this.sendMessageToDevice.bind(this),
       'Get Provisioning CertObj': this.GetProvisioningCertObj.bind(this),
+      'Compare Domain Cert Hashes': this.compareCertHashes.bind(this),
       'Update AMT Credentials': this.updateCredentials.bind(this)
     }
   })
@@ -685,16 +703,20 @@ export class Activation {
       // convert the certificate pfx to an object
       const pfxobj = this.certManager.convertPfxToObject(pfxb64, amtDomain.provisioningCertPassword)
       // return the certificate chain pems and private key
-      const certChainPfx = this.certManager.dumpPfx(pfxobj)
-      // check that provisioning certificate root matches one of the trusted roots from AMT
-      for (const hash in devices[clientId].ClientData.payload.certHashes) {
-        if (devices[clientId].ClientData.payload.certHashes[hash]?.toLowerCase() === certChainPfx.fingerprint?.toLowerCase()) {
-          devices[clientId].certObj = certChainPfx.provisioningCertificateObj
-        }
-      }
+      context.certChainPfx = this.certManager.dumpPfx(pfxobj)
     } catch (error) {
       this.logger.error(`Device ${devices[clientId].uuid} Failed to get provisioning certificate.`)
       devices[clientId].certObj = null
+    }
+  }
+
+  compareCertHashes (context: ActivationContext, event: ActivationEvent): void {
+    const { clientId, certChainPfx } = context
+    // check that provisioning certificate root matches one of the trusted roots from AMT
+    for (const hash in devices[clientId].ClientData.payload.certHashes) {
+      if (devices[clientId].ClientData.payload.certHashes[hash]?.toLowerCase() === certChainPfx.fingerprint?.toLowerCase()) {
+        devices[clientId].certObj = certChainPfx.provisioningCertificateObj
+      }
     }
   }
 
