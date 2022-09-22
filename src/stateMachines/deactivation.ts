@@ -15,6 +15,7 @@ export interface DeactivationContext {
   unauthCount: number
   clientId: string
   status: 'success' | 'error' | ''
+  errorMessage: string
 }
 
 interface DeactivationEvent {
@@ -32,7 +33,7 @@ export class Deactivation {
   createMachine<DeactivationContext, DeactivationEvent>({
     predictableActionArguments: true,
     preserveActionOrder: true,
-    context: { message: '', clientId: '', status: '', unauthCount: 0 },
+    context: { message: '', clientId: '', status: '', unauthCount: 0, errorMessage: '' },
     id: 'Deactivation Machine',
     initial: 'PROVISIONED',
     states: {
@@ -57,24 +58,44 @@ export class Deactivation {
           src: this.removeDeviceFromSecretProvider.bind(this),
           id: 'remove-device-from-secret-provider',
           onDone: 'REMOVE_DEVICE_FROM_MPS',
-          onError: 'REMOVE_DEVICE_FROM_SECRET_PROVIDER_FAILURE'
+          onError: {
+            actions: assign({ message: (context, event) => event.data }),
+            target: 'REMOVE_DEVICE_FROM_SECRET_PROVIDER_FAILURE'
+          }
         }
+      },
+      REMOVE_DEVICE_FROM_SECRET_PROVIDER_FAILURE: {
+        always: [
+          {
+            cond: 'isNotFound',
+            target: 'REMOVE_DEVICE_FROM_MPS'
+          }, {
+            actions: assign({ errorMessage: (context, event) => 'Failed to remove device from secret provider' }),
+            target: 'FAILED'
+          }
+        ]
       },
       REMOVE_DEVICE_FROM_MPS: {
         invoke: {
           src: this.removeDeviceFromMPS.bind(this),
           id: 'remove-device-from-mps',
           onDone: 'UNPROVISIONED',
-          onError: 'REMOVE_DEVICE_FROM_MPS_FAILURE'
+          onError: {
+            actions: assign({ message: (context, event) => event.data }),
+            target: 'REMOVE_DEVICE_FROM_MPS_FAILURE'
+          }
         }
       },
-      REMOVE_DEVICE_FROM_SECRET_PROVIDER_FAILURE: {
-        entry: assign({ errorMessage: 'Failed to remove device from secret provider' }),
-        always: 'FAILED'
-      },
       REMOVE_DEVICE_FROM_MPS_FAILURE: {
-        entry: assign({ errorMessage: 'Failed to remove device from MPS' }),
-        always: 'FAILED'
+        always: [
+          {
+            cond: 'isNotFound',
+            target: 'UNPROVISIONED'
+          }, {
+            actions: assign({ errorMessage: (context, event) => 'Failed to remove device from db' }),
+            target: 'FAILED'
+          }
+        ]
       },
       UNPROVISIONED: {
         type: 'final',
@@ -100,7 +121,7 @@ export class Deactivation {
         }
       },
       FAILED: {
-        entry: [assign({ status: 'error' }), 'Send Message to Device'],
+        entry: [assign({ status: (context: DeactivationContext, event) => 'error' }), 'Send Message to Device'],
         type: 'final'
       }
     }
@@ -108,6 +129,15 @@ export class Deactivation {
     actions: {
       'Reset Unauth Count': (context: DeactivationContext, event) => { devices[context.clientId].unauthCount = 0 },
       'Send Message to Device': this.sendMessageToDevice.bind(this)
+    },
+    guards: {
+      isNotFound: (context, event) => {
+        const { message } = context
+        if (message.toString().includes('HTTPError: Response code 404')) {
+          return true
+        }
+        return false
+      }
     }
   })
 

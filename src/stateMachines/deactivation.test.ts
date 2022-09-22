@@ -11,6 +11,7 @@ EnvReader.GlobalEnvConfig = config
 
 describe('Deactivation State Machine', () => {
   let deactivation: Deactivation
+  let deactivationContext: DeactivationContext
   let config
   let currentStateIndex: number
   let wrapItSpy: jest.SpyInstance
@@ -41,30 +42,15 @@ describe('Deactivation State Machine', () => {
       uuid: '4c4c4544-004b-4210-8033-b6c04f504633',
       messageId: 1
     }
+    deactivationContext = { message: '', clientId: '', status: '', unauthCount: 0, errorMessage: '' }
     sendSpy = jest.spyOn(devices[clientId].ClientSocket, 'send').mockImplementation().mockReturnValue()
     currentStateIndex = 0
     config = {
       services: {
-        'send-unprovision-message': async (_, event) =>
-          await new Promise((resolve) => {
-            setTimeout(() => {
-              resolve({ clientId: event.clientId })
-            }, 50)
-          }),
-        'remove-device-from-secret-provider': async (_, event) =>
-          await new Promise((resolve) => {
-            resolve(true)
-          }),
-        'remove-device-from-mps': async (_, event) =>
-          await new Promise((resolve) => {
-            resolve(true)
-          }),
-        'error-machine': async (_, event) =>
-          await new Promise((resolve, reject) => {
-            setTimeout(() => {
-              resolve({ clientId: event.clientId })
-            }, 50)
-          })
+        'send-unprovision-message': Promise.resolve(clientId),
+        'remove-device-from-secret-provider': Promise.resolve(true),
+        'remove-device-from-mps': Promise.resolve(true),
+        'error-machine': Promise.resolve(clientId)
       },
       actions: {
         'Send Message to Device': () => {}
@@ -73,7 +59,7 @@ describe('Deactivation State Machine', () => {
   })
 
   it('should eventually reach "UNPROVISIONED"', (done) => {
-    const mockDeactivationMachine = deactivation.machine.withConfig(config)
+    const mockDeactivationMachine = deactivation.machine.withConfig(config).withContext(deactivationContext)
     const flowStates = [
       'PROVISIONED',
       'UNPROVISIONING',
@@ -89,20 +75,32 @@ describe('Deactivation State Machine', () => {
     })
 
     deactivationService.start()
-    deactivationService.send({
-      type: 'UNPROVISION',
-      clientId,
-      data: null
-    })
+    deactivationService.send({ type: 'UNPROVISION', clientId, data: null })
   })
-
-  it('should eventually reach "Failed"', (done) => {
-    config.services['send-unprovision-message'] = async (_, event) => await new Promise((resolve, reject) => {
-      setTimeout(() => {
-        reject(new Error())
-      }, 50)
+  it('should eventually reach "UNPROVISIONED" when service provider gives not found error', (done) => {
+    config.services['remove-device-from-secret-provider'] = Promise.reject(new Error('HTTPError: Response code 404 (Not Found)'))
+    config.services['remove-device-from-mps'] = Promise.resolve(true)
+    const mockDeactivationMachine = deactivation.machine.withConfig(config).withContext(deactivationContext)
+    const flowStates = [
+      'PROVISIONED',
+      'UNPROVISIONING',
+      'REMOVE_DEVICE_FROM_SECRET_PROVIDER',
+      'REMOVE_DEVICE_FROM_MPS',
+      'UNPROVISIONED'
+    ]
+    const deactivationService = interpret(mockDeactivationMachine).onTransition((state) => {
+      console.log(state.value)
+      expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+      if (state.matches('UNPROVISIONED') && currentStateIndex === flowStates.length) {
+        done()
+      }
     })
 
+    deactivationService.start()
+    deactivationService.send({ type: 'UNPROVISION', clientId, data: null })
+  })
+  it('should eventually reach "Failed"', (done) => {
+    config.services['send-unprovision-message'] = Promise.reject(new Error())
     config.services['error-machine'] = async (_, event) => await new Promise((resolve, reject) => {
       setTimeout(() => {
         deactivationService.send({ type: 'ONFAILED', clientId, data: null })
@@ -128,7 +126,8 @@ describe('Deactivation State Machine', () => {
       message: '',
       clientId,
       unauthCount: 0,
-      status: ''
+      status: '',
+      errorMessage: ''
     }
 
     void deactivation.invokeUnprovision(context)
@@ -142,7 +141,8 @@ describe('Deactivation State Machine', () => {
       message: '',
       clientId,
       unauthCount: 0,
-      status: 'success'
+      status: 'success',
+      errorMessage: ''
     }
     deactivation.sendMessageToDevice(context, null)
     expect(responseMessageSpy).toHaveBeenCalledWith(context.clientId, null, context.status, 'success', JSON.stringify(devices[clientId].status))
@@ -154,7 +154,8 @@ describe('Deactivation State Machine', () => {
       message: '',
       clientId,
       unauthCount: 0,
-      status: 'error'
+      status: 'error',
+      errorMessage: ''
     }
     deactivation.sendMessageToDevice(context, null)
     expect(responseMessageSpy).toHaveBeenCalledWith(context.clientId, null, context.status, 'failed', JSON.stringify(devices[clientId].status))
