@@ -42,7 +42,7 @@ describe('Deactivation State Machine', () => {
       uuid: '4c4c4544-004b-4210-8033-b6c04f504633',
       messageId: 1
     }
-    deactivationContext = { message: '', clientId: '', status: '', unauthCount: 0, errorMessage: '' }
+    deactivationContext = { message: '', clientId: '', status: 'success', unauthCount: 0, errorMessage: '' }
     sendSpy = jest.spyOn(devices[clientId].ClientSocket, 'send').mockImplementation().mockReturnValue()
     currentStateIndex = 0
     config = {
@@ -126,7 +126,7 @@ describe('Deactivation State Machine', () => {
       message: '',
       clientId,
       unauthCount: 0,
-      status: '',
+      status: 'success',
       errorMessage: ''
     }
 

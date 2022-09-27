@@ -14,7 +14,7 @@ export interface DeactivationContext {
   message: any
   unauthCount: number
   clientId: string
-  status: 'success' | 'error' | ''
+  status: 'success' | 'error'
   errorMessage: string
 }
 
@@ -33,7 +33,7 @@ export class Deactivation {
   createMachine<DeactivationContext, DeactivationEvent>({
     predictableActionArguments: true,
     preserveActionOrder: true,
-    context: { message: '', clientId: '', status: '', unauthCount: 0, errorMessage: '' },
+    context: { message: '', clientId: '', status: 'success', unauthCount: 0, errorMessage: '' },
     id: 'Deactivation Machine',
     initial: 'PROVISIONED',
     states: {
@@ -192,7 +192,7 @@ export class Deactivation {
       clientObj.status.Status = message
       method = 'failed'
     }
-    const responseMessage = ClientResponseMsg.get(clientId, null, status as any, method, JSON.stringify(clientObj.status))
+    const responseMessage = ClientResponseMsg.get(clientId, null, status, method, JSON.stringify(clientObj.status))
     devices[clientId].ClientSocket.send(JSON.stringify(responseMessage))
   }
 }
