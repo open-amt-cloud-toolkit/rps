@@ -13,7 +13,6 @@ import { PasswordHelper } from '../utils/PasswordHelper'
 import { SignatureHelper } from '../utils/SignatureHelper'
 import { send } from 'xstate/lib/actions'
 import { Error } from './error'
-import { NetworkConfiguration } from './networkConfiguration'
 import { FeaturesConfiguration } from './featuresConfiguration'
 import { NodeForge } from '../NodeForge'
 import { Configurator } from '../Configurator'
@@ -25,6 +24,7 @@ import { TLS } from './tls'
 import { invokeWsmanCall } from './common'
 import ClientResponseMsg from '../utils/ClientResponseMsg'
 import { Unconfiguration } from './unconfiguration'
+import { WiredConfiguration } from './wiredConfiguration'
 
 export interface ActivationContext {
   profile: AMTConfiguration
@@ -60,7 +60,7 @@ export class Activation {
   dbFactory: DbCreatorFactory
   db: any
   error: Error = new Error()
-  networkConfiguration: NetworkConfiguration = new NetworkConfiguration()
+  wiredConfiguration: WiredConfiguration = new WiredConfiguration()
   featuresConfiguration: FeaturesConfiguration = new FeaturesConfiguration()
   cira: CIRAConfiguration = new CIRAConfiguration()
   unconfiguration: Unconfiguration = new Unconfiguration()
@@ -388,10 +388,10 @@ export class Activation {
         }
       },
       NETWORK_CONFIGURATION: {
-        entry: send({ type: 'NETWORKCONFIGURATION' }, { to: 'network-configuration-machine' }),
+        entry: send({ type: 'WIRED_CONFIGURATION' }, { to: 'wired-network-configuration-machine' }),
         invoke: {
-          src: this.networkConfiguration.machine,
-          id: 'network-configuration-machine',
+          src: this.wiredConfiguration.machine,
+          id: 'wired-network-configuration-machine',
           data: {
             amtProfile: (context, event) => context.profile,
             generalSettings: (context, event) => context.generalSettings,
@@ -400,10 +400,7 @@ export class Activation {
             amt: (context, event) => context.amt,
             cim: (context, event) => context.cim
           },
-          onDone: 'FEATURES_CONFIGURATION'
-        },
-        on: {
-          ONFAILED: 'FAILED'
+          onDone:  'FEATURES_CONFIGURATION'
         }
       },
       FEATURES_CONFIGURATION: {

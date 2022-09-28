@@ -1,0 +1,415 @@
+import { AMT, CIM } from '@open-amt-cloud-toolkit/wsman-messages'
+import { assign, createMachine, send } from 'xstate'
+import { WirelessConfig } from '../models/RCS.Config'
+import { HttpHandler } from '../HttpHandler'
+import Logger from '../Logger'
+import { AMTConfiguration } from '../models'
+import { EnvReader } from '../utils/EnvReader'
+import { devices } from '../WebSocketListener'
+import { Error } from './error'
+import { Configurator } from '../Configurator'
+import { DbCreatorFactory } from '../repositories/factories/DbCreatorFactory'
+import { AMTEthernetPortSettings, AMT_WiFiPortConfigurationServiceResponse } from '../models/WSManResponse'
+import { invokeWsmanCall } from './common'
+
+interface WirelessConfigContext {
+    amtProfile: AMTConfiguration
+    wifiProfileCount: number
+    message: any
+    clientId: string
+    xmlMessage: any
+    statusMessage: string
+    generalSettings: AMT.Models.GeneralSettings
+    wirelessSettings: any
+    wifiEndPointSettings?: any
+    httpHandler: HttpHandler
+    amt?: AMT.Messages
+    cim?: CIM.Messages
+}
+
+interface WirelessConfigEvent {
+    type: 'WIRELESS_CONFIGURATION' | 'ONFAILED'
+    clientId: string
+    data?: any
+}
+export class WirelessConfiguration {
+    configurator: Configurator
+    logger: Logger
+    dbFactory: DbCreatorFactory
+    db: any
+    error: Error = new Error()
+
+    machine =
+        /** @xstate-layout N4IgpgJg5mDOIC5QEMDGAXAlgN2Vg9gHYC0AtmgBaaFgB0AqgHIAKASgPIBqAkgMrftGAUQAiAYgCCAYQAq3ThLmDEoAA75YmAoRUgAHogCMAVgDMABlrGATADZzt6+cOGA7IYAcHgDQgAnogALB7WtACcjubmxrYm1qaBgQC+Sb5oWLjaZJTUdADiQjIA+gXCrBIAMkW8hXKMebxiEER01Nj4ANZ0sGCEEMQwNABOyAA2PehYhFDwSCDqmtq6BghOgca0HoaBtmGudjHWxr4BCLGutNYers6uIdYHtilpGDh4mETZqFQ0tAXFpSE5SqNRkdQaYjAQyG+CGtFUozwADNYaRaD0+gNelCxhMpjNdAstB8dHMViYLFY7A4nC53F4Tohzpdrrd7o9niB0m8suRvrlaFJBJwgcUABoAWSqMnYRQAUrxBGJCRpiURlohrO5Qg8Yjs9o9rIyzoEwrRzGE4g9DLZXBEwpzuZkSV8fnRWEIJCISkIypVqrVuPVGirFiSNQhTLTLrYzB5zB5jGFTK5jv4mabzZabNbbfbHa9nZ8+W7BQAJIRSADSRRE3AKvGKHsqEuVcyJSzJiFMxlTlzCgUMV0HdtsDPTCF7ploiTCNgtUfMWuSqS5hfexZyv24zF4RTL7EbACEJDURKD6LugTwpEImi1aG1Ot1ev0KBp0AAjZA9CATACuqihmqpKgCswQeOEYQOLEjiGAuqbGi4xiQS4CTxlc6GxgWGQbiQJYCjue4Hsep6iBeV6sDed5QjCcIIsiqLoq+xDvrAX4-pAAFAe2qqdmBQReFBME2tY8HJohE5bIYlxalcWrbB4gSmB4OE8i6BG-F6IjCGKMi3qwdRSGWEhBvevxPl0zGYqgUJYEimCoHgYDAfx+iIPOtA9kmFqzlqaanAOoQJjYSmBPEISqauTp4a6Arabp+mikGxmmYwkLQrC8KIugKJDGiGL9LZQz2Y5zmueGXYINcoQ2h4pgJBECEBUYdiBOE5x7K4gSuHm1hqUW+FbnQXoSkGFHma0hDtFZhXEMgECkNQ3EVeqVU1bQdUNaa9gSS1CDhTJ5iBM4J13K4vXHQNsWaSNIhjYwE20VlDG5Uxc0LUthArbxYZrQJ1X7JtY7bU1e3GmOlimLsVzwdEiYDtdvLDbQE3NBZ03PtZ-Q-WofGVQDG1bY1u0pvtQ4ySdLi2Cm0N7JaTzReuyP8r8T2ZfROV5QVLG4-M+P-e5gO1SDJPNcaPZQ9Yg607sdo2qYSMaSjvASCKIhCNRk2Ppjs3INgYDEBAYDYI5Lm-SBEYUpYNj2JEdKeD4E7Rg1dohG4F0JCpSubqzdCq+rmvcLeGV0dljH5ei+uG8bpu2atoFC9bVJ27SbiO8ag46jsURiQasaMy8uEs6WQIcKw2uWXQz1DHFNAJ1bZg29S9vp+OpypjJsROBYS5hNY+ZM8Xyt+7QZfsBXggAGKmRUogN1Vye2zSzht07pyJhsSZxDY8HGMYCY+0No9BgoFTcN6dYNk2noVK2C8A+FzjmgmT-rLGSYQ5mFpWmJea7CkVchB8DG1mCgZmI9SxMDYFwPgAhhAiAfknCKVh+42H7hEa4+0D4bGCMdMI-dbS9i2EfOu+RCg+j9CCQMwYkHkhQu1W0RwTAeF2NsBwxokyQTEgfOwm8dheFIbdQUwpRRFElNKWUCplAWzcisJwQNEgxHOuJMmnC7i0FsMpcwPYvCsPcA6Ie6lfalmbN6QEwIAxgiDA0OhmpXAqU2DERwSk3CYPXh5MI3CTBLjHPvARUUi7GOPqWYylYaxXyEI2IozY752MjA8C4HgIjQ3iMdMcklTg0zNPGfeLgeo50RkYwaZDaBEX3IeGQJ4zwURqFRYOQh4nhWNOdGMDxWEpl2GYfqxSboowSkIPSBkjImSDPE4wJhNF-20bYLRNIkJiXaiFCwEUaYTKEf0+641CiXnGf3KwPknAENJh4g6vVNp3EcHOXsA8FYbNHhRPZoR97QSOWDFSSFzlmAiDYA+sZ4IriCSU4RAdRBB1vPE+CQNdE6IeIacmF0vL7C8ShUwXjlKpnuaXVg5d4nQUgnaZMNoTqOH2o4UIsYoxJi1A45SgS1zDxMYRRgZ8L61nrFEm+LZ4kqUSOaK4B94IPAiLYThXjLg+L4f4sc9KYolwFDPbgc9EGyIJkLcKWpNFoqptBTw+xOFjnNIOPUA52GOCxQKGBPB+CCHnqqwW9DeybV7MdBILrTBDgWZYK4o4VK2j1cYC19d7WJ3JKczwgCkhAA */
+        createMachine<WirelessConfigContext, WirelessConfigEvent>({
+            preserveActionOrder: true,
+            predictableActionArguments: true,
+            context: {
+                httpHandler: null,
+                amtProfile: null,
+                wifiProfileCount: 0,
+                message: null,
+                clientId: '',
+                xmlMessage: null,
+                statusMessage: '',
+                generalSettings: null,
+                wirelessSettings: null,
+                wifiEndPointSettings: []
+            },
+            id: 'wireless-network-configuration-machine',
+            initial: 'ACTIVATION',
+            states: {
+                ACTIVATION: {
+                    on: {
+                        WIRELESS_CONFIGURATION: {
+                            actions: [assign({ statusMessage: () => '', wifiProfileCount: () => 0 }), 'Reset Unauth Count'],
+                            target: 'CHECK_GENERAL_SETTINGS'
+                        }
+                    }
+                },
+                CHECK_GENERAL_SETTINGS: {
+                    always: [
+                        {
+                            cond: 'isNotAMTNetworkEnabled',
+                            target: 'PUT_GENERAL_SETTINGS'
+                        }, {
+                            target: 'ENUMERATE_WIFI_ENDPOINT_SETTINGS'
+                        }
+                    ]
+                },
+                PUT_GENERAL_SETTINGS: {
+                    invoke: {
+                        src: this.putGeneralSettings.bind(this),
+                        id: 'put-general-settings',
+                        onDone: {
+                            actions: assign({ message: (context, event) => event.data }),
+                            target: 'ENUMERATE_WIFI_ENDPOINT_SETTINGS'
+                        },
+                        onError: {
+                            actions: assign({ statusMessage: (context, event) => 'Failed to update amt general settings on device' }),
+                            target: 'FAILED'
+                        }
+                    }
+                },
+                ENUMERATE_WIFI_ENDPOINT_SETTINGS: {
+                    invoke: {
+                        src: this.enumerateWiFiEndpointSettings.bind(this),
+                        id: 'enumerate-wifi-endpoint-settings',
+                        onDone: {
+                            actions: assign({ message: (context, event) => event.data }),
+                            target: 'PULL_WIFI_ENDPOINT_SETTINGS'
+                        },
+                        onError: {
+                            actions: assign({ statusMessage: (context, event) => 'Failed to get enumeration number for wifi endpoint settings' }),
+                            target: 'FAILED'
+                        }
+                    }
+                },
+                PULL_WIFI_ENDPOINT_SETTINGS: {
+                    invoke: {
+                        src: this.pullWiFiEndpointSettings.bind(this),
+                        id: 'pull-wifi-endpoint-settings',
+                        onDone: {
+                            actions: assign({ message: (context, event) => event.data }),
+                            target: 'CHECK_WIFI_ENDPOINT_SETTINGS_PULL_RESPONSE'
+                        },
+                        onError: {
+                            actions: assign({ statusMessage: (context, event) => 'Failed to pull wifi endpoint settings' }),
+                            target: 'FAILED'
+                        }
+                    }
+                },
+                CHECK_WIFI_ENDPOINT_SETTINGS_PULL_RESPONSE: {
+                    entry: 'Read WiFi Endpoint Settings Pull Response',
+                    always: [
+                        {
+                            cond: 'isWirelessProfilesExistsOnDevice',
+                            target: 'DELETE_WIFI_ENDPOINT_SETTINGS'
+                        }, {
+                            cond: 'isWiFiProfilesExits',
+                            target: 'REQUEST_STATE_CHANGE_FOR_WIFI_PORT'
+                        }, {
+                            target: 'SUCCESS'
+                        }
+                    ]
+                },
+                DELETE_WIFI_ENDPOINT_SETTINGS: {
+                    invoke: {
+                        src: this.deleteWiFiProfileOnAMTDevice.bind(this),
+                        id: 'delete-wifi-endpoint-settings',
+                        onDone: {
+                            actions: assign({ message: (context, event) => event.data }),
+                            target: 'CHECK_WIFI_ENDPOINT_SETTINGS_DELETE_RESPONSE'
+                        },
+                        onError: {
+                            actions: assign({ statusMessage: (context, event) => 'Failed to delete wifi endpoint settings' }),
+                            target: 'FAILED'
+                        }
+                    }
+                },
+                CHECK_WIFI_ENDPOINT_SETTINGS_DELETE_RESPONSE: {
+                    always: [
+                        {
+                            cond: 'isWifiProfileDeleted',
+                            target: 'FAILED'
+                        },
+                        {
+                            cond: 'isWirelessProfilesExistsOnDevice',
+                            target: 'DELETE_WIFI_ENDPOINT_SETTINGS'
+                        }, {
+                            cond: 'isWiFiProfilesExits',
+                            target: 'REQUEST_STATE_CHANGE_FOR_WIFI_PORT'
+                        }, {
+                            target: 'SUCCESS'
+                        }
+                    ]
+                },
+                REQUEST_STATE_CHANGE_FOR_WIFI_PORT: {
+                    invoke: {
+                        src: this.updateWifiPort.bind(this),
+                        id: 'request-state-change-for-wifi-port',
+                        onDone: {
+                            actions: assign({ message: (context, event) => event.data }),
+                            target: 'ADD_WIFI_SETTINGS'
+                        },
+                        onError: {
+                            actions: assign({ statusMessage: (context, event) => 'Failed to update state change for wifi port' }),
+                            target: 'FAILED'
+                        }
+                    }
+                },
+                ADD_WIFI_SETTINGS: {
+                    invoke: {
+                        src: this.addWifiConfigs.bind(this),
+                        id: 'add-wifi-settings',
+                        onDone: {
+                            actions: assign({ message: (context, event) => event.data }),
+                            target: 'CHECK_ADD_WIFI_SETTINGS_RESPONSE'
+                        },
+                        onError: {
+                            actions: assign({ statusMessage: (context, event) => 'Failed to add wifi settings' }),
+                            target: 'FAILED'
+                        }
+                    }
+                },
+                CHECK_ADD_WIFI_SETTINGS_RESPONSE: {
+                    always: [
+                        {
+                            cond: 'isWifiProfileAdded',
+                            target: 'FAILED'
+                        },
+                        {
+                            cond: 'isWiFiProfilesExits',
+                            target: 'ADD_WIFI_SETTINGS'
+                        },
+                        {
+                            target: 'GET_WIFI_PORT_CONFIGURATION_SERVICE'
+                        }
+                    ]
+                },
+                GET_WIFI_PORT_CONFIGURATION_SERVICE: {
+                    invoke: {
+                        src: this.getWiFiPortConfigurationService.bind(this),
+                        id: 'get-wifi-port-configuration-service',
+                        onDone: {
+                            actions: assign({ message: (context, event) => event.data }),
+                            target: 'CHECK_WIFI_PORT_CONFIGURATION_SERVICE'
+                        },
+                        onError: {
+                            actions: assign({ statusMessage: (context, event) => 'Failed to get WiFi Port Configuration Service' }),
+                            target: 'FAILED'
+                        }
+                    }
+                },
+                CHECK_WIFI_PORT_CONFIGURATION_SERVICE: {
+                    always: [
+                        {
+                            cond: 'isLocalProfileSynchronizationNotEnabled',
+                            target: 'PUT_WIFI_PORT_CONFIGURATION_SERVICE'
+                        },
+                        {
+                            actions: assign({ statusMessage: (context, event) => 'Wireless Configured' }),
+                            target: 'SUCCESS'
+                        }
+                    ]
+                },
+                PUT_WIFI_PORT_CONFIGURATION_SERVICE: {
+                    invoke: {
+                        src: this.putWiFiPortConfigurationService.bind(this),
+                        id: 'put-wifi-port-configuration-service',
+                        onDone: {
+                            actions: assign({ message: (context, event) => event.data }),
+                            target: 'CHECK_WIFI_PORT_CONFIGURATION_SERVICE'
+                        },
+                        onError: {
+                            actions: assign({ statusMessage: (context, event) => 'Failed to put WiFi Port Configuration Service' }),
+                            target: 'FAILED'
+                        }
+                    }
+                },
+                ERROR: {
+                    entry: send({ type: 'PARSE' }, { to: 'error-machine' }),
+                    invoke: {
+                        src: this.error.machine,
+                        id: 'error-machine',
+                        data: {
+                            unauthCount: 0,
+                            message: (context, event) => event.data,
+                            clientId: (context, event) => context.clientId
+                        },
+                        onDone: 'CHECK_GENERAL_SETTINGS' // To do: Need to test as it might not require anymore.
+                    },
+                    on: {
+                        ONFAILED: 'FAILED'
+                    }
+                },
+                FAILED: {
+                    entry: ['Update Configuration Status'],
+                    type: 'final'
+                },
+                SUCCESS: {
+                    entry: ['Update Configuration Status'],
+                    type: 'final'
+                }
+            }
+        }, {
+            guards: {
+                isNotAMTNetworkEnabled: this.isNotAMTNetworkEnabled.bind(this),
+                isWiFiProfilesExits: (context, event) => context.wifiProfileCount < context.amtProfile.wifiConfigs.length,
+                isWirelessProfilesExistsOnDevice: (context, event) => context.wifiEndPointSettings.length !== 0,
+                isWifiProfileAdded: (context, event) => context.message.Envelope.Body.AddWiFiSettings_OUTPUT.ReturnValue !== 0,
+                isWifiProfileDeleted: (context, event) => context.message.Envelope.Body == null,
+                isLocalProfileSynchronizationNotEnabled: (context, event) => context.message.Envelope.Body.AMT_WiFiPortConfigurationService.localProfileSynchronizationEnabled === 0
+            },
+            actions: {
+                'Reset Unauth Count': (context, event) => { devices[context.clientId].unauthCount = 0 },
+                'Update Configuration Status': (context, event) => {
+                    const status = devices[context.clientId].status.Network
+                    devices[context.clientId].status.Network = status == null ? context.statusMessage : `${status}. ${context.statusMessage}`
+                },
+                'Read WiFi Endpoint Settings Pull Response': this.readWiFiEndpointSettingsPullResponse.bind(this)
+            }
+        })
+
+    constructor() {
+        this.configurator = new Configurator()
+        this.dbFactory = new DbCreatorFactory(EnvReader.GlobalEnvConfig)
+        this.logger = new Logger('Network_Configuration_State_Machine')
+    }
+
+    async putGeneralSettings(context): Promise<any> {
+        context.xmlMessage = context.amt.GeneralSettings(AMT.Methods.PUT, context.generalSettings)
+        return await invokeWsmanCall(context)
+    }
+
+    isNotAMTNetworkEnabled(context: WirelessConfigContext, event: WirelessConfigEvent): boolean {
+        // AMTNetworkEnabled - When set to Disabled, the AMT OOB network interfaces (LAN and WLAN) are disabled including AMT user initiated applications, Environment Detection and RMCPPing.
+        // 0 : Disabled, 1 - Enabled
+        // SharedFQDN -Defines Whether the FQDN (HostName.DomainName) is shared with the Host or dedicated to ME. (The default value for this property is shared - TRUE).
+        // RmcpPingResponseEnabled - Indicates whether Intel(R) AMT should respond to RMCP ping Echo Request messages.
+        const settings: AMT.Models.GeneralSettings = context.generalSettings
+        if (!settings.SharedFQDN || settings.AMTNetworkEnabled !== 1 || !settings.RmcpPingResponseEnabled) {
+            settings.SharedFQDN = true
+            settings.AMTNetworkEnabled = 1
+            settings.RmcpPingResponseEnabled = true
+            context.generalSettings = settings
+            return true
+        }
+        return false
+    }
+
+    async enumerateWiFiEndpointSettings(context): Promise<any> {
+        context.xmlMessage = context.cim.WiFiEndpointSettings(CIM.Methods.ENUMERATE)
+        return await invokeWsmanCall(context)
+    }
+
+    async pullWiFiEndpointSettings(context): Promise<any> {
+        context.xmlMessage = context.cim.WiFiEndpointSettings(CIM.Methods.PULL, context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+        return await invokeWsmanCall(context)
+    }
+
+    readWiFiEndpointSettingsPullResponse(context: WirelessConfigContext, event: WirelessConfigEvent): void {
+        let wifiEndPointSettings = []
+        if (context.message.Envelope.Body.PullResponse.Items?.CIM_WiFiEndpointSettings != null) {
+            // CIM_WiFiEndpointSettings is an array if there more than one profile exists, otherwise its just an object from AMT
+            if (Array.isArray(context.message.Envelope.Body.PullResponse.Items.CIM_WiFiEndpointSettings)) {
+                wifiEndPointSettings = context.message.Envelope.Body.PullResponse.Items.CIM_WiFiEndpointSettings
+            } else {
+                wifiEndPointSettings.push(context.message.Envelope.Body.PullResponse.Items.CIM_WiFiEndpointSettings)
+            }
+        }
+
+        context.wifiEndPointSettings = []
+        if (wifiEndPointSettings.length > 0) {
+            //  ignore the profiles with Priority 0 and without InstanceID, which is required to delete a wifi profile on AMT device
+            wifiEndPointSettings.forEach(wifi => {
+                if (wifi.InstanceID != null && wifi.Priority !== 0) {
+                    context.wifiEndPointSettings.push({ ...wifi })
+                }
+            })
+        }
+    }
+
+    async deleteWiFiProfileOnAMTDevice(context: WirelessConfigContext, event: WirelessConfigEvent): Promise<any> {
+        let wifiEndpoints = context.wifiEndPointSettings
+        // Deletes first profile in the array
+        const selector = { name: 'InstanceID', value: wifiEndpoints[0].InstanceID }
+        context.xmlMessage = context.cim.WiFiEndpointSettings(CIM.Methods.DELETE, null, selector)
+        wifiEndpoints = wifiEndpoints.slice(1)
+        context.wifiEndPointSettings = wifiEndpoints
+        return await invokeWsmanCall(context)
+    }
+
+    async updateWifiPort(context: WirelessConfigContext, event: WirelessConfigEvent): Promise<any> {
+        // Enumeration 32769 - WiFi is enabled in S0 + Sx/AC
+        context.xmlMessage = context.cim.WiFiPort(CIM.Methods.REQUEST_STATE_CHANGE, 32769)
+        return await invokeWsmanCall(context)
+    }
+
+    async getWifiProfile(profileName: string): Promise<WirelessConfig> {
+        // Get WiFi profile information based on the profile name from db.
+        this.db = await this.dbFactory.getDb()
+        const wifiConfig = await this.db.wirelessProfiles.getByName(profileName)
+        if (this.configurator?.secretsManager) {
+            // Get WiFi profile pskPassphrase from vault
+            const data: any = await this.configurator.secretsManager.getSecretAtPath(`Wireless/${wifiConfig.profileName}`)
+            if (data != null) {
+                wifiConfig.pskPassphrase = data.data.PSK_PASSPHRASE
+            }
+        }
+        return wifiConfig
+    }
+
+    async addWifiConfigs(context: WirelessConfigContext, event: WirelessConfigEvent): Promise<any> {
+        // Get WiFi profile information based on the profile name.
+        const wifiConfig = await this.getWifiProfile(context.amtProfile.wifiConfigs[context.wifiProfileCount].profileName)
+        const selector = { name: 'Name', value: 'WiFi Endpoint 0' }
+        // Add  WiFi profile information to WiFi endpoint settings object
+        const wifiEndpointSettings = {
+            ElementName: wifiConfig.profileName,
+            InstanceID: `Intel(r) AMT:WiFi Endpoint Settings ${wifiConfig.profileName}`,
+            AuthenticationMethod: wifiConfig.authenticationMethod,
+            EncryptionMethod: wifiConfig.encryptionMethod,
+            SSID: wifiConfig.ssid,
+            Priority: context.amtProfile.wifiConfigs[context.wifiProfileCount].priority,
+            PSKPassPhrase: wifiConfig.pskPassphrase
+        }
+
+        // Increment the count to keep track of profiles added to AMT
+        ++context.wifiProfileCount
+        context.xmlMessage = context.amt.WiFiPortConfigurationService(AMT.Methods.ADD_WIFI_SETTINGS, wifiEndpointSettings, selector)
+        return await invokeWsmanCall(context)
+    }
+
+    async getWiFiPortConfigurationService(context: WirelessConfigContext, event: WirelessConfigEvent): Promise<any> {
+        context.xmlMessage = context.amt.WiFiPortConfigurationService(AMT.Methods.GET, null, null)
+        return await invokeWsmanCall(context)
+    }
+
+    async putWiFiPortConfigurationService(context: WirelessConfigContext, event: WirelessConfigEvent): Promise<any> {
+        const wifiPortConfigurationService: AMT_WiFiPortConfigurationServiceResponse = context.message.Envelope.Body.AMT_WiFiPortConfigurationService
+        wifiPortConfigurationService.localProfileSynchronizationEnabled = 1
+        context.xmlMessage = context.amt.WiFiPortConfigurationService(AMT.Methods.PUT, wifiPortConfigurationService, null)
+        return await invokeWsmanCall(context)
+    }
+}
