@@ -6,7 +6,7 @@
  **********************************************************************/
 
 import * as parseArgs from 'minimist'
-import { ClientMsg } from './models/RCS.Config'
+import { ClientMethods, ClientMsg } from './models/RCS.Config'
 import Logger from './Logger'
 import { ILogger } from './interfaces/ILogger'
 
@@ -25,13 +25,14 @@ const CommandParser = {
         const args = parseArgs(input, options)
 
         // TODO: text mode is assumed right now, switch shouldn't be used for method going forward
-        if (typeof args.t === 'undefined' && typeof args.e === 'undefined' && input.length > 0 && input[0].length > 0 && !input[0].includes('-')) {
+        let textModeAssumed = false
+        if (typeof args.t === 'undefined' && typeof args.e === 'undefined' && input.length > 0 && input[0].length > 0 && !input[0].startsWith('-')) {
+          textModeAssumed = true
           args.t = input[0]
         }
 
         if (args.t) {
           msg.method = args.t
-
           this.logger.silly(`parsed method: ${msg.method}`)
 
           if (args.profile && msg.payload) {
@@ -49,15 +50,18 @@ const CommandParser = {
             this.logger.silly(`bypass password check: ${msg.payload.force}`)
           }
 
-          if (msg.method === 'maintenance' && msg.payload) {
+          if (msg.method === ClientMethods.MAINTENANCE && msg.payload) {
             if (args.synctime) {
               msg.payload.task = 'synctime'
             } else if (args.syncnetwork) {
               msg.payload.task = 'syncnetwork'
             } else if (args.changepassword) {
               msg.payload.task = 'changepassword'
-              if (args._.length === 2) {
-                msg.payload.newpassword = args._[1]
+              // new (static) password will be in the unparsed arguments
+              // if text is assumed, the command is also in the unparsed arguments
+              const checkIndex = textModeAssumed ? 1 : 0
+              if (args._.length > checkIndex) {
+                msg.payload.newpassword = args._[checkIndex]
               }
             }
             this.logger.silly(`parsed maintenance task: ${msg.payload.task}`)

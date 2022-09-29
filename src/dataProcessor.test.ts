@@ -336,20 +336,20 @@ describe('Process data', () => {
       devices[clientId] = { ClientId: clientId, ClientSocket: null, messageId: 0, connectionParams: connectionParams, unauthCount: 0 }
       VersionChecker.setCurrentVersion('4.0.0')
     })
-    interface TestTuple { task: string, newpassword: string | undefined, expectType: string }
-    test.each<TestTuple>([
+    interface TestInput { task: string, newpassword: string | undefined, expectType: string }
+    test.each<TestInput>([
       { task: 'synctime', newpassword: undefined, expectType: 'SYNCCLOCK' },
       { task: 'syncnetwork', newpassword: undefined, expectType: 'SYNCNETWORK' },
       { task: 'changepassword', newpassword: undefined, expectType: 'CHANGEPASSWORD' },
       { task: 'changepassword', newpassword: 'SomeNewPassword', expectType: 'CHANGEPASSWORD' }
-    ])('should send event of type $expectType for task $task', async (tt) => {
-      clientMsg.payload.task = tt.task
+    ])('should send event of type $expectType for task $task', async (ti) => {
+      clientMsg.payload.task = ti.task
       const expectedEvent: any = {
-        type: tt.expectType
+        type: ti.expectType
       }
-      if (tt.newpassword !== undefined) {
-        clientMsg.payload.newpassword = tt.newpassword
-        expectedEvent.data = tt.newpassword
+      if (ti.newpassword !== undefined) {
+        clientMsg.payload.newpassword = ti.newpassword
+        expectedEvent.data = ti.newpassword
       }
       await dataProcessor.maintainDevice(clientMsg, clientId, maintenance)
       expect(validatorSpy).toHaveBeenCalled()
