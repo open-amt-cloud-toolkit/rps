@@ -12,7 +12,7 @@ import { ILogger } from './interfaces/ILogger'
 
 const options = {
   string: ['text', 'password'],
-  boolean: ['force', 'synctime'],
+  boolean: ['force', 'synctime', 'syncnetwork', 'changepassword'],
   alias: { t: 'text', p: 'password', f: 'force', e: 'encrypted' }
 }
 
@@ -49,8 +49,17 @@ const CommandParser = {
             this.logger.silly(`bypass password check: ${msg.payload.force}`)
           }
 
-          if (msg.method === 'maintenance' && args.synctime && msg.payload) {
-            msg.payload.task = 'synctime'
+          if (msg.method === 'maintenance' && msg.payload) {
+            if (args.synctime) {
+              msg.payload.task = 'synctime'
+            } else if (args.syncnetwork) {
+              msg.payload.task = 'syncnetwork'
+            } else if (args.changepassword) {
+              msg.payload.task = 'changepassword'
+              if (args._.length === 2) {
+                msg.payload.newpassword = args._[1]
+              }
+            }
             this.logger.silly(`parsed maintenance task: ${msg.payload.task}`)
           }
         }

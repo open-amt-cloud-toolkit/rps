@@ -121,13 +121,39 @@ export class DataProcessor {
     }
   }
 
-  async maintainDevice (clientMsg: ClientMsg, clientId: string): Promise<void> {
+  async maintainDevice (clientMsg: ClientMsg, clientId: string, maintenance: Maintenance = new Maintenance()): Promise<void> {
     this.logger.debug(`ProcessData: Parsed Maintenance message received from device ${clientMsg.payload.uuid}: ${JSON.stringify(clientMsg, null, '\t')}`)
     await this.validator.validateMaintenanceMsg(clientMsg, clientId)
     this.setConnectionParams(clientId, 'admin', clientMsg.payload.password, clientMsg.payload.uuid)
-    const maintenance = new Maintenance()
     maintenance.service.start()
-    maintenance.service.send({ type: 'SYNCCLOCK', clientId })
+    // after merging should instantiate the interface
+    // const mEvent: MaintenanceEvent = {
+    //   type: null,
+    //   clientId: clientId
+    // }
+    const mEvent: any = {
+      clientId: clientId
+    }
+    switch (clientMsg.payload.task) {
+      case 'synctime':
+        mEvent.type = 'SYNCCLOCK'
+        break
+      case 'syncnetwork':
+        mEvent.type = 'SYNCNETWORK'
+        break
+      case 'changepassword':
+        mEvent.type = 'CHANGEPASSWORD'
+        if (clientMsg.payload.newpassword) {
+          mEvent.data = clientMsg.payload.newpassword
+        }
+        break
+    }
+    // remove when maintenance supports the event types as
+    // rpc-go hangs without a response on unhandled events
+    // if (mEvent.type !== 'SYNCCLOCK') {
+    //   throw new RPSError(`${clientId} - unhandled ${JSON.stringify(mEvent)}`)
+    // }
+    maintenance.service.send(mEvent)
   }
 
   setConnectionParams (clientId: string, username: string = null, password: string = null, uuid: string = null): void {
