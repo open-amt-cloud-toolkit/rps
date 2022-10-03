@@ -140,11 +140,14 @@ export class DataProcessor {
         break
       case 'syncnetwork':
         mEvent.type = 'SYNCNETWORK'
+        if (clientMsg.payload.taskArg) {
+          mEvent.data = clientMsg.payload.taskArg
+        }
         break
       case 'changepassword':
         mEvent.type = 'CHANGEPASSWORD'
-        if (clientMsg.payload.newpassword) {
-          mEvent.data = clientMsg.payload.newpassword
+        if (clientMsg.payload.taskArg) {
+          mEvent.data = clientMsg.payload.taskArg
         }
         break
     }

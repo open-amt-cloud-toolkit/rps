@@ -115,11 +115,22 @@ test.each<TestInput>([
     }
   },
   {
-    desc: 'should parse syncnetwork',
+    desc: 'should not parse syncnetwork missing IP address',
     method: `${clientMethod} --syncnetwork`,
     expect: {
       method: clientMethod,
       payload: { task: 'syncnetwork' }
+    }
+  },
+  {
+    desc: 'should parse syncnetwork with IP address',
+    method: `${clientMethod} --syncnetwork 127.0.0.1/24`,
+    expect: {
+      method: clientMethod,
+      payload: {
+        task: 'syncnetwork',
+        taskArg: '127.0.0.1/24'
+      }
     }
   },
   {
@@ -139,7 +150,7 @@ test.each<TestInput>([
         password: testPW,
         force: true,
         task: 'changepassword',
-        newpassword: 'SomeNewPassword'
+        taskArg: 'SomeNewPassword'
       }
     }
   },
@@ -152,7 +163,7 @@ test.each<TestInput>([
         password: testPW,
         force: true,
         task: 'changepassword',
-        newpassword: 'SomeNewPassword'
+        taskArg: 'SomeNewPassword'
       }
     }
   }

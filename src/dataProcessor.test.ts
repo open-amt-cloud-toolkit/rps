@@ -336,20 +336,20 @@ describe('Process data', () => {
       devices[clientId] = { ClientId: clientId, ClientSocket: null, messageId: 0, connectionParams: connectionParams, unauthCount: 0 }
       VersionChecker.setCurrentVersion('4.0.0')
     })
-    interface TestInput { task: string, newpassword: string | undefined, expectType: string }
+    interface TestInput { task: string, taskArg: string | undefined, expectType: string }
     test.each<TestInput>([
-      { task: 'synctime', newpassword: undefined, expectType: 'SYNCCLOCK' },
-      { task: 'syncnetwork', newpassword: undefined, expectType: 'SYNCNETWORK' },
-      { task: 'changepassword', newpassword: undefined, expectType: 'CHANGEPASSWORD' },
-      { task: 'changepassword', newpassword: 'SomeNewPassword', expectType: 'CHANGEPASSWORD' }
+      { task: 'synctime', taskArg: undefined, expectType: 'SYNCCLOCK' },
+      { task: 'syncnetwork', taskArg: '127.0.0.1', expectType: 'SYNCNETWORK' },
+      { task: 'changepassword', taskArg: undefined, expectType: 'CHANGEPASSWORD' },
+      { task: 'changepassword', taskArg: 'SomeNewPassword', expectType: 'CHANGEPASSWORD' }
     ])('should send event of type $expectType for task $task', async (ti) => {
       clientMsg.payload.task = ti.task
       const expectedEvent: any = {
         type: ti.expectType
       }
-      if (ti.newpassword !== undefined) {
-        clientMsg.payload.newpassword = ti.newpassword
-        expectedEvent.data = ti.newpassword
+      if (ti.taskArg !== undefined) {
+        clientMsg.payload.taskArg = ti.taskArg
+        expectedEvent.data = ti.taskArg
       }
       await dataProcessor.maintainDevice(clientMsg, clientId, maintenance)
       expect(validatorSpy).toHaveBeenCalled()

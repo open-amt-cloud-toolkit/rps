@@ -23,12 +23,13 @@ const CommandParser = {
       if (msg?.method?.length > 0) {
         const input: string[] = msg.method.trim().split(' ')
         const args = parseArgs(input, options)
+        let firstNonFlagArg = args._[0]
 
         // TODO: text mode is assumed right now, switch shouldn't be used for method going forward
-        let textModeAssumed = false
         if (typeof args.t === 'undefined' && typeof args.e === 'undefined' && input.length > 0 && input[0].length > 0 && !input[0].startsWith('-')) {
-          textModeAssumed = true
           args.t = input[0]
+          // if text is assumed, the command is also in the unparsed arguments
+          firstNonFlagArg = firstNonFlagArg = args._[1]
         }
 
         if (args.t) {
@@ -55,14 +56,10 @@ const CommandParser = {
               msg.payload.task = 'synctime'
             } else if (args.syncnetwork) {
               msg.payload.task = 'syncnetwork'
+              msg.payload.taskArg = firstNonFlagArg
             } else if (args.changepassword) {
               msg.payload.task = 'changepassword'
-              // new (static) password will be in the unparsed arguments
-              // if text is assumed, the command is also in the unparsed arguments
-              const checkIndex = textModeAssumed ? 1 : 0
-              if (args._.length > checkIndex) {
-                msg.payload.newpassword = args._[checkIndex]
-              }
+              msg.payload.taskArg = firstNonFlagArg
             }
             this.logger.silly(`parsed maintenance task: ${msg.payload.task}`)
           }
