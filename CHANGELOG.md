@@ -1,5 +1,76 @@
-<a name="2.4.0"></a>
-## [2.4.0] - 2022-07-05
+<a name="2.5.0"></a>
+
+## [2.5.0] - 2022-10-05
+### Build
+- **deps:** bump pg from 8.7.3 to 8.8.0 (#bddf6bf) 
+- **deps:** bump ws from 8.8.0 to 8.8.1 (#1d2c4a9) 
+- **deps:** bump [@open](https://github.com/open)-amt-cloud-toolkit/wsman-messages (#825c0de) 
+- **deps:** bump xstate from 4.33.5 to 4.33.6 (#aa96975) 
+- **deps:** bump winston from 3.7.2 to 3.8.1 (#21db422) 
+- **deps:** bump [@open](https://github.com/open)-amt-cloud-toolkit/wsman-messages (#8d1b264) 
+- **deps:** bump uuid from 8.3.2 to 9.0.0 (#fcd9007) 
+- **deps:** bump [@open](https://github.com/open)-amt-cloud-toolkit/wsman-messages (#2c2bf35) 
+- **deps:** bump winston from 3.8.1 to 3.8.2 (#f3c1ea7) 
+- **deps:** bump express-validator from 6.14.1 to 6.14.2 (#5e7ca44) 
+- **deps:** bump xstate from 4.33.4 to 4.33.5 ([#713](https://github.com/open-amt-cloud-toolkit/rps/issues/713)) (#5819bd1) 
+- **deps:** bump xstate from 4.33.2 to 4.33.4 (#7a4b7d9) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 16.11.49 to 16.11.54 (#a7699de) 
+- **deps-dev:** bump jest-junit from 14.0.0 to 14.0.1 (#0706707) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 16.11.54 to 16.11.56 (#54ab968) 
+- **deps-dev:** bump typescript from 4.7.4 to 4.8.2 (#d5b3aa3) 
+- **deps-dev:** bump typescript from 4.8.2 to 4.8.3 (#d4b373f) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 16.11.48 to 16.11.49 (#8618819) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 16.11.47 to 16.11.48 (#1815c00) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 16.11.56 to 16.11.58 (#879aac6) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 16.11.46 to 16.11.47 (#c364ba8) 
+- **deps-dev:** bump jest-junit from 13.2.0 to 14.0.0 (#632a923) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 16.11.45 to 16.11.46 (#c0ab520) 
+- **deps-dev:** bump jest-sinon from 1.0.4 to 1.1.0 (#6b4a3aa) 
+- **deps-dev:** bump [@types](https://github.com/types)/node-forge from 1.0.2 to 1.0.4 (#ef4c428) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 16.11.58 to 16.11.59 (#bbd3dd5) 
+- **deps-dev:** bump [@types](https://github.com/types)/express from 4.17.13 to 4.17.14 (#09a9f35) 
+- **deps-dev:** bump [@types](https://github.com/types)/node-forge from 1.0.4 to 1.0.5 (#fbd958f) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 16.11.19 to 16.11.45 (#1e69710) 
+- **deps-dev:** bump nodemon from 2.0.16 to 2.0.19 (#f885519) 
+- **deps-dev:** bump typescript from 4.7.3 to 4.7.4 (#6a98685) 
+- **deps-dev:** bump nodemon from 2.0.19 to 2.0.20 (#877a116) 
+
+### Chore
+- update changelog and bump package.json version for release (#6993b4f) 
+
+### Docs
+- updates changelog for v2.5.0 (#fdd69f5) 
+
+### Feat
+- **domains:** cert password authentication on submit (#e0c068e) 
+- **profile:** adds amt features config state machine ([#706](https://github.com/open-amt-cloud-toolkit/rps/issues/706)) (#a778930) 
+
+### Fix
+- certManager filename causing build failure in docker (#ce555dc) 
+- **api:** create endpoints now rollback db if vault fails (#99b2b56) 
+- **cira:** deletes certificates when unconfiguring previous settings ([#673](https://github.com/open-amt-cloud-toolkit/rps/issues/673)) (#0fd112b) 
+- **profile features:** corrected CIM_KVMRedirection enum comparison ([#711](https://github.com/open-amt-cloud-toolkit/rps/issues/711)) (#1245cb5) 
+
+### Refactor
+- **activation:** adds specific error message to provision cert ([#727](https://github.com/open-amt-cloud-toolkit/rps/issues/727)) (#4bb6e11) 
+- **activation:** adds xstate framework for activation (#5e00101) 
+- **cira:** cira config uses xstate ([#698](https://github.com/open-amt-cloud-toolkit/rps/issues/698)) (#21a2792) 
+- **config:** remove unnused amtusername (#9b6044b) 
+- **deactivation:** update error message (#c3a2c2a) 
+- **deactivation:** adds checks for secret provider responses ([#730](https://github.com/open-amt-cloud-toolkit/rps/issues/730)) (#55791e4) 
+- **deactivation:** adds xstate framework for deactivation (#9f1b25e) 
+- **interfaces:** remove unused refactored code ([#694](https://github.com/open-amt-cloud-toolkit/rps/issues/694)) (#82dc0ee) 
+- **maintenance:** uses xstate for maintenance tasks ([#693](https://github.com/open-amt-cloud-toolkit/rps/issues/693)) (#50f8aa8) 
+- **networkConfiguration:** adds xstate framework to network configuration (#49a8b92) 
+- **reconfigure:** updated to reconfigure a device ([#712](https://github.com/open-amt-cloud-toolkit/rps/issues/712)) (#4b1de24) 
+- **status:** formats network status message (#cf76d89) 
+- **test:** adds unit tests to activation state machine ([#697](https://github.com/open-amt-cloud-toolkit/rps/issues/697)) (#25c5bcb) 
+- **tls:** tls configuration now uses xstate (#9a4d93b) 
+
+
+<a name="v2.4.0"></a>
+
+## [v2.4.0] - 2022-07-05
 ### Build
 - **deps:** bump ws from 8.7.0 to 8.8.0 (#1fe1bde) 
 - **deps:** bump ws from 8.6.0 to 8.7.0 (#e2877cb) 
@@ -9,7 +80,7 @@
 - **deps-dev:** bump typescript from 4.6.4 to 4.7.2 (#103fa24) 
 
 ### Ci
-- rename test output files (#95a4d22) 
+- rename test output files (#95f8002) 
 - remove node 12 and add 18 for build (#a98387c) 
 - **codedql:** upgrade codeql to v2 (#ff43898) 
 - **jest:** upload junit results as built artifact (#ddd5953) 
@@ -28,6 +99,7 @@
 
 
 <a name="v2.3.2"></a>
+
 ## [v2.3.2] - 2022-06-15
 ### Fix
 - **dependencies:** resolve peer dependencies for eslint (#e595d4e) 
@@ -45,6 +117,7 @@
 
 
 <a name="v2.3.0"></a>
+
 ## [v2.3.0] - 2022-05-11
 ### Build
 - **deps:** bump minimist from 1.2.5 to 1.2.6 (#24478f5) 
@@ -95,6 +168,7 @@
 
 
 <a name="v2.2.0"></a>
+
 ## [v2.2.0] - 2022-03-18
 ### Build
 - **deps:** bump ws from 8.4.0 to 8.4.2 (#5841c98) 
@@ -212,6 +286,7 @@
 
 
 <a name="v2.1.0"></a>
+
 ## [v2.1.0] - 2021-11-08
 ### Build
 - **deps:** bump express-validator from 6.12.2 to 6.13.0 (#51cb84a) 
@@ -262,6 +337,7 @@
 
 
 <a name="v2.0.1"></a>
+
 ## [v2.0.1] - 2021-09-22
 ### Build
 - **deps:** bump tmpl from 1.0.4 to 1.0.5 (#53b175f) 
@@ -278,6 +354,7 @@
 
 
 <a name="v2.0.0"></a>
+
 ## [v2.0.0] - 2021-09-15
 ### Build
 - update version to v2.0.0 (#1dbd15c) 
@@ -338,6 +415,7 @@ tenantId is a new field in the db and all queries now require it
 
 
 <a name="v1.5.0"></a>
+
 ## [v1.5.0] - 2021-08-12
 ### Build
 - **deps:** bump express-validator from 6.12.0 to 6.12.1 (#9d64d0d) 
@@ -415,6 +493,7 @@ removed configuration_script column from profiles db
 
 
 <a name="v1.4.0"></a>
+
 ## [v1.4.0] - 2021-06-23
 ### Build
 - **dep:** bump color-string to 1.5.5 (#0e7455b) 
@@ -495,6 +574,7 @@ Vault KEY names are changed
 
 
 <a name="v1.3.0"></a>
+
 ## [v1.3.0] - 2021-05-06
 ### Build
 - bump version in package.json and swagger (#bf94f12) 
@@ -556,6 +636,7 @@ Auth now handled by kong
 
 
 <a name="v1.2.0"></a>
+
 ## [v1.2.0] - 2021-04-02
 ### Build
 - update dockerfile to node 14-buster-slim (#4b7b854) 
@@ -655,6 +736,7 @@ API responses are structured and no longer return string messages
 
 
 <a name="v1.1.0"></a>
+
 ## [v1.1.0] - 2021-02-11
 ### Build
 - **config:** update cors defaults (#70fbf7e) 
@@ -730,6 +812,7 @@ API responses are structured and no longer return string messages
 
 
 <a name="v1.0.0"></a>
+
 ## v1.0.0 - 2020-11-20
 ### Ci
 - automation for scanning and builds (#b73e176) 
@@ -742,8 +825,9 @@ API responses are structured and no longer return string messages
 - **docker:** optimize dockerfile (#ad2319d) 
 
 
-[Unreleased]: https://github.com/open-amt-cloud-toolkit/rps/compare/2.3.0...HEAD
-[2.3.0]: https://github.com/open-amt-cloud-toolkit/rps/compare/v2.3.2...2.3.0
+[Unreleased]: https://github.com/open-amt-cloud-toolkit/rps/compare/2.4.0...HEAD
+[2.4.0]: https://github.com/open-amt-cloud-toolkit/rps/compare/v2.4.0...2.4.0
+[v2.4.0]: https://github.com/open-amt-cloud-toolkit/rps/compare/v2.3.2...v2.4.0
 [v2.3.2]: https://github.com/open-amt-cloud-toolkit/rps/compare/v2.3.1...v2.3.2
 [v2.3.1]: https://github.com/open-amt-cloud-toolkit/rps/compare/v2.3.0...v2.3.1
 [v2.3.0]: https://github.com/open-amt-cloud-toolkit/rps/compare/v2.2.0...v2.3.0
