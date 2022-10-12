@@ -1,8 +1,9 @@
 {
 	"info": {
-		"_postman_id": "0fceb723-6616-4d10-a0e4-fa7e8cff251c",
+		"_postman_id": "6f9c8745-d2e2-4f71-822e-7fa78f7e2b42",
 		"name": "RPS API Tests",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "20544419"
 	},
 	"item": [
 		{
@@ -9395,6 +9396,7 @@
 							"pm.test(\"Version request should succeed\", function () {\r",
 							"    var result = pm.response.json();\r",
 							"    pm.expect(result.protocolVersion).to.eql(\"4.0.0\")\r",
+							"    pm.expect(result.serviceVersion).to.exist\r",
 							"});"
 						],
 						"type": "text/javascript"
@@ -9402,6 +9404,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZW5hbnRJZCI6IiIsImlzcyI6IjlFbVJKVGJJaUliNGJJZVNzbWdjV0lqclI2SHlFVHFjIiwiZGV2aWNlSWQiOiIqIiwiZXhwIjoxNjUzMDAwMDgyfQ.loR4N1Kff6YfE_w5gNYC35EqP_s4Lqncp7wwDOWhFhw",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [
 					{
