@@ -1,5 +1,5 @@
 import { ClientMsg } from '../models/RCS.Config'
-import { AppVersion, ProtocolVersion } from './constants'
+import { ServiceVersion, ProtocolVersion } from './constants'
 
 export default {
   /**
@@ -12,7 +12,7 @@ export default {
     const msg: ClientMsg = {
       method: method,
       apiKey: 'xxxxx',
-      appVersion: AppVersion,
+      appVersion: ServiceVersion,
       protocolVersion: ProtocolVersion,
       status: status,
       message: message,

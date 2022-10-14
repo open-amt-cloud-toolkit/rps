@@ -10,7 +10,7 @@ const packageObj = require('../../package.json')
 export const AMTRandomPasswordChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^*()'
 export const AMTRandomPasswordLength = 16
 
-export const AppVersion = packageObj.version
+export const ServiceVersion = packageObj.version
 export const ProtocolVersion = '4.0.0'
 export const AMTUserName = 'admin'
 export const mpsserver = (name: string): string => {
