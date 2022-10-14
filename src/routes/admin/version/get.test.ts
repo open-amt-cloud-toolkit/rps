@@ -1,5 +1,6 @@
 import { createSpyObj } from '../../../test/helper/jest'
 import * as version from './get'
+import { ServiceVersion, ProtocolVersion } from '../../../utils/constants'
 
 describe('Checks getVersion', () => {
   let resSpy
@@ -9,14 +10,10 @@ describe('Checks getVersion', () => {
     resSpy.status.mockReturnThis()
     resSpy.json.mockReturnThis()
     resSpy.send.mockReturnThis()
-    req = {
-      serviceVersion: '2.5.0',
-      protocolVersion: '4.0.0'
-    }
   })
   it('should return with protocolVersion and serviceVersion', async () => {
     await version.getVersion(req, resSpy)
     expect(resSpy.status).toHaveBeenCalledWith(200)
-    expect(resSpy.json).toHaveBeenCalledWith({ serviceVersion: '2.5.0', protocolVersion: '4.0.0' })
+    expect(resSpy.json).toHaveBeenCalledWith({ serviceVersion: ServiceVersion, protocolVersion: ProtocolVersion })
   })
 })
