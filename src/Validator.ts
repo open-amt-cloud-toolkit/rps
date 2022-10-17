@@ -23,7 +23,7 @@ export class Validator implements IValidator {
 
   constructor (
     private readonly logger: ILogger,
-    private readonly configurator: Configurator
+    readonly configurator: Configurator
   ) {
     this.jsonParser = new ClientMsgJsonParser()
   }
@@ -195,27 +195,18 @@ export class Validator implements IValidator {
   }
 
   async verifyDevicePassword (payload: Payload): Promise<void> {
-    try {
-      if (this.configurator?.amtDeviceRepository) {
-        const amtDevice = await this.configurator.amtDeviceRepository.get(payload.uuid)
+    if (this.configurator?.amtDeviceRepository) {
+      const amtDevice = await this.configurator.amtDeviceRepository.get(payload.uuid)
 
-        if (amtDevice?.amtpass && payload.password && payload.password === amtDevice.amtpass) {
-          this.logger.debug(`AMT password matches stored version for Device ${payload.uuid}`)
-        } else {
-          this.logger.error(`stored version for Device ${payload.uuid}`)
-          throw new RPSError(`AMT password DOES NOT match stored version for Device ${payload.uuid}`)
-        }
+      if (amtDevice?.amtpass && payload.password && payload.password === amtDevice.amtpass) {
+        this.logger.debug(`AMT password matches stored version for Device ${payload.uuid}`)
       } else {
-        this.logger.error(`Device ${payload.uuid} secret provider not found`)
-        throw new RPSError(`Device ${payload.uuid} secret provider not found`)
+        this.logger.error(`stored version for Device ${payload.uuid}`)
+        throw new RPSError(`AMT password DOES NOT match stored version for Device ${payload.uuid}`)
       }
-    } catch (error) {
-      this.logger.error(`AMT device secret provider exception: ${error}`)
-      if (error instanceof RPSError) {
-        throw new RPSError(`${error.message}`)
-      } else {
-        throw new Error('AMT device secret provider exception')
-      }
+    } else {
+      this.logger.error(`Device ${payload.uuid} secret provider not found`)
+      throw new RPSError(`Device ${payload.uuid} secret provider not found`)
     }
   }
 
@@ -282,13 +273,13 @@ export class Validator implements IValidator {
     }
     try {
       const amtDevice: AMTDeviceDTO = await this.configurator.amtDeviceRepository.get(msg.payload.uuid)
-      if (amtDevice?.amtpass == null) {
+      if (amtDevice == null) {
         this.logger.error(`AMT device DOES NOT exists ${msg.payload.uuid}`)
-        throw new RPSError(`AMT device DOES NOT exists ${msg.payload.uuid}`)
+        return null
       }
       return amtDevice
     } catch (error) {
-      this.logger.error(`AMT device DOES NOT exists ${msg.payload.uuid}`)
+      this.logger.error(`Failed to get AMT device info ${msg.payload.uuid}`)
     }
     return null
   }
@@ -301,28 +292,23 @@ export class Validator implements IValidator {
     } catch (error) {
       this.logger.error(`AMT device DOES NOT exists ${msg.payload.uuid}`)
     }
+    clientObj.activationStatus = true
+    msg.payload.username = AMTUserName
     if (amtDevice?.amtpass) {
       if (amtDevice.amtpass !== msg.payload.password) {
         throw new RPSError(`AMT password DOES NOT match stored version for Device ${msg.payload.uuid}`)
       }
-      msg.payload.username = AMTUserName
       msg.payload.password = amtDevice.amtpass
       this.logger.debug(`AMT password found for Device ${msg.payload.uuid}`)
       await this.updateTags(msg.payload.uuid, msg.payload.profile)
       if (clientObj.action === ClientAction.ADMINCTLMODE || clientObj.action === ClientAction.CLIENTCTLMODE) {
-        clientObj.activationStatus.activated = true
         clientObj.amtPassword = amtDevice.amtpass
-        if (!amtDevice.mebxpass && clientObj.action === ClientAction.ADMINCTLMODE) {
-          clientObj.activationStatus.missingMebxPassword = true
-        } else {
-          clientObj.action = ClientAction.NETWORKCONFIG
+        if (clientObj.action === ClientAction.ADMINCTLMODE) {
+          clientObj.mebxPassword = amtDevice.mebxpass
         }
       }
     } else {
-      clientObj.activationStatus.activated = true
-      clientObj.activationStatus.changePassword = true
-      clientObj.activationStatus.missingMebxPassword = false
-      msg.payload.username = AMTUserName
+      this.logger.debug(`AMT credentials not found in secret provider for device ${msg.payload.uuid}`)
     }
     clientObj.ClientData = msg
   }

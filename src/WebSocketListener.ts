@@ -46,7 +46,7 @@ export class WebSocketListener {
    */
   onClientConnected = (ws: WebSocket): void => {
     const clientId = uuid()
-    devices[clientId] = { ClientId: clientId, ClientSocket: ws, ciraconfig: {}, network: { count: 0 }, status: {}, tls: {}, activationStatus: {}, unauthCount: 0, messageId: 0 }
+    devices[clientId] = { ClientId: clientId, ClientSocket: ws, ciraconfig: {}, network: { count: 0 }, status: {}, tls: {}, activationStatus: false, unauthCount: 0, messageId: 0 }
 
     ws.on('message', async (data: WebSocket.Data, isBinary: boolean) => {
       // eslint-disable-next-line @typescript-eslint/no-base-to-string

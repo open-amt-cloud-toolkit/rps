@@ -57,7 +57,7 @@ describe('Network Configuration', () => {
       ciraconfig: {},
       network: {},
       status: {},
-      activationStatus: {},
+      activationStatus: false,
       connectionParams: {
         guid: '4c4c4544-004b-4210-8033-b6c04f504633',
         port: 16992,
