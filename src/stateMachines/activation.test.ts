@@ -68,7 +68,7 @@ describe('Activation State Machine', () => {
       ciraconfig: {},
       network: {},
       status: {},
-      activationStatus: {},
+      activationStatus: false,
       connectionParams: {
         guid: '4c4c4544-004b-4210-8033-b6c04f504633',
         port: 16992,
@@ -467,7 +467,7 @@ describe('Activation State Machine', () => {
     test('should set activation status', () => {
       devices[context.clientId].status.Status = 'Admin control mode.'
       activation.setActivationStatus(context, null)
-      expect(devices[clientId].activationStatus.activated).toBeTruthy()
+      expect(devices[clientId].activationStatus).toBeTruthy()
     })
   })
 

@@ -80,7 +80,7 @@ export class DataProcessor {
     // Makes the first wsman call
     this.setConnectionParams(clientId)
     activation.service.start()
-    if (devices[clientId].activationStatus.activated) {
+    if (devices[clientId].activationStatus) {
       activation.service.send({ type: 'ACTIVATED', clientId: clientId, isActivated: true })
     } else {
       activation.service.send({ type: 'ACTIVATION', clientId: clientId })

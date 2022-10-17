@@ -158,7 +158,7 @@ export class FeaturesConfiguration {
         }
       },
       SUCCESS: {
-        entry: (context, _) => this.logger.error(`AMT Features Configuration failed: ${context.statusMessage}`),
+        entry: (context, _) => this.logger.info('AMT Features Configuration success'),
         type: 'final'
       },
       FAILED: {

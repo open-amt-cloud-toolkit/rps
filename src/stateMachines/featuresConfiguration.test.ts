@@ -27,7 +27,7 @@ describe('Features State Machine', () => {
       ClientData: {},
       status: {},
       uuid: '4bac9510-04a6-4321-bae2-d45ddf07b684',
-      activationStatus: {},
+      activationStatus: false,
       connectionParams: {
         guid: '4c4c4544-004b-4210-8033-b6c04f504633',
         port: 16992,

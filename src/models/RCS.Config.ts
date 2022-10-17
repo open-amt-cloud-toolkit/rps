@@ -96,7 +96,7 @@ export interface ClientObject {
   payload?: any
   certObj?: ProvisioningCertObj
   readyState?: number
-  activationStatus?: ActivationStatus
+  activationStatus?: boolean
   delayEndTime?: number
   amtPassword?: string
   mebxPassword?: string
@@ -114,12 +114,6 @@ export interface ClientObject {
   pendingPromise?: Promise<any>
   resolve?: any
   reject?: any
-}
-
-export interface ActivationStatus {
-  activated?: boolean
-  missingMebxPassword?: boolean
-  changePassword?: boolean
 }
 
 export interface CIRAConfigFlow {
