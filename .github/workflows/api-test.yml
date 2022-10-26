@@ -11,16 +11,19 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - run: docker build -f Dockerfile -t rps:${GITHUB_SHA} .
     - run: docker-compose up -d
     
     - name: Let Docker Spin up
       run: sleep 5
     - name: Run RPS API Tests
-      run: docker run --network=host -v  /home/runner/work/rps/rps/src/test/collections/:/collections -v /home/runner/work/mps/mps/src/test/results/:/results postman/newman run /collections/rps.postman_collection.json -e /collections/rps.postman_environment.json --insecure --reporters cli,json,junit --reporter-json-export /results/rps_api_results.json --reporter-junit-export /results/rps_api_results_junit.xml
+      run: docker run --network=host -v  /home/runner/work/rps/rps/src/test/collections/:/collections -v /home/runner/work/mps/mps/src/test/results/:/results postman/newman:5.3-alpine run /collections/rps.postman_collection.json -e /collections/rps.postman_environment.json --insecure --reporters cli,json,junit --reporter-json-export /results/rps_api_results.json --reporter-junit-export /results/rps_api_results_junit.xml
     - name: Run RPS Security Tests
       run: docker run --network=host -v  /home/runner/work/rps/rps/src/test/collections/:/collections -v /home/runner/work/mps/mps/src/test/results/:/results postman/newman run /collections/rps_security_api_test.postman_collection.json -e /collections/rps.postman_environment.json -d /collections/data/rps_security_api_test.data.json --insecure --reporters cli,json,junit --reporter-json-export /results/rps_api_security_results.json --reporter-junit-export /results/rps_api_security_results_junit.xml
+    # - name: Dump docker logs on failure
+    #   if: failure()
+    #   uses: jwalton/gh-docker-logs@v2
     - name: Upload Postman Results
       uses: actions/upload-artifact@v3
       with:
