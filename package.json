@@ -63,7 +63,7 @@
     "winston": "^3.8.2",
     "ws": "^8.9.0",
     "xml2js": "^0.4.23",
-    "xstate": "^4.33.6"
+    "xstate": "^4.34.0"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.2",
