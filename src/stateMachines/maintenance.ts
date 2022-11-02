@@ -5,6 +5,7 @@ import Logger from '../Logger'
 import ClientResponseMsg from '../utils/ClientResponseMsg'
 
 import { devices } from '../WebSocketListener'
+import { AMTPassword } from './amtPassword'
 import { Error } from './error'
 import { SyncIP } from './syncIP'
 import { TimeSync } from './timeMachine'
@@ -20,7 +21,7 @@ export interface MaintenanceContext {
 }
 
 export interface MaintenanceEvent {
-  type: 'SYNCTIME' | 'ONFAILED' | 'ON_SYNCIP_FAILED' | 'SYNCIP'
+  type: 'SYNCTIME' | 'ONFAILED' | 'ON_SYNCIP_FAILED' | 'SYNCIP' |'CHANGEPASSWORD'
   clientId: string
   data?: any
 }
@@ -29,6 +30,7 @@ export class Maintenance {
   amt: AMT.Messages
   logger: Logger
   timeSync: TimeSync = new TimeSync()
+  amtPassword: AMTPassword = new AMTPassword()
   ipSync: SyncIP = new SyncIP()
   error: Error = new Error()
   machine =
@@ -52,6 +54,13 @@ export class Maintenance {
             actions: [assign({ clientId: (context, event) => event.clientId }), 'Reset Unauth Count'],
             target: 'SYNC_TIME'
           },
+          CHANGEPASSWORD: {
+            actions: [assign({
+              clientId: (context, event) => event.clientId,
+              message: (context, event) => event.data
+            }), 'Reset Unauth Count'],
+            target: 'CHANGE_PASSWORD'
+          },
           SYNCIP: {
             actions: [assign({
               clientId: (context, event) => event.clientId,
@@ -71,6 +80,24 @@ export class Maintenance {
           },
           onDone: {
             actions: assign({ statusMessage: (context, event) => 'Time Synchronized' }),
+            target: 'SUCCESS'
+          },
+          onError: 'ERROR'
+        }
+      },
+      CHANGE_PASSWORD: {
+        entry: send({ type: 'CHANGEPASSWORD' }, { to: 'change-amt-password' }),
+        invoke: {
+          src: this.amtPassword.machine,
+          id: 'change-amt-password',
+          data: {
+            unauthCount: (context, event) => context.unauthCount,
+            amtPassword: (context, event) => context.message,
+            httpHandler: (context, event) => context.httpHandler,
+            clientId: (context, event) => context.clientId
+          },
+          onDone: {
+            actions: assign({ statusMessage: (context, event) => 'AMT Password Changed' }),
             target: 'SUCCESS'
           },
           onError: 'ERROR'

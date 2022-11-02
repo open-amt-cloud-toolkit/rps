@@ -138,7 +138,7 @@ export class Validator implements IValidator {
     if (msg.payload.force) {
       this.logger.debug('bypassing password check')
     } else {
-      await this.verifyDevicePassword(payload)
+      await this.verifyDevicePassword(payload, clientId)
     }
     // Store the client message
     clientObj.uuid = payload.uuid
@@ -194,23 +194,39 @@ export class Validator implements IValidator {
     } else {
       throw new RPSError(`Device ${payload.uuid} is in pre-provisioning mode.`)
     }
-    await this.verifyDevicePassword(payload)
+    await this.verifyDevicePassword(payload, clientId)
     clientObj.ClientData = msg
   }
 
-  async verifyDevicePassword (payload: Payload): Promise<void> {
-    if (this.configurator?.amtDeviceRepository) {
-      const amtDevice = await this.configurator.amtDeviceRepository.get(payload.uuid)
+  async verifyDevicePassword (payload: Payload, clientId: string): Promise<void> {
+    try {
+      const clientObj = devices[clientId]
+      if (this.configurator?.amtDeviceRepository) {
+        const amtDevice = await this.configurator.amtDeviceRepository.get(payload.uuid)
 
-      if (amtDevice?.amtpass && payload.password && payload.password === amtDevice.amtpass) {
-        this.logger.debug(`AMT password matches stored version for Device ${payload.uuid}`)
+        if (amtDevice?.amtpass && payload.password && payload.password === amtDevice.amtpass) {
+          this.logger.debug(`AMT password matches stored version for Device ${payload.uuid}`)
+          clientObj.uuid = payload.uuid
+          clientObj.amtPassword = amtDevice.amtpass
+          clientObj.mebxPassword = amtDevice.mebxpass
+          clientObj.hostname = amtDevice.name
+          clientObj.mpsPassword = amtDevice.mpspass
+          clientObj.mpsUsername = amtDevice.mpsuser
+        } else {
+          this.logger.error(`stored version for Device ${payload.uuid}`)
+          throw new RPSError(`AMT password DOES NOT match stored version for Device ${payload.uuid}`)
+        }
       } else {
-        this.logger.error(`stored version for Device ${payload.uuid}`)
-        throw new RPSError(`AMT password DOES NOT match stored version for Device ${payload.uuid}`)
+        this.logger.error(`Device ${payload.uuid} secret provider not found`)
+        throw new RPSError(`Device ${payload.uuid} secret provider not found`)
       }
-    } else {
-      this.logger.error(`Device ${payload.uuid} secret provider not found`)
-      throw new RPSError(`Device ${payload.uuid} secret provider not found`)
+    } catch (error) {
+      this.logger.error(`AMT device secret provider exception: ${error}`)
+      if (error instanceof RPSError) {
+        throw new RPSError(`${error.message}`)
+      } else {
+        throw new Error('AMT device secret provider exception')
+      }
     }
   }
 

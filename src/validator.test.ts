@@ -90,15 +90,18 @@ describe('validator', () => {
       })
     })
     test('should get device credentials from secret provider', async () => {
+      const clientId = uuid()
+      devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
       msg.payload.password = 'Intel123!'
-      await validator.verifyDevicePassword(msg.payload)
+      await validator.verifyDevicePassword(msg.payload, clientId)
       expect(getSpy).toHaveBeenCalled()
     })
     test('should throw an exception when device info does not exists', async () => {
+      const clientId = uuid()
       msg.payload.password = 'P@ssw0rd'
       let rpsError
       try {
-        await validator.verifyDevicePassword(msg.payload)
+        await validator.verifyDevicePassword(msg.payload, clientId)
       } catch (error) {
         rpsError = error
       }
@@ -107,10 +110,11 @@ describe('validator', () => {
       expect(getSpy).toHaveBeenCalled()
     })
     test('should throw an exception when device repo does not exists', async () => {
+      const clientId = uuid()
       validator.configurator.amtDeviceRepository = null
       let rpsError
       try {
-        await validator.verifyDevicePassword(msg.payload)
+        await validator.verifyDevicePassword(msg.payload, clientId)
       } catch (error) {
         rpsError = error
       }
