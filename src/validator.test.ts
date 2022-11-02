@@ -18,6 +18,9 @@ import { ClientAction, ClientObject } from './models/RCS.Config'
 EnvReader.GlobalEnvConfig = config
 const configurator: Configurator = new Configurator()
 const validator = new Validator(new Logger('Validator'), configurator)
+const clientId = uuid()
+devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
+
 let msg
 
 describe('validator', () => {
@@ -121,8 +124,6 @@ describe('validator', () => {
     test('should throw an exception if version is less than 7', async () => {
       let rpsError = null
       try {
-        const clientId = uuid()
-        devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
         msg.payload.ver = '6.8.50'
         await validator.verifyAMTVersion(msg.payload, 'activation')
       } catch (error) {
@@ -158,8 +159,6 @@ describe('validator', () => {
         protocolVersion: '4.0.0',
         status: 'ok'
       }
-      const clientId = uuid()
-      devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
       VersionChecker.setCurrentVersion('4.0.0')
       const clientMsg = validator.parseClientMsg(JSON.stringify(msg), clientId)
       expect(clientMsg.message).toEqual(msg.message)
@@ -167,12 +166,8 @@ describe('validator', () => {
 
     test('check protocol version of message', () => {
       const msg = '{"apiKey":"key","appVersion":"1.2.0","message":"all\'s good!","method":"activation","payload":"eyJidWlsZCI6IjM0MjUiLCJjZXJ0SGFzaGVzIjpbImU3Njg1NjM0ZWZhY2Y2OWFjZTkzOWE2YjI1NWI3YjRmYWJlZjQyOTM1YjUwYTI2NWFjYjVjYjYwMjdlNDRlNzAiLCJlYjA0Y2Y1ZWIxZjM5YWZhNzYyZjJiYjEyMGYyOTZjYmE1MjBjMWI5N2RiMTU4OTU2NWI4MWNiOWExN2I3MjQ0IiwiYzM4NDZiZjI0YjllOTNjYTY0Mjc0YzBlYzY3YzFlY2M1ZTAyNGZmY2FjZDJkNzQwMTkzNTBlODFmZTU0NmFlNCIsImQ3YTdhMGZiNWQ3ZTI3MzFkNzcxZTk0ODRlYmNkZWY3MWQ1ZjBjM2UwYTI5NDg3ODJiYzgzZWUwZWE2OTllZjQiLCIxNDY1ZmEyMDUzOTdiODc2ZmFhNmYwYTk5NThlNTU5MGU0MGZjYzdmYWE0ZmI3YzJjODY3NzUyMWZiNWZiNjU4IiwiODNjZTNjMTIyOTY4OGE1OTNkNDg1ZjgxOTczYzBmOTE5NTQzMWVkYTM3Y2M1ZTM2NDMwZTc5YzdhODg4NjM4YiIsImE0YjZiMzk5NmZjMmYzMDZiM2ZkODY4MWJkNjM0MTNkOGM1MDA5Y2M0ZmEzMjljMmNjZjBlMmZhMWIxNDAzMDUiLCI5YWNmYWI3ZTQzYzhkODgwZDA2YjI2MmE5NGRlZWVlNGI0NjU5OTg5YzNkMGNhZjE5YmFmNjQwNWU0MWFiN2RmIiwiYTUzMTI1MTg4ZDIxMTBhYTk2NGIwMmM3YjdjNmRhMzIwMzE3MDg5NGU1ZmI3MWZmZmI2NjY3ZDVlNjgxMGEzNiIsIjE2YWY1N2E5ZjY3NmIwYWIxMjYwOTVhYTVlYmFkZWYyMmFiMzExMTlkNjQ0YWM5NWNkNGI5M2RiZjNmMjZhZWIiLCI5NjBhZGYwMDYzZTk2MzU2NzUwYzI5NjVkZDBhMDg2N2RhMGI5Y2JkNmU3NzcxNGFlYWZiMjM0OWFiMzkzZGEzIiwiNjhhZDUwOTA5YjA0MzYzYzYwNWVmMTM1ODFhOTM5ZmYyYzk2MzcyZTNmMTIzMjViMGE2ODYxZTFkNTlmNjYwMyIsIjZkYzQ3MTcyZTAxY2JjYjBiZjYyNTgwZDg5NWZlMmI4YWM5YWQ0Zjg3MzgwMWUwYzEwYjljODM3ZDIxZWIxNzciLCI3M2MxNzY0MzRmMWJjNmQ1YWRmNDViMGU3NmU3MjcyODdjOGRlNTc2MTZjMWU2ZTYxNDFhMmIyY2JjN2Q4ZTRjIiwiMjM5OTU2MTEyN2E1NzEyNWRlOGNlZmVhNjEwZGRmMmZhMDc4YjVjODA2N2Y0ZTgyODI5MGJmYjg2MGU4NGIzYyIsIjQ1MTQwYjMyNDdlYjljYzhjNWI0ZjBkN2I1MzA5MWY3MzI5MjA4OWU2ZTVhNjNlMjc0OWRkM2FjYTkxOThlZGEiLCI0M2RmNTc3NGIwM2U3ZmVmNWZlNDBkOTMxYTdiZWRmMWJiMmU2YjQyNzM4YzRlNmQzODQxMTAzZDNhYTdmMzM5IiwiMmNlMWNiMGJmOWQyZjllMTAyOTkzZmJlMjE1MTUyYzNiMmRkMGNhYmRlMWM2OGU1MzE5YjgzOTE1NGRiYjdmNSIsIjcwYTczZjdmMzc2YjYwMDc0MjQ4OTA0NTM0YjExNDgyZDViZjBlNjk4ZWNjNDk4ZGY1MjU3N2ViZjJlOTNiOWEiXSwiY2xpZW50IjoiUFBDIiwiY3VycmVudE1vZGUiOjAsImZxZG4iOiJ2cHJvZGVtby5jb20iLCJwYXNzd29yZCI6IktRR25IK041cUo4WUxxakVGSk1uR1NnY25GTE12MFRrIiwicHJvZmlsZSI6InByb2ZpbGUxIiwic2t1IjoiMTYzOTIiLCJ1c2VybmFtZSI6IiQkT3NBZG1pbiIsInV1aWQiOlsxNiwxNDksMTcyLDc1LDE2Niw0LDMzLDY3LDE4NiwyMjYsMjEyLDkzLDIyMyw3LDE4MiwxMzJdLCJ2ZXIiOiIxMS44LjUwIn0=","protocolVersion":"3.0.0","status":"ok"}'
-      const clientId = uuid()
-      devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
       VersionChecker.setCurrentVersion('4.0.0')
-
       let rpsError = null
-
       try {
         validator.parseClientMsg(msg, clientId)
       } catch (error) {
@@ -188,17 +183,13 @@ describe('validator', () => {
 
   describe('verifyPayload function', () => {
     test('Should return payload', async () => {
-      const clientId = uuid()
-      devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
       const result = await validator.verifyPayload(msg, clientId)
       expect(result).toEqual(msg.payload)
     })
 
     test('Should throw an exception if message is null', async () => {
       let rpsError = null
-      const clientId = uuid()
       try {
-        devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
         await validator.verifyPayload(null, clientId)
       } catch (error) {
         rpsError = error
@@ -209,9 +200,7 @@ describe('validator', () => {
 
     test('Should throw an exception if uuid does not exist', async () => {
       let rpsError = null
-      const clientId = uuid()
       try {
-        devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
         msg.payload.uuid = ''
         await validator.verifyPayload(msg, clientId)
       } catch (error) {
@@ -223,14 +212,24 @@ describe('validator', () => {
   })
 
   describe('validate maintenance message', () => {
-    const clientId = uuid()
+    let rpsError = null
     beforeEach(() => {
+      rpsError = null
       msg.method = 'maintenance'
-      msg.payload.task = 'synctime'
-      devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
+    })
+    test('Should throw an exception if task is not specified', async () => {
+      try {
+        await validator.validateMaintenanceMsg(msg, clientId)
+      } catch (error) {
+        rpsError = error
+      }
+      expect(rpsError).toBeInstanceOf(RPSError)
+      expect(rpsError.message).toEqual(`${clientId} - missing maintenance task in message`)
     })
     test('Should throw an exception if device is in preprovisioning state', async () => {
-      let rpsError = null
+      // set mode explicitly to pre-provisioning
+      msg.payload.task = 'synctime'
+      msg.payload.mode = 0
       try {
         await validator.validateMaintenanceMsg(msg, clientId)
       } catch (error) {
@@ -276,8 +275,6 @@ describe('validator', () => {
     test('should throw an exception if AMT password is undefined', async () => {
       let rpsError = null
       try {
-        const clientId = uuid()
-        devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
         msg.payload.password = undefined
         await validator.validateActivationMsg(msg, clientId)
       } catch (error) {
@@ -289,8 +286,6 @@ describe('validator', () => {
     test('should throw an exception if profile does not match', async () => {
       let rpsError = null
       try {
-        const clientId = uuid()
-        devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
         msg.payload.profile = 'profile5'
         await validator.validateActivationMsg(msg, clientId)
       } catch (error) {
@@ -301,9 +296,7 @@ describe('validator', () => {
     })
     test('Should throw an exception if uuid length is not 36', async () => {
       let rpsError = null
-      const clientId = uuid()
       try {
-        devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
         msg.payload.uuid = '4bac9510-04a6-4321-bae2-d45ddf07b68'
         await validator.validateActivationMsg(msg, clientId)
       } catch (error) {
@@ -314,9 +307,7 @@ describe('validator', () => {
     })
     test('Should throw an exception if uuid is empty', async () => {
       let rpsError = null
-      const clientId = uuid()
       try {
-        devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
         msg.payload.uuid = ''
         await validator.validateActivationMsg(msg, clientId)
       } catch (error) {
@@ -328,7 +319,6 @@ describe('validator', () => {
   })
 
   describe('validate deactivation message', () => {
-    const clientId = uuid()
     let rpsError
     let verifyAMTVersionSpy
     beforeEach(() => {
@@ -376,8 +366,6 @@ describe('validator', () => {
     test('should throw an exception if no certHashes', async () => {
       let rpsError = null
       try {
-        const clientId = uuid()
-        devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
         msg.payload.certHashes = undefined
         await validator.verifyActivationMsgForACM(msg.payload)
       } catch (error) {
@@ -389,8 +377,6 @@ describe('validator', () => {
     test('should throw an exception if no fqdn', async () => {
       let rpsError = null
       try {
-        const clientId = uuid()
-        devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
         msg.payload.fqdn = undefined
         await validator.verifyActivationMsgForACM(msg.payload)
       } catch (error) {
@@ -403,7 +389,6 @@ describe('validator', () => {
 
   describe('set next steps for Configuration', () => {
     test('should set next action NETWORKCONFIG if MEBX is already set', async () => {
-      const clientId = uuid()
       const clientObj: ClientObject = {
         ClientId: clientId,
         ClientData: null,
@@ -422,7 +407,6 @@ describe('validator', () => {
       expect(updateTagsSpy).toHaveBeenCalled()
     })
     test('should set next action NETWORKCONFIG if ClientAction is CCM', async () => {
-      const clientId = uuid()
       const clientObj: ClientObject = {
         ClientId: clientId,
         ClientData: null,
@@ -443,11 +427,9 @@ describe('validator', () => {
   })
 
   describe('verify CurrentMode for activation ', () => {
-    const clientId = uuid()
     let profile
     let setNextStepsForConfigurationSpy
     beforeEach(() => {
-      devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0, status: {} }
       profile = { profileName: 'profile1', amtPassword: 'P@ssw0rd', activation: 'ccmactivate', mebxPassword: 'P@ssw0rd', tenantId: '' }
       setNextStepsForConfigurationSpy = jest.spyOn(validator, 'setNextStepsForConfiguration')
     })

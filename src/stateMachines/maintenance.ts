@@ -6,6 +6,7 @@ import ClientResponseMsg from '../utils/ClientResponseMsg'
 
 import { devices } from '../WebSocketListener'
 import { Error } from './error'
+import { SyncIP } from './syncIP'
 import { TimeSync } from './timeMachine'
 
 export interface MaintenanceContext {
@@ -18,16 +19,17 @@ export interface MaintenanceContext {
   status: 'success' | 'error' | ''
 }
 
-interface MaintenanceEvent {
-  type: 'SYNCCLOCK' | 'ONFAILED'
+export interface MaintenanceEvent {
+  type: 'SYNCTIME' | 'ONFAILED' | 'ON_SYNCIP_FAILED' | 'SYNCIP'
   clientId: string
   data?: any
-}/*  */
+}
 
 export class Maintenance {
   amt: AMT.Messages
   logger: Logger
   timeSync: TimeSync = new TimeSync()
+  ipSync: SyncIP = new SyncIP()
   error: Error = new Error()
   machine =
   createMachine<MaintenanceContext, MaintenanceEvent>({
@@ -46,9 +48,16 @@ export class Maintenance {
     states: {
       PROVISIONED: {
         on: {
-          SYNCCLOCK: {
+          SYNCTIME: {
             actions: [assign({ clientId: (context, event) => event.clientId }), 'Reset Unauth Count'],
             target: 'SYNC_TIME'
+          },
+          SYNCIP: {
+            actions: [assign({
+              clientId: (context, event) => event.clientId,
+              message: (context, event) => event.data
+            }), 'Reset Unauth Count'],
+            target: 'SYNC_IP_ADDRESS'
           }
         }
       },
@@ -60,8 +69,31 @@ export class Maintenance {
           data: {
             clientId: (context, event) => context.clientId
           },
-          onDone: 'SUCCESS',
+          onDone: {
+            actions: assign({ statusMessage: (context, event) => 'Time Synchronized' }),
+            target: 'SUCCESS'
+          },
           onError: 'ERROR'
+        }
+      },
+      SYNC_IP_ADDRESS: {
+        entry: send({ type: 'SYNC_IP' }, { to: 'sync-ip-address' }),
+        invoke: {
+          src: this.ipSync.machine,
+          id: 'sync-ip-address',
+          data: {
+            unauthCount: (context, event) => context.unauthCount,
+            ipConfiguration: (context, event) => context.message,
+            httpHandler: (context, event) => context.httpHandler,
+            clientId: (context, event) => context.clientId
+          },
+          onDone: {
+            actions: assign({ statusMessage: (context, event) => 'IP Address Synchronized' }),
+            target: 'SUCCESS'
+          }
+        },
+        on: {
+          ON_SYNCIP_FAILED: 'FAILURE'
         }
       },
       ERROR: {
@@ -81,11 +113,15 @@ export class Maintenance {
         }
       },
       FAILURE: {
-        entry: [assign({ status: (context, event) => 'error' }), 'Update Configuration Status', 'Send Message to Device'],
+        entry: [
+          assign({ status: (context, event) => 'error', errorMessage: (context, event) => event.data }),
+          'Update Configuration Status',
+          'Send Message to Device'
+        ],
         type: 'final'
       },
       SUCCESS: {
-        entry: [assign({ statusMessage: (context, event) => 'Time Synchronized' }), 'Update Configuration Status', 'Send Message to Device'],
+        entry: ['Update Configuration Status', 'Send Message to Device'],
         type: 'final'
       }
     }
