@@ -182,6 +182,10 @@ export class Validator implements IValidator {
   async validateMaintenanceMsg (msg: ClientMsg, clientId: string): Promise<void> {
     const clientObj = devices[clientId]
     const payload: Payload = this.verifyPayload(msg, clientId)
+    // Task must be specified
+    if (!msg.payload.task) {
+      throw new RPSError(`${clientId} - missing maintenance task in message`)
+    }
     // Check for the current mode
     if (payload.currentMode > 0) {
       const mode = payload.currentMode === 1 ? 'client control mode' : 'admin control mode'

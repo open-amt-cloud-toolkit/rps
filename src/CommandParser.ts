@@ -6,13 +6,13 @@
  **********************************************************************/
 
 import * as parseArgs from 'minimist'
-import { ClientMsg } from './models/RCS.Config'
+import { ClientMethods, ClientMsg } from './models/RCS.Config'
 import Logger from './Logger'
 import { ILogger } from './interfaces/ILogger'
 
 const options = {
   string: ['text', 'password'],
-  boolean: ['force', 'synctime'],
+  boolean: ['force', 'synctime', 'syncip', 'changepassword'],
   alias: { t: 'text', p: 'password', f: 'force', e: 'encrypted' }
 }
 
@@ -23,15 +23,17 @@ const CommandParser = {
       if (msg?.method?.length > 0) {
         const input: string[] = msg.method.trim().split(' ')
         const args = parseArgs(input, options)
+        let firstNonFlagArg = args._[0]
 
         // TODO: text mode is assumed right now, switch shouldn't be used for method going forward
-        if (typeof args.t === 'undefined' && typeof args.e === 'undefined' && input.length > 0 && input[0].length > 0 && !input[0].includes('-')) {
+        if (typeof args.t === 'undefined' && typeof args.e === 'undefined' && input.length > 0 && input[0].length > 0 && !input[0].startsWith('-')) {
           args.t = input[0]
+          // if text is assumed, the command is also in the unparsed arguments
+          firstNonFlagArg = firstNonFlagArg = args._[1]
         }
 
         if (args.t) {
           msg.method = args.t
-
           this.logger.silly(`parsed method: ${msg.method}`)
 
           if (args.profile && msg.payload) {
@@ -49,8 +51,15 @@ const CommandParser = {
             this.logger.silly(`bypass password check: ${msg.payload.force}`)
           }
 
-          if (msg.method === 'maintenance' && args.synctime && msg.payload) {
-            msg.payload.task = 'synctime'
+          if (msg.method === ClientMethods.MAINTENANCE && msg.payload) {
+            if (args.synctime) {
+              msg.payload.task = 'synctime'
+            } else if (args.syncip) {
+              msg.payload.task = 'syncip'
+            } else if (args.changepassword) {
+              msg.payload.task = 'changepassword'
+              msg.payload.taskArg = firstNonFlagArg
+            }
             this.logger.silly(`parsed maintenance task: ${msg.payload.task}`)
           }
         }
