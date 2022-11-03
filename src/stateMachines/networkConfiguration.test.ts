@@ -11,7 +11,6 @@ import { AMT, CIM } from '@open-amt-cloud-toolkit/wsman-messages'
 
 const clientId = uuid()
 EnvReader.GlobalEnvConfig = config
-// const configurator = new Configurator()
 describe('Network Configuration', () => {
   let config
   let currentStateIndex: number
