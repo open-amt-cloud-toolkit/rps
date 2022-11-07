@@ -25,15 +25,35 @@ describe('Domain Profile Validation', () => {
     }).toThrowError(new Error('Unable to decrypt provisioning certificate. Please check that the password is correct, and that the certificate is a valid certificate.'))
   })
 
-  test('domainSuffixChecker - success', () => {
+  test('domainSuffixChecker (root) - success', () => {
     value = 'test.com'
     expect(() => {
       domainSuffixChecker(pfxobj, value)
     }).not.toThrowError(new Error('FQDN not associated with provisioning certificate'))
   })
 
-  test('domainSuffixChecker - failure', () => {
+  test('domainSuffixChecker (subdomain) - success', () => {
+    value = 'test.test.com'
+    expect(() => {
+      domainSuffixChecker(pfxobj, value)
+    }).not.toThrowError(new Error('FQDN not associated with provisioning certificate'))
+  })
+
+  test('domainSuffixChecker (subdomain) - success', () => {
+    value = 'intel.test.com'
+    expect(() => {
+      domainSuffixChecker(pfxobj, value)
+    }).not.toThrowError(new Error('FQDN not associated with provisioning certificate'))
+  })
+
+  test('domainSuffixChecker (root) - failure', () => {
     value = 'wrong.com'
+    expect(() => {
+      domainSuffixChecker(pfxobj, value)
+    }).toThrowError(new Error('FQDN not associated with provisioning certificate'))
+  })
+  test('domainSuffixChecker (subdomain) - failure', () => {
+    value = 'test.wrong.com'
     expect(() => {
       domainSuffixChecker(pfxobj, value)
     }).toThrowError(new Error('FQDN not associated with provisioning certificate'))
