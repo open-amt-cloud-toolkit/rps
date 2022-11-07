@@ -18,7 +18,7 @@ describe('ciraconfig tests', () => {
       username: 'admin',
       password: 'qwerty',
       commonName: 'The Test Config',
-      serverAddressFormat: 1,
+      serverAddressFormat: 3,
       authMethod: 2,
       mpsRootCertificate: 'enabled',
       proxyDetails: 'details',
