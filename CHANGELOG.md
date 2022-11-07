@@ -1,3 +1,40 @@
+<a name="2.6.0"></a>
+## [2.6.0] - 2022-11-07
+### Build
+- **deps:** bump minimist from 1.2.6 to 1.2.7 (#74017d9) 
+- **deps:** bump ws from 8.10.0 to 8.11.0 (#4bee7eb) 
+- **deps:** bump express from 4.18.1 to 4.18.2 (#b679873) 
+- **deps:** bump ws from 8.9.0 to 8.10.0 (#b0c5edd) 
+- **deps:** bump xstate from 4.33.6 to 4.34.0 (#48375da) 
+- **deps:** bump ws from 8.8.1 to 8.9.0 (#c727f40) 
+- **deps:** bump [@open](https://github.com/open)-amt-cloud-toolkit/wsman-messages from 2.4.1 to 3.0.4 (#e6fba58) 
+- **deps-dev:** bump [@types](https://github.com/types)/node-forge from 1.0.5 to 1.3.0 (#3eca0fc) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 16.11.65 to 16.18.3 (#dd1dd48) 
+- **deps-dev:** bump typescript from 4.8.3 to 4.8.4 (#256db7b) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 16.11.59 to 16.11.65 (#55f4cb8) 
+- **deps-dev:** bump sinon from 14.0.0 to 14.0.1 (#8028c76) 
+- **docker:** change base image to use bullseye-slim instead of buster-slim (#337666a) 
+
+### Ci
+- **ab-sync:** update action to v2.1 (#2bc20d2) 
+- **actions:** update to actions/checkout[@v3](https://github.com/v3) (#70ffe9a) 
+
+### Feat
+- **appversion:** adds appversion to version api (#2fc8e01) 
+- **maintenance:** adds syncip command to the maintenance task ([#740](https://github.com/open-amt-cloud-toolkit/rps/issues/740)) (#036553b) 
+
+### Fix
+- **activation:** adds mebx password to secret provider on reconfigure (#03c47c5) 
+- **domains:** allow subdomains w/ matching root domain (#dacc97c) 
+
+### Refactor
+- **amtPwd:** update to generate random password if not provided ([#743](https://github.com/open-amt-cloud-toolkit/rps/issues/743)) (#a3c3f26) 
+- **network:**  by default enables local profile synchronization for wifi (#329f0bb) 
+
+### Test
+- **getVersion:** fixes getVersion tests (#72d46f5) 
+
+
 <a name="2.5.0"></a>
 
 ## [2.5.0] - 2022-10-05
