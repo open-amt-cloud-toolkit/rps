@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  * Author: Madhavi Losetty
  **********************************************************************/
+import { Types } from '@open-amt-cloud-toolkit/wsman-messages/amt'
 import { DigestChallenge } from '@open-amt-cloud-toolkit/wsman-messages/models/common'
 import * as WebSocket from 'ws'
 import { AMTConfiguration, AMTDomain, ProvisioningCertObj } from '.'
@@ -53,8 +54,8 @@ export interface CIRAConfig {
   username: string
   password?: string
   commonName: string
-  serverAddressFormat: number // IPv4 (3), IPv6 (4), FQDN (201)
-  authMethod: number // Mutual Auth (1), Username/Password (2) (We only support 2)
+  serverAddressFormat: Types.MPServer.InfoFormat // IPv4 (3), IPv6 (4), FQDN (201)
+  authMethod: Types.MPServer.AuthMethod // Mutual Auth (1), Username/Password (2) (We only support 2)
   mpsRootCertificate: string // Assumption is Root Cert for MPS. Need to validate.
   proxyDetails: string
   tenantId: string
