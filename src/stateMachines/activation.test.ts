@@ -333,6 +333,7 @@ describe('Activation State Machine', () => {
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
     it('should send WSMan to set MEBx password', async () => {
+      devices[context.clientId].mebxPassword = 'password'
       await activation.setMEBxPassword(context)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
