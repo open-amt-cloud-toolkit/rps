@@ -14,13 +14,14 @@ describe('AMT Profile - Edit', () => {
   let resSpy
   let req
   let getByNameSpy: jest.SpyInstance
+  let writeSecretWithObjectSpy: jest.SpyInstance
 
   beforeEach(() => {
     resSpy = createSpyObj('Response', ['status', 'json', 'end', 'send'])
     req = {
       db: { profiles: { getByName: jest.fn(), update: jest.fn() } },
       body: { profileName: 'profileName' },
-      query: { }
+      query: {}
     }
     getByNameSpy = jest.spyOn(req.db.profiles, 'getByName').mockResolvedValue({})
     jest.spyOn(req.db.profiles, 'update').mockResolvedValue({})
@@ -34,7 +35,7 @@ describe('AMT Profile - Edit', () => {
     expect(getByNameSpy).toHaveBeenCalledWith('profileName')
     expect(resSpy.status).toHaveBeenCalledWith(200)
   })
-  it('should handle not found', async () => {
+  it('should handle found', async () => {
     req.body = {
       profileName: 'acm',
       activation: ClientAction.ADMINCTLMODE,
@@ -78,6 +79,96 @@ describe('AMT Profile - Edit', () => {
     await editProfile(req, resSpy)
     expect(getByNameSpy).toHaveBeenCalledWith('profileName')
     expect(resSpy.status).toHaveBeenCalledWith(500)
+  })
+  it('test editProfile when CIRA profile is changed to TLS profile', async () => {
+    req.secretsManager = { writeSecretWithObject: jest.fn(), getSecretAtPath: jest.fn() }
+    writeSecretWithObjectSpy = jest.spyOn(req.secretsManager, 'writeSecretWithObject').mockResolvedValue({})
+    req.body = {
+      profileName: 'testTLS',
+      activation: ClientAction.ADMINCTLMODE,
+      amtPassword: null,
+      ciraConfigName: null,
+      generateRandomMEBxPassword: true,
+      generateRandomPassword: true,
+      tenantId: '',
+      tags: [
+        'tag1'
+      ],
+      wifiConfigs: [],
+      dhcpEnabled: false,
+      tlsMode: 2,
+      iderEnabled: true,
+      kvmEnabled: true,
+      solEnabled: true,
+      userConsent: 'None',
+      version: '1'
+    }
+    jest.spyOn(req.db.profiles, 'getByName').mockResolvedValue({
+      profileName: 'testTLS',
+      activation: ClientAction.ADMINCTLMODE,
+      amtPassword: null,
+      ciraConfigName: 'ciraConfig2',
+      generateRandomMEBxPassword: true,
+      generateRandomPassword: true,
+      mebxPassword: null,
+      tenantId: '',
+      tags: [
+        'tag1'
+      ],
+      wifiConfigs: [],
+      dhcpEnabled: false,
+      tlsMode: null,
+      iderEnabled: true,
+      kvmEnabled: true,
+      solEnabled: true,
+      userConsent: 'None',
+      version: '1'
+    })
+    jest.spyOn(req.db.profiles, 'update').mockResolvedValue({
+      profileName: 'testTLS',
+      activation: ClientAction.ADMINCTLMODE,
+      amtPassword: null,
+      ciraConfigName: null,
+      generateRandomMEBxPassword: true,
+      generateRandomPassword: true,
+      mebxPassword: null,
+      tenantId: '',
+      tags: [
+        'tag1'
+      ],
+      wifiConfigs: [],
+      dhcpEnabled: false,
+      tlsMode: 2,
+      iderEnabled: true,
+      kvmEnabled: true,
+      solEnabled: true,
+      userConsent: 'None',
+      version: '2'
+    })
+    const amtConfig: AMTConfiguration = {
+      profileName: 'testTLS',
+      activation: ClientAction.ADMINCTLMODE,
+      ciraConfigName: null,
+      generateRandomMEBxPassword: true,
+      generateRandomPassword: true,
+      tenantId: '',
+      tags: [
+        'tag1'
+      ],
+      wifiConfigs: [],
+      dhcpEnabled: false,
+      tlsMode: 2,
+      iderEnabled: true,
+      kvmEnabled: true,
+      solEnabled: true,
+      userConsent: AMTUserConsent.NONE,
+      version: '2'
+    }
+    await editProfile(req, resSpy)
+    expect(getByNameSpy).toHaveBeenCalledWith('testTLS')
+    expect(resSpy.status).toHaveBeenCalledWith(200)
+    expect(resSpy.json).toHaveBeenCalledWith(amtConfig)
+    expect(writeSecretWithObjectSpy).toHaveBeenCalledTimes(1)
   })
 })
 
@@ -395,4 +486,199 @@ test('test getUpdatedData with kvm options', async () => {
   expect(result.iderEnabled).toEqual(false)
   expect(result.kvmEnabled).toEqual(true)
   expect(result.solEnabled).toEqual(false)
+})
+
+test('test getUpdatedData when CIRA profile is changed to TLS profile', async () => {
+  const newConfig: AMTConfiguration = {
+    profileName: 'testTLS',
+    activation: ClientAction.CLIENTCTLMODE,
+    amtPassword: null,
+    ciraConfigName: null,
+    generateRandomMEBxPassword: false,
+    generateRandomPassword: true,
+    mebxPassword: null,
+    tenantId: '',
+    tags: [
+      'tag1'
+    ],
+    dhcpEnabled: true,
+    tlsMode: 2,
+    iderEnabled: false,
+    kvmEnabled: true,
+    solEnabled: false,
+    userConsent: undefined,
+    version: undefined
+  }
+  const oldConfig: AMTConfiguration = {
+    profileName: 'testTLS',
+    activation: ClientAction.CLIENTCTLMODE,
+    amtPassword: null,
+    ciraConfigName: 'ciraConfig2',
+    generateRandomMEBxPassword: false,
+    generateRandomPassword: true,
+    mebxPassword: null,
+    tenantId: '',
+    tags: [
+      'tag1'
+    ],
+    dhcpEnabled: true,
+    tlsMode: null,
+    iderEnabled: false,
+    kvmEnabled: true,
+    solEnabled: false,
+    userConsent: undefined,
+    version: undefined
+  }
+  const amtConfig: AMTConfiguration = {
+    profileName: 'testTLS',
+    activation: ClientAction.CLIENTCTLMODE,
+    amtPassword: null,
+    ciraConfigName: null,
+    generateRandomMEBxPassword: false,
+    generateRandomPassword: true,
+    mebxPassword: null,
+    tenantId: '',
+    tags: [
+      'tag1'
+    ],
+    dhcpEnabled: true,
+    tlsMode: 2,
+    iderEnabled: false,
+    kvmEnabled: true,
+    solEnabled: false,
+    userConsent: undefined,
+    version: undefined
+  }
+  const result: AMTConfiguration = await getUpdatedData(newConfig, oldConfig)
+  expect(result).toEqual(amtConfig)
+})
+
+test('test getUpdatedData when TLS profile mode 2 is changed to TLS profile mode 2', async () => {
+  const newConfig: AMTConfiguration = {
+    profileName: 'testTLS',
+    activation: ClientAction.CLIENTCTLMODE,
+    amtPassword: null,
+    ciraConfigName: null,
+    generateRandomMEBxPassword: false,
+    generateRandomPassword: true,
+    mebxPassword: null,
+    tenantId: '',
+    tags: [
+      'tag1'
+    ],
+    dhcpEnabled: true,
+    tlsMode: 4,
+    iderEnabled: false,
+    kvmEnabled: true,
+    solEnabled: false,
+    userConsent: undefined,
+    version: undefined
+  }
+  const oldConfig: AMTConfiguration = {
+    profileName: 'testTLS',
+    activation: ClientAction.CLIENTCTLMODE,
+    amtPassword: null,
+    ciraConfigName: null,
+    generateRandomMEBxPassword: false,
+    generateRandomPassword: true,
+    mebxPassword: null,
+    tenantId: '',
+    tags: [
+      'tag1'
+    ],
+    dhcpEnabled: true,
+    tlsMode: 2,
+    iderEnabled: false,
+    kvmEnabled: true,
+    solEnabled: false,
+    userConsent: undefined,
+    version: undefined
+  }
+  const amtConfig: AMTConfiguration = {
+    profileName: 'testTLS',
+    activation: ClientAction.CLIENTCTLMODE,
+    amtPassword: null,
+    ciraConfigName: null,
+    generateRandomMEBxPassword: false,
+    generateRandomPassword: true,
+    mebxPassword: null,
+    tenantId: '',
+    tags: [
+      'tag1'
+    ],
+    dhcpEnabled: true,
+    tlsMode: 4,
+    iderEnabled: false,
+    kvmEnabled: true,
+    solEnabled: false,
+    userConsent: undefined,
+    version: undefined
+  }
+  const result: AMTConfiguration = await getUpdatedData(newConfig, oldConfig)
+  expect(result).toEqual(amtConfig)
+})
+
+test('test getUpdatedData when TLS profile is changed to CIRA profile', async () => {
+  const newConfig: AMTConfiguration = {
+    profileName: 'testTLS',
+    activation: ClientAction.CLIENTCTLMODE,
+    amtPassword: null,
+    ciraConfigName: 'ciraConfig2',
+    generateRandomMEBxPassword: false,
+    generateRandomPassword: true,
+    mebxPassword: null,
+    tenantId: '',
+    tags: [
+      'tag1'
+    ],
+    dhcpEnabled: true,
+    tlsMode: null,
+    iderEnabled: false,
+    kvmEnabled: true,
+    solEnabled: false,
+    userConsent: undefined,
+    version: undefined
+  }
+  const oldConfig: AMTConfiguration = {
+    profileName: 'testTLS',
+    activation: ClientAction.CLIENTCTLMODE,
+    amtPassword: null,
+    ciraConfigName: null,
+    generateRandomMEBxPassword: false,
+    generateRandomPassword: true,
+    mebxPassword: null,
+    tenantId: '',
+    tags: [
+      'tag1'
+    ],
+    dhcpEnabled: true,
+    tlsMode: null,
+    iderEnabled: false,
+    kvmEnabled: true,
+    solEnabled: false,
+    userConsent: undefined,
+    version: undefined
+  }
+  const amtConfig: AMTConfiguration = {
+    profileName: 'testTLS',
+    activation: ClientAction.CLIENTCTLMODE,
+    amtPassword: null,
+    ciraConfigName: 'ciraConfig2',
+    generateRandomMEBxPassword: false,
+    generateRandomPassword: true,
+    mebxPassword: null,
+    tenantId: '',
+    tags: [
+      'tag1'
+    ],
+    dhcpEnabled: true,
+    tlsMode: null,
+    iderEnabled: false,
+    kvmEnabled: true,
+    solEnabled: false,
+    userConsent: undefined,
+    version: undefined
+  }
+  const result: AMTConfiguration = await getUpdatedData(newConfig, oldConfig)
+  expect(result).toEqual(amtConfig)
 })

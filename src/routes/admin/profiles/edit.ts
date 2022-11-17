@@ -4,13 +4,15 @@
  **********************************************************************/
 import Logger from '../../../Logger'
 import { NOT_FOUND_EXCEPTION, NOT_FOUND_MESSAGE } from '../../../utils/constants'
-import { AMTConfiguration } from '../../../models'
+import { AMTConfiguration, CertAttributes, AMTKeyUsage, TLSCerts } from '../../../models'
 import { ClientAction, ProfileWifiConfigs } from '../../../models/RCS.Config'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { Request, Response } from 'express'
 import { IProfilesWifiConfigsTable } from '../../../interfaces/database/IProfileWifiConfigsDb'
 import handleError from '../../../utils/handleError'
 import { RPSError } from '../../../utils/RPSError'
+import { CertManager } from '../../../certManager'
+import { NodeForge } from '../../../NodeForge'
 
 export async function editProfile (req: Request, res: Response): Promise<void> {
   const log = new Logger('editProfile')
@@ -40,6 +42,16 @@ export async function editProfile (req: Request, res: Response): Promise<void> {
       // SQL Query > Insert Data
       const results = await req.db.profiles.update(amtConfig)
       if (results) {
+        // check if non-tls to tls
+        // then check if certificate exists in vault and generate self-signed if does not exist
+        if (oldConfig.tlsMode == null && newConfig.tlsMode != null) {
+          // generate self signed certificates for use with TLS config if applicable
+          const existingTLSCert = await req.secretsManager.getSecretAtPath(`TLS/${oldConfig.profileName}`)
+          if (existingTLSCert == null) {
+            await generateSelfSignedCertificate(req, newConfig.profileName)
+          }
+        }
+
         // profile inserted  into db successfully. insert the secret into vault
         if (oldConfig.amtPassword !== null || oldConfig.mebxPassword !== null) {
           if (req.secretsManager) {
@@ -74,6 +86,48 @@ export async function editProfile (req: Request, res: Response): Promise<void> {
   } catch (error) {
     handleError(log, newConfig.profileName, req, res, error)
   }
+}
+
+export async function generateSelfSignedCertificate (req: Request, profileName: string): Promise<void> {
+  // generate root certificate
+  const cm = new CertManager(new Logger('CertManager'), new NodeForge())
+  const certAttr: CertAttributes = {
+    CN: `oact-${profileName}`,
+    C: 'country',
+    ST: 'state',
+    O: 'Intel'
+  }
+  const rootCert = cm.createCertificate(certAttr)
+
+  const issueAttr: CertAttributes = {
+    CN: `oact-issued-${profileName}`,
+    C: 'country',
+    ST: 'state',
+    O: 'Intel'
+  }
+
+  const keyUsages: AMTKeyUsage = {
+    name: 'extKeyUsage',
+    '2.16.840.1.113741.1.2.1': true,
+    '2.16.840.1.113741.1.2.2': false,
+    '2.16.840.1.113741.1.2.3': false,
+    serverAuth: false,
+    clientAuth: true,
+    emailProtection: false,
+    codeSigning: false,
+    timeStamping: false
+  }
+  // gene
+  const issuedCert = cm.createCertificate(issueAttr, rootCert.key, null, certAttr, keyUsages)
+
+  const certs: {data: TLSCerts} = {
+    data: {
+      ROOT_CERTIFICATE: rootCert,
+      ISSUED_CERTIFICATE: issuedCert
+    }
+  }
+
+  await req.secretsManager.writeSecretWithObject(`TLS/${profileName}`, certs)
 }
 
 export const handleAMTPassword = (amtConfig: AMTConfiguration, newConfig: AMTConfiguration, oldConfig: AMTConfiguration): AMTConfiguration => {
