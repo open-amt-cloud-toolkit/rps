@@ -15,9 +15,14 @@
         "project": "./tsconfig.json"
     },
     "plugins": [
-        "@typescript-eslint"
+        "@typescript-eslint",
+        "license-header"
     ],
     "rules": {
+        "license-header/header": [
+            "warn",
+            "./header.js"
+        ],
         "no-extra-semi": "error",
         "@typescript-eslint/strict-boolean-expressions": 0,
         "@typescript-eslint/restrict-template-expressions": 0,

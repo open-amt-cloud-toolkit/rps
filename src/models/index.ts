@@ -1,8 +1,7 @@
 /*********************************************************************
-* Copyright (c) Intel Corporation 2019
-* SPDX-License-Identifier: Apache-2.0
-* Description: Constants
-**********************************************************************/
+ * Copyright (c) Intel Corporation 2022
+ * SPDX-License-Identifier: Apache-2.0
+ **********************************************************************/
 
 import { pki } from 'node-forge'
 import { CIRAConfig, ProfileWifiConfigs, WebSocketConfig } from './RCS.Config'

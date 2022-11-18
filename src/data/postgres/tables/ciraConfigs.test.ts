@@ -1,3 +1,8 @@
+/*********************************************************************
+ * Copyright (c) Intel Corporation 2022
+ * SPDX-License-Identifier: Apache-2.0
+ **********************************************************************/
+
 import { CiraConfigTable } from './ciraConfigs'
 import { CIRAConfig } from '../../../models/RCS.Config'
 import PostgresDb from '..'

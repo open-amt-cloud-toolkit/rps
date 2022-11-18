@@ -1,3 +1,8 @@
+/*********************************************************************
+ * Copyright (c) Intel Corporation 2022
+ * SPDX-License-Identifier: Apache-2.0
+ **********************************************************************/
+
 import { AMTPassword, AMTPasswordContext, AMTPasswordEvent } from './amtPassword'
 import { v4 as uuid } from 'uuid'
 import { devices } from '../WebSocketListener'

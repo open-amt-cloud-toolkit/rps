@@ -1,8 +1,8 @@
 /*********************************************************************
- * Copyright (c) Intel Corporation 2019
+ * Copyright (c) Intel Corporation 2022
  * SPDX-License-Identifier: Apache-2.0
- * Author : Ramu Bachala
  **********************************************************************/
+
 import { deleteProfile } from './delete'
 
 import { Router } from 'express'

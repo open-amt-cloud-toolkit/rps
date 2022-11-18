@@ -1,3 +1,8 @@
+/*********************************************************************
+ * Copyright (c) Intel Corporation 2022
+ * SPDX-License-Identifier: Apache-2.0
+ **********************************************************************/
+
 import validateMiddleware from './validate'
 import * as val from 'express-validator'
 import { createSpyObj } from '../test/helper/jest'

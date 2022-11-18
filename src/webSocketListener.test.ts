@@ -1,7 +1,8 @@
 /*********************************************************************
- * Copyright (c) Intel Corporation 2019
+ * Copyright (c) Intel Corporation 2022
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
+
 import { WebSocketConfig, ClientMsg } from './models/RCS.Config'
 import { devices, WebSocketListener } from './WebSocketListener'
 import Logger from './Logger'

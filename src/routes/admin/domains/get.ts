@@ -1,7 +1,8 @@
 /*********************************************************************
- * Copyright (c) Intel Corporation 2021
+ * Copyright (c) Intel Corporation 2022
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
+
 import { API_RESPONSE, NOT_FOUND_MESSAGE, NOT_FOUND_EXCEPTION } from '../../../utils/constants'
 import { AMTDomain } from '../../../models'
 import Logger from '../../../Logger'

@@ -1,9 +1,8 @@
 /*********************************************************************
- * Copyright (c) Intel Corporation 2019
+ * Copyright (c) Intel Corporation 2022
  * SPDX-License-Identifier: Apache-2.0
- * Author: Madhavi Losetty
- * Description: Simple Websocket server
  **********************************************************************/
+
 import * as WebSocket from 'ws'
 import { v4 as uuid } from 'uuid'
 

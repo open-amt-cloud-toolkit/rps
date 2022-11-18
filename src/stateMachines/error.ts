@@ -1,3 +1,8 @@
+/*********************************************************************
+ * Copyright (c) Intel Corporation 2022
+ * SPDX-License-Identifier: Apache-2.0
+ **********************************************************************/
+
 import { createMachine, sendParent } from 'xstate'
 import { pure } from 'xstate/lib/actions'
 import { HttpHandler } from '../HttpHandler'

@@ -1,8 +1,6 @@
 /*********************************************************************
- * Copyright (c) Intel Corporation 2019
+ * Copyright (c) Intel Corporation 2022
  * SPDX-License-Identifier: Apache-2.0
- * Description: stores amt profile information
- * Author: Brian Osburn
  **********************************************************************/
 
 import { AMTConfiguration } from '../models'

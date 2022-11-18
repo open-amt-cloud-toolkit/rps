@@ -1,8 +1,8 @@
 /*********************************************************************
- * Copyright (c) Intel Corporation 2019
+ * Copyright (c) Intel Corporation 2022
  * SPDX-License-Identifier: Apache-2.0
- * Author : Ramu Bachala
  **********************************************************************/
+
 import Logger from '../../../Logger'
 import { API_RESPONSE } from '../../../utils/constants'
 import { CIRAConfig } from '../../../models/RCS.Config'

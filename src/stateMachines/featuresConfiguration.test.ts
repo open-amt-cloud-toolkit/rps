@@ -1,3 +1,8 @@
+/*********************************************************************
+ * Copyright (c) Intel Corporation 2022
+ * SPDX-License-Identifier: Apache-2.0
+ **********************************************************************/
+
 import { FeatureContext, FeaturesConfiguration } from './featuresConfiguration'
 import { ClientAction } from '../models/RCS.Config'
 import { AMTConfiguration, AMTRedirectionServiceEnabledStates, AMTUserConsent, AMTUserConsentValues } from '../models'

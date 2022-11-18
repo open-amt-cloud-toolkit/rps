@@ -1,3 +1,8 @@
+/*********************************************************************
+ * Copyright (c) Intel Corporation 2022
+ * SPDX-License-Identifier: Apache-2.0
+ **********************************************************************/
+
 import PostgresDb from '..'
 import { API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
 import { ProfileWifiConfigs } from '../../../models/RCS.Config'

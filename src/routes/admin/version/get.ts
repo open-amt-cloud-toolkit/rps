@@ -1,7 +1,8 @@
 /*********************************************************************
- * Copyright (c) Intel Corporation 2021
+ * Copyright (c) Intel Corporation 2022
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
+
 import { ServiceVersion, ProtocolVersion } from '../../../utils/constants'
 import { Request, Response } from 'express'
 
