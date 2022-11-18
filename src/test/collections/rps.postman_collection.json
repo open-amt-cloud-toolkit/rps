@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "6f9c8745-d2e2-4f71-822e-7fa78f7e2b42",
+		"_postman_id": "eef63341-5123-4c3c-9f6c-9676fbd974f9",
 		"name": "RPS API Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "20544419"
+		"_exporter_id": "2229705"
 	},
 	"item": [
 		{
@@ -4404,6 +4404,10 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"var responseBody = pm.response.json();\r",
+									"versionVar = responseBody.version;\r",
+									"pm.globals.set(\"profile6Version\", versionVar);\r",
+									"\r",
 									"pm.test(\"Status code is 201\", function () {\r",
 									"    pm.response.to.have.status(201);\r",
 									"});\r",
@@ -4441,7 +4445,127 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": true\r\n    }"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": true \r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"profiles",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create CIRA Config",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"pm.test(\"Creation should succeed\", function () {\r",
+									"    var result = pm.response.json();\r",
+									"    pm.expect(result.configName).to.eql(\"ciraconfig3\")\r",
+									"    pm.expect(result.mpsServerAddress).to.eql(\"192.168.8.50\"),\r",
+									"\tpm.expect(result.mpsPort).to.eql(4433),\r",
+									"\tpm.expect(result.username).to.eql(\"admin\"),\r",
+									"\tpm.expect(result.password).to.eql(),\r",
+									"\tpm.expect(result.commonName).to.eql(\"192.168.8.50\"),\r",
+									"\tpm.expect(result.serverAddressFormat).to.eql(3),\r",
+									"\tpm.expect(result.authMethod).to.eql(2),\r",
+									"\tpm.expect(result.mpsRootCertificate).to.eql(\"rootcert\"),\r",
+									"\tpm.expect(result.proxyDetails).to.eql(\"\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\t\"configName\": \"ciraconfig3\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"ciraconfigs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Profile[CCM] with CIRA",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var responseBody = pm.response.json();\r",
+									"versionVar = responseBody.version;\r",
+									"pm.globals.set(\"testTLSVersion\", versionVar);\r",
+									"\r",
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Creation should succeed\", function () {\r",
+									"    var result = pm.response.json();\r",
+									"    pm.expect(result.profileName).to.eql(\"testTLS\"),\r",
+									"    pm.expect(result.ciraConfigName).to.eql(\"ciraconfig3\")\r",
+									"    pm.expect(result.amtPassword).to.eql(),\r",
+									"    pm.expect(result.mebxPassword).to.eql(),\r",
+									"    pm.expect(result.activation).to.eql(\"ccmactivate\")\r",
+									"    pm.expect(result.tags.length).to.equal(1)\r",
+									"    pm.expect(result.userConsent).to.eql(\"All\")\r",
+									"    pm.expect(result.iderEnabled).to.eql(false)\r",
+									"    pm.expect(result.kvmEnabled).to.eql(true)\r",
+									"    pm.expect(result.solEnabled).to.eql(false)\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"profileName\": \"testTLS\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"ciraConfigName\": \"ciraconfig3\",\r\n    \"tlsMode\": null\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -4467,6 +4591,10 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"var responseBody = pm.response.json();\r",
+									"versionVar = responseBody.version;\r",
+									"pm.globals.set(\"profileKVMOptionsVersion\", versionVar);\r",
+									"\r",
 									"pm.test(\"Status code is 201\", function () {\r",
 									"    pm.response.to.have.status(201);\r",
 									"});\r",
@@ -4602,7 +4730,6 @@
 									"    pm.expect(result.activation).to.eql(\"ccmactivate\")\r",
 									"    pm.expect(result.tags.length).to.equal(1)\r",
 									"    pm.expect(result.tlsMode).to.equal(4)\r",
-									"\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -4660,7 +4787,7 @@
 									"    pm.expect(result.errors[0].msg).to.eql(\"tlsMode must be set to one of these values: 1 (Server Authentication Only), 2 (Server and Non-TLS Authentication), 3 (Mutual TLS only), 4 (Mutual and Non-TLS authentication)\")\r",
 									"    pm.expect(result.errors[0].param).to.eql(\"tlsMode\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
-									"      pm.expect(result.errors[0].value).to.eql(5)\r",
+									"    pm.expect(result.errors[0].value).to.eql(5)\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -4772,9 +4899,9 @@
 									"pm.test(\"Status code is 200\", function () {    \r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
-									"pm.test(\"Result length should equal 3\", function () {\r",
+									"pm.test(\"Result length should equal 4\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
-									"    pm.expect(jsonData.length).to.eql(3);\r",
+									"    pm.expect(jsonData.length).to.eql(4);\r",
 									"});\r",
 									"\r",
 									""
@@ -4961,10 +5088,10 @@
 									"pm.test(\"Status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
-									"pm.test(\"Result length should equal 3\", function () {\r",
+									"pm.test(\"Result length should equal 4\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
-									"    pm.expect(jsonData.data.length).to.eql(3);\r",
-									"    pm.expect(jsonData.totalCount).to.eql(3);\r",
+									"    pm.expect(jsonData.data.length).to.eql(4);\r",
+									"    pm.expect(jsonData.totalCount).to.eql(4);\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -5020,9 +5147,9 @@
 									"pm.test(\"Status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
-									"pm.test(\"Result length should equal 3\", function () {\r",
+									"pm.test(\"Result length should equal 4\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
-									"    pm.expect(jsonData.length).to.eql(3);\r",
+									"    pm.expect(jsonData.length).to.eql(4);\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -5065,7 +5192,7 @@
 					"response": []
 				},
 				{
-					"name": "Create Profile[ACM]",
+					"name": "Create Duplicate Profile[ACM]",
 					"event": [
 						{
 							"listen": "test",
@@ -5287,8 +5414,13 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 409\", function () {\r",
-									"    pm.response.to.have.status(409);\r",
+									"var responseBody = pm.response.json();\r",
+									"versionVar = responseBody.version;\r",
+									"pm.globals.set(\"profileKVMOptionsVersion\", versionVar);\r",
+									"\r",
+									"\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
 									"});\r",
 									"pm.test(\"Update (PATCH->edit) should succeed\", function () {\r",
 									"    var result = pm.response.json();\r",
@@ -5297,7 +5429,6 @@
 									"    pm.expect(result.iderEnabled).to.eql(false)\r",
 									"    pm.expect(result.kvmEnabled).to.eql(true)\r",
 									"    pm.expect(result.solEnabled).to.eql(false)\r",
-									"\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -5311,17 +5442,11 @@
 								"key": "Content-Type",
 								"type": "text",
 								"value": "application/json"
-							},
-							{
-								"key": "X-RPS-API-Key",
-								"type": "text",
-								"value": "APIKEYFORRPS123!",
-								"disabled": true
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profileKVMOptions\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"userConsent\": \"All\",\r\n    \"iderEnabled\": false,\r\n    \"kvmEnabled\": false,\r\n    \"solEnabled\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profileKVMOptions\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"userConsent\": \"All\",\r\n    \"iderEnabled\": false,\r\n    \"kvmEnabled\": true,\r\n    \"solEnabled\": false,\r\n    \"version\": {{profileKVMOptionsVersion}}\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5445,12 +5570,256 @@
 					"response": []
 				},
 				{
+					"name": "Update Profile ccmactivate from CIRA to TLS",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var responseBody = pm.response.json();\r",
+									"versionVar = responseBody.version;\r",
+									"pm.globals.set(\"testTLSVersion\", versionVar);\r",
+									"\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Should update profile from CIRA to TLS mode 2\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.profileName).to.eql(\"testTLS\")\r",
+									"    pm.expect(jsonData.activation).to.equal(\"ccmactivate\")    \r",
+									"    pm.expect(jsonData.tags.length).to.equal(1)    \r",
+									"    pm.expect(jsonData.dhcpEnabled).to.equal(true)\r",
+									"    pm.expect(jsonData.ciraConfigName).to.eql(null)  \r",
+									"    pm.expect(jsonData.tlsMode).to.eql(2)\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n        \"profileName\": \"testTLS\",\r\n        \"activation\": \"ccmactivate\",\r\n        \"ciraConfigName\": null,\r\n        \"generateRandomPassword\": true,\r\n        \"generateRandomMEBxPassword\": true,\r\n        \"tags\": [\r\n            \"tag1\"\r\n        ],\r\n        \"dhcpEnabled\": true,\r\n        \"tlsMode\": 2,\r\n        \"userConsent\": \"All\",\r\n        \"iderEnabled\": false,\r\n        \"kvmEnabled\": true,\r\n        \"solEnabled\": false,\r\n        \"tenantId\": \"\",\r\n        \"version\": {{testTLSVersion}},\r\n        \"wifiConfigs\": []\r\n    }"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"profiles",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Check Certificate in Vault",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "If-Match",
+								"type": "text",
+								"value": "123",
+								"disabled": true
+							},
+							{
+								"key": "x-vault-token",
+								"value": "{{vaultToken}}",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{protocol}}://{{vaultHost}}/v1/secret/data/TLS/testTLS",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{vaultHost}}"
+							],
+							"path": [
+								"v1",
+								"secret",
+								"data",
+								"TLS",
+								"testTLS"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile ccmactivate from TLS to TLS",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var responseBody = pm.response.json();\r",
+									"versionVar = responseBody.version;\r",
+									"pm.globals.set(\"testTLSVersion\", versionVar);\r",
+									"\r",
+									"\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Should update profile with TLS mode 4\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.profileName).to.eql(\"testTLS\")\r",
+									"    pm.expect(jsonData.activation).to.equal(\"ccmactivate\")    \r",
+									"    pm.expect(jsonData.tags.length).to.equal(1)    \r",
+									"    pm.expect(jsonData.dhcpEnabled).to.equal(true)\r",
+									"    pm.expect(jsonData.ciraConfigName).to.eql(null)  \r",
+									"    pm.expect(jsonData.tlsMode).to.eql(4)\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n        \"profileName\": \"testTLS\",\r\n        \"activation\": \"ccmactivate\",\r\n        \"ciraConfigName\": null,\r\n        \"generateRandomPassword\": true,\r\n        \"generateRandomMEBxPassword\": true,\r\n        \"tags\": [\r\n            \"tag1\"\r\n        ],\r\n        \"dhcpEnabled\": true,\r\n        \"tlsMode\": 4,\r\n        \"userConsent\": \"All\",\r\n        \"iderEnabled\": false,\r\n        \"kvmEnabled\": true,\r\n        \"solEnabled\": false,\r\n        \"tenantId\": \"\",\r\n        \"version\": {{testTLSVersion}},\r\n        \"wifiConfigs\": []\r\n    }"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"profiles",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile ccmactivate from TLS to CIRA",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var responseBody = pm.response.json();\r",
+									"versionVar = responseBody.version;\r",
+									"pm.globals.set(\"testTLSVersion\", versionVar);\r",
+									"\r",
+									"\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Should update TLS profile to CIRA profile\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.profileName).to.eql(\"testTLS\")\r",
+									"    pm.expect(jsonData.activation).to.equal(\"ccmactivate\")    \r",
+									"    pm.expect(jsonData.tags.length).to.equal(1)    \r",
+									"    pm.expect(jsonData.dhcpEnabled).to.equal(true)\r",
+									"    pm.expect(jsonData.ciraConfigName).to.eql(\"ciraconfig3\")  \r",
+									"    pm.expect(jsonData.tlsMode).to.eql(null)\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n{\r\n        \"profileName\": \"testTLS\",\r\n        \"activation\": \"ccmactivate\",\r\n        \"ciraConfigName\": \"ciraconfig3\",\r\n        \"generateRandomPassword\": true,\r\n        \"generateRandomMEBxPassword\": true,\r\n        \"tags\": [\r\n            \"tag1\"\r\n        ],\r\n        \"dhcpEnabled\": true,\r\n        \"tlsMode\": null,\r\n        \"userConsent\": \"All\",\r\n        \"iderEnabled\": false,\r\n        \"kvmEnabled\": true,\r\n        \"solEnabled\": false,\r\n        \"tenantId\": \"\",\r\n        \"version\": {{testTLSVersion}},\r\n        \"wifiConfigs\": []\r\n    }"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"profiles",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Update Profile with tags",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
+									"var responseBody = pm.response.json();\r",
+									"versionVar = responseBody.version;\r",
+									"pm.globals.set(\"profile6Version\", versionVar);\r",
+									"\r",
+									"\r",
 									"pm.test(\"Status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
@@ -5479,7 +5848,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag123\"],\r\n    \"generateRandomPassword\": true,\r\n    \"generateRanodomMEBxPassword\": false,\r\n    \"version\": \"763\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag123\"],\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"version\": {{profile6Version}}\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5534,7 +5903,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"acmactivate\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRanodomMEBxPassword\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"acmactivate\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5560,13 +5929,17 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 409\", function () {\r",
-									"    pm.response.to.have.status(409);\r",
+									"var responseBody = pm.response.json();\r",
+									"versionVar = responseBody.version;\r",
+									"pm.globals.set(\"profile6Version\", versionVar);\r",
+									"\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
 									"});\r",
 									"pm.test(\"Result 1 should be equal to example\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
-									"    pm.expect(jsonData.activation).to.equal(\"ccmactivate\") \r",
+									"    pm.expect(jsonData.activation).to.equal(\"acmactivate\") \r",
 									"    pm.expect(jsonData.dhcpEnabled).to.equal(false)\r",
 									"    pm.expect(jsonData.ciraConfigName).to.eql(null)  \r",
 									"    pm.expect(jsonData.tags.length).to.equal(1)     \r",
@@ -5587,7 +5960,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"mebxPassword\": \"P@ssw0rd\",\r\n    \"activation\": \"acmactivate\",\r\n    \"generateRandomPassword\": true,\r\n    \"generateRanodomMEBxPassword\": false,\r\n    \"version\": \"766\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"mebxPassword\": \"P@ssw0rd\",\r\n    \"activation\": \"acmactivate\",\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"version\": {{profile6Version}}\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5619,7 +5992,7 @@
 									"pm.test(\"Update should succeed\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
-									"    pm.expect(jsonData.activation).to.equal(\"acmactivate\")    \r",
+									"    pm.expect(jsonData.activation).to.equal(\"ccmactivate\")    \r",
 									"    pm.expect(jsonData.tags.length).to.equal(1)    \r",
 									"    pm.expect(jsonData.dhcpEnabled).to.equal(false)\r",
 									"    pm.expect(jsonData.ciraConfigName).to.eql(null)  \r",
@@ -5640,7 +6013,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"acmactivate\",\r\n    \"mebxPassword\": \"P@ssw0rd\",\r\n    \"amtPassword\": \"P@ssw0rd\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRanodomMEBxPassword\": false,\r\n    \"version\": \"767\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"mebxPassword\": \"P@ssw0rd\",\r\n    \"amtPassword\": \"P@ssw0rd\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"version\": {{profile6Version}}\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5672,7 +6045,7 @@
 									"pm.test(\"Update should succeed\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
-									"    pm.expect(jsonData.activation).to.equal(\"acmactivate\")    \r",
+									"    pm.expect(jsonData.activation).to.equal(\"ccmactivate\")    \r",
 									"    pm.expect(jsonData.tags.length).to.equal(1)    \r",
 									"    pm.expect(jsonData.dhcpEnabled).to.equal(false)\r",
 									"    pm.expect(jsonData.ciraConfigName).to.eql(null)  \r",
@@ -5693,7 +6066,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"acmactivate\",\r\n    \"mebxPassword\": \"P@ssw0rd\",\r\n    \"amtPassword\": \"P@ssw0rd\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRanodomMEBxPassword\": false,\r\n    \"version\": \"123\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"acmactivate\",\r\n    \"mebxPassword\": \"P@ssw0rd\",\r\n    \"amtPassword\": \"P@ssw0rd\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"version\": \"123\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5725,7 +6098,7 @@
 									"pm.test(\"Update should succeed\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
-									"    pm.expect(jsonData.activation).to.equal(\"acmactivate\")    \r",
+									"    pm.expect(jsonData.activation).to.equal(\"ccmactivate\")    \r",
 									"    pm.expect(jsonData.tags.length).to.equal(1)    \r",
 									"    pm.expect(jsonData.dhcpEnabled).to.equal(false)\r",
 									"    pm.expect(jsonData.ciraConfigName).to.eql(null)  \r",
@@ -5751,7 +6124,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"acmactivate\",\r\n    \"mebxPassword\": \"P@ssw0rd\",\r\n    \"amtPassword\": \"P@ssw0rd\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRanodomMEBxPassword\": false,\r\n    \"version\": \"123\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"acmactivate\",\r\n    \"mebxPassword\": \"P@ssw0rd\",\r\n    \"amtPassword\": \"P@ssw0rd\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"version\": \"123\"\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5868,6 +6241,51 @@
 				},
 				{
 					"name": "Remove Profile tlsMode",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {\r",
+									"    pm.response.to.have.status(204);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/testTLS",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"profiles",
+								"testTLS"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Profile tlsMode Copy",
 					"event": [
 						{
 							"listen": "test",
@@ -9396,7 +9814,6 @@
 							"pm.test(\"Version request should succeed\", function () {\r",
 							"    var result = pm.response.json();\r",
 							"    pm.expect(result.protocolVersion).to.eql(\"4.0.0\")\r",
-							"    pm.expect(result.serviceVersion).to.exist\r",
 							"});"
 						],
 						"type": "text/javascript"
@@ -9404,16 +9821,6 @@
 				}
 			],
 			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZW5hbnRJZCI6IiIsImlzcyI6IjlFbVJKVGJJaUliNGJJZVNzbWdjV0lqclI2SHlFVHFjIiwiZGV2aWNlSWQiOiIqIiwiZXhwIjoxNjUzMDAwMDgyfQ.loR4N1Kff6YfE_w5gNYC35EqP_s4Lqncp7wwDOWhFhw",
-							"type": "string"
-						}
-					]
-				},
 				"method": "GET",
 				"header": [
 					{
@@ -9500,7 +9907,7 @@
 		"bearer": [
 			{
 				"key": "token",
-				"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZW5hbnRJZCI6IiIsImlzcyI6IjlFbVJKVGJJaUliNGJJZVNzbWdjV0lqclI2SHlFVHFjIiwiZXhwIjoxNjMxMjk3MjAyfQ.m99vUJ9HrD3sHxZd6PLFO4UXTYjXqrnFRxEfW2zmqlA",
+				"value": "",
 				"type": "string"
 			}
 		]
