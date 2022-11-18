@@ -93,10 +93,13 @@ export function passwordChecker (certManager: CertManager, req: any): CertsAndKe
 
 export function domainSuffixChecker (pfxobj: CertsAndKeys, value: any): void {
   const certCommonName = pfxobj.certs[0].subject.getField('CN').value
-  const splittedCertCommonName = certCommonName.split('.')
-  const parsedCertCommonName = (String(splittedCertCommonName[splittedCertCommonName.length - 2]) + '.' +
-    String(splittedCertCommonName[splittedCertCommonName.length - 1])).trim()
-  if (parsedCertCommonName !== value.trim()) {
+  const splittedCertCommonName: string[] = certCommonName.split('.')
+  const parsedCertCommonName = (splittedCertCommonName[splittedCertCommonName.length - 2] + '.' +
+    splittedCertCommonName[splittedCertCommonName.length - 1]).trim()
+  const splittedDomainName: string[] = value.split('.')
+  const parsedDomainName = (splittedDomainName[splittedDomainName.length - 2] + '.' +
+  splittedDomainName[splittedDomainName.length - 1]).trim()
+  if (parsedCertCommonName !== parsedDomainName) {
     throw new Error('FQDN not associated with provisioning certificate')
   }
 }

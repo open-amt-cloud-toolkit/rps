@@ -737,7 +737,7 @@ export class Activation {
   setActivationStatus (context: ActivationContext, event: ActivationEvent): void {
     const clientObj = devices[context.clientId]
     this.logger.debug(`Device ${clientObj.uuid} activated in ${clientObj.status.Status}.`)
-    clientObj.activationStatus.activated = true
+    clientObj.activationStatus = true
     MqttProvider.publishEvent('success', ['Activator', 'execute'], `Device activated in ${clientObj.status.Status}`, clientObj.uuid)
   }
 

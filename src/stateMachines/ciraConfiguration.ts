@@ -6,7 +6,7 @@ import { HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
 import got from 'got'
 import { AMTRandomPasswordLength } from '../utils/constants'
-import { CIRAConfig, ClientAction, mpsServer } from '../models/RCS.Config'
+import { CIRAConfig, ClientAction } from '../models/RCS.Config'
 import { NodeForge } from '../NodeForge'
 import { DbCreatorFactory } from '../repositories/factories/DbCreatorFactory'
 import { EnvReader } from '../utils/EnvReader'
@@ -18,6 +18,7 @@ import { AMTConfiguration } from '../models'
 import { randomUUID } from 'crypto'
 import { Error } from './error'
 import { invokeWsmanCall } from './common'
+import { Models } from '@open-amt-cloud-toolkit/wsman-messages/amt'
 
 export interface CIRAConfigContext {
   clientId: string
@@ -336,7 +337,7 @@ export class CIRAConfiguration {
 
   async addRemoteAccessService (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
     const selector = { name: 'Name', value: context.message.Envelope.Body.PullResponse.Items.AMT_ManagementPresenceRemoteSAP.Name }
-    const policy = {
+    const policy: AMT.Models.RemoteAccessPolicyRule = {
       Trigger: 2, // 2 – Periodic
       TunnelLifeTime: 0, // 0 means that the tunnel should stay open until it is closed
       ExtendedData: 'AAAAAAAAABk=' // Equals to 25 seconds in base 64 with network order.
@@ -367,7 +368,7 @@ export class CIRAConfiguration {
   }
 
   async addMPS (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
-    const server: mpsServer = {
+    const server: Models.MPServer = {
       AccessInfo: context.ciraConfig.mpsServerAddress,
       InfoFormat: context.ciraConfig.serverAddressFormat,
       Port: context.ciraConfig.mpsPort,

@@ -80,7 +80,7 @@ export class DataProcessor {
     // Makes the first wsman call
     this.setConnectionParams(clientId)
     activation.service.start()
-    if (devices[clientId].activationStatus.activated) {
+    if (devices[clientId].activationStatus) {
       activation.service.send({ type: 'ACTIVATED', clientId: clientId, isActivated: true })
     } else {
       activation.service.send({ type: 'ACTIVATION', clientId: clientId })
@@ -121,13 +121,45 @@ export class DataProcessor {
     }
   }
 
-  async maintainDevice (clientMsg: ClientMsg, clientId: string): Promise<void> {
+  async maintainDevice (clientMsg: ClientMsg, clientId: string, maintenance: Maintenance = new Maintenance()): Promise<void> {
     this.logger.debug(`ProcessData: Parsed Maintenance message received from device ${clientMsg.payload.uuid}: ${JSON.stringify(clientMsg, null, '\t')}`)
     await this.validator.validateMaintenanceMsg(clientMsg, clientId)
     this.setConnectionParams(clientId, 'admin', clientMsg.payload.password, clientMsg.payload.uuid)
-    const maintenance = new Maintenance()
     maintenance.service.start()
-    maintenance.service.send({ type: 'SYNCCLOCK', clientId })
+    const mEvent = this.buildMaintenanceEvent(clientId, clientMsg.payload)
+    maintenance.service.send(mEvent)
+  }
+
+  buildMaintenanceEvent (clientId: string, payload: any): any {
+    const mEvent: any = {
+      clientId: clientId
+    }
+    if (payload == null || payload.task == null) {
+      throw new RPSError(`${clientId} - missing payload data`)
+    }
+    switch (payload.task) {
+      case 'synctime':
+        mEvent.type = 'SYNCTIME'
+        break
+      case 'syncip':
+        mEvent.type = 'SYNCIP'
+        if (payload.ipConfiguration) {
+          mEvent.data = payload.ipConfiguration
+        } else {
+          throw new RPSError(`${clientId} - missing ipConfiguration`)
+        }
+        break
+      case 'changepassword':
+        mEvent.type = 'CHANGEPASSWORD'
+        // password is optional
+        if (payload.taskArg) {
+          mEvent.data = payload.taskArg
+        }
+        break
+      default:
+        throw new RPSError(`${clientId} - unknown task ${payload.task}`)
+    }
+    return mEvent
   }
 
   setConnectionParams (clientId: string, username: string = null, password: string = null, uuid: string = null): void {

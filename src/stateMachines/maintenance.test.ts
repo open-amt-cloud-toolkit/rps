@@ -3,6 +3,10 @@ import { HttpHandler } from '../HttpHandler'
 import ClientResponseMsg from '../utils/ClientResponseMsg'
 import { devices } from '../WebSocketListener'
 import { Maintenance, MaintenanceContext } from './maintenance'
+import { EnvReader } from '../utils/EnvReader'
+import { config } from '../test/helper/Config'
+
+EnvReader.GlobalEnvConfig = config
 
 describe('Maintenance State Machine', () => {
   let maintenance: Maintenance
@@ -35,6 +39,7 @@ describe('Maintenance State Machine', () => {
     config = {
       services: {
         'time-machine': Promise.resolve(true),
+        'sync-ip-address': Promise.resolve(true),
         'error-machine': Promise.resolve(true)
 
       },
@@ -44,7 +49,7 @@ describe('Maintenance State Machine', () => {
     }
   })
 
-  it('should syncclock', (done) => {
+  it('should synctime', (done) => {
     const mockMaintenanceMachine = maintenance.machine.withConfig(config).withContext(context)
     const flowStates = ['PROVISIONED', 'SYNC_TIME', 'SUCCESS']
 
@@ -57,7 +62,20 @@ describe('Maintenance State Machine', () => {
     })
 
     maintenanceService.start()
-    maintenanceService.send({ type: 'SYNCCLOCK', clientId })
+    maintenanceService.send({ type: 'SYNCTIME', clientId })
+  })
+
+  it('should syncip', (done) => {
+    const mockMaintenanceMachine = maintenance.machine.withConfig(config).withContext(context)
+    const flowStates = ['PROVISIONED', 'SYNC_IP_ADDRESS', 'SUCCESS']
+    const maintenanceService = interpret(mockMaintenanceMachine).onTransition((state) => {
+      expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+      if (state.matches('SUCCESS') && currentStateIndex === flowStates.length) {
+        done()
+      }
+    })
+    maintenanceService.start()
+    maintenanceService.send({ type: 'SYNCIP', clientId })
   })
 
   it('should update configuration status when success', () => {

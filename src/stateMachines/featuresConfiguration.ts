@@ -3,8 +3,6 @@ import { HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
 import { assign, createMachine, interpret } from 'xstate'
 import { AMTConfiguration, AMTRedirectionServiceEnabledStates, mapAMTUserConsent } from '../models'
-import { RedirectionService } from '@open-amt-cloud-toolkit/wsman-messages/amt/models'
-import { IPS_OptInService } from '@open-amt-cloud-toolkit/wsman-messages/models/ips_models'
 import { invokeWsmanCall } from './common'
 
 export interface FeatureContext {
@@ -158,7 +156,7 @@ export class FeaturesConfiguration {
         }
       },
       SUCCESS: {
-        entry: (context, _) => this.logger.error(`AMT Features Configuration failed: ${context.statusMessage}`),
+        entry: (context, _) => this.logger.info('AMT Features Configuration success'),
         type: 'final'
       },
       FAILED: {
@@ -277,7 +275,7 @@ export class FeaturesConfiguration {
   }
 
   async putRedirectionService (context: FeatureContext): Promise<any> {
-    const redirectionService: RedirectionService = context.AMT_RedirectionService
+    const redirectionService: AMT.Models.RedirectionService = context.AMT_RedirectionService
     const redirectionResponse: AMT.Models.RedirectionResponse = {
       AMT_RedirectionService: JSON.parse(JSON.stringify(redirectionService))
     }
@@ -286,7 +284,7 @@ export class FeaturesConfiguration {
   }
 
   async putIpsOptInService (context: FeatureContext): Promise<any> {
-    const ipsOptInService: IPS_OptInService = context.IPS_OptInService
+    const ipsOptInService: IPS.Models.OptInService = context.IPS_OptInService
     const ipsOptInSvcResponse: IPS.Models.OptInServiceResponse = {
       IPS_OptInService: JSON.parse(JSON.stringify(ipsOptInService))
     }

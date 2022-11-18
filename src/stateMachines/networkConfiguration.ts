@@ -193,6 +193,8 @@ export class NetworkConfiguration {
             cond: 'isWirelessProfilesExistsOnDevice',
             target: 'DELETE_WIFI_ENDPOINT_SETTINGS'
           }, {
+            target: 'GET_WIFI_PORT_CONFIGURATION_SERVICE'
+          }, {
             cond: 'isWiFiProfilesExits',
             target: 'REQUEST_STATE_CHANGE_FOR_WIFI_PORT'
           }, {
@@ -224,12 +226,51 @@ export class NetworkConfiguration {
             cond: 'isWirelessProfilesExistsOnDevice',
             target: 'DELETE_WIFI_ENDPOINT_SETTINGS'
           }, {
+            target: 'GET_WIFI_PORT_CONFIGURATION_SERVICE'
+          }
+        ]
+      },
+      GET_WIFI_PORT_CONFIGURATION_SERVICE: {
+        invoke: {
+          src: this.getWiFiPortConfigurationService.bind(this),
+          id: 'get-wifi-port-configuration-service',
+          onDone: {
+            actions: assign({ message: (context, event) => event.data }),
+            target: 'CHECK_WIFI_PORT_CONFIGURATION_SERVICE'
+          },
+          onError: {
+            actions: assign({ statusMessage: (context, event) => 'Failed to get WiFi Port Configuration Service' }),
+            target: 'FAILED'
+          }
+        }
+      },
+      CHECK_WIFI_PORT_CONFIGURATION_SERVICE: {
+        always: [
+          {
+            cond: 'isLocalProfileSynchronizationNotEnabled',
+            target: 'PUT_WIFI_PORT_CONFIGURATION_SERVICE'
+          },
+          {
             cond: 'isWiFiProfilesExits',
             target: 'REQUEST_STATE_CHANGE_FOR_WIFI_PORT'
           }, {
             target: 'SUCCESS'
           }
         ]
+      },
+      PUT_WIFI_PORT_CONFIGURATION_SERVICE: {
+        invoke: {
+          src: this.putWiFiPortConfigurationService.bind(this),
+          id: 'put-wifi-port-configuration-service',
+          onDone: {
+            actions: assign({ message: (context, event) => event.data }),
+            target: 'CHECK_WIFI_PORT_CONFIGURATION_SERVICE'
+          },
+          onError: {
+            actions: assign({ statusMessage: (context, event) => 'Failed to put WiFi Port Configuration Service' }),
+            target: 'FAILED'
+          }
+        }
       },
       REQUEST_STATE_CHANGE_FOR_WIFI_PORT: {
         invoke: {
@@ -270,49 +311,10 @@ export class NetworkConfiguration {
             target: 'ADD_WIFI_SETTINGS'
           },
           {
-            target: 'GET_WIFI_PORT_CONFIGURATION_SERVICE'
-          }
-        ]
-      },
-      GET_WIFI_PORT_CONFIGURATION_SERVICE: {
-        invoke: {
-          src: this.getWiFiPortConfigurationService.bind(this),
-          id: 'get-wifi-port-configuration-service',
-          onDone: {
-            actions: assign({ message: (context, event) => event.data }),
-            target: 'CHECK_WIFI_PORT_CONFIGURATION_SERVICE'
-          },
-          onError: {
-            actions: assign({ statusMessage: (context, event) => 'Failed to get WiFi Port Configuration Service' }),
-            target: 'FAILED'
-          }
-        }
-      },
-      CHECK_WIFI_PORT_CONFIGURATION_SERVICE: {
-        always: [
-          {
-            cond: 'isLocalProfileSynchronizationNotEnabled',
-            target: 'PUT_WIFI_PORT_CONFIGURATION_SERVICE'
-          },
-          {
             actions: assign({ statusMessage: (context, event) => 'Wireless Configured' }),
             target: 'SUCCESS'
           }
         ]
-      },
-      PUT_WIFI_PORT_CONFIGURATION_SERVICE: {
-        invoke: {
-          src: this.putWiFiPortConfigurationService.bind(this),
-          id: 'put-wifi-port-configuration-service',
-          onDone: {
-            actions: assign({ message: (context, event) => event.data }),
-            target: 'CHECK_WIFI_PORT_CONFIGURATION_SERVICE'
-          },
-          onError: {
-            actions: assign({ statusMessage: (context, event) => 'Failed to put WiFi Port Configuration Service' }),
-            target: 'FAILED'
-          }
-        }
       },
       ERROR: {
         entry: send({ type: 'PARSE' }, { to: 'error-machine' }),

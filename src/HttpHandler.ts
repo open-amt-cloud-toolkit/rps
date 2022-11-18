@@ -85,13 +85,17 @@ export class HttpHandler {
   }
 
   parseAuthenticateResponseHeader = (value: string): DigestChallenge => {
-    const params = value.replace('Digest realm', 'realm').split(',')
-    const challengeParams = params.reduce((obj: DigestChallenge, s: string) => {
-      const parts = s.split('=')
-      obj[parts[0].trim()] = parts[1].replace(/"/g, '')
-      return obj
-    }, {})
-    return challengeParams
+    const params = value.replace('Digest realm', 'realm').split(/([^=,]*)=("[^"]*"|[^,"]*)/)
+    const obj = {} as DigestChallenge
+    for (let idx = 0; idx < params.length; idx = idx + 3) {
+      if (params[idx + 1] != null) {
+        obj[params[idx + 1].trim()] = params[idx + 2].replace(/"/g, '')
+      }
+    }
+    if (obj.qop != null) {
+      obj.qop = 'auth'
+    }
+    return obj
   }
 
   parseXML (xmlBody: string): any {
