@@ -1,3 +1,8 @@
+/*********************************************************************
+ * Copyright (c) Intel Corporation 2022
+ * SPDX-License-Identifier: Apache-2.0
+ **********************************************************************/
+
 import { interpret } from 'xstate'
 import { Error, ErrorContext } from './error'
 import { v4 as uuid } from 'uuid'

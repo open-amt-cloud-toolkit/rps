@@ -1,9 +1,6 @@
 /*********************************************************************
- * Copyright (c) Intel Corporation 2021
+ * Copyright (c) Intel Corporation 2022
  * SPDX-License-Identifier: Apache-2.0
- * Author: Craig Spencer
- * Description: Provdies functions to abstract the
- *              interactions with the mqtt broker
  **********************************************************************/
 
 import * as url from 'url'

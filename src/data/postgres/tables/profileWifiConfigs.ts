@@ -1,7 +1,8 @@
 /*********************************************************************
- * Copyright (c) Intel Corporation 2021
+ * Copyright (c) Intel Corporation 2022
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
+
 import { IProfilesWifiConfigsTable } from '../../../interfaces/database/IProfileWifiConfigsDb'
 import { ProfileWifiConfigs } from '../../../models/RCS.Config'
 import { API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'

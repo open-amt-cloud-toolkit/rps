@@ -1,3 +1,8 @@
+/*********************************************************************
+ * Copyright (c) Intel Corporation 2022
+ * SPDX-License-Identifier: Apache-2.0
+ **********************************************************************/
+
 import { AMT, IPS, CIM } from '@open-amt-cloud-toolkit/wsman-messages'
 import { assign, createMachine, interpret } from 'xstate'
 import { ClientAction } from '../models/RCS.Config'
