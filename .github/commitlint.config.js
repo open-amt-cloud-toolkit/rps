@@ -7,5 +7,10 @@ module.exports = {
             'never',
             ['sentence-case', 'start-case', 'pascal-case', 'upper-case'],
         ],
+        'scope-enum': [
+            2,
+            'always',
+            ['db', 'api', 'secrets', 'activation', 'deactivation', 'maintenance', 'state-machine', 'health', 'utils', 'events', 'docker', 'deps', 'deps-dev', 'gh-actions', 'config']
+        ]
     }
 }

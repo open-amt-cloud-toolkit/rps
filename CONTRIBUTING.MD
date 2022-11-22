@@ -52,13 +52,21 @@ Must be one of the following:
 
 Should be one of the following:
 Modules:
-* **common**: A change or addition to the common module
-* **tracker**: A change or addition to the tracker module
-* **server**: A change or addition to the server module
-* **msgs**: A change or addition to msgs module
-* **eval**: Any change to benchmark tools
-* **deps**: A change to any dependency or 3rd-party library
-* **all**: A change that affects all modules
+* **activation**: A change or addition activation functionality
+* **api**: A change or addition to REST functionality
+* **config**: A change or addition to service configuration
+* **db**: A change or addition to database calls or functionality
+* **deactivation**: A change or addition to deactivation functionality
+* **deps**: A change or addition to dependencies (primarily used by dependabot)
+* **deps-dev**: A change or addition to developer dependencies (primarily used by dependabot)
+* **docker**: A change or addition to docker file or composition
+* **events**: A change or addition to eventing from the service
+* **gh-actions**: A change or addition to GitHub actions
+* **health**: A change or addition to health checks
+* **maintenance**: A change or addition maintenance functionality
+* **secrets**: A change or addition to secret store calls or functionality
+* **state-machine**: A change or addition to state-machine functionality
+* **utils**: A change or addition to the utility functions
 * *no scope*:  If no scope is provided, it is assumed the PR does not apply to the above scopes
 
 ### Body
