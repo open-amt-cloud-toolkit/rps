@@ -16,6 +16,9 @@ import routes from './routes'
 import rc = require('rc')
 import { MqttProvider } from './utils/MqttProvider'
 import { DbCreatorFactory } from './repositories/factories/DbCreatorFactory'
+import { backOff } from 'exponential-backoff'
+import { ISecretManagerService } from './interfaces/ISecretManagerService'
+import { IDB } from './interfaces/database/IDb'
 const log = new Logger('Index')
 
 // To merge ENV variables. consider after lowercasing ENV since our config keys are lowercase
@@ -43,17 +46,49 @@ const server: WebSocketListener = new WebSocketListener(new Logger('WebSocketLis
 const mqtt: MqttProvider = new MqttProvider(config)
 mqtt.connectBroker()
 
+const dbFactory = new DbCreatorFactory(config)
 app.use('/api/v1', async (req: express.Request, res: express.Response, next) => {
   if (configurator.secretsManager) {
     (req as any).secretsManager = configurator.secretsManager
   }
-  const newdb = new DbCreatorFactory(config)
-  req.db = await newdb.getDb()
+  req.db = await dbFactory.getDb()
   next()
 }, routes)
 
-app.listen(config.webport, () => {
-  log.info(`RPS Microservice Rest APIs listening on http://:${config.webport}.`)
-})
+export const waitForDB = async function (db: IDB): Promise<void> {
+  await backOff(async () => await db.query('SELECT 1'), {
+    retry: (e: any, attemptNumber: number) => {
+      log.info(`waiting for db[${attemptNumber}] ${e.code || e.message || e}`)
+      return true
+    }
+  })
+}
 
-server.connect()
+export const waitForSecretsManager = async function (secretsManager: ISecretManagerService): Promise<void> {
+  await backOff(async () => await secretsManager.health(), {
+    retry: (e: any, attemptNumber: number) => {
+      log.info(`waiting for secret manager service[${attemptNumber}] ${e.code || e.message || e}`)
+      return true
+    }
+  })
+}
+
+// the env keys have been lower-cased!!
+if (process.env.node_env !== 'test') {
+  dbFactory.getDb()
+    .then((db) => {
+      void waitForDB(db)
+    })
+    .then(() => {
+      void waitForSecretsManager(configurator.secretsManager)
+    })
+    .then(() => {
+      app.listen(config.webport, () => {
+        log.info(`RPS Microservice Rest APIs listening on http://:${config.webport}.`)
+      })
+      server.connect()
+    })
+    .catch(err => {
+      log.error(err)
+    })
+}
