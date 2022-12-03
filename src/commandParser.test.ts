@@ -150,6 +150,14 @@ test.each<TestInput>([
         taskArg: 'SomeNewPassword'
       }
     }
+  },
+  {
+    desc: 'should parse synchostname',
+    method: `${clientMethod} --synchostname`,
+    expect: {
+      method: clientMethod,
+      payload: { task: 'synchostname' }
+    }
   }
 ])('$desc', async (ti) => {
   const clientMsg = getBasicMessage()

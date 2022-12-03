@@ -5,7 +5,7 @@
   "vault_token": "myroot",
   "websocketport": 8080,
   "db_provider": "postgres",
-  "connection_string": "postgresql://<USERNAME>:<PASSWORD>@localhost:5432/rpsdb?sslmode=no-verify",
+  "connection_string": "postgresql://<USERNAME>:<PASSWORD>@localhost:5432/rpsdb",
   "cors_origin": "http://localhost:4200",
   "cors_headers": "Origin, X-Requested-With, Accept, Content-Type, csrf-token, authorization",
   "cors_methods": "*",
