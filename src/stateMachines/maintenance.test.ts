@@ -45,8 +45,8 @@ describe('Maintenance State Machine', () => {
       services: {
         'time-machine': Promise.resolve(true),
         'sync-ip-address': Promise.resolve(true),
-        'error-machine': Promise.resolve(true)
-
+        'error-machine': Promise.resolve(true),
+        'sync-hostname': Promise.resolve(true)
       },
       actions: {
         'Send Message to Device': () => {}
@@ -59,7 +59,6 @@ describe('Maintenance State Machine', () => {
     const flowStates = ['PROVISIONED', 'SYNC_TIME', 'SUCCESS']
 
     const maintenanceService = interpret(mockMaintenanceMachine).onTransition((state) => {
-      console.log(state.value)
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('SUCCESS') && currentStateIndex === flowStates.length) {
         done()
@@ -81,6 +80,19 @@ describe('Maintenance State Machine', () => {
     })
     maintenanceService.start()
     maintenanceService.send({ type: 'SYNCIP', clientId })
+  })
+
+  it('should sync hostname', (done) => {
+    const mockMaintenanceMachine = maintenance.machine.withConfig(config).withContext(context)
+    const flowStates = ['PROVISIONED', 'SYNC_HOST_NAME', 'SUCCESS']
+    const maintenanceService = interpret(mockMaintenanceMachine).onTransition((state) => {
+      expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+      if (state.matches('SUCCESS') && currentStateIndex === flowStates.length) {
+        done()
+      }
+    })
+    maintenanceService.start()
+    maintenanceService.send({ type: 'SYNCHOSTNAME', clientId })
   })
 
   it('should update configuration status when success', () => {

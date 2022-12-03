@@ -8,12 +8,13 @@ import { createMachine, interpret, send, assign } from 'xstate'
 import { HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
 import ClientResponseMsg from '../utils/ClientResponseMsg'
-
+import { Configurator } from '../Configurator'
 import { devices } from '../WebSocketListener'
 import { AMTPassword } from './amtPassword'
 import { Error } from './error'
 import { SyncIP } from './syncIP'
 import { TimeSync } from './timeMachine'
+import { SyncHostName } from './syncHostName'
 
 export interface MaintenanceContext {
   message: any
@@ -26,17 +27,19 @@ export interface MaintenanceContext {
 }
 
 export interface MaintenanceEvent {
-  type: 'SYNCTIME' | 'ONFAILED' | 'ON_SYNCIP_FAILED' | 'SYNCIP' |'CHANGEPASSWORD'
+  type: 'SYNCTIME' | 'ONFAILED' | 'ON_SYNCIP_FAILED' | 'SYNCIP' |'CHANGEPASSWORD' | 'SYNCHOSTNAME'
   clientId: string
   data?: any
 }
 
 export class Maintenance {
+  configurator = new Configurator()
   amt: AMT.Messages
-  logger: Logger
+  logger = new Logger('Maintenance')
   timeSync: TimeSync = new TimeSync()
   amtPassword: AMTPassword = new AMTPassword()
   ipSync: SyncIP = new SyncIP()
+  syncHostName: SyncHostName = new SyncHostName()
   error: Error = new Error()
   machine =
   createMachine<MaintenanceContext, MaintenanceEvent>({
@@ -72,6 +75,13 @@ export class Maintenance {
               message: (context, event) => event.data
             }), 'Reset Unauth Count'],
             target: 'SYNC_IP_ADDRESS'
+          },
+          SYNCHOSTNAME: {
+            actions: [assign({
+              clientId: (context, event) => event.clientId,
+              message: (context, event) => event.data
+            })],
+            target: 'SYNC_HOST_NAME'
           }
         }
       },
@@ -126,6 +136,24 @@ export class Maintenance {
         },
         on: {
           ON_SYNCIP_FAILED: 'FAILURE'
+        }
+      },
+      SYNC_HOST_NAME: {
+        entry: send({ type: 'SYNCHOSTNAME' }, { to: 'sync-hostname' }),
+        invoke: {
+          data: {
+            unauthCount: (context, event) => context.unauthCount,
+            hostnameInfo: (context, event) => context.message,
+            httpHandler: (context, event) => context.httpHandler,
+            clientId: (context, event) => context.clientId
+          },
+          src: this.syncHostName.machine,
+          id: 'sync-hostname',
+          onDone: {
+            actions: assign({ statusMessage: (context, event) => 'hostname updated' }),
+            target: 'SUCCESS'
+          },
+          onError: 'ERROR'
         }
       },
       ERROR: {

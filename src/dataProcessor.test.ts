@@ -22,6 +22,7 @@ import { ClientMethods } from './models/RCS.Config'
 import { Maintenance, MaintenanceEvent } from './stateMachines/maintenance'
 import { IPConfiguration } from './stateMachines/syncIP'
 import { RPSError } from './utils/RPSError'
+import { HostnameConfiguration } from './stateMachines/syncHostName'
 
 EnvReader.GlobalEnvConfig = config
 const configurator = new Configurator()
@@ -411,6 +412,17 @@ describe('build maintenance event', () => {
     const mEvent = dataProcessor.buildMaintenanceEvent(clientId, payload)
     expect(mEvent.type = 'CHANGEPASSWORD')
     expect(mEvent.data).toEqual(newPassword)
+  })
+  it('should pass - synchostname', async () => {
+    const HostnameInfo: HostnameConfiguration = {
+      dnsSuffixOS: 'os.suffix.test',
+      hostname: 'some-test-name'
+    }
+    payload.task = 'synchostname'
+    payload.hostnameInfo = HostnameInfo
+    const mEvent: MaintenanceEvent = dataProcessor.buildMaintenanceEvent(clientId, payload)
+    expect(mEvent.type = 'SYNCHOSTNAME')
+    expect(mEvent.data).toEqual(HostnameInfo)
   })
   it('should fail - unknown task', async () => {
     payload.task = 'somerandomtask'

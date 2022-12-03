@@ -155,6 +155,14 @@ export class DataProcessor {
           mEvent.data = payload.taskArg
         }
         break
+      case 'synchostname':
+        mEvent.type = 'SYNCHOSTNAME'
+        if (payload.hostnameInfo) {
+          mEvent.data = payload.hostnameInfo
+        } else {
+          throw new RPSError(`${clientId} - missing HostnameInfo`)
+        }
+        break
       default:
         throw new RPSError(`${clientId} - unknown task ${payload.task}`)
     }

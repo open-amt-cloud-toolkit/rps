@@ -10,7 +10,7 @@ import { ILogger } from './interfaces/ILogger'
 
 const options = {
   string: ['text', 'password'],
-  boolean: ['force', 'synctime', 'syncip', 'changepassword'],
+  boolean: ['force', 'synctime', 'syncip', 'changepassword', 'synchostname'],
   alias: { t: 'text', p: 'password', f: 'force', e: 'encrypted' }
 }
 
@@ -57,6 +57,8 @@ const CommandParser = {
             } else if (args.changepassword) {
               msg.payload.task = 'changepassword'
               msg.payload.taskArg = firstNonFlagArg
+            } else if (args.synchostname) {
+              msg.payload.task = 'synchostname'
             }
             this.logger.silly(`parsed maintenance task: ${msg.payload.task}`)
           }
