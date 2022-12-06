@@ -76,11 +76,9 @@ export const waitForSecretsManager = async function (secretsManager: ISecretMana
 // the env keys have been lower-cased!!
 if (process.env.node_env !== 'test') {
   dbFactory.getDb()
-    .then((db) => {
-      void waitForDB(db)
-    })
-    .then(() => {
-      void waitForSecretsManager(configurator.secretsManager)
+    .then(async (db) => {
+      await waitForDB(db)
+      await waitForSecretsManager(configurator.secretsManager)
     })
     .then(() => {
       app.listen(config.webport, () => {
