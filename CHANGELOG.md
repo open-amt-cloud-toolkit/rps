@@ -1,3 +1,35 @@
+
+<a name="2.7.0"></a>
+## [2.7.0] - 2022-12-08
+### Build
+- update package.json to v2.7.0 (#d581d4e) 
+- **deps:** Bump [@open](https://github.com/open)-amt-cloud-toolkit/wsman-messages from 3.0.4 to 3.0.5 (#33ca0da) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 16.18.3 to 16.18.4 (#bf9d292) 
+- **deps-dev:** bump sinon from 14.0.2 to 15.0.0 ([#799](https://github.com/open-amt-cloud-toolkit/rps/issues/799)) (#c5d24f7) 
+- **deps-dev:** bump [@types](https://github.com/types)/node-forge from 1.3.0 to 1.3.1 (#7599992) 
+- **deps-dev:** bump jest-junit from 14.0.1 to 15.0.0 (#18e1b78) 
+- **deps-dev:** bump typescript from 4.8.4 to 4.9.3 (#6f82bf1) 
+- **deps-dev:** bump sinon from 14.0.1 to 14.0.2 (#828ec60) 
+
+### Ci
+- update ci semantic check (#4dba25e) 
+- changes type from "Bug" to "User Story" (#a861276) 
+- add projects sync to rps (#1c4cd5a) 
+- **azureBoardsSync:** remove github personal access token (#753fa42) 
+- **azureBoardsSync:** change wit to "Product Backlog Item" (#6aafb55) 
+- **lint:** add header checks (#b7a849f) 
+
+### Feat
+- **health:** add waits for db and vault to be available to respond ([#800](https://github.com/open-amt-cloud-toolkit/rps/issues/800)) (#33561f9) 
+- **maintenance:** maintenance sync hostname information (#5a8a964) 
+
+### Fix
+- **auth:** handle qop="auth-int, auth" header (#8535bf0) 
+- **factory:** db singleton was not actually added missing unit test for vault factory (#1ee838d) 
+- **profiles:** self-signed cert for tls profile update ([#754](https://github.com/open-amt-cloud-toolkit/rps/issues/754)) (#8544500) 
+
+### Refactor
+- startup promises are no longer ignored with void (#63d289d) 
 <a name="2.6.0"></a>
 ## [2.6.0] - 2022-11-07
 ### Build
