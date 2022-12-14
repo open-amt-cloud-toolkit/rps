@@ -127,32 +127,6 @@ test.each<TestInput>([
     }
   },
   {
-    desc: 'should parse changepassword (static trailing arg)',
-    method: `-t ${clientMethod} --changepassword -p=${testPW} -f SomeNewPassword additional ignored arguments`,
-    expect: {
-      method: clientMethod,
-      payload: {
-        password: testPW,
-        force: true,
-        task: 'changepassword',
-        taskArg: 'SomeNewPassword'
-      }
-    }
-  },
-  {
-    desc: 'should parse changepassword (static embedded arg)',
-    method: `${clientMethod} --changepassword SomeNewPassword -p=${testPW} -f`,
-    expect: {
-      method: clientMethod,
-      payload: {
-        password: testPW,
-        force: true,
-        task: 'changepassword',
-        taskArg: 'SomeNewPassword'
-      }
-    }
-  },
-  {
     desc: 'should parse synchostname',
     method: `${clientMethod} --synchostname`,
     expect: {

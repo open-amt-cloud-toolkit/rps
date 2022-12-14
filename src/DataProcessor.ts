@@ -158,9 +158,9 @@ export class DataProcessor {
         break
       case 'changepassword':
         mEvent.type = 'CHANGEPASSWORD'
-        // password is optional
-        if (payload.taskArg) {
-          mEvent.data = payload.taskArg
+        // newPassword is optional
+        if (payload.newPassword) {
+          mEvent.data = payload.newPassword
         }
         break
       case 'synchostname':

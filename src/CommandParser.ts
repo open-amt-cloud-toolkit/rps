@@ -21,13 +21,10 @@ const CommandParser = {
       if (msg?.method?.length > 0) {
         const input: string[] = msg.method.trim().split(' ')
         const args = parseArgs(input, options)
-        let firstNonFlagArg = args._[0]
 
         // TODO: text mode is assumed right now, switch shouldn't be used for method going forward
         if (typeof args.t === 'undefined' && typeof args.e === 'undefined' && input.length > 0 && input[0].length > 0 && !input[0].startsWith('-')) {
           args.t = input[0]
-          // if text is assumed, the command is also in the unparsed arguments
-          firstNonFlagArg = firstNonFlagArg = args._[1]
         }
 
         if (args.t) {
@@ -56,7 +53,6 @@ const CommandParser = {
               msg.payload.task = 'syncip'
             } else if (args.changepassword) {
               msg.payload.task = 'changepassword'
-              msg.payload.taskArg = firstNonFlagArg
             } else if (args.synchostname) {
               msg.payload.task = 'synchostname'
             }

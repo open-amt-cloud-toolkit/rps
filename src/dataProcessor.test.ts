@@ -387,7 +387,7 @@ describe('build maintenance event', () => {
   it('should pass - changepassword static', async () => {
     const newPassword = 'SomeNewPassword!@#$'
     payload.task = 'changepassword'
-    payload.taskArg = newPassword
+    payload.newPassword = newPassword
     const mEvent = dataProcessor.buildMaintenanceEvent(clientId, payload)
     expect(mEvent.type = 'CHANGEPASSWORD')
     expect(mEvent.data).toEqual(newPassword)
