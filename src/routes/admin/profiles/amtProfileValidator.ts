@@ -125,7 +125,7 @@ export const amtProfileValidator = (): ValidationChain[] => {
     check('userConsent')
       .optional({ nullable: true })
       .isIn(Object.values(AMTUserConsent))
-      .withMessage(`User Consenst must be one of ${Object.values(AMTUserConsent)}`)
+      .withMessage(`User consent must be one of ${Object.values(AMTUserConsent)}`)
       .custom((value, { req }) => {
         const activation = req.body.activation
         if ((activation === ClientAction.CLIENTCTLMODE && value !== AMTUserConsent.ALL)) {
@@ -274,7 +274,7 @@ export const profileUpdateValidator = (): any => {
     check('userConsent')
       .optional({ nullable: true })
       .isIn(Object.values(AMTUserConsent))
-      .withMessage(`User Consenst must be one of ${Object.values(AMTUserConsent)}`)
+      .withMessage(`User consent must be one of ${Object.values(AMTUserConsent)}`)
       .custom((value, { req }) => {
         const activation = req.body.activation
         if ((activation === ClientAction.CLIENTCTLMODE && value !== AMTUserConsent.ALL)) {

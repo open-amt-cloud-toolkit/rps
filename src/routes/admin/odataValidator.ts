@@ -10,11 +10,11 @@ export const odataValidator = (): any => {
   return [
     query('$top')
       .default(DEFAULT_TOP)
-      .isInt({ min: 0 })
+      .isInt({ min: 0, max: 9999999999 })
       .withMessage('The number of items to return should be a positive integer'),
     query('$skip')
       .default(DEFAULT_SKIP)
-      .isInt({ min: 0 })
+      .isInt({ min: 0, max: 9999999999 })
       .withMessage('The number of items to skip before starting to collect the result set should be a positive integer'),
     query('$count')
       .optional()
