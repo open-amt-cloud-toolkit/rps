@@ -389,6 +389,45 @@ describe('validator', () => {
       expect(rpsError).toBeInstanceOf(RPSError)
       expect(rpsError.message).toEqual(`Device ${msg.payload.uuid} activation failed. Missing DNS Suffix.`)
     })
+    test('should throw an exception if no fqdn (with doesDomainExist mock)', async () => {
+      jest.spyOn(validator.configurator.domainCredentialManager, 'doesDomainExist').mockImplementation(async () => {
+        return false
+      })
+      let rpsError = null
+      try {
+        msg.payload.fqdn = 'abcd'
+        await validator.verifyActivationMsgForACM(msg.payload)
+      } catch (error) {
+        rpsError = error
+      }
+      expect(rpsError).toBeInstanceOf(RPSError)
+      expect(rpsError.message).toEqual(`Device ${msg.payload.uuid} activation failed. Specified AMT domain suffix: abcd does not match list of available AMT domain suffixes.`)
+    })
+    test('should not throw an exception if device already in ACM without FQDN', async () => {
+      let rpsError = null
+      try {
+        msg.payload.fqdn = undefined
+        msg.payload.currentMode = 2
+        await validator.verifyActivationMsgForACM(msg.payload)
+      } catch (error) {
+        rpsError = error
+      }
+      expect(rpsError).toBe(null)
+    })
+    test('should not throw an exception if no fqdn (with doesDomainExist mock)', async () => {
+      jest.spyOn(validator.configurator.domainCredentialManager, 'doesDomainExist').mockImplementation(async () => {
+        return false
+      })
+      let rpsError = null
+      try {
+        msg.payload.fqdn = 'abcd'
+        msg.payload.currentMode = 2
+        await validator.verifyActivationMsgForACM(msg.payload)
+      } catch (error) {
+        rpsError = error
+      }
+      expect(rpsError).toBe(null)
+    })
   })
 
   describe('set next steps for Configuration', () => {
