@@ -246,10 +246,10 @@ export class Validator implements IValidator {
     if (!payload.certHashes) {
       throw new RPSError(`Device ${payload.uuid} activation failed. Missing certificate hashes from the device.`)
     }
-    if (!payload.fqdn) {
+    if (!payload.fqdn && (payload.currentMode !== 2)) {
       throw new RPSError(`Device ${payload.uuid} activation failed. Missing DNS Suffix.`)
     }
-    if (!(await this.configurator.domainCredentialManager.doesDomainExist(payload.fqdn))) {
+    if (!(await this.configurator.domainCredentialManager.doesDomainExist(payload.fqdn)) && (payload.currentMode !== 2)) {
       throw new RPSError(`Device ${payload.uuid} activation failed. Specified AMT domain suffix: ${payload.fqdn} does not match list of available AMT domain suffixes.`)
     }
   }
