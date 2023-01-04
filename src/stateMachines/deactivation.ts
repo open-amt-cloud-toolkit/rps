@@ -21,6 +21,7 @@ export interface DeactivationContext {
   clientId: string
   status: 'success' | 'error'
   errorMessage: string
+  statusMessage: string
 }
 
 interface DeactivationEvent {
@@ -38,7 +39,7 @@ export class Deactivation {
   createMachine<DeactivationContext, DeactivationEvent>({
     predictableActionArguments: true,
     preserveActionOrder: true,
-    context: { message: '', clientId: '', status: 'success', unauthCount: 0, errorMessage: '' },
+    context: { message: '', clientId: '', status: 'success', unauthCount: 0, errorMessage: '', statusMessage: '' },
     id: 'Deactivation Machine',
     initial: 'PROVISIONED',
     states: {
@@ -97,8 +98,8 @@ export class Deactivation {
             cond: 'isNotFound',
             target: 'UNPROVISIONED'
           }, {
-            actions: assign({ errorMessage: (context, event) => 'Failed to remove device from db' }),
-            target: 'FAILED'
+            actions: assign({ statusMessage: (context, event) => 'Deactivated. MPS Unavailable.' }),
+            target: 'UNPROVISIONED'
           }
         ]
       },
@@ -165,12 +166,12 @@ export class Deactivation {
   }
 
   async removeDeviceFromMPS (context: DeactivationContext): Promise<any> {
-    await got(`${EnvReader.GlobalEnvConfig.mpsServer}/api/v1/devices/${devices[context.clientId].uuid}`, {
+    return await got(`${EnvReader.GlobalEnvConfig.mpsServer}/api/v1/devices/${devices[context.clientId].uuid}`, {
       method: 'DELETE'
     })
   }
 
-  async invokeUnprovision (context): Promise<any> {
+  async invokeUnprovision (context: DeactivationContext): Promise<any> {
     let { message, clientId } = context
     const clientObj = devices[clientId]
     const xmlRequestBody = this.amt.SetupAndConfigurationService(AMT.Methods.UNPROVISION, null, 2)
@@ -187,14 +188,13 @@ export class Deactivation {
 
   sendMessageToDevice (context: DeactivationContext, event: DeactivationEvent): void {
     const { clientId, status } = context
-    const message = event?.data
     const clientObj = devices[clientId]
     let method: 'failed' | 'success' | 'ok' | 'heartbeat' = 'success' // TODO: Get rid of redundant data (i.e. Method and Status)
     if (status === 'success') {
-      clientObj.status.Status = 'Deactivated'
+      clientObj.status.Status = context.statusMessage !== '' ? context.statusMessage : 'Deactivated'
       method = 'success'
     } else if (status === 'error') {
-      clientObj.status.Status = message
+      clientObj.status.Status = context.errorMessage !== '' ? context.errorMessage : 'Failed'
       method = 'failed'
     }
     const responseMessage = ClientResponseMsg.get(clientId, null, status, method, JSON.stringify(clientObj.status))
