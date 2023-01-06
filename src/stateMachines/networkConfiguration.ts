@@ -393,7 +393,7 @@ export class NetworkConfiguration {
   }
 
   async putGeneralSettings (context): Promise<any> {
-    context.xmlMessage = context.amt.GeneralSettings(AMT.Methods.PUT, context.generalSettings)
+    context.xmlMessage = context.amt.GeneralSettings(AMT.Methods.PUT, null, context.generalSettings)
     return await invokeWsmanCall(context)
   }
 
@@ -532,7 +532,7 @@ export class NetworkConfiguration {
 
   async updateWifiPort (context: NetworkConfigContext, event: NetworkConfigEvent): Promise<any> {
     // Enumeration 32769 - WiFi is enabled in S0 + Sx/AC
-    context.xmlMessage = context.cim.WiFiPort(CIM.Methods.REQUEST_STATE_CHANGE, 32769)
+    context.xmlMessage = context.cim.WiFiPort(CIM.Methods.REQUEST_STATE_CHANGE, null, 32769)
     return await invokeWsmanCall(context)
   }
 
@@ -567,7 +567,7 @@ export class NetworkConfiguration {
 
     // Increment the count to keep track of profiles added to AMT
     ++context.wifiProfileCount
-    context.xmlMessage = context.amt.WiFiPortConfigurationService(AMT.Methods.ADD_WIFI_SETTINGS, wifiEndpointSettings, selector)
+    context.xmlMessage = context.amt.WiFiPortConfigurationService(AMT.Methods.ADD_WIFI_SETTINGS, null, wifiEndpointSettings, selector)
     return await invokeWsmanCall(context)
   }
 
@@ -579,7 +579,7 @@ export class NetworkConfiguration {
   async putWiFiPortConfigurationService (context: NetworkConfigContext, event: NetworkConfigEvent): Promise<any> {
     const wifiPortConfigurationService: AMT_WiFiPortConfigurationServiceResponse = context.message.Envelope.Body.AMT_WiFiPortConfigurationService
     wifiPortConfigurationService.localProfileSynchronizationEnabled = 1
-    context.xmlMessage = context.amt.WiFiPortConfigurationService(AMT.Methods.PUT, wifiPortConfigurationService, null)
+    context.xmlMessage = context.amt.WiFiPortConfigurationService(AMT.Methods.PUT, null, wifiPortConfigurationService, null)
     return await invokeWsmanCall(context)
   }
 }

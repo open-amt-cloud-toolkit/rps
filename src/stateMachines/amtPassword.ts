@@ -169,7 +169,7 @@ export class AMTPassword {
     // Encode to base64
     const amt = new AMT.Messages()
     const encodedPassword = Buffer.from(result, 'binary').toString('base64')
-    context.xmlMessage = amt.AuthorizationService(AMT.Methods.SET_ADMIN_ACL_ENTRY_EX, AMTUserName, encodedPassword)
+    context.xmlMessage = amt.AuthorizationService(AMT.Methods.SET_ADMIN_ACL_ENTRY_EX, null, AMTUserName, encodedPassword)
     return await invokeWsmanCall(context)
   }
 

@@ -347,7 +347,7 @@ export class CIRAConfiguration {
       TunnelLifeTime: 0, // 0 means that the tunnel should stay open until it is closed
       ExtendedData: 'AAAAAAAAABk=' // Equals to 25 seconds in base 64 with network order.
     }
-    context.xmlMessage = context.amt.RemoteAccessService(AMT.Methods.ADD_REMOTE_ACCESS_POLICY_RULE, null, policy, selector)
+    context.xmlMessage = context.amt.RemoteAccessService(AMT.Methods.ADD_REMOTE_ACCESS_POLICY_RULE, null, null, policy, selector)
     return await invokeWsmanCall(context)
   }
 
@@ -363,12 +363,12 @@ export class CIRAConfiguration {
     } else {
       envSettings.DetectionStrings = [`${randomUUID()}.com`]
     }
-    context.xmlMessage = context.amt.EnvironmentDetectionSettingData(AMT.Methods.PUT, envSettings)
+    context.xmlMessage = context.amt.EnvironmentDetectionSettingData(AMT.Methods.PUT, null, envSettings)
     return await invokeWsmanCall(context)
   }
 
   async addTrustedRootCertificate (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.PublicKeyManagementService(AMT.Methods.ADD_TRUSTED_ROOT_CERTIFICATE, { CertificateBlob: context.ciraConfig.mpsRootCertificate })
+    context.xmlMessage = context.amt.PublicKeyManagementService(AMT.Methods.ADD_TRUSTED_ROOT_CERTIFICATE, null, { CertificateBlob: context.ciraConfig.mpsRootCertificate })
     return await invokeWsmanCall(context)
   }
 
@@ -384,7 +384,7 @@ export class CIRAConfiguration {
     if (context.ciraConfig.serverAddressFormat === 3 && context.ciraConfig.commonName) {
       server.CommonName = context.ciraConfig.commonName
     }
-    context.xmlMessage = context.amt.RemoteAccessService(AMT.Methods.ADD_MPS, server)
+    context.xmlMessage = context.amt.RemoteAccessService(AMT.Methods.ADD_MPS, null, server)
     return await invokeWsmanCall(context)
   }
 
@@ -406,7 +406,7 @@ export class CIRAConfiguration {
   }
 
   async userInitiatedConnectionService (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.UserInitiatedConnectionService(AMT.Methods.REQUEST_STATE_CHANGE, 32771)
+    context.xmlMessage = context.amt.UserInitiatedConnectionService(AMT.Methods.REQUEST_STATE_CHANGE, null, 32771)
     return await invokeWsmanCall(context)
   }
 }

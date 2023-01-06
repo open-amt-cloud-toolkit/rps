@@ -430,18 +430,18 @@ export class TLS {
       timeStamping: false
     }
     const cert = this.certManager.amtCertSignWithCAKey(DERKey, null, certAttributes, issuerAttributes, keyUsages)
-    context.xmlMessage = context.amt.PublicKeyManagementService(AMT.Methods.ADD_CERTIFICATE, { CertificateBlob: cert.pem.substring(27, cert.pem.length - 25) })
+    context.xmlMessage = context.amt.PublicKeyManagementService(AMT.Methods.ADD_CERTIFICATE, null, { CertificateBlob: cert.pem.substring(27, cert.pem.length - 25) })
     return await invokeWsmanCall(context)
   }
 
   async generateKeyPair (context: TLSContext, event: TLSEvent): Promise<void> {
-    context.xmlMessage = context.amt.PublicKeyManagementService(AMT.Methods.GENERATE_KEY_PAIR, { KeyAlgorithm: 0, KeyLength: 2048 })
+    context.xmlMessage = context.amt.PublicKeyManagementService(AMT.Methods.GENERATE_KEY_PAIR, null, { KeyAlgorithm: 0, KeyLength: 2048 })
     return await invokeWsmanCall(context)
   }
 
   async addTrustedRootCertificate (context: TLSContext, event: TLSEvent): Promise<void> {
     const tlsCerts = devices[context.clientId].ClientData.payload.profile.tlsCerts
-    context.xmlMessage = context.amt.PublicKeyManagementService(AMT.Methods.ADD_TRUSTED_ROOT_CERTIFICATE, { CertificateBlob: tlsCerts.ROOT_CERTIFICATE.certbin })
+    context.xmlMessage = context.amt.PublicKeyManagementService(AMT.Methods.ADD_TRUSTED_ROOT_CERTIFICATE, null, { CertificateBlob: tlsCerts.ROOT_CERTIFICATE.certbin })
     return await invokeWsmanCall(context)
   }
 

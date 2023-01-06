@@ -497,19 +497,19 @@ export class Unconfiguration {
 
   async removeRemoteAccessPolicyRuleUserInitiated (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
     const selector = { name: 'PolicyRuleName', value: 'User Initiated' }
-    context.xmlMessage = context.amt.RemoteAccessPolicyRule(AMT.Methods.DELETE, selector)
+    context.xmlMessage = context.amt.RemoteAccessPolicyRule(AMT.Methods.DELETE, null, selector)
     return await invokeWsmanCall(context)
   }
 
   async removeRemoteAccessPolicyRuleAlert (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
     const selector = { name: 'PolicyRuleName', value: 'Alert' }
-    context.xmlMessage = context.amt.RemoteAccessPolicyRule(AMT.Methods.DELETE, selector)
+    context.xmlMessage = context.amt.RemoteAccessPolicyRule(AMT.Methods.DELETE, null, selector)
     return await invokeWsmanCall(context)
   }
 
   async removeRemoteAccessPolicyRulePeriodic (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
     const selector = { name: 'PolicyRuleName', value: 'Periodic' }
-    context.xmlMessage = context.amt.RemoteAccessPolicyRule(AMT.Methods.DELETE, selector)
+    context.xmlMessage = context.amt.RemoteAccessPolicyRule(AMT.Methods.DELETE, null, selector)
     return await invokeWsmanCall(context)
   }
 
@@ -553,7 +553,7 @@ export class Unconfiguration {
   async clearEnvironmentDetectionSettings (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
     const envSettings = context.message.Envelope.Body.AMT_EnvironmentDetectionSettingData
     envSettings.DetectionStrings = []
-    context.xmlMessage = context.amt.EnvironmentDetectionSettingData(AMT.Methods.PUT, envSettings)
+    context.xmlMessage = context.amt.EnvironmentDetectionSettingData(AMT.Methods.PUT, null, envSettings)
     return await invokeWsmanCall(context)
   }
 

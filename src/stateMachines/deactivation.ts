@@ -174,7 +174,7 @@ export class Deactivation {
   async invokeUnprovision (context: DeactivationContext): Promise<any> {
     let { message, clientId } = context
     const clientObj = devices[clientId]
-    const xmlRequestBody = this.amt.SetupAndConfigurationService(AMT.Methods.UNPROVISION, null, 2)
+    const xmlRequestBody = this.amt.SetupAndConfigurationService(AMT.Methods.UNPROVISION, null, null, 1)
     message = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
     this.logger.debug(`Unprovisioning message to AMT ${clientObj.uuid} : ${message}`)
     const responseMessage = ClientResponseMsg.get(clientId, message, 'wsman', 'ok')

@@ -270,12 +270,12 @@ export class FeaturesConfiguration {
   }
 
   async setRedirectionService (context: FeatureContext): Promise<any> {
-    context.xmlMessage = context.amt.RedirectionService(AMT.Methods.REQUEST_STATE_CHANGE, context.AMT_RedirectionService.EnabledState)
+    context.xmlMessage = context.amt.RedirectionService(AMT.Methods.REQUEST_STATE_CHANGE, null, context.AMT_RedirectionService.EnabledState)
     return await invokeWsmanCall(context)
   }
 
   async setKvmRedirectionSap (context: FeatureContext): Promise<any> {
-    context.xmlMessage = context.cim.KVMRedirectionSAP(CIM.Methods.REQUEST_STATE_CHANGE, context.CIM_KVMRedirectionSAP.EnabledState)
+    context.xmlMessage = context.cim.KVMRedirectionSAP(CIM.Methods.REQUEST_STATE_CHANGE, null, context.CIM_KVMRedirectionSAP.EnabledState)
     return await invokeWsmanCall(context)
   }
 
@@ -284,7 +284,7 @@ export class FeaturesConfiguration {
     const redirectionResponse: AMT.Models.RedirectionResponse = {
       AMT_RedirectionService: JSON.parse(JSON.stringify(redirectionService))
     }
-    context.xmlMessage = context.amt.RedirectionService(AMT.Methods.PUT, null, redirectionResponse)
+    context.xmlMessage = context.amt.RedirectionService(AMT.Methods.PUT, null, null, redirectionResponse)
     return await invokeWsmanCall(context)
   }
 
@@ -293,7 +293,7 @@ export class FeaturesConfiguration {
     const ipsOptInSvcResponse: IPS.Models.OptInServiceResponse = {
       IPS_OptInService: JSON.parse(JSON.stringify(ipsOptInService))
     }
-    context.xmlMessage = context.ips.OptInService(IPS.Methods.PUT, null, ipsOptInSvcResponse)
+    context.xmlMessage = context.ips.OptInService(IPS.Methods.PUT, null, null, ipsOptInSvcResponse)
     return await invokeWsmanCall(context)
   }
 }

@@ -656,13 +656,13 @@ export class Activation {
     const password = await this.getPassword(context)
     this.createSignedString(clientId)
     const clientObj = devices[clientId]
-    context.xmlMessage = context.ips.HostBasedSetupService(IPS.Methods.ADMIN_SETUP, 2, password, clientObj.nonce.toString('base64'), 2, clientObj.signature)
+    context.xmlMessage = context.ips.HostBasedSetupService(IPS.Methods.ADMIN_SETUP, null, 2, password, clientObj.nonce.toString('base64'), 2, clientObj.signature)
     return await invokeWsmanCall(context)
   }
 
   async getClientSetup (context): Promise<any> {
     const password = await this.getPassword(context)
-    context.xmlMessage = context.ips.HostBasedSetupService(IPS.Methods.SETUP, 2, password)
+    context.xmlMessage = context.ips.HostBasedSetupService(IPS.Methods.SETUP, null, 2, password)
     return await invokeWsmanCall(context)
   }
 
@@ -672,12 +672,12 @@ export class Activation {
     const result = password.match(/../g).map((v) => String.fromCharCode(parseInt(v, 16))).join('')
     // Encode to base64
     const encodedPassword = Buffer.from(result, 'binary').toString('base64')
-    context.xmlMessage = context.amt.AuthorizationService(AMT.Methods.SET_ADMIN_ACL_ENTRY_EX, AMTUserName, encodedPassword)
+    context.xmlMessage = context.amt.AuthorizationService(AMT.Methods.SET_ADMIN_ACL_ENTRY_EX, null, AMTUserName, encodedPassword)
     return await invokeWsmanCall(context)
   }
 
   async setMEBxPassword (context): Promise<any> {
-    context.xmlMessage = context.amt.SetupAndConfigurationService(AMT.Methods.SET_MEBX_PASSWORD, devices[context.clientId].mebxPassword)
+    context.xmlMessage = context.amt.SetupAndConfigurationService(AMT.Methods.SET_MEBX_PASSWORD, null, devices[context.clientId].mebxPassword)
     return await invokeWsmanCall(context)
   }
 
@@ -693,7 +693,7 @@ export class Activation {
       } else if (clientObj.count === clientObj.certObj.certChain.length) {
         isRoot = true
       }
-      xmlRequestBody = ips.HostBasedSetupService(IPS.Methods.ADD_NEXT_CERT_IN_CHAIN, null, null, null, null, null, clientObj.certObj.certChain[clientObj.count - 1], isLeaf, isRoot)
+      xmlRequestBody = ips.HostBasedSetupService(IPS.Methods.ADD_NEXT_CERT_IN_CHAIN, null, null, null, null, null, null, clientObj.certObj.certChain[clientObj.count - 1], isLeaf, isRoot)
       ++devices[clientId].count
       this.logger.debug(`xmlRequestBody ${clientObj.uuid} : ${xmlRequestBody}`)
       return xmlRequestBody
