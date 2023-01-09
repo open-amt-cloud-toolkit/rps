@@ -7,7 +7,7 @@ import { WebSocketConfig, ClientMsg } from './models/RCS.Config'
 import { devices, WebSocketListener } from './WebSocketListener'
 import Logger from './Logger'
 import { ILogger } from './interfaces/ILogger'
-import * as WebSocket from 'ws'
+import WebSocket from 'ws'
 
 const wsConfig: WebSocketConfig = {
   WebSocketPort: 8080

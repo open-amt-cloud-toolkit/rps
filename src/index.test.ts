@@ -25,6 +25,12 @@ describe('Index', () => {
     process.env.NODE_ENV = 'test'
     // indexFile = require('./Index')
   })
+
+  it('should load custom middleware', async () => {
+    const result = await indexFile.loadCustomMiddleware()
+    expect(result.length).toBe(1)
+  })
+
   it('should wait for db', async () => {
     const backOffSpy = jest.spyOn(exponentialBackoff, 'backOff')
     let shouldBeOk = false
