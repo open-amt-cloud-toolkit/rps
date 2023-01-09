@@ -149,7 +149,7 @@ export class AMTPassword {
   async getGeneralSettings (context): Promise<any> {
     const amt = new AMT.Messages()
     context.xmlMessage = amt.GeneralSettings(AMT.Methods.GET)
-    return await invokeWsmanCall(context)
+    await invokeWsmanCall(context)
   }
 
   async changeAMTPassword (context: AMTPasswordContext, event: AMTPasswordEvent): Promise<any> {
@@ -170,7 +170,7 @@ export class AMTPassword {
     const amt = new AMT.Messages()
     const encodedPassword = Buffer.from(result, 'binary').toString('base64')
     context.xmlMessage = amt.AuthorizationService(AMT.Methods.SET_ADMIN_ACL_ENTRY_EX, AMTUserName, encodedPassword)
-    return await invokeWsmanCall(context)
+    await invokeWsmanCall(context)
   }
 
   async saveDeviceInfoToSecretProvider (context: AMTPasswordContext, event: AMTPasswordEvent): Promise<boolean> {

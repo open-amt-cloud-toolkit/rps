@@ -23,7 +23,7 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
    * @returns {number}
    */
   async getCount (tenantId: string = ''): Promise<number> {
-    const result = await this.db.query<{total_count: number}>(`
+    const result = await this.db.query<{ total_count: number }>(`
     SELECT count(*) OVER() AS total_count 
     FROM wirelessconfigs 
     WHERE tenant_id = $1`, [tenantId])

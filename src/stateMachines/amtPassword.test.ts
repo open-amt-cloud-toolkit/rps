@@ -28,7 +28,7 @@ describe('AMT Password State Machine', () => {
   beforeEach(() => {
     amtPwd = new AMTPassword()
     amtPwdContext = {
-      clientId: clientId,
+      clientId,
       httpHandler: new HttpHandler(),
       status: 'success',
       errorMessage: '',
@@ -111,7 +111,7 @@ describe('AMT Password State Machine', () => {
       }
     })
     amtPwdService.start()
-    amtPwdService.send({ type: 'CHANGEPASSWORD', clientId: clientId, data: null })
+    amtPwdService.send({ type: 'CHANGEPASSWORD', clientId, data: null })
   })
 
   it('should eventually reach "Failed" at save-amt-password-to-secret-provider state ', (done) => {
@@ -133,6 +133,6 @@ describe('AMT Password State Machine', () => {
     })
 
     amtPwdService.start()
-    amtPwdService.send({ type: 'CHANGEPASSWORD', clientId: clientId, data: null })
+    amtPwdService.send({ type: 'CHANGEPASSWORD', clientId, data: null })
   })
 })

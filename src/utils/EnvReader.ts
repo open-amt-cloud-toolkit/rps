@@ -12,7 +12,7 @@ export interface webConfigType {
   secureOptions?: any
 }
 
-interface IEnvReader{
+interface IEnvReader {
   GlobalEnvConfig: RPSConfig
 }
 const EnvReader: IEnvReader = {

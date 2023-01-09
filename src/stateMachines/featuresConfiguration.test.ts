@@ -68,7 +68,7 @@ describe('Features State Machine', () => {
     setDefaultResponses()
     context = {
       clientId,
-      amtConfiguration: amtConfiguration,
+      amtConfiguration,
       httpHandler: new HttpHandler(),
       statusMessage: '',
       xmlMessage: '',
