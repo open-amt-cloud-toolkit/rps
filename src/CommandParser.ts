@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import * as parseArgs from 'minimist'
+import parseArgs from 'minimist'
 import { ClientMethods, ClientMsg } from './models/RCS.Config'
 import Logger from './Logger'
 import { ILogger } from './interfaces/ILogger'

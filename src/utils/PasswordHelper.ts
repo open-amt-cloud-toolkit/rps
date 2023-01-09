@@ -5,7 +5,7 @@
 
 import * as crypto from 'crypto'
 import { AMTRandomPasswordChars } from '../utils/constants'
-import * as cryptoRandomString from 'crypto-random-string'
+import cryptoRandomString from 'crypto-random-string'
 
 const PasswordHelper = {
   /**

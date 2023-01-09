@@ -7,7 +7,7 @@ import { IProfilesWifiConfigsTable } from '../../../interfaces/database/IProfile
 import { ProfileWifiConfigs } from '../../../models/RCS.Config'
 import { API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
 import { RPSError } from '../../../utils/RPSError'
-import * as format from 'pg-format'
+import format from 'pg-format'
 import PostgresDb from '..'
 
 export class ProfilesWifiConfigsTable implements IProfilesWifiConfigsTable {
