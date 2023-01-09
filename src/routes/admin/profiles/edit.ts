@@ -121,7 +121,7 @@ export async function generateSelfSignedCertificate (req: Request, profileName: 
   // gene
   const issuedCert = cm.createCertificate(issueAttr, rootCert.key, null, certAttr, keyUsages)
 
-  const certs: {data: TLSCerts} = {
+  const certs: { data: TLSCerts } = {
     data: {
       ROOT_CERTIFICATE: rootCert,
       ISSUED_CERTIFICATE: issuedCert

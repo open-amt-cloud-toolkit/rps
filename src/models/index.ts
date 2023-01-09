@@ -20,7 +20,7 @@ export interface ProvisioningCertObj {
   certChain: string[]
   privateKey: pki.PrivateKey
 }
-export interface AMTKeyUsage{
+export interface AMTKeyUsage {
   /** Extension ID  */
   name: string
   /** Enables Console Usage */

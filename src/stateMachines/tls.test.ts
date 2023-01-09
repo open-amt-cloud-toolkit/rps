@@ -148,7 +148,7 @@ describe('TLS State Machine', () => {
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
   it('should updateConfigurationStatus', async () => {
-    await tls.updateConfigurationStatus(context)
+    tls.updateConfigurationStatus(context)
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
   it('should enumerateTlsData', async () => {
@@ -162,7 +162,7 @@ describe('TLS State Machine', () => {
   })
   it('should putRemoteTLSData', async () => {
     context.tlsSettingData = [{}]
-    jest.spyOn(forge.pki, 'certificateFromPem').mockReturnValue({ subject: { getField: () => { return {} } } } as any)
+    jest.spyOn(forge.pki, 'certificateFromPem').mockReturnValue({ subject: { getField: () => ({}) } } as any)
     const tlsSettingDataSpy = jest.spyOn(context.amt, 'TLSSettingData').mockReturnValue('')
     await tls.putRemoteTLSData(context, null)
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
@@ -170,7 +170,7 @@ describe('TLS State Machine', () => {
   })
   it('should putLocalTLSData', async () => {
     context.tlsSettingData = [{}, {}]
-    jest.spyOn(forge.pki, 'certificateFromPem').mockReturnValue({ subject: { getField: () => { return {} } } } as any)
+    jest.spyOn(forge.pki, 'certificateFromPem').mockReturnValue({ subject: { getField: () => ({}) } } as any)
     const tlsSettingDataSpy = jest.spyOn(context.amt, 'TLSSettingData').mockReturnValue('')
     await tls.putLocalTLSData(context, null)
     expect(invokeWsmanCallSpy).toHaveBeenCalled()

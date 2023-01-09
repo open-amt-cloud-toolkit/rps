@@ -153,23 +153,13 @@ export class SyncIP {
     }
   }, {
     guards: {
-      isWirelessOnlyDevice: (context: SyncIPContext) => {
-        return context.wirelessSettings != null && context.wiredSettings?.MACAddress == null
-      },
-      isNotSharedStaticIp: (context: SyncIPContext) => {
-        return context.wiredSettings.DHCPEnabled === true && context.wiredSettings.SharedStaticIp !== true
-      },
-      isNotIPAddressMatched: (context: SyncIPContext) => {
-        return context.wiredSettings.IPAddress !== context.ipConfiguration.ipAddress
-      },
-      isNotIPSyncEnabled: (context: SyncIPContext) => {
-        return context.wiredSettings.IpSyncEnabled !== true && context.isIPSynchronized
-      }
+      isWirelessOnlyDevice: (context: SyncIPContext) => context.wirelessSettings != null && context.wiredSettings?.MACAddress == null,
+      isNotSharedStaticIp: (context: SyncIPContext) => context.wiredSettings.DHCPEnabled === true && context.wiredSettings.SharedStaticIp !== true,
+      isNotIPAddressMatched: (context: SyncIPContext) => context.wiredSettings.IPAddress !== context.ipConfiguration.ipAddress,
+      isNotIPSyncEnabled: (context: SyncIPContext) => context.wiredSettings.IpSyncEnabled !== true && context.isIPSynchronized
     },
     actions: {
-      respondFailure: pure((context: SyncIPContext) => {
-        return sendParent({ type: 'ON_SYNC_NETWORK_FAILED', data: context.statusMessage })
-      }),
+      respondFailure: pure((context: SyncIPContext) => sendParent({ type: 'ON_SYNC_NETWORK_FAILED', data: context.statusMessage })),
       'Read Ethernet Port Settings': this.readEthernetPortSettings.bind(this)
     }
   })
@@ -178,14 +168,14 @@ export class SyncIP {
     const amt = new AMT.Messages()
     context.xmlMessage = amt.EthernetPortSettings(AMT.Methods.ENUMERATE)
     this.logger.info(context.xmlMessage)
-    return await invokeWsmanCall(context)
+    await invokeWsmanCall(context)
   }
 
   async pullEthernetPortSettings (context: SyncIPContext): Promise<any> {
     const amt = new AMT.Messages()
     context.xmlMessage = amt.EthernetPortSettings(AMT.Methods.PULL, context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
     this.logger.info(context.xmlMessage)
-    return await invokeWsmanCall(context)
+    await invokeWsmanCall(context)
   }
 
   readEthernetPortSettings (context: SyncIPContext): void {
@@ -225,6 +215,6 @@ export class SyncIP {
     }
     const amt = new AMT.Messages()
     context.xmlMessage = amt.EthernetPortSettings(AMT.Methods.PUT, null, context.wiredSettings)
-    return await invokeWsmanCall(context)
+    await invokeWsmanCall(context)
   }
 }

@@ -77,7 +77,7 @@ describe('Error State Machine', () => {
       }
     })
     errorService.start()
-    errorService.send({ type: 'PARSE', clientId: clientId })
+    errorService.send({ type: 'PARSE', clientId })
   })
 
   it('should eventually reach "BADREQUEST"', (done) => {
@@ -118,7 +118,7 @@ describe('Error State Machine', () => {
   it('should add authorization header', () => {
     const context = {
       message: unauthorizedResponse,
-      clientId: clientId
+      clientId
     }
     expect(devices[clientId].connectionParams.digestChallenge).toBeNull()
     error.addAuthorizationHeader(context)

@@ -172,7 +172,7 @@ export class Validator implements IValidator {
         method: 'PATCH',
         json: {
           guid: uuid,
-          tags: tags
+          tags
         }
       })
     }
