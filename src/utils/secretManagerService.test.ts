@@ -7,10 +7,10 @@ import { SecretManagerService } from './SecretManagerService'
 import Logger from '../Logger'
 import { ILogger } from '../interfaces/ILogger'
 import { config } from '../test/helper/Config'
-import { EnvReader } from './EnvReader'
+import { Environment } from './Environment'
 
 let secretManagerService: SecretManagerService = null
-EnvReader.GlobalEnvConfig = config
+Environment.Config = config
 let gotSpy: jest.SpyInstance
 const logger: ILogger = new Logger('SecretManagerTests')
 const secretPath = '4c4c4544-004b-4210-8033-b6c04f504633'
@@ -123,6 +123,6 @@ test('should get health of vault', async () => {
   const result = await secretManagerService.health()
   expect(result).toEqual(data)
   expect(gotHealthSpy).toHaveBeenCalledWith('sys/health', {
-    prefixUrl: `${EnvReader.GlobalEnvConfig.VaultConfig.address}/v1/`
+    prefixUrl: `${Environment.Config.VaultConfig.address}/v1/`
   })
 })

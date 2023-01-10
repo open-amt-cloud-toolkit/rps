@@ -9,7 +9,7 @@ import { WirelessConfig } from '../models/RCS.Config'
 import { HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
 import { AMTConfiguration } from '../models'
-import { EnvReader } from '../utils/EnvReader'
+import { Environment } from '../utils/Environment'
 import { devices } from '../WebSocketListener'
 import { Error } from './error'
 import { Configurator } from '../Configurator'
@@ -372,7 +372,7 @@ export class NetworkConfiguration {
 
   constructor () {
     this.configurator = new Configurator()
-    this.dbFactory = new DbCreatorFactory(EnvReader.GlobalEnvConfig)
+    this.dbFactory = new DbCreatorFactory(Environment.Config)
     this.logger = new Logger('Network_Configuration_State_Machine')
   }
 

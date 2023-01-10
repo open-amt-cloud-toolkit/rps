@@ -12,7 +12,7 @@ import { RPSError } from './utils/RPSError'
 import { CommandParser } from './CommandParser'
 import { VersionChecker } from './VersionChecker'
 import { AMTUserName } from './utils/constants'
-import { EnvReader } from './utils/EnvReader'
+import { Environment } from './utils/Environment'
 import got from 'got'
 import { devices } from './WebSocketListener'
 import { AMTConfiguration, AMTDeviceDTO } from './models'
@@ -168,7 +168,7 @@ export class Validator implements IValidator {
     let tags = []
     if (profile?.tags.length > 0) {
       tags = profile.tags
-      await got(`${EnvReader.GlobalEnvConfig.mpsServer}/api/v1/devices`, {
+      await got(`${Environment.Config.mpsServer}/api/v1/devices`, {
         method: 'PATCH',
         json: {
           guid: uuid,

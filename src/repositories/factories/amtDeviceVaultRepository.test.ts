@@ -5,7 +5,7 @@
 
 import { config } from '../../test/helper/Config'
 import { Configurator } from '../../Configurator'
-import { EnvReader } from '../../utils/EnvReader'
+import { Environment } from '../../utils/Environment'
 import { ILogger } from '../../interfaces/ILogger'
 import Logger from '../../Logger'
 import { AMTDeviceDTO } from '../../models'
@@ -13,7 +13,7 @@ import { AMTDeviceVaultRepository } from './AMTDeviceVaultRepository'
 import { randomUUID } from 'crypto'
 import { AMTUserName } from '../../utils/constants'
 
-EnvReader.GlobalEnvConfig = config
+Environment.Config = config
 let device: AMTDeviceDTO
 const logger: ILogger = new Logger('AMTDeviceVaultRepositoryTest')
 let configurator: Configurator

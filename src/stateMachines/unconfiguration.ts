@@ -12,7 +12,7 @@ import Logger from '../Logger'
 import { CIRAConfig } from '../models/RCS.Config'
 import { NodeForge } from '../NodeForge'
 import { DbCreatorFactory } from '../repositories/factories/DbCreatorFactory'
-import { EnvReader } from '../utils/EnvReader'
+import { Environment } from '../utils/Environment'
 import { SignatureHelper } from '../utils/SignatureHelper'
 import { Validator } from '../Validator'
 import { devices } from '../WebSocketListener'
@@ -473,7 +473,7 @@ export class Unconfiguration {
     this.signatureHelper = new SignatureHelper(this.nodeForge)
     this.configurator = new Configurator()
     this.validator = new Validator(new Logger('Validator'), this.configurator)
-    this.dbFactory = new DbCreatorFactory(EnvReader.GlobalEnvConfig)
+    this.dbFactory = new DbCreatorFactory(Environment.Config)
     this.logger = new Logger('Activation_State_Machine')
   }
 

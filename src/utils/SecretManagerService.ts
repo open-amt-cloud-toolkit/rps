@@ -5,7 +5,7 @@
 
 import { ISecretManagerService } from '../interfaces/ISecretManagerService'
 import { ILogger } from '../interfaces/ILogger'
-import { EnvReader } from './EnvReader'
+import { Environment } from './Environment'
 import got, { Got } from 'got'
 
 export class SecretManagerService implements ISecretManagerService {
@@ -14,9 +14,9 @@ export class SecretManagerService implements ISecretManagerService {
   constructor (logger: ILogger) {
     this.logger = logger
     this.gotClient = got.extend({
-      prefixUrl: `${EnvReader.GlobalEnvConfig.VaultConfig.address}/v1/${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}`,
+      prefixUrl: `${Environment.Config.VaultConfig.address}/v1/${Environment.Config.VaultConfig.SecretsPath}`,
       headers: {
-        'X-Vault-Token': EnvReader.GlobalEnvConfig.VaultConfig.token
+        'X-Vault-Token': Environment.Config.VaultConfig.token
       }
     })
   }
@@ -73,10 +73,10 @@ export class SecretManagerService implements ISecretManagerService {
 
   async deleteSecretWithPath (path: string): Promise<void> {
     // to permanently delete the key, we use metadata path
-    const basePath = EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath.replace('/data/', '/metadata/')
+    const basePath = Environment.Config.VaultConfig.SecretsPath.replace('/data/', '/metadata/')
     this.logger.verbose(`Deleting data from vault:${path}`)
     await this.gotClient.delete(`${path}`, {
-      prefixUrl: `${EnvReader.GlobalEnvConfig.VaultConfig.address}/v1/${basePath}`
+      prefixUrl: `${Environment.Config.VaultConfig.address}/v1/${basePath}`
     }).json()
     this.logger.debug(`Successfully Deleted data from vault: ${path}`)
   }
@@ -85,7 +85,7 @@ export class SecretManagerService implements ISecretManagerService {
     // const rspJson: any = await this.gotClient.get('v1/sys/health').json()
     const rspJson: any = await this.gotClient.get('sys/health',
       {
-        prefixUrl: `${EnvReader.GlobalEnvConfig.VaultConfig.address}/v1/`
+        prefixUrl: `${Environment.Config.VaultConfig.address}/v1/`
       }).json()
     return rspJson
   }

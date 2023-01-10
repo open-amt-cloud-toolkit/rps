@@ -8,11 +8,11 @@ import { Deactivation, DeactivationContext } from './deactivation'
 import { v4 as uuid } from 'uuid'
 import { devices } from '../WebSocketListener'
 import { config } from '../test/helper/Config'
-import { EnvReader } from '../utils/EnvReader'
+import { Environment } from '../utils/Environment'
 import ClientResponseMsg from '../utils/ClientResponseMsg'
 
 const clientId = uuid()
-EnvReader.GlobalEnvConfig = config
+Environment.Config = config
 
 describe('Deactivation State Machine', () => {
   let deactivation: Deactivation

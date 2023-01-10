@@ -12,7 +12,7 @@ import { ISecretManagerService } from './interfaces/ISecretManagerService'
 import { IAMTDeviceRepository } from './interfaces/database/IAMTDeviceRepository'
 import { SecretManagerService } from './utils/SecretManagerService'
 import { AmtDeviceFactory } from './repositories/factories/AmtDeviceFactory'
-import { EnvReader } from './utils/EnvReader'
+import { Environment } from './utils/Environment'
 import { IValidator } from './interfaces/IValidator'
 import { Validator } from './Validator'
 import { DataProcessor } from './DataProcessor'
@@ -31,12 +31,12 @@ export class Configurator {
     const validator: IValidator = new Validator(new Logger('Validator'), this)
 
     this.dataProcessor = new DataProcessor(new Logger('DataProcessor'), validator)
-    const dbf = new DbCreatorFactory(EnvReader.GlobalEnvConfig)
+    const dbf = new DbCreatorFactory(Environment.Config)
 
     this.amtDeviceRepository = AmtDeviceFactory.getAmtDeviceRepository(this)
     dbf.getDb().then((db) => {
       this.domainCredentialManager = new DomainCredentialManager(new Logger('DomainCredentialManager'), db.domains, this)
-      this.profileManager = new ProfileManager(new Logger('ProfileManager'), this, db.profiles, EnvReader.GlobalEnvConfig)
+      this.profileManager = new ProfileManager(new Logger('ProfileManager'), this, db.profiles, Environment.Config)
     }).catch((err) => {
       log.error(err)
       throw new Error('Unable to get db configuration')

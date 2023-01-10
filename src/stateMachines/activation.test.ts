@@ -7,7 +7,7 @@ import { AMT, CIM, IPS } from '@open-amt-cloud-toolkit/wsman-messages'
 import { Activation, ActivationContext } from './activation'
 import { v4 as uuid } from 'uuid'
 import { devices } from '../WebSocketListener'
-import { EnvReader } from '../utils/EnvReader'
+import { Environment } from '../utils/Environment'
 import { config } from '../test/helper/Config'
 import { NodeForge } from '../NodeForge'
 import { CertManager } from '../certManager'
@@ -22,7 +22,7 @@ import { AMTUserName } from '../utils/constants'
 import * as common from './common'
 
 const clientId = uuid()
-EnvReader.GlobalEnvConfig = config
+Environment.Config = config
 describe('Activation State Machine', () => {
   let activation: Activation
   let context: ActivationContext

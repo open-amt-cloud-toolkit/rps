@@ -10,7 +10,7 @@ import { Configurator } from '../Configurator'
 import { HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
 import ClientResponseMsg from '../utils/ClientResponseMsg'
-import { EnvReader } from '../utils/EnvReader'
+import { Environment } from '../utils/Environment'
 import { devices } from '../WebSocketListener'
 import { Error } from './error'
 import got from 'got'
@@ -166,7 +166,7 @@ export class Deactivation {
   }
 
   async removeDeviceFromMPS (context: DeactivationContext): Promise<any> {
-    return await got(`${EnvReader.GlobalEnvConfig.mpsServer}/api/v1/devices/${devices[context.clientId].uuid}`, {
+    return await got(`${Environment.Config.mpsServer}/api/v1/devices/${devices[context.clientId].uuid}`, {
       method: 'DELETE'
     })
   }

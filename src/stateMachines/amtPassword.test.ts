@@ -6,7 +6,7 @@
 import { AMTPassword, AMTPasswordContext, AMTPasswordEvent } from './amtPassword'
 import { v4 as uuid } from 'uuid'
 import { devices } from '../WebSocketListener'
-import { EnvReader } from '../utils/EnvReader'
+import { Environment } from '../utils/Environment'
 import { config } from '../test/helper/Config'
 import { HttpHandler } from '../HttpHandler'
 import { Configurator } from '../Configurator'
@@ -14,7 +14,7 @@ import * as common from './common'
 import { interpret } from 'xstate'
 
 const clientId = uuid()
-EnvReader.GlobalEnvConfig = config
+Environment.Config = config
 
 describe('AMT Password State Machine', () => {
   let amtPwd: AMTPassword
