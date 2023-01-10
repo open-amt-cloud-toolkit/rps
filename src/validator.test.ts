@@ -14,6 +14,7 @@ import { Environment } from './utils/Environment'
 import { VersionChecker } from './VersionChecker'
 import { devices } from './WebSocketListener'
 import { ClientAction, ClientObject } from './models/RCS.Config'
+import { DeviceCredentials } from './interfaces/ISecretManagerService'
 
 Environment.Config = config
 const configurator: Configurator = new Configurator()
@@ -55,20 +56,20 @@ describe('validator', () => {
 
   describe('get Device Credentials ', () => {
     test('should get device credentials from secret provider', async () => {
-      const cred = { guid: '4c4c4544-005a-3510-804b-b4c04f564433', name: 'DESKTOP-2T73VQK', mpsuser: 'admin', mpspass: 'sOK1A4Wh$rtp!FB2', amtuser: 'admin', amtpass: 'Intel123!', mebxpass: 'Intel123!' }
-      const getSpy = jest.spyOn(validator.configurator.amtDeviceRepository, 'get').mockImplementation(async () => cred)
+      const cred = { MPS_PASSWORD: 'sOK1A4Wh$rtp!FB2', AMT_PASSWORD: 'Intel123!', MEBX_PASSWORD: 'Intel123!' }
+      const getSpy = jest.spyOn(validator.configurator.secretsManager, 'getSecretAtPath').mockImplementation(async () => cred)
       const amtDevice = await validator.getDeviceCredentials(msg)
       expect(amtDevice).toBe(cred)
       expect(getSpy).toHaveBeenCalled()
     })
     test('should return null when credentials does not exists', async () => {
-      const getSpy = jest.spyOn(validator.configurator.amtDeviceRepository, 'get').mockImplementation(async () => null)
+      const getSpy = jest.spyOn(validator.configurator.secretsManager, 'getSecretAtPath').mockImplementation(async () => null)
       const amtDevice = await validator.getDeviceCredentials(msg)
       expect(amtDevice).toBeNull()
       expect(getSpy).toHaveBeenCalled()
     })
     test('should return null on an exception', async () => {
-      const getSpy = jest.spyOn(validator.configurator.amtDeviceRepository, 'get').mockImplementation(async () => {
+      const getSpy = jest.spyOn(validator.configurator.secretsManager, 'getSecretAtPath').mockImplementation(async () => {
         throw new Error()
       })
       const amtDevice = await validator.getDeviceCredentials(msg)
@@ -80,8 +81,8 @@ describe('validator', () => {
   describe('verify Device Password  ', () => {
     let getSpy
     beforeEach(() => {
-      const cred = { guid: '4c4c4544-005a-3510-804b-b4c04f564433', name: 'DESKTOP-2T73VQK', mpsuser: 'admin', mpspass: 'sOK1A4Wh$rtp!FB2', amtuser: 'admin', amtpass: 'Intel123!', mebxpass: 'Intel123!' }
-      getSpy = jest.spyOn(validator.configurator.amtDeviceRepository, 'get').mockImplementation(async () => cred)
+      const cred = { MPS_PASSWORD: 'sOK1A4Wh$rtp!FB2', AMT_PASSWORD: 'Intel123!', MEBX_PASSWORD: 'Intel123!' }
+      getSpy = jest.spyOn(validator.configurator.secretsManager, 'getSecretAtPath').mockImplementation(async () => cred as any)
     })
     test('should get device credentials from secret provider', async () => {
       const clientId = uuid()
@@ -101,19 +102,6 @@ describe('validator', () => {
       }
       expect(rpsError).toBeInstanceOf(RPSError)
       expect(rpsError.message).toEqual(`AMT password DOES NOT match stored version for Device ${msg.payload.uuid}`)
-      expect(getSpy).toHaveBeenCalled()
-    })
-    test('should throw an exception when device repo does not exists', async () => {
-      const clientId = uuid()
-      validator.configurator.amtDeviceRepository = null
-      let rpsError
-      try {
-        await validator.verifyDevicePassword(msg.payload, clientId)
-      } catch (error) {
-        rpsError = error
-      }
-      expect(rpsError).toBeInstanceOf(RPSError)
-      expect(rpsError.message).toEqual(`Device ${msg.payload.uuid} secret provider not found`)
       expect(getSpy).toHaveBeenCalled()
     })
   })
@@ -431,7 +419,7 @@ describe('validator', () => {
         unauthCount: 0
       }
       devices[clientId] = clientObj
-      const getDevcieCredentialsSpy = jest.spyOn(validator, 'getDeviceCredentials').mockResolvedValue({ guid: msg.uuid, amtpass: msg.payload.password, mebxpass: 'TestP{assw0rd' })
+      const getDevcieCredentialsSpy = jest.spyOn(validator, 'getDeviceCredentials').mockResolvedValue({ AMT_PASSWORD: msg.payload.password, MEBX_PASSWORD: 'TestP{assw0rd' } as DeviceCredentials)
       const updateTagsSpy = jest.spyOn(validator, 'updateTags').mockResolvedValue()
       await validator.setNextStepsForConfiguration(msg, clientObj.ClientId)
       expect(clientObj.amtPassword).toBe(msg.payload.password)
@@ -449,12 +437,12 @@ describe('validator', () => {
         unauthCount: 0
       }
       devices[clientId] = clientObj
-      const getDevcieCredentialsSpy = jest.spyOn(validator, 'getDeviceCredentials').mockResolvedValue({ guid: msg.uuid, amtpass: msg.payload.password })
+      const getDeviceCredentialsSpy = jest.spyOn(validator, 'getDeviceCredentials').mockResolvedValue({ AMT_PASSWORD: msg.payload.password } as DeviceCredentials)
       const updateTagsSpy = jest.spyOn(validator, 'updateTags').mockResolvedValue()
       await validator.setNextStepsForConfiguration(msg, clientObj.ClientId)
       expect(clientObj.amtPassword).toBe(msg.payload.password)
       expect(clientObj.ClientData).toBe(msg)
-      expect(getDevcieCredentialsSpy).toHaveBeenCalled()
+      expect(getDeviceCredentialsSpy).toHaveBeenCalled()
       expect(updateTagsSpy).toHaveBeenCalled()
     })
   })

@@ -254,7 +254,7 @@ describe('Network Configuration', () => {
         getDb: async () => mockDb
       } as any
       const getByNameSpy = jest.spyOn(mockDb.wirelessProfiles, 'getByName').mockReturnValue(expectedProfile)
-      const getPSKPassphraseSpy = jest.spyOn(networkConfig.configurator.secretsManager, 'getSecretAtPath').mockImplementation(async () => ({ data: { PSK_PASSPHRASE: 'Intel@123' } }))
+      const getPSKPassphraseSpy = jest.spyOn(networkConfig.configurator.secretsManager, 'getSecretAtPath').mockImplementation(async () => ({ PSK_PASSPHRASE: 'Intel@123' }))
 
       const wifiProfile = await networkConfig.getWifiProfile(context.amtProfile.profileName)
       expect(wifiProfile).toBe(expectedProfile)

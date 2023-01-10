@@ -15,8 +15,9 @@ import { AMTUserName } from './utils/constants'
 import { Environment } from './utils/Environment'
 import got from 'got'
 import { devices } from './WebSocketListener'
-import { AMTConfiguration, AMTDeviceDTO } from './models'
+import { AMTConfiguration } from './models'
 import { Configurator } from './Configurator'
+import { DeviceCredentials } from './interfaces/ISecretManagerService'
 export class Validator implements IValidator {
   jsonParser: ClientMsgJsonParser
 
@@ -200,24 +201,17 @@ export class Validator implements IValidator {
   async verifyDevicePassword (payload: Payload, clientId: string): Promise<void> {
     try {
       const clientObj = devices[clientId]
-      if (this.configurator?.amtDeviceRepository) {
-        const amtDevice = await this.configurator.amtDeviceRepository.get(payload.uuid)
+      const amtDevice = await this.configurator.secretsManager.getSecretAtPath(`devices/${payload.uuid}`) as DeviceCredentials
 
-        if (amtDevice?.amtpass && payload.password && payload.password === amtDevice.amtpass) {
-          this.logger.debug(`AMT password matches stored version for Device ${payload.uuid}`)
-          clientObj.uuid = payload.uuid
-          clientObj.amtPassword = amtDevice.amtpass
-          clientObj.mebxPassword = amtDevice.mebxpass
-          clientObj.hostname = amtDevice.name
-          clientObj.mpsPassword = amtDevice.mpspass
-          clientObj.mpsUsername = amtDevice.mpsuser
-        } else {
-          this.logger.error(`stored version for Device ${payload.uuid}`)
-          throw new RPSError(`AMT password DOES NOT match stored version for Device ${payload.uuid}`)
-        }
+      if (amtDevice?.AMT_PASSWORD && payload.password && payload.password === amtDevice.AMT_PASSWORD) {
+        this.logger.debug(`AMT password matches stored version for Device ${payload.uuid}`)
+        clientObj.hostname = clientObj.uuid = payload.uuid
+        clientObj.amtPassword = amtDevice.AMT_PASSWORD
+        clientObj.mebxPassword = amtDevice.MEBX_PASSWORD
+        clientObj.mpsPassword = amtDevice.MPS_PASSWORD
       } else {
-        this.logger.error(`Device ${payload.uuid} secret provider not found`)
-        throw new RPSError(`Device ${payload.uuid} secret provider not found`)
+        this.logger.error(`stored version for Device ${payload.uuid}`)
+        throw new RPSError(`AMT password DOES NOT match stored version for Device ${payload.uuid}`)
       }
     } catch (error) {
       this.logger.error(`AMT device secret provider exception: ${error}`)
@@ -285,18 +279,15 @@ export class Validator implements IValidator {
     }
   }
 
-  async getDeviceCredentials (msg: ClientMsg): Promise<AMTDeviceDTO> {
-    if (!this.configurator?.amtDeviceRepository) {
-      this.logger.error(`Device ${msg.payload.uuid} not found`)
-      throw new RPSError(`Device ${msg.payload.uuid} not found`)
-    }
+  async getDeviceCredentials (msg: ClientMsg): Promise<DeviceCredentials> {
     try {
-      const amtDevice: AMTDeviceDTO = await this.configurator.amtDeviceRepository.get(msg.payload.uuid)
-      if (amtDevice == null) {
+      const secretData = await this.configurator.secretsManager.getSecretAtPath(`devices/${msg.payload.uuid}`)
+
+      if (secretData == null) {
         this.logger.error(`AMT device DOES NOT exists ${msg.payload.uuid}`)
         return null
       }
-      return amtDevice
+      return secretData as DeviceCredentials
     } catch (error) {
       this.logger.error(`Failed to get AMT device info ${msg.payload.uuid}`)
     }
@@ -305,7 +296,7 @@ export class Validator implements IValidator {
 
   async setNextStepsForConfiguration (msg: ClientMsg, clientId: string): Promise<void> {
     const clientObj = devices[clientId]
-    let amtDevice: AMTDeviceDTO = null
+    let amtDevice: DeviceCredentials = null
     try {
       amtDevice = await this.getDeviceCredentials(msg)
     } catch (error) {
@@ -313,17 +304,17 @@ export class Validator implements IValidator {
     }
     clientObj.activationStatus = true
     msg.payload.username = AMTUserName
-    if (amtDevice?.amtpass) {
-      if (amtDevice.amtpass !== msg.payload.password) {
+    if (amtDevice?.AMT_PASSWORD) {
+      if (amtDevice.AMT_PASSWORD !== msg.payload.password) {
         throw new RPSError(`AMT password DOES NOT match stored version for Device ${msg.payload.uuid}`)
       }
-      msg.payload.password = amtDevice.amtpass
+      msg.payload.password = amtDevice.AMT_PASSWORD
       this.logger.debug(`AMT password found for Device ${msg.payload.uuid}`)
       await this.updateTags(msg.payload.uuid, msg.payload.profile)
       if (clientObj.action === ClientAction.ADMINCTLMODE || clientObj.action === ClientAction.CLIENTCTLMODE) {
-        clientObj.amtPassword = amtDevice.amtpass
+        clientObj.amtPassword = amtDevice.AMT_PASSWORD
         if (clientObj.action === ClientAction.ADMINCTLMODE) {
-          clientObj.mebxPassword = amtDevice.mebxpass
+          clientObj.mebxPassword = amtDevice.MEBX_PASSWORD
         }
       }
     } else {

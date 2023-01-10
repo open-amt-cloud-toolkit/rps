@@ -15,7 +15,7 @@ import dot = require('dot-object')
 import routes from './routes'
 import rc = require('rc')
 import { MqttProvider } from './utils/MqttProvider'
-import { DbCreatorFactory } from './repositories/factories/DbCreatorFactory'
+import { DbCreatorFactory } from './factories/DbCreatorFactory'
 import { backOff } from 'exponential-backoff'
 import { ISecretManagerService } from './interfaces/ISecretManagerService'
 import { IDB } from './interfaces/database/IDb'
@@ -48,7 +48,7 @@ const server: WebSocketListener = new WebSocketListener(new Logger('WebSocketLis
 const mqtt: MqttProvider = new MqttProvider(config)
 mqtt.connectBroker()
 
-const dbFactory = new DbCreatorFactory(config)
+const dbFactory = new DbCreatorFactory()
 
 export const loadCustomMiddleware = async function (): Promise<express.RequestHandler[]> {
   const pathToCustomMiddleware = './src/middleware/custom'

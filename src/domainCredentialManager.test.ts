@@ -9,11 +9,12 @@ import Logger from './Logger'
 import { AMTDomain } from './models'
 import { DomainsTable } from './data/postgres/tables/domains'
 import Db from './data/postgres'
+import { Configurator } from './Configurator'
 
 const logger: ILogger = new Logger('DomainCredentialManagerTests')
 describe('Domain Credential Manager Tests', () => {
   let creator: Db
-
+  let domainCredentialManager: DomainCredentialManager
   beforeEach(() => {
     creator = {
       query: (query) => {
@@ -23,20 +24,29 @@ describe('Domain Credential Manager Tests', () => {
             rows: [{
               name: '',
               domainSuffix: 'd2.com',
-              provisioningCert: 'd2.pfx',
-              provisioningCertstorageFormat: '',
+              provisioningCert: ' ',
+              provisioningCertStorageFormat: '',
               provisioningCertPassword: ''
             }]
           }
         }
       }
     } as any
+    domainCredentialManager = new DomainCredentialManager(logger,
+      new DomainsTable(creator), {
+        secretsManager: {
+          getSecretAtPath: jest.fn().mockResolvedValue({ CERT: 'd2.pfx', CERT_PASSWORD: 'password' })
+        } as any
+      } as Configurator)
   })
   test('retrieve provisioning cert based on domain', async () => {
-    const domainCredentialManager: DomainCredentialManager = new DomainCredentialManager(logger, new DomainsTable(creator))
-
     const expectedProvisioningCert: string = 'd2.pfx'
     const domain: AMTDomain = await domainCredentialManager.getProvisioningCert('d2.com')
     expect(domain.provisioningCert).toEqual(expectedProvisioningCert)
+    expect(domain.provisioningCertPassword).toEqual('password')
+  })
+  test('does domain exist should return true', async () => {
+    const result = await domainCredentialManager.doesDomainExist('d2.com')
+    expect(result).toBeTruthy()
   })
 })

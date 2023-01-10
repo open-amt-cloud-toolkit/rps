@@ -29,6 +29,7 @@ const rcsConfig: RPSConfig = {
   corsOrigin: '*',
   mpsServer: 'https://localhost:3000',
   dbProvider: 'postgres',
+  secretsProvider: 'vault',
   connectionString: 'postgresql://postgresadmin:admin123@localhost:5432/rpsdb',
   delayTimer: 12
 }

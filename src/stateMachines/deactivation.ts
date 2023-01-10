@@ -161,8 +161,8 @@ export class Deactivation {
     this.logger = new Logger('Deactivation State Machine')
   }
 
-  async removeDeviceFromSecretProvider (context: DeactivationContext): Promise<any> {
-    return await this.configurator.amtDeviceRepository.delete(devices[context.clientId].uuid)
+  async removeDeviceFromSecretProvider (context: DeactivationContext): Promise<boolean> {
+    return await this.configurator.secretsManager.deleteSecretAtPath(`devices/${devices[context.clientId].uuid}`)
   }
 
   async removeDeviceFromMPS (context: DeactivationContext): Promise<any> {

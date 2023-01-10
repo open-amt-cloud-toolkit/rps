@@ -9,13 +9,13 @@ import { WirelessConfig } from '../models/RCS.Config'
 import { HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
 import { AMTConfiguration } from '../models'
-import { Environment } from '../utils/Environment'
 import { devices } from '../WebSocketListener'
 import { Error } from './error'
 import { Configurator } from '../Configurator'
-import { DbCreatorFactory } from '../repositories/factories/DbCreatorFactory'
+import { DbCreatorFactory } from '../factories/DbCreatorFactory'
 import { AMTEthernetPortSettings, AMT_WiFiPortConfigurationServiceResponse } from '../models/WSManResponse'
 import { invokeWsmanCall } from './common'
+import { WifiCredentials } from '../interfaces/ISecretManagerService'
 
 interface NetworkConfigContext {
   amtProfile: AMTConfiguration
@@ -372,7 +372,7 @@ export class NetworkConfiguration {
 
   constructor () {
     this.configurator = new Configurator()
-    this.dbFactory = new DbCreatorFactory(Environment.Config)
+    this.dbFactory = new DbCreatorFactory()
     this.logger = new Logger('Network_Configuration_State_Machine')
   }
 
@@ -526,9 +526,9 @@ export class NetworkConfiguration {
     const wifiConfig = await this.db.wirelessProfiles.getByName(profileName)
     if (this.configurator?.secretsManager) {
       // Get WiFi profile pskPassphrase from vault
-      const data: any = await this.configurator.secretsManager.getSecretAtPath(`Wireless/${wifiConfig.profileName}`)
+      const data = await this.configurator.secretsManager.getSecretAtPath(`Wireless/${wifiConfig.profileName}`) as WifiCredentials
       if (data != null) {
-        wifiConfig.pskPassphrase = data.data.PSK_PASSPHRASE
+        wifiConfig.pskPassphrase = data.PSK_PASSPHRASE
       }
     }
     return wifiConfig
