@@ -37,7 +37,6 @@ describe('Error State Machine', () => {
       services: {
       },
       actions: {
-        parseError: () => {},
         respondUnknown: () => {},
         respondBadRequest: () => {}
       },
@@ -100,7 +99,6 @@ describe('Error State Machine', () => {
     config.guards = {}
     const context: ErrorContext = {
       message: unauthorizedResponse as any,
-      parsedMessage: null,
       clientId
     }
     const mockerrorMachine = error.machine.withConfig(config).withContext(context)
