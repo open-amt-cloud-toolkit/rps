@@ -36,116 +36,116 @@ export class Deactivation {
   logger: Logger
   error: Error = new Error()
   machine =
-    createMachine<DeactivationContext, DeactivationEvent>({
-      predictableActionArguments: true,
-      preserveActionOrder: true,
-      context: { message: '', clientId: '', status: 'success', unauthCount: 0, errorMessage: '', statusMessage: '' },
-      id: 'Deactivation Machine',
-      initial: 'PROVISIONED',
-      states: {
-        PROVISIONED: {
-          on: {
-            UNPROVISION: {
-              actions: [assign({ clientId: (context: DeactivationContext, event) => event.clientId }), 'Reset Unauth Count'],
-              target: 'UNPROVISIONING'
-            }
+  createMachine<DeactivationContext, DeactivationEvent>({
+    predictableActionArguments: true,
+    preserveActionOrder: true,
+    context: { message: '', clientId: '', status: 'success', unauthCount: 0, errorMessage: '', statusMessage: '' },
+    id: 'Deactivation Machine',
+    initial: 'PROVISIONED',
+    states: {
+      PROVISIONED: {
+        on: {
+          UNPROVISION: {
+            actions: [assign({ clientId: (context: DeactivationContext, event) => event.clientId }), 'Reset Unauth Count'],
+            target: 'UNPROVISIONING'
           }
-        },
-        UNPROVISIONING: {
-          invoke: {
-            src: this.invokeUnprovision.bind(this),
-            id: 'send-unprovision-message',
-            onDone: 'REMOVE_DEVICE_FROM_SECRET_PROVIDER',
-            onError: 'ERROR'
-          }
-        },
-        REMOVE_DEVICE_FROM_SECRET_PROVIDER: {
-          invoke: {
-            src: this.removeDeviceFromSecretProvider.bind(this),
-            id: 'remove-device-from-secret-provider',
-            onDone: 'REMOVE_DEVICE_FROM_MPS',
-            onError: {
-              actions: assign({ message: (context, event) => event.data }),
-              target: 'REMOVE_DEVICE_FROM_SECRET_PROVIDER_FAILURE'
-            }
-          }
-        },
-        REMOVE_DEVICE_FROM_SECRET_PROVIDER_FAILURE: {
-          always: [
-            {
-              cond: 'isNotFound',
-              target: 'REMOVE_DEVICE_FROM_MPS'
-            }, {
-              actions: assign({ errorMessage: (context, event) => 'Failed to remove device from secret provider' }),
-              target: 'FAILED'
-            }
-          ]
-        },
-        REMOVE_DEVICE_FROM_MPS: {
-          invoke: {
-            src: this.removeDeviceFromMPS.bind(this),
-            id: 'remove-device-from-mps',
-            onDone: 'UNPROVISIONED',
-            onError: {
-              actions: assign({ message: (context, event) => event.data }),
-              target: 'REMOVE_DEVICE_FROM_MPS_FAILURE'
-            }
-          }
-        },
-        REMOVE_DEVICE_FROM_MPS_FAILURE: {
-          always: [
-            {
-              cond: 'isNotFound',
-              target: 'UNPROVISIONED'
-            }, {
-              actions: assign({ statusMessage: (context, event) => 'Deactivated. MPS Unavailable.' }),
-              target: 'UNPROVISIONED'
-            }
-          ]
-        },
-        UNPROVISIONED: {
-          type: 'final',
-          entry: [assign({ status: (context: DeactivationContext, event) => 'success' }), 'Send Message to Device']
-        },
-        ERROR: {
-          invoke: {
-            id: 'error-machine',
-            src: this.error.machine,
-            data: {
-              unauthCount: (context: DeactivationContext, event) => context.unauthCount,
-              message: (context: DeactivationContext, event) => event.data,
-              clientId: (context: DeactivationContext, event) => context.clientId
-            },
-            onDone: [{
-              target: 'UNPROVISIONING'
-            }],
-            onError: 'FAILED'
-          },
-          entry: send({ type: 'PARSE' }, { to: 'error-machine' }),
-          on: {
-            ONFAILED: 'FAILED'
-          }
-        },
-        FAILED: {
-          entry: [assign({ status: (context: DeactivationContext, event) => 'error' }), 'Send Message to Device'],
-          type: 'final'
         }
-      }
-    }, {
-      actions: {
-        'Reset Unauth Count': (context: DeactivationContext, event) => { devices[context.clientId].unauthCount = 0 },
-        'Send Message to Device': this.sendMessageToDevice.bind(this)
       },
-      guards: {
-        isNotFound: (context, event) => {
-          const { message } = context
-          if (message.toString().includes('HTTPError: Response code 404')) {
-            return true
-          }
-          return false
+      UNPROVISIONING: {
+        invoke: {
+          src: this.invokeUnprovision.bind(this),
+          id: 'send-unprovision-message',
+          onDone: 'REMOVE_DEVICE_FROM_SECRET_PROVIDER',
+          onError: 'ERROR'
         }
+      },
+      REMOVE_DEVICE_FROM_SECRET_PROVIDER: {
+        invoke: {
+          src: this.removeDeviceFromSecretProvider.bind(this),
+          id: 'remove-device-from-secret-provider',
+          onDone: 'REMOVE_DEVICE_FROM_MPS',
+          onError: {
+            actions: assign({ message: (context, event) => event.data }),
+            target: 'REMOVE_DEVICE_FROM_SECRET_PROVIDER_FAILURE'
+          }
+        }
+      },
+      REMOVE_DEVICE_FROM_SECRET_PROVIDER_FAILURE: {
+        always: [
+          {
+            cond: 'isNotFound',
+            target: 'REMOVE_DEVICE_FROM_MPS'
+          }, {
+            actions: assign({ errorMessage: (context, event) => 'Failed to remove device from secret provider' }),
+            target: 'FAILED'
+          }
+        ]
+      },
+      REMOVE_DEVICE_FROM_MPS: {
+        invoke: {
+          src: this.removeDeviceFromMPS.bind(this),
+          id: 'remove-device-from-mps',
+          onDone: 'UNPROVISIONED',
+          onError: {
+            actions: assign({ message: (context, event) => event.data }),
+            target: 'REMOVE_DEVICE_FROM_MPS_FAILURE'
+          }
+        }
+      },
+      REMOVE_DEVICE_FROM_MPS_FAILURE: {
+        always: [
+          {
+            cond: 'isNotFound',
+            target: 'UNPROVISIONED'
+          }, {
+            actions: assign({ statusMessage: (context, event) => 'Deactivated. MPS Unavailable.' }),
+            target: 'UNPROVISIONED'
+          }
+        ]
+      },
+      UNPROVISIONED: {
+        type: 'final',
+        entry: [assign({ status: (context: DeactivationContext, event) => 'success' }), 'Send Message to Device']
+      },
+      ERROR: {
+        invoke: {
+          id: 'error-machine',
+          src: this.error.machine,
+          data: {
+            unauthCount: (context: DeactivationContext, event) => context.unauthCount,
+            message: (context: DeactivationContext, event) => event.data,
+            clientId: (context: DeactivationContext, event) => context.clientId
+          },
+          onDone: [{
+            target: 'UNPROVISIONING'
+          }],
+          onError: 'FAILED'
+        },
+        entry: send({ type: 'PARSE' }, { to: 'error-machine' }),
+        on: {
+          ONFAILED: 'FAILED'
+        }
+      },
+      FAILED: {
+        entry: [assign({ status: (context: DeactivationContext, event) => 'error' }), 'Send Message to Device'],
+        type: 'final'
       }
-    })
+    }
+  }, {
+    actions: {
+      'Reset Unauth Count': (context: DeactivationContext, event) => { devices[context.clientId].unauthCount = 0 },
+      'Send Message to Device': this.sendMessageToDevice.bind(this)
+    },
+    guards: {
+      isNotFound: (context, event) => {
+        const { message } = context
+        if (message.toString().includes('HTTPError: Response code 404')) {
+          return true
+        }
+        return false
+      }
+    }
+  })
 
   service = interpret(this.machine).onTransition((state) => {
     console.log(`Current state of Deactivation State Machine: ${JSON.stringify(state.value)}`)

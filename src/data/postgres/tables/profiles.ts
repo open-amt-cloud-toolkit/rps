@@ -24,7 +24,7 @@ export class ProfilesTable implements IProfilesTable {
    * @returns {number}
    */
   async getCount (tenantId: string = ''): Promise<number> {
-    const result = await this.db.query<{ total_count: number }>(`
+    const result = await this.db.query<{total_count: number}>(`
     SELECT count(*) OVER() AS total_count 
     FROM profiles
     WHERE tenant_id = $1`, [tenantId])

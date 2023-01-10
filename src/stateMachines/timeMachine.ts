@@ -119,12 +119,12 @@ export class TimeSync {
     const Ta0: number = context.message.Envelope.Body.GetLowAccuracyTimeSynch_OUTPUT.Ta0
     const amt = new AMT.Messages()
     context.xmlMessage = amt.TimeSynchronizationService(AMT.Methods.SET_HIGH_ACCURACY_TIME_SYNCH, Ta0, Tm1, Tm1)
-    await invokeWsmanCall(context)
+    return await invokeWsmanCall(context)
   }
 
   async getLowAccuracyTimeSync (context: TimeContext): Promise<void> {
     const amt = new AMT.Messages()
     context.xmlMessage = amt.TimeSynchronizationService(AMT.Methods.GET_LOW_ACCURACY_TIME_SYNCH)
-    await invokeWsmanCall(context)
+    return await invokeWsmanCall(context)
   }
 }

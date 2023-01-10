@@ -17,7 +17,7 @@ describe('Checks getVersion', () => {
     resSpy.send.mockReturnThis()
   })
   it('should return with protocolVersion and serviceVersion', async () => {
-    version.getVersion(req, resSpy)
+    await version.getVersion(req, resSpy)
     expect(resSpy.status).toHaveBeenCalledWith(200)
     expect(resSpy.json).toHaveBeenCalledWith({ serviceVersion: ServiceVersion, protocolVersion: ProtocolVersion })
   })

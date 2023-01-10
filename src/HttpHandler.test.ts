@@ -101,7 +101,7 @@ it('should return a WSMan request', async () => {
   const connectionParams = {
     guid: '4c4c4544-004b-4210-8033-b6c04f504633',
     port: 16992,
-    digestChallenge,
+    digestChallenge: digestChallenge,
     username: 'admin',
     password: 'P@ssw0rd'
   }
@@ -118,7 +118,7 @@ it('should return a null when no xml is passed to wrap a WSMan request', async (
   const connectionParams = {
     guid: '4c4c4544-004b-4210-8033-b6c04f504633',
     port: 16992,
-    digestChallenge,
+    digestChallenge: digestChallenge,
     username: 'admin',
     password: 'P@ssw0rd'
   }

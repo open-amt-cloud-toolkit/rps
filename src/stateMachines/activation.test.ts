@@ -105,7 +105,7 @@ describe('Activation State Machine', () => {
         tenantId: ''
       },
       message: '',
-      clientId,
+      clientId: clientId,
       xmlMessage: '',
       status: 'success',
       errorMessage: '',
@@ -126,7 +126,7 @@ describe('Activation State Machine', () => {
     config = {
       services: {
         'get-amt-profile': Promise.resolve({
-          clientId,
+          clientId: clientId,
           profile: { profileName: 'ccm', activation: 'ccmactivate', amtPassword: 'Intel123!' }
         }),
         'get-amt-domain': Promise.resolve({
@@ -218,15 +218,21 @@ describe('Activation State Machine', () => {
         tenantId: '',
         tags: ['acm']
       }
-      const getAMTProfileSpy = jest.spyOn(activation.configurator.profileManager, 'getAmtProfile').mockImplementation(async () => expectedProfile)
+      const getAMTProfileSpy = jest.spyOn(activation.configurator.profileManager, 'getAmtProfile').mockImplementation(async () => {
+        return expectedProfile
+      })
       const profile = await activation.getAMTProfile(context, null)
       expect(profile).toBe(expectedProfile)
       expect(getAMTProfileSpy).toHaveBeenCalled()
     })
     test('should return AMT Password', async () => {
       getPasswordSpy.mockRestore()
-      const getAmtPasswordSpy = jest.spyOn(activation.configurator.profileManager, 'getAmtPassword').mockImplementation(async () => 'P@ssw0rd')
-      const getMebxPasswordSpy = jest.spyOn(activation.configurator.profileManager, 'getMEBxPassword').mockImplementation(async () => 'P@ssw0rd')
+      const getAmtPasswordSpy = jest.spyOn(activation.configurator.profileManager, 'getAmtPassword').mockImplementation(async () => {
+        return 'P@ssw0rd'
+      })
+      const getMebxPasswordSpy = jest.spyOn(activation.configurator.profileManager, 'getMEBxPassword').mockImplementation(async () => {
+        return 'P@ssw0rd'
+      })
       const profile = await activation.getPassword(context)
       expect(profile).toBeDefined()
       expect(getAmtPasswordSpy).toHaveBeenCalled()
@@ -241,7 +247,9 @@ describe('Activation State Machine', () => {
         provisioningCertPassword: 'P@ssw0rd',
         tenantId: ''
       }
-      const getProvisioningCertSpy = jest.spyOn(activation.configurator.domainCredentialManager, 'getProvisioningCert').mockImplementation(async () => expectedProfile)
+      const getProvisioningCertSpy = jest.spyOn(activation.configurator.domainCredentialManager, 'getProvisioningCert').mockImplementation(async () => {
+        return expectedProfile
+      })
       const profile = await activation.getAMTDomainCert(context, null)
       expect(profile).toBe(expectedProfile)
       expect(getProvisioningCertSpy).toHaveBeenCalled()
@@ -299,7 +307,7 @@ describe('Activation State Machine', () => {
     })
 
     it('should send WSMan to add certificate from domain certificate chain', async () => {
-      const context = { profile: null, amtDomain: null, message: '', clientId, xmlMessage: '', response: '', status: 'wsman', errorMessage: '' }
+      const context = { profile: null, amtDomain: null, message: '', clientId: clientId, xmlMessage: '', response: '', status: 'wsman', errorMessage: '' }
       const injectCertificateSpy = jest.spyOn(activation, 'injectCertificate').mockImplementation().mockReturnValue('abcdef')
       await activation.getNextCERTInChain(context)
       expect(injectCertificateSpy).toHaveBeenCalled()
@@ -341,15 +349,19 @@ describe('Activation State Machine', () => {
       const convertPfxToObjectSpy = jest.spyOn(activation.certManager, 'convertPfxToObject').mockImplementation(() => {
         throw new Error('Decrypting provisioning certificate failed.')
       })
-      activation.GetProvisioningCertObj(context, null)
+      await activation.GetProvisioningCertObj(context, null)
       expect(devices[clientId].certObj).toBeNull()
       expect(convertPfxToObjectSpy).toHaveBeenCalled()
     })
     test('should assign return valid certificate object', async () => {
       const certObject = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprint: 'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244' }
-      const convertPfxToObjectSpy = jest.spyOn(activation.certManager, 'convertPfxToObject').mockImplementation(() => ({ certs: null, keys: null }))
-      const dumpPfxSpy = jest.spyOn(activation.certManager, 'dumpPfx').mockImplementation(() => certObject)
-      activation.GetProvisioningCertObj(context, null)
+      const convertPfxToObjectSpy = jest.spyOn(activation.certManager, 'convertPfxToObject').mockImplementation(() => {
+        return { certs: null, keys: null }
+      })
+      const dumpPfxSpy = jest.spyOn(activation.certManager, 'dumpPfx').mockImplementation(() => {
+        return certObject
+      })
+      await activation.GetProvisioningCertObj(context, null)
       expect(convertPfxToObjectSpy).toHaveBeenCalled()
       expect(dumpPfxSpy).toHaveBeenCalled()
       expect(context.certChainPfx).toBe(certObject)
@@ -490,7 +502,7 @@ describe('Activation State Machine', () => {
       })
 
       ccmActivationService.start()
-      ccmActivationService.send({ type: 'ACTIVATION', clientId })
+      ccmActivationService.send({ type: 'ACTIVATION', clientId: clientId })
     })
 
     it('should eventually reach "PROVISIONED" in Admin mode', (done) => {
@@ -529,7 +541,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId })
+      acmActivationService.send({ type: 'ACTIVATION', clientId: clientId })
     })
 
     it('should eventually reach "PROVISIONED" in Admin mode with CIRA profile', (done) => {
@@ -567,7 +579,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId })
+      acmActivationService.send({ type: 'ACTIVATION', clientId: clientId })
     })
 
     it('should eventually reach "FAILED" at "GET_AMT_PROFILE"', (done) => {
@@ -590,7 +602,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId })
+      acmActivationService.send({ type: 'ACTIVATION', clientId: clientId })
     })
 
     it('should eventually reach "FAILED" at "GET_AMT_DOMAIN_CERT"', (done) => {
@@ -614,7 +626,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId })
+      acmActivationService.send({ type: 'ACTIVATION', clientId: clientId })
     })
 
     it('should eventually reach "FAILED" at "CHECKCERTCHAINRESPONSE"', (done) => {
@@ -643,7 +655,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId })
+      acmActivationService.send({ type: 'ACTIVATION', clientId: clientId })
     })
 
     it('should send success message to device', () => {

@@ -53,7 +53,7 @@ describe('profiles tests', () => {
     })
     test('should get profiles', async () => {
       const rows = [{}, {}]
-      querySpy.mockResolvedValueOnce({ rows, rowCount: rows.length })
+      querySpy.mockResolvedValueOnce({ rows: rows, rowCount: rows.length })
       const result = await profilesTable.get()
       expect(result).toStrictEqual(rows)
       expect(querySpy).toBeCalledTimes(1)

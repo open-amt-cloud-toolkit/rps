@@ -251,10 +251,14 @@ describe('Network Configuration', () => {
       }
 
       networkConfig.dbFactory = {
-        getDb: async () => mockDb
+        getDb: async () => {
+          return mockDb
+        }
       } as any
       const getByNameSpy = jest.spyOn(mockDb.wirelessProfiles, 'getByName').mockReturnValue(expectedProfile)
-      const getPSKPassphraseSpy = jest.spyOn(networkConfig.configurator.secretsManager, 'getSecretAtPath').mockImplementation(async () => ({ data: { PSK_PASSPHRASE: 'Intel@123' } }))
+      const getPSKPassphraseSpy = jest.spyOn(networkConfig.configurator.secretsManager, 'getSecretAtPath').mockImplementation(async () => {
+        return { data: { PSK_PASSPHRASE: 'Intel@123' } }
+      })
 
       const wifiProfile = await networkConfig.getWifiProfile(context.amtProfile.profileName)
       expect(wifiProfile).toBe(expectedProfile)
@@ -310,7 +314,7 @@ describe('Network Configuration', () => {
           }
         }
       }
-      networkConfig.readEthernetPortSettings(context, null)
+      await networkConfig.readEthernetPortSettings(context, null)
       expect(context.wiredSettings).toBeDefined()
       expect(context.wirelessSettings).toBeDefined()
     })
@@ -338,7 +342,7 @@ describe('Network Configuration', () => {
           }
         }
       }
-      networkConfig.readEthernetPortSettings(context, null)
+      await networkConfig.readEthernetPortSettings(context, null)
       expect(context.wiredSettings).toBeDefined()
       expect(context.wirelessSettings).toBeDefined()
     })
@@ -359,7 +363,7 @@ describe('Network Configuration', () => {
           }
         }
       }
-      networkConfig.readEthernetPortSettings(context, null)
+      await networkConfig.readEthernetPortSettings(context, null)
       expect(context.wiredSettings).toBeNull()
       expect(context.wirelessSettings).toBeDefined()
     })
@@ -380,7 +384,7 @@ describe('Network Configuration', () => {
           }
         }
       }
-      networkConfig.readEthernetPortSettings(context, null)
+      await networkConfig.readEthernetPortSettings(context, null)
       expect(context.wirelessSettings).toBeNull()
       expect(context.wiredSettings).toBeDefined()
     })
@@ -545,7 +549,7 @@ describe('Network Configuration', () => {
           Body: { PullResponse: { Items: { CIM_WiFiEndpointSettings: [{ InstanceID: 'home', Priority: 1 }, { InstanceID: 'office', Priority: 2 }] } } }
         }
       }
-      networkConfig.readWiFiEndpointSettingsPullResponse(context, null)
+      await networkConfig.readWiFiEndpointSettingsPullResponse(context, null)
       expect(context.wifiEndPointSettings.length).toBe(2)
     })
     test('Should read WiFi end point settings', async () => {
@@ -555,7 +559,7 @@ describe('Network Configuration', () => {
           Body: { PullResponse: { Items: { CIM_WiFiEndpointSettings: { InstanceID: 'home', Priority: 1 } } } }
         }
       }
-      networkConfig.readWiFiEndpointSettingsPullResponse(context, null)
+      await networkConfig.readWiFiEndpointSettingsPullResponse(context, null)
       expect(context.wifiEndPointSettings.length).toBe(1)
     })
     test('Should delete profile from WiFi end point settings', async () => {

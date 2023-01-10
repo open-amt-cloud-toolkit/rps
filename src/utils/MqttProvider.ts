@@ -52,10 +52,10 @@ export class MqttProvider {
     if (!MqttProvider.instance?.turnedOn) return
 
     const event: OpenAMTEvent = {
-      type,
-      message,
-      methods,
-      guid,
+      type: type,
+      message: message,
+      methods: methods,
+      guid: guid,
       timestamp: Date.now()
     }
 

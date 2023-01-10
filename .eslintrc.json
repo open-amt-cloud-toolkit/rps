@@ -5,7 +5,6 @@
         "jest": true
     },
     "extends": [
-        "eslint:recommended",
         "standard-with-typescript"
     ],
     "ignorePatterns": "**/*.js",
@@ -20,8 +19,6 @@
         "license-header"
     ],
     "rules": {
-        "arrow-body-style": 2,
-        "object-shorthand": 2,
         "license-header/header": [
             "warn",
             "./header.js"
@@ -32,7 +29,6 @@
         "@typescript-eslint/no-misused-promises": 0,
         "@typescript-eslint/no-throw-literal": 0,
         "@typescript-eslint/consistent-type-assertions": 0,
-        "@typescript-eslint/no-dynamic-delete": 0,
-        "@typescript-eslint/prefer-nullish-coalescing": 0
+        "@typescript-eslint/no-dynamic-delete": 0
     }
 }

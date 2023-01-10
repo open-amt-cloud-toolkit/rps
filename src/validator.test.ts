@@ -56,13 +56,17 @@ describe('validator', () => {
   describe('get Device Credentials ', () => {
     test('should get device credentials from secret provider', async () => {
       const cred = { guid: '4c4c4544-005a-3510-804b-b4c04f564433', name: 'DESKTOP-2T73VQK', mpsuser: 'admin', mpspass: 'sOK1A4Wh$rtp!FB2', amtuser: 'admin', amtpass: 'Intel123!', mebxpass: 'Intel123!' }
-      const getSpy = jest.spyOn(validator.configurator.amtDeviceRepository, 'get').mockImplementation(async () => cred)
+      const getSpy = jest.spyOn(validator.configurator.amtDeviceRepository, 'get').mockImplementation(async () => {
+        return cred
+      })
       const amtDevice = await validator.getDeviceCredentials(msg)
       expect(amtDevice).toBe(cred)
       expect(getSpy).toHaveBeenCalled()
     })
     test('should return null when credentials does not exists', async () => {
-      const getSpy = jest.spyOn(validator.configurator.amtDeviceRepository, 'get').mockImplementation(async () => null)
+      const getSpy = jest.spyOn(validator.configurator.amtDeviceRepository, 'get').mockImplementation(async () => {
+        return null
+      })
       const amtDevice = await validator.getDeviceCredentials(msg)
       expect(amtDevice).toBeNull()
       expect(getSpy).toHaveBeenCalled()
@@ -81,7 +85,9 @@ describe('validator', () => {
     let getSpy
     beforeEach(() => {
       const cred = { guid: '4c4c4544-005a-3510-804b-b4c04f564433', name: 'DESKTOP-2T73VQK', mpsuser: 'admin', mpspass: 'sOK1A4Wh$rtp!FB2', amtuser: 'admin', amtpass: 'Intel123!', mebxpass: 'Intel123!' }
-      getSpy = jest.spyOn(validator.configurator.amtDeviceRepository, 'get').mockImplementation(async () => cred)
+      getSpy = jest.spyOn(validator.configurator.amtDeviceRepository, 'get').mockImplementation(async () => {
+        return cred
+      })
     })
     test('should get device credentials from secret provider', async () => {
       const clientId = uuid()
@@ -123,7 +129,7 @@ describe('validator', () => {
       let rpsError = null
       try {
         msg.payload.ver = '6.8.50'
-        validator.verifyAMTVersion(msg.payload, 'activation')
+        await validator.verifyAMTVersion(msg.payload, 'activation')
       } catch (error) {
         rpsError = error
       }
@@ -137,7 +143,7 @@ describe('validator', () => {
         const clientId = uuid()
         devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
         msg.payload.build = '2425'
-        validator.verifyAMTVersion(msg.payload, 'activation')
+        await validator.verifyAMTVersion(msg.payload, 'activation')
       } catch (error) {
         rpsError = error
       }
@@ -384,7 +390,9 @@ describe('validator', () => {
       expect(rpsError.message).toEqual(`Device ${msg.payload.uuid} activation failed. Missing DNS Suffix.`)
     })
     test('should throw an exception if no fqdn (with doesDomainExist mock)', async () => {
-      jest.spyOn(validator.configurator.domainCredentialManager, 'doesDomainExist').mockImplementation(async () => false)
+      jest.spyOn(validator.configurator.domainCredentialManager, 'doesDomainExist').mockImplementation(async () => {
+        return false
+      })
       let rpsError = null
       try {
         msg.payload.fqdn = 'abcd'
@@ -407,7 +415,9 @@ describe('validator', () => {
       expect(rpsError).toBe(null)
     })
     test('should not throw an exception if no fqdn (with doesDomainExist mock)', async () => {
-      jest.spyOn(validator.configurator.domainCredentialManager, 'doesDomainExist').mockImplementation(async () => false)
+      jest.spyOn(validator.configurator.domainCredentialManager, 'doesDomainExist').mockImplementation(async () => {
+        return false
+      })
       let rpsError = null
       try {
         msg.payload.fqdn = 'abcd'
