@@ -57,7 +57,7 @@ describe('Sync Host Name', () => {
     }
     currentStateIndex = 0
     synchostname = new SyncHostName()
-    invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue()
+    invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue(null)
   })
 
   it('should eventually reach "SUCCESS" state', (done) => {

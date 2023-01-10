@@ -27,7 +27,7 @@ export interface MaintenanceContext {
 }
 
 export interface MaintenanceEvent {
-  type: 'SYNCTIME' | 'ONFAILED' | 'ON_SYNCIP_FAILED' | 'SYNCIP' |'CHANGEPASSWORD' | 'SYNCHOSTNAME'
+  type: 'SYNCTIME' | 'ONFAILED' | 'ON_SYNCIP_FAILED' | 'SYNCIP' | 'CHANGEPASSWORD' | 'SYNCHOSTNAME'
   clientId: string
   data?: any
 }
@@ -42,156 +42,156 @@ export class Maintenance {
   syncHostName: SyncHostName = new SyncHostName()
   error: Error = new Error()
   machine =
-  createMachine<MaintenanceContext, MaintenanceEvent>({
-    predictableActionArguments: true,
-    preserveActionOrder: true,
-    initial: 'PROVISIONED',
-    context: {
-      clientId: '',
-      status: 'success',
-      message: null,
-      httpHandler: new HttpHandler(),
-      xmlMessage: '',
-      errorMessage: '',
-      statusMessage: ''
-    },
-    states: {
-      PROVISIONED: {
-        on: {
-          SYNCTIME: {
-            actions: [assign({ clientId: (context, event) => event.clientId }), 'Reset Unauth Count'],
-            target: 'SYNC_TIME'
-          },
-          CHANGEPASSWORD: {
-            actions: [assign({
-              clientId: (context, event) => event.clientId,
-              message: (context, event) => event.data
-            }), 'Reset Unauth Count'],
-            target: 'CHANGE_PASSWORD'
-          },
-          SYNCIP: {
-            actions: [assign({
-              clientId: (context, event) => event.clientId,
-              message: (context, event) => event.data
-            }), 'Reset Unauth Count'],
-            target: 'SYNC_IP_ADDRESS'
-          },
-          SYNCHOSTNAME: {
-            actions: [assign({
-              clientId: (context, event) => event.clientId,
-              message: (context, event) => event.data
-            })],
-            target: 'SYNC_HOST_NAME'
-          }
-        }
+    createMachine<MaintenanceContext, MaintenanceEvent>({
+      predictableActionArguments: true,
+      preserveActionOrder: true,
+      initial: 'PROVISIONED',
+      context: {
+        clientId: '',
+        status: 'success',
+        message: null,
+        httpHandler: new HttpHandler(),
+        xmlMessage: '',
+        errorMessage: '',
+        statusMessage: ''
       },
-      SYNC_TIME: {
-        entry: send({ type: 'TIMETRAVEL' }, { to: 'time-machine' }),
-        invoke: {
-          src: this.timeSync.machine,
-          id: 'time-machine',
-          data: {
-            clientId: (context, event) => context.clientId
-          },
-          onDone: {
-            actions: assign({ statusMessage: (context, event) => 'Time Synchronized' }),
-            target: 'SUCCESS'
-          },
-          onError: 'ERROR'
-        }
-      },
-      CHANGE_PASSWORD: {
-        entry: send({ type: 'CHANGEPASSWORD' }, { to: 'change-amt-password' }),
-        invoke: {
-          src: this.amtPassword.machine,
-          id: 'change-amt-password',
-          data: {
-            unauthCount: (context, event) => context.unauthCount,
-            amtPassword: (context, event) => context.message,
-            httpHandler: (context, event) => context.httpHandler,
-            clientId: (context, event) => context.clientId
-          },
-          onDone: {
-            actions: assign({ statusMessage: (context, event) => 'AMT Password Changed' }),
-            target: 'SUCCESS'
-          },
-          onError: 'ERROR'
-        }
-      },
-      SYNC_IP_ADDRESS: {
-        entry: send({ type: 'SYNC_IP' }, { to: 'sync-ip-address' }),
-        invoke: {
-          src: this.ipSync.machine,
-          id: 'sync-ip-address',
-          data: {
-            unauthCount: (context, event) => context.unauthCount,
-            ipConfiguration: (context, event) => context.message,
-            httpHandler: (context, event) => context.httpHandler,
-            clientId: (context, event) => context.clientId
-          },
-          onDone: {
-            actions: assign({ statusMessage: (context, event) => 'IP Address Synchronized' }),
-            target: 'SUCCESS'
+      states: {
+        PROVISIONED: {
+          on: {
+            SYNCTIME: {
+              actions: [assign({ clientId: (context, event) => event.clientId }), 'Reset Unauth Count'],
+              target: 'SYNC_TIME'
+            },
+            CHANGEPASSWORD: {
+              actions: [assign({
+                clientId: (context, event) => event.clientId,
+                message: (context, event) => event.data
+              }), 'Reset Unauth Count'],
+              target: 'CHANGE_PASSWORD'
+            },
+            SYNCIP: {
+              actions: [assign({
+                clientId: (context, event) => event.clientId,
+                message: (context, event) => event.data
+              }), 'Reset Unauth Count'],
+              target: 'SYNC_IP_ADDRESS'
+            },
+            SYNCHOSTNAME: {
+              actions: [assign({
+                clientId: (context, event) => event.clientId,
+                message: (context, event) => event.data
+              })],
+              target: 'SYNC_HOST_NAME'
+            }
           }
         },
-        on: {
-          ON_SYNCIP_FAILED: 'FAILURE'
-        }
-      },
-      SYNC_HOST_NAME: {
-        entry: send({ type: 'SYNCHOSTNAME' }, { to: 'sync-hostname' }),
-        invoke: {
-          data: {
-            unauthCount: (context, event) => context.unauthCount,
-            hostnameInfo: (context, event) => context.message,
-            httpHandler: (context, event) => context.httpHandler,
-            clientId: (context, event) => context.clientId
-          },
-          src: this.syncHostName.machine,
-          id: 'sync-hostname',
-          onDone: {
-            actions: assign({ statusMessage: (context, event) => 'hostname updated' }),
-            target: 'SUCCESS'
-          },
-          onError: 'ERROR'
-        }
-      },
-      ERROR: {
-        entry: send({ type: 'PARSE' }, { to: 'error-machine' }),
-        invoke: {
-          src: this.error.machine,
-          id: 'error-machine',
-          data: {
-            unauthCount: (context, event) => context.unauthCount,
-            message: (context, event) => event.data,
-            clientId: (context, event) => context.clientId
-          },
-          onDone: 'SYNC_TIME' // To do: Need to test as it might not require anymore.
+        SYNC_TIME: {
+          entry: send({ type: 'TIMETRAVEL' }, { to: 'time-machine' }),
+          invoke: {
+            src: this.timeSync.machine,
+            id: 'time-machine',
+            data: {
+              clientId: (context, event) => context.clientId
+            },
+            onDone: {
+              actions: assign({ statusMessage: (context, event) => 'Time Synchronized' }),
+              target: 'SUCCESS'
+            },
+            onError: 'ERROR'
+          }
         },
-        on: {
-          ONFAILED: 'FAILURE'
+        CHANGE_PASSWORD: {
+          entry: send({ type: 'CHANGEPASSWORD' }, { to: 'change-amt-password' }),
+          invoke: {
+            src: this.amtPassword.machine,
+            id: 'change-amt-password',
+            data: {
+              unauthCount: (context, event) => context.unauthCount,
+              amtPassword: (context, event) => context.message,
+              httpHandler: (context, event) => context.httpHandler,
+              clientId: (context, event) => context.clientId
+            },
+            onDone: {
+              actions: assign({ statusMessage: (context, event) => 'AMT Password Changed' }),
+              target: 'SUCCESS'
+            },
+            onError: 'ERROR'
+          }
+        },
+        SYNC_IP_ADDRESS: {
+          entry: send({ type: 'SYNC_IP' }, { to: 'sync-ip-address' }),
+          invoke: {
+            src: this.ipSync.machine,
+            id: 'sync-ip-address',
+            data: {
+              unauthCount: (context, event) => context.unauthCount,
+              ipConfiguration: (context, event) => context.message,
+              httpHandler: (context, event) => context.httpHandler,
+              clientId: (context, event) => context.clientId
+            },
+            onDone: {
+              actions: assign({ statusMessage: (context, event) => 'IP Address Synchronized' }),
+              target: 'SUCCESS'
+            }
+          },
+          on: {
+            ON_SYNCIP_FAILED: 'FAILURE'
+          }
+        },
+        SYNC_HOST_NAME: {
+          entry: send({ type: 'SYNCHOSTNAME' }, { to: 'sync-hostname' }),
+          invoke: {
+            data: {
+              unauthCount: (context, event) => context.unauthCount,
+              hostnameInfo: (context, event) => context.message,
+              httpHandler: (context, event) => context.httpHandler,
+              clientId: (context, event) => context.clientId
+            },
+            src: this.syncHostName.machine,
+            id: 'sync-hostname',
+            onDone: {
+              actions: assign({ statusMessage: (context, event) => 'hostname updated' }),
+              target: 'SUCCESS'
+            },
+            onError: 'ERROR'
+          }
+        },
+        ERROR: {
+          entry: send({ type: 'PARSE' }, { to: 'error-machine' }),
+          invoke: {
+            src: this.error.machine,
+            id: 'error-machine',
+            data: {
+              unauthCount: (context, event) => context.unauthCount,
+              message: (context, event) => event.data,
+              clientId: (context, event) => context.clientId
+            },
+            onDone: 'SYNC_TIME' // To do: Need to test as it might not require anymore.
+          },
+          on: {
+            ONFAILED: 'FAILURE'
+          }
+        },
+        FAILURE: {
+          entry: [
+            assign({ status: (context, event) => 'error', errorMessage: (context, event) => event.data }),
+            'Update Configuration Status',
+            'Send Message to Device'
+          ],
+          type: 'final'
+        },
+        SUCCESS: {
+          entry: ['Update Configuration Status', 'Send Message to Device'],
+          type: 'final'
         }
-      },
-      FAILURE: {
-        entry: [
-          assign({ status: (context, event) => 'error', errorMessage: (context, event) => event.data }),
-          'Update Configuration Status',
-          'Send Message to Device'
-        ],
-        type: 'final'
-      },
-      SUCCESS: {
-        entry: ['Update Configuration Status', 'Send Message to Device'],
-        type: 'final'
       }
-    }
-  }, {
-    actions: {
-      'Reset Unauth Count': (context, event) => { devices[context.clientId].unauthCount = 0 },
-      'Send Message to Device': (context, event) => this.sendMessageToDevice(context, event),
-      'Update Configuration Status': this.updateConfigurationStatus.bind(this)
-    }
-  })
+    }, {
+      actions: {
+        'Reset Unauth Count': (context, event) => { devices[context.clientId].unauthCount = 0 },
+        'Send Message to Device': (context, event) => { this.sendMessageToDevice(context, event) },
+        'Update Configuration Status': this.updateConfigurationStatus.bind(this)
+      }
+    })
 
   constructor () {
     this.amt = new AMT.Messages()

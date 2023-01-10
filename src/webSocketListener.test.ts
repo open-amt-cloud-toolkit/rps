@@ -49,28 +49,28 @@ describe('Websocket Listener', () => {
     expect(ret).toEqual(false)
   })
 
-  it('Should remove client from devices on disconnect', async () => {
-    await server.onClientDisconnected(clientid)
+  it('Should remove client from devices on disconnect', () => {
+    server.onClientDisconnected(clientid)
     expect(devices[clientid]).toBeUndefined()
   })
 
-  it('Should initialize device on connect', async () => {
+  it('Should initialize device on connect', () => {
     const mockWebSocket = {
       on: jest.fn()
     }
     const webSocketMock = jest.spyOn(mockWebSocket, 'on')
-    await server.onClientConnected(mockWebSocket as any)
+    server.onClientConnected(mockWebSocket as any)
     expect(webSocketMock).toHaveBeenCalledTimes(3)
     expect(Object.keys(devices).length).toBe(2)
   })
 
-  it('Should log on error', async () => {
+  it('Should log on error', () => {
     const error: Error = {
       name: 'abc',
       message: 'abcd'
     }
     const loggerSpy = jest.spyOn(server.logger, 'error')
-    await server.onError(error, clientid)
+    server.onError(error, clientid)
     expect(loggerSpy).toHaveBeenCalled()
   })
 

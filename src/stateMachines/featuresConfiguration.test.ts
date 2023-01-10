@@ -68,7 +68,7 @@ describe('Features State Machine', () => {
     setDefaultResponses()
     context = {
       clientId,
-      amtConfiguration: amtConfiguration,
+      amtConfiguration,
       httpHandler: new HttpHandler(),
       statusMessage: '',
       xmlMessage: '',
@@ -79,7 +79,7 @@ describe('Features State Machine', () => {
       ips: new IPS.Messages()
     }
     featuresConfiguration = new FeaturesConfiguration()
-    invokeSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue()
+    invokeSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue(null)
     currentStateIndex = 0
     machineConfig = {
       services: {

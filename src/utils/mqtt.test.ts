@@ -47,11 +47,9 @@ describe('MQTT Turned ON Tests', () => {
     expect(MqttProvider.instance.options.clientId).toBeDefined()
   })
   it('Checks Connection', () => {
-    jest.spyOn(mqtt1, 'connect').mockImplementation(() => {
-      return {
-        connected: true
-      } as any
-    })
+    jest.spyOn(mqtt1, 'connect').mockImplementation(() => ({
+      connected: true
+    } as any))
 
     expect(MqttProvider.instance.client).toBeUndefined()
     MqttProvider.instance.connectBroker()
@@ -60,7 +58,7 @@ describe('MQTT Turned ON Tests', () => {
 
   it('Should send an event message when turned on', async () => {
     MqttProvider.instance.client = {
-      publish: (topic, message, callback) => { return {} as any }
+      publish: (topic, message, callback) => ({} as any)
     } as any
     const spy = jest.spyOn(MqttProvider.instance.client, 'publish').mockImplementation((topic, message, callback) => {
       callback()
@@ -96,9 +94,7 @@ describe('MQTT Turned ON Tests', () => {
   it('Should close client when prompted', async () => {
     MqttProvider.instance.client = {
       connected: true,
-      end: () => {
-        return { connected: false }
-      }
+      end: () => ({ connected: false })
     } as any
 
     MqttProvider.instance.turnedOn = true
@@ -137,11 +133,9 @@ describe('MQTT Turned OFF Tests', () => {
 
   it('Should NOT Send an event message when turned off', async () => {
     MqttProvider.instance.client = {
-      publish: (topic, message, callback) => { return {} as any }
+      publish: (topic, message, callback) => ({} as any)
     } as any
-    const spy = jest.spyOn(MqttProvider.instance.client, 'publish').mockImplementation((topic, message, callback) => {
-      return {} as any
-    })
+    const spy = jest.spyOn(MqttProvider.instance.client, 'publish').mockImplementation((topic, message, callback) => ({} as any))
     MqttProvider.instance.turnedOn = false
     MqttProvider.publishEvent('success', ['testMethod'], 'Test Message')
     expect(spy).not.toHaveBeenCalled()

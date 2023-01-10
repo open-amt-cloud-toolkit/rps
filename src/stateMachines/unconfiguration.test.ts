@@ -26,9 +26,9 @@ describe('Unconfiguration State Machine', () => {
   jest.setTimeout(15000)
   beforeEach(() => {
     unconfiguration = new Unconfiguration()
-    invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue()
+    invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue(null)
     unconfigContext = {
-      clientId: clientId,
+      clientId,
       httpHandler: new HttpHandler(),
       status: 'success',
       errorMessage: '',

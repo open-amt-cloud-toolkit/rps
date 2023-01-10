@@ -41,7 +41,7 @@ describe('TLS State Machine', () => {
       }
     }
     ipMachine = new SyncIP()
-    invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue()
+    invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue(null)
     config = {
       services: {
         'enumerate-ethernet-port-settings': Promise.resolve({
@@ -99,7 +99,7 @@ describe('TLS State Machine', () => {
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
 
-  it('should readEthernetPortSettings', async () => {
+  it('should readEthernetPortSettings', () => {
     context.message = {
       Envelope: {
         Body: {
@@ -114,11 +114,11 @@ describe('TLS State Machine', () => {
         }
       }
     }
-    await ipMachine.readEthernetPortSettings(context)
+    ipMachine.readEthernetPortSettings(context)
     expect(context.wiredSettings).not.toBeNull()
     expect(context.wirelessSettings).not.toBeNull()
   })
-  it('should readEthernetPortSettings - array order changes', async () => {
+  it('should readEthernetPortSettings - array order changes', () => {
     context.message = {
       Envelope: {
         Body: {
@@ -133,11 +133,11 @@ describe('TLS State Machine', () => {
         }
       }
     }
-    await ipMachine.readEthernetPortSettings(context)
+    ipMachine.readEthernetPortSettings(context)
     expect(context.wiredSettings).not.toBeNull()
     expect(context.wirelessSettings).not.toBeNull()
   })
-  it('should readEthernetPortSettings for only wired device', async () => {
+  it('should readEthernetPortSettings for only wired device', () => {
     context.wirelessSettings = null
     context.wiredSettings = null
     context.message = {
@@ -151,11 +151,11 @@ describe('TLS State Machine', () => {
         }
       }
     }
-    await ipMachine.readEthernetPortSettings(context)
+    ipMachine.readEthernetPortSettings(context)
     expect(context.wirelessSettings).not.toBeNull()
     expect(context.wiredSettings).toBeNull()
   })
-  it('should readEthernetPortSettings for wireless deivces only', async () => {
+  it('should readEthernetPortSettings for wireless deivces only', () => {
     context.wiredSettings = null
     context.wirelessSettings = null
     context.message = {
@@ -169,7 +169,7 @@ describe('TLS State Machine', () => {
         }
       }
     }
-    await ipMachine.readEthernetPortSettings(context)
+    ipMachine.readEthernetPortSettings(context)
     expect(context.wirelessSettings).toBeNull()
     expect(context.wiredSettings).not.toBeNull()
   })

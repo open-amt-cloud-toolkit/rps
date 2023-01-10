@@ -53,7 +53,7 @@ const PasswordHelper = {
      */
   generateRandomPassword: (length: number): string => {
     for (let i = 0; i < 10000; ++i) {
-      const password: string = cryptoRandomString({ length: length, characters: AMTRandomPasswordChars })
+      const password: string = cryptoRandomString({ length, characters: AMTRandomPasswordChars })
 
       if (PasswordHelper.passwordCheck(password)) {
         return password

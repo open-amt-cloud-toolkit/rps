@@ -15,13 +15,13 @@ export default {
  */
   get (clientId: string, payload: string, method: 'error' | 'wsman' | 'success' | 'heartbeat_request', status: 'failed' | 'success' | 'ok' | 'heartbeat', message: string = ''): ClientMsg {
     const msg: ClientMsg = {
-      method: method,
+      method,
       apiKey: 'xxxxx',
       appVersion: ServiceVersion,
       protocolVersion: ProtocolVersion,
-      status: status,
-      message: message,
-      payload: payload
+      status,
+      message,
+      payload
     }
 
     if (method === 'heartbeat_request') {

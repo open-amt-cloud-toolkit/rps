@@ -61,7 +61,7 @@ export class CertManager {
           fingerprint = md.digest().toHex()
         } else {
           const inter: CertificateObject = {
-            pem: pem,
+            pem,
             issuer: cert.issuer.hash,
             subject: cert.subject.hash
           }
@@ -236,7 +236,7 @@ export class CertManager {
 
     return {
       h: Math.random(),
-      cert: cert,
+      cert,
       pem: this.nodeForge.pkiCertificateToPem(cert).replace(/(\r\n|\n|\r)/gm, ''),
       certbin: Buffer.from(this.hex2rstr(this.nodeForge.asn1ToDer(this.nodeForge.pkiCertificateToAsn1(cert)).toHex()), 'binary').toString('base64'),
       privateKey: keys?.privateKey,
