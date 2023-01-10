@@ -80,9 +80,9 @@ export class DataProcessor {
     this.setConnectionParams(clientId)
     activation.service.start()
     if (devices[clientId].activationStatus) {
-      activation.service.send({ type: 'ACTIVATED', clientId: clientId, isActivated: true })
+      activation.service.send({ type: 'ACTIVATED', clientId, isActivated: true })
     } else {
-      activation.service.send({ type: 'ACTIVATION', clientId: clientId })
+      activation.service.send({ type: 'ACTIVATION', clientId })
     }
   }
 
@@ -131,7 +131,7 @@ export class DataProcessor {
 
   buildMaintenanceEvent (clientId: string, payload: any): any {
     const mEvent: any = {
-      clientId: clientId
+      clientId
     }
     if (payload == null || payload.task == null) {
       throw new RPSError(`${clientId} - missing payload data`)

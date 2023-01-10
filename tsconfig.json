@@ -1,10 +1,10 @@
-{ 
+{
     "compilerOptions": {
         "outDir": "./dist",
         "moduleResolution": "node",
         "module": "commonjs",
         "allowJs": true,
-        "target":"es2019",
+        "target": "es2019",
         "sourceMap": true,
         "resolveJsonModule": true,
         "esModuleInterop": true,
@@ -12,11 +12,11 @@
             "node_modules/@types"
         ]
     },
-    "include":[
+    "include": [
         "./src/**/*"
     ],
-    "type":[
+    "type": [
         "@types/jest",
         "@types/node"
-    ]   
+    ]
 }

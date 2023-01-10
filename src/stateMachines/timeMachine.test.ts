@@ -34,7 +34,7 @@ describe('TLS State Machine', () => {
       status: 'success'
     }
     timeMachine = new TimeSync()
-    invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue()
+    invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue(null)
     config = {
       services: {
         'get-low-accuracy-time-synch': Promise.resolve({

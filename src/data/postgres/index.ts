@@ -24,7 +24,7 @@ export default class Db implements IDB {
 
   constructor (connectionString: string) {
     this.pool = new Pool({
-      connectionString: connectionString
+      connectionString
     })
     this.ciraConfigs = new CiraConfigTable(this)
     this.profiles = new ProfilesTable(this)
