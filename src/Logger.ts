@@ -7,14 +7,16 @@ import * as winston from 'winston'
 import { ILogger } from './interfaces/ILogger'
 
 const { combine, timestamp, printf } = winston.format
-const myFormat = printf(info => `${info.timestamp} ${info.level}: ${info.message}`)
+const myFormat = printf(info => {
+  return `${info.timestamp} ${info.level}: ${info.message}`
+})
 
 // file logging removed to avoid disk space consumption and
 // adhere to non-root user requirements
 // const logFile = path.join(__dirname, '/logs/logs.txt')
 
 const logger = winston.createLogger({
-  level: process.env.RPS_LOG_LEVEL ?? 'info',
+  level: process.env.RPS_LOG_LEVEL || 'info',
   format: combine(timestamp(), myFormat),
   transports: [
     new winston.transports.Console()

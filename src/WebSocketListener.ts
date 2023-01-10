@@ -9,7 +9,7 @@ import { v4 as uuid } from 'uuid'
 import { ClientMsg, ClientObject, WebSocketConfig } from './models/RCS.Config'
 import { ILogger } from './interfaces/ILogger'
 import { DataProcessor } from './DataProcessor'
-const devices: Record<string, ClientObject> = {}
+const devices: {[key: string]: ClientObject} = {}
 const maxMessageSize = 1024 * 10
 export { devices }
 export class WebSocketListener {

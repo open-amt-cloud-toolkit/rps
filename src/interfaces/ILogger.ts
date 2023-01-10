@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-export interface ILogger {
+export interface ILogger{
   debug: (log: string, ...params: any[]) => void
   info: (log: string, ...params: any[]) => void
   warn: (log: string, ...params: any[]) => void

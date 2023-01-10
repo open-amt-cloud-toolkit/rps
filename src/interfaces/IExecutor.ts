@@ -6,6 +6,6 @@
 import { HttpHandler } from '../HttpHandler'
 import { ClientMsg } from '../models/RCS.Config'
 
-export interface IExecutor {
+export interface IExecutor{
   execute: (message: any, clientId: string, httpHandler?: HttpHandler) => Promise<ClientMsg>
 }

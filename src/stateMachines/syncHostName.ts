@@ -145,7 +145,7 @@ export class SyncHostName {
   async getGeneralSettings (context): Promise<any> {
     const amt = new AMT.Messages()
     context.xmlMessage = amt.GeneralSettings(AMT.Methods.GET)
-    await invokeWsmanCall(context)
+    return await invokeWsmanCall(context)
   }
 
   compareHostName (hostnameOS, hostNameGeneralSettings): boolean {
@@ -156,7 +156,7 @@ export class SyncHostName {
     const amt = new AMT.Messages()
     context.generalSettings.HostName = context.hostnameInfo.hostname
     context.xmlMessage = amt.GeneralSettings(AMT.Methods.PUT, context.generalSettings)
-    await invokeWsmanCall(context)
+    return await invokeWsmanCall(context)
   }
 
   async saveDeviceInfoToMPS (context: SyncHostNameContext, event: SyncHostEvent): Promise<boolean> {

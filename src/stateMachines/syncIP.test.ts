@@ -114,7 +114,7 @@ describe('TLS State Machine', () => {
         }
       }
     }
-    ipMachine.readEthernetPortSettings(context)
+    await ipMachine.readEthernetPortSettings(context)
     expect(context.wiredSettings).not.toBeNull()
     expect(context.wirelessSettings).not.toBeNull()
   })
@@ -133,7 +133,7 @@ describe('TLS State Machine', () => {
         }
       }
     }
-    ipMachine.readEthernetPortSettings(context)
+    await ipMachine.readEthernetPortSettings(context)
     expect(context.wiredSettings).not.toBeNull()
     expect(context.wirelessSettings).not.toBeNull()
   })
@@ -151,7 +151,7 @@ describe('TLS State Machine', () => {
         }
       }
     }
-    ipMachine.readEthernetPortSettings(context)
+    await ipMachine.readEthernetPortSettings(context)
     expect(context.wirelessSettings).not.toBeNull()
     expect(context.wiredSettings).toBeNull()
   })
@@ -169,7 +169,7 @@ describe('TLS State Machine', () => {
         }
       }
     }
-    ipMachine.readEthernetPortSettings(context)
+    await ipMachine.readEthernetPortSettings(context)
     expect(context.wirelessSettings).toBeNull()
     expect(context.wiredSettings).not.toBeNull()
   })

@@ -44,9 +44,13 @@ const secretCert = {
 
 beforeEach(() => {
   secretManagerService = new SecretManagerService(logger)
-  gotSpy = jest.spyOn(secretManagerService.gotClient, 'get').mockImplementation(() => ({
-    json: jest.fn(() => secretCreds)
-  } as any))
+  gotSpy = jest.spyOn(secretManagerService.gotClient, 'get').mockImplementation(() => {
+    return {
+      json: jest.fn(() => {
+        return secretCreds
+      })
+    } as any
+  })
 })
 
 afterEach(() => {
@@ -90,7 +94,9 @@ test('should throw an exception and return null if given path does not exist', a
 })
 
 test('should create a secret', async () => {
-  const gotPostSpy = jest.spyOn(secretManagerService.gotClient, 'post').mockImplementation(() => ({ json: jest.fn(async () => await Promise.resolve(secretCert)) } as any))
+  const gotPostSpy = jest.spyOn(secretManagerService.gotClient, 'post').mockImplementation(() => {
+    return { json: jest.fn(async () => await Promise.resolve(secretCert)) } as any
+  })
   const result = await secretManagerService.writeSecretWithObject('test', secretCert)
   expect(result).toEqual(secretCert)
   expect(gotPostSpy).toHaveBeenCalledWith('test', { json: secretCert })
@@ -117,9 +123,13 @@ test('should get health of vault', async () => {
     cluster_name: 'vault-cluster-426a5cd4',
     cluster_id: '3f02d0f2-4048-cdcd-7e4d-7d2905c52995'
   }
-  const gotHealthSpy = jest.spyOn(secretManagerService.gotClient, 'get').mockImplementation(() => ({
-    json: jest.fn(() => data)
-  } as any))
+  const gotHealthSpy = jest.spyOn(secretManagerService.gotClient, 'get').mockImplementation(() => {
+    return {
+      json: jest.fn(() => {
+        return data
+      })
+    } as any
+  })
   const result = await secretManagerService.health()
   expect(result).toEqual(data)
   expect(gotHealthSpy).toHaveBeenCalledWith('sys/health', {

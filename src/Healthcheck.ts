@@ -8,7 +8,7 @@ import { RequestOptions } from 'https'
 
 const options: RequestOptions = {
   host: 'localhost',
-  port: process.env.RPSWEBPORT ?? 8081,
+  port: process.env.RPSWEBPORT || 8081,
   timeout: 2000,
   path: '/api/v1/admin/health'
 }
