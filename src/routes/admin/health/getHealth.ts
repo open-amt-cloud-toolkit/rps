@@ -8,7 +8,7 @@ import { Request, Response } from 'express'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, POSTGRES_RESPONSE_CODES, VAULT_RESPONSE_CODES } from '../../../utils/constants'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { HealthCheck } from '../../../models/RCS.Config'
-import { EnvReader } from '../../../utils/EnvReader'
+import { Environment } from '../../../utils/Environment'
 import { ISecretManagerService } from '../../../interfaces/ISecretManagerService'
 import { IDB } from '../../../interfaces/database/IDb'
 
@@ -17,7 +17,7 @@ export async function getHealthCheck (req: Request, res: Response): Promise<void
   try {
     const status: HealthCheck = {
       db: {
-        name: EnvReader.GlobalEnvConfig.dbProvider.toUpperCase(),
+        name: Environment.Config.dbProvider.toUpperCase(),
         status: 'OK'
       },
       secretStore: {

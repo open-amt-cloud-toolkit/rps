@@ -5,7 +5,7 @@
 
 import { v4 as uuid } from 'uuid'
 import { devices } from '../WebSocketListener'
-import { EnvReader } from '../utils/EnvReader'
+import { Environment } from '../utils/Environment'
 import { config } from '../test/helper/Config'
 import { ClientAction } from '../models/RCS.Config'
 import { NetworkConfiguration } from './networkConfiguration'
@@ -15,7 +15,7 @@ import * as common from './common'
 import { AMT, CIM } from '@open-amt-cloud-toolkit/wsman-messages'
 
 const clientId = uuid()
-EnvReader.GlobalEnvConfig = config
+Environment.Config = config
 describe('Network Configuration', () => {
   let config
   let currentStateIndex: number

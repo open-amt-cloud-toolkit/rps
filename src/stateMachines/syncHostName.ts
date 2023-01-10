@@ -10,7 +10,7 @@ import { invokeWsmanCall } from './common'
 import Logger from '../Logger'
 import { Error } from './error'
 import { devices } from '../WebSocketListener'
-import { EnvReader } from '../utils/EnvReader'
+import { Environment } from '../utils/Environment'
 import { MqttProvider } from '../utils/MqttProvider'
 import got from 'got'
 import { send } from 'xstate/lib/actions'
@@ -164,7 +164,7 @@ export class SyncHostName {
     const clientObj = devices[clientId]
     /* Register device metadata with MPS */
     try {
-      await got(`${EnvReader.GlobalEnvConfig.mpsServer}/api/v1/devices`, {
+      await got(`${Environment.Config.mpsServer}/api/v1/devices`, {
         method: 'PATCH',
         json: {
           guid: clientObj.uuid,

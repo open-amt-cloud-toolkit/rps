@@ -7,7 +7,7 @@ import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 import { CIRAConfiguration, CIRAConfigContext, MPSType } from './ciraConfiguration'
 import { v4 as uuid } from 'uuid'
 import { devices } from '../WebSocketListener'
-import { EnvReader } from '../utils/EnvReader'
+import { Environment } from '../utils/Environment'
 import { config } from '../test/helper/Config'
 import { ClientAction } from '../models/RCS.Config'
 import { HttpHandler } from '../HttpHandler'
@@ -15,7 +15,7 @@ import { interpret } from 'xstate'
 import * as common from './common'
 
 const clientId = uuid()
-EnvReader.GlobalEnvConfig = config
+Environment.Config = config
 
 describe('CIRA Configuration State Machine', () => {
   let ciraConfiguration: CIRAConfiguration

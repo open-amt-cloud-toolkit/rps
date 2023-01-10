@@ -14,7 +14,7 @@ import { AMTRandomPasswordLength } from '../utils/constants'
 import { CIRAConfig, ClientAction } from '../models/RCS.Config'
 import { NodeForge } from '../NodeForge'
 import { DbCreatorFactory } from '../repositories/factories/DbCreatorFactory'
-import { EnvReader } from '../utils/EnvReader'
+import { Environment } from '../utils/Environment'
 import { PasswordHelper } from '../utils/PasswordHelper'
 import { SignatureHelper } from '../utils/SignatureHelper'
 import { Validator } from '../Validator'
@@ -156,7 +156,7 @@ export class CIRAConfiguration {
         },
         SAVE_DEVICE_TO_MPS: {
           invoke: {
-            src: async (context, event) => await got(`${EnvReader.GlobalEnvConfig.mpsServer}/api/v1/devices`, {
+            src: async (context, event) => await got(`${Environment.Config.mpsServer}/api/v1/devices`, {
               method: 'POST',
               json: {
                 guid: devices[context.clientId].uuid,
@@ -324,7 +324,7 @@ export class CIRAConfiguration {
     this.signatureHelper = new SignatureHelper(this.nodeForge)
     this.configurator = new Configurator()
     this.validator = new Validator(new Logger('Validator'), this.configurator)
-    this.dbFactory = new DbCreatorFactory(EnvReader.GlobalEnvConfig)
+    this.dbFactory = new DbCreatorFactory(Environment.Config)
     this.logger = new Logger('Activation_State_Machine')
   }
 
@@ -356,8 +356,8 @@ export class CIRAConfiguration {
 
   async putEnvironmentDetectionSettings (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
     const envSettings = context.message.Envelope.Body.AMT_EnvironmentDetectionSettingData
-    if (EnvReader.GlobalEnvConfig.disableCIRADomainName?.toLowerCase() !== '') {
-      envSettings.DetectionStrings = [EnvReader.GlobalEnvConfig.disableCIRADomainName]
+    if (Environment.Config.disableCIRADomainName?.toLowerCase() !== '') {
+      envSettings.DetectionStrings = [Environment.Config.disableCIRADomainName]
     } else {
       envSettings.DetectionStrings = [`${randomUUID()}.com`]
     }

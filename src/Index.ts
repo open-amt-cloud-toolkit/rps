@@ -8,7 +8,7 @@ import cors from 'cors'
 import Logger from './Logger'
 import { WebSocketListener } from './WebSocketListener'
 import { Configurator } from './Configurator'
-import { EnvReader } from './utils/EnvReader'
+import { Environment } from './utils/Environment'
 import { RPSConfig, mapConfig } from './models'
 import { parseValue } from './utils/parseEnvValue'
 import dot = require('dot-object')
@@ -35,15 +35,15 @@ const rcconfig = rc('rps')
 log.silly(`Before config... ${JSON.stringify(rcconfig, null, 2)}`)
 const config: RPSConfig = mapConfig(rcconfig, dot)
 log.silly(`Updated config... ${JSON.stringify(config, null, 2)}`)
-EnvReader.GlobalEnvConfig = config
+Environment.Config = config
 const app = express()
 app.use(cors())
 app.use(express.urlencoded())
 app.use(express.json())
 
 const configurator = new Configurator()
-log.silly(`WebSocket Cert Info ${JSON.stringify(EnvReader.GlobalEnvConfig.WSConfiguration)}`)
-const server: WebSocketListener = new WebSocketListener(new Logger('WebSocketListener'), EnvReader.GlobalEnvConfig.WSConfiguration, configurator.dataProcessor)
+log.silly(`WebSocket Cert Info ${JSON.stringify(Environment.Config.WSConfiguration)}`)
+const server: WebSocketListener = new WebSocketListener(new Logger('WebSocketListener'), Environment.Config.WSConfiguration, configurator.dataProcessor)
 
 const mqtt: MqttProvider = new MqttProvider(config)
 mqtt.connectBroker()

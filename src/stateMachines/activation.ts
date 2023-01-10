@@ -9,7 +9,7 @@ import { ClientAction } from '../models/RCS.Config'
 import { HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
 import { AMTConfiguration, AMTDeviceDTO, AMTDomain } from '../models'
-import { EnvReader } from '../utils/EnvReader'
+import { Environment } from '../utils/Environment'
 import { MqttProvider } from '../utils/MqttProvider'
 import { devices } from '../WebSocketListener'
 import got from 'got'
@@ -576,7 +576,7 @@ export class Activation {
     this.signatureHelper = new SignatureHelper(this.nodeForge)
     this.configurator = new Configurator()
     this.validator = new Validator(new Logger('Validator'), this.configurator)
-    this.dbFactory = new DbCreatorFactory(EnvReader.GlobalEnvConfig)
+    this.dbFactory = new DbCreatorFactory(Environment.Config)
     this.logger = new Logger('Activation_State_Machine')
   }
 
@@ -773,7 +773,7 @@ export class Activation {
       if (profile?.tags != null) {
         tags = profile.tags
       }
-      await got(`${EnvReader.GlobalEnvConfig.mpsServer}/api/v1/devices`, {
+      await got(`${Environment.Config.mpsServer}/api/v1/devices`, {
         method: 'POST',
         json: {
           guid: clientObj.uuid,

@@ -10,12 +10,12 @@ import { config } from './test/helper/Config'
 import { Validator } from './Validator'
 import { Configurator } from './Configurator'
 import { RPSError } from './utils/RPSError'
-import { EnvReader } from './utils/EnvReader'
+import { Environment } from './utils/Environment'
 import { VersionChecker } from './VersionChecker'
 import { devices } from './WebSocketListener'
 import { ClientAction, ClientObject } from './models/RCS.Config'
 
-EnvReader.GlobalEnvConfig = config
+Environment.Config = config
 const configurator: Configurator = new Configurator()
 const validator = new Validator(new Logger('Validator'), configurator)
 const clientId = uuid()
