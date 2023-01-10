@@ -8,20 +8,21 @@ import Logger from '../../../Logger'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { Request, Response } from 'express'
 import handleError from '../../../utils/handleError'
+import { WifiCredentials } from '../../../interfaces/ISecretManagerService'
 export async function createWirelessProfile (req: Request, res: Response): Promise<void> {
   const wirelessConfig: WirelessConfig = req.body
   wirelessConfig.tenantId = req.tenantId
   const log = new Logger('createWirelessProfile')
   try {
     const passphrase = wirelessConfig.pskPassphrase
+    // prevents passphrase from being stored in DB
     if (req.secretsManager) {
       wirelessConfig.pskPassphrase = 'PSK_PASSPHRASE'
     }
-
     const results: WirelessConfig = await req.db.wirelessProfiles.insert(wirelessConfig)
     // store the password into Vault
     if (req.secretsManager) {
-      await req.secretsManager.writeSecretWithKey(`Wireless/${wirelessConfig.profileName}`, wirelessConfig.pskPassphrase, passphrase)
+      await req.secretsManager.writeSecretWithObject(`Wireless/${wirelessConfig.profileName}`, { PSK_PASSPHRASE: passphrase } as WifiCredentials)
       log.debug(`pskPassphrase stored in Vault for wireless profile: ${wirelessConfig.profileName}`)
     }
     log.verbose(`Created wireless profile : ${wirelessConfig.profileName}`)

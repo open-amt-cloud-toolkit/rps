@@ -10,6 +10,7 @@ import { MqttProvider } from '../../../utils/MqttProvider'
 import { Request, Response } from 'express'
 import handleError from '../../../utils/handleError'
 import { RPSError } from '../../../utils/RPSError'
+import { CertCredentials } from '../../../interfaces/ISecretManagerService'
 
 export async function editDomain (req: Request, res: Response): Promise<void> {
   let amtDomain: AMTDomain = {} as AMTDomain
@@ -36,11 +37,9 @@ export async function editDomain (req: Request, res: Response): Promise<void> {
       if (results) {
         // Delete the previous values of cert and password in vault and store the updated values
         if (req.secretsManager && (newDomain.provisioningCert != null || newDomain.provisioningCertPassword != null)) {
-          const data = {
-            data: {
-              CERT: cert,
-              CERT_PASSWORD: domainPwd
-            }
+          const data: CertCredentials = {
+            CERT: cert,
+            CERT_PASSWORD: domainPwd
           }
           await req.secretsManager.writeSecretWithObject(`certs/${amtDomain.profileName}`, data)
           log.debug(`Updated AMT Domain : ${amtDomain.profileName} in vault`)

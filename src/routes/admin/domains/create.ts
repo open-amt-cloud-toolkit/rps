@@ -8,6 +8,7 @@ import Logger from '../../../Logger'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { Request, Response } from 'express'
 import handleError from '../../../utils/handleError'
+import { CertCredentials } from '../../../interfaces/ISecretManagerService'
 
 export async function createDomain (req: Request, res: Response): Promise<void> {
   let vaultStatus: any
@@ -34,11 +35,9 @@ export async function createDomain (req: Request, res: Response): Promise<void> 
     delete results.provisioningCertPassword
 
     if (req.secretsManager) {
-      const data = {
-        data: {
-          CERT: cert,
-          CERT_PASSWORD: domainPwd
-        }
+      const data: CertCredentials = {
+        CERT: cert,
+        CERT_PASSWORD: domainPwd
       }
       // save to secret provider
       vaultStatus = await req.secretsManager.writeSecretWithObject(`certs/${amtDomain.profileName}`, data)

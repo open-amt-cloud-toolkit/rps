@@ -8,7 +8,7 @@ import { assign, createMachine, interpret } from 'xstate'
 import { ClientAction } from '../models/RCS.Config'
 import { HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
-import { AMTConfiguration, AMTDeviceDTO, AMTDomain } from '../models'
+import { AMTConfiguration, AMTDomain } from '../models'
 import { Environment } from '../utils/Environment'
 import { MqttProvider } from '../utils/MqttProvider'
 import { devices } from '../WebSocketListener'
@@ -23,13 +23,14 @@ import { FeaturesConfiguration } from './featuresConfiguration'
 import { NodeForge } from '../NodeForge'
 import { Configurator } from '../Configurator'
 import { Validator } from '../Validator'
-import { DbCreatorFactory } from '../repositories/factories/DbCreatorFactory'
+import { DbCreatorFactory } from '../factories/DbCreatorFactory'
 import { AMTUserName } from '../utils/constants'
 import { CIRAConfiguration } from './ciraConfiguration'
 import { TLS } from './tls'
 import { invokeWsmanCall } from './common'
 import ClientResponseMsg from '../utils/ClientResponseMsg'
 import { Unconfiguration } from './unconfiguration'
+import { DeviceCredentials } from '../interfaces/ISecretManagerService'
 
 export interface ActivationContext {
   profile: AMTConfiguration
@@ -148,7 +149,7 @@ export class Activation {
               target: 'EXTRACT_DOMAIN_CERT'
             },
             onError: {
-              actions: assign({ errorMessage: 'Failed to get amt domain certificate from database' }),
+              actions: assign({ errorMessage: 'Failed to get amt domain certificate' }),
               target: 'FAILED'
             }
           }
@@ -576,7 +577,7 @@ export class Activation {
     this.signatureHelper = new SignatureHelper(this.nodeForge)
     this.configurator = new Configurator()
     this.validator = new Validator(new Logger('Validator'), this.configurator)
-    this.dbFactory = new DbCreatorFactory(Environment.Config)
+    this.dbFactory = new DbCreatorFactory()
     this.logger = new Logger('Activation_State_Machine')
   }
 
@@ -748,20 +749,14 @@ export class Activation {
 
   async saveDeviceInfoToSecretProvider (context: ActivationContext, event: ActivationEvent): Promise<boolean> {
     const clientObj = devices[context.clientId]
-    if (this.configurator?.amtDeviceRepository) {
-      const amtDevice: AMTDeviceDTO = {
-        guid: clientObj.uuid,
-        name: clientObj.hostname,
-        amtpass: clientObj.amtPassword,
-        mebxpass: clientObj.action === ClientAction.ADMINCTLMODE ? clientObj.mebxPassword : null
-      }
-      await this.configurator.amtDeviceRepository.insert(amtDevice)
-      return true
-    } else {
-      MqttProvider.publishEvent('fail', ['Activator'], 'Unable to write device', clientObj.uuid)
-      this.logger.error('unable to write device')
+
+    const data: DeviceCredentials = {
+      AMT_PASSWORD: clientObj.amtPassword,
+      MEBX_PASSWORD: clientObj.action === ClientAction.ADMINCTLMODE ? clientObj.mebxPassword : null
     }
-    return false
+
+    await this.configurator.secretsManager.writeSecretWithObject(`devices/${clientObj.uuid}`, data)
+    return true
   }
 
   async saveDeviceInfoToMPS (context: ActivationContext, event: ActivationEvent): Promise<boolean> {

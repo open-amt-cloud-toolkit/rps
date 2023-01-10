@@ -11,6 +11,7 @@ import { CIRAConfig } from './models/RCS.Config'
 import { IProfilesTable } from './interfaces/database/IProfilesDb'
 import { AMTRandomPasswordLength } from './utils/constants'
 import { Configurator } from './Configurator'
+import { TLSCredentials } from './interfaces/ISecretManagerService'
 
 export class ProfileManager implements IProfileManager {
   private readonly amtConfigurations: IProfilesTable
@@ -179,8 +180,7 @@ export class ProfileManager implements IProfileManager {
       if (amtProfile.tlsMode != null) {
         if (this.configurator?.secretsManager) {
           const results = await this.configurator.secretsManager.getSecretAtPath(`TLS/${amtProfile.profileName}`)
-          amtProfile.tlsCerts = results.data
-          amtProfile.tlsCerts.version = results?.metadata?.version
+          amtProfile.tlsCerts = results as TLSCredentials
         }
       }
       this.logger.debug(`AMT Profile returned from db: ${amtProfile?.profileName}`)

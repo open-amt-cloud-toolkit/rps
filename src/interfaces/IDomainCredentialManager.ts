@@ -6,7 +6,6 @@
 import { AMTDomain } from '../models'
 
 export interface IDomainCredentialManager {
-  getProvisioningCertStorageType: (domain: string) => Promise<string>
   getProvisioningCert: (domainSuffix: string) => Promise<AMTDomain>
   doesDomainExist: (domainSuffix: string) => Promise<boolean>
 }

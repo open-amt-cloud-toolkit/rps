@@ -13,7 +13,7 @@ import got from 'got'
 import { AMTRandomPasswordLength } from '../utils/constants'
 import { CIRAConfig, ClientAction } from '../models/RCS.Config'
 import { NodeForge } from '../NodeForge'
-import { DbCreatorFactory } from '../repositories/factories/DbCreatorFactory'
+import { DbCreatorFactory } from '../factories/DbCreatorFactory'
 import { Environment } from '../utils/Environment'
 import { PasswordHelper } from '../utils/PasswordHelper'
 import { SignatureHelper } from '../utils/SignatureHelper'
@@ -140,11 +140,9 @@ export class CIRAConfiguration {
         SAVE_MPS_PASSWORD_TO_SECRET_PROVIDER: {
           invoke: {
             src: async (context, event) => await this.configurator.secretsManager.writeSecretWithObject(`devices/${devices[context.clientId].uuid}`, {
-              data: {
-                MPS_PASSWORD: context.ciraConfig.password,
-                AMT_PASSWORD: devices[context.clientId].amtPassword,
-                MEBX_PASSWORD: devices[context.clientId].action === ClientAction.ADMINCTLMODE ? devices[context.clientId].mebxPassword : null
-              }
+              MPS_PASSWORD: context.ciraConfig.password,
+              AMT_PASSWORD: devices[context.clientId].amtPassword,
+              MEBX_PASSWORD: devices[context.clientId].action === ClientAction.ADMINCTLMODE ? devices[context.clientId].mebxPassword : null
             }),
             id: 'save-mps-password-to-secret-provider',
             onDone: 'SAVE_DEVICE_TO_MPS',
@@ -324,7 +322,7 @@ export class CIRAConfiguration {
     this.signatureHelper = new SignatureHelper(this.nodeForge)
     this.configurator = new Configurator()
     this.validator = new Validator(new Logger('Validator'), this.configurator)
-    this.dbFactory = new DbCreatorFactory(Environment.Config)
+    this.dbFactory = new DbCreatorFactory()
     this.logger = new Logger('Activation_State_Machine')
   }
 

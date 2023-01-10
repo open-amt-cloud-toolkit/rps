@@ -13,6 +13,7 @@ export const config: RPSConfig = {
     address: 'http://localhost:8200'
   },
   webport: 8081,
+  secretsProvider: 'vault',
   credentialspath: '../../../MPS_MicroService/private/data.json',
   corsHeaders: '*',
   corsMethods: '*',

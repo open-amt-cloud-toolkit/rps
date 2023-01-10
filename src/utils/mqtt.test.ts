@@ -20,6 +20,7 @@ describe('MQTT Turned ON Tests', () => {
       token: '',
       address: ''
     },
+    secretsProvider: 'vault',
     webport: 8081,
     credentialspath: '../../../MPS_MicroService/private/data.json',
     corsHeaders: '*',
@@ -121,6 +122,7 @@ describe('MQTT Turned OFF Tests', () => {
     corsMethods: '*',
     corsOrigin: '*',
     mpsServer: 'https://localhost:3000',
+    secretsProvider: 'vault',
     dbProvider: 'postgres',
     connectionString: 'postgresql://postgresadmin:admin123@localhost:5432/rpsdb',
     delayTimer: 12,

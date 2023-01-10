@@ -68,12 +68,12 @@ describe('AMT Password State Machine', () => {
     currentStateIndex = 0
   })
 
-  test('should get General Settings', async () => {
+  it('should get General Settings', async () => {
     await amtPwd.getGeneralSettings(amtPwdContext)
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
 
-  test('should change AMT Password', async () => {
+  it('should change AMT Password', async () => {
     amtPwdContext.generalSettings = {
       DigestRealm: 'Digest:A3829B3827DE4D33D4449B366831FD01'
     }
@@ -81,17 +81,18 @@ describe('AMT Password State Machine', () => {
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
 
-  test('should return true to store device data in vault', async () => {
-    const insertSpy = jest.spyOn(configurator.amtDeviceRepository, 'insert').mockImplementation(async () => true)
+  it('should return true to store device data in vault', async () => {
+    const insertSpy = jest.spyOn(configurator.secretsManager, 'writeSecretWithObject').mockImplementation(async () => true)
     const response = await amtPwd.saveDeviceInfoToSecretProvider(amtPwdContext, null)
     expect(insertSpy).toHaveBeenCalled()
     expect(response).toBe(true)
   })
 
-  test('should return false if not able to save device data in vault', async () => {
-    amtPwd.configurator = null
-    const response = await amtPwd.saveDeviceInfoToSecretProvider(amtPwdContext, null)
-    expect(response).toBe(false)
+  it('should return false if not able to save device data in vault', async () => {
+    const err = new Error('unable to save')
+    jest.spyOn(configurator.secretsManager, 'writeSecretWithObject').mockRejectedValueOnce(err)
+
+    await expect(amtPwd.saveDeviceInfoToSecretProvider(amtPwdContext, null)).rejects.toBe(err)
   })
 
   it('should eventually reach "SUCCESS"', (done) => {

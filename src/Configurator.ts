@@ -9,31 +9,36 @@ import { DomainCredentialManager } from './DomainCredentialManager'
 import { ProfileManager } from './ProfileManager'
 import Logger from './Logger'
 import { ISecretManagerService } from './interfaces/ISecretManagerService'
-import { IAMTDeviceRepository } from './interfaces/database/IAMTDeviceRepository'
-import { SecretManagerService } from './utils/SecretManagerService'
-import { AmtDeviceFactory } from './repositories/factories/AmtDeviceFactory'
 import { Environment } from './utils/Environment'
 import { IValidator } from './interfaces/IValidator'
 import { Validator } from './Validator'
 import { DataProcessor } from './DataProcessor'
-import { DbCreatorFactory } from './repositories/factories/DbCreatorFactory'
+import { DbCreatorFactory } from './factories/DbCreatorFactory'
+import { SecretManagerCreatorFactory } from './factories/SecretManagerCreatorFactory'
 
 export class Configurator {
-  amtDeviceRepository: IAMTDeviceRepository
   domainCredentialManager: IDomainCredentialManager
   profileManager: IProfileManager
-  readonly secretsManager: ISecretManagerService
+  secretsManager: ISecretManagerService
   readonly dataProcessor: DataProcessor
 
   constructor () {
     const log = new Logger('Configurator')
-    this.secretsManager = new SecretManagerService(new Logger('SecretManagerService'))
+
     const validator: IValidator = new Validator(new Logger('Validator'), this)
 
     this.dataProcessor = new DataProcessor(new Logger('DataProcessor'), validator)
-    const dbf = new DbCreatorFactory(Environment.Config)
 
-    this.amtDeviceRepository = AmtDeviceFactory.getAmtDeviceRepository(this)
+    const dbf = new DbCreatorFactory()
+    const smcf = new SecretManagerCreatorFactory()
+
+    smcf.getSecretManager(new Logger('SecretManagerService')).then((secretManager) => {
+      this.secretsManager = secretManager
+    }).catch((err) => {
+      log.error(err)
+      throw new Error('Unable to get secret manager configuration')
+    })
+
     dbf.getDb().then((db) => {
       this.domainCredentialManager = new DomainCredentialManager(new Logger('DomainCredentialManager'), db.domains, this)
       this.profileManager = new ProfileManager(new Logger('ProfileManager'), this, db.profiles, Environment.Config)
