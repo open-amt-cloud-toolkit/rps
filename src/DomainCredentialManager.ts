@@ -8,6 +8,7 @@ import { ILogger } from './interfaces/ILogger'
 import { IDomainsTable } from './interfaces/database/IDomainsDb'
 import { AMTDomain } from './models'
 import { Configurator } from './Configurator'
+import { CertCredentials } from './interfaces/ISecretManagerService'
 
 export class DomainCredentialManager implements IDomainCredentialManager {
   private readonly amtDomains: IDomainsTable
@@ -21,23 +22,6 @@ export class DomainCredentialManager implements IDomainCredentialManager {
   }
 
   /**
-     * @description get the provisioning cert storage format for a given domain
-     * @param {string} domainSuffix
-     * @returns {string} returns path to provisioning cert storage format if domain is found otherwise null
-     */
-  async getProvisioningCertStorageType (domainSuffix: string): Promise<string> {
-    const domain = await this.amtDomains.getDomainByDomainSuffix(domainSuffix)
-    let format: string = null
-    if (domain?.provisioningCertStorageFormat) {
-      format = domain.provisioningCertStorageFormat
-    } else {
-      this.logger.error(`unable to find provisioning cert storage format for profile ${domainSuffix}`)
-    }
-
-    return format
-  }
-
-  /**
      * @description get the provisioning cert for a given domain
      * @param {string} domainSuffix
      * @returns {AMTDomain} returns domain object
@@ -45,13 +29,13 @@ export class DomainCredentialManager implements IDomainCredentialManager {
   async getProvisioningCert (domainSuffix: string): Promise<AMTDomain> {
     const domain = await this.amtDomains.getDomainByDomainSuffix(domainSuffix)
     this.logger.debug(`domain : ${JSON.stringify(domain)}`)
-    let certPwd = null
+
     if (domain?.provisioningCert) {
       if (this.configurator?.secretsManager) {
-        certPwd = await this.configurator.secretsManager.getSecretAtPath(`certs/${domain.profileName}`)
+        const certPwd = await this.configurator.secretsManager.getSecretAtPath(`certs/${domain.profileName}`) as CertCredentials
         this.logger.debug('Received CertPwd from vault')
-        domain.provisioningCert = certPwd.data.CERT
-        domain.provisioningCertPassword = certPwd.data.CERT_PASSWORD
+        domain.provisioningCert = certPwd.CERT
+        domain.provisioningCertPassword = certPwd.CERT_PASSWORD
       }
     } else {
       this.logger.error(`unable to find provisioning cert for profile ${domainSuffix}`)

@@ -7,7 +7,7 @@ import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 import { CIRAConfiguration, CIRAConfigContext, MPSType } from './ciraConfiguration'
 import { v4 as uuid } from 'uuid'
 import { devices } from '../WebSocketListener'
-import { EnvReader } from '../utils/EnvReader'
+import { Environment } from '../utils/Environment'
 import { config } from '../test/helper/Config'
 import { ClientAction } from '../models/RCS.Config'
 import { HttpHandler } from '../HttpHandler'
@@ -15,7 +15,7 @@ import { interpret } from 'xstate'
 import * as common from './common'
 
 const clientId = uuid()
-EnvReader.GlobalEnvConfig = config
+Environment.Config = config
 
 describe('CIRA Configuration State Machine', () => {
   let ciraConfiguration: CIRAConfiguration
@@ -27,7 +27,7 @@ describe('CIRA Configuration State Machine', () => {
   beforeEach(() => {
     ciraConfiguration = new CIRAConfiguration()
     ciraConfigContext = {
-      clientId: clientId,
+      clientId,
       httpHandler: new HttpHandler(),
       status: 'success',
       errorMessage: '',
@@ -111,7 +111,7 @@ describe('CIRA Configuration State Machine', () => {
       uuid: '4c4c4544-004b-4210-8033-b6c04f504633',
       messageId: 1
     }
-    invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue()
+    invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue(null)
     currentStateIndex = 0
     configuration = {
       services: {
@@ -167,7 +167,7 @@ describe('CIRA Configuration State Machine', () => {
     })
 
     ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId: clientId, data: null })
+    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId, data: null })
   })
 
   it('should eventually reach "Failed"', (done) => {
@@ -182,7 +182,7 @@ describe('CIRA Configuration State Machine', () => {
     })
 
     ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId: clientId, data: null })
+    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId, data: null })
   })
 
   it('should eventually reach "Failed" at add-trusted-root-certificate state ', (done) => {
@@ -201,7 +201,7 @@ describe('CIRA Configuration State Machine', () => {
     })
 
     ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId: clientId, data: null })
+    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId, data: null })
   })
 
   it('should eventually reach "Failed" at enumerate-management-presence-remote-sap state ', (done) => {
@@ -224,7 +224,7 @@ describe('CIRA Configuration State Machine', () => {
     })
 
     ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId: clientId, data: null })
+    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId, data: null })
   })
 
   it('should eventually reach "Failed" at add-mps state ', (done) => {
@@ -246,7 +246,7 @@ describe('CIRA Configuration State Machine', () => {
     })
 
     ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId: clientId, data: null })
+    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId, data: null })
   })
 
   it('should eventually reach "Failed" at pull-management-presence-remote-sap state ', (done) => {
@@ -270,7 +270,7 @@ describe('CIRA Configuration State Machine', () => {
     })
 
     ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId: clientId, data: null })
+    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId, data: null })
   })
 
   it('should eventually reach "Failed" at add-remote-policy-access-rule state ', (done) => {
@@ -295,7 +295,7 @@ describe('CIRA Configuration State Machine', () => {
     })
 
     ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId: clientId, data: null })
+    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId, data: null })
   })
 
   it('should eventually reach "Failed" at enumerate-remote-access-policy-rule state ', (done) => {
@@ -321,7 +321,7 @@ describe('CIRA Configuration State Machine', () => {
     })
 
     ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId: clientId, data: null })
+    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId, data: null })
   })
 
   it('should eventually reach "Failed" at pull-remote-access-policy-rule state ', (done) => {
@@ -348,7 +348,7 @@ describe('CIRA Configuration State Machine', () => {
     })
 
     ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId: clientId, data: null })
+    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId, data: null })
   })
 
   it('should eventually reach "Failed" at put-remote-access-policy-rule state ', (done) => {
@@ -376,7 +376,7 @@ describe('CIRA Configuration State Machine', () => {
     })
 
     ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId: clientId, data: null })
+    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId, data: null })
   })
 
   it('should eventually reach "Failed" at user-initiated-connection-service state ', (done) => {
@@ -405,7 +405,7 @@ describe('CIRA Configuration State Machine', () => {
     })
 
     ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId: clientId, data: null })
+    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId, data: null })
   })
 
   it('should eventually reach "Failed" at get-environment-detection-settings state ', (done) => {
@@ -435,7 +435,7 @@ describe('CIRA Configuration State Machine', () => {
     })
 
     ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId: clientId, data: null })
+    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId, data: null })
   })
 
   it('should eventually reach "Failed" at put-environment-detection-settings state ', (done) => {
@@ -468,7 +468,7 @@ describe('CIRA Configuration State Machine', () => {
     })
 
     ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId: clientId, data: null })
+    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId, data: null })
   })
 
   describe('send wsman message with Management Presence Remote SAP', () => {

@@ -10,7 +10,7 @@ import { config } from './test/helper/Config'
 import { Validator } from './Validator'
 import { Configurator } from './Configurator'
 import { DataProcessor } from './DataProcessor'
-import { EnvReader } from './utils/EnvReader'
+import { Environment } from './utils/Environment'
 import { VersionChecker } from './VersionChecker'
 import { devices } from './WebSocketListener'
 import { parse, HttpZResponseModel } from 'http-z'
@@ -24,7 +24,7 @@ import { IPConfiguration } from './stateMachines/syncIP'
 import { RPSError } from './utils/RPSError'
 import { HostnameConfiguration } from './stateMachines/syncHostName'
 
-EnvReader.GlobalEnvConfig = config
+Environment.Config = config
 const configurator = new Configurator()
 const validator = new Validator(new Logger('Validator'), configurator)
 const dataProcessor = new DataProcessor(new Logger('DataProcessor'), validator)
@@ -38,7 +38,7 @@ const digestChallenge = {
 const connectionParams = {
   guid: '4c4c4544-004b-4210-8033-b6c04f504633',
   port: 16992,
-  digestChallenge: digestChallenge,
+  digestChallenge,
   username: 'admin',
   password: 'P@ssw0rd'
 }
@@ -77,7 +77,7 @@ describe('handle AMT reponse', () => {
       payload: 'HTTP/1.1 401 Unauthorized\r\nWWW-Authenticate: Digest realm="Digest:727734D63A1FC0423736E48DA554E462", nonce="B9AX94iAAAAAAAAAx6rrSfPHGUrx/3uA",stale="false",qop="auth"\r\nContent-Type: text/html\r\nServer: Intel(R) Active Management Technology 15.0.23.1706\r\nContent-Length: 693\r\nConnection: close\r\n\r\n<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" >\n<html><head><link rel=stylesheet href=/styles.css>\n<meta http-equiv="Content-Type" content="text/html; charset=utf-8">\n<title>Intel&reg; Active Management Technology</title></head>\n<body>\n<table class=header>\n<tr><td valign=top nowrap>\n<p class=top1>Intel<font class=r><sup>&reg;</sup></font> Active Management Technology\n<td valign="middle"><img src="logo.gif" align="right" alt="Intel">\n</table>\n<br />\n<h2 class=warn>Log on failed. Incorrect user name or password, or user account temporarily locked.</h2>\n\n<p>\n<form METHOD="GET" action="index.htm"><h2><input type=submit value="Try again">\n</h2></form>\n<p>\n\n</body>\n</html>\n'
     }
     const clientId = uuid()
-    devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: clientData, messageId: 0, connectionParams: connectionParams, unauthCount: 0 }
+    devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: clientData, messageId: 0, connectionParams, unauthCount: 0 }
     const promise = new Promise<any>((resolve, reject) => {
       devices[clientId].resolve = resolve
       devices[clientId].reject = reject
@@ -169,7 +169,7 @@ describe('deactivate a device', () => {
     const deactivationStartSpy = jest.spyOn(deactivation.service, 'start').mockImplementation()
     const deactivationSendSpy = jest.spyOn(deactivation.service, 'send').mockImplementation()
     const clientId = uuid()
-    devices[clientId] = { ClientId: clientId, ClientSocket: null, messageId: 0, connectionParams: connectionParams, unauthCount: 0 }
+    devices[clientId] = { ClientId: clientId, ClientSocket: null, messageId: 0, connectionParams, unauthCount: 0 }
     VersionChecker.setCurrentVersion('4.0.0')
     await dataProcessor.deactivateDevice(clientMsg, clientId, deactivation)
     expect(validatorSpy).toHaveBeenCalled()
@@ -208,7 +208,7 @@ describe('Activate a device', () => {
     const activationStartSpy = jest.spyOn(activation.service, 'start').mockImplementation()
     const activationSendSpy = jest.spyOn(activation.service, 'send').mockImplementation()
     const clientId = uuid()
-    devices[clientId] = { ClientId: clientId, ClientSocket: null, messageId: 0, connectionParams: connectionParams, unauthCount: 0, activationStatus: false }
+    devices[clientId] = { ClientId: clientId, ClientSocket: null, messageId: 0, connectionParams, unauthCount: 0, activationStatus: false }
     VersionChecker.setCurrentVersion('4.0.0')
     await dataProcessor.activateDevice(clientMsg, clientId, activation)
     expect(validatorSpy).toHaveBeenCalled()
@@ -339,10 +339,10 @@ it('should pass maintainDevice method', async () => {
   const startSpy = jest.spyOn(maintenance.service, 'start').mockImplementation()
   const sendSpy = jest.spyOn(maintenance.service, 'send').mockImplementation()
   const clientId = uuid()
-  devices[clientId] = { ClientId: clientId, ClientSocket: null, messageId: 0, connectionParams: connectionParams, unauthCount: 0 }
+  devices[clientId] = { ClientId: clientId, ClientSocket: null, messageId: 0, connectionParams, unauthCount: 0 }
   VersionChecker.setCurrentVersion('4.0.0')
   const expectedEvent: any = {
-    clientId: clientId,
+    clientId,
     type: 'SYNCTIME'
   }
   await dataProcessor.maintainDevice(clientMsg, clientId, maintenance)

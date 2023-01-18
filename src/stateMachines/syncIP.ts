@@ -153,23 +153,13 @@ export class SyncIP {
     }
   }, {
     guards: {
-      isWirelessOnlyDevice: (context: SyncIPContext) => {
-        return context.wirelessSettings != null && context.wiredSettings?.MACAddress == null
-      },
-      isNotSharedStaticIp: (context: SyncIPContext) => {
-        return context.wiredSettings.DHCPEnabled === true && context.wiredSettings.SharedStaticIp !== true
-      },
-      isNotIPAddressMatched: (context: SyncIPContext) => {
-        return context.wiredSettings.IPAddress !== context.ipConfiguration.ipAddress
-      },
-      isNotIPSyncEnabled: (context: SyncIPContext) => {
-        return context.wiredSettings.IpSyncEnabled !== true && context.isIPSynchronized
-      }
+      isWirelessOnlyDevice: (context: SyncIPContext) => context.wirelessSettings != null && context.wiredSettings?.MACAddress == null,
+      isNotSharedStaticIp: (context: SyncIPContext) => context.wiredSettings.DHCPEnabled === true && context.wiredSettings.SharedStaticIp !== true,
+      isNotIPAddressMatched: (context: SyncIPContext) => context.wiredSettings.IPAddress !== context.ipConfiguration.ipAddress,
+      isNotIPSyncEnabled: (context: SyncIPContext) => context.wiredSettings.IpSyncEnabled !== true && context.isIPSynchronized
     },
     actions: {
-      respondFailure: pure((context: SyncIPContext) => {
-        return sendParent({ type: 'ON_SYNC_NETWORK_FAILED', data: context.statusMessage })
-      }),
+      respondFailure: pure((context: SyncIPContext) => sendParent({ type: 'ON_SYNC_NETWORK_FAILED', data: context.statusMessage })),
       'Read Ethernet Port Settings': this.readEthernetPortSettings.bind(this)
     }
   })

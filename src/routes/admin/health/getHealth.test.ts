@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import { createSpyObj } from '../../../test/helper/jest'
-import { EnvReader } from '../../../utils/EnvReader'
+import { Environment } from '../../../utils/Environment'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { getHealthCheck, getDBHealth, getSecretStoreHealth } from './getHealth'
 import { config } from '../../../test/helper/Config'
@@ -33,7 +33,7 @@ describe('Checks health of dependent services', () => {
       expect(mqttSpy).toHaveBeenCalled()
     })
     it('should be healthy when database is ready', async () => {
-      EnvReader.GlobalEnvConfig = config
+      Environment.Config = config
       await getHealthCheck(req, resSpy)
       expect(resSpy.status).toHaveBeenCalledWith(200)
     })

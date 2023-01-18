@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import { createSpyObj } from '../../../test/helper/jest'
-import { EnvReader } from '../../../utils/EnvReader'
+import { Environment } from '../../../utils/Environment'
 import { createProfile, generateSelfSignedCertificate, setRedirectionConfiguration } from './create'
 import { ClientAction } from '../../../models/RCS.Config'
 import { AMTUserConsent } from '../../../models'
@@ -30,7 +30,7 @@ describe('Profiles - Create', () => {
     resSpy.status.mockReturnThis()
     resSpy.json.mockReturnThis()
     resSpy.send.mockReturnThis()
-    EnvReader.GlobalEnvConfig = { VaultConfig: { SecretsPath: '' } } as any
+    Environment.Config = { VaultConfig: { SecretsPath: '' } } as any
   })
   it('should create', async () => {
     await createProfile(req, resSpy)

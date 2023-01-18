@@ -3,20 +3,20 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { ISecretManagerService } from '../interfaces/ISecretManagerService'
-import { ILogger } from '../interfaces/ILogger'
-import { EnvReader } from './EnvReader'
+import { DeviceCredentials, ISecretManagerService, TLSCredentials, WifiCredentials } from '../../interfaces/ISecretManagerService'
+import { ILogger } from '../../interfaces/ILogger'
+import { Environment } from '../../utils/Environment'
 import got, { Got } from 'got'
 
-export class SecretManagerService implements ISecretManagerService {
+export class VaultService implements ISecretManagerService {
   gotClient: Got
   logger: ILogger
   constructor (logger: ILogger) {
     this.logger = logger
     this.gotClient = got.extend({
-      prefixUrl: `${EnvReader.GlobalEnvConfig.VaultConfig.address}/v1/${EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath}`,
+      prefixUrl: `${Environment.Config.VaultConfig.address}/v1/${Environment.Config.VaultConfig.SecretsPath}`,
       headers: {
-        'X-Vault-Token': EnvReader.GlobalEnvConfig.VaultConfig.token
+        'X-Vault-Token': Environment.Config.VaultConfig.token
       }
     })
   }
@@ -36,12 +36,14 @@ export class SecretManagerService implements ISecretManagerService {
     return null
   }
 
-  async getSecretAtPath (path: string): Promise<any> {
+  async getSecretAtPath (path: string): Promise<DeviceCredentials | TLSCredentials | WifiCredentials> {
     try {
       this.logger.verbose(`getting secrets from ${path}`)
       const rspJson: any = await this.gotClient.get(path).json()
       this.logger.debug(`got data back from vault ${path}, ${JSON.stringify(rspJson?.data?.metadata)}`)
-      return rspJson.data
+      const secretData = rspJson.data.data
+      secretData.version = rspJson.data.metadata.version
+      return secretData
     } catch (error) {
       this.logger.error('getSecretAtPath error \r\n')
       this.logger.error(error)
@@ -49,19 +51,13 @@ export class SecretManagerService implements ISecretManagerService {
     }
   }
 
-  async writeSecretWithKey (path: string, key: string, keyValue: any): Promise<any> {
-    const data = { data: {} }
-    data.data[key] = keyValue
-    this.logger.verbose('writing data to vault:')
-    const rspJson: any = await this.gotClient.post(path, { json: data }).json()
-    this.logger.debug(`Successfully written data to vault at path: ${path}, result: ${JSON.stringify(rspJson)}`)
-    return rspJson
-  }
-
   async writeSecretWithObject (path: string, data: any): Promise<any> {
     try {
+      const json = {
+        data
+      }
       this.logger.verbose('writing data to vault:')
-      const rspJson: any = await this.gotClient.post(path, { json: data }).json()
+      const rspJson: any = await this.gotClient.post(path, { json }).json()
       this.logger.debug(`Successfully written data to vault at path: ${path}, result: ${JSON.stringify(rspJson)}`)
       return rspJson
     } catch (error) {
@@ -71,21 +67,29 @@ export class SecretManagerService implements ISecretManagerService {
     }
   }
 
-  async deleteSecretWithPath (path: string): Promise<void> {
+  async deleteSecretAtPath (path: string): Promise<boolean> {
+    try {
     // to permanently delete the key, we use metadata path
-    const basePath = EnvReader.GlobalEnvConfig.VaultConfig.SecretsPath.replace('/data/', '/metadata/')
-    this.logger.verbose(`Deleting data from vault:${path}`)
-    await this.gotClient.delete(`${path}`, {
-      prefixUrl: `${EnvReader.GlobalEnvConfig.VaultConfig.address}/v1/${basePath}`
-    }).json()
-    this.logger.debug(`Successfully Deleted data from vault: ${path}`)
+      const basePath = Environment.Config.VaultConfig.SecretsPath.replace('/data/', '/metadata/')
+      this.logger.verbose(`Deleting data from vault:${path}`)
+      await this.gotClient.delete(`${path}`, {
+        prefixUrl: `${Environment.Config.VaultConfig.address}/v1/${basePath}`
+      }).json()
+      this.logger.debug(`Successfully Deleted data from vault: ${path}`)
+      return true
+    } catch (error) {
+      this.logger.error('Failed to delete secret')
+      return false
+    }
   }
 
   async health (): Promise<any> {
     const rspJson: any = await this.gotClient.get('sys/health?standbyok=true',
       {
-        prefixUrl: `${EnvReader.GlobalEnvConfig.VaultConfig.address}/v1/`
+        prefixUrl: `${Environment.Config.VaultConfig.address}/v1/`
       }).json()
     return rspJson
   }
 }
+
+export default VaultService

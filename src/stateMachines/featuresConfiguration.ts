@@ -161,11 +161,11 @@ export class FeaturesConfiguration {
         }
       },
       SUCCESS: {
-        entry: (context, _) => this.logger.info('AMT Features Configuration success'),
+        entry: (context, _) => { this.logger.info('AMT Features Configuration success') },
         type: 'final'
       },
       FAILED: {
-        entry: (context, _) => this.logger.error(`AMT Features Configuration failed: ${context.statusMessage}`),
+        entry: (context, _) => { this.logger.error(`AMT Features Configuration failed: ${context.statusMessage}`) },
         type: 'final'
       }
     }
@@ -245,8 +245,8 @@ export class FeaturesConfiguration {
           AMT_RedirectionService: amtRedirectionService,
           IPS_OptInService: ipsOptInService,
           CIM_KVMRedirectionSAP: cimKVMRedirectionSAP,
-          isRedirectionChanged: isRedirectionChanged,
-          isOptInServiceChanged: isOptInServiceChanged
+          isRedirectionChanged,
+          isOptInServiceChanged
         }
       })
     }

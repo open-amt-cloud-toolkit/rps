@@ -23,9 +23,9 @@ export async function deleteProfile (req: Request, res: Response): Promise<void>
       if (results) {
         if (req.secretsManager) {
           if (!profile.generateRandomPassword || !profile.generateRandomMEBxPassword) {
-            await req.secretsManager.deleteSecretWithPath(`profiles/${profile.profileName}`)
+            await req.secretsManager.deleteSecretAtPath(`profiles/${profile.profileName}`)
           }
-          await req.secretsManager.deleteSecretWithPath(`TLS/${profile.profileName}`)
+          await req.secretsManager.deleteSecretAtPath(`TLS/${profile.profileName}`)
         }
 
         MqttProvider.publishEvent('success', ['deleteProfile'], `Deleted Profile : ${profileName}`)

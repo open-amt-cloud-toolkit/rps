@@ -14,6 +14,7 @@ import handleError from '../../../utils/handleError'
 import { RPSError } from '../../../utils/RPSError'
 import { CertManager } from '../../../certManager'
 import { NodeForge } from '../../../NodeForge'
+import { DeviceCredentials } from '../../../interfaces/ISecretManagerService'
 
 export async function editProfile (req: Request, res: Response): Promise<void> {
   const log = new Logger('editProfile')
@@ -57,23 +58,23 @@ export async function editProfile (req: Request, res: Response): Promise<void> {
         if (oldConfig.amtPassword !== null || oldConfig.mebxPassword !== null) {
           if (req.secretsManager) {
             log.debug('Delete in vault') // User might be flipping from false to true which we dont know. So try deleting either way.
-            await req.secretsManager.deleteSecretWithPath(`profiles/${amtConfig.profileName}`)
+            await req.secretsManager.deleteSecretAtPath(`profiles/${amtConfig.profileName}`)
             log.debug('Password deleted from vault')
           }
         }
         // store the password sent into Vault
         if (req.secretsManager && (!amtConfig.generateRandomPassword || !amtConfig.generateRandomMEBxPassword)) {
-          const data = { data: { AMT_PASSWORD: null, MEBX_PASSWORD: null } }
+          const data: DeviceCredentials = { AMT_PASSWORD: null, MEBX_PASSWORD: null }
           if (!amtConfig.generateRandomPassword) {
-            data.data.AMT_PASSWORD = amtPwdBefore
+            data.AMT_PASSWORD = amtPwdBefore
             log.debug('AMT Password written to vault')
           }
           if (!amtConfig.generateRandomMEBxPassword) {
-            data.data.MEBX_PASSWORD = mebxPwdBefore
+            data.MEBX_PASSWORD = mebxPwdBefore
             log.debug('MEBX Password written to vault')
           }
 
-          if (data.data.AMT_PASSWORD != null || data.data.MEBX_PASSWORD != null) {
+          if (data.AMT_PASSWORD != null || data.MEBX_PASSWORD != null) {
             await req.secretsManager.writeSecretWithObject(`profiles/${amtConfig.profileName}`, data)
           }
         }
@@ -121,11 +122,9 @@ export async function generateSelfSignedCertificate (req: Request, profileName: 
   // gene
   const issuedCert = cm.createCertificate(issueAttr, rootCert.key, null, certAttr, keyUsages)
 
-  const certs: {data: TLSCerts} = {
-    data: {
-      ROOT_CERTIFICATE: rootCert,
-      ISSUED_CERTIFICATE: issuedCert
-    }
+  const certs: TLSCerts = {
+    ROOT_CERTIFICATE: rootCert,
+    ISSUED_CERTIFICATE: issuedCert
   }
 
   await req.secretsManager.writeSecretWithObject(`TLS/${profileName}`, certs)

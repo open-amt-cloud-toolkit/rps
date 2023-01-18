@@ -20,7 +20,7 @@ export interface ProvisioningCertObj {
   certChain: string[]
   privateKey: pki.PrivateKey
 }
-export interface AMTKeyUsage{
+export interface AMTKeyUsage {
   /** Extension ID  */
   name: string
   /** Enables Console Usage */
@@ -79,6 +79,7 @@ export class RPSConfig {
   webport: number
   credentialspath: string
   WSConfiguration: WebSocketConfig
+  secretsProvider: string
   dbProvider: string
   connectionString: string
   corsOrigin: string
@@ -294,6 +295,7 @@ const recipeRCSConfig = {
   vault_token: 'VaultConfig.token',
   secrets_path: 'VaultConfig.SecretsPath',
   db_provider: 'dbProvider',
+  secrets_provider: 'secretsProvider',
   connection_string: 'connectionString',
   amt_domains: 'AMTDomains',
   amt_configurations: 'AMTConfigurations',

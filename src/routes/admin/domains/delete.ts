@@ -22,7 +22,7 @@ export async function deleteDomain (req: Request, res: Response): Promise<void> 
       const results = await req.db.domains.delete(domainName)
       if (results) {
         if (req.secretsManager) {
-          await req.secretsManager.deleteSecretWithPath(`certs/${domain.profileName}`)
+          await req.secretsManager.deleteSecretAtPath(`certs/${domain.profileName}`)
         }
         MqttProvider.publishEvent('success', ['deleteDomain'], `Domain Deleted : ${domainName}`)
         res.status(204).end()

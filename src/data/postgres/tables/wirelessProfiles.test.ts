@@ -104,9 +104,7 @@ describe('wireless profiles tests', () => {
   describe('Delete', () => {
     test('should delete', async () => {
       let count = 0
-      querySpy.mockImplementation(() => {
-        return { rows: [], rowCount: count++ }
-      })
+      querySpy.mockImplementation(() => ({ rows: [], rowCount: count++ }))
       const result = await wirelessProfilesTable.delete(profileName)
       expect(result).toBeTruthy()
       expect(querySpy).toBeCalledTimes(2)

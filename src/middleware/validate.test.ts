@@ -24,31 +24,25 @@ describe('Check validate', () => {
     resSpy.status.mockReturnThis()
     resSpy.json.mockReturnThis()
     resSpy.send.mockReturnThis()
-    jest.spyOn(val, 'validationResult').mockImplementation(() => {
-      return {
-        isEmpty: jest.fn().mockReturnValue(true),
-        array: jest.fn().mockReturnValue([{ test: 'error' }])
-      } as any
-    })
+    jest.spyOn(val, 'validationResult').mockImplementation(() => ({
+      isEmpty: jest.fn().mockReturnValue(true),
+      array: jest.fn().mockReturnValue([{ test: 'error' }])
+    } as any))
   })
 
   it('should fail with incorrect req', async () => {
-    jest.spyOn(val, 'validationResult').mockImplementation(() => {
-      return {
-        isEmpty: jest.fn().mockReturnValue(false),
-        array: jest.fn().mockReturnValue([{ test: 'error' }])
-      } as any
-    })
+    jest.spyOn(val, 'validationResult').mockImplementation(() => ({
+      isEmpty: jest.fn().mockReturnValue(false),
+      array: jest.fn().mockReturnValue([{ test: 'error' }])
+    } as any))
     await validateMiddleware(req, resSpy, next)
     expect(resSpy.status).toHaveBeenCalledWith(400)
   })
   it('should pass with proper req', async () => {
-    jest.spyOn(val, 'validationResult').mockImplementation(() => {
-      return {
-        isEmpty: jest.fn().mockReturnValue(true),
-        array: jest.fn().mockReturnValue([{ test: 'fake' }])
-      } as any
-    })
+    jest.spyOn(val, 'validationResult').mockImplementation(() => ({
+      isEmpty: jest.fn().mockReturnValue(true),
+      array: jest.fn().mockReturnValue([{ test: 'fake' }])
+    } as any))
     next = jest.fn()
     await validateMiddleware(req, resSpy, next)
     expect(next).toHaveBeenCalled()

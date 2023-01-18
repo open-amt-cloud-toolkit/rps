@@ -28,7 +28,7 @@ export async function editWirelessProfile (req: Request, res: Response): Promise
 
       const results: WirelessConfig = await req.db.wirelessProfiles.update(config)
       if (req.secretsManager && passphrase) {
-        await req.secretsManager.writeSecretWithKey(`Wireless/${config.profileName}`, config.pskPassphrase, passphrase)
+        await req.secretsManager.writeSecretWithObject(`Wireless/${config.profileName}`, { PSK_PASSPHRASE: passphrase })
         log.debug(`pskPassphrase stored in Vault for wireless profile: ${config.profileName}`)
       }
       delete results.pskPassphrase

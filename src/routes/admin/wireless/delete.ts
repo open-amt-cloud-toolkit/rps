@@ -17,7 +17,7 @@ export async function deleteWirelessProfile (req: Request, res: Response): Promi
     const results: boolean = await req.db.wirelessProfiles.delete(profileName)
     if (results) {
       if (req.secretsManager) {
-        await req.secretsManager.deleteSecretWithPath(`Wireless/${profileName}`)
+        await req.secretsManager.deleteSecretAtPath(`Wireless/${profileName}`)
       }
       MqttProvider.publishEvent('success', ['deleteWirelessProfiles'], `Deleted wireless profile : ${profileName}`)
       log.verbose(`Deleted wireless profile : ${profileName}`)

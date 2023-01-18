@@ -8,10 +8,10 @@ import { HttpHandler } from '../HttpHandler'
 import ClientResponseMsg from '../utils/ClientResponseMsg'
 import { devices } from '../WebSocketListener'
 import { Maintenance, MaintenanceContext } from './maintenance'
-import { EnvReader } from '../utils/EnvReader'
+import { Environment } from '../utils/Environment'
 import { config } from '../test/helper/Config'
 
-EnvReader.GlobalEnvConfig = config
+Environment.Config = config
 
 describe('Maintenance State Machine', () => {
   let maintenance: Maintenance

@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { HttpHandler } from '../HttpHandler'
-import { ClientMsg } from '../models/RCS.Config'
+import { RPSConfig } from '../models'
 
-export interface IExecutor{
-  execute: (message: any, clientId: string, httpHandler?: HttpHandler) => Promise<ClientMsg>
+const Environment = {
+  Config: null as RPSConfig
 }
+
+export { Environment }

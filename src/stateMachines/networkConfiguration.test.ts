@@ -5,7 +5,7 @@
 
 import { v4 as uuid } from 'uuid'
 import { devices } from '../WebSocketListener'
-import { EnvReader } from '../utils/EnvReader'
+import { Environment } from '../utils/Environment'
 import { config } from '../test/helper/Config'
 import { ClientAction } from '../models/RCS.Config'
 import { NetworkConfiguration } from './networkConfiguration'
@@ -15,7 +15,7 @@ import * as common from './common'
 import { AMT, CIM } from '@open-amt-cloud-toolkit/wsman-messages'
 
 const clientId = uuid()
-EnvReader.GlobalEnvConfig = config
+Environment.Config = config
 describe('Network Configuration', () => {
   let config
   let currentStateIndex: number
@@ -115,7 +115,7 @@ describe('Network Configuration', () => {
       ]
     }
     WiFiPortConfigurationServiceSpy = jest.spyOn(context.amt, 'WiFiPortConfigurationService').mockReturnValue('done')
-    invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue()
+    invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue(null)
     ethernetPortSettingsSpy = jest.spyOn(context.amt, 'EthernetPortSettings').mockImplementation().mockReturnValue('abcdef')
     WiFiEndpointSettingsSpy = jest.spyOn(context.cim, 'WiFiEndpointSettings').mockReturnValue('done')
     currentStateIndex = 0
@@ -251,14 +251,10 @@ describe('Network Configuration', () => {
       }
 
       networkConfig.dbFactory = {
-        getDb: async () => {
-          return mockDb
-        }
+        getDb: async () => mockDb
       } as any
       const getByNameSpy = jest.spyOn(mockDb.wirelessProfiles, 'getByName').mockReturnValue(expectedProfile)
-      const getPSKPassphraseSpy = jest.spyOn(networkConfig.configurator.secretsManager, 'getSecretAtPath').mockImplementation(async () => {
-        return { data: { PSK_PASSPHRASE: 'Intel@123' } }
-      })
+      const getPSKPassphraseSpy = jest.spyOn(networkConfig.configurator.secretsManager, 'getSecretAtPath').mockImplementation(async () => ({ PSK_PASSPHRASE: 'Intel@123' }))
 
       const wifiProfile = await networkConfig.getWifiProfile(context.amtProfile.profileName)
       expect(wifiProfile).toBe(expectedProfile)
@@ -288,7 +284,7 @@ describe('Network Configuration', () => {
       expect(ethernetPortSettingsSpy).toHaveBeenCalled()
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
-    test('should read ethernet port settings pull response', async () => {
+    test('should read ethernet port settings pull response', () => {
       context.message = {
         Envelope: {
           Header: {},
@@ -314,11 +310,11 @@ describe('Network Configuration', () => {
           }
         }
       }
-      await networkConfig.readEthernetPortSettings(context, null)
+      networkConfig.readEthernetPortSettings(context, null)
       expect(context.wiredSettings).toBeDefined()
       expect(context.wirelessSettings).toBeDefined()
     })
-    test('should read ethernet port settings pull response', async () => {
+    test('should read ethernet port settings pull response', () => {
       context.message = {
         Envelope: {
           Header: {},
@@ -342,11 +338,11 @@ describe('Network Configuration', () => {
           }
         }
       }
-      await networkConfig.readEthernetPortSettings(context, null)
+      networkConfig.readEthernetPortSettings(context, null)
       expect(context.wiredSettings).toBeDefined()
       expect(context.wirelessSettings).toBeDefined()
     })
-    test('should read ethernet port settings pull response for wireless only device', async () => {
+    test('should read ethernet port settings pull response for wireless only device', () => {
       context.wiredSettings = null
       context.message = {
         Envelope: {
@@ -363,11 +359,11 @@ describe('Network Configuration', () => {
           }
         }
       }
-      await networkConfig.readEthernetPortSettings(context, null)
+      networkConfig.readEthernetPortSettings(context, null)
       expect(context.wiredSettings).toBeNull()
       expect(context.wirelessSettings).toBeDefined()
     })
-    test('should read ethernet port settings pull response for wired only device', async () => {
+    test('should read ethernet port settings pull response for wired only device', () => {
       context.wirelessSettings = null
       context.message = {
         Envelope: {
@@ -384,7 +380,7 @@ describe('Network Configuration', () => {
           }
         }
       }
-      await networkConfig.readEthernetPortSettings(context, null)
+      networkConfig.readEthernetPortSettings(context, null)
       expect(context.wirelessSettings).toBeNull()
       expect(context.wiredSettings).toBeDefined()
     })
@@ -542,24 +538,24 @@ describe('Network Configuration', () => {
       expect(WiFiEndpointSettingsSpy).toHaveBeenCalled()
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
-    test('Should read WiFi end point settings, if CIM_WiFiEndpointSettings is an array', async () => {
+    test('Should read WiFi end point settings, if CIM_WiFiEndpointSettings is an array', () => {
       context.message = {
         Envelope: {
           Header: {},
           Body: { PullResponse: { Items: { CIM_WiFiEndpointSettings: [{ InstanceID: 'home', Priority: 1 }, { InstanceID: 'office', Priority: 2 }] } } }
         }
       }
-      await networkConfig.readWiFiEndpointSettingsPullResponse(context, null)
+      networkConfig.readWiFiEndpointSettingsPullResponse(context, null)
       expect(context.wifiEndPointSettings.length).toBe(2)
     })
-    test('Should read WiFi end point settings', async () => {
+    test('Should read WiFi end point settings', () => {
       context.message = {
         Envelope: {
           Header: {},
           Body: { PullResponse: { Items: { CIM_WiFiEndpointSettings: { InstanceID: 'home', Priority: 1 } } } }
         }
       }
-      await networkConfig.readWiFiEndpointSettingsPullResponse(context, null)
+      networkConfig.readWiFiEndpointSettingsPullResponse(context, null)
       expect(context.wifiEndPointSettings.length).toBe(1)
     })
     test('Should delete profile from WiFi end point settings', async () => {

@@ -29,6 +29,7 @@ const rcsConfig: RPSConfig = {
   corsOrigin: '*',
   mpsServer: 'https://localhost:3000',
   dbProvider: 'postgres',
+  secretsProvider: 'vault',
   connectionString: 'postgresql://postgresadmin:admin123@localhost:5432/rpsdb',
   delayTimer: 12
 }
@@ -86,21 +87,11 @@ const amtConfigurations: AMTConfiguration[] = [
   }
 ]
 const profileStub: IProfilesTable = {
-  getCount: async () => {
-    return 2
-  },
-  getByName: async (name) => {
-    return amtConfigurations.find(c => c.profileName === name)
-  },
-  get: async (top, skip) => {
-    return amtConfigurations
-  },
-  getCiraConfigForProfile: async (ciraConfigName) => {
-    return ciraConfigurations.find(c => c.configName === ciraConfigName)
-  },
-  delete: async (profileName) => {
-    return true
-  },
+  getCount: async () => 2,
+  getByName: async (name) => amtConfigurations.find(c => c.profileName === name),
+  get: async (top, skip) => amtConfigurations,
+  getCiraConfigForProfile: async (ciraConfigName) => ciraConfigurations.find(c => c.configName === ciraConfigName),
+  delete: async (profileName) => true,
   insert: async (amtConfig: AMTConfiguration) => {
     amtConfigurations.push(amtConfig)
     return amtConfig

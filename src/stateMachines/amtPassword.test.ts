@@ -6,7 +6,7 @@
 import { AMTPassword, AMTPasswordContext, AMTPasswordEvent } from './amtPassword'
 import { v4 as uuid } from 'uuid'
 import { devices } from '../WebSocketListener'
-import { EnvReader } from '../utils/EnvReader'
+import { Environment } from '../utils/Environment'
 import { config } from '../test/helper/Config'
 import { HttpHandler } from '../HttpHandler'
 import { Configurator } from '../Configurator'
@@ -14,7 +14,7 @@ import * as common from './common'
 import { interpret } from 'xstate'
 
 const clientId = uuid()
-EnvReader.GlobalEnvConfig = config
+Environment.Config = config
 
 describe('AMT Password State Machine', () => {
   let amtPwd: AMTPassword
@@ -28,7 +28,7 @@ describe('AMT Password State Machine', () => {
   beforeEach(() => {
     amtPwd = new AMTPassword()
     amtPwdContext = {
-      clientId: clientId,
+      clientId,
       httpHandler: new HttpHandler(),
       status: 'success',
       errorMessage: '',
@@ -48,7 +48,7 @@ describe('AMT Password State Machine', () => {
       uuid: '4c4c4544-004b-4210-8033-b6c04f504633',
       messageId: 1
     }
-    invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue()
+    invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue(null)
 
     configuration = {
       services: {
@@ -68,12 +68,12 @@ describe('AMT Password State Machine', () => {
     currentStateIndex = 0
   })
 
-  test('should get General Settings', async () => {
+  it('should get General Settings', async () => {
     await amtPwd.getGeneralSettings(amtPwdContext)
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
 
-  test('should change AMT Password', async () => {
+  it('should change AMT Password', async () => {
     amtPwdContext.generalSettings = {
       DigestRealm: 'Digest:A3829B3827DE4D33D4449B366831FD01'
     }
@@ -81,17 +81,18 @@ describe('AMT Password State Machine', () => {
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
 
-  test('should return true to store device data in vault', async () => {
-    const insertSpy = jest.spyOn(configurator.amtDeviceRepository, 'insert').mockImplementation(async () => true)
+  it('should return true to store device data in vault', async () => {
+    const insertSpy = jest.spyOn(configurator.secretsManager, 'writeSecretWithObject').mockImplementation(async () => true)
     const response = await amtPwd.saveDeviceInfoToSecretProvider(amtPwdContext, null)
     expect(insertSpy).toHaveBeenCalled()
     expect(response).toBe(true)
   })
 
-  test('should return false if not able to save device data in vault', async () => {
-    amtPwd.configurator = null
-    const response = await amtPwd.saveDeviceInfoToSecretProvider(amtPwdContext, null)
-    expect(response).toBe(false)
+  it('should return false if not able to save device data in vault', async () => {
+    const err = new Error('unable to save')
+    jest.spyOn(configurator.secretsManager, 'writeSecretWithObject').mockRejectedValueOnce(err)
+
+    await expect(amtPwd.saveDeviceInfoToSecretProvider(amtPwdContext, null)).rejects.toBe(err)
   })
 
   it('should eventually reach "SUCCESS"', (done) => {
@@ -111,7 +112,7 @@ describe('AMT Password State Machine', () => {
       }
     })
     amtPwdService.start()
-    amtPwdService.send({ type: 'CHANGEPASSWORD', clientId: clientId, data: null })
+    amtPwdService.send({ type: 'CHANGEPASSWORD', clientId, data: null })
   })
 
   it('should eventually reach "Failed" at save-amt-password-to-secret-provider state ', (done) => {
@@ -133,6 +134,6 @@ describe('AMT Password State Machine', () => {
     })
 
     amtPwdService.start()
-    amtPwdService.send({ type: 'CHANGEPASSWORD', clientId: clientId, data: null })
+    amtPwdService.send({ type: 'CHANGEPASSWORD', clientId, data: null })
   })
 })

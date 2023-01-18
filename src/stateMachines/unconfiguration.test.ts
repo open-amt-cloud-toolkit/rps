@@ -6,7 +6,7 @@
 import { Unconfiguration, UnconfigContext } from './unconfiguration'
 import { v4 as uuid } from 'uuid'
 import { devices } from '../WebSocketListener'
-import { EnvReader } from '../utils/EnvReader'
+import { Environment } from '../utils/Environment'
 import { config } from '../test/helper/Config'
 import { HttpHandler } from '../HttpHandler'
 import { interpret } from 'xstate'
@@ -14,7 +14,7 @@ import { MPSType } from './ciraConfiguration'
 import * as common from './common'
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 const clientId = uuid()
-EnvReader.GlobalEnvConfig = config
+Environment.Config = config
 
 describe('Unconfiguration State Machine', () => {
   let unconfiguration: Unconfiguration
@@ -26,9 +26,9 @@ describe('Unconfiguration State Machine', () => {
   jest.setTimeout(15000)
   beforeEach(() => {
     unconfiguration = new Unconfiguration()
-    invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue()
+    invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue(null)
     unconfigContext = {
-      clientId: clientId,
+      clientId,
       httpHandler: new HttpHandler(),
       status: 'success',
       errorMessage: '',

@@ -13,62 +13,54 @@ const nodeForge = new NodeForge()
 const certManager = new CertManager(new Logger('CertManager'), nodeForge)
 let pfxobj
 
-export const domainInsertValidator = (): any => {
-  return [
-    check('profileName')
-      .not()
-      .isEmpty()
-      .withMessage('AMT Domain profile name is required')
-      .matches('^[a-zA-Z0-9$@$!%*#?&-_~^]+$')
-      .withMessage('AMT Domain profile name accepts letters, numbers, special characters and no spaces'),
-    check('provisioningCertPassword')
-      .not()
-      .isEmpty()
-      .withMessage('Provisioning Cert Password is required')
-      .isLength({ max: 64 })
-      .withMessage('Password should not exceed 64 characters in length')
-      .custom(passwordValidator()),
-    check('domainSuffix')
-      .not()
-      .isEmpty()
-      .withMessage('Domain suffix name is required')
-      .custom(domainSuffixValidator()),
-    check('provisioningCert')
-      .not()
-      .isEmpty()
-      .withMessage('Provisioning certificate is required')
-      .custom(expirationValidator()),
-    check('provisioningCertStorageFormat')
-      .not()
-      .isEmpty()
-      .withMessage('Provisioning Cert Storage Format is required')
-      .isIn(['raw', 'string'])
-      .withMessage("Provisioning Cert Storage Format should be either 'raw' or 'string'")
-  ]
-}
+export const domainInsertValidator = (): any => [
+  check('profileName')
+    .not()
+    .isEmpty()
+    .withMessage('AMT Domain profile name is required')
+    .matches('^[a-zA-Z0-9$@$!%*#?&-_~^]+$')
+    .withMessage('AMT Domain profile name accepts letters, numbers, special characters and no spaces'),
+  check('provisioningCertPassword')
+    .not()
+    .isEmpty()
+    .withMessage('Provisioning Cert Password is required')
+    .isLength({ max: 64 })
+    .withMessage('Password should not exceed 64 characters in length')
+    .custom(passwordValidator()),
+  check('domainSuffix')
+    .not()
+    .isEmpty()
+    .withMessage('Domain suffix name is required')
+    .custom(domainSuffixValidator()),
+  check('provisioningCert')
+    .not()
+    .isEmpty()
+    .withMessage('Provisioning certificate is required')
+    .custom(expirationValidator()),
+  check('provisioningCertStorageFormat')
+    .not()
+    .isEmpty()
+    .withMessage('Provisioning Cert Storage Format is required')
+    .isIn(['raw', 'string'])
+    .withMessage("Provisioning Cert Storage Format should be either 'raw' or 'string'")
+]
 
-export const domainUpdateValidator = (): any => {
-  return [
-    check('profileName')
-      .not()
-      .isEmpty()
-      .withMessage('AMT Domain profile name is required')
-      .matches('^[a-zA-Z0-9$@$!%*#?&-_~^]+$')
-      .withMessage('AMT Domain name accepts letters, numbers, special characters and no spaces'),
-    check('domainSuffix')
-      .optional(),
-    check('provisioningCert')
-      .optional(),
-    check('provisioningCertStorageFormat')
-      .optional()
-      .isIn(['raw', 'string'])
-      .withMessage('Provisioning Cert Storage Format is either "raw" or "string"'),
-    check('provisioningCertPassword')
-      .optional()
-      .isLength({ max: 64 })
-      .withMessage('Password should not exceed 64 characters in length')
-  ]
-}
+export const domainUpdateValidator = (): any => [
+  check('profileName')
+    .not()
+    .isEmpty()
+    .withMessage('AMT Domain profile name is required')
+    .matches('^[a-zA-Z0-9$@$!%*#?&-_~^]+$')
+    .withMessage('AMT Domain name accepts letters, numbers, special characters and no spaces'),
+  check('domainSuffix'),
+  check('provisioningCert'),
+  check('provisioningCertStorageFormat')
+    .isIn(['raw', 'string'])
+    .withMessage('Provisioning Cert Storage Format is either "raw" or "string"'),
+  check('provisioningCertPassword')
+    .isLength({ max: 64 })
+    .withMessage('Password should not exceed 64 characters in length')
+]
 
 function passwordValidator (): CustomValidator {
   return (value, { req }) => { pfxobj = passwordChecker(certManager, req); return true }

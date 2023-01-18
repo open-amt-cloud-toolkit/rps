@@ -11,6 +11,7 @@ import { CertManager } from '../../../certManager'
 import { NodeForge } from '../../../NodeForge'
 import { ClientAction } from '../../../models/RCS.Config'
 import handleError from '../../../utils/handleError'
+import { DeviceCredentials } from '../../../interfaces/ISecretManagerService'
 
 export async function createProfile (req: Request, res: Response): Promise<void> {
   let vaultStatus: any
@@ -44,13 +45,13 @@ export async function createProfile (req: Request, res: Response): Promise<void>
     if (req.secretsManager) {
       if (!amtConfig.generateRandomPassword || !amtConfig.generateRandomMEBxPassword) {
       // store the passwords in Vault if not randomly generated per device
-        const data = { data: { AMT_PASSWORD: '', MEBX_PASSWORD: '' } }
+        const data: DeviceCredentials = { AMT_PASSWORD: '', MEBX_PASSWORD: '' }
         if (!amtConfig.generateRandomPassword) {
-          data.data.AMT_PASSWORD = pwdBefore
+          data.AMT_PASSWORD = pwdBefore
           log.debug('AMT Password written to vault')
         }
         if (!amtConfig.generateRandomMEBxPassword) {
-          data.data.MEBX_PASSWORD = mebxPwdBefore
+          data.MEBX_PASSWORD = mebxPwdBefore
           log.debug('MEBX Password written to vault')
         }
         vaultStatus = await req.secretsManager.writeSecretWithObject(`profiles/${amtConfig.profileName}`, data)
@@ -107,11 +108,9 @@ export async function generateSelfSignedCertificate (req: Request, profileName: 
   // gene
   const issuedCert = cm.createCertificate(issueAttr, rootCert.key, null, certAttr, keyUsages)
 
-  const certs: {data: TLSCerts} = {
-    data: {
-      ROOT_CERTIFICATE: rootCert,
-      ISSUED_CERTIFICATE: issuedCert
-    }
+  const certs: TLSCerts = {
+    ROOT_CERTIFICATE: rootCert,
+    ISSUED_CERTIFICATE: issuedCert
   }
 
   await req.secretsManager.writeSecretWithObject(`TLS/${profileName}`, certs)

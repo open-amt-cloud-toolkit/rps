@@ -11,13 +11,12 @@ import { invokeWsmanCall } from './common'
 import Logger from '../Logger'
 import { Error } from './error'
 import { Configurator } from '../Configurator'
-import { MqttProvider } from '../utils/MqttProvider'
 import { devices } from '../WebSocketListener'
-import { AMTDeviceDTO } from '../models'
 import { AMTUserName, AMTRandomPasswordLength } from '../utils/constants'
 import { SignatureHelper } from '../utils/SignatureHelper'
 import { Validator } from '../Validator'
 import { PasswordHelper } from '../utils/PasswordHelper'
+import { DeviceCredentials } from '../interfaces/ISecretManagerService'
 
 export interface AMTPasswordContext {
   message: any
@@ -175,21 +174,12 @@ export class AMTPassword {
 
   async saveDeviceInfoToSecretProvider (context: AMTPasswordContext, event: AMTPasswordEvent): Promise<boolean> {
     const clientObj = devices[context.clientId]
-    if (this.configurator?.amtDeviceRepository) {
-      const amtDevice: AMTDeviceDTO = {
-        guid: clientObj.uuid,
-        name: clientObj.hostname,
-        amtpass: context.amtPassword,
-        mebxpass: clientObj.mebxPassword,
-        mpspass: clientObj.mpsPassword,
-        mpsuser: clientObj.mpsUsername
-      }
-      await this.configurator.amtDeviceRepository.insert(amtDevice)
-      return true
-    } else {
-      MqttProvider.publishEvent('fail', ['AMTPasswordChange'], 'Unable to write device', clientObj.uuid)
-      this.logger.error('unable to write device')
+    const data: DeviceCredentials = {
+      AMT_PASSWORD: context.amtPassword,
+      MEBX_PASSWORD: clientObj.mebxPassword,
+      MPS_PASSWORD: clientObj.mpsPassword
     }
-    return false
+    await this.configurator.secretsManager.writeSecretWithObject(`devices/${clientObj.uuid}`, data)
+    return true
   }
 }
