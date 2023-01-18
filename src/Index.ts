@@ -67,7 +67,7 @@ export const waitForDB = async function (db: IDB): Promise<void> {
 export const waitForSecretsManager = async function (secretsManager: ISecretManagerService): Promise<void> {
   await backOff(async () => await secretsManager.health(), {
     retry: (e: any, attemptNumber: number) => {
-      log.info(`waiting for secret manager service[${attemptNumber}] ${e.code || e.message || e}`)
+      log.info(`waiting for secret manager service[${attemptNumber}] ${e.message || e.code || e}`)
       return true
     }
   })
