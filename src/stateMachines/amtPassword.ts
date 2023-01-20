@@ -147,7 +147,7 @@ export class AMTPassword {
 
   async getGeneralSettings (context): Promise<any> {
     const amt = new AMT.Messages()
-    context.xmlMessage = amt.GeneralSettings(AMT.Methods.GET)
+    context.xmlMessage = amt.GeneralSettings.Get()
     return await invokeWsmanCall(context)
   }
 
@@ -168,7 +168,7 @@ export class AMTPassword {
     // Encode to base64
     const amt = new AMT.Messages()
     const encodedPassword = Buffer.from(result, 'binary').toString('base64')
-    context.xmlMessage = amt.AuthorizationService(AMT.Methods.SET_ADMIN_ACL_ENTRY_EX, AMTUserName, encodedPassword)
+    context.xmlMessage = amt.AuthorizationService.SetAdminACLEntryEx(AMTUserName, encodedPassword)
     return await invokeWsmanCall(context)
   }
 

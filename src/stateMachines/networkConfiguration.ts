@@ -13,7 +13,6 @@ import { devices } from '../WebSocketListener'
 import { Error } from './error'
 import { Configurator } from '../Configurator'
 import { DbCreatorFactory } from '../factories/DbCreatorFactory'
-import { AMTEthernetPortSettings, AMT_WiFiPortConfigurationServiceResponse } from '../models/WSManResponse'
 import { invokeWsmanCall } from './common'
 import { WifiCredentials } from '../interfaces/ISecretManagerService'
 
@@ -377,7 +376,7 @@ export class NetworkConfiguration {
   }
 
   async putGeneralSettings (context): Promise<any> {
-    context.xmlMessage = context.amt.GeneralSettings(AMT.Methods.PUT, context.generalSettings)
+    context.xmlMessage = context.amt.GeneralSettings.Put(context.generalSettings)
     return await invokeWsmanCall(context)
   }
 
@@ -398,12 +397,12 @@ export class NetworkConfiguration {
   }
 
   async enumerateEthernetPortSettings (context): Promise<any> {
-    context.xmlMessage = context.amt.EthernetPortSettings(AMT.Methods.ENUMERATE)
+    context.xmlMessage = context.amt.EthernetPortSettings.Enumerate()
     return await invokeWsmanCall(context)
   }
 
   async pullEthernetPortSettings (context): Promise<any> {
-    context.xmlMessage = context.amt.EthernetPortSettings(AMT.Methods.PULL, context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+    context.xmlMessage = context.amt.EthernetPortSettings.Pull(context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
     return await invokeWsmanCall(context)
   }
 
@@ -458,12 +457,12 @@ export class NetworkConfiguration {
     }
     // this.logger.debug(`Updated Network configuration to set on device :  ${JSON.stringify(context.message, null, '\t')}`)
     // put request to update ethernet port settings on the device
-    context.xmlMessage = context.amt.EthernetPortSettings(AMT.Methods.PUT, null, context.wiredSettings)
+    context.xmlMessage = context.amt.EthernetPortSettings.Put(context.wiredSettings)
     return await invokeWsmanCall(context)
   }
 
   readEthernetPortSettingsPutResponse (context: NetworkConfigContext, event: NetworkConfigEvent): void {
-    const amtEthernetPortSettings: AMTEthernetPortSettings = context.message.Envelope.Body.AMT_EthernetPortSettings
+    const amtEthernetPortSettings: AMT.Models.EthernetPortSettings = context.message.Envelope.Body.AMT_EthernetPortSettings
     if (context.amtProfile.dhcpEnabled === amtEthernetPortSettings.DHCPEnabled && !(context.amtProfile.dhcpEnabled) === amtEthernetPortSettings.SharedStaticIp && amtEthernetPortSettings.IpSyncEnabled) {
       // Check with status messages once
       devices[context.clientId].status.Network = 'Wired Network Configured'
@@ -473,12 +472,12 @@ export class NetworkConfiguration {
   }
 
   async enumerateWiFiEndpointSettings (context): Promise<any> {
-    context.xmlMessage = context.cim.WiFiEndpointSettings(CIM.Methods.ENUMERATE)
+    context.xmlMessage = context.cim.WiFiEndpointSettings.Enumerate()
     return await invokeWsmanCall(context)
   }
 
   async pullWiFiEndpointSettings (context): Promise<any> {
-    context.xmlMessage = context.cim.WiFiEndpointSettings(CIM.Methods.PULL, context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+    context.xmlMessage = context.cim.WiFiEndpointSettings.Pull(context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
     return await invokeWsmanCall(context)
   }
 
@@ -495,7 +494,7 @@ export class NetworkConfiguration {
 
     context.wifiEndPointSettings = []
     if (wifiEndPointSettings.length > 0) {
-    //  ignore the profiles with Priority 0 and without InstanceID, which is required to delete a wifi profile on AMT device
+      //  ignore the profiles with Priority 0 and without InstanceID, which is required to delete a wifi profile on AMT device
       wifiEndPointSettings.forEach(wifi => {
         if (wifi.InstanceID != null && wifi.Priority !== 0) {
           context.wifiEndPointSettings.push({ ...wifi })
@@ -508,7 +507,7 @@ export class NetworkConfiguration {
     let wifiEndpoints = context.wifiEndPointSettings
     // Deletes first profile in the array
     const selector = { name: 'InstanceID', value: wifiEndpoints[0].InstanceID }
-    context.xmlMessage = context.cim.WiFiEndpointSettings(CIM.Methods.DELETE, null, selector)
+    context.xmlMessage = context.cim.WiFiEndpointSettings.Delete(selector)
     wifiEndpoints = wifiEndpoints.slice(1)
     context.wifiEndPointSettings = wifiEndpoints
     return await invokeWsmanCall(context)
@@ -516,7 +515,7 @@ export class NetworkConfiguration {
 
   async updateWifiPort (context: NetworkConfigContext, event: NetworkConfigEvent): Promise<any> {
     // Enumeration 32769 - WiFi is enabled in S0 + Sx/AC
-    context.xmlMessage = context.cim.WiFiPort(CIM.Methods.REQUEST_STATE_CHANGE, 32769)
+    context.xmlMessage = context.cim.WiFiPort.RequestStateChange(32769)
     return await invokeWsmanCall(context)
   }
 
@@ -539,11 +538,11 @@ export class NetworkConfiguration {
     const wifiConfig = await this.getWifiProfile(context.amtProfile.wifiConfigs[context.wifiProfileCount].profileName)
     const selector = { name: 'Name', value: 'WiFi Endpoint 0' }
     // Add  WiFi profile information to WiFi endpoint settings object
-    const wifiEndpointSettings = {
+    const wifiEndpointSettings: CIM.Models.WiFiEndpointSettings = {
       ElementName: wifiConfig.profileName,
       InstanceID: `Intel(r) AMT:WiFi Endpoint Settings ${wifiConfig.profileName}`,
-      AuthenticationMethod: wifiConfig.authenticationMethod,
-      EncryptionMethod: wifiConfig.encryptionMethod,
+      AuthenticationMethod: wifiConfig.authenticationMethod as CIM.Types.WiFiEndpointSettings.AuthenticationMethod,
+      EncryptionMethod: wifiConfig.encryptionMethod as CIM.Types.WiFiEndpointSettings.EncryptionMethod,
       SSID: wifiConfig.ssid,
       Priority: context.amtProfile.wifiConfigs[context.wifiProfileCount].priority,
       PSKPassPhrase: wifiConfig.pskPassphrase
@@ -551,19 +550,19 @@ export class NetworkConfiguration {
 
     // Increment the count to keep track of profiles added to AMT
     ++context.wifiProfileCount
-    context.xmlMessage = context.amt.WiFiPortConfigurationService(AMT.Methods.ADD_WIFI_SETTINGS, wifiEndpointSettings, selector)
+    context.xmlMessage = context.amt.WiFiPortConfigurationService.AddWiFiSettings(wifiEndpointSettings, selector)
     return await invokeWsmanCall(context)
   }
 
   async getWiFiPortConfigurationService (context: NetworkConfigContext, event: NetworkConfigEvent): Promise<any> {
-    context.xmlMessage = context.amt.WiFiPortConfigurationService(AMT.Methods.GET, null, null)
+    context.xmlMessage = context.amt.WiFiPortConfigurationService.Get()
     return await invokeWsmanCall(context)
   }
 
   async putWiFiPortConfigurationService (context: NetworkConfigContext, event: NetworkConfigEvent): Promise<any> {
-    const wifiPortConfigurationService: AMT_WiFiPortConfigurationServiceResponse = context.message.Envelope.Body.AMT_WiFiPortConfigurationService
-    wifiPortConfigurationService.localProfileSynchronizationEnabled = 1
-    context.xmlMessage = context.amt.WiFiPortConfigurationService(AMT.Methods.PUT, wifiPortConfigurationService, null)
+    const wifiPortConfigurationService: AMT.Models.WiFiPortConfigurationService = context.message.Envelope.Body.AMT_WiFiPortConfigurationService
+    wifiPortConfigurationService.localProfileSynchronizationEnabled = 3
+    context.xmlMessage = context.amt.WiFiPortConfigurationService.Put(wifiPortConfigurationService)
     return await invokeWsmanCall(context)
   }
 }

@@ -166,14 +166,14 @@ export class SyncIP {
 
   async enumerateEthernetPortSettings (context: SyncIPContext): Promise<any> {
     const amt = new AMT.Messages()
-    context.xmlMessage = amt.EthernetPortSettings(AMT.Methods.ENUMERATE)
+    context.xmlMessage = amt.EthernetPortSettings.Enumerate()
     this.logger.info(context.xmlMessage)
     return await invokeWsmanCall(context)
   }
 
   async pullEthernetPortSettings (context: SyncIPContext): Promise<any> {
     const amt = new AMT.Messages()
-    context.xmlMessage = amt.EthernetPortSettings(AMT.Methods.PULL, context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+    context.xmlMessage = amt.EthernetPortSettings.Pull(context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
     this.logger.info(context.xmlMessage)
     return await invokeWsmanCall(context)
   }
@@ -214,7 +214,7 @@ export class SyncIP {
       context.wiredSettings.SecondaryDNS = context.ipConfiguration.secondaryDns || context.wiredSettings.SecondaryDNS
     }
     const amt = new AMT.Messages()
-    context.xmlMessage = amt.EthernetPortSettings(AMT.Methods.PUT, null, context.wiredSettings)
+    context.xmlMessage = amt.EthernetPortSettings.Put(context.wiredSettings)
     return await invokeWsmanCall(context)
   }
 }

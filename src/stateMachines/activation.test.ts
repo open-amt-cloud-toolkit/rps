@@ -27,7 +27,6 @@ describe('Activation State Machine', () => {
   let activation: Activation
   let context: ActivationContext
   let invokeWsmanCallSpy: jest.SpyInstance
-  let hostBasedSetupServiceSpy: jest.SpyInstance
   let responseMessageSpy: jest.SpyInstance
   let sendSpy: jest.SpyInstance
   let signStringSpy: jest.SpyInstance
@@ -118,7 +117,6 @@ describe('Activation State Machine', () => {
 
     invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue(null)
     getPasswordSpy = jest.spyOn(activation, 'getPassword').mockResolvedValue('abcdef')
-    hostBasedSetupServiceSpy = jest.spyOn(context.ips, 'HostBasedSetupService').mockReturnValue('abcdef')
     responseMessageSpy = jest.spyOn(ClientResponseMsg, 'get').mockReturnValue({} as any)
     sendSpy = jest.spyOn(devices[clientId].ClientSocket, 'send').mockReturnValue()
     signStringSpy = jest.spyOn(activation.signatureHelper, 'signString').mockReturnValue('abcdef')
@@ -283,7 +281,7 @@ describe('Activation State Machine', () => {
     it('should send WSMan to get amt general settings', async () => {
       context.profile = null
       context.amtDomain = null
-      const generalSettingsSpy = jest.spyOn(context.amt, 'GeneralSettings').mockImplementation().mockReturnValue('abcdef')
+      const generalSettingsSpy = jest.spyOn(context.amt.GeneralSettings, 'Get').mockImplementation().mockReturnValue('abcdef')
       await activation.getGeneralSettings(context)
       expect(generalSettingsSpy).toHaveBeenCalled()
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
@@ -292,7 +290,7 @@ describe('Activation State Machine', () => {
     it('should send WSMan to get host based setup service', async () => {
       context.profile = null
       context.amtDomain = null
-      const hostBasedSetupServiceSpy = jest.spyOn(context.ips, 'HostBasedSetupService').mockImplementation().mockReturnValue('abcdef')
+      const hostBasedSetupServiceSpy = jest.spyOn(context.ips.HostBasedSetupService, 'Get').mockImplementation().mockReturnValue('abcdef')
       await activation.getHostBasedSetupService(context)
       expect(hostBasedSetupServiceSpy).toHaveBeenCalled()
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
@@ -396,6 +394,7 @@ describe('Activation State Machine', () => {
       clientObj.count = 1
       clientObj.certObj = {} as any
       clientObj.certObj.certChain = ['leaf', 'inter1', 'root']
+      const hostBasedSetupServiceSpy = jest.spyOn(context.ips.HostBasedSetupService, 'AddNextCertInChain').mockReturnValue('abcdef')
       const response = await activation.injectCertificate(clientId, context.ips)
       expect(response).toBeDefined()
       expect(clientObj.count).toBe(2)
@@ -406,6 +405,7 @@ describe('Activation State Machine', () => {
       clientObj.count = 2
       clientObj.certObj = {} as any
       clientObj.certObj.certChain = ['leaf', 'inter1', 'root']
+      const hostBasedSetupServiceSpy = jest.spyOn(context.ips.HostBasedSetupService, 'AddNextCertInChain').mockReturnValue('abcdef')
       const response = await activation.injectCertificate(clientId, context.ips)
       expect(response).toBeDefined()
       expect(clientObj.count).toBe(3)
@@ -416,6 +416,7 @@ describe('Activation State Machine', () => {
       clientObj.count = 3
       clientObj.certObj = {} as any
       clientObj.certObj.certChain = ['leaf', 'inter1', 'root']
+      const hostBasedSetupServiceSpy = jest.spyOn(context.ips.HostBasedSetupService, 'AddNextCertInChain').mockReturnValue('abcdef')
       const response = await activation.injectCertificate(clientId, context.ips)
       expect(response).toBeDefined()
       expect(clientObj.count).toBe(4)

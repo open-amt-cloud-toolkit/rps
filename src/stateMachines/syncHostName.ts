@@ -144,7 +144,7 @@ export class SyncHostName {
 
   async getGeneralSettings (context): Promise<any> {
     const amt = new AMT.Messages()
-    context.xmlMessage = amt.GeneralSettings(AMT.Methods.GET)
+    context.xmlMessage = amt.GeneralSettings.Get()
     return await invokeWsmanCall(context)
   }
 
@@ -155,7 +155,7 @@ export class SyncHostName {
   async updateAMT (context: SyncHostNameContext): Promise<any> {
     const amt = new AMT.Messages()
     context.generalSettings.HostName = context.hostnameInfo.hostname
-    context.xmlMessage = amt.GeneralSettings(AMT.Methods.PUT, context.generalSettings)
+    context.xmlMessage = amt.GeneralSettings.Put(context.generalSettings)
     return await invokeWsmanCall(context)
   }
 
