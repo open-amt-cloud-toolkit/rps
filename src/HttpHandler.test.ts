@@ -91,7 +91,7 @@ it('should parse authentication response header with rogue double comma', async 
 
 it('should return a WSMan request', async () => {
   const cim = new CIM.Messages()
-  const xmlRequestBody = cim.ServiceAvailableToElement(CIM.Methods.ENUMERATE, '1')
+  const xmlRequestBody = cim.ServiceAvailableToElement.Enumerate()
   const digestChallenge = {
     realm: 'Digest:56ABC7BE224EF620C69EB88F01071DC8',
     nonce: 'fVNueyEAAAAAAAAAcO8WqJ8s+WdyFUIY',

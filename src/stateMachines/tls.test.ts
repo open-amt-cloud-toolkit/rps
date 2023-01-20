@@ -163,7 +163,7 @@ describe('TLS State Machine', () => {
   it('should putRemoteTLSData', async () => {
     context.tlsSettingData = [{}]
     jest.spyOn(forge.pki, 'certificateFromPem').mockReturnValue({ subject: { getField: () => ({}) } } as any)
-    const tlsSettingDataSpy = jest.spyOn(context.amt, 'TLSSettingData').mockReturnValue('')
+    const tlsSettingDataSpy = jest.spyOn(context.amt.TLSSettingData, 'Put').mockReturnValue('')
     await tls.putRemoteTLSData(context, null)
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
     expect(tlsSettingDataSpy).toHaveBeenCalled()
@@ -171,7 +171,7 @@ describe('TLS State Machine', () => {
   it('should putLocalTLSData', async () => {
     context.tlsSettingData = [{}, {}]
     jest.spyOn(forge.pki, 'certificateFromPem').mockReturnValue({ subject: { getField: () => ({}) } } as any)
-    const tlsSettingDataSpy = jest.spyOn(context.amt, 'TLSSettingData').mockReturnValue('')
+    const tlsSettingDataSpy = jest.spyOn(context.amt.TLSSettingData, 'Put').mockReturnValue('')
     await tls.putLocalTLSData(context, null)
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
     expect(tlsSettingDataSpy).toHaveBeenCalled()

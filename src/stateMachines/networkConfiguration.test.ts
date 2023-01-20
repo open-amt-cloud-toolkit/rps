@@ -22,9 +22,6 @@ describe('Network Configuration', () => {
   let networkConfig: NetworkConfiguration
   let context
   let invokeWsmanCallSpy
-  let ethernetPortSettingsSpy
-  let WiFiPortConfigurationServiceSpy
-  let WiFiEndpointSettingsSpy
 
   jest.setTimeout(15000)
   beforeEach(() => {
@@ -114,10 +111,7 @@ describe('Network Configuration', () => {
         }
       ]
     }
-    WiFiPortConfigurationServiceSpy = jest.spyOn(context.amt, 'WiFiPortConfigurationService').mockReturnValue('done')
     invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue(null)
-    ethernetPortSettingsSpy = jest.spyOn(context.amt, 'EthernetPortSettings').mockImplementation().mockReturnValue('abcdef')
-    WiFiEndpointSettingsSpy = jest.spyOn(context.cim, 'WiFiEndpointSettings').mockReturnValue('done')
     currentStateIndex = 0
     config = {
       services: {
@@ -265,6 +259,7 @@ describe('Network Configuration', () => {
 
   describe('Ethernet Port Settings', () => {
     test('should enumerate ethernet port settings', async () => {
+      const ethernetPortSettingsSpy = jest.spyOn(context.amt.EthernetPortSettings, 'Enumerate').mockImplementation().mockReturnValue('abcdef')
       await networkConfig.enumerateEthernetPortSettings(context)
       expect(ethernetPortSettingsSpy).toHaveBeenCalled()
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
@@ -280,6 +275,7 @@ describe('Network Configuration', () => {
           }
         }
       }
+      const ethernetPortSettingsSpy = jest.spyOn(context.amt.EthernetPortSettings, 'Pull').mockImplementation().mockReturnValue('abcdef')
       await networkConfig.pullEthernetPortSettings(context)
       expect(ethernetPortSettingsSpy).toHaveBeenCalled()
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
@@ -405,11 +401,12 @@ describe('Network Configuration', () => {
         SharedStaticIp: false,
         SubnetMask: '255.255.255.0'
       }
+      const ethernetPortSettingsSpy = jest.spyOn(context.amt.EthernetPortSettings, 'Put').mockImplementation().mockReturnValue('abcdef')
       await networkConfig.putEthernetPortSettings(context)
       expect(ethernetPortSettingsSpy).toHaveBeenCalled()
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
-    test('should put ethernet port settings, DHCPEnabled is set to true', async () => {
+    test('should put ethernet port settings, DHCPEnabled is set to false', async () => {
       context.amtProfile.dhcpEnabled = false
       context.wiredSettings = {
         DHCPEnabled: true,
@@ -431,6 +428,7 @@ describe('Network Configuration', () => {
         SharedStaticIp: false,
         SubnetMask: '255.255.255.0'
       }
+      const ethernetPortSettingsSpy = jest.spyOn(context.amt.EthernetPortSettings, 'Put').mockImplementation().mockReturnValue('abcdef')
       await networkConfig.putEthernetPortSettings(context)
       expect(ethernetPortSettingsSpy).toHaveBeenCalled()
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
@@ -485,6 +483,7 @@ describe('Network Configuration', () => {
 
   describe('WiFi Port Configuration Service', () => {
     test('should get WiFi Port Configuration Service', async () => {
+      const WiFiPortConfigurationServiceSpy = jest.spyOn(context.amt.WiFiPortConfigurationService, 'Get').mockReturnValue('done')
       await networkConfig.getWiFiPortConfigurationService(context, null)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
       expect(WiFiPortConfigurationServiceSpy).toHaveBeenCalled()
@@ -496,6 +495,7 @@ describe('Network Configuration', () => {
           Body: { AMT_WiFiPortConfigurationService: { localProfileSynchronizationEnabled: 1 } }
         }
       }
+      const WiFiPortConfigurationServiceSpy = jest.spyOn(context.amt.WiFiPortConfigurationService, 'Put').mockReturnValue('done')
       await networkConfig.putWiFiPortConfigurationService(context, null)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
       expect(WiFiPortConfigurationServiceSpy).toHaveBeenCalled()
@@ -511,6 +511,7 @@ describe('Network Configuration', () => {
         pskValue: 1,
         tenantId: ''
       })
+      const WiFiPortConfigurationServiceSpy = jest.spyOn(context.amt.WiFiPortConfigurationService, 'AddWiFiSettings').mockReturnValue('done')
       await networkConfig.addWifiConfigs(context, null)
       expect(getWifiProfileSpy).toHaveBeenCalled()
       expect(WiFiPortConfigurationServiceSpy).toHaveBeenCalled()
@@ -520,6 +521,7 @@ describe('Network Configuration', () => {
 
   describe('WiFi Endpoint Settings', () => {
     test('should get enumeration number for WiFi end point settings', async () => {
+      const WiFiEndpointSettingsSpy = jest.spyOn(context.cim.WiFiEndpointSettings, 'Enumerate').mockReturnValue('done')
       await networkConfig.enumerateWiFiEndpointSettings(context)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
       expect(WiFiEndpointSettingsSpy).toHaveBeenCalled()
@@ -534,6 +536,7 @@ describe('Network Configuration', () => {
           Body: { EnumerateResponse: { EnumerationContext: '92340000-0000-0000-0000-000000000000' } }
         }
       }
+      const WiFiEndpointSettingsSpy = jest.spyOn(context.cim.WiFiEndpointSettings, 'Pull').mockReturnValue('done')
       await networkConfig.pullWiFiEndpointSettings(context)
       expect(WiFiEndpointSettingsSpy).toHaveBeenCalled()
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
@@ -560,6 +563,7 @@ describe('Network Configuration', () => {
     })
     test('Should delete profile from WiFi end point settings', async () => {
       context.wifiEndPointSettings = [{ InstanceID: 'home', Priority: 1 }]
+      const WiFiEndpointSettingsSpy = jest.spyOn(context.cim.WiFiEndpointSettings, 'Delete').mockReturnValue('done')
       await networkConfig.deleteWiFiProfileOnAMTDevice(context, null)
       expect(context.wifiEndPointSettings.length).toBe(0)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
@@ -568,10 +572,8 @@ describe('Network Configuration', () => {
   })
 
   describe('AMT General Settings', () => {
-    let generalSettingsSpy
     let generalSettingsResponse
     beforeEach(() => {
-      generalSettingsSpy = jest.spyOn(context.amt, 'GeneralSettings').mockReturnValue('done')
       generalSettingsResponse = {
         AMTNetworkEnabled: 1,
         InstanceID: 'Intel(r) AMT: General Settings',
@@ -588,6 +590,7 @@ describe('Network Configuration', () => {
         RmcpPingResponseEnabled: true,
         SharedFQDN: true
       }
+      const generalSettingsSpy = jest.spyOn(context.amt.GeneralSettings, 'Put').mockReturnValue('done')
       await networkConfig.putGeneralSettings(context)
       expect(generalSettingsSpy).toHaveBeenCalled()
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
@@ -607,7 +610,7 @@ describe('Network Configuration', () => {
 
   describe('CIM WiFi Port', () => {
     test('should update wifi port', async () => {
-      const wifiPortSpy = jest.spyOn(context.cim, 'WiFiPort').mockReturnValue('done')
+      const wifiPortSpy = jest.spyOn(context.cim.WiFiPort, 'RequestStateChange').mockReturnValue('done')
       await networkConfig.updateWifiPort(context, null)
       expect(wifiPortSpy).toHaveBeenCalled()
       expect(invokeWsmanCallSpy).toHaveBeenCalled()

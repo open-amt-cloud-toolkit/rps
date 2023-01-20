@@ -478,73 +478,73 @@ export class Unconfiguration {
 
   async removeRemoteAccessPolicyRuleUserInitiated (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
     const selector = { name: 'PolicyRuleName', value: 'User Initiated' }
-    context.xmlMessage = context.amt.RemoteAccessPolicyRule(AMT.Methods.DELETE, selector)
+    context.xmlMessage = context.amt.RemoteAccessPolicyRule.Delete(selector)
     return await invokeWsmanCall(context)
   }
 
   async removeRemoteAccessPolicyRuleAlert (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
     const selector = { name: 'PolicyRuleName', value: 'Alert' }
-    context.xmlMessage = context.amt.RemoteAccessPolicyRule(AMT.Methods.DELETE, selector)
+    context.xmlMessage = context.amt.RemoteAccessPolicyRule.Delete(selector)
     return await invokeWsmanCall(context)
   }
 
   async removeRemoteAccessPolicyRulePeriodic (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
     const selector = { name: 'PolicyRuleName', value: 'Periodic' }
-    context.xmlMessage = context.amt.RemoteAccessPolicyRule(AMT.Methods.DELETE, selector)
+    context.xmlMessage = context.amt.RemoteAccessPolicyRule.Delete(selector)
     return await invokeWsmanCall(context)
   }
 
   async enumerateManagementPresenceRemoteSAP (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.ManagementPresenceRemoteSAP(AMT.Methods.ENUMERATE)
+    context.xmlMessage = context.amt.ManagementPresenceRemoteSAP.Enumerate()
     return await invokeWsmanCall(context)
   }
 
   async pullManagementPresenceRemoteSAP (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.ManagementPresenceRemoteSAP(AMT.Methods.PULL, context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+    context.xmlMessage = context.amt.ManagementPresenceRemoteSAP.Pull(context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
     return await invokeWsmanCall(context)
   }
 
   async deleteRemoteAccessService (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
     const selector = { name: 'Name', value: context.message.Envelope.Body.PullResponse.Items.AMT_ManagementPresenceRemoteSAP.Name }
-    context.xmlMessage = context.amt.ManagementPresenceRemoteSAP(AMT.Methods.DELETE, null, selector)
+    context.xmlMessage = context.amt.ManagementPresenceRemoteSAP.Delete(selector)
     return await invokeWsmanCall(context)
   }
 
   async enumeratePublicKeyCertificate (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.PublicKeyCertificate(AMT.Methods.ENUMERATE)
+    context.xmlMessage = context.amt.PublicKeyCertificate.Enumerate()
     return await invokeWsmanCall(context)
   }
 
   async pullPublicKeyCertificate (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.PublicKeyCertificate(AMT.Methods.PULL, context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+    context.xmlMessage = context.amt.PublicKeyCertificate.Pull(context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
     return await invokeWsmanCall(context)
   }
 
   async deletePublicKeyCertificate (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
     const selector = { name: 'InstanceID', value: context.publicKeyCertificates[0].InstanceID }
-    context.xmlMessage = context.amt.PublicKeyCertificate(AMT.Methods.DELETE, null, selector)
+    context.xmlMessage = context.amt.PublicKeyCertificate.Delete(selector)
     return await invokeWsmanCall(context)
   }
 
   async getEnvironmentDetectionSettings (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.EnvironmentDetectionSettingData(AMT.Methods.GET)
+    context.xmlMessage = context.amt.EnvironmentDetectionSettingData.Get()
     return await invokeWsmanCall(context)
   }
 
   async clearEnvironmentDetectionSettings (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
     const envSettings = context.message.Envelope.Body.AMT_EnvironmentDetectionSettingData
     envSettings.DetectionStrings = []
-    context.xmlMessage = context.amt.EnvironmentDetectionSettingData(AMT.Methods.PUT, envSettings)
+    context.xmlMessage = context.amt.EnvironmentDetectionSettingData.Put(envSettings)
     return await invokeWsmanCall(context)
   }
 
   async enumerateTLSSettingData (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.TLSSettingData(AMT.Methods.ENUMERATE)
+    context.xmlMessage = context.amt.TLSSettingData.Enumerate()
     return await invokeWsmanCall(context)
   }
 
   async pullTLSSettingData (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.TLSSettingData(AMT.Methods.PULL, context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+    context.xmlMessage = context.amt.TLSSettingData.Pull(context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
     return await invokeWsmanCall(context)
   }
 
@@ -554,51 +554,51 @@ export class Unconfiguration {
     context.TLSSettingData[0].AcceptNonSecureConnections = true
     context.TLSSettingData[0].MutualAuthentication = false
     delete context.TLSSettingData[0].TrustedCN
-    context.xmlMessage = context.amt.TLSSettingData(AMT.Methods.PUT, null, context.TLSSettingData[0])
+    context.xmlMessage = context.amt.TLSSettingData.Put(context.TLSSettingData[0])
     return await invokeWsmanCall(context)
   }
 
   async commitSetupAndConfigurationService (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.SetupAndConfigurationService(AMT.Methods.COMMIT_CHANGES)
+    context.xmlMessage = context.amt.SetupAndConfigurationService.CommitChanges()
     return await invokeWsmanCall(context)
   }
 
   async disableTLSSettingData2 (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
     context.TLSSettingData[1].Enabled = false
     delete context.TLSSettingData[1].TrustedCN
-    context.xmlMessage = context.amt.TLSSettingData(AMT.Methods.PUT, null, context.TLSSettingData[1])
+    context.xmlMessage = context.amt.TLSSettingData.Put(context.TLSSettingData[1])
     return await invokeWsmanCall(context)
   }
 
   async enumerateTLSCredentialContext (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.TLSCredentialContext(AMT.Methods.ENUMERATE)
+    context.xmlMessage = context.amt.TLSCredentialContext.Enumerate()
     return await invokeWsmanCall(context)
   }
 
   async pullTLSCredentialContext (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.TLSCredentialContext(AMT.Methods.PULL, context.message.Envelope.Body.EnumerateResponse.EnumerationContext)
+    context.xmlMessage = context.amt.TLSCredentialContext.Pull(context.message.Envelope.Body.EnumerateResponse.EnumerationContext)
     return await invokeWsmanCall(context)
   }
 
   async deleteTLSCredentialContext (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.TLSCredentialContext(AMT.Methods.DELETE, null, null, context.message.Envelope.Body.PullResponse.Items?.AMT_TLSCredentialContext)
+    context.xmlMessage = context.amt.TLSCredentialContext.Delete(context.message.Envelope.Body.PullResponse.Items?.AMT_TLSCredentialContext)
     return await invokeWsmanCall(context)
   }
 
   async enumeratePublicPrivateKeyPair (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.PublicPrivateKeyPair(AMT.Methods.ENUMERATE)
+    context.xmlMessage = context.amt.PublicPrivateKeyPair.Enumerate()
     return await invokeWsmanCall(context)
   }
 
   async pullPublicPrivateKeyPair (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.PublicPrivateKeyPair(AMT.Methods.PULL, context.message.Envelope.Body.EnumerateResponse.EnumerationContext)
+    context.xmlMessage = context.amt.PublicPrivateKeyPair.Pull(context.message.Envelope.Body.EnumerateResponse.EnumerationContext)
     return await invokeWsmanCall(context)
   }
 
   async deletePublicPrivateKeyPair (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
     const selector = { name: 'InstanceID', value: context.privateCerts[0].InstanceID }
     context.privateCerts = context.privateCerts.slice(1)
-    context.xmlMessage = context.amt.PublicPrivateKeyPair(AMT.Methods.DELETE, null, selector)
+    context.xmlMessage = context.amt.PublicPrivateKeyPair.Delete(selector)
     return await invokeWsmanCall(context)
   }
 }

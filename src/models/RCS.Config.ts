@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
+import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 import { Types } from '@open-amt-cloud-toolkit/wsman-messages/amt'
 import { DigestChallenge } from '@open-amt-cloud-toolkit/wsman-messages/models/common'
 import * as WebSocket from 'ws'
 import { AMTConfiguration, AMTDomain, ProvisioningCertObj } from '.'
-import { AMTEthernetPortSettings } from './WSManResponse'
 
 export interface WebSocketConfig {
   WebSocketPort: number
@@ -146,7 +146,7 @@ export interface NetworkConfigFlow {
   isWiFiConfigsDeleted?: boolean
   getGeneralSettings?: boolean
   setEthernetPortSettings?: boolean
-  WirelessObj?: AMTEthernetPortSettings
+  WirelessObj?: AMT.Models.EthernetPortSettings
   setWiFiPort?: boolean
   setWiFiPortResponse?: boolean
   getWiFiPortConfigurationService?: boolean

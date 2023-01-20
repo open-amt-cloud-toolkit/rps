@@ -42,7 +42,7 @@ describe('Unconfiguration State Machine', () => {
       publicKeyCertificates: [],
       amt: new AMT.Messages()
     }
-    remoteAccessPolicyRuleSpy = jest.spyOn(unconfigContext.amt, 'RemoteAccessPolicyRule').mockReturnValue('abcdef')
+    remoteAccessPolicyRuleSpy = jest.spyOn(unconfigContext.amt.RemoteAccessPolicyRule, 'Delete').mockReturnValue('abcdef')
     devices[clientId] = {
       unauthCount: 0,
       ClientId: clientId,
