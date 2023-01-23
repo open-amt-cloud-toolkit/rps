@@ -430,28 +430,28 @@ export class TLS {
       timeStamping: false
     }
     const cert = this.certManager.amtCertSignWithCAKey(DERKey, null, certAttributes, issuerAttributes, keyUsages)
-    context.xmlMessage = context.amt.PublicKeyManagementService(AMT.Methods.ADD_CERTIFICATE, { CertificateBlob: cert.pem.substring(27, cert.pem.length - 25) })
+    context.xmlMessage = context.amt.PublicKeyManagementService.AddCertificate({ CertificateBlob: cert.pem.substring(27, cert.pem.length - 25) })
     return await invokeWsmanCall(context)
   }
 
   async generateKeyPair (context: TLSContext, event: TLSEvent): Promise<void> {
-    context.xmlMessage = context.amt.PublicKeyManagementService(AMT.Methods.GENERATE_KEY_PAIR, { KeyAlgorithm: 0, KeyLength: 2048 })
+    context.xmlMessage = context.amt.PublicKeyManagementService.GenerateKeyPair({ KeyAlgorithm: 0, KeyLength: 2048 })
     return await invokeWsmanCall(context)
   }
 
   async addTrustedRootCertificate (context: TLSContext, event: TLSEvent): Promise<void> {
     const tlsCerts = devices[context.clientId].ClientData.payload.profile.tlsCerts
-    context.xmlMessage = context.amt.PublicKeyManagementService(AMT.Methods.ADD_TRUSTED_ROOT_CERTIFICATE, { CertificateBlob: tlsCerts.ROOT_CERTIFICATE.certbin })
+    context.xmlMessage = context.amt.PublicKeyManagementService.AddTrustedRootCertificate({ CertificateBlob: tlsCerts.ROOT_CERTIFICATE.certbin })
     return await invokeWsmanCall(context)
   }
 
   async enumerateTLSCredentialContext (context: TLSContext, event: TLSEvent): Promise<void> {
-    context.xmlMessage = context.amt.TLSCredentialContext(AMT.Methods.ENUMERATE)
+    context.xmlMessage = context.amt.TLSCredentialContext.Enumerate()
     return await invokeWsmanCall(context)
   }
 
   async pullTLSCredentialContext (context: TLSContext, event: TLSEvent): Promise<void> {
-    context.xmlMessage = context.amt.TLSCredentialContext(AMT.Methods.PULL, context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+    context.xmlMessage = context.amt.TLSCredentialContext.Pull(context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
     return await invokeWsmanCall(context)
   }
 
@@ -464,27 +464,27 @@ export class TLS {
       ElementProvidingContext: `<a:Address>/wsman</a:Address><a:ReferenceParameters><w:ResourceURI>${amtPrefix}AMT_TLSProtocolEndpointCollection</w:ResourceURI><w:SelectorSet><w:Selector Name="ElementName">TLSProtocolEndpointInstances Collection</w:Selector></w:SelectorSet></a:ReferenceParameters>`
     }
 
-    context.xmlMessage = context.amt.TLSCredentialContext(AMT.Methods.CREATE, null, putObj as any)
+    context.xmlMessage = context.amt.TLSCredentialContext.Create(putObj as any)
     return await invokeWsmanCall(context)
   }
 
   async enumeratePublicKeyCertificate (context: TLSContext, event: TLSEvent): Promise<void> {
-    context.xmlMessage = context.amt.PublicKeyCertificate(AMT.Methods.ENUMERATE)
+    context.xmlMessage = context.amt.PublicKeyCertificate.Enumerate()
     return await invokeWsmanCall(context)
   }
 
   async pullPublicKeyCertificate (context: TLSContext, event: TLSEvent): Promise<void> {
-    context.xmlMessage = context.amt.PublicKeyCertificate(AMT.Methods.PULL, context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+    context.xmlMessage = context.amt.PublicKeyCertificate.Pull(context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
     return await invokeWsmanCall(context)
   }
 
   async enumeratePublicPrivateKeyPair (context: TLSContext, event: TLSEvent): Promise<void> {
-    context.xmlMessage = context.amt.PublicPrivateKeyPair(AMT.Methods.ENUMERATE)
+    context.xmlMessage = context.amt.PublicPrivateKeyPair.Enumerate()
     return await invokeWsmanCall(context)
   }
 
   async pullPublicPrivateKeyPair (context: TLSContext, event: TLSEvent): Promise<void> {
-    context.xmlMessage = context.amt.PublicPrivateKeyPair(AMT.Methods.PULL, context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+    context.xmlMessage = context.amt.PublicPrivateKeyPair.Pull(context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
     return await invokeWsmanCall(context)
   }
 
@@ -497,12 +497,12 @@ export class TLS {
   }
 
   async enumerateTlsData (context: TLSContext, event: TLSEvent): Promise<void> {
-    context.xmlMessage = context.amt.TLSSettingData(AMT.Methods.ENUMERATE)
+    context.xmlMessage = context.amt.TLSSettingData.Enumerate()
     return await invokeWsmanCall(context)
   }
 
   async pullTLSData (context: TLSContext, event: TLSEvent): Promise<void> {
-    context.xmlMessage = context.amt.TLSSettingData(AMT.Methods.PULL, context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+    context.xmlMessage = context.amt.TLSSettingData.Pull(context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
     return await invokeWsmanCall(context)
   }
 
@@ -520,7 +520,7 @@ export class TLS {
         context.tlsSettingData[0].TrustedCN = [commonName]
       }
     }
-    context.xmlMessage = context.amt.TLSSettingData(AMT.Methods.PUT, null, context.tlsSettingData[0])
+    context.xmlMessage = context.amt.TLSSettingData.Put(context.tlsSettingData[0])
     return await invokeWsmanCall(context)
   }
 
@@ -536,12 +536,12 @@ export class TLS {
         context.tlsSettingData[1].TrustedCN = [commonName]
       }
     }
-    context.xmlMessage = context.amt.TLSSettingData(AMT.Methods.PUT, null, context.tlsSettingData[1])
+    context.xmlMessage = context.amt.TLSSettingData.Put(context.tlsSettingData[1])
     return await invokeWsmanCall(context)
   }
 
   async commitChanges (context: TLSContext, event: TLSEvent): Promise<void> {
-    context.xmlMessage = context.amt.SetupAndConfigurationService(AMT.Methods.COMMIT_CHANGES)
+    context.xmlMessage = context.amt.SetupAndConfigurationService.CommitChanges()
     return await invokeWsmanCall(context)
   }
 }

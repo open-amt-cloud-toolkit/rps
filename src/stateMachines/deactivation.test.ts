@@ -26,7 +26,7 @@ describe('Deactivation State Machine', () => {
   beforeEach(() => {
     deactivation = new Deactivation()
     wrapItSpy = jest.spyOn(deactivation.httpHandler, 'wrapIt').mockReturnValue('abcdef')
-    setupAndConfigurationServiceSpy = jest.spyOn(deactivation.amt, 'SetupAndConfigurationService').mockImplementation().mockReturnValue('abcdef')
+    setupAndConfigurationServiceSpy = jest.spyOn(deactivation.amt.SetupAndConfigurationService, 'Unprovision').mockImplementation().mockReturnValue('abcdef')
     responseMessageSpy = jest.spyOn(ClientResponseMsg, 'get').mockReturnValue({} as any)
     devices[clientId] = {
       unauthCount: 0,
