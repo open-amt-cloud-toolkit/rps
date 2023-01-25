@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { ICiraConfigTable } from './ICiraConfigDb'
-import { IDomainsTable } from './IDomainsDb'
-import { IProfilesTable } from './IProfilesDb'
-import { IProfilesWifiConfigsTable } from './IProfileWifiConfigsDb'
-import { IWirelessProfilesTable } from './IWirelessProfilesDB'
+import { type ICiraConfigTable } from './ICiraConfigDb'
+import { type IDomainsTable } from './IDomainsDb'
+import { type IProfilesTable } from './IProfilesDb'
+import { type IProfilesWifiConfigsTable } from './IProfileWifiConfigsDb'
+import { type IWirelessProfilesTable } from './IWirelessProfilesDB'
 
 export interface IDB {
   ciraConfigs: ICiraConfigTable

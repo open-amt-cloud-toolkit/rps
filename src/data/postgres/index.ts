@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { IDB } from '../../interfaces/database/IDb'
-import { Pool, QueryResult } from 'pg'
+import { type IDB } from '../../interfaces/database/IDb'
+import { Pool, type QueryResult } from 'pg'
 import Logger from '../../Logger'
 import { CiraConfigTable } from './tables/ciraConfigs'
 import { ProfilesTable } from './tables/profiles'

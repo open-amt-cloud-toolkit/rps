@@ -3,14 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import * as WebSocket from 'ws'
+import type WebSocket from 'ws'
 
-import { ILogger } from './interfaces/ILogger'
-import { ClientMsg, ClientMethods } from './models/RCS.Config'
+import type { ILogger } from './interfaces/ILogger'
+import { ClientMethods, type ClientMsg } from './models/RCS.Config'
 import { RPSError } from './utils/RPSError'
-import { IValidator } from './interfaces/IValidator'
+import type { IValidator } from './interfaces/IValidator'
 import { HttpHandler } from './HttpHandler'
-import { parse, HttpZResponseModel } from 'http-z'
+import { parse, type HttpZResponseModel } from 'http-z'
 import { devices } from './WebSocketListener'
 import { Deactivation } from './stateMachines/deactivation'
 import { Maintenance } from './stateMachines/maintenance'

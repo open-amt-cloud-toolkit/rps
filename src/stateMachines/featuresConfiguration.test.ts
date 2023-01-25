@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { FeatureContext, FeaturesConfiguration } from './featuresConfiguration'
+import { type FeatureContext, FeaturesConfiguration } from './featuresConfiguration'
 import { ClientAction } from '../models/RCS.Config'
-import { AMTConfiguration, AMTRedirectionServiceEnabledStates, AMTUserConsent, AMTUserConsentValues } from '../models'
+import { type AMTConfiguration, AMTRedirectionServiceEnabledStates, AMTUserConsent, AMTUserConsentValues } from '../models'
 import { v4 as uuid } from 'uuid'
 import { devices } from '../WebSocketListener'
 import { HttpHandler } from '../HttpHandler'

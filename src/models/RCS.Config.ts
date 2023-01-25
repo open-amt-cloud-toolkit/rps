@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
-import { Types } from '@open-amt-cloud-toolkit/wsman-messages/amt'
-import { DigestChallenge } from '@open-amt-cloud-toolkit/wsman-messages/models/common'
-import * as WebSocket from 'ws'
-import { AMTConfiguration, AMTDomain, ProvisioningCertObj } from '.'
+import { type AMT } from '@open-amt-cloud-toolkit/wsman-messages'
+import { type Types } from '@open-amt-cloud-toolkit/wsman-messages/amt'
+import { type DigestChallenge } from '@open-amt-cloud-toolkit/wsman-messages/models/common'
+import type * as WebSocket from 'ws'
+import { type AMTConfiguration, type AMTDomain, type ProvisioningCertObj } from '.'
 
 export interface WebSocketConfig {
   WebSocketPort: number
@@ -71,13 +71,6 @@ export interface RemoteConfig {
   AMTConfigurations: AMTConfiguration[]
   AMTDomains: AMTDomain[]
 }
-export interface SocketConnection {
-  socket: WebSocket
-  state: number
-  onStateChange?: Function
-  close?: Function
-  write?: Function
-}
 
 export interface Status {
   Status?: string
@@ -92,7 +85,6 @@ export interface ClientObject {
   hostname?: string
   ClientSocket?: WebSocket
   ClientData?: any
-  socketConn?: SocketConnection
   count?: number
   payload?: any
   certObj?: ProvisioningCertObj

@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import * as WebSocket from 'ws'
-import { ClientMsg } from '../models/RCS.Config'
+import type * as WebSocket from 'ws'
+import { type ClientMsg } from '../models/RCS.Config'
 
 export interface IValidator {
   validateMaintenanceMsg: (clientMsg: ClientMsg, clientId: string) => any

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { ClientMsg, Payload, ClientMethods } from '../models/RCS.Config'
+import { type ClientMsg, type Payload, ClientMethods } from '../models/RCS.Config'
 import { RPSError } from './RPSError'
 
 export class ClientMsgJsonParser {

@@ -5,8 +5,8 @@
 
 import * as indexFile from './Index'
 import * as exponentialBackoff from 'exponential-backoff'
-import { ISecretManagerService } from './interfaces/ISecretManagerService'
-import { IDB } from './interfaces/database/IDb'
+import { type ISecretManagerService } from './interfaces/ISecretManagerService'
+import { type IDB } from './interfaces/database/IDb'
 
 describe('Index', () => {
   // const env = process.env

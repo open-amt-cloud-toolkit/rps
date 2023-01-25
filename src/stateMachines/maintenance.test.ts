@@ -7,7 +7,7 @@ import { interpret } from 'xstate'
 import { HttpHandler } from '../HttpHandler'
 import ClientResponseMsg from '../utils/ClientResponseMsg'
 import { devices } from '../WebSocketListener'
-import { Maintenance, MaintenanceContext } from './maintenance'
+import { Maintenance, type MaintenanceContext } from './maintenance'
 import { Environment } from '../utils/Environment'
 import { config } from '../test/helper/Config'
 

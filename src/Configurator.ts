@@ -3,14 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { IDomainCredentialManager } from './interfaces/IDomainCredentialManager'
-import { IProfileManager } from './interfaces/IProfileManager'
+import type { IDomainCredentialManager } from './interfaces/IDomainCredentialManager'
+import type { IProfileManager } from './interfaces/IProfileManager'
 import { DomainCredentialManager } from './DomainCredentialManager'
 import { ProfileManager } from './ProfileManager'
 import Logger from './Logger'
-import { ISecretManagerService } from './interfaces/ISecretManagerService'
+import type { ISecretManagerService } from './interfaces/ISecretManagerService'
 import { Environment } from './utils/Environment'
-import { IValidator } from './interfaces/IValidator'
+import type { IValidator } from './interfaces/IValidator'
 import { Validator } from './Validator'
 import { DataProcessor } from './DataProcessor'
 import { DbCreatorFactory } from './factories/DbCreatorFactory'

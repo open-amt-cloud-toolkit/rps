@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { WebSocketConfig, ClientMsg } from './models/RCS.Config'
+import { type WebSocketConfig, type ClientMsg } from './models/RCS.Config'
 import { devices, WebSocketListener } from './WebSocketListener'
 import Logger from './Logger'
-import { ILogger } from './interfaces/ILogger'
+import { type ILogger } from './interfaces/ILogger'
 import WebSocket from 'ws'
 
 const wsConfig: WebSocketConfig = {

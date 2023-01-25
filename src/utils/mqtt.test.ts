@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import { MqttProvider } from './MqttProvider'
-import { RPSConfig } from '../models'
+import { type RPSConfig } from '../models'
 import mqtt1 from 'mqtt'
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
 jest.mock('mqtt', () => ({ ...jest.requireActual('mqtt') as object }))

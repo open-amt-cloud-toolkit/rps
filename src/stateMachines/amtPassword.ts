@@ -16,7 +16,7 @@ import { AMTUserName, AMTRandomPasswordLength } from '../utils/constants'
 import { SignatureHelper } from '../utils/SignatureHelper'
 import { Validator } from '../Validator'
 import { PasswordHelper } from '../utils/PasswordHelper'
-import { DeviceCredentials } from '../interfaces/ISecretManagerService'
+import { type DeviceCredentials } from '../interfaces/ISecretManagerService'
 
 export interface AMTPasswordContext {
   message: any

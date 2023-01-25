@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { CertCreationResult } from '../models'
+import { type CertCreationResult } from '../models'
 
 export interface DeviceCredentials {
   AMT_PASSWORD: string

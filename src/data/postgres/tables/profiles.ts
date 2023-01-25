@@ -3,13 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { IProfilesTable } from '../../../interfaces/database/IProfilesDb'
-import { CIRAConfig } from '../../../models/RCS.Config'
-import { AMTConfiguration } from '../../../models'
+import { type IProfilesTable } from '../../../interfaces/database/IProfilesDb'
+import { type CIRAConfig } from '../../../models/RCS.Config'
+import { type AMTConfiguration } from '../../../models'
 import { PROFILE_INSERTION_FAILED_DUPLICATE, PROFILE_INSERTION_CIRA_CONSTRAINT, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP, PROFILE_INSERTION_GENERIC_CONSTRAINT, CONCURRENCY_EXCEPTION, CONCURRENCY_MESSAGE } from '../../../utils/constants'
 import Logger from '../../../Logger'
 import { RPSError } from '../../../utils/RPSError'
-import PostgresDb from '..'
+import type PostgresDb from '..'
 
 export class ProfilesTable implements IProfilesTable {
   db: PostgresDb

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { ClientMsg } from '../models/RCS.Config'
+import { type ClientMsg } from '../models/RCS.Config'
 import { ServiceVersion, ProtocolVersion } from './constants'
 
 export default {

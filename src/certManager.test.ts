@@ -5,7 +5,7 @@
 
 import { CertManager } from './certManager'
 import { NodeForge } from './NodeForge'
-import { AMTKeyUsage, CertAttributes, CertificateObject } from './models'
+import { type AMTKeyUsage, type CertAttributes, type CertificateObject } from './models'
 import Logger from './Logger'
 import { TEST_PFXCERT, EXPECTED_CERT } from './test/helper/certs'
 

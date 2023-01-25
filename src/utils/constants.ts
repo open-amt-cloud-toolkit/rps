@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { apiResponse } from '../models/RCS.Config'
+import { type apiResponse } from '../models/RCS.Config'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const packageObj = require('../../package.json')
 

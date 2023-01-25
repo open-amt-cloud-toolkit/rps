@@ -5,7 +5,7 @@
 
 // ./routes/index.js
 import adminRouter from './admin/index'
-import { Router, Request, Response } from 'express'
+import { Router, type Request, type Response } from 'express'
 
 const router: Router = Router()
 

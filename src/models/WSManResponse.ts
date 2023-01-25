@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { CIM } from '@open-amt-cloud-toolkit/wsman-messages'
+import { type CIM } from '@open-amt-cloud-toolkit/wsman-messages'
 
 export interface Header {
   To: string

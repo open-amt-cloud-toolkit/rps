@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import { interpret } from 'xstate'
-import { Deactivation, DeactivationContext } from './deactivation'
+import { Deactivation, type DeactivationContext } from './deactivation'
 import { v4 as uuid } from 'uuid'
 import { devices } from '../WebSocketListener'
 import { config } from '../test/helper/Config'

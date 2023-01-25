@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { IDB } from './interfaces/database/IDb'
-import { ISecretManagerService } from './interfaces/ISecretManagerService'
+import { type IDB } from './interfaces/database/IDb'
+import { type ISecretManagerService } from './interfaces/ISecretManagerService'
 
 declare module 'express' {
   export interface Request {

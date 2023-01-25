@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import PostgresDb from '..'
-import { WirelessConfig } from '../../../models/RCS.Config'
+import { type WirelessConfig } from '../../../models/RCS.Config'
 import { API_UNEXPECTED_EXCEPTION, CONCURRENCY_MESSAGE, DEFAULT_SKIP, DEFAULT_TOP, NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT, NETWORK_CONFIG_ERROR, NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE } from '../../../utils/constants'
 import { WirelessProfilesTable } from './wirelessProfiles'
 

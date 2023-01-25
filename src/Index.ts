@@ -9,7 +9,7 @@ import Logger from './Logger'
 import { WebSocketListener } from './WebSocketListener'
 import { Configurator } from './Configurator'
 import { Environment } from './utils/Environment'
-import { RPSConfig, mapConfig } from './models'
+import { type RPSConfig, mapConfig } from './models'
 import { parseValue } from './utils/parseEnvValue'
 import dot = require('dot-object')
 import routes from './routes'
@@ -17,8 +17,8 @@ import rc = require('rc')
 import { MqttProvider } from './utils/MqttProvider'
 import { DbCreatorFactory } from './factories/DbCreatorFactory'
 import { backOff } from 'exponential-backoff'
-import { ISecretManagerService } from './interfaces/ISecretManagerService'
-import { IDB } from './interfaces/database/IDb'
+import { type ISecretManagerService } from './interfaces/ISecretManagerService'
+import { type IDB } from './interfaces/database/IDb'
 import { existsSync, lstatSync, readdirSync } from 'fs'
 import path = require('path')
 const log = new Logger('Index')
