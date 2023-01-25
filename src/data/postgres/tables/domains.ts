@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { IDomainsTable } from '../../../interfaces/database/IDomainsDb'
+import { type IDomainsTable } from '../../../interfaces/database/IDomainsDb'
 import { DUPLICATE_DOMAIN_FAILED, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP, CONCURRENCY_EXCEPTION, CONCURRENCY_MESSAGE } from '../../../utils/constants'
-import { AMTDomain } from '../../../models'
+import { type AMTDomain } from '../../../models'
 import { RPSError } from '../../../utils/RPSError'
 import Logger from '../../../Logger'
-import PostgresDb from '..'
+import type PostgresDb from '..'
 
 export class DomainsTable implements IDomainsTable {
   db: PostgresDb

@@ -4,13 +4,13 @@
  **********************************************************************/
 
 import Logger from '../../../Logger'
-import { Request, Response } from 'express'
+import { type Request, type Response } from 'express'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, POSTGRES_RESPONSE_CODES, VAULT_RESPONSE_CODES } from '../../../utils/constants'
 import { MqttProvider } from '../../../utils/MqttProvider'
-import { HealthCheck } from '../../../models/RCS.Config'
+import { type HealthCheck } from '../../../models/RCS.Config'
 import { Environment } from '../../../utils/Environment'
-import { ISecretManagerService } from '../../../interfaces/ISecretManagerService'
-import { IDB } from '../../../interfaces/database/IDb'
+import { type ISecretManagerService } from '../../../interfaces/ISecretManagerService'
+import { type IDB } from '../../../interfaces/database/IDb'
 
 export async function getHealthCheck (req: Request, res: Response): Promise<void> {
   const log = new Logger('getHealthCheck')

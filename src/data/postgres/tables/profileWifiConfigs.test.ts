@@ -5,7 +5,7 @@
 
 import PostgresDb from '..'
 import { API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
-import { ProfileWifiConfigs } from '../../../models/RCS.Config'
+import { type ProfileWifiConfigs } from '../../../models/RCS.Config'
 import { ProfilesWifiConfigsTable } from './profileWifiConfigs'
 
 describe('profilewificonfig tests', () => {

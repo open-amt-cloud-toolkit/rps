@@ -6,7 +6,7 @@
 import { interpret } from 'xstate'
 import { HttpHandler } from '../HttpHandler'
 import { devices } from '../WebSocketListener'
-import { TLS, TLSContext } from './tls'
+import { TLS, type TLSContext } from './tls'
 import * as common from './common'
 import * as forge from 'node-forge'
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'

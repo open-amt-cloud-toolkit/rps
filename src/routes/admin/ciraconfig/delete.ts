@@ -7,7 +7,7 @@ import Logger from '../../../Logger'
 import { NOT_FOUND_EXCEPTION, NOT_FOUND_MESSAGE } from '../../../utils/constants'
 import { RPSError } from '../../../utils/RPSError'
 import { MqttProvider } from '../../../utils/MqttProvider'
-import { Request, Response } from 'express'
+import { type Request, type Response } from 'express'
 import handleError from '../../../utils/handleError'
 
 export async function deleteCiraConfig (req: Request, res: Response): Promise<void> {

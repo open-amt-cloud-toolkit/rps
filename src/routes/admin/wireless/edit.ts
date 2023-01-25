@@ -4,10 +4,10 @@
  **********************************************************************/
 
 import { NOT_FOUND_EXCEPTION, NOT_FOUND_MESSAGE } from '../../../utils/constants'
-import { WirelessConfig } from '../../../models/RCS.Config'
+import { type WirelessConfig } from '../../../models/RCS.Config'
 import Logger from '../../../Logger'
 import { MqttProvider } from '../../../utils/MqttProvider'
-import { Request, Response } from 'express'
+import { type Request, type Response } from 'express'
 import handleError from '../../../utils/handleError'
 import { RPSError } from '../../../utils/RPSError'
 

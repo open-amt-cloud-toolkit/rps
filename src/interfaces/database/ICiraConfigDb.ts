@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { CIRAConfig } from '../../models/RCS.Config'
-import { ITable } from './ITable'
+import { type CIRAConfig } from '../../models/RCS.Config'
+import { type ITable } from './ITable'
 
 export interface ICiraConfigTable extends ITable<CIRAConfig> {
 }

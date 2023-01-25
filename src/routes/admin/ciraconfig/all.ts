@@ -5,10 +5,10 @@
 
 import Logger from '../../../Logger'
 import { API_RESPONSE } from '../../../utils/constants'
-import { CIRAConfig } from '../../../models/RCS.Config'
-import { DataWithCount } from '../../../models'
+import { type CIRAConfig } from '../../../models/RCS.Config'
+import { type DataWithCount } from '../../../models'
 import { MqttProvider } from '../../../utils/MqttProvider'
-import { Request, Response } from 'express'
+import { type Request, type Response } from 'express'
 import handleError from '../../../utils/handleError'
 
 export async function allCiraConfigs (req: Request, res: Response): Promise<void> {

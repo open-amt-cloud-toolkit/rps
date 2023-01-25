@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { Router, Request, Response } from 'express'
+import { Router, type Request, type Response } from 'express'
 import domains from './domains/index'
 import profiles from './profiles/index'
 import ciraConfigs from './ciraconfig/index'

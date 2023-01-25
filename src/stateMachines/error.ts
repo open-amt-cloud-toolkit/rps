@@ -8,7 +8,7 @@ import { pure } from 'xstate/lib/actions'
 import { HttpHandler } from '../HttpHandler'
 import { devices } from '../WebSocketListener'
 import { parseBody } from '../utils/parseWSManResponseBody'
-import { HttpZResponseModel } from 'http-z'
+import { type HttpZResponseModel } from 'http-z'
 
 const httpHandler = new HttpHandler()
 export interface ErrorContext {

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { RPSConfig } from '../../models'
+import { type RPSConfig } from '../../models'
 
 export const config: RPSConfig = {
   VaultConfig: {

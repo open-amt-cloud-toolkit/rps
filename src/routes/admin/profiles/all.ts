@@ -4,10 +4,10 @@
  **********************************************************************/
 
 import Logger from '../../../Logger'
-import { AMTConfiguration, DataWithCount } from '../../../models'
+import { type AMTConfiguration, type DataWithCount } from '../../../models'
 import { API_RESPONSE } from '../../../utils/constants'
 import { MqttProvider } from '../../../utils/MqttProvider'
-import { Request, Response } from 'express'
+import { type Request, type Response } from 'express'
 import handleError from '../../../utils/handleError'
 
 export async function allProfiles (req: Request, res: Response): Promise<void> {
