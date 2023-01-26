@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { AMT, CIM, Common, IPS } from '@open-amt-cloud-toolkit/wsman-messages'
-import { HttpHandler } from '../HttpHandler'
+import { type AMT, type CIM, Common, type IPS } from '@open-amt-cloud-toolkit/wsman-messages'
+import { type HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
 import { assign, createMachine, interpret } from 'xstate'
-import { AMTConfiguration, AMTRedirectionServiceEnabledStates, mapAMTUserConsent } from '../models'
+import { type AMTConfiguration, AMTRedirectionServiceEnabledStates, mapAMTUserConsent } from '../models'
 import { invokeWsmanCall } from './common'
 
 export interface FeatureContext {

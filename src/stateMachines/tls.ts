@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
+import { type AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 import { createMachine, send, assign } from 'xstate'
 import { CertManager } from '../certManager'
 import { HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
-import { AMTConfiguration, AMTKeyUsage, CertAttributes } from '../models'
+import { type AMTConfiguration, type AMTKeyUsage, type CertAttributes } from '../models'
 import { NodeForge } from '../NodeForge'
 import { devices } from '../WebSocketListener'
 import { invokeWsmanCall } from './common'
@@ -27,7 +27,7 @@ export interface TLSContext {
   tlsSettingData: any[]
   tlsCredentialContext: any
   amtProfile: AMTConfiguration
-  unauthCount: Number
+  unauthCount: number
   amt?: AMT.Messages
 }
 

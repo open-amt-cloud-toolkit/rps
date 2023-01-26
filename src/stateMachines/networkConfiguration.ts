@@ -3,18 +3,18 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { AMT, CIM } from '@open-amt-cloud-toolkit/wsman-messages'
+import { type AMT, type CIM } from '@open-amt-cloud-toolkit/wsman-messages'
 import { assign, createMachine, send } from 'xstate'
-import { WirelessConfig } from '../models/RCS.Config'
-import { HttpHandler } from '../HttpHandler'
+import { type WirelessConfig } from '../models/RCS.Config'
+import { type HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
-import { AMTConfiguration } from '../models'
+import { type AMTConfiguration } from '../models'
 import { devices } from '../WebSocketListener'
 import { Error } from './error'
 import { Configurator } from '../Configurator'
 import { DbCreatorFactory } from '../factories/DbCreatorFactory'
 import { invokeWsmanCall } from './common'
-import { WifiCredentials } from '../interfaces/ISecretManagerService'
+import { type WifiCredentials } from '../interfaces/ISecretManagerService'
 
 interface NetworkConfigContext {
   amtProfile: AMTConfiguration

@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { DeviceCredentials, ISecretManagerService, TLSCredentials, WifiCredentials } from '../../interfaces/ISecretManagerService'
-import { ILogger } from '../../interfaces/ILogger'
+import { type DeviceCredentials, type ISecretManagerService, type TLSCredentials, type WifiCredentials } from '../../interfaces/ISecretManagerService'
+import { type ILogger } from '../../interfaces/ILogger'
 import { Environment } from '../../utils/Environment'
-import got, { Got } from 'got'
+import got, { type Got } from 'got'
 
 export class VaultService implements ISecretManagerService {
   gotClient: Got

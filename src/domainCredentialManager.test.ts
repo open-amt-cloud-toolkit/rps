@@ -4,12 +4,12 @@
  **********************************************************************/
 
 import { DomainCredentialManager } from './DomainCredentialManager'
-import { ILogger } from './interfaces/ILogger'
+import { type ILogger } from './interfaces/ILogger'
 import Logger from './Logger'
-import { AMTDomain } from './models'
+import { type AMTDomain } from './models'
 import { DomainsTable } from './data/postgres/tables/domains'
-import Db from './data/postgres'
-import { Configurator } from './Configurator'
+import type Db from './data/postgres'
+import { type Configurator } from './Configurator'
 
 const logger: ILogger = new Logger('DomainCredentialManagerTests')
 describe('Domain Credential Manager Tests', () => {

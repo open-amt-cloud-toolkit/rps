@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import PostgresDb from '..'
-import { AMTConfiguration, AMTUserConsent } from '../../../models'
+import { type AMTConfiguration, AMTUserConsent } from '../../../models'
 import { PROFILE_INSERTION_FAILED_DUPLICATE, PROFILE_INSERTION_CIRA_CONSTRAINT, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP, PROFILE_INSERTION_GENERIC_CONSTRAINT, CONCURRENCY_MESSAGE } from '../../../utils/constants'
 import { RPSError } from '../../../utils/RPSError'
 import { ProfilesTable } from './profiles'

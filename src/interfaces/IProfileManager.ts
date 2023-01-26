@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { AMTConfiguration } from '../models'
-import { CIRAConfig } from '../models/RCS.Config'
+import { type AMTConfiguration } from '../models'
+import { type CIRAConfig } from '../models/RCS.Config'
 
 export interface IProfileManager {
   getActivationMode: (profileName: string) => Promise<string>

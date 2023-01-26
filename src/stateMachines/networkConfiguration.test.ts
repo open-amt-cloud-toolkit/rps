@@ -597,13 +597,13 @@ describe('Network Configuration', () => {
     })
     test('Should return false if AMT network is Enabled', async () => {
       context.generalSettings = generalSettingsResponse
-      const result = await networkConfig.isNotAMTNetworkEnabled(context, null)
+      const result = networkConfig.isNotAMTNetworkEnabled(context, null)
       expect(result).toBeFalsy()
     })
     test('Should return true if AMT network is Enabled', async () => {
       context.generalSettings = generalSettingsResponse
       context.generalSettings.SharedFQDN = false
-      const result = await networkConfig.isNotAMTNetworkEnabled(context, null)
+      const result = networkConfig.isNotAMTNetworkEnabled(context, null)
       expect(result).toBeTruthy()
     })
   })

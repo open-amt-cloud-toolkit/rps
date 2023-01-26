@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import * as WebSocket from 'ws'
-import { IValidator } from './interfaces/IValidator'
-import { ILogger } from './interfaces/ILogger'
-import { ClientMsg, ClientAction, Payload, ClientMethods } from './models/RCS.Config'
+import type * as WebSocket from 'ws'
+import { type IValidator } from './interfaces/IValidator'
+import { type ILogger } from './interfaces/ILogger'
+import { type ClientMsg, ClientAction, type Payload, ClientMethods } from './models/RCS.Config'
 import { ClientMsgJsonParser } from './utils/ClientMsgJsonParser'
 import { RPSError } from './utils/RPSError'
 import { CommandParser } from './CommandParser'
@@ -15,9 +15,9 @@ import { AMTUserName } from './utils/constants'
 import { Environment } from './utils/Environment'
 import got from 'got'
 import { devices } from './WebSocketListener'
-import { AMTConfiguration } from './models'
-import { Configurator } from './Configurator'
-import { DeviceCredentials } from './interfaces/ISecretManagerService'
+import { type AMTConfiguration } from './models'
+import { type Configurator } from './Configurator'
+import { type DeviceCredentials } from './interfaces/ISecretManagerService'
 export class Validator implements IValidator {
   jsonParser: ClientMsgJsonParser
 

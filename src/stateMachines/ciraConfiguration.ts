@@ -3,15 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
+import { type AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 import { createMachine, assign, send } from 'xstate'
 import { CertManager } from '../certManager'
 import { Configurator } from '../Configurator'
-import { HttpHandler } from '../HttpHandler'
+import { type HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
 import got from 'got'
 import { AMTRandomPasswordLength } from '../utils/constants'
-import { CIRAConfig, ClientAction } from '../models/RCS.Config'
+import { type CIRAConfig, ClientAction } from '../models/RCS.Config'
 import { NodeForge } from '../NodeForge'
 import { DbCreatorFactory } from '../factories/DbCreatorFactory'
 import { Environment } from '../utils/Environment'
@@ -19,11 +19,11 @@ import { PasswordHelper } from '../utils/PasswordHelper'
 import { SignatureHelper } from '../utils/SignatureHelper'
 import { Validator } from '../Validator'
 import { devices } from '../WebSocketListener'
-import { AMTConfiguration } from '../models'
+import { type AMTConfiguration } from '../models'
 import { randomUUID } from 'crypto'
 import { Error } from './error'
 import { invokeWsmanCall } from './common'
-import { Models } from '@open-amt-cloud-toolkit/wsman-messages/amt'
+import { type Models } from '@open-amt-cloud-toolkit/wsman-messages/amt'
 
 export interface CIRAConfigContext {
   clientId: string

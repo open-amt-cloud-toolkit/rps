@@ -4,10 +4,10 @@
  **********************************************************************/
 
 import { NOT_FOUND_EXCEPTION, NOT_FOUND_MESSAGE } from '../../../utils/constants'
-import { AMTDomain } from '../../../models'
+import { type AMTDomain } from '../../../models'
 import Logger from '../../../Logger'
 import { MqttProvider } from '../../../utils/MqttProvider'
-import { Request, Response } from 'express'
+import { type Request, type Response } from 'express'
 import { RPSError } from '../../../utils/RPSError'
 import handleError from '../../../utils/handleError'
 

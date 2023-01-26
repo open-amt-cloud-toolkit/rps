@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { Request, Response } from 'express'
+import { type Request, type Response } from 'express'
 import { MqttProvider } from './MqttProvider'
-import Logger from '../Logger'
+import type Logger from '../Logger'
 import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, CONCURRENCY_EXCEPTION, NOT_FOUND_EXCEPTION } from './constants'
 import { RPSError } from './RPSError'
 

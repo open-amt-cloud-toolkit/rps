@@ -5,16 +5,16 @@
 
 import Logger from '../../../Logger'
 import { NOT_FOUND_EXCEPTION, NOT_FOUND_MESSAGE } from '../../../utils/constants'
-import { AMTConfiguration, CertAttributes, AMTKeyUsage, TLSCerts } from '../../../models'
-import { ClientAction, ProfileWifiConfigs } from '../../../models/RCS.Config'
+import { type AMTConfiguration, type CertAttributes, type AMTKeyUsage, type TLSCerts } from '../../../models'
+import { ClientAction, type ProfileWifiConfigs } from '../../../models/RCS.Config'
 import { MqttProvider } from '../../../utils/MqttProvider'
-import { Request, Response } from 'express'
-import { IProfilesWifiConfigsTable } from '../../../interfaces/database/IProfileWifiConfigsDb'
+import { type Request, type Response } from 'express'
+import { type IProfilesWifiConfigsTable } from '../../../interfaces/database/IProfileWifiConfigsDb'
 import handleError from '../../../utils/handleError'
 import { RPSError } from '../../../utils/RPSError'
 import { CertManager } from '../../../certManager'
 import { NodeForge } from '../../../NodeForge'
-import { DeviceCredentials } from '../../../interfaces/ISecretManagerService'
+import { type DeviceCredentials } from '../../../interfaces/ISecretManagerService'
 
 export async function editProfile (req: Request, res: Response): Promise<void> {
   const log = new Logger('editProfile')

@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import { interpret } from 'xstate'
-import { Error, ErrorContext } from './error'
+import { Error, type ErrorContext } from './error'
 import { v4 as uuid } from 'uuid'
 import { devices } from '../WebSocketListener'
 const clientId = uuid()

@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { AMTDomain } from '../../../models'
+import { type AMTDomain } from '../../../models'
 import Logger from '../../../Logger'
 import { MqttProvider } from '../../../utils/MqttProvider'
-import { Request, Response } from 'express'
+import { type Request, type Response } from 'express'
 import handleError from '../../../utils/handleError'
-import { CertCredentials } from '../../../interfaces/ISecretManagerService'
+import { type CertCredentials } from '../../../interfaces/ISecretManagerService'
 
 export async function createDomain (req: Request, res: Response): Promise<void> {
   let vaultStatus: any

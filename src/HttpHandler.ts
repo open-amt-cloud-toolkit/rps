@@ -5,9 +5,9 @@
 
 import { createHash } from 'crypto'
 import * as xml2js from 'xml2js'
-import { DigestChallenge } from '@open-amt-cloud-toolkit/wsman-messages/models/common'
+import { type DigestChallenge } from '@open-amt-cloud-toolkit/wsman-messages/models/common'
 import Logger from './Logger'
-import { connectionParams } from './models/RCS.Config'
+import { type connectionParams } from './models/RCS.Config'
 
 export class HttpHandler {
   authResolve: any

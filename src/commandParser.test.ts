@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import { CommandParser } from './CommandParser'
-import { ClientMethods, ClientMsg } from './models/RCS.Config'
+import { ClientMethods, type ClientMsg } from './models/RCS.Config'
 
 function getBasicMessage (): ClientMsg {
   const clientMsg: ClientMsg = {

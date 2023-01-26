@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { ICiraConfigTable } from '../../../interfaces/database/ICiraConfigDb'
-import { CIRAConfig } from '../../../models/RCS.Config'
+import { type ICiraConfigTable } from '../../../interfaces/database/ICiraConfigDb'
+import { type CIRAConfig } from '../../../models/RCS.Config'
 import { CIRA_CONFIG_DELETION_FAILED_CONSTRAINT, API_UNEXPECTED_EXCEPTION, CIRA_CONFIG_INSERTION_FAILED_DUPLICATE, DEFAULT_TOP, DEFAULT_SKIP, CONCURRENCY_EXCEPTION, CONCURRENCY_MESSAGE } from '../../../utils/constants'
 import { RPSError } from '../../../utils/RPSError'
 import Logger from '../../../Logger'
-import PostgresDb from '..'
+import type PostgresDb from '..'
 export class CiraConfigTable implements ICiraConfigTable {
   db: PostgresDb
   log: Logger

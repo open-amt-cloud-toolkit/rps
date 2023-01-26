@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { pki } from 'node-forge'
-import { CIRAConfig, ProfileWifiConfigs, WebSocketConfig } from './RCS.Config'
+import { type pki } from 'node-forge'
+import { type CIRAConfig, type ProfileWifiConfigs, type WebSocketConfig } from './RCS.Config'
 
 // guid: string, name: string, mpsuser: string, mpspass: string, amtuser: string, amtpassword: string, mebxpass: string) {
 export interface AMTDeviceDTO {

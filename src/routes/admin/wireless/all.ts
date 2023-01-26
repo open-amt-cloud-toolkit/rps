@@ -4,11 +4,11 @@
  **********************************************************************/
 
 import Logger from '../../../Logger'
-import { WirelessConfig } from '../../../models/RCS.Config'
+import { type WirelessConfig } from '../../../models/RCS.Config'
 import { API_RESPONSE } from '../../../utils/constants'
-import { DataWithCount } from '../../../models'
+import { type DataWithCount } from '../../../models'
 import { MqttProvider } from '../../../utils/MqttProvider'
-import { Request, Response } from 'express'
+import { type Request, type Response } from 'express'
 import handleError from '../../../utils/handleError'
 
 export async function allProfiles (req: Request, res: Response): Promise<void> {

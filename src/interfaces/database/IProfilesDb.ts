@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { AMTConfiguration } from '../../models'
-import { CIRAConfig } from '../../models/RCS.Config'
-import { ITable } from './ITable'
+import { type AMTConfiguration } from '../../models'
+import { type CIRAConfig } from '../../models/RCS.Config'
+import { type ITable } from './ITable'
 
 export interface IProfilesTable extends ITable<AMTConfiguration> {
   getCiraConfigForProfile: (ciraConfigName: string, tenantId?: string) => Promise<CIRAConfig>

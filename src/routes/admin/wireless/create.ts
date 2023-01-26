@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { WirelessConfig } from '../../../models/RCS.Config'
+import { type WirelessConfig } from '../../../models/RCS.Config'
 import Logger from '../../../Logger'
 import { MqttProvider } from '../../../utils/MqttProvider'
-import { Request, Response } from 'express'
+import { type Request, type Response } from 'express'
 import handleError from '../../../utils/handleError'
-import { WifiCredentials } from '../../../interfaces/ISecretManagerService'
+import { type WifiCredentials } from '../../../interfaces/ISecretManagerService'
 export async function createWirelessProfile (req: Request, res: Response): Promise<void> {
   const wirelessConfig: WirelessConfig = req.body
   wirelessConfig.tenantId = req.tenantId
