@@ -115,3 +115,8 @@ export const WIFIENDPOINT = {
 
 export const DEFAULT_TOP = 25
 export const DEFAULT_SKIP = 0
+
+export const UNEXPECTED_PARSE_ERROR = {
+  statusCode: 599,
+  statusMessage: 'Unexpected Parse Error'
+}
