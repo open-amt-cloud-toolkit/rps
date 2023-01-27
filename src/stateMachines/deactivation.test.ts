@@ -10,6 +10,7 @@ import { devices } from '../WebSocketListener'
 import { config } from '../test/helper/Config'
 import { Environment } from '../utils/Environment'
 import ClientResponseMsg from '../utils/ClientResponseMsg'
+import { HttpHandler } from '../HttpHandler'
 
 const clientId = uuid()
 Environment.Config = config
@@ -19,13 +20,11 @@ describe('Deactivation State Machine', () => {
   let deactivationContext: DeactivationContext
   let config
   let currentStateIndex: number
-  let wrapItSpy: jest.SpyInstance
   let setupAndConfigurationServiceSpy: jest.SpyInstance
   let sendSpy: jest.SpyInstance
   let responseMessageSpy: jest.SpyInstance
   beforeEach(() => {
     deactivation = new Deactivation()
-    wrapItSpy = jest.spyOn(deactivation.httpHandler, 'wrapIt').mockReturnValue('abcdef')
     setupAndConfigurationServiceSpy = jest.spyOn(deactivation.amt.SetupAndConfigurationService, 'Unprovision').mockImplementation().mockReturnValue('abcdef')
     responseMessageSpy = jest.spyOn(ClientResponseMsg, 'get').mockReturnValue({} as any)
     devices[clientId] = {
@@ -38,16 +37,25 @@ describe('Deactivation State Machine', () => {
       status: {},
       activationStatus: false,
       connectionParams: {
-        guid: '4c4c4544-004b-4210-8033-b6c04f504633',
+        guid: clientId,
         port: 16992,
         digestChallenge: null,
         username: 'admin',
         password: 'P@ssw0rd'
       },
-      uuid: '4c4c4544-004b-4210-8033-b6c04f504633',
+      uuid: clientId,
       messageId: 1
     }
-    deactivationContext = { message: '', clientId: '', status: 'success', unauthCount: 0, errorMessage: '', statusMessage: '' }
+    deactivationContext = {
+      message: '',
+      clientId,
+      status: 'success',
+      unauthCount: 0,
+      xmlMessage: '',
+      errorMessage: '',
+      statusMessage: '',
+      httpHandler: new HttpHandler()
+    }
     sendSpy = jest.spyOn(devices[clientId].ClientSocket, 'send').mockImplementation().mockReturnValue()
     currentStateIndex = 0
     config = {
@@ -168,46 +176,21 @@ describe('Deactivation State Machine', () => {
   })
 
   it('should invoke unprovision and return promise', async () => {
-    const context: DeactivationContext = {
-      message: '',
-      clientId,
-      unauthCount: 0,
-      status: 'success',
-      errorMessage: '',
-      statusMessage: ''
-    }
-
-    void deactivation.invokeUnprovision(context)
+    void deactivation.invokeUnprovision(deactivationContext)
     expect(devices[clientId].pendingPromise).toBeDefined()
-    expect(wrapItSpy).toHaveBeenCalled()
     expect(setupAndConfigurationServiceSpy).toHaveBeenCalled()
   })
 
   it('should send success message to device', () => {
-    const context: DeactivationContext = {
-      message: '',
-      clientId,
-      unauthCount: 0,
-      status: 'success',
-      errorMessage: '',
-      statusMessage: ''
-    }
-    deactivation.sendMessageToDevice(context, null)
-    expect(responseMessageSpy).toHaveBeenCalledWith(context.clientId, null, context.status, 'success', JSON.stringify(devices[clientId].status))
+    deactivation.sendMessageToDevice(deactivationContext, null)
+    expect(responseMessageSpy).toHaveBeenCalledWith(deactivationContext.clientId, null, deactivationContext.status, 'success', JSON.stringify(devices[clientId].status))
     expect(sendSpy).toHaveBeenCalled()
   })
 
   it('should send error message to device', () => {
-    const context: DeactivationContext = {
-      message: '',
-      clientId,
-      unauthCount: 0,
-      status: 'error',
-      errorMessage: '',
-      statusMessage: ''
-    }
-    deactivation.sendMessageToDevice(context, null)
-    expect(responseMessageSpy).toHaveBeenCalledWith(context.clientId, null, context.status, 'failed', JSON.stringify(devices[clientId].status))
+    deactivationContext.status = 'error'
+    deactivation.sendMessageToDevice(deactivationContext, null)
+    expect(responseMessageSpy).toHaveBeenCalledWith(deactivationContext.clientId, null, deactivationContext.status, 'failed', JSON.stringify(devices[clientId].status))
     expect(sendSpy).toHaveBeenCalled()
   })
 

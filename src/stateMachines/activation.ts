@@ -628,13 +628,13 @@ export class Activation {
   async getGeneralSettings (context): Promise<any> {
     const amt: AMT.Messages = context.amt
     context.xmlMessage = amt.GeneralSettings.Get()
-    return await invokeWsmanCall(context)
+    return await invokeWsmanCall(context, 2)
   }
 
   async getHostBasedSetupService (context): Promise<any> {
     const ips: IPS.Messages = context.ips
     context.xmlMessage = ips.HostBasedSetupService.Get()
-    return await invokeWsmanCall(context)
+    return await invokeWsmanCall(context, 2)
   }
 
   async getNextCERTInChain (context): Promise<any> {
