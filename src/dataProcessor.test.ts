@@ -13,16 +13,25 @@ import { DataProcessor } from './DataProcessor'
 import { Environment } from './utils/Environment'
 import { VersionChecker } from './VersionChecker'
 import { devices } from './WebSocketListener'
-import { parse, HttpZResponseModel } from 'http-z'
+import { parse, type HttpZResponseModel } from 'http-z'
 import { HttpHandler } from './HttpHandler'
-import { parseBody } from './utils/parseWSManResponseBody'
 import { Deactivation } from './stateMachines/deactivation'
 import { Activation } from './stateMachines/activation'
 import { ClientMethods } from './models/RCS.Config'
-import { Maintenance, MaintenanceEvent } from './stateMachines/maintenance'
-import { IPConfiguration } from './stateMachines/syncIP'
+import { Maintenance, type MaintenanceEvent } from './stateMachines/maintenance'
+import { type IPConfiguration } from './stateMachines/syncIP'
 import { RPSError } from './utils/RPSError'
-import { HostnameConfiguration } from './stateMachines/syncHostName'
+import { type HostnameConfiguration } from './stateMachines/syncHostName'
+import { parseChunkedMessage } from './utils/parseChunkedMessage'
+import {
+  response200BadWsmanXML,
+  response200Good,
+  response200Incomplete,
+  response200OutOfOrder,
+  response400,
+  response401
+} from './test/helper/AMTMessages'
+import { UNEXPECTED_PARSE_ERROR } from './utils/constants'
 
 Environment.Config = config
 const configurator = new Configurator()
@@ -43,100 +52,70 @@ const connectionParams = {
   password: 'P@ssw0rd'
 }
 
-describe('handle AMT reponse', () => {
-  let clientData
-  beforeEach(() => {
-    clientData = {
-      method: 'deactivate',
-      apiKey: 'key',
-      appVersion: '1.0.0',
-      protocolVersion: '4.0.0',
-      status: 'ok',
-      message: 'ok',
-      fqdn: '',
-      payload: {
-        uuid: '4c4c4544-004b-4210-8033-b6c04f504633',
-        username: '$$OsAdmin',
-        password: 'P@ssw0rd',
-        currentMode: 2,
-        hostname: 'DESKTOP-9CC12U7',
-        certHashes: ['c3846bf24b9e93ca64274c0ec67c1ecc5e024ffcacd2d74019350e81fe546ae4']
-      }
-    }
-  })
-  it('should reject on 401 response', async () => {
-    expect.assertions(1)
-    const clientMsg = {
-      method: 'response',
-      apiKey: 'key',
-      appVersion: '1.0.0',
-      protocolVersion: '4.0.0',
-      status: 'ok',
-      message: 'ok',
-      fqdn: '',
-      payload: 'HTTP/1.1 401 Unauthorized\r\nWWW-Authenticate: Digest realm="Digest:727734D63A1FC0423736E48DA554E462", nonce="B9AX94iAAAAAAAAAx6rrSfPHGUrx/3uA",stale="false",qop="auth"\r\nContent-Type: text/html\r\nServer: Intel(R) Active Management Technology 15.0.23.1706\r\nContent-Length: 693\r\nConnection: close\r\n\r\n<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" >\n<html><head><link rel=stylesheet href=/styles.css>\n<meta http-equiv="Content-Type" content="text/html; charset=utf-8">\n<title>Intel&reg; Active Management Technology</title></head>\n<body>\n<table class=header>\n<tr><td valign=top nowrap>\n<p class=top1>Intel<font class=r><sup>&reg;</sup></font> Active Management Technology\n<td valign="middle"><img src="logo.gif" align="right" alt="Intel">\n</table>\n<br />\n<h2 class=warn>Log on failed. Incorrect user name or password, or user account temporarily locked.</h2>\n\n<p>\n<form METHOD="GET" action="index.htm"><h2><input type=submit value="Try again">\n</h2></form>\n<p>\n\n</body>\n</html>\n'
-    }
-    const clientId = uuid()
-    devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: clientData, messageId: 0, connectionParams, unauthCount: 0 }
-    const promise = new Promise<any>((resolve, reject) => {
-      devices[clientId].resolve = resolve
-      devices[clientId].reject = reject
-    })
-    devices[clientId].pendingPromise = promise
-    VersionChecker.setCurrentVersion('4.0.0')
-    const message = parse(clientMsg.payload) as HttpZResponseModel
-    await dataProcessor.handleResponse(clientMsg, clientId)
-    await expect(promise).rejects.toEqual(message)
-  })
-  it('should resolve on 200', async () => {
-    const clientMsg = {
-      method: 'response',
-      apiKey: 'key',
-      appVersion: '1.0.0',
-      protocolVersion: '4.0.0',
-      status: 'ok',
-      message: 'ok',
-      fqdn: '',
-      payload: 'HTTP/1.1 200 OK\r\nDate: Mon, 31 Jan 2022 10:23:04 GMT\r\nServer: Intel(R) Active Management Technology 15.0.23.1706\r\nX-Frame-Options: DENY\r\nContent-Type: application/soap+xml; charset=UTF-8\r\nTransfer-Encoding: chunked\r\n\r\n0456\r\n<?xml version="1.0" encoding="UTF-8"?><a:Envelope xmlns:a="http://www.w3.org/2003/05/soap-envelope" xmlns:b="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:c="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" xmlns:d="http://schemas.xmlsoap.org/ws/2005/02/trust" xmlns:e="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:f="http://schemas.dmtf.org/wbem/wsman/1/cimbinding.xsd" xmlns:g="http://intel.com/wbem/wscim/1/amt-schema/1/AMT_SetupAndConfigurationService" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><a:Header><b:To>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</b:To><b:RelatesTo>1</b:RelatesTo><b:Action a:mustUnderstand="true">http://intel.com/wbem/wscim/1/amt-schema/1/AMT_SetupAndConfigurationService/UnprovisionResponse</b:Action><b:MessageID>uuid:00000000-8086-8086-8086-000000000029</b:MessageID><c:ResourceURI>http://intel.com/wbem/wscim/1/amt-schema/1/AMT_SetupAndConfigurationService</c:ResourceURI></a:Header><a:Body><g:Unprovision_OUTPUT><g:ReturnValue>0</g:ReturnValue></g:Unprovision_OUTPUT></a:Body></a:Envelope>\r\n0\r\n\r\n'
-    }
-    const clientId = uuid()
+describe('handle AMT response', () => {
+  const clientId = uuid()
+  devices[clientId] = {
+    ClientId: clientId,
+    unauthCount: 0
+  }
+  VersionChecker.setCurrentVersion('4.0.0')
 
-    devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: clientData, messageId: 0, unauthCount: 0 }
-    const promise = new Promise<any>((resolve, reject) => {
+  let promise
+  let clientMsg
+  beforeEach(() => {
+    clientMsg = {}
+    promise = new Promise<any>((resolve, reject) => {
       devices[clientId].resolve = resolve
       devices[clientId].reject = reject
     })
     devices[clientId].pendingPromise = promise
-    VersionChecker.setCurrentVersion('4.0.0')
-    const message = parse(clientMsg.payload) as HttpZResponseModel
-    const expected = httpHandler.parseXML(parseBody(message))
+  })
+
+  it('should resolve with parsed xml payload on 200', async () => {
+    clientMsg.payload = response200Good
+    const response = parse(response200Good) as HttpZResponseModel
+    const expected = httpHandler.parseXML(parseChunkedMessage(response.body.text))
     await dataProcessor.handleResponse(clientMsg, clientId)
     await expect(promise).resolves.toEqual(expected)
   })
-  it('should reject and parse on 400', async () => {
-    const clientMsg = {
-      method: 'response',
-      apiKey: 'key',
-      appVersion: '1.0.0',
-      protocolVersion: '4.0.0',
-      status: 'ok',
-      message: 'ok',
-      fqdn: '',
-      payload: 'HTTP/1.1 400 OK\r\nDate: Thu, 27 Jan 2022 11:18:36 GMT\r\nServer: Intel(R) Active Management Technology 15.0.23.1706\r\nX-Frame-Options: DENY\r\nContent-Type: application/soap+xml; charset=UTF-8\r\nTransfer-Encoding: chunked\r\n\r\n0456\r\n<?xml version="1.0" encoding="UTF-8"?><a:Envelope xmlns:a="http://www.w3.org/2003/05/soap-envelope" xmlns:b="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:c="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" xmlns:d="http://schemas.xmlsoap.org/ws/2005/02/trust" xmlns:e="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:f="http://schemas.dmtf.org/wbem/wsman/1/cimbinding.xsd" xmlns:g="http://intel.com/wbem/wscim/1/amt-schema/1/AMT_SetupAndConfigurationService" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><a:Header><b:To>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</b:To><b:RelatesTo>1</b:RelatesTo><b:Action a:mustUnderstand="true">http://intel.com/wbem/wscim/1/amt-schema/1/AMT_SetupAndConfigurationService/UnprovisionResponse</b:Action><b:MessageID>uuid:00000000-8086-8086-8086-00000000010B</b:MessageID><c:ResourceURI>http://intel.com/wbem/wscim/1/amt-schema/1/AMT_SetupAndConfigurationService</c:ResourceURI></a:Header><a:Body><g:Unprovision_OUTPUT><g:ReturnValue>1</g:ReturnValue></g:Unprovision_OUTPUT></a:Body></a:Envelope>\r\n0\r\n\r\n'
-    }
-    const clientId = uuid()
-
-    devices[clientId] = { ClientId: clientId, ClientSocket: null, ClientData: clientData, messageId: 0, unauthCount: 0 }
-    const promise = new Promise<any>((resolve, reject) => {
-      devices[clientId].resolve = resolve
-      devices[clientId].reject = reject
-    })
-    devices[clientId].pendingPromise = promise
-    VersionChecker.setCurrentVersion('4.0.0')
-    const message = parse(clientMsg.payload) as HttpZResponseModel
-    const expected = httpHandler.parseXML(parseBody(message))
+  it('should reject with UNEXPECTED_PARSE_ERROR on 200 but out of order', async () => {
+    clientMsg.payload = response200OutOfOrder
     await dataProcessor.handleResponse(clientMsg, clientId)
-    await expect(promise).rejects.toEqual(expected)
+    await expect(promise).rejects.toEqual(UNEXPECTED_PARSE_ERROR)
+  })
+  it('should reject with UNEXPECTED_PARSE_ERROR on 200 but incomplete', async () => {
+    clientMsg.payload = response200Incomplete
+    await dataProcessor.handleResponse(clientMsg, clientId)
+    await expect(promise).rejects.toEqual(UNEXPECTED_PARSE_ERROR)
+  })
+  it('should reject with UNEXPECTED_PARSE_ERROR on 200 but bad wsman xml', async () => {
+    clientMsg.payload = response200BadWsmanXML
+    await dataProcessor.handleResponse(clientMsg, clientId)
+    await expect(promise).rejects.toEqual(UNEXPECTED_PARSE_ERROR)
+  })
+  it('should reject with HttpZReponseModel on 400', async () => {
+    clientMsg.payload = response400
+    const expected = parse(response400) as HttpZResponseModel
+    await dataProcessor.handleResponse(clientMsg, clientId)
+    try {
+      const resolveVal = await devices[clientId].pendingPromise
+      expect(resolveVal).toBeFalsy()
+    } catch (rejectVal) {
+      expect(rejectVal).toEqual(expected)
+      expect(rejectVal.statusCode).toEqual(400)
+    }
+  })
+  it('should reject with HttpZReponseModel on 401', async () => {
+    clientMsg.payload = response401
+    const expected = parse(response401) as HttpZResponseModel
+    await dataProcessor.handleResponse(clientMsg, clientId)
+    try {
+      const resolveVal = await devices[clientId].pendingPromise
+      expect(resolveVal).toBeFalsy()
+    } catch (rejectVal) {
+      expect(rejectVal).toEqual(expected)
+      expect(rejectVal.statusCode).toEqual(401)
+    }
   })
 })
 

@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { IDomainCredentialManager } from './interfaces/IDomainCredentialManager'
-import { ILogger } from './interfaces/ILogger'
-import { IDomainsTable } from './interfaces/database/IDomainsDb'
-import { AMTDomain } from './models'
-import { Configurator } from './Configurator'
-import { CertCredentials } from './interfaces/ISecretManagerService'
+import { type IDomainCredentialManager } from './interfaces/IDomainCredentialManager'
+import { type ILogger } from './interfaces/ILogger'
+import { type IDomainsTable } from './interfaces/database/IDomainsDb'
+import { type AMTDomain } from './models'
+import { type Configurator } from './Configurator'
+import { type CertCredentials } from './interfaces/ISecretManagerService'
 
 export class DomainCredentialManager implements IDomainCredentialManager {
   private readonly amtDomains: IDomainsTable

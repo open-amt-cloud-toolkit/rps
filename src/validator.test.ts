@@ -13,8 +13,8 @@ import { RPSError } from './utils/RPSError'
 import { Environment } from './utils/Environment'
 import { VersionChecker } from './VersionChecker'
 import { devices } from './WebSocketListener'
-import { ClientAction, ClientObject } from './models/RCS.Config'
-import { DeviceCredentials } from './interfaces/ISecretManagerService'
+import { ClientAction, type ClientObject } from './models/RCS.Config'
+import { type DeviceCredentials } from './interfaces/ISecretManagerService'
 
 Environment.Config = config
 const configurator: Configurator = new Configurator()
@@ -169,14 +169,14 @@ describe('validator', () => {
 
   describe('verifyPayload function', () => {
     test('Should return payload', async () => {
-      const result = await validator.verifyPayload(msg, clientId)
+      const result = validator.verifyPayload(msg, clientId)
       expect(result).toEqual(msg.payload)
     })
 
     test('Should throw an exception if message is null', async () => {
       let rpsError = null
       try {
-        await validator.verifyPayload(null, clientId)
+        validator.verifyPayload(null, clientId)
       } catch (error) {
         rpsError = error
       }
@@ -188,7 +188,7 @@ describe('validator', () => {
       let rpsError = null
       try {
         msg.payload.uuid = ''
-        await validator.verifyPayload(msg, clientId)
+        validator.verifyPayload(msg, clientId)
       } catch (error) {
         rpsError = error
       }

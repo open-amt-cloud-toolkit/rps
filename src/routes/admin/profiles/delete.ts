@@ -4,10 +4,10 @@
  **********************************************************************/
 
 import Logger from '../../../Logger'
-import { AMTConfiguration } from '../../../models'
+import { type AMTConfiguration } from '../../../models'
 import { API_UNEXPECTED_EXCEPTION, NOT_FOUND_EXCEPTION, NOT_FOUND_MESSAGE } from '../../../utils/constants'
 import { MqttProvider } from '../../../utils/MqttProvider'
-import { Request, Response } from 'express'
+import { type Request, type Response } from 'express'
 import handleError from '../../../utils/handleError'
 import { RPSError } from '../../../utils/RPSError'
 

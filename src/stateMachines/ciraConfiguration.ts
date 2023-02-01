@@ -3,15 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
+import { type AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 import { createMachine, assign, send } from 'xstate'
 import { CertManager } from '../certManager'
 import { Configurator } from '../Configurator'
-import { HttpHandler } from '../HttpHandler'
+import { type HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
 import got from 'got'
-import { AMTRandomPasswordLength } from '../utils/constants'
-import { CIRAConfig, ClientAction } from '../models/RCS.Config'
+import { AMTRandomPasswordLength, UNEXPECTED_PARSE_ERROR } from '../utils/constants'
+import { type CIRAConfig, ClientAction } from '../models/RCS.Config'
 import { NodeForge } from '../NodeForge'
 import { DbCreatorFactory } from '../factories/DbCreatorFactory'
 import { Environment } from '../utils/Environment'
@@ -19,11 +19,11 @@ import { PasswordHelper } from '../utils/PasswordHelper'
 import { SignatureHelper } from '../utils/SignatureHelper'
 import { Validator } from '../Validator'
 import { devices } from '../WebSocketListener'
-import { AMTConfiguration } from '../models'
+import { type AMTConfiguration } from '../models'
 import { randomUUID } from 'crypto'
 import { Error } from './error'
 import { invokeWsmanCall } from './common'
-import { Models } from '@open-amt-cloud-toolkit/wsman-messages/amt'
+import { type Models } from '@open-amt-cloud-toolkit/wsman-messages/amt'
 
 export interface CIRAConfigContext {
   clientId: string
@@ -37,6 +37,7 @@ export interface CIRAConfigContext {
   privateCerts: any[]
   httpHandler: HttpHandler
   amt?: AMT.Messages
+  retryCount?: number
 }
 interface CIRAConfigEvent {
   type: 'CONFIGURE_CIRA' | 'ONFAILED'
@@ -66,6 +67,8 @@ export class CIRAConfiguration {
     createMachine<CIRAConfigContext, CIRAConfigEvent>({
       preserveActionOrder: true,
       predictableActionArguments: true,
+      // todo: the actual context comes in from the parent and clobbers this one
+      // xstate version 5 should fix this.
       context: {
         clientId: '',
         httpHandler: null,
@@ -84,7 +87,8 @@ export class CIRAConfiguration {
         CIRACONFIGURED: {
           on: {
             CONFIGURE_CIRA: {
-              actions: ['Reset Unauth Count'],
+              // reset retry will create retryCount on the context
+              actions: ['Reset Unauth Count', 'Reset Retry Count'],
               target: 'GET_CIRA_CONFIG'
             }
           }
@@ -198,11 +202,21 @@ export class CIRAConfiguration {
           invoke: {
             src: this.pullManagementPresenceRemoteSAP.bind(this),
             id: 'pull-management-presence-remote-sap',
-            onDone: { actions: assign({ message: (context, event) => event.data }), target: 'ADD_REMOTE_POLICY_ACCESS_RULE' },
-            onError: {
-              actions: assign({ statusMessage: (context, event) => 'Failed to Pull Management Presence Remote SAP' }),
-              target: 'FAILURE'
-            }
+            onDone: {
+              actions: [assign({ message: (context, event) => event.data }), 'Reset Retry Count'],
+              target: 'ADD_REMOTE_POLICY_ACCESS_RULE'
+            },
+            onError: [
+              {
+                cond: 'shouldRetry',
+                actions: 'Increment Retry Count',
+                target: 'ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP'
+              },
+              {
+                actions: assign({ statusMessage: (context, event) => 'Failed to Pull Management Presence Remote SAP' }),
+                target: 'FAILURE'
+              }
+            ]
           }
         },
         ADD_REMOTE_POLICY_ACCESS_RULE: {
@@ -231,11 +245,21 @@ export class CIRAConfiguration {
           invoke: {
             src: this.pullRemoteAccessPolicyAppliesToMPS.bind(this),
             id: 'pull-remote-access-policy-rule',
-            onDone: { actions: assign({ message: (context, event) => event.data }), target: 'PUT_REMOTE_ACCESS_POLICY_RULE' },
-            onError: {
-              actions: assign({ statusMessage: (context, event) => 'Failed to pull remote access policy rule' }),
-              target: 'FAILURE'
-            }
+            onDone: {
+              actions: [assign({ message: (context, event) => event.data }), 'Reset Retry Count'],
+              target: 'PUT_REMOTE_ACCESS_POLICY_RULE'
+            },
+            onError: [
+              {
+                cond: 'shouldRetry',
+                actions: 'Increment Retry Count',
+                target: 'ENUMERATE_REMOTE_ACCESS_POLICY_RULE'
+              },
+              {
+                actions: assign({ statusMessage: (context, event) => 'Failed to pull remote access policy rule' }),
+                target: 'FAILURE'
+              }
+            ]
           }
         },
         PUT_REMOTE_ACCESS_POLICY_RULE: {
@@ -306,13 +330,16 @@ export class CIRAConfiguration {
       guards: {
         hasMPSEntries: (context, event) => context.message.Envelope.Body.PullResponse.Items?.AMT_ManagementPresenceRemoteSAP != null,
         hasEnvSettings: (context, event) => context.message.Envelope.Body.AMT_EnvironmentDetectionSettingData.DetectionStrings != null,
-        successfulStateChange: (context, event) => context.message.Envelope.Body?.RequestStateChange_OUTPUT?.ReturnValue === 0
+        successfulStateChange: (context, event) => context.message.Envelope.Body?.RequestStateChange_OUTPUT?.ReturnValue === 0,
+        shouldRetry: (context, event) => context.retryCount < 3 && event.data === UNEXPECTED_PARSE_ERROR
       },
       actions: {
         'Update Configuration Status': (context, event) => {
           devices[context.clientId].status.CIRAConnection = context.statusMessage
         },
-        'Reset Unauth Count': (context, event) => { devices[context.clientId].unauthCount = 0 }
+        'Reset Unauth Count': (context, event) => { devices[context.clientId].unauthCount = 0 },
+        'Reset Retry Count': assign({ retryCount: (context, event) => 0 }),
+        'Increment Retry Count': assign({ retryCount: (context, event) => context.retryCount + 1 })
       }
     })
 
@@ -344,28 +371,28 @@ export class CIRAConfiguration {
       ExtendedData: 'AAAAAAAAABk=' // Equals to 25 seconds in base 64 with network order.
     }
     context.xmlMessage = context.amt.RemoteAccessService.AddRemoteAccessPolicyRule(policy, selector)
-    return await invokeWsmanCall(context)
+    return await invokeWsmanCall(context, 2)
   }
 
   async getEnvironmentDetectionSettings (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
     context.xmlMessage = context.amt.EnvironmentDetectionSettingData.Get()
-    return await invokeWsmanCall(context)
+    return await invokeWsmanCall(context, 2)
   }
 
   async putEnvironmentDetectionSettings (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
     const envSettings: AMT.Models.EnvironmentDetectionSettingData = context.message.Envelope.Body.AMT_EnvironmentDetectionSettingData
-    if (Environment.Config.disableCIRADomainName?.toLowerCase() !== undefined) {
+    if (Environment.Config.disableCIRADomainName) {
       envSettings.DetectionStrings = [Environment.Config.disableCIRADomainName]
     } else {
       envSettings.DetectionStrings = [`${randomUUID()}.com`]
     }
     context.xmlMessage = context.amt.EnvironmentDetectionSettingData.Put(envSettings)
-    return await invokeWsmanCall(context)
+    return await invokeWsmanCall(context, 2)
   }
 
   async addTrustedRootCertificate (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
     context.xmlMessage = context.amt.PublicKeyManagementService.AddTrustedRootCertificate({ CertificateBlob: context.ciraConfig.mpsRootCertificate })
-    return await invokeWsmanCall(context)
+    return await invokeWsmanCall(context, 2)
   }
 
   async addMPS (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
@@ -381,12 +408,12 @@ export class CIRAConfiguration {
       server.CommonName = context.ciraConfig.commonName
     }
     context.xmlMessage = context.amt.RemoteAccessService.AddMPS(server)
-    return await invokeWsmanCall(context)
+    return await invokeWsmanCall(context, 2)
   }
 
   async enumerateRemoteAccessPolicyAppliesToMPS (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
     context.xmlMessage = context.amt.RemoteAccessPolicyAppliesToMPS.Enumerate()
-    return await invokeWsmanCall(context)
+    return await invokeWsmanCall(context, 2)
   }
 
   async pullRemoteAccessPolicyAppliesToMPS (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
@@ -398,11 +425,11 @@ export class CIRAConfiguration {
     const data = context.message.Envelope.Body.PullResponse.Items.AMT_RemoteAccessPolicyAppliesToMPS
     data.MpsType = MPSType.Both
     context.xmlMessage = context.amt.RemoteAccessPolicyAppliesToMPS.Put(data)
-    return await invokeWsmanCall(context)
+    return await invokeWsmanCall(context, 2)
   }
 
   async userInitiatedConnectionService (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
     context.xmlMessage = context.amt.UserInitiatedConnectionService.RequestStateChange(32771)
-    return await invokeWsmanCall(context)
+    return await invokeWsmanCall(context, 2)
   }
 }

@@ -3,19 +3,19 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { AMT, IPS } from '@open-amt-cloud-toolkit/wsman-messages'
+import { type AMT, type IPS } from '@open-amt-cloud-toolkit/wsman-messages'
 import { createMachine, assign, send } from 'xstate'
 import { CertManager } from '../certManager'
 import { Configurator } from '../Configurator'
-import { HttpHandler } from '../HttpHandler'
+import { type HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
-import { CIRAConfig } from '../models/RCS.Config'
+import { type CIRAConfig } from '../models/RCS.Config'
 import { NodeForge } from '../NodeForge'
 import { DbCreatorFactory } from '../factories/DbCreatorFactory'
 import { SignatureHelper } from '../utils/SignatureHelper'
 import { Validator } from '../Validator'
 import { devices } from '../WebSocketListener'
-import { AMTConfiguration } from '../models'
+import { type AMTConfiguration } from '../models'
 import { Error } from './error'
 import { invokeWsmanCall } from './common'
 

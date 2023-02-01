@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { Request, Response } from 'express'
+import { type Request, type Response } from 'express'
 
 const ifMatchMiddleware = (req: Request, res: Response, next): void => {
   const item = req.body

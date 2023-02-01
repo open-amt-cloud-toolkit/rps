@@ -8,7 +8,7 @@ import { assign, createMachine, interpret } from 'xstate'
 import { ClientAction } from '../models/RCS.Config'
 import { HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
-import { AMTConfiguration, AMTDomain } from '../models'
+import { type AMTConfiguration, type AMTDomain } from '../models'
 import { Environment } from '../utils/Environment'
 import { MqttProvider } from '../utils/MqttProvider'
 import { devices } from '../WebSocketListener'
@@ -30,7 +30,7 @@ import { TLS } from './tls'
 import { invokeWsmanCall } from './common'
 import ClientResponseMsg from '../utils/ClientResponseMsg'
 import { Unconfiguration } from './unconfiguration'
-import { DeviceCredentials } from '../interfaces/ISecretManagerService'
+import { type DeviceCredentials } from '../interfaces/ISecretManagerService'
 
 export interface ActivationContext {
   profile: AMTConfiguration
@@ -628,17 +628,17 @@ export class Activation {
   async getGeneralSettings (context): Promise<any> {
     const amt: AMT.Messages = context.amt
     context.xmlMessage = amt.GeneralSettings.Get()
-    return await invokeWsmanCall(context)
+    return await invokeWsmanCall(context, 2)
   }
 
   async getHostBasedSetupService (context): Promise<any> {
     const ips: IPS.Messages = context.ips
     context.xmlMessage = ips.HostBasedSetupService.Get()
-    return await invokeWsmanCall(context)
+    return await invokeWsmanCall(context, 2)
   }
 
   async getNextCERTInChain (context): Promise<any> {
-    context.xmlMessage = await this.injectCertificate(context.clientId, context.ips)
+    context.xmlMessage = this.injectCertificate(context.clientId, context.ips)
     return await invokeWsmanCall(context)
   }
 

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { RPSConfig } from '../models'
+import { type RPSConfig } from '../models'
 
 const Environment = {
   Config: null as RPSConfig

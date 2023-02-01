@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { AMTPassword, AMTPasswordContext, AMTPasswordEvent } from './amtPassword'
+import { AMTPassword, type AMTPasswordContext, type AMTPasswordEvent } from './amtPassword'
 import { v4 as uuid } from 'uuid'
 import { devices } from '../WebSocketListener'
 import { Environment } from '../utils/Environment'

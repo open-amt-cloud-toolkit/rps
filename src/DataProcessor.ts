@@ -3,20 +3,21 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import * as WebSocket from 'ws'
+import type WebSocket from 'ws'
 
-import { ILogger } from './interfaces/ILogger'
-import { ClientMsg, ClientMethods } from './models/RCS.Config'
+import type { ILogger } from './interfaces/ILogger'
+import { ClientMethods, type ClientMsg } from './models/RCS.Config'
 import { RPSError } from './utils/RPSError'
-import { IValidator } from './interfaces/IValidator'
+import type { IValidator } from './interfaces/IValidator'
 import { HttpHandler } from './HttpHandler'
-import { parse, HttpZResponseModel } from 'http-z'
+import { parse, type HttpZResponseModel } from 'http-z'
 import { devices } from './WebSocketListener'
 import { Deactivation } from './stateMachines/deactivation'
 import { Maintenance } from './stateMachines/maintenance'
 import { Activation } from './stateMachines/activation'
-import { parseBody } from './utils/parseWSManResponseBody'
 import ClientResponseMsg from './utils/ClientResponseMsg'
+import { parseChunkedMessage } from './utils/parseChunkedMessage'
+import { UNEXPECTED_PARSE_ERROR } from './utils/constants'
 export class DataProcessor {
   httpHandler: HttpHandler
   constructor (
@@ -96,28 +97,35 @@ export class DataProcessor {
 
   async handleResponse (clientMsg: ClientMsg, clientId: string): Promise<void> {
     const clientObj = devices[clientId]
-    const payload = clientObj.ClientData.payload
-    const message = parse(clientMsg.payload) as HttpZResponseModel
-    if (message.statusCode === 200) {
-      const xmlBody = parseBody(message)
-      // parse WSMan xml response to json
-      const parsedMessage = this.httpHandler.parseXML(xmlBody)
-      if (clientObj.pendingPromise != null) {
-        clientObj.resolve(parsedMessage)
+    let resolveValue = null
+    let rejectValue = null
+    let statusCode = -1
+    try {
+      const httpRsp = parse(clientMsg.payload) as HttpZResponseModel
+      statusCode = httpRsp.statusCode
+      if (statusCode === 200) {
+        const xmlBody = parseChunkedMessage(httpRsp.body.text)
+        resolveValue = this.httpHandler.parseXML(xmlBody)
+        if (!xmlBody || !resolveValue) {
+          // AMT fulfilled the request, but there is some problem with the response
+          rejectValue = UNEXPECTED_PARSE_ERROR
+        }
+      } else {
+        rejectValue = httpRsp
       }
-      this.logger.debug(`Device ${payload.uuid} wsman response ${message.statusCode}: ${JSON.stringify(clientMsg.payload, null, '\t')}`)
-    } else {
-      let parsedMessage = message
-      if (message.statusCode !== 401) { // won't be parsed if it is a 401 since it isn't XML
-        const xmlBody = parseBody(message)
-        // pares WSMan xml response to json
-        parsedMessage = this.httpHandler.parseXML(xmlBody)
-      }
-      if (clientObj.pendingPromise != null) {
-        clientObj.reject(parsedMessage)
-      }
-      this.logger.debug(`Device ${payload.uuid} wsman response ${message.statusCode}: ${JSON.stringify(clientMsg.payload, null, '\t')}`)
+    } catch (error) {
+      rejectValue = UNEXPECTED_PARSE_ERROR
     }
+    if (clientObj.pendingPromise != null) {
+      if (resolveValue) {
+        clientObj.resolve(resolveValue)
+      } else {
+        clientObj.reject(rejectValue)
+      }
+    }
+    this.logger.debug(`Device ${clientId}` +
+      `wsman response ${statusCode} ${resolveValue ? 'resolved' : 'rejected'}: ` +
+      `${JSON.stringify(clientMsg.payload, null, '\t')}`)
   }
 
   async maintainDevice (clientMsg: ClientMsg, clientId: string, maintenance: Maintenance = new Maintenance()): Promise<void> {

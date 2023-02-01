@@ -3,18 +3,19 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { AMT, CIM } from '@open-amt-cloud-toolkit/wsman-messages'
+import { type AMT, type CIM } from '@open-amt-cloud-toolkit/wsman-messages'
 import { assign, createMachine, send } from 'xstate'
-import { WirelessConfig } from '../models/RCS.Config'
-import { HttpHandler } from '../HttpHandler'
+import { type WirelessConfig } from '../models/RCS.Config'
+import { type HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
-import { AMTConfiguration } from '../models'
+import { type AMTConfiguration } from '../models'
 import { devices } from '../WebSocketListener'
 import { Error } from './error'
 import { Configurator } from '../Configurator'
 import { DbCreatorFactory } from '../factories/DbCreatorFactory'
 import { invokeWsmanCall } from './common'
-import { WifiCredentials } from '../interfaces/ISecretManagerService'
+import { type WifiCredentials } from '../interfaces/ISecretManagerService'
+import { UNEXPECTED_PARSE_ERROR } from '../utils/constants'
 
 interface NetworkConfigContext {
   amtProfile: AMTConfiguration
@@ -30,6 +31,7 @@ interface NetworkConfigContext {
   httpHandler: HttpHandler
   amt?: AMT.Messages
   cim?: CIM.Messages
+  retryCount?: number
 }
 
 interface NetworkConfigEvent {
@@ -49,6 +51,8 @@ export class NetworkConfiguration {
     createMachine<NetworkConfigContext, NetworkConfigEvent>({
       preserveActionOrder: true,
       predictableActionArguments: true,
+      // todo: the actual context comes in from the parent and clobbers this one
+      // xstate version 5 should fix this.
       context: {
         httpHandler: null,
         amtProfile: null,
@@ -68,7 +72,7 @@ export class NetworkConfiguration {
         ACTIVATION: {
           on: {
             NETWORKCONFIGURATION: {
-              actions: [assign({ statusMessage: () => '', wifiProfileCount: () => 0 }), 'Reset Unauth Count'],
+              actions: [assign({ statusMessage: () => '', wifiProfileCount: () => 0 }), 'Reset Unauth Count', 'Reset Retry Count'],
               target: 'CHECK_GENERAL_SETTINGS'
             }
           }
@@ -116,13 +120,20 @@ export class NetworkConfiguration {
             src: this.pullEthernetPortSettings.bind(this),
             id: 'pull-ethernet-port-settings',
             onDone: {
-              actions: assign({ message: (context, event) => event.data }),
+              actions: [assign({ message: (context, event) => event.data }), 'Reset Retry Count'],
               target: 'CHECK_ETHERNET_PORT_SETTINGS_PULL_RESPONSE'
             },
-            onError: {
-              actions: assign({ statusMessage: (context, event) => 'Failed to pull to ethernet port settings' }),
-              target: 'FAILED'
-            }
+            onError: [
+              {
+                cond: 'shouldRetry',
+                actions: 'Increment Retry Count',
+                target: 'ENUMERATE_ETHERNET_PORT_SETTINGS'
+              },
+              {
+                actions: assign({ statusMessage: (context, event) => 'Failed to pull ethernet port settings' }),
+                target: 'FAILED'
+              }
+            ]
           }
         },
         CHECK_ETHERNET_PORT_SETTINGS_PULL_RESPONSE: {
@@ -181,13 +192,20 @@ export class NetworkConfiguration {
             src: this.pullWiFiEndpointSettings.bind(this),
             id: 'pull-wifi-endpoint-settings',
             onDone: {
-              actions: assign({ message: (context, event) => event.data }),
+              actions: [assign({ message: (context, event) => event.data }), 'Reset Retry Count'],
               target: 'CHECK_WIFI_ENDPOINT_SETTINGS_PULL_RESPONSE'
             },
-            onError: {
-              actions: assign({ statusMessage: (context, event) => 'Failed to pull wifi endpoint settings' }),
-              target: 'FAILED'
-            }
+            onError: [
+              {
+                cond: 'shouldRetry',
+                actions: 'Increment Retry Count',
+                target: 'ENUMERATE_WIFI_ENDPOINT_SETTINGS'
+              },
+              {
+                actions: assign({ statusMessage: (context, event) => 'Failed to pull wifi endpoint settings' }),
+                target: 'FAILED'
+              }
+            ]
           }
         },
         CHECK_WIFI_ENDPOINT_SETTINGS_PULL_RESPONSE: {
@@ -355,7 +373,8 @@ export class NetworkConfiguration {
         isWifiProfileAdded: (context, event) => context.message.Envelope.Body.AddWiFiSettings_OUTPUT.ReturnValue !== 0,
         isWifiProfileDeleted: (context, event) => context.message.Envelope.Body == null,
         isLocalProfileSynchronizationNotEnabled: (context, event) => context.message.Envelope.Body.AMT_WiFiPortConfigurationService.localProfileSynchronizationEnabled === 0,
-        isNotAMTNetworkEnabled: this.isNotAMTNetworkEnabled.bind(this)
+        isNotAMTNetworkEnabled: this.isNotAMTNetworkEnabled.bind(this),
+        shouldRetry: (context, event) => context.retryCount < 3 && event.data === UNEXPECTED_PARSE_ERROR
       },
       actions: {
         'Reset Unauth Count': (context, event) => { devices[context.clientId].unauthCount = 0 },
@@ -365,7 +384,9 @@ export class NetworkConfiguration {
         },
         'Read Ethernet Port Settings': this.readEthernetPortSettings.bind(this),
         'Read Ethernet Port Settings Put Response': this.readEthernetPortSettingsPutResponse.bind(this),
-        'Read WiFi Endpoint Settings Pull Response': this.readWiFiEndpointSettingsPullResponse.bind(this)
+        'Read WiFi Endpoint Settings Pull Response': this.readWiFiEndpointSettingsPullResponse.bind(this),
+        'Reset Retry Count': assign({ retryCount: (context, event) => 0 }),
+        'Increment Retry Count': assign({ retryCount: (context, event) => context.retryCount + 1 })
       }
     })
 
@@ -398,7 +419,7 @@ export class NetworkConfiguration {
 
   async enumerateEthernetPortSettings (context): Promise<any> {
     context.xmlMessage = context.amt.EthernetPortSettings.Enumerate()
-    return await invokeWsmanCall(context)
+    return await invokeWsmanCall(context, 2)
   }
 
   async pullEthernetPortSettings (context): Promise<any> {
@@ -458,7 +479,7 @@ export class NetworkConfiguration {
     // this.logger.debug(`Updated Network configuration to set on device :  ${JSON.stringify(context.message, null, '\t')}`)
     // put request to update ethernet port settings on the device
     context.xmlMessage = context.amt.EthernetPortSettings.Put(context.wiredSettings)
-    return await invokeWsmanCall(context)
+    return await invokeWsmanCall(context, 2)
   }
 
   readEthernetPortSettingsPutResponse (context: NetworkConfigContext, event: NetworkConfigEvent): void {
@@ -473,7 +494,7 @@ export class NetworkConfiguration {
 
   async enumerateWiFiEndpointSettings (context): Promise<any> {
     context.xmlMessage = context.cim.WiFiEndpointSettings.Enumerate()
-    return await invokeWsmanCall(context)
+    return await invokeWsmanCall(context, 2)
   }
 
   async pullWiFiEndpointSettings (context): Promise<any> {
@@ -556,13 +577,13 @@ export class NetworkConfiguration {
 
   async getWiFiPortConfigurationService (context: NetworkConfigContext, event: NetworkConfigEvent): Promise<any> {
     context.xmlMessage = context.amt.WiFiPortConfigurationService.Get()
-    return await invokeWsmanCall(context)
+    return await invokeWsmanCall(context, 2)
   }
 
   async putWiFiPortConfigurationService (context: NetworkConfigContext, event: NetworkConfigEvent): Promise<any> {
     const wifiPortConfigurationService: AMT.Models.WiFiPortConfigurationService = context.message.Envelope.Body.AMT_WiFiPortConfigurationService
     wifiPortConfigurationService.localProfileSynchronizationEnabled = 3
     context.xmlMessage = context.amt.WiFiPortConfigurationService.Put(wifiPortConfigurationService)
-    return await invokeWsmanCall(context)
+    return await invokeWsmanCall(context, 2)
   }
 }

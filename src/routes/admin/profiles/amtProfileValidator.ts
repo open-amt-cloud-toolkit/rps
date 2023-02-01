@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { Request } from 'express'
-import { check, ValidationChain } from 'express-validator'
+import { type Request } from 'express'
+import { check, type ValidationChain } from 'express-validator'
 import { ClientAction } from '../../../models/RCS.Config'
 import { AMTUserConsent } from '../../../models'
 

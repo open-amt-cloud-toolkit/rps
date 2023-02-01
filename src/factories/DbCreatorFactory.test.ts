@@ -5,7 +5,7 @@
 
 import { DbCreatorFactory } from './DbCreatorFactory'
 import { config } from '../test/helper/Config'
-import { IDB } from '../interfaces/database/IDb'
+import { type IDB } from '../interfaces/database/IDb'
 import { Environment } from '../utils/Environment'
 
 describe('DB Creator Factory', () => {

@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { check, CustomValidator } from 'express-validator'
+import { check, type CustomValidator } from 'express-validator'
 import { NodeForge } from '../../../NodeForge'
 import { CertManager } from '../../../certManager'
 import Logger from '../../../Logger'
-import { CertsAndKeys } from '../../../models'
+import { type CertsAndKeys } from '../../../models'
 
 const nodeForge = new NodeForge()
 const certManager = new CertManager(new Logger('CertManager'), nodeForge)

@@ -5,10 +5,10 @@
 
 import { VaultService } from '.'
 import Logger from '../../Logger'
-import { ILogger } from '../../interfaces/ILogger'
+import { type ILogger } from '../../interfaces/ILogger'
 import { config } from '../../test/helper/Config'
 import { Environment } from '../../utils/Environment'
-import { DeviceCredentials } from '../../interfaces/ISecretManagerService'
+import { type DeviceCredentials } from '../../interfaces/ISecretManagerService'
 
 let secretManagerService: VaultService = null
 Environment.Config = config

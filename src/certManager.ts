@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { pkcs12, pki } from 'node-forge'
-import { ILogger } from './interfaces/ILogger'
-import Logger from './Logger'
-import { AMTKeyUsage, CertAttributes, CertCreationResult, CertificateObject, CertsAndKeys, ProvisioningCertObj } from './models'
-import { NodeForge } from './NodeForge'
+import { type pkcs12, type pki } from 'node-forge'
+import { type ILogger } from './interfaces/ILogger'
+import type Logger from './Logger'
+import { type AMTKeyUsage, type CertAttributes, type CertCreationResult, type CertificateObject, type CertsAndKeys, type ProvisioningCertObj } from './models'
+import { type NodeForge } from './NodeForge'
 
 export class CertManager {
   private readonly nodeForge: NodeForge

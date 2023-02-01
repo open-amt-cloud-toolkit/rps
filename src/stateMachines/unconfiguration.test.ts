@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { Unconfiguration, UnconfigContext } from './unconfiguration'
+import { Unconfiguration, type UnconfigContext } from './unconfiguration'
 import { v4 as uuid } from 'uuid'
 import { devices } from '../WebSocketListener'
 import { Environment } from '../utils/Environment'

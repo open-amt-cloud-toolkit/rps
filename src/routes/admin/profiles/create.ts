@@ -4,14 +4,14 @@
  **********************************************************************/
 
 import Logger from '../../../Logger'
-import { AMTConfiguration, AMTKeyUsage, AMTUserConsent, CertAttributes, TLSCerts } from '../../../models'
+import { type AMTConfiguration, type AMTKeyUsage, AMTUserConsent, type CertAttributes, type TLSCerts } from '../../../models'
 import { MqttProvider } from '../../../utils/MqttProvider'
-import { Request, Response } from 'express'
+import { type Request, type Response } from 'express'
 import { CertManager } from '../../../certManager'
 import { NodeForge } from '../../../NodeForge'
 import { ClientAction } from '../../../models/RCS.Config'
 import handleError from '../../../utils/handleError'
-import { DeviceCredentials } from '../../../interfaces/ISecretManagerService'
+import { type DeviceCredentials } from '../../../interfaces/ISecretManagerService'
 
 export async function createProfile (req: Request, res: Response): Promise<void> {
   let vaultStatus: any

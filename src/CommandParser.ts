@@ -4,9 +4,9 @@
  **********************************************************************/
 
 import parseArgs from 'minimist'
-import { ClientMethods, ClientMsg } from './models/RCS.Config'
+import { ClientMethods, type ClientMsg } from './models/RCS.Config'
 import Logger from './Logger'
-import { ILogger } from './interfaces/ILogger'
+import type { ILogger } from './interfaces/ILogger'
 
 const options = {
   string: ['text', 'password'],

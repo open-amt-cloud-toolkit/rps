@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { AMTDomain } from '../models'
+import { type AMTDomain } from '../models'
 
 export interface IDomainCredentialManager {
   getProvisioningCert: (domainSuffix: string) => Promise<AMTDomain>

@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import { AMT, CIM, IPS } from '@open-amt-cloud-toolkit/wsman-messages'
-import { Activation, ActivationContext } from './activation'
+import { Activation, type ActivationContext } from './activation'
 import { v4 as uuid } from 'uuid'
 import { devices } from '../WebSocketListener'
 import { Environment } from '../utils/Environment'
@@ -257,7 +257,7 @@ describe('Activation State Machine', () => {
       // convert the certificate pfx to an object
       const pfxobj = certManager.convertPfxToObject(cert, 'Intel123!')
       clientObj.certObj.privateKey = pfxobj.keys[0]
-      const result = await activation.createSignedString(clientId)
+      const result = activation.createSignedString(clientId)
       expect(result).toBeTruthy()
       expect(clientObj.signature).toBeDefined()
       expect(clientObj.signature).not.toBe('')
@@ -270,7 +270,7 @@ describe('Activation State Machine', () => {
       const clientObj = devices[clientId]
       clientObj.signature = undefined
       clientObj.ClientData.payload.fwNonce = PasswordHelper.generateNonce()
-      const result = await activation.createSignedString(clientId)
+      const result = activation.createSignedString(clientId)
       expect(result).toBeFalsy()
       expect(clientObj.signature).toBeUndefined()
       expect(signStringSpy).toHaveBeenCalled()
@@ -395,7 +395,7 @@ describe('Activation State Machine', () => {
       clientObj.certObj = {} as any
       clientObj.certObj.certChain = ['leaf', 'inter1', 'root']
       const hostBasedSetupServiceSpy = jest.spyOn(context.ips.HostBasedSetupService, 'AddNextCertInChain').mockReturnValue('abcdef')
-      const response = await activation.injectCertificate(clientId, context.ips)
+      const response = activation.injectCertificate(clientId, context.ips)
       expect(response).toBeDefined()
       expect(clientObj.count).toBe(2)
       expect(hostBasedSetupServiceSpy).toHaveBeenCalled()
@@ -406,7 +406,7 @@ describe('Activation State Machine', () => {
       clientObj.certObj = {} as any
       clientObj.certObj.certChain = ['leaf', 'inter1', 'root']
       const hostBasedSetupServiceSpy = jest.spyOn(context.ips.HostBasedSetupService, 'AddNextCertInChain').mockReturnValue('abcdef')
-      const response = await activation.injectCertificate(clientId, context.ips)
+      const response = activation.injectCertificate(clientId, context.ips)
       expect(response).toBeDefined()
       expect(clientObj.count).toBe(3)
       expect(hostBasedSetupServiceSpy).toHaveBeenCalled()
@@ -417,7 +417,7 @@ describe('Activation State Machine', () => {
       clientObj.certObj = {} as any
       clientObj.certObj.certChain = ['leaf', 'inter1', 'root']
       const hostBasedSetupServiceSpy = jest.spyOn(context.ips.HostBasedSetupService, 'AddNextCertInChain').mockReturnValue('abcdef')
-      const response = await activation.injectCertificate(clientId, context.ips)
+      const response = activation.injectCertificate(clientId, context.ips)
       expect(response).toBeDefined()
       expect(clientObj.count).toBe(4)
       expect(clientObj.certObj.certChain.length).toBeLessThan(clientObj.count)

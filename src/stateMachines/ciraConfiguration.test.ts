@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
-import { CIRAConfiguration, CIRAConfigContext, MPSType } from './ciraConfiguration'
+import { CIRAConfiguration, type CIRAConfigContext, MPSType } from './ciraConfiguration'
 import { v4 as uuid } from 'uuid'
 import { devices } from '../WebSocketListener'
 import { Environment } from '../utils/Environment'

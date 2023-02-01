@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { apiResponse } from '../models/RCS.Config'
+import { type apiResponse } from '../models/RCS.Config'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const packageObj = require('../../package.json')
 
@@ -115,3 +115,8 @@ export const WIFIENDPOINT = {
 
 export const DEFAULT_TOP = 25
 export const DEFAULT_SKIP = 0
+
+export const UNEXPECTED_PARSE_ERROR = {
+  statusCode: 599,
+  statusMessage: 'Unexpected Parse Error'
+}

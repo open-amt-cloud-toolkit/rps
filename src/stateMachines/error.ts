@@ -7,13 +7,11 @@ import { createMachine, sendParent } from 'xstate'
 import { pure } from 'xstate/lib/actions'
 import { HttpHandler } from '../HttpHandler'
 import { devices } from '../WebSocketListener'
-import { parseBody } from '../utils/parseWSManResponseBody'
-import { HttpZResponseModel } from 'http-z'
+import { type HttpZResponseModel } from 'http-z'
 
 const httpHandler = new HttpHandler()
 export interface ErrorContext {
   message: HttpZResponseModel
-  parsedMessage: any
   clientId: string
 }
 
@@ -28,7 +26,7 @@ export class Error {
     createMachine<ErrorContext, ErrorEvent>({
       preserveActionOrder: true,
       predictableActionArguments: true,
-      context: { message: null, clientId: '', parsedMessage: null },
+      context: { message: null, clientId: '' },
       id: 'error-machine',
       initial: 'ERRORED',
       states: {
@@ -68,10 +66,10 @@ export class Error {
           entry: 'respondUnauthorized'
         },
         BADREQUEST: {
-          entry: ['parseError', 'respondBadRequest']
+          entry: ['respondBadRequest']
         },
         UNKNOWN: {
-          entry: ['parseError', 'respondUnknown']
+          entry: ['respondUnknown']
         }
       }
     }, {
@@ -90,7 +88,6 @@ export class Error {
           devices[context.clientId].unauthCount = 0
           return sendParent({ type: 'ONFAILED', data: 'Unknown error has occured' })
         }),
-        parseError: (context) => { this.parseError(context) },
         addAuthorizationHeader: (context) => { this.addAuthorizationHeader(context) }
       }
     })
@@ -110,12 +107,6 @@ export class Error {
 
   respondBadRequest (context): any {
     devices[context.clientId].unauthCount = 0
-    return sendParent({ type: 'ONFAILED', data: context.parsedMessage })
-  }
-
-  parseError (context): void {
-    const xmlBody = parseBody(context.message)
-    // pares WSMan xml response to json
-    context.parsedMessage = httpHandler.parseXML(xmlBody)
+    return sendParent({ type: 'ONFAILED', data: context.message?.statusMessage })
   }
 }

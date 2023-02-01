@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { AMTConfiguration, RPSConfig } from './models'
+import { type AMTConfiguration, type RPSConfig } from './models'
 import { ProfileManager } from './ProfileManager'
-import { ILogger } from './interfaces/ILogger'
+import { type ILogger } from './interfaces/ILogger'
 import Logger from './Logger'
-import { IProfilesTable } from './interfaces/database/IProfilesDb'
-import { CIRAConfig, ClientAction } from './models/RCS.Config'
+import { type IProfilesTable } from './interfaces/database/IProfilesDb'
+import { type CIRAConfig, ClientAction } from './models/RCS.Config'
 
 const logger: ILogger = new Logger('ProfileManagerTests')
 

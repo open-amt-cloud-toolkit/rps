@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import { CiraConfigTable } from './ciraConfigs'
-import { CIRAConfig } from '../../../models/RCS.Config'
+import { type CIRAConfig } from '../../../models/RCS.Config'
 import PostgresDb from '..'
 import { API_UNEXPECTED_EXCEPTION, CONCURRENCY_MESSAGE, DEFAULT_SKIP, DEFAULT_TOP } from '../../../utils/constants'
 

@@ -5,7 +5,7 @@
 
 import { DomainsTable } from './domains'
 import { DUPLICATE_DOMAIN_FAILED, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP, CONCURRENCY_MESSAGE } from '../../../utils/constants'
-import { AMTDomain } from '../../../models'
+import { type AMTDomain } from '../../../models'
 import PostgresDb from '..'
 
 describe('domains tests', () => {

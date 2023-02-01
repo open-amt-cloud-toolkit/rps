@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import Logger from '../../../Logger'
-import { Request, Response } from 'express'
+import { type Request, type Response } from 'express'
 import { API_RESPONSE, NOT_FOUND_EXCEPTION, NOT_FOUND_MESSAGE } from '../../../utils/constants'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import handleError from '../../../utils/handleError'

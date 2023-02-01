@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { AMT, CIM, Common, IPS } from '@open-amt-cloud-toolkit/wsman-messages'
-import { HttpHandler } from '../HttpHandler'
+import { type AMT, type CIM, Common, type IPS } from '@open-amt-cloud-toolkit/wsman-messages'
+import { type HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
 import { assign, createMachine, interpret } from 'xstate'
-import { AMTConfiguration, AMTRedirectionServiceEnabledStates, mapAMTUserConsent } from '../models'
+import { type AMTConfiguration, AMTRedirectionServiceEnabledStates, mapAMTUserConsent } from '../models'
 import { invokeWsmanCall } from './common'
 
 export interface FeatureContext {
@@ -256,33 +256,33 @@ export class FeaturesConfiguration {
 
   async getAmtRedirectionService (context: FeatureContext): Promise<any> {
     context.xmlMessage = context.amt.RedirectionService.Get()
-    return await invokeWsmanCall(context)
+    return await invokeWsmanCall(context, 2)
   }
 
   async getIpsOptInService (context: FeatureContext): Promise<any> {
     context.xmlMessage = context.ips.OptInService.Get()
-    return await invokeWsmanCall(context)
+    return await invokeWsmanCall(context, 2)
   }
 
   async getCimKvmRedirectionSAP (context: FeatureContext): Promise<any> {
     context.xmlMessage = context.cim.KVMRedirectionSAP.Get()
-    return await invokeWsmanCall(context)
+    return await invokeWsmanCall(context, 2)
   }
 
   async setRedirectionService (context: FeatureContext): Promise<any> {
     context.xmlMessage = context.amt.RedirectionService.RequestStateChange(context.AMT_RedirectionService.EnabledState)
-    return await invokeWsmanCall(context)
+    return await invokeWsmanCall(context, 2)
   }
 
   async setKvmRedirectionSap (context: FeatureContext): Promise<any> {
     context.xmlMessage = context.cim.KVMRedirectionSAP.RequestStateChange(context.CIM_KVMRedirectionSAP.EnabledState)
-    return await invokeWsmanCall(context)
+    return await invokeWsmanCall(context, 2)
   }
 
   async putRedirectionService (context: FeatureContext): Promise<any> {
     const redirectionService: AMT.Models.RedirectionService = context.AMT_RedirectionService
     context.xmlMessage = context.amt.RedirectionService.Put(redirectionService)
-    return await invokeWsmanCall(context)
+    return await invokeWsmanCall(context, 2)
   }
 
   async putIpsOptInService (context: FeatureContext): Promise<any> {
@@ -291,6 +291,6 @@ export class FeaturesConfiguration {
       IPS_OptInService: JSON.parse(JSON.stringify(ipsOptInService))
     }
     context.xmlMessage = context.ips.OptInService.Put(ipsOptInSvcResponse)
-    return await invokeWsmanCall(context)
+    return await invokeWsmanCall(context, 2)
   }
 }
