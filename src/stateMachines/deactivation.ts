@@ -14,14 +14,17 @@ import { Environment } from '../utils/Environment'
 import { devices } from '../WebSocketListener'
 import { Error } from './error'
 import got from 'got'
+import { invokeWsmanCall } from './common'
 
 export interface DeactivationContext {
   message: any
   unauthCount: number
   clientId: string
   status: 'success' | 'error'
+  xmlMessage: string
   errorMessage: string
   statusMessage: string
+  httpHandler: HttpHandler
 }
 
 interface DeactivationEvent {
@@ -31,7 +34,6 @@ interface DeactivationEvent {
 }
 export class Deactivation {
   configurator: Configurator
-  httpHandler: HttpHandler
   amt: AMT.Messages
   logger: Logger
   error: Error = new Error()
@@ -39,7 +41,16 @@ export class Deactivation {
     createMachine<DeactivationContext, DeactivationEvent>({
       predictableActionArguments: true,
       preserveActionOrder: true,
-      context: { message: '', clientId: '', status: 'success', unauthCount: 0, errorMessage: '', statusMessage: '' },
+      context: {
+        message: '',
+        clientId: '',
+        status: 'success',
+        unauthCount: 0,
+        xmlMessage: '',
+        errorMessage: '',
+        statusMessage: '',
+        httpHandler: new HttpHandler()
+      },
       id: 'Deactivation Machine',
       initial: 'PROVISIONED',
       states: {
@@ -155,7 +166,6 @@ export class Deactivation {
   })
 
   constructor () {
-    this.httpHandler = new HttpHandler()
     this.configurator = new Configurator()
     this.amt = new AMT.Messages()
     this.logger = new Logger('Deactivation State Machine')
@@ -172,18 +182,8 @@ export class Deactivation {
   }
 
   async invokeUnprovision (context: DeactivationContext): Promise<any> {
-    let { message, clientId } = context
-    const clientObj = devices[clientId]
-    const xmlRequestBody = this.amt.SetupAndConfigurationService.Unprovision(1)
-    message = this.httpHandler.wrapIt(xmlRequestBody, clientObj.connectionParams)
-    this.logger.debug(`Unprovisioning message to AMT ${clientObj.uuid} : ${message}`)
-    const responseMessage = ClientResponseMsg.get(clientId, message, 'wsman', 'ok')
-    devices[clientId].ClientSocket.send(JSON.stringify(responseMessage))
-    clientObj.pendingPromise = new Promise<any>((resolve, reject) => {
-      clientObj.resolve = resolve
-      clientObj.reject = reject
-    })
-    return await clientObj.pendingPromise
+    context.xmlMessage = this.amt.SetupAndConfigurationService.Unprovision(1)
+    return await invokeWsmanCall(context)
   }
 
   sendMessageToDevice (context: DeactivationContext, event: DeactivationEvent): void {
