@@ -16,7 +16,8 @@ describe('Wireless - Get', () => {
     req = {
       db: { wirelessProfiles: { getByName: jest.fn() } },
       query: { },
-      params: { profileName: 'profileName' }
+      params: { profileName: 'profileName' },
+      tenantId: ''
     }
     getByNameSpy = jest.spyOn(req.db.wirelessProfiles, 'getByName').mockResolvedValue({})
 
@@ -26,13 +27,13 @@ describe('Wireless - Get', () => {
   })
   it('should get', async () => {
     await getWirelessProfile(req, resSpy)
-    expect(getByNameSpy).toHaveBeenCalledWith('profileName')
+    expect(getByNameSpy).toHaveBeenCalledWith('profileName', req.tenantId)
     expect(resSpy.status).toHaveBeenCalledWith(200)
   })
   it('should handle error', async () => {
     jest.spyOn(req.db.wirelessProfiles, 'getByName').mockRejectedValue(null)
     await getWirelessProfile(req, resSpy)
-    expect(getByNameSpy).toHaveBeenCalledWith('profileName')
+    expect(getByNameSpy).toHaveBeenCalledWith('profileName', req.tenantId)
     expect(resSpy.status).toHaveBeenCalledWith(500)
   })
 })

@@ -103,6 +103,8 @@ describe('Activation State Machine', () => {
         provisioningCertPassword: 'P@ssw0rd',
         tenantId: ''
       },
+      tenantId: '',
+      canActivate: true,
       message: '',
       clientId,
       xmlMessage: '',
@@ -491,7 +493,7 @@ describe('Activation State Machine', () => {
       })
 
       ccmActivationService.start()
-      ccmActivationService.send({ type: 'ACTIVATION', clientId })
+      ccmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '' })
     })
 
     it('should eventually reach "PROVISIONED" in Admin mode', (done) => {
@@ -522,7 +524,6 @@ describe('Activation State Machine', () => {
         'PROVISIONED'
       ]
       const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
-        console.log(state.value)
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('PROVISIONED') && currentStateIndex === flowStates.length) {
           done()
@@ -530,7 +531,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId })
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '' })
     })
 
     it('should eventually reach "PROVISIONED" in Admin mode with CIRA profile', (done) => {
@@ -568,7 +569,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId })
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '' })
     })
 
     it('should eventually reach "FAILED" at "GET_AMT_PROFILE"', (done) => {
@@ -591,7 +592,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId })
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '' })
     })
 
     it('should eventually reach "FAILED" at "GET_AMT_DOMAIN_CERT"', (done) => {
@@ -615,7 +616,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId })
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '' })
     })
 
     it('should eventually reach "FAILED" at "CHECKCERTCHAINRESPONSE"', (done) => {
@@ -644,7 +645,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId })
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '' })
     })
 
     it('should send success message to device', () => {

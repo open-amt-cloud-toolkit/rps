@@ -26,7 +26,8 @@ describe('AMT Profile - Edit', () => {
     req = {
       db: { profiles: { getByName: jest.fn(), update: jest.fn() } },
       body: { profileName: 'profileName' },
-      query: {}
+      query: {},
+      tenantId: ''
     }
     getByNameSpy = jest.spyOn(req.db.profiles, 'getByName').mockResolvedValue({})
     jest.spyOn(req.db.profiles, 'update').mockResolvedValue({})
@@ -37,7 +38,7 @@ describe('AMT Profile - Edit', () => {
   })
   it('should edit', async () => {
     await editProfile(req, resSpy)
-    expect(getByNameSpy).toHaveBeenCalledWith('profileName')
+    expect(getByNameSpy).toHaveBeenCalledWith('profileName', req.tenantId)
     expect(resSpy.status).toHaveBeenCalledWith(200)
   })
   it('should handle found', async () => {
@@ -70,19 +71,19 @@ describe('AMT Profile - Edit', () => {
       solEnabled: true
     })
     await editProfile(req, resSpy)
-    expect(getByNameSpy).toHaveBeenCalledWith('acm')
+    expect(getByNameSpy).toHaveBeenCalledWith('acm', req.tenantId)
     expect(resSpy.status).toHaveBeenCalledWith(200)
   })
   it('should handle not found', async () => {
     jest.spyOn(req.db.profiles, 'getByName').mockResolvedValue(null)
     await editProfile(req, resSpy)
-    expect(getByNameSpy).toHaveBeenCalledWith('profileName')
+    expect(getByNameSpy).toHaveBeenCalledWith('profileName', req.tenantId)
     expect(resSpy.status).toHaveBeenCalledWith(404)
   })
   it('should handle error', async () => {
     jest.spyOn(req.db.profiles, 'getByName').mockRejectedValue(null)
     await editProfile(req, resSpy)
-    expect(getByNameSpy).toHaveBeenCalledWith('profileName')
+    expect(getByNameSpy).toHaveBeenCalledWith('profileName', req.tenantId)
     expect(resSpy.status).toHaveBeenCalledWith(500)
   })
   it('test editProfile when CIRA profile is changed to TLS profile', async () => {
@@ -170,7 +171,7 @@ describe('AMT Profile - Edit', () => {
       version: '2'
     }
     await editProfile(req, resSpy)
-    expect(getByNameSpy).toHaveBeenCalledWith('testTLS')
+    expect(getByNameSpy).toHaveBeenCalledWith('testTLS', req.tenantId)
     expect(resSpy.status).toHaveBeenCalledWith(200)
     expect(resSpy.json).toHaveBeenCalledWith(amtConfig)
     expect(writeSecretWithObjectSpy).toHaveBeenCalledTimes(1)

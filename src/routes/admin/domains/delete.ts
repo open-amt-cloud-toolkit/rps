@@ -15,11 +15,11 @@ export async function deleteDomain (req: Request, res: Response): Promise<void> 
   const log = new Logger('deleteDomain')
   const { domainName } = req.params
   try {
-    const domain: AMTDomain = await req.db.domains.getByName(domainName)
+    const domain: AMTDomain = await req.db.domains.getByName(domainName, req.tenantId)
     if (domain == null) {
       throw new RPSError(NOT_FOUND_MESSAGE('Domain', domainName), NOT_FOUND_EXCEPTION)
     } else {
-      const results = await req.db.domains.delete(domainName)
+      const results = await req.db.domains.delete(domainName, req.tenantId)
       if (results) {
         if (req.secretsManager) {
           await req.secretsManager.deleteSecretAtPath(`certs/${domain.profileName}`)

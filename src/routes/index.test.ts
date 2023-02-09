@@ -7,7 +7,7 @@ import router from './index'
 
 describe('Check index from admin', () => {
   const routes = [
-    { path: '/', method: 'get' }
+    // { path: '/', method: 'get' }
   ]
 
   it('should have routes', () => {

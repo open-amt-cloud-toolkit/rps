@@ -50,7 +50,8 @@ describe('validator', () => {
         username: '$$OsAdmin',
         client: 'RPC',
         profile: 'profile1'
-      }
+      },
+      tenantId: ''
     }
   })
 
@@ -353,7 +354,7 @@ describe('validator', () => {
       let rpsError = null
       try {
         msg.payload.certHashes = undefined
-        await validator.verifyActivationMsgForACM(msg.payload)
+        await validator.verifyActivationMsgForACM(msg)
       } catch (error) {
         rpsError = error
       }
@@ -364,7 +365,7 @@ describe('validator', () => {
       let rpsError = null
       try {
         msg.payload.fqdn = undefined
-        await validator.verifyActivationMsgForACM(msg.payload)
+        await validator.verifyActivationMsgForACM(msg)
       } catch (error) {
         rpsError = error
       }
@@ -376,7 +377,7 @@ describe('validator', () => {
       let rpsError = null
       try {
         msg.payload.fqdn = 'abcd'
-        await validator.verifyActivationMsgForACM(msg.payload)
+        await validator.verifyActivationMsgForACM(msg)
       } catch (error) {
         rpsError = error
       }
@@ -388,7 +389,7 @@ describe('validator', () => {
       try {
         msg.payload.fqdn = undefined
         msg.payload.currentMode = 2
-        await validator.verifyActivationMsgForACM(msg.payload)
+        await validator.verifyActivationMsgForACM(msg)
       } catch (error) {
         rpsError = error
       }
@@ -400,7 +401,7 @@ describe('validator', () => {
       try {
         msg.payload.fqdn = 'abcd'
         msg.payload.currentMode = 2
-        await validator.verifyActivationMsgForACM(msg.payload)
+        await validator.verifyActivationMsgForACM(msg)
       } catch (error) {
         rpsError = error
       }

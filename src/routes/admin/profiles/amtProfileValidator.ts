@@ -149,7 +149,7 @@ export const amtProfileValidator = (): ValidationChain[] => [
 const validatewifiConfigs = async (value: any, req: Request): Promise<string[]> => {
   const wifiConfigNames = []
   for (const config of value) {
-    const iswifiExist = await req.db.wirelessProfiles.checkProfileExits(config.profileName)
+    const iswifiExist = await req.db.wirelessProfiles.checkProfileExits(config.profileName, req.tenantId)
     if (!iswifiExist) {
       wifiConfigNames.push(config.profileName)
     }

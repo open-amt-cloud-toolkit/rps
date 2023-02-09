@@ -14,7 +14,7 @@ export async function getWirelessProfile (req: Request, res: Response): Promise<
   const log = new Logger('getWirelessProfile')
   const { profileName } = req.params
   try {
-    const result = await req.db.wirelessProfiles.getByName(profileName)
+    const result = await req.db.wirelessProfiles.getByName(profileName, req.tenantId)
     if (result == null) {
       throw new RPSError(NOT_FOUND_MESSAGE('Wireless', profileName), NOT_FOUND_EXCEPTION)
     } else {

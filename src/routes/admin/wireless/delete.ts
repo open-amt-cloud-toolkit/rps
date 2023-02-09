@@ -14,7 +14,7 @@ export async function deleteWirelessProfile (req: Request, res: Response): Promi
   const log = new Logger('deleteWirelessProfile')
   const { profileName } = req.params
   try {
-    const results: boolean = await req.db.wirelessProfiles.delete(profileName)
+    const results: boolean = await req.db.wirelessProfiles.delete(profileName, req.tenantId)
     if (results) {
       if (req.secretsManager) {
         await req.secretsManager.deleteSecretAtPath(`Wireless/${profileName}`)

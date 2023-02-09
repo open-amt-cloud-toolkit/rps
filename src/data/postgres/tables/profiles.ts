@@ -21,6 +21,7 @@ export class ProfilesTable implements IProfilesTable {
 
   /**
    * @description Get count of all profiles from DB
+   * @param {string} tenantId
    * @returns {number}
    */
   async getCount (tenantId: string = ''): Promise<number> {
@@ -39,6 +40,7 @@ export class ProfilesTable implements IProfilesTable {
    * @description Get all AMT Profiles from DB
    * @param {number} top
    * @param {number} skip
+   * @param {string} tenantId
    * @returns {Pagination} returns an array of AMT profiles from DB
    */
   async get (top: number = DEFAULT_TOP, skip: number = DEFAULT_SKIP, tenantId: string = ''): Promise<AMTConfiguration[]> {
@@ -85,6 +87,7 @@ export class ProfilesTable implements IProfilesTable {
   /**
    * @description Get AMT Profile from DB by name
    * @param {string} profileName
+   * @param {string} tenantId
    * @returns {AMTConfiguration} AMT Profile object
    */
   async getByName (profileName: string, tenantId: string = ''): Promise<AMTConfiguration> {
@@ -130,15 +133,17 @@ export class ProfilesTable implements IProfilesTable {
   /**
    * @description Get CIRA config from DB by name
    * @param {string} configName
+   * @param {string} tenantId
    * @returns {CIRAConfig} CIRA config object
    */
-  async getCiraConfigForProfile (configName: string): Promise<CIRAConfig> {
-    return await this.db.ciraConfigs.getByName(configName)
+  async getCiraConfigForProfile (configName: string, tenantId: string): Promise<CIRAConfig> {
+    return await this.db.ciraConfigs.getByName(configName, tenantId)
   }
 
   /**
    * @description Delete AMT Profile from DB by name
    * @param {string} profileName
+   * @param {string} tenantId
    * @returns {boolean} Return true on successful deletion
    */
   async delete (profileName: string, tenantId: string = ''): Promise<boolean> {
@@ -198,7 +203,7 @@ export class ProfilesTable implements IProfilesTable {
         await this.db.profileWirelessConfigs.createProfileWifiConfigs(amtConfig.wifiConfigs, amtConfig.profileName, amtConfig.tenantId)
       }
 
-      return await this.getByName(amtConfig.profileName)
+      return await this.getByName(amtConfig.profileName, amtConfig.tenantId)
     } catch (error) {
       this.log.error(`Failed to insert AMT profile: ${amtConfig.profileName}`, error)
       if (error instanceof RPSError) {
@@ -249,11 +254,11 @@ export class ProfilesTable implements IProfilesTable {
         if (amtConfig.wifiConfigs?.length > 0) {
           await this.db.profileWirelessConfigs.createProfileWifiConfigs(amtConfig.wifiConfigs, amtConfig.profileName)
         }
-        latestItem = await this.getByName(amtConfig.profileName)
+        latestItem = await this.getByName(amtConfig.profileName, amtConfig.tenantId)
         return latestItem
       }
       // if rowcount is 0, we assume update failed and grab the current reflection of the record in the DB to be returned in the Concurrency Error
-      latestItem = await this.getByName(amtConfig.profileName)
+      latestItem = await this.getByName(amtConfig.profileName, amtConfig.tenantId)
     } catch (error) {
       this.log.error(`Failed to update AMT profile: ${amtConfig.profileName}`, error)
       if (error.code === '23503') { // Foreign key constraint violation

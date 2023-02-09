@@ -130,7 +130,7 @@ export class CiraConfigTable implements ICiraConfigTable {
         ciraConfig.tenantId
       ])
       if (results.rowCount > 0) {
-        return await this.getByName(ciraConfig.configName)
+        return await this.getByName(ciraConfig.configName, ciraConfig.tenantId)
       }
       return null
     } catch (error) {
@@ -168,7 +168,7 @@ export class CiraConfigTable implements ICiraConfigTable {
         ciraConfig.tenantId,
         ciraConfig.version
       ])
-      latestItem = await this.getByName(ciraConfig.configName)
+      latestItem = await this.getByName(ciraConfig.configName, ciraConfig.tenantId)
       if (results.rowCount > 0) {
         return latestItem
       }

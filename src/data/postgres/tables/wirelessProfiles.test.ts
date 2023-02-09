@@ -158,7 +158,7 @@ describe('wireless profiles tests', () => {
       const result = await wirelessProfilesTable.insert(wirelessConfig)
 
       expect(result).toBe(wirelessConfig)
-      expect(getByNameSpy).toHaveBeenCalledWith(wirelessConfig.profileName)
+      expect(getByNameSpy).toHaveBeenCalledWith(wirelessConfig.profileName, wirelessConfig.tenantId)
       expect(querySpy).toBeCalledTimes(1)
       expect(querySpy).toBeCalledWith(`
         INSERT INTO wirelessconfigs
@@ -191,7 +191,7 @@ describe('wireless profiles tests', () => {
       getByNameSpy.mockResolvedValue(wirelessConfig)
       const result = await wirelessProfilesTable.update(wirelessConfig)
       expect(result).toBe(wirelessConfig)
-      expect(getByNameSpy).toHaveBeenCalledWith(wirelessConfig.profileName)
+      expect(getByNameSpy).toHaveBeenCalledWith(wirelessConfig.profileName, wirelessConfig.tenantId)
       expect(querySpy).toBeCalledTimes(1)
       expect(querySpy).toBeCalledWith(`
       UPDATE wirelessconfigs 
@@ -218,7 +218,7 @@ describe('wireless profiles tests', () => {
       const getByNameSpy = jest.spyOn(wirelessProfilesTable, 'getByName')
       getByNameSpy.mockResolvedValue(wirelessConfig)
       await expect(wirelessProfilesTable.update(wirelessConfig)).rejects.toThrow(CONCURRENCY_MESSAGE)
-      expect(getByNameSpy).toHaveBeenCalledWith(wirelessConfig.profileName)
+      expect(getByNameSpy).toHaveBeenCalledWith(wirelessConfig.profileName, wirelessConfig.tenantId)
       expect(querySpy).toBeCalledTimes(1)
       expect(querySpy).toBeCalledWith(`
       UPDATE wirelessconfigs 

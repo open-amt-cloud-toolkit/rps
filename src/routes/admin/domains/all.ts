@@ -16,7 +16,7 @@ export async function getAllDomains (req: Request, res: Response): Promise<void>
   const skip = Number(req.query.$skip)
   const includeCount = req.query.$count
   try {
-    let domains: AMTDomain[] = await req.db.domains.get(top, skip)
+    let domains: AMTDomain[] = await req.db.domains.get(top, skip, req.tenantId)
     if (domains.length >= 0) {
       domains = domains.map((result: AMTDomain) => {
         delete result.provisioningCert
@@ -27,7 +27,7 @@ export async function getAllDomains (req: Request, res: Response): Promise<void>
     if (includeCount == null || includeCount === 'false') {
       res.status(200).json(API_RESPONSE(domains)).end()
     } else {
-      const count: number = await req.db.domains.getCount()
+      const count: number = await req.db.domains.getCount(req.tenantId)
       const dataWithCount: DataWithCount = {
         data: domains,
         totalCount: count

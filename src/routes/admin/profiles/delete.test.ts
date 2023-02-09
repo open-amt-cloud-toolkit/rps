@@ -16,6 +16,7 @@ describe('Profiles - Delete', () => {
     req = {
       db: { profiles: { delete: jest.fn(), getByName: jest.fn() } },
       query: { },
+      tenantId: '',
       params: { profileName: 'profileName' }
     }
     deleteSpy = jest.spyOn(req.db.profiles, 'delete').mockResolvedValue({})
@@ -37,7 +38,7 @@ describe('Profiles - Delete', () => {
   it('should handle error', async () => {
     jest.spyOn(req.db.profiles, 'delete').mockRejectedValue(null)
     await deleteProfile(req, resSpy)
-    expect(deleteSpy).toHaveBeenCalledWith('profileName')
+    expect(deleteSpy).toHaveBeenCalledWith('profileName', req.tenantId)
     expect(resSpy.status).toHaveBeenCalledWith(500)
   })
 })

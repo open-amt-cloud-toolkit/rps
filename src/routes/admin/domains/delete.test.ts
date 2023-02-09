@@ -16,7 +16,8 @@ describe('CIRA Config - Delete', () => {
     req = {
       db: { domains: { delete: jest.fn(), getByName: jest.fn() } },
       query: { },
-      params: { domainName: 'domainName' }
+      params: { domainName: 'domainName' },
+      tenantId: ''
     }
     deleteSpy = jest.spyOn(req.db.domains, 'delete').mockResolvedValue({})
     jest.spyOn(req.db.domains, 'getByName').mockResolvedValue({})
@@ -37,7 +38,7 @@ describe('CIRA Config - Delete', () => {
   it('should handle error', async () => {
     jest.spyOn(req.db.domains, 'delete').mockRejectedValue(null)
     await deleteDomain(req, resSpy)
-    expect(deleteSpy).toHaveBeenCalledWith('domainName')
+    expect(deleteSpy).toHaveBeenCalledWith('domainName', req.tenantId)
     expect(resSpy.status).toHaveBeenCalledWith(500)
   })
 })

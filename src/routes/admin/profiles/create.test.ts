@@ -40,7 +40,7 @@ describe('Profiles - Create', () => {
       kvmEnabled: true,
       solEnabled: false,
       userConsent: AMTUserConsent.KVM,
-      tenantId: undefined
+      tenantId: ''
     })
     expect(resSpy.status).toHaveBeenCalledWith(201)
   })
@@ -54,7 +54,7 @@ describe('Profiles - Create', () => {
       kvmEnabled: true,
       solEnabled: false,
       userConsent: AMTUserConsent.KVM,
-      tenantId: undefined
+      tenantId: ''
     })
     expect(resSpy.status).toHaveBeenCalledWith(500)
   })
@@ -68,7 +68,7 @@ describe('Profiles - Create', () => {
       kvmEnabled: true,
       solEnabled: false,
       userConsent: AMTUserConsent.KVM,
-      tenantId: undefined
+      tenantId: ''
     })
     expect(resSpy.status).toHaveBeenCalledWith(500)
   })
@@ -174,7 +174,7 @@ describe('Profiles - Create', () => {
       kvmEnabled: true,
       solEnabled: false,
       userConsent: 'KVM',
-      tenantId: undefined
+      tenantId: ''
     })
     expect(resSpy.status).toHaveBeenCalledWith(500)
   })

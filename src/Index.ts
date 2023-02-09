@@ -51,18 +51,20 @@ mqtt.connectBroker()
 const dbFactory = new DbCreatorFactory()
 
 export const loadCustomMiddleware = async function (): Promise<express.RequestHandler[]> {
-  const pathToCustomMiddleware = './src/middleware/custom'
+  const pathToCustomMiddleware = path.join(__dirname, './middleware/custom/')
   const middleware: express.RequestHandler[] = []
   const doesExist = existsSync(pathToCustomMiddleware)
   const isDirectory = lstatSync(pathToCustomMiddleware).isDirectory()
   if (doesExist && isDirectory) {
     const files = readdirSync(pathToCustomMiddleware)
     for (const file of files) {
-      const pathToMiddleware = path.join('../src/middleware/custom/', file)
-      console.log(pathToMiddleware)
-      const customMiddleware = await import(pathToMiddleware)
-      if (customMiddleware?.default != null) {
-        middleware.push(customMiddleware.default)
+      if (path.extname(file) === '.js') {
+        const pathToMiddleware = path.join(pathToCustomMiddleware, file.substring(0, file.lastIndexOf('.')))
+        log.info('Loading custom middleware: ' + file)
+        const customMiddleware = await import(pathToMiddleware)
+        if (customMiddleware?.default != null) {
+          middleware.push(customMiddleware.default)
+        }
       }
     }
   }

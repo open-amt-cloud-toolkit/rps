@@ -21,7 +21,7 @@ export async function editProfile (req: Request, res: Response): Promise<void> {
   const newConfig = req.body
   newConfig.tenantId = req.tenantId
   try {
-    const oldConfig: AMTConfiguration = await req.db.profiles.getByName(newConfig.profileName)
+    const oldConfig: AMTConfiguration = await req.db.profiles.getByName(newConfig.profileName, req.tenantId)
 
     if (oldConfig == null) {
       throw new RPSError(NOT_FOUND_MESSAGE('AMT', newConfig.profileName), NOT_FOUND_EXCEPTION)

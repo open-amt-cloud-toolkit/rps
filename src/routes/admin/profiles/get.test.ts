@@ -16,7 +16,8 @@ describe('Profiles - Get', () => {
     req = {
       db: { profiles: { getByName: jest.fn() } },
       query: { },
-      params: { profileName: 'profileName' }
+      params: { profileName: 'profileName' },
+      tenantId: ''
     }
     getByNameSpy = jest.spyOn(req.db.profiles, 'getByName').mockResolvedValue({})
 
@@ -26,13 +27,13 @@ describe('Profiles - Get', () => {
   })
   it('should get', async () => {
     await getProfile(req, resSpy)
-    expect(getByNameSpy).toHaveBeenCalledWith('profileName')
+    expect(getByNameSpy).toHaveBeenCalledWith('profileName', req.tenantId)
     expect(resSpy.status).toHaveBeenCalledWith(200)
   })
   it('should handle error', async () => {
     jest.spyOn(req.db.profiles, 'getByName').mockRejectedValue(null)
     await getProfile(req, resSpy)
-    expect(getByNameSpy).toHaveBeenCalledWith('profileName')
+    expect(getByNameSpy).toHaveBeenCalledWith('profileName', req.tenantId)
     expect(resSpy.status).toHaveBeenCalledWith(500)
   })
 })

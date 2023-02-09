@@ -20,7 +20,7 @@ export async function editDomain (req: Request, res: Response): Promise<void> {
   const newDomain = req.body
   newDomain.tenantId = req.tenantId
   try {
-    const oldDomain: AMTDomain = await req.db.domains.getByName(newDomain.profileName)
+    const oldDomain: AMTDomain = await req.db.domains.getByName(newDomain.profileName, req.tenantId)
     if (oldDomain == null) {
       throw new RPSError(NOT_FOUND_MESSAGE('Domain', newDomain.profileName), NOT_FOUND_EXCEPTION)
     } else {

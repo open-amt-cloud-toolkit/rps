@@ -11,7 +11,7 @@ import handleError from '../../../utils/handleError'
 import { type WifiCredentials } from '../../../interfaces/ISecretManagerService'
 export async function createWirelessProfile (req: Request, res: Response): Promise<void> {
   const wirelessConfig: WirelessConfig = req.body
-  wirelessConfig.tenantId = req.tenantId
+  wirelessConfig.tenantId = req.tenantId || ''
   const log = new Logger('createWirelessProfile')
   try {
     const passphrase = wirelessConfig.pskPassphrase

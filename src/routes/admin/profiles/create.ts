@@ -17,7 +17,7 @@ export async function createProfile (req: Request, res: Response): Promise<void>
   let vaultStatus: any
   const log = new Logger('createProfile')
   let amtConfig: AMTConfiguration = req.body
-  amtConfig.tenantId = req.tenantId
+  amtConfig.tenantId = req.tenantId || ''
   try {
     const pwdBefore = amtConfig.amtPassword
     const mebxPwdBefore = amtConfig.mebxPassword
@@ -56,7 +56,7 @@ export async function createProfile (req: Request, res: Response): Promise<void>
         }
         vaultStatus = await req.secretsManager.writeSecretWithObject(`profiles/${amtConfig.profileName}`, data)
         if (vaultStatus == null) {
-          const dbResults: any = await req.db.profiles.delete(amtConfig.profileName)
+          const dbResults: any = await req.db.profiles.delete(amtConfig.profileName, req.tenantId)
           if (dbResults == null) {
             throw new Error('Error saving password to secret provider. AMT Profile inserted but unable to undo')
           }

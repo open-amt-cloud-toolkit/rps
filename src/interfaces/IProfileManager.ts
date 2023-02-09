@@ -7,11 +7,11 @@ import { type AMTConfiguration } from '../models'
 import { type CIRAConfig } from '../models/RCS.Config'
 
 export interface IProfileManager {
-  getActivationMode: (profileName: string) => Promise<string>
-  getCiraConfiguration: (profileName: string) => Promise<CIRAConfig>
-  getAmtPassword: (profileName: string) => Promise<string>
-  doesProfileExist: (profileName: string) => Promise<boolean>
-  getAmtProfile: (profileName: string) => Promise<AMTConfiguration>
-  getMEBxPassword: (profileName: string) => Promise<string>
-  getMPSPassword: (profileName: string) => Promise<string>
+  getActivationMode: (profileName: string, tenantId: string) => Promise<string>
+  getCiraConfiguration: (profileName: string, tenantId: string) => Promise<CIRAConfig>
+  getAmtPassword: (profileName: string, tenantId: string) => Promise<string>
+  doesProfileExist: (profileName: string, tenantId: string) => Promise<boolean>
+  getAmtProfile: (profileName: string, tenantId: string) => Promise<AMTConfiguration>
+  getMEBxPassword: (profileName: string, tenantId: string) => Promise<string>
+  getMPSPassword: (profileName: string, tenantId: string) => Promise<string>
 }

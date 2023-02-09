@@ -30,7 +30,9 @@ describe('MQTT Turned ON Tests', () => {
     dbProvider: 'postgres',
     connectionString: 'postgresql://postgresadmin:admin123@localhost:5432/rpsdb',
     delayTimer: 12,
-    mqttAddress: 'mqtt://127.0.0.1:8883'
+    mqttAddress: 'mqtt://127.0.0.1:8883',
+    jwtTenantProperty: '',
+    jwtTokenHeader: ''
   }
 
   beforeEach(() => {
@@ -126,7 +128,9 @@ describe('MQTT Turned OFF Tests', () => {
     dbProvider: 'postgres',
     connectionString: 'postgresql://postgresadmin:admin123@localhost:5432/rpsdb',
     delayTimer: 12,
-    mqttAddress: 'mqtt://127.0.0.1:8883'
+    mqttAddress: 'mqtt://127.0.0.1:8883',
+    jwtTenantProperty: '',
+    jwtTokenHeader: ''
   }
 
   beforeEach(() => {

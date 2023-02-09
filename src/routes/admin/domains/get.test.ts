@@ -15,7 +15,8 @@ describe('CIRA Config - Get', () => {
     req = {
       db: { domains: { getByName: jest.fn() } },
       query: { },
-      params: { domainName: 'domainName' }
+      params: { domainName: 'domainName' },
+      tenantId: ''
     }
     getByNameSpy = jest.spyOn(req.db.domains, 'getByName').mockResolvedValue({})
 
@@ -25,13 +26,13 @@ describe('CIRA Config - Get', () => {
   })
   it('should get', async () => {
     await getDomain(req, resSpy)
-    expect(getByNameSpy).toHaveBeenCalledWith('domainName')
+    expect(getByNameSpy).toHaveBeenCalledWith('domainName', req.tenantId)
     expect(resSpy.status).toHaveBeenCalledWith(200)
   })
   it('should handle error', async () => {
     jest.spyOn(req.db.domains, 'getByName').mockRejectedValue(null)
     await getDomain(req, resSpy)
-    expect(getByNameSpy).toHaveBeenCalledWith('domainName')
+    expect(getByNameSpy).toHaveBeenCalledWith('domainName', req.tenantId)
     expect(resSpy.status).toHaveBeenCalledWith(500)
   })
 })
