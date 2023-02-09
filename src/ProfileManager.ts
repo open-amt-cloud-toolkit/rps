@@ -177,7 +177,7 @@ export class ProfileManager implements IProfileManager {
         amtProfile.ciraConfigObject = await this.amtConfigurations.getCiraConfigForProfile(amtProfile.ciraConfigName)
       }
       // If the TLS Config associated with profile, retrieves from DB
-      if (amtProfile.tlsMode != null) {
+      if (amtProfile.tlsMode != null && amtProfile.tlsSigningAuthority) {
         if (this.configurator?.secretsManager) {
           const results = await this.configurator.secretsManager.getSecretAtPath(`TLS/${amtProfile.profileName}`)
           amtProfile.tlsCerts = results as TLSCredentials

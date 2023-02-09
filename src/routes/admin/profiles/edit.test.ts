@@ -13,7 +13,7 @@ import {
   handleGenerateRandomPassword,
   handleMEBxPassword
 } from './edit'
-import { ClientAction } from '../../../models/RCS.Config'
+import { ClientAction, TlsMode, TlsSigningAuthority } from '../../../models/RCS.Config'
 
 describe('AMT Profile - Edit', () => {
   let resSpy
@@ -41,11 +41,20 @@ describe('AMT Profile - Edit', () => {
     expect(resSpy.status).toHaveBeenCalledWith(200)
   })
   it('should handle found', async () => {
+    // these should be global and checked if called
+    // but not enought time in the sprint to do it correctly
+    req.secretsManager = {
+      writeSecretWithObject: jest.fn(),
+      getSecretAtPath: jest.fn(),
+      deleteSecretAtPath: jest.fn()
+    }
+    writeSecretWithObjectSpy = jest.spyOn(req.secretsManager, 'getSecretAtPath').mockResolvedValue({})
     req.body = {
       profileName: 'acm',
       activation: ClientAction.ADMINCTLMODE,
       tags: ['acm'],
-      tlsMode: 2,
+      tlsMode: TlsMode.SERVER_ALLOW_NONTLS,
+      tlsSigningAuthority: TlsSigningAuthority.SELF_SIGNED,
       dhcpEnabled: false,
       generateRandomPassword: false,
       password: 'password',
@@ -60,7 +69,8 @@ describe('AMT Profile - Edit', () => {
       profileName: 'acm',
       activation: ClientAction.ADMINCTLMODE,
       tags: ['acm'],
-      tlsMode: 2,
+      tlsMode: TlsMode.SERVER_ALLOW_NONTLS,
+      tlsSigningAuthority: TlsSigningAuthority.SELF_SIGNED,
       dhcpEnabled: false,
       generateRandomPassword: true,
       generateRandomMEBxPassword: true,
@@ -101,7 +111,8 @@ describe('AMT Profile - Edit', () => {
       ],
       wifiConfigs: [],
       dhcpEnabled: false,
-      tlsMode: 2,
+      tlsMode: TlsMode.SERVER_ALLOW_NONTLS,
+      tlsSigningAuthority: TlsSigningAuthority.SELF_SIGNED,
       iderEnabled: true,
       kvmEnabled: true,
       solEnabled: true,
@@ -122,7 +133,6 @@ describe('AMT Profile - Edit', () => {
       ],
       wifiConfigs: [],
       dhcpEnabled: false,
-      tlsMode: null,
       iderEnabled: true,
       kvmEnabled: true,
       solEnabled: true,
@@ -143,7 +153,8 @@ describe('AMT Profile - Edit', () => {
       ],
       wifiConfigs: [],
       dhcpEnabled: false,
-      tlsMode: 2,
+      tlsMode: TlsMode.SERVER_ALLOW_NONTLS,
+      tlsSigningAuthority: TlsSigningAuthority.SELF_SIGNED,
       iderEnabled: true,
       kvmEnabled: true,
       solEnabled: true,
@@ -162,7 +173,8 @@ describe('AMT Profile - Edit', () => {
       ],
       wifiConfigs: [],
       dhcpEnabled: false,
-      tlsMode: 2,
+      tlsMode: TlsMode.SERVER_ALLOW_NONTLS,
+      tlsSigningAuthority: TlsSigningAuthority.SELF_SIGNED,
       iderEnabled: true,
       kvmEnabled: true,
       solEnabled: true,
@@ -507,7 +519,8 @@ test('test getUpdatedData when CIRA profile is changed to TLS profile', async ()
       'tag1'
     ],
     dhcpEnabled: true,
-    tlsMode: 2,
+    tlsMode: TlsMode.SERVER_ALLOW_NONTLS,
+    tlsSigningAuthority: TlsSigningAuthority.SELF_SIGNED,
     iderEnabled: false,
     kvmEnabled: true,
     solEnabled: false,
@@ -527,7 +540,6 @@ test('test getUpdatedData when CIRA profile is changed to TLS profile', async ()
       'tag1'
     ],
     dhcpEnabled: true,
-    tlsMode: null,
     iderEnabled: false,
     kvmEnabled: true,
     solEnabled: false,
@@ -547,7 +559,8 @@ test('test getUpdatedData when CIRA profile is changed to TLS profile', async ()
       'tag1'
     ],
     dhcpEnabled: true,
-    tlsMode: 2,
+    tlsMode: TlsMode.SERVER_ALLOW_NONTLS,
+    tlsSigningAuthority: TlsSigningAuthority.SELF_SIGNED,
     iderEnabled: false,
     kvmEnabled: true,
     solEnabled: false,
@@ -558,7 +571,7 @@ test('test getUpdatedData when CIRA profile is changed to TLS profile', async ()
   expect(result).toEqual(amtConfig)
 })
 
-test('test getUpdatedData when TLS profile mode 2 is changed to TLS profile mode 2', async () => {
+test('test getUpdatedData when TLS profile mode 2 is changed to TLS profile mode 4', async () => {
   const newConfig: AMTConfiguration = {
     profileName: 'testTLS',
     activation: ClientAction.CLIENTCTLMODE,
@@ -572,7 +585,8 @@ test('test getUpdatedData when TLS profile mode 2 is changed to TLS profile mode
       'tag1'
     ],
     dhcpEnabled: true,
-    tlsMode: 4,
+    tlsMode: TlsMode.MUTUAL_ALLOW_NONTLS,
+    tlsSigningAuthority: TlsSigningAuthority.SELF_SIGNED,
     iderEnabled: false,
     kvmEnabled: true,
     solEnabled: false,
@@ -592,7 +606,8 @@ test('test getUpdatedData when TLS profile mode 2 is changed to TLS profile mode
       'tag1'
     ],
     dhcpEnabled: true,
-    tlsMode: 2,
+    tlsMode: TlsMode.SERVER_ALLOW_NONTLS,
+    tlsSigningAuthority: TlsSigningAuthority.SELF_SIGNED,
     iderEnabled: false,
     kvmEnabled: true,
     solEnabled: false,
@@ -612,7 +627,8 @@ test('test getUpdatedData when TLS profile mode 2 is changed to TLS profile mode
       'tag1'
     ],
     dhcpEnabled: true,
-    tlsMode: 4,
+    tlsMode: TlsMode.MUTUAL_ALLOW_NONTLS,
+    tlsSigningAuthority: TlsSigningAuthority.SELF_SIGNED,
     iderEnabled: false,
     kvmEnabled: true,
     solEnabled: false,
@@ -637,7 +653,6 @@ test('test getUpdatedData when TLS profile is changed to CIRA profile', async ()
       'tag1'
     ],
     dhcpEnabled: true,
-    tlsMode: null,
     iderEnabled: false,
     kvmEnabled: true,
     solEnabled: false,
@@ -657,7 +672,6 @@ test('test getUpdatedData when TLS profile is changed to CIRA profile', async ()
       'tag1'
     ],
     dhcpEnabled: true,
-    tlsMode: null,
     iderEnabled: false,
     kvmEnabled: true,
     solEnabled: false,
@@ -677,7 +691,6 @@ test('test getUpdatedData when TLS profile is changed to CIRA profile', async ()
       'tag1'
     ],
     dhcpEnabled: true,
-    tlsMode: null,
     iderEnabled: false,
     kvmEnabled: true,
     solEnabled: false,
