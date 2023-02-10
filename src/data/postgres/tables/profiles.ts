@@ -57,6 +57,7 @@ export class ProfilesTable implements IProfilesTable {
       kvm_enabled as "kvmEnabled",
       sol_enabled as "solEnabled",
       p.tenant_id as "tenantId",
+      tls_signing_authority as "tlsSigningAuthority",
       p.xmin as "version",
       COALESCE(json_agg(json_build_object('profileName',wc.wireless_profile_name, 'priority', wc.priority)) FILTER (WHERE wc.wireless_profile_name IS NOT NULL), '[]') AS "wifiConfigs" 
     FROM profiles p
@@ -75,6 +76,7 @@ export class ProfilesTable implements IProfilesTable {
       ider_enabled,
       kvm_enabled,
       sol_enabled,
+      tls_signing_authority,
       p.tenant_id
     ORDER BY p.profile_name 
     LIMIT $1 OFFSET $2`, [top, skip, tenantId])
@@ -103,6 +105,7 @@ export class ProfilesTable implements IProfilesTable {
       kvm_enabled as "kvmEnabled",
       sol_enabled as "solEnabled",
       p.tenant_id as "tenantId",
+      tls_signing_authority as "tlsSigningAuthority",
       p.xmin as "version",
       COALESCE(json_agg(json_build_object('profileName',wc.wireless_profile_name, 'priority', wc.priority)) FILTER (WHERE wc.wireless_profile_name IS NOT NULL), '[]') AS "wifiConfigs"
     FROM profiles p
@@ -121,6 +124,7 @@ export class ProfilesTable implements IProfilesTable {
       ider_enabled,
       kvm_enabled,
       sol_enabled,
+      tls_signing_authority,
       p.tenant_id
     `, [profileName, tenantId])
 
@@ -164,14 +168,14 @@ export class ProfilesTable implements IProfilesTable {
     try {
       const results = await this.db.query(`
         INSERT INTO profiles(
-          profile_name, activation, 
-          amt_password, generate_random_password, 
-          cira_config_name, 
-          mebx_password, generate_random_mebx_password, 
+          profile_name, activation,
+          amt_password, generate_random_password,
+          cira_config_name,
+          mebx_password, generate_random_mebx_password,
           tags, dhcp_enabled, tls_mode,
           user_consent, ider_enabled, kvm_enabled, sol_enabled,
-          tenant_id)
-        values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
+          tenant_id, tls_signing_authority)
+        values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`,
       [
         amtConfig.profileName,
         amtConfig.activation,
@@ -187,7 +191,8 @@ export class ProfilesTable implements IProfilesTable {
         amtConfig.iderEnabled,
         amtConfig.kvmEnabled,
         amtConfig.solEnabled,
-        amtConfig.tenantId
+        amtConfig.tenantId,
+        amtConfig.tlsSigningAuthority
       ])
 
       if (results.rowCount === 0) {
@@ -225,7 +230,7 @@ export class ProfilesTable implements IProfilesTable {
       const results = await this.db.query(`
       UPDATE profiles 
       SET activation=$2, amt_password=$3, generate_random_password=$4, cira_config_name=$5, mebx_password=$6, generate_random_mebx_password=$7, tags=$8, dhcp_enabled=$9, tls_mode=$10, user_consent=$13,
-      ider_enabled=$14, kvm_enabled=$15, sol_enabled=$16
+      ider_enabled=$14, kvm_enabled=$15, sol_enabled=$16, tls_signing_authority=$17
       WHERE profile_name=$1 and tenant_id = $11 and xmin = $12`,
       [
         amtConfig.profileName,
@@ -243,7 +248,8 @@ export class ProfilesTable implements IProfilesTable {
         amtConfig.userConsent,
         amtConfig.iderEnabled,
         amtConfig.kvmEnabled,
-        amtConfig.solEnabled
+        amtConfig.solEnabled,
+        amtConfig.tlsSigningAuthority
       ])
       if (results.rowCount > 0) {
         if (amtConfig.wifiConfigs?.length > 0) {

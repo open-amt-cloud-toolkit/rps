@@ -5,6 +5,7 @@
 
 import ClientResponseMsg from '../utils/ClientResponseMsg'
 import { devices } from '../WebSocketListener'
+import { type EnterpriseAssistantMessage, enterpriseAssistantSocket, promises } from '../WSEnterpriseAssistantListener'
 import { UNEXPECTED_PARSE_ERROR } from '../utils/constants'
 import Logger from '../Logger'
 
@@ -38,4 +39,17 @@ const invokeWsmanCall = async (context: any, retries = 0): Promise<any> => {
   return await clientObj.pendingPromise
 }
 
-export { invokeWsmanCall }
+const invokeEnterpriseAssistantCall = async (context: any): Promise<EnterpriseAssistantMessage> => {
+  const { clientId, message } = context
+  enterpriseAssistantSocket.send(JSON.stringify(message))
+  if (promises[clientId] == null) {
+    promises[clientId] = {} as any
+  }
+  promises[clientId].pendingPromise = new Promise<any>((resolve, reject) => {
+    promises[clientId].resolve = resolve
+    promises[clientId].reject = reject
+  })
+  return await promises[clientId].pendingPromise
+}
+
+export { invokeWsmanCall, invokeEnterpriseAssistantCall }

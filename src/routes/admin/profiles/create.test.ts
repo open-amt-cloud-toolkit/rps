@@ -5,15 +5,19 @@
 
 import { createSpyObj } from '../../../test/helper/jest'
 import { Environment } from '../../../utils/Environment'
-import { createProfile, generateSelfSignedCertificate, setRedirectionConfiguration } from './create'
-import { ClientAction } from '../../../models/RCS.Config'
+import { createProfile } from './create'
+import { ClientAction, TlsMode, TlsSigningAuthority } from '../../../models/RCS.Config'
 import { AMTUserConsent } from '../../../models'
+import { adjustRedirectionConfiguration } from './common'
 
 describe('Profiles - Create', () => {
   let resSpy
   let req
   let insertSpy: jest.SpyInstance
-  let secretManagerSpy: jest.SpyInstance
+  let writeSecretSpy: jest.SpyInstance
+  let defaultDbAmtCfgAcm
+  let defaultRedirectionCfgACM
+  let sparseAcmCfg
 
   beforeEach(() => {
     resSpy = createSpyObj('Response', ['status', 'json', 'end', 'send'])
@@ -25,8 +29,28 @@ describe('Profiles - Create', () => {
       body: {},
       query: { }
     }
+    defaultRedirectionCfgACM = {
+      iderEnabled: false,
+      kvmEnabled: true,
+      solEnabled: false,
+      userConsent: AMTUserConsent.KVM
+    }
+    defaultDbAmtCfgAcm = {
+      amtPassword: 'AMT_PASSWORD',
+      tenantId: undefined,
+      ...defaultRedirectionCfgACM
+    }
+    sparseAcmCfg = {
+      profileName: 'testProfile',
+      activation: ClientAction.ADMINCTLMODE,
+      dhcpEnabled: true,
+      generateRandomPassword: false,
+      amtPassword: 'P@ssw0rd',
+      generateRandomMEBxPassword: false,
+      mebxPassword: 'P@ssw0rd'
+    }
     insertSpy = jest.spyOn(req.db.profiles, 'insert').mockResolvedValue({})
-    secretManagerSpy = jest.spyOn(req.secretsManager, 'writeSecretWithObject').mockResolvedValue({})
+    writeSecretSpy = jest.spyOn(req.secretsManager, 'writeSecretWithObject').mockResolvedValue({})
     resSpy.status.mockReturnThis()
     resSpy.json.mockReturnThis()
     resSpy.send.mockReturnThis()
@@ -34,42 +58,21 @@ describe('Profiles - Create', () => {
   })
   it('should create', async () => {
     await createProfile(req, resSpy)
-    expect(insertSpy).toHaveBeenCalledWith({
-      amtPassword: 'AMT_PASSWORD',
-      iderEnabled: false,
-      kvmEnabled: true,
-      solEnabled: false,
-      userConsent: AMTUserConsent.KVM,
-      tenantId: undefined
-    })
+    expect(insertSpy).toHaveBeenCalledWith(defaultDbAmtCfgAcm)
     expect(resSpy.status).toHaveBeenCalledWith(201)
   })
   it('should handle error with create with write in vault fails', async () => {
     jest.spyOn(req.db.profiles, 'delete').mockResolvedValue(true)
-    secretManagerSpy = jest.spyOn(req.secretsManager, 'writeSecretWithObject').mockResolvedValue(null)
+    writeSecretSpy = jest.spyOn(req.secretsManager, 'writeSecretWithObject').mockResolvedValue(null)
     await createProfile(req, resSpy)
-    expect(insertSpy).toHaveBeenCalledWith({
-      amtPassword: 'AMT_PASSWORD',
-      iderEnabled: false,
-      kvmEnabled: true,
-      solEnabled: false,
-      userConsent: AMTUserConsent.KVM,
-      tenantId: undefined
-    })
+    expect(insertSpy).toHaveBeenCalledWith(defaultDbAmtCfgAcm)
     expect(resSpy.status).toHaveBeenCalledWith(500)
   })
   it('should handle error with create with write in vault fails and undo db.delete fail', async () => {
     jest.spyOn(req.db.profiles, 'delete').mockResolvedValue(null)
-    secretManagerSpy = jest.spyOn(req.secretsManager, 'writeSecretWithObject').mockResolvedValue(null)
+    writeSecretSpy = jest.spyOn(req.secretsManager, 'writeSecretWithObject').mockResolvedValue(null)
     await createProfile(req, resSpy)
-    expect(insertSpy).toHaveBeenCalledWith({
-      amtPassword: 'AMT_PASSWORD',
-      iderEnabled: false,
-      kvmEnabled: true,
-      solEnabled: false,
-      userConsent: AMTUserConsent.KVM,
-      tenantId: undefined
-    })
+    expect(insertSpy).toHaveBeenCalledWith(defaultDbAmtCfgAcm)
     expect(resSpy.status).toHaveBeenCalledWith(500)
   })
   it('should create when generate random password false for acm', async () => {
@@ -77,7 +80,8 @@ describe('Profiles - Create', () => {
       profileName: 'acm',
       activation: ClientAction.ADMINCTLMODE,
       tags: ['acm'],
-      tlsMode: 2,
+      tlsMode: TlsMode.SERVER_ALLOW_NONTLS,
+      tlsSigningAuthority: TlsSigningAuthority.SELF_SIGNED,
       dhcpEnabled: false,
       generateRandomPassword: false,
       password: 'password',
@@ -96,7 +100,8 @@ describe('Profiles - Create', () => {
       profileName: 'acm',
       activation: ClientAction.ADMINCTLMODE,
       tags: ['acm'],
-      tlsMode: 2,
+      tlsMode: TlsMode.SERVER_ALLOW_NONTLS,
+      tlsSigningAuthority: TlsSigningAuthority.SELF_SIGNED,
       dhcpEnabled: false,
       generateRandomPassword: true,
       password: 'password',
@@ -110,72 +115,75 @@ describe('Profiles - Create', () => {
     await createProfile(req, resSpy)
     expect(resSpy.status).toHaveBeenCalledWith(201)
   })
-  it('should create self signed certificate', async () => {
+  it('should create self signed certificate when selected as signing authority', async () => {
     req.body = {
-      profileName: 'ccm',
-      activation: ClientAction.CLIENTCTLMODE,
-      tags: ['ccm'],
-      dhcpEnabled: false,
-      generateRandomPassword: false,
-      password: 'P@ssw0rd',
-      generateRandomMEBxPassword: false,
-      mebxPassword: 'P@ssw0rd',
-      tlsmode: 2,
-      userConsent: 'None',
-      iderEnabled: true,
-      kvmEnabled: true,
-      solEnabled: true
+      ...sparseAcmCfg,
+      tlsMode: TlsMode.SERVER_ALLOW_NONTLS,
+      tlsSigningAuthority: TlsSigningAuthority.SELF_SIGNED
     }
-    await generateSelfSignedCertificate(req, req.body.profileName)
-    expect(secretManagerSpy).toHaveBeenCalled()
+    await createProfile(req, resSpy)
+    expect(insertSpy).toHaveBeenCalledWith({
+      ...req.body,
+      amtPassword: 'AMT_PASSWORD',
+      mebxPassword: 'MEBX_PASSWORD',
+      ...defaultRedirectionCfgACM
+    })
+    expect(writeSecretSpy).toHaveBeenNthCalledWith(2, `TLS/${req.body.profileName}`, expect.anything())
+  })
+  it('should create self signed certificate by default', async () => {
+    req.body = {
+      ...sparseAcmCfg,
+      tlsMode: TlsMode.SERVER_ALLOW_NONTLS
+    }
+    await createProfile(req, resSpy)
+    expect(insertSpy).toHaveBeenCalledWith({
+      ...req.body,
+      amtPassword: 'AMT_PASSWORD',
+      mebxPassword: 'MEBX_PASSWORD',
+      tlsSigningAuthority: TlsSigningAuthority.SELF_SIGNED,
+      ...defaultRedirectionCfgACM
+    })
+    expect(writeSecretSpy).toHaveBeenNthCalledWith(2, `TLS/${req.body.profileName}`, expect.anything())
+  })
+  it('should not create self signed certificate if tlsMode is falsy', async () => {
+    req.body = {
+      ...sparseAcmCfg,
+      tlsSigningAuthority: TlsSigningAuthority.SELF_SIGNED
+    }
+    await createProfile(req, resSpy)
+    expect(insertSpy).toHaveBeenCalledWith({
+      ...req.body,
+      amtPassword: 'AMT_PASSWORD',
+      mebxPassword: 'MEBX_PASSWORD',
+      ...defaultRedirectionCfgACM
+    })
+    expect(writeSecretSpy).not.toHaveBeenNthCalledWith(2, `TLS/${req.body.profileName}`, expect.anything())
   })
   it(`should set default AMT Redirection Configuration settings for ${ClientAction.ADMINCTLMODE}`, async () => {
     req.body = {
-      profileName: 'ccm',
-      activation: ClientAction.ADMINCTLMODE,
-      tags: ['ccm'],
-      dhcpEnabled: false,
-      generateRandomPassword: false,
-      password: 'P@ssw0rd',
-      generateRandomMEBxPassword: false,
-      mebxPassword: 'P@ssw0rd',
-      tlsmode: 2
+      activation: ClientAction.ADMINCTLMODE
     }
-    const result = setRedirectionConfiguration(req.body)
-    expect(result.userConsent).toEqual(AMTUserConsent.KVM)
-    expect(result.iderEnabled).toEqual(false)
-    expect(result.kvmEnabled).toEqual(true)
-    expect(result.solEnabled).toEqual(false)
+    const result = adjustRedirectionConfiguration(req.body)
+    expect(result).toEqual({
+      ...req.body,
+      ...defaultRedirectionCfgACM
+    })
   })
   it(`should set default AMT Redirection Configuration settings for ${ClientAction.CLIENTCTLMODE}`, async () => {
     req.body = {
-      profileName: 'ccm',
-      activation: ClientAction.CLIENTCTLMODE,
-      tags: ['ccm'],
-      dhcpEnabled: false,
-      generateRandomPassword: false,
-      password: 'P@ssw0rd',
-      generateRandomMEBxPassword: false,
-      mebxPassword: 'P@ssw0rd',
-      tlsmode: 2
+      activation: ClientAction.CLIENTCTLMODE
     }
-    const result = setRedirectionConfiguration(req.body)
-    expect(result.userConsent).toEqual(AMTUserConsent.ALL)
-    expect(result.iderEnabled).toEqual(false)
-    expect(result.kvmEnabled).toEqual(true)
-    expect(result.solEnabled).toEqual(false)
+    const result = adjustRedirectionConfiguration(req.body)
+    expect(result).toEqual({
+      ...req.body,
+      ...defaultRedirectionCfgACM,
+      userConsent: AMTUserConsent.ALL
+    })
   })
   it('should handle error', async () => {
     jest.spyOn(req.db.profiles, 'insert').mockResolvedValue(null)
     await createProfile(req, resSpy)
-    expect(insertSpy).toHaveBeenCalledWith({
-      amtPassword: 'AMT_PASSWORD',
-      iderEnabled: false,
-      kvmEnabled: true,
-      solEnabled: false,
-      userConsent: 'KVM',
-      tenantId: undefined
-    })
+    expect(insertSpy).toHaveBeenCalledWith(defaultDbAmtCfgAcm)
     expect(resSpy.status).toHaveBeenCalledWith(500)
   })
   it('should create even when no secretsManager', async () => {
