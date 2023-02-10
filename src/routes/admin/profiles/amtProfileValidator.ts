@@ -5,7 +5,7 @@
 
 import { type Request } from 'express'
 import { check, type ValidationChain } from 'express-validator'
-import { ClientAction } from '../../../models/RCS.Config'
+import { ClientAction, TlsSigningAuthority } from '../../../models/RCS.Config'
 import { AMTUserConsent } from '../../../models'
 
 export const amtProfileValidator = (): ValidationChain[] => [
@@ -19,7 +19,7 @@ export const amtProfileValidator = (): ValidationChain[] => [
     .not()
     .isEmpty()
     .withMessage('Activation is required')
-    .isIn([ClientAction.ADMINCTLMODE, ClientAction.CLIENTCTLMODE])
+    .isIn(Object.values(ClientAction))
     .withMessage(`Activation accepts either ${ClientAction.ADMINCTLMODE} (admin control activation) or ${ClientAction.CLIENTCTLMODE} (client control mode activation)`)
     .custom((value, { req }) => {
       const pwd = req.body.amtPassword
@@ -86,6 +86,10 @@ export const amtProfileValidator = (): ValidationChain[] => [
     .optional({ nullable: true })
     .isInt({ min: 1, max: 4 })
     .withMessage('tlsMode must be set to one of these values: 1 (Server Authentication Only), 2 (Server and Non-TLS Authentication), 3 (Mutual TLS only), 4 (Mutual and Non-TLS authentication)'),
+  check('tlsSigningAuthority')
+    .optional({ nullable: true })
+    .isIn(Object.values(TlsSigningAuthority))
+    .withMessage(`TLS Signing Authority must be one of ${Object.values(TlsSigningAuthority)}`),
   check('ciraConfigName')
     .optional({ nullable: true })
     .custom((value, { req }) => {
@@ -165,7 +169,7 @@ export const profileUpdateValidator = (): any => [
     .matches('^[a-zA-Z0-9$@$!%*#?&-_~^]+$')
     .withMessage('AMT profile name accepts letters, numbers, special characters and no spaces'),
   check('activation')
-    .isIn([ClientAction.ADMINCTLMODE, ClientAction.CLIENTCTLMODE])
+    .isIn(Object.values(ClientAction))
     .withMessage(`Activation accepts either ${ClientAction.ADMINCTLMODE} (admin control activation) or ${ClientAction.CLIENTCTLMODE} (client control mode activation)`)
     .custom((value, { req }) => {
       const pwd = req.body.amtPassword
@@ -233,6 +237,10 @@ export const profileUpdateValidator = (): any => [
     .optional({ nullable: true })
     .isInt({ min: 1, max: 4 })
     .withMessage('tlsMode must be set to one of these values: 1 (Server Authentication Only), 2 (Server and Non-TLS Authentication), 3 (Mutual TLS only), 4 (Mutual and Non-TLS authentication)'),
+  check('tlsSigningAuthority')
+    .optional({ nullable: true })
+    .isIn(Object.values(TlsSigningAuthority))
+    .withMessage(`TLS Signing Authority must be one of ${Object.values(TlsSigningAuthority)}`),
   check('ciraConfigName')
     .optional({ nullable: true })
     .custom((value, { req }) => {

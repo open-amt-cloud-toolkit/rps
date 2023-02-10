@@ -19,6 +19,7 @@ import { DbCreatorFactory } from './factories/DbCreatorFactory'
 import { backOff } from 'exponential-backoff'
 import { type ISecretManagerService } from './interfaces/ISecretManagerService'
 import { type IDB } from './interfaces/database/IDb'
+import { WSEnterpriseAssistantListener } from './WSEnterpriseAssistantListener'
 import { existsSync, lstatSync, readdirSync } from 'fs'
 import path = require('path')
 const log = new Logger('Index')
@@ -43,6 +44,7 @@ app.use(express.json())
 
 const configurator = new Configurator()
 log.silly(`WebSocket Cert Info ${JSON.stringify(Environment.Config.WSConfiguration)}`)
+const serverForEnterpriseAssistant: WSEnterpriseAssistantListener = new WSEnterpriseAssistantListener(new Logger('WSEnterpriseAssistantListener'), Environment.Config.WSConfiguration)
 const server: WebSocketListener = new WebSocketListener(new Logger('WebSocketListener'), Environment.Config.WSConfiguration, configurator.dataProcessor)
 
 const mqtt: MqttProvider = new MqttProvider(config)
@@ -116,6 +118,7 @@ if (process.env.node_env !== 'test') {
         log.info(`RPS Microservice Rest APIs listening on http://:${config.webport}.`)
       })
       server.connect()
+      serverForEnterpriseAssistant.connect()
     })
     .catch(err => {
       log.error(err)

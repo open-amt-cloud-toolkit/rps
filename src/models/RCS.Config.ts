@@ -263,10 +263,15 @@ export interface HealthCheckStatus {
 export enum TlsMode {
   INVALID = -1,
   NONE = 0,
-  SERVERONLY = 1,
-  SERVERALLOWNONTLS = 2,
-  MUTUALONLY = 3,
-  MUTUALALLOWNONTLS = 4
+  SERVER_ONLY = 1,
+  SERVER_ALLOW_NONTLS = 2,
+  MUTUAL_ONLY = 3,
+  MUTUAL_ALLOW_NONTLS = 4
+}
+
+export enum TlsSigningAuthority {
+  SELF_SIGNED = 'SelfSigned',
+  MICROSOFT_CA = 'MicrosoftCA'
 }
 
 export interface connectionParams {

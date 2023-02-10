@@ -4,7 +4,13 @@
  **********************************************************************/
 
 import { type pki } from 'node-forge'
-import { type CIRAConfig, type ProfileWifiConfigs, type WebSocketConfig } from './RCS.Config'
+import {
+  type CIRAConfig,
+  type ProfileWifiConfigs,
+  type TlsMode,
+  type TlsSigningAuthority,
+  type WebSocketConfig
+} from './RCS.Config'
 
 // guid: string, name: string, mpsuser: string, mpspass: string, amtuser: string, amtpassword: string, mebxpass: string) {
 export interface AMTDeviceDTO {
@@ -31,7 +37,7 @@ export interface AMTKeyUsage {
   ['2.16.840.1.113741.1.2.3']: boolean
   /** Enables TLS Usage on the Server */
   serverAuth: boolean
-  /** Enables TLS Usage Usage on the Client */
+  /** Enables TLS Usage on the Client */
   clientAuth: boolean
   /** Enables Email Protection */
   emailProtection: boolean
@@ -139,14 +145,16 @@ export class AMTConfiguration {
   dhcpEnabled?: boolean
   wifiConfigs?: ProfileWifiConfigs[]
   tenantId: string
-  tlsMode?: number
+  tlsMode?: TlsMode
   tlsCerts?: TLSCerts
+  tlsSigningAuthority?: TlsSigningAuthority
   userConsent?: AMTUserConsent
   iderEnabled?: boolean
   kvmEnabled?: boolean
   solEnabled?: boolean
   version?: string
 }
+
 export interface TLSCerts {
   ROOT_CERTIFICATE: CertCreationResult
   ISSUED_CERTIFICATE: CertCreationResult
