@@ -261,7 +261,7 @@ describe('Unconfiguration State Machine', () => {
 
   it('should eventually reach "SUCCESS"', (done) => {
     configuration.guards = {}
-    const fault = { Envelope: { Body: { Fault: {} } } }
+    const fault = { statusCode: 400 }
     configuration.services['remove-remote-access-policy-rule-user-initiated'] = Promise.reject(fault)
     configuration.services['remove-remote-access-policy-rule-rule-alert'] = Promise.reject(fault)
     configuration.services['remove-remote-access-policy-rule-periodic'] = Promise.reject(fault)
@@ -365,7 +365,7 @@ describe('Unconfiguration State Machine', () => {
 
   it('should eventually reach "FAILURE" after "DELETE_MANAGEMENT_PRESENCE_REMOTE_SAP"', (done) => {
     configuration.guards = {}
-    const fault = { Envelope: { Body: { Fault: {} } } }
+    const fault = { statusCode: 400 }
     configuration.services['remove-remote-access-policy-rule-user-initiated'] = Promise.reject(fault)
     configuration.services['remove-remote-access-policy-rule-rule-alert'] = Promise.reject(fault)
     configuration.services['remove-remote-access-policy-rule-periodic'] = Promise.reject(fault)
