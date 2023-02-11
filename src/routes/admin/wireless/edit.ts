@@ -14,7 +14,7 @@ import { RPSError } from '../../../utils/RPSError'
 export async function editWirelessProfile (req: Request, res: Response): Promise<void> {
   const log = new Logger('editNetProfile')
   try {
-    let config: WirelessConfig = await req.db.wirelessProfiles.getByName(req.body.profileName)
+    let config: WirelessConfig = await req.db.wirelessProfiles.getByName(req.body.profileName, req.tenantId)
     if (config == null) {
       throw new RPSError(NOT_FOUND_MESSAGE('Wireless', req.body.profileName), NOT_FOUND_EXCEPTION)
     } else {

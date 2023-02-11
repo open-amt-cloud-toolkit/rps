@@ -82,7 +82,8 @@ describe('Websocket Listener', () => {
       protocolVersion: '2.0',
       status: '200',
       message: 'success',
-      payload: null
+      payload: null,
+      tenantId: ''
     }
     const sendMessage = jest.spyOn(server, 'sendMessage')
     const processMessageSpy = jest.spyOn(server.dataProcessor, 'processData').mockResolvedValue(clientMsg)

@@ -15,7 +15,7 @@ export async function getProfile (req: Request, res: Response): Promise<void> {
   const log = new Logger('getProfile')
   const { profileName } = req.params
   try {
-    const result: AMTConfiguration = await req.db.profiles.getByName(profileName)
+    const result: AMTConfiguration = await req.db.profiles.getByName(profileName, req.tenantId)
     if (result == null) {
       throw new RPSError(NOT_FOUND_MESSAGE('AMT', profileName), NOT_FOUND_EXCEPTION)
     } else {

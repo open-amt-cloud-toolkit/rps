@@ -48,6 +48,8 @@ export interface ActivationContext {
   ips: IPS.Messages
   cim: CIM.Messages
   certChainPfx: any
+  tenantId: string
+  canActivate: boolean
 }
 
 interface ActivationEvent {
@@ -55,6 +57,7 @@ interface ActivationEvent {
   clientId: string
   isActivated?: boolean
   data?: any
+  tenantId: string
 }
 export class Activation {
   nodeForge: NodeForge
@@ -86,6 +89,8 @@ export class Activation {
         xmlMessage: '',
         status: 'success',
         errorMessage: '',
+        tenantId: '',
+        canActivate: true,
         generalSettings: null,
         targetAfterError: null,
         httpHandler: new HttpHandler(),
@@ -101,13 +106,14 @@ export class Activation {
         UNPROVISIONED: {
           on: {
             ACTIVATION: {
-              actions: assign({ clientId: (context, event) => event.clientId }),
+              actions: assign({ clientId: (context, event) => event.clientId, tenantId: (context, event) => event.tenantId }),
               target: 'GET_AMT_PROFILE'
             },
             ACTIVATED: {
               actions: assign({
                 clientId: (context, event) => event.clientId,
-                isActivated: (context, event) => event.isActivated
+                isActivated: (context, event) => event.isActivated,
+                tenantId: (context, event) => event.tenantId
               }),
               target: 'GET_AMT_PROFILE'
             }
@@ -131,13 +137,36 @@ export class Activation {
           always: [
             {
               cond: 'isActivated',
-              target: 'GET_GENERAL_SETTINGS'
+              target: 'CHECK_TENANT_ACCESS'
             }, {
               cond: 'isAdminMode',
               target: 'GET_AMT_DOMAIN_CERT'
             }, {
               target: 'GET_GENERAL_SETTINGS'
             }
+          ]
+        },
+        CHECK_TENANT_ACCESS: {
+          invoke: {
+            src: this.getDeviceFromMPS.bind(this),
+            id: 'check-tenant-access',
+            onDone: {
+              actions: assign({ canActivate: (context, event) => event.data }),
+              target: 'DETERMINE_CAN_ACTIVATE'
+            },
+            onError: {
+              target: 'GET_GENERAL_SETTINGS'
+            }
+          }
+        },
+        DETERMINE_CAN_ACTIVATE: {
+          always: [{
+            cond: 'canActivate',
+            target: 'GET_GENERAL_SETTINGS'
+          }, {
+            actions: assign({ errorMessage: 'Device belongs to another tenant. Please unprovision and re-activate device.' }),
+            target: 'FAILED'
+          }
           ]
         },
         GET_AMT_DOMAIN_CERT: {
@@ -443,7 +472,8 @@ export class Activation {
               clientId: (context, event) => context.clientId,
               profile: (context, event) => context.profile,
               httpHandler: (context, _) => context.httpHandler,
-              amt: (context, event) => context.amt
+              amt: (context, event) => context.amt,
+              tenantId: (context, event) => context.tenantId
             },
             onDone: 'PROVISIONED'
           }
@@ -522,7 +552,8 @@ export class Activation {
         isGeneralSettings: (context, event) => context.targetAfterError === 'GET_GENERAL_SETTINGS',
         isMebxPassword: (context, event) => context.targetAfterError === 'SET_MEBX_PASSWORD',
         hasCIRAProfile: (context, event) => context.profile.ciraConfigName != null,
-        isActivated: (context, event) => context.isActivated
+        isActivated: (context, event) => context.isActivated,
+        canActivate: (context, event) => context.canActivate
       },
       actions: {
         'Reset Unauth Count': (context, event) => { devices[context.clientId].unauthCount = 0 },
@@ -588,12 +619,28 @@ export class Activation {
 
   async getAMTProfile (context: ActivationContext, event: ActivationEvent): Promise<AMTConfiguration> {
     this.db = await this.dbFactory.getDb()
-    const profile = await this.configurator.profileManager.getAmtProfile(devices[context.clientId].ClientData.payload.profile.profileName)
+    const profile = await this.configurator.profileManager.getAmtProfile(devices[context.clientId].ClientData.payload.profile.profileName, context.tenantId)
     return await Promise.resolve(profile)
   }
 
+  async getDeviceFromMPS (context: ActivationContext, event: ActivationEvent): Promise<any> {
+    const clientObj = devices[context.clientId]
+    try {
+      const result = await got(`${Environment.Config.mpsServer}/api/v1/devices/${clientObj.uuid}?tenantId=${context.profile.tenantId}`, {
+        method: 'GET'
+      })
+
+      if (result?.body != null && result?.body !== '') {
+        return true // if we have a result the device is already in their tenant and can activated
+      }
+      return false // if we have a success repsonse, but no result -- it means the device belongs to another tenant -- prevent activation without unprovision first.
+    } catch (err) {
+      return true // no one has registered this device and can be activated
+    }
+  }
+
   async getAMTDomainCert (context: ActivationContext, event: ActivationEvent): Promise<AMTDomain> {
-    const domain = await this.configurator.domainCredentialManager.getProvisioningCert(devices[context.clientId].ClientData.payload.fqdn)
+    const domain = await this.configurator.domainCredentialManager.getProvisioningCert(devices[context.clientId].ClientData.payload.fqdn, context.tenantId)
     return await Promise.resolve(domain)
   }
 
@@ -643,10 +690,10 @@ export class Activation {
   }
 
   async getPassword (context): Promise<string> {
-    const amtPassword: string = await this.configurator.profileManager.getAmtPassword(context.profile.profileName)
+    const amtPassword: string = await this.configurator.profileManager.getAmtPassword(context.profile.profileName, context.tenantId)
     devices[context.clientId].amtPassword = amtPassword
     if (context.profile.activation === ClientAction.ADMINCTLMODE) {
-      const mebxPassword: string = await this.configurator.profileManager.getMEBxPassword(context.profile.profileName)
+      const mebxPassword: string = await this.configurator.profileManager.getMEBxPassword(context.profile.profileName, context.tenantId)
       devices[context.clientId].mebxPassword = mebxPassword
     }
     const data: string = `admin:${devices[context.clientId].ClientData.payload.digestRealm}:${amtPassword}`

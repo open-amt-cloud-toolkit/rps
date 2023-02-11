@@ -76,7 +76,7 @@ export class Validator implements IValidator {
       throw new RPSError(`Device ${payload.uuid} activation failed. Missing password.`)
     }
     // Check for client requested action and profile activation
-    const profile: AMTConfiguration = await this.configurator.profileManager.getAmtProfile(payload.profile)
+    const profile: AMTConfiguration = await this.configurator.profileManager.getAmtProfile(payload.profile, msg.tenantId)
     if (!profile) {
       throw new RPSError(`Device ${payload.uuid} activation failed. ${payload.profile} does not match list of available AMT profiles.`)
     }
@@ -97,7 +97,7 @@ export class Validator implements IValidator {
     }
     // Validate client message to configure ACM message
     if (clientObj.action === ClientAction.ADMINCTLMODE) {
-      await this.verifyActivationMsgForACM(payload)
+      await this.verifyActivationMsgForACM(msg)
     }
     // }
   }
@@ -236,15 +236,17 @@ export class Validator implements IValidator {
     return msg.payload
   }
 
-  async verifyActivationMsgForACM (payload: Payload): Promise<void> {
-    if (!payload.certHashes) {
-      throw new RPSError(`Device ${payload.uuid} activation failed. Missing certificate hashes from the device.`)
+  async verifyActivationMsgForACM (msg: ClientMsg): Promise<void> {
+    if (!msg.payload.certHashes) {
+      throw new RPSError(`Device ${msg.payload.uuid} activation failed. Missing certificate hashes from the device.`)
     }
-    if (!payload.fqdn && (payload.currentMode !== 2)) {
-      throw new RPSError(`Device ${payload.uuid} activation failed. Missing DNS Suffix.`)
+
+    if (!msg.payload.fqdn && (msg.payload.currentMode !== 2)) {
+      throw new RPSError(`Device ${msg.payload.uuid} activation failed. Missing DNS Suffix.`)
     }
-    if (!(await this.configurator.domainCredentialManager.doesDomainExist(payload.fqdn)) && (payload.currentMode !== 2)) {
-      throw new RPSError(`Device ${payload.uuid} activation failed. Specified AMT domain suffix: ${payload.fqdn} does not match list of available AMT domain suffixes.`)
+
+    if (!(await this.configurator.domainCredentialManager.doesDomainExist(msg.payload.fqdn, msg.tenantId)) && (msg.payload.currentMode !== 2)) {
+      throw new RPSError(`Device ${msg.payload.uuid} activation failed. Specified AMT domain suffix: ${msg.payload.fqdn} does not match list of available AMT domain suffixes.`)
     }
   }
 

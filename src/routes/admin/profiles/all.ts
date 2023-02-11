@@ -17,11 +17,11 @@ export async function allProfiles (req: Request, res: Response): Promise<void> {
   const skip = Number(req.query.$skip)
   const includeCount = req.query.$count
   try {
-    amtConfigs = await req.db.profiles.get(top, skip)
+    amtConfigs = await req.db.profiles.get(top, skip, req.tenantId)
     if (includeCount == null || includeCount === 'false') {
       res.status(200).json(API_RESPONSE(amtConfigs)).end()
     } else {
-      const count: number = await req.db.profiles.getCount()
+      const count: number = await req.db.profiles.getCount(req.tenantId)
       const dataWithCount: DataWithCount = {
         data: amtConfigs,
         totalCount: count

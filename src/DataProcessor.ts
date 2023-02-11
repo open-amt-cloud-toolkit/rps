@@ -81,9 +81,9 @@ export class DataProcessor {
     this.setConnectionParams(clientId)
     activation.service.start()
     if (devices[clientId].activationStatus) {
-      activation.service.send({ type: 'ACTIVATED', clientId, isActivated: true })
+      activation.service.send({ type: 'ACTIVATED', tenantId: clientMsg.tenantId, clientId, isActivated: true })
     } else {
-      activation.service.send({ type: 'ACTIVATION', clientId })
+      activation.service.send({ type: 'ACTIVATION', tenantId: clientMsg.tenantId, clientId })
     }
   }
 

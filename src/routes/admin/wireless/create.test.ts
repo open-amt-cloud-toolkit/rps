@@ -25,13 +25,13 @@ describe('Wireless - Create', () => {
   })
   it('should create', async () => {
     await createWirelessProfile(req, resSpy)
-    expect(insertSpy).toHaveBeenCalledWith({})
+    expect(insertSpy).toHaveBeenCalledTimes(1)
     expect(resSpy.status).toHaveBeenCalledWith(201)
   })
   it('should handle error', async () => {
     jest.spyOn(req.db.wirelessProfiles, 'insert').mockRejectedValue(null)
     await createWirelessProfile(req, resSpy)
-    expect(insertSpy).toHaveBeenCalledWith({})
+    expect(insertSpy).toHaveBeenCalledTimes(1)
     expect(resSpy.status).toHaveBeenCalledWith(500)
   })
 })

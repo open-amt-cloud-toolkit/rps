@@ -38,11 +38,13 @@ export interface CIRAConfigContext {
   httpHandler: HttpHandler
   amt?: AMT.Messages
   retryCount?: number
+  tenantId: string
 }
 interface CIRAConfigEvent {
   type: 'CONFIGURE_CIRA' | 'ONFAILED'
   clientId: string
   data: any
+  tenantId: string
 }
 
 export enum MPSType {
@@ -79,7 +81,8 @@ export class CIRAConfiguration {
         message: null,
         ciraConfig: null,
         profile: null,
-        privateCerts: []
+        privateCerts: [],
+        tenantId: ''
       },
       id: 'cira-machine',
       initial: 'CIRACONFIGURED',
@@ -95,7 +98,7 @@ export class CIRAConfiguration {
         },
         GET_CIRA_CONFIG: {
           invoke: {
-            src: async (context, event) => await this.configurator.profileManager.getCiraConfiguration(devices[context.clientId].ClientData.payload.profile.profileName),
+            src: async (context, event) => await this.configurator.profileManager.getCiraConfiguration(devices[context.clientId].ClientData.payload.profile.profileName, context.tenantId),
             id: 'get-cira-config',
             onDone: {
               actions: assign({ ciraConfig: (context, event) => event.data }),

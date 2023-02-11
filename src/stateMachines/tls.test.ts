@@ -95,7 +95,6 @@ describe('TLS State Machine', () => {
     ]
 
     const tlsService = interpret(tlsStateMachine).onTransition((state) => {
-      console.log(state.value)
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('SUCCESS') && currentStateIndex === flowStates.length) {
         done()

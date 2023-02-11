@@ -194,6 +194,7 @@ export interface ClientMsg {
   status: string
   message: string
   payload: any
+  tenantId?: string
 }
 
 export interface Payload {

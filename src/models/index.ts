@@ -95,6 +95,8 @@ export class RPSConfig {
   delayTimer: number
   mqttAddress?: string
   disableCIRADomainName?: string
+  jwtTokenHeader: string
+  jwtTenantProperty: string
   constructor () {
     this.VaultConfig = new VaultConfig()
   }
@@ -315,7 +317,9 @@ const recipeRCSConfig = {
   mps_server: 'mpsServer',
   delay_timer: 'delayTimer',
   mqtt_address: 'mqttAddress',
-  disable_cira_domain_name: 'disableCIRADomainName'
+  disable_cira_domain_name: 'disableCIRADomainName',
+  jwt_token_header: 'jwtTokenHeader',
+  jwt_tenant_property: 'jwtTenantProperty'
 }
 
 export function mapConfig (src, dot): RPSConfig {

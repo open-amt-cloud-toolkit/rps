@@ -17,7 +17,7 @@ import { parse, type HttpZResponseModel } from 'http-z'
 import { HttpHandler } from './HttpHandler'
 import { Deactivation } from './stateMachines/deactivation'
 import { Activation } from './stateMachines/activation'
-import { ClientMethods } from './models/RCS.Config'
+import { ClientMethods, type ClientMsg } from './models/RCS.Config'
 import { Maintenance, type MaintenanceEvent } from './stateMachines/maintenance'
 import { type IPConfiguration } from './stateMachines/syncIP'
 import { RPSError } from './utils/RPSError'
@@ -294,14 +294,14 @@ describe('Process data', () => {
 })
 
 it('should pass maintainDevice method', async () => {
-  const clientMsg = {
+  const clientMsg: ClientMsg = {
     method: 'maintenance',
     apiKey: 'key',
     appVersion: '1.0.0',
     protocolVersion: '4.0.0',
     status: 'ok',
     message: 'ok',
-    fqdn: '',
+    tenantId: '',
     payload: {
       task: 'synctime',
       uuid: '4c4c4544-004b-4210-8033-b6c04f504633',

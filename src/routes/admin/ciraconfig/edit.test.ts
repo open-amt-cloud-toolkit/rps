@@ -16,7 +16,8 @@ describe('CIRA Config - Edit', () => {
     req = {
       db: { ciraConfigs: { getByName: jest.fn(), update: jest.fn() } },
       body: { configName: 'configName' },
-      query: { }
+      query: { },
+      tenantId: ''
     }
     getByNameSpy = jest.spyOn(req.db.ciraConfigs, 'getByName').mockResolvedValue({})
     jest.spyOn(req.db.ciraConfigs, 'update').mockResolvedValue({})
@@ -27,19 +28,19 @@ describe('CIRA Config - Edit', () => {
   })
   it('should edit', async () => {
     await editCiraConfig(req, resSpy)
-    expect(getByNameSpy).toHaveBeenCalledWith('configName')
+    expect(getByNameSpy).toHaveBeenCalledWith('configName', req.tenantId)
     expect(resSpy.status).toHaveBeenCalledWith(200)
   })
   it('should handle not found', async () => {
     jest.spyOn(req.db.ciraConfigs, 'getByName').mockResolvedValue(null)
     await editCiraConfig(req, resSpy)
-    expect(getByNameSpy).toHaveBeenCalledWith('configName')
+    expect(getByNameSpy).toHaveBeenCalledWith('configName', req.tenantId)
     expect(resSpy.status).toHaveBeenCalledWith(404)
   })
   it('should handle error', async () => {
     jest.spyOn(req.db.ciraConfigs, 'getByName').mockRejectedValue(null)
     await editCiraConfig(req, resSpy)
-    expect(getByNameSpy).toHaveBeenCalledWith('configName')
+    expect(getByNameSpy).toHaveBeenCalledWith('configName', req.tenantId)
     expect(resSpy.status).toHaveBeenCalledWith(500)
   })
 })

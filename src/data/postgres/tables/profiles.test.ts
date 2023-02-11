@@ -149,9 +149,9 @@ describe('profiles tests', () => {
     test('should get ciraconfig for profile', async () => {
       const ciraConfigSpy = jest.spyOn(db.ciraConfigs, 'getByName')
       ciraConfigSpy.mockResolvedValue({} as any)
-      const result = await profilesTable.getCiraConfigForProfile(profileName)
+      const result = await profilesTable.getCiraConfigForProfile(profileName, '')
       expect(result).toStrictEqual({})
-      expect(ciraConfigSpy).toHaveBeenCalledWith(profileName)
+      expect(ciraConfigSpy).toHaveBeenCalledWith(profileName, '')
     })
   })
   describe('Delete', () => {
@@ -193,7 +193,7 @@ describe('profiles tests', () => {
 
       expect(result).toBe(amtConfig)
       expect(profileWirelessConfigsSpy).toHaveBeenCalledWith(amtConfig.wifiConfigs, amtConfig.profileName, amtConfig.tenantId)
-      expect(getByNameSpy).toHaveBeenCalledWith(amtConfig.profileName)
+      expect(getByNameSpy).toHaveBeenCalledWith(amtConfig.profileName, amtConfig.tenantId)
       expect(querySpy).toBeCalledTimes(1)
       expect(querySpy).toBeCalledWith(`
         INSERT INTO profiles(
@@ -233,7 +233,7 @@ describe('profiles tests', () => {
 
       expect(result).toBe(amtConfig)
       expect(profileWirelessConfigsSpy).not.toHaveBeenCalledWith(amtConfig.wifiConfigs, amtConfig.profileName, amtConfig.tenantId)
-      expect(getByNameSpy).toHaveBeenCalledWith(amtConfig.profileName)
+      expect(getByNameSpy).toHaveBeenCalledWith(amtConfig.profileName, amtConfig.tenantId)
       expect(querySpy).toBeCalledTimes(1)
       expect(querySpy).toBeCalledWith(`
         INSERT INTO profiles(

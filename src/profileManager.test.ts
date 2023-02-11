@@ -31,7 +31,9 @@ const rcsConfig: RPSConfig = {
   dbProvider: 'postgres',
   secretsProvider: 'vault',
   connectionString: 'postgresql://postgresadmin:admin123@localhost:5432/rpsdb',
-  delayTimer: 12
+  delayTimer: 12,
+  jwtTenantProperty: '',
+  jwtTokenHeader: ''
 }
 
 const ciraConfigurations: CIRAConfig[] = [{
@@ -109,14 +111,14 @@ const profileStub: IProfilesTable = {
 test('test if profile exists', () => {
   const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub)
 
-  const actual = profileManager.doesProfileExist('profile 1')
+  const actual = profileManager.doesProfileExist('profile 1', '')
   expect(actual).toBeTruthy()
 })
 
 test('test if profile exists', async () => {
   const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub)
 
-  const actual = await profileManager.doesProfileExist('profile 5')
+  const actual = await profileManager.doesProfileExist('profile 5', '')
   expect(actual).toBeFalsy()
 })
 
@@ -124,7 +126,7 @@ test('retrieve activation based on profile', async () => {
   const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub)
 
   const expected = ClientAction.ADMINCTLMODE
-  const actual = await profileManager.getActivationMode('profile 2')
+  const actual = await profileManager.getActivationMode('profile 2', '')
   expect(actual).toEqual(expected)
 })
 
@@ -132,7 +134,7 @@ test('retrieve activation based on profile', async () => {
   const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub, rcsConfig)
 
   const expected = ClientAction.CLIENTCTLMODE
-  const actual = await profileManager.getActivationMode('profile 1')
+  const actual = await profileManager.getActivationMode('profile 1', '')
   expect(actual).toEqual(expected)
 })
 
@@ -140,7 +142,7 @@ test('retrieve configuration for cira', async () => {
   const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub, rcsConfig)
 
   const expected = 'ciraconfig1'
-  const actual = await profileManager.getCiraConfiguration('profile 2')
+  const actual = await profileManager.getCiraConfiguration('profile 2', '')
   expect(actual.configName).toEqual(expected)
 })
 
@@ -149,7 +151,7 @@ test('retrieve amt password', async () => {
 
   const expected = '<StrongPassword1!>'
   const profile = 'profile 1'
-  const actual = await profileManager.getAmtPassword(profile)
+  const actual = await profileManager.getAmtPassword(profile, '')
 
   expect(actual).toEqual(expected)
 })
@@ -159,6 +161,6 @@ test('retrieve amt password auto generated', async () => {
 
   const profile = 'profile 2'
   const expected = '<StrongPassword2!>'
-  const actual = await profileManager.getAmtPassword(profile)
+  const actual = await profileManager.getAmtPassword(profile, '')
   expect(actual).toBe(expected)
 })

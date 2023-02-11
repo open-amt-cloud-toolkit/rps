@@ -180,7 +180,6 @@ describe('Features State Machine', () => {
       'FAILED'
     ]
     const featuresService = interpret(mockFeaturesMachine).onTransition((state) => {
-      console.log(state.value)
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
         done()

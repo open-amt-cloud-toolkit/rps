@@ -31,8 +31,8 @@ export class ProfileManager implements IProfileManager {
    * @param {string} profileName profile to look up
    * @returns {string} returns the activation to be performed
    */
-  public async getActivationMode (profileName: string): Promise<string> {
-    const profile = await this.getAmtProfile(profileName)
+  public async getActivationMode (profileName: string, tenantId: string): Promise<string> {
+    const profile = await this.getAmtProfile(profileName, tenantId)
     let activation: string
 
     if (profile?.activation) {
@@ -50,8 +50,8 @@ export class ProfileManager implements IProfileManager {
    * @param {string} profile of cira config
    * @returns {string} returns the config for CIRA for a given profile
    */
-  public async getCiraConfiguration (profileName: string): Promise<CIRAConfig> {
-    const profile = await this.getAmtProfile(profileName)
+  public async getCiraConfiguration (profileName: string, tenantId: string): Promise<CIRAConfig> {
+    const profile = await this.getAmtProfile(profileName, tenantId)
     let ciraConfig: CIRAConfig
 
     if (profile?.ciraConfigName && profile.ciraConfigObject) {
@@ -69,8 +69,8 @@ export class ProfileManager implements IProfileManager {
    * @param {string} profileName profile name of amt password
    * @returns {string} returns the amt password for a given profile
    */
-  public async getAmtPassword (profileName: string): Promise<string> {
-    const profile: AMTConfiguration = await this.getAmtProfile(profileName)
+  public async getAmtPassword (profileName: string, tenantId: string): Promise<string> {
+    const profile: AMTConfiguration = await this.getAmtProfile(profileName, tenantId)
     let amtPassword: string
     if (profile) {
       if (profile.generateRandomPassword) {
@@ -102,8 +102,8 @@ export class ProfileManager implements IProfileManager {
     * @param {string} profileName profile name of amt password
     * @returns {string} returns the amt password for a given profile
    */
-  public async getMEBxPassword (profileName: string): Promise<string> {
-    const profile: AMTConfiguration = await this.getAmtProfile(profileName)
+  public async getMEBxPassword (profileName: string, tenantId: string): Promise<string> {
+    const profile: AMTConfiguration = await this.getAmtProfile(profileName, tenantId)
     let mebxPassword: string
     if (profile) {
       if (profile.generateRandomMEBxPassword) {
@@ -137,8 +137,8 @@ export class ProfileManager implements IProfileManager {
      * @param {string} profileName profile name of MPS password
      * @returns {string} returns the MPS password for a given profile
      */
-  public async getMPSPassword (profileName: string): Promise<string> {
-    const profile: AMTConfiguration = await this.getAmtProfile(profileName)
+  public async getMPSPassword (profileName: string, tenantId: string): Promise<string> {
+    const profile: AMTConfiguration = await this.getAmtProfile(profileName, tenantId)
     let mpsPassword: string
 
     if (profile?.ciraConfigObject) {
@@ -166,15 +166,15 @@ export class ProfileManager implements IProfileManager {
     * @param {string} profile
     * @returns {AMTConfiguration} returns AMTConfig object if profile exists otherwise null.
     */
-  public async getAmtProfile (profile: string): Promise<AMTConfiguration> {
+  public async getAmtProfile (profile: string, tenantId: string): Promise<AMTConfiguration> {
     try {
       if (!profile) {
         return null
       }
-      const amtProfile: AMTConfiguration = await this.amtConfigurations.getByName(profile)
+      const amtProfile: AMTConfiguration = await this.amtConfigurations.getByName(profile, tenantId)
       // If the CIRA Config associated with profile, retrieves from DB
       if (amtProfile?.ciraConfigName != null) {
-        amtProfile.ciraConfigObject = await this.amtConfigurations.getCiraConfigForProfile(amtProfile.ciraConfigName)
+        amtProfile.ciraConfigObject = await this.amtConfigurations.getCiraConfigForProfile(amtProfile.ciraConfigName, tenantId)
       }
       // If the TLS Config associated with profile, retrieves from DB
       if (amtProfile.tlsMode != null && amtProfile.tlsSigningAuthority) {
@@ -196,8 +196,8 @@ export class ProfileManager implements IProfileManager {
   * @param {string} profile
   * @returns {boolean} returns true if profile exists otherwise false.
   */
-  public async doesProfileExist (profileName: string): Promise<boolean> {
-    const profile = await this.getAmtProfile(profileName)
+  public async doesProfileExist (profileName: string, tenantId: string): Promise<boolean> {
+    const profile = await this.getAmtProfile(profileName, tenantId)
     if (profile) {
       // this.logger.debug(`found profile ${profileName}`);
       return true
