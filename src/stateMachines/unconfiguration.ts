@@ -440,7 +440,7 @@ export class Unconfiguration {
       }
     }, {
       guards: {
-        isExpectedBadRequest: (context, event) => event.data?.Envelope?.Body.Fault != null,
+        isExpectedBadRequest: (context, event) => event.data?.statusCode === 400,
         hasPrivateCerts: (context, event) => context.privateCerts.length > 0,
         isLMSTLSSettings: (context, event) => context.message.Envelope.Body.AMT_TLSSettingData?.ElementName === 'Intel(r) AMT LMS TLS Settings',
         is8023TLS: (context, event) => context.message.Envelope.Body.AMT_TLSSettingData?.ElementName === 'Intel(r) AMT 802.3 TLS Settings' && context.TLSSettingData[1].Enabled,
