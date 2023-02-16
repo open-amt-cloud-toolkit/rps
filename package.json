@@ -62,7 +62,7 @@
     "rc": "^1.2.8",
     "uuid": "^9.0.0",
     "winston": "^3.8.2",
-    "ws": "^8.11.0",
+    "ws": "^8.12.1",
     "xml2js": "^0.4.23",
     "xstate": "^4.36.0"
   },
@@ -74,7 +74,7 @@
     "@types/pg": "^8.6.6",
     "@types/ws": "^8.5.4",
     "@typescript-eslint/eslint-plugin": "^5.52.0",
-    "@typescript-eslint/parser": "^5.51.0",
+    "@typescript-eslint/parser": "^5.52.0",
     "eslint": "^8.34.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-config-standard-with-typescript": "^34.0.0",
