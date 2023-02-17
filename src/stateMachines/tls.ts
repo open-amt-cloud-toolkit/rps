@@ -16,6 +16,8 @@ import { invokeEnterpriseAssistantCall, invokeWsmanCall } from './common'
 import { Error } from './error'
 import { TimeSync } from './timeMachine'
 import { TlsSigningAuthority } from '../models/RCS.Config'
+import { UNEXPECTED_PARSE_ERROR } from '../utils/constants'
+import { parseChunkedMessage } from '../utils/parseChunkedMessage'
 
 export interface TLSContext {
   message: any
@@ -30,6 +32,7 @@ export interface TLSContext {
   amtProfile: AMTConfiguration
   unauthCount: number
   amt?: AMT.Messages
+  retryCount?: number
 }
 
 interface TLSEvent {
@@ -40,7 +43,7 @@ interface TLSEvent {
 
 export class TLS {
   nodeForge: NodeForge
-  logger: Logger
+  logger: Logger = new Logger('TLS')
   certManager: CertManager
   error: Error = new Error()
   timeSync: TimeSync = new TimeSync()
@@ -67,6 +70,7 @@ export class TLS {
         PROVISIONED: {
           on: {
             CONFIGURE_TLS: {
+              actions: ['Reset Retry Count'],
               target: 'ENUMERATE_PUBLIC_KEY_CERTIFICATE'
             }
           }
@@ -95,16 +99,22 @@ export class TLS {
             id: 'pull-public-key-certificate',
             onDone: {
               actions: [
-                assign({ message: (context, event) => event.data })
+                assign({ message: (context, event) => event.data }),
+                'Reset Retry Count'
               ],
               target: 'CHECK_CERT_MODE'
             },
-            onError: {
-              actions: assign({
-                errorMessage: 'Failed to pull public key certificates'
-              }),
-              target: 'FAILED'
-            }
+            onError: [
+              {
+                cond: 'shouldRetry',
+                actions: 'Increment Retry Count',
+                target: 'ENUMERATE_PUBLIC_KEY_CERTIFICATE'
+              },
+              {
+                actions: assign({ errorMessage: 'Failed to pull public key certificates' }),
+                target: 'FAILED'
+              }
+            ]
           }
         },
         CHECK_CERT_MODE: {
@@ -251,16 +261,22 @@ export class TLS {
             id: 'pull-public-private-key-pair',
             onDone: {
               actions: [
-                assign({ message: (context, event) => event.data })
+                assign({ message: (context, event) => event.data }),
+                'Reset Retry Count'
               ],
               target: 'PULL_PUBLIC_PRIVATE_KEY_PAIR_RESPONSE'
             },
-            onError: {
-              actions: assign({
-                errorMessage: 'Failed to pull public private key pair'
-              }),
-              target: 'FAILED'
-            }
+            onError: [
+              {
+                cond: 'shouldRetry',
+                actions: 'Increment Retry Count',
+                target: 'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR'
+              },
+              {
+                actions: assign({ errorMessage: 'Failed to pull public private key pair' }),
+                target: 'FAILED'
+              }
+            ]
           }
         },
         PULL_PUBLIC_PRIVATE_KEY_PAIR_RESPONSE: {
@@ -297,12 +313,16 @@ export class TLS {
               ],
               target: 'SYNC_TIME'
             },
-            onError: {
-              actions: assign({
-                errorMessage: 'Failed to create TLS credential context'
-              }),
-              target: 'FAILED'
-            }
+            onError: [
+              {
+                cond: 'alreadyExists',
+                target: 'SYNC_TIME'
+              },
+              {
+                actions: assign({ errorMessage: 'Failed to create TLS credential context' }),
+                target: 'FAILED'
+              }
+            ]
           }
         },
         SYNC_TIME: {
@@ -311,6 +331,7 @@ export class TLS {
             src: this.timeSync.machine,
             id: 'time-machine',
             data: {
+              // tech-debt: unused parameters
               clientId: (context, event) => context.clientId,
               httpHandler: (context, event) => context.httpHandler
             },
@@ -344,16 +365,22 @@ export class TLS {
             id: 'pull-tls-data',
             onDone: {
               actions: [
-                assign({ message: (context, event) => event.data, tlsSettingData: (context, event) => event.data.Envelope.Body.PullResponse.Items.AMT_TLSSettingData })
+                assign({ message: (context, event) => event.data, tlsSettingData: (context, event) => event.data.Envelope.Body.PullResponse.Items.AMT_TLSSettingData }),
+                'Reset Retry Count'
               ],
               target: 'PUT_REMOTE_TLS_DATA'
             },
-            onError: {
-              actions: assign({
-                errorMessage: 'Failed to pull TLS data'
-              }),
-              target: 'FAILED'
-            }
+            onError: [
+              {
+                cond: 'shouldRetry',
+                actions: 'Increment Retry Count',
+                target: 'ENUMERATE_TLS_DATA'
+              },
+              {
+                actions: assign({ errorMessage: 'Failed to pull TLS data' }),
+                target: 'FAILED'
+              }
+            ]
           }
         },
         PUT_REMOTE_TLS_DATA: {
@@ -443,10 +470,28 @@ export class TLS {
     }, {
       guards: {
         hasPublicPrivateKeyPairs: (context, event) => context.message.Envelope.Body.PullResponse.Items !== '',
-        useTLSEnterpriseAssistantCert: (context, event) => context.amtProfile.tlsSigningAuthority === TlsSigningAuthority.MICROSOFT_CA
+        useTLSEnterpriseAssistantCert: (context, event) => context.amtProfile.tlsSigningAuthority === TlsSigningAuthority.MICROSOFT_CA,
+        shouldRetry: (context, event) => context.retryCount < 3 && event.data === UNEXPECTED_PARSE_ERROR,
+        alreadyExists: (context, event) => {
+          let exists = false
+          try {
+            const xmlBody = parseChunkedMessage(event.data.body.text)
+            const parsed = context.httpHandler.parseXML(xmlBody)
+            if (parsed.Envelope?.Body?.Fault?.Code?.Subcode?.Value?.includes('AlreadyExists')) {
+              this.logger.info(parsed.envelope?.Body?.Fault?.Reason?.Text)
+              exists = true
+            }
+          } catch (err) {
+            exists = false
+          }
+          return exists
+        }
       },
       actions: {
-        'Update Configuration Status': this.updateConfigurationStatus.bind(this)
+        'Update Configuration Status': this.updateConfigurationStatus.bind(this),
+        'Reset Retry Count': assign({ retryCount: (context, event) => 0 }),
+        'Increment Retry Count': assign({ retryCount: (context, event) => context.retryCount + 1 })
+
       }
     })
 
@@ -475,7 +520,7 @@ export class TLS {
       SigningAlgorithm: 1,
       NullSignedCertificateRequest: context.message.response.csr
     })
-    return await invokeWsmanCall(context)
+    return await invokeWsmanCall(context, 2)
   }
 
   async initiateCertRequest (context: TLSContext, event: TLSEvent): Promise<EnterpriseAssistantMessage> {
@@ -564,23 +609,23 @@ export class TLS {
 
     context.xmlMessage = context.amt.PublicKeyManagementService.AddCertificate({ CertificateBlob: cert })
 
-    return await invokeWsmanCall(context)
+    return await invokeWsmanCall(context, 2)
   }
 
   async generateKeyPair (context: TLSContext, event: TLSEvent): Promise<void> {
     context.xmlMessage = context.amt.PublicKeyManagementService.GenerateKeyPair({ KeyAlgorithm: 0, KeyLength: 2048 })
-    return await invokeWsmanCall(context)
+    return await invokeWsmanCall(context, 2)
   }
 
   async addTrustedRootCertificate (context: TLSContext, event: TLSEvent): Promise<void> {
     const tlsCerts = devices[context.clientId].ClientData.payload.profile.tlsCerts
     context.xmlMessage = context.amt.PublicKeyManagementService.AddTrustedRootCertificate({ CertificateBlob: tlsCerts.ROOT_CERTIFICATE.certbin })
-    return await invokeWsmanCall(context)
+    return await invokeWsmanCall(context, 2)
   }
 
   async enumerateTLSCredentialContext (context: TLSContext, event: TLSEvent): Promise<void> {
     context.xmlMessage = context.amt.TLSCredentialContext.Enumerate()
-    return await invokeWsmanCall(context)
+    return await invokeWsmanCall(context, 2)
   }
 
   async pullTLSCredentialContext (context: TLSContext, event: TLSEvent): Promise<void> {
@@ -593,12 +638,12 @@ export class TLS {
 
     const certHandle = event.data.Envelope.Body?.AddCertificate_OUTPUT?.CreatedCertificate?.ReferenceParameters?.SelectorSet?.Selector?._ ?? 'Intel(r) AMT Certificate: Handle: 1'
     context.xmlMessage = context.amt.TLSCredentialContext.Create(certHandle)
-    return await invokeWsmanCall(context)
+    return await invokeWsmanCall(context, 2)
   }
 
   async enumeratePublicKeyCertificate (context: TLSContext, event: TLSEvent): Promise<void> {
     context.xmlMessage = context.amt.PublicKeyCertificate.Enumerate()
-    return await invokeWsmanCall(context)
+    return await invokeWsmanCall(context, 2)
   }
 
   async pullPublicKeyCertificate (context: TLSContext, event: TLSEvent): Promise<void> {
@@ -608,7 +653,7 @@ export class TLS {
 
   async enumeratePublicPrivateKeyPair (context: TLSContext, event: TLSEvent): Promise<void> {
     context.xmlMessage = context.amt.PublicPrivateKeyPair.Enumerate()
-    return await invokeWsmanCall(context)
+    return await invokeWsmanCall(context, 2)
   }
 
   async pullPublicPrivateKeyPair (context: TLSContext, event: TLSEvent): Promise<void> {
@@ -626,7 +671,7 @@ export class TLS {
 
   async enumerateTlsData (context: TLSContext, event: TLSEvent): Promise<void> {
     context.xmlMessage = context.amt.TLSSettingData.Enumerate()
-    return await invokeWsmanCall(context)
+    return await invokeWsmanCall(context, 2)
   }
 
   async pullTLSData (context: TLSContext, event: TLSEvent): Promise<void> {
@@ -641,7 +686,7 @@ export class TLS {
     context.tlsSettingData[0].MutualAuthentication = (context.amtProfile.tlsMode === 3 || context.amtProfile.tlsMode === 4)
 
     context.xmlMessage = context.amt.TLSSettingData.Put(context.tlsSettingData[0])
-    return await invokeWsmanCall(context)
+    return await invokeWsmanCall(context, 2)
   }
 
   async putLocalTLSData (context: TLSContext, event: TLSEvent): Promise<void> {
@@ -654,7 +699,7 @@ export class TLS {
     // }
     // }
     context.xmlMessage = context.amt.TLSSettingData.Put(context.tlsSettingData[1])
-    return await invokeWsmanCall(context)
+    return await invokeWsmanCall(context, 2)
   }
 
   async commitChanges (context: TLSContext, event: TLSEvent): Promise<void> {
