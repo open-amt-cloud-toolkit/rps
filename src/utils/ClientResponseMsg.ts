@@ -21,7 +21,8 @@ export default {
       protocolVersion: ProtocolVersion,
       status,
       message,
-      payload
+      payload,
+      tenantId: ''
     }
 
     if (method === 'heartbeat_request') {

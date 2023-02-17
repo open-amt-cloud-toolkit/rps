@@ -149,7 +149,7 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
         wirelessConfig.tenantId
       ])
       if (results?.rowCount > 0) {
-        const profile = await this.getByName(wirelessConfig.profileName)
+        const profile = await this.getByName(wirelessConfig.profileName, wirelessConfig.tenantId)
         return profile
       }
       return null
@@ -186,7 +186,7 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
         wirelessConfig.tenantId,
         wirelessConfig.version
       ])
-      latestItem = await this.getByName(wirelessConfig.profileName)
+      latestItem = await this.getByName(wirelessConfig.profileName, wirelessConfig.tenantId)
       if (results?.rowCount > 0) {
         return latestItem
       }

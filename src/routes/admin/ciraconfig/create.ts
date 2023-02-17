@@ -12,7 +12,7 @@ import handleError from '../../../utils/handleError'
 export async function createCiraConfig (req: Request, res: Response): Promise<void> {
   const log = new Logger('createCiraConfig')
   const ciraConfig: CIRAConfig = req.body
-  ciraConfig.tenantId = req.tenantId
+  ciraConfig.tenantId = req.tenantId || ''
 
   try {
     // SQL Query > Insert Data

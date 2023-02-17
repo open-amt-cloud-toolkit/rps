@@ -5,28 +5,27 @@
 
 import Logger from '../../../Logger'
 import { NOT_FOUND_EXCEPTION, NOT_FOUND_MESSAGE } from '../../../utils/constants'
-import { type AMTConfiguration, type CertAttributes, type AMTKeyUsage, type TLSCerts } from '../../../models'
-import { ClientAction, type ProfileWifiConfigs } from '../../../models/RCS.Config'
+import { type AMTConfiguration } from '../../../models'
+import { ClientAction, type ProfileWifiConfigs, TlsSigningAuthority } from '../../../models/RCS.Config'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { type Request, type Response } from 'express'
 import { type IProfilesWifiConfigsTable } from '../../../interfaces/database/IProfileWifiConfigsDb'
 import handleError from '../../../utils/handleError'
 import { RPSError } from '../../../utils/RPSError'
-import { CertManager } from '../../../certManager'
-import { NodeForge } from '../../../NodeForge'
 import { type DeviceCredentials } from '../../../interfaces/ISecretManagerService'
+import { adjustTlsConfiguration, generateSelfSignedCertificate } from './common'
 
 export async function editProfile (req: Request, res: Response): Promise<void> {
   const log = new Logger('editProfile')
-  const newConfig = req.body
+  const newConfig: AMTConfiguration = req.body
   newConfig.tenantId = req.tenantId
   try {
-    const oldConfig: AMTConfiguration = await req.db.profiles.getByName(newConfig.profileName)
+    const oldConfig: AMTConfiguration = await req.db.profiles.getByName(newConfig.profileName, req.tenantId)
 
     if (oldConfig == null) {
       throw new RPSError(NOT_FOUND_MESSAGE('AMT', newConfig.profileName), NOT_FOUND_EXCEPTION)
     } else {
-      const amtConfig: AMTConfiguration = await getUpdatedData(newConfig, oldConfig)
+      let amtConfig: AMTConfiguration = await getUpdatedData(newConfig, oldConfig)
       amtConfig.wifiConfigs = await handleWifiConfigs(newConfig, oldConfig, req.db.profileWirelessConfigs)
       // Assigning value key value for AMT Random Password and MEBx Random Password to store in database
       const amtPwdBefore = amtConfig.amtPassword
@@ -41,16 +40,17 @@ export async function editProfile (req: Request, res: Response): Promise<void> {
           amtConfig.mebxPassword = 'MEBX_PASSWORD'
         }
       }
+      amtConfig = adjustTlsConfiguration(amtConfig)
       // SQL Query > Insert Data
       const results = await req.db.profiles.update(amtConfig)
       if (results) {
         // check if non-tls to tls
-        // then check if certificate exists in vault and generate self-signed if does not exist
-        if (oldConfig.tlsMode == null && newConfig.tlsMode != null) {
-          // generate self signed certificates for use with TLS config if applicable
+        // then check if certificate exists in vault and generate self-signed if it does not exist
+        if (amtConfig.tlsSigningAuthority === TlsSigningAuthority.SELF_SIGNED) {
+          // generate self-signed certificates for use with TLS config if applicable
           const existingTLSCert = await req.secretsManager.getSecretAtPath(`TLS/${oldConfig.profileName}`)
           if (existingTLSCert == null) {
-            await generateSelfSignedCertificate(req, newConfig.profileName)
+            await generateSelfSignedCertificate(req.secretsManager, newConfig.profileName)
           }
         }
 
@@ -88,46 +88,6 @@ export async function editProfile (req: Request, res: Response): Promise<void> {
   } catch (error) {
     handleError(log, newConfig.profileName, req, res, error)
   }
-}
-
-export async function generateSelfSignedCertificate (req: Request, profileName: string): Promise<void> {
-  // generate root certificate
-  const cm = new CertManager(new Logger('CertManager'), new NodeForge())
-  const certAttr: CertAttributes = {
-    CN: `oact-${profileName}`,
-    C: 'country',
-    ST: 'state',
-    O: 'Intel'
-  }
-  const rootCert = cm.createCertificate(certAttr)
-
-  const issueAttr: CertAttributes = {
-    CN: `oact-issued-${profileName}`,
-    C: 'country',
-    ST: 'state',
-    O: 'Intel'
-  }
-
-  const keyUsages: AMTKeyUsage = {
-    name: 'extKeyUsage',
-    '2.16.840.1.113741.1.2.1': true,
-    '2.16.840.1.113741.1.2.2': false,
-    '2.16.840.1.113741.1.2.3': false,
-    serverAuth: false,
-    clientAuth: true,
-    emailProtection: false,
-    codeSigning: false,
-    timeStamping: false
-  }
-  // gene
-  const issuedCert = cm.createCertificate(issueAttr, rootCert.key, null, certAttr, keyUsages)
-
-  const certs: TLSCerts = {
-    ROOT_CERTIFICATE: rootCert,
-    ISSUED_CERTIFICATE: issuedCert
-  }
-
-  await req.secretsManager.writeSecretWithObject(`TLS/${profileName}`, certs)
 }
 
 export const handleAMTPassword = (amtConfig: AMTConfiguration, newConfig: AMTConfiguration, oldConfig: AMTConfiguration): AMTConfiguration => {
@@ -201,6 +161,7 @@ export const getUpdatedData = async (newConfig: any, oldConfig: AMTConfiguration
   amtConfig.iderEnabled = newConfig.iderEnabled ?? oldConfig.iderEnabled
   amtConfig.kvmEnabled = newConfig.kvmEnabled ?? oldConfig.kvmEnabled
   amtConfig.solEnabled = newConfig.solEnabled ?? oldConfig.solEnabled
+  amtConfig.tlsSigningAuthority = newConfig.tlsSigningAuthority ?? oldConfig.tlsSigningAuthority
   amtConfig.version = newConfig.version
   return amtConfig
 }

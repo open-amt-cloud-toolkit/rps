@@ -41,12 +41,12 @@ describe('Domain Credential Manager Tests', () => {
   })
   test('retrieve provisioning cert based on domain', async () => {
     const expectedProvisioningCert: string = 'd2.pfx'
-    const domain: AMTDomain = await domainCredentialManager.getProvisioningCert('d2.com')
+    const domain: AMTDomain = await domainCredentialManager.getProvisioningCert('d2.com', '')
     expect(domain.provisioningCert).toEqual(expectedProvisioningCert)
     expect(domain.provisioningCertPassword).toEqual('password')
   })
   test('does domain exist should return true', async () => {
-    const result = await domainCredentialManager.doesDomainExist('d2.com')
+    const result = await domainCredentialManager.doesDomainExist('d2.com', '')
     expect(result).toBeTruthy()
   })
 })

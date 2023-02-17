@@ -24,10 +24,11 @@ export class DomainCredentialManager implements IDomainCredentialManager {
   /**
      * @description get the provisioning cert for a given domain
      * @param {string} domainSuffix
+     * @param {string} tenantId
      * @returns {AMTDomain} returns domain object
      */
-  async getProvisioningCert (domainSuffix: string): Promise<AMTDomain> {
-    const domain = await this.amtDomains.getDomainByDomainSuffix(domainSuffix)
+  async getProvisioningCert (domainSuffix: string, tenantId: string): Promise<AMTDomain> {
+    const domain = await this.amtDomains.getDomainByDomainSuffix(domainSuffix, tenantId)
     this.logger.debug(`domain : ${JSON.stringify(domain)}`)
 
     if (domain?.provisioningCert) {
@@ -46,10 +47,11 @@ export class DomainCredentialManager implements IDomainCredentialManager {
   /**
     * @description Checks if the AMT domain exists or not
     * @param {string} domainSuffix
+    * @param {string} tenantId
     * @returns {boolean} returns true if domain exists otherwise false.
     */
-  public async doesDomainExist (domainSuffix: string): Promise<boolean> {
-    if (await this.amtDomains.getDomainByDomainSuffix(domainSuffix)) {
+  public async doesDomainExist (domainSuffix: string, tenantId: string): Promise<boolean> {
+    if (await this.amtDomains.getDomainByDomainSuffix(domainSuffix, tenantId)) {
       return true
     } else {
       return false

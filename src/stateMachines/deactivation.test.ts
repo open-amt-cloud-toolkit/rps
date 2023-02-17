@@ -102,7 +102,6 @@ describe('Deactivation State Machine', () => {
       'UNPROVISIONED'
     ]
     const deactivationService = interpret(mockDeactivationMachine).onTransition((state) => {
-      console.log(state.value)
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('UNPROVISIONED') && currentStateIndex === flowStates.length) {
         done()

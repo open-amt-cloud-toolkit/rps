@@ -24,5 +24,7 @@ export const config: RPSConfig = {
     WebSocketPort: 8080
   },
   dbProvider: 'postgres',
-  connectionString: 'postgresql://postgresadmin:admin123@localhost:5432/rpsdb'
+  connectionString: 'postgresql://postgresadmin:admin123@localhost:5432/rpsdb',
+  jwtTenantProperty: '',
+  jwtTokenHeader: ''
 }

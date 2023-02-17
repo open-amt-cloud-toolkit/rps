@@ -25,13 +25,13 @@ describe('CIRA Config - Create', () => {
   })
   it('should create', async () => {
     await createCiraConfig(req, resSpy)
-    expect(insertSpy).toHaveBeenCalledWith({})
+    expect(insertSpy).toHaveBeenCalledTimes(1)
     expect(resSpy.status).toHaveBeenCalledWith(201)
   })
   it('should handle error', async () => {
     jest.spyOn(req.db.ciraConfigs, 'insert').mockRejectedValue(null)
     await createCiraConfig(req, resSpy)
-    expect(insertSpy).toHaveBeenCalledWith({})
+    expect(insertSpy).toHaveBeenCalledTimes(1)
     expect(resSpy.status).toHaveBeenCalledWith(500)
   })
 })

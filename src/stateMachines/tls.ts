@@ -4,17 +4,18 @@
  **********************************************************************/
 
 import { type AMT } from '@open-amt-cloud-toolkit/wsman-messages'
-import { createMachine, send, assign } from 'xstate'
+import { assign, createMachine, send } from 'xstate'
 import { CertManager } from '../certManager'
 import { HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
 import { type AMTConfiguration, type AMTKeyUsage, type CertAttributes } from '../models'
 import { NodeForge } from '../NodeForge'
 import { devices } from '../WebSocketListener'
-import { invokeWsmanCall } from './common'
+import { type EnterpriseAssistantMessage } from '../WSEnterpriseAssistantListener'
+import { invokeEnterpriseAssistantCall, invokeWsmanCall } from './common'
 import { Error } from './error'
 import { TimeSync } from './timeMachine'
-import * as forge from 'node-forge'
+import { TlsSigningAuthority } from '../models/RCS.Config'
 
 export interface TLSContext {
   message: any
@@ -44,7 +45,6 @@ export class TLS {
   error: Error = new Error()
   timeSync: TimeSync = new TimeSync()
   machine =
-
     createMachine<TLSContext, TLSEvent>({
       predictableActionArguments: true,
       preserveActionOrder: true,
@@ -97,11 +97,95 @@ export class TLS {
               actions: [
                 assign({ message: (context, event) => event.data })
               ],
-              target: 'ADD_TRUSTED_ROOT_CERTIFICATE'
+              target: 'CHECK_CERT_MODE'
             },
             onError: {
               actions: assign({
                 errorMessage: 'Failed to pull public key certificates'
+              }),
+              target: 'FAILED'
+            }
+          }
+        },
+        CHECK_CERT_MODE: {
+          always: [{
+            cond: 'useTLSEnterpriseAssistantCert',
+            target: 'ENTERPRISE_ASSISTANT_REQUEST'
+          }, 'ADD_TRUSTED_ROOT_CERTIFICATE']
+        },
+        CHECK_CERT_MODE_AFTER_REQUEST: {
+          always: [{
+            cond: 'useTLSEnterpriseAssistantCert',
+            target: 'ENTERPRISE_ASSISTANT_RESPONSE'
+          }, 'ADD_CERTIFICATE']
+        },
+        ENTERPRISE_ASSISTANT_REQUEST: {
+          invoke: {
+            src: this.initiateCertRequest.bind(this),
+            id: 'enterprise-assistant-request',
+            onDone: {
+              actions: [
+                assign({ message: (context, event) => event.data })
+              ],
+              target: 'GENERATE_KEY_PAIR'
+            },
+            onError: {
+              actions: assign({
+                errorMessage: 'Failed to initiate cert request with enterprise assistant'
+              }),
+              target: 'FAILED'
+            }
+          }
+        },
+        ENTERPRISE_ASSISTANT_RESPONSE: {
+          invoke: {
+            src: this.sendEnterpriseAssistantKeyPairResponse.bind(this),
+            id: 'enterprise-assistant-response',
+            onDone: {
+              actions: [
+                assign({ message: (context, event) => event.data })
+              ],
+              target: 'SIGN_CSR'
+            },
+            onError: {
+              actions: assign({
+                errorMessage: 'Failed to send key pair to enterprise assistant'
+              }),
+              target: 'FAILED'
+            }
+          }
+        },
+        SIGN_CSR: {
+          invoke: {
+            src: this.signCSR.bind(this),
+            id: 'sign-csr',
+            onDone: {
+              actions: [
+                assign({ message: (context, event) => event.data })
+              ],
+              target: 'GET_CERT_FROM_ENTERPRISE_ASSISTANT'
+            },
+            onError: {
+              actions: assign({
+                errorMessage: 'Failed to have AMT sign CSR'
+              }),
+              target: 'FAILED'
+            }
+          }
+        },
+        GET_CERT_FROM_ENTERPRISE_ASSISTANT: {
+          invoke: {
+            src: this.getCertFromEnterpriseAssistant.bind(this),
+            id: 'get-cert-from-enterprise-assistant',
+            onDone: {
+              actions: [
+                assign({ message: (context, event) => event.data })
+              ],
+              target: 'ADD_CERTIFICATE'
+            },
+            onError: {
+              actions: assign({
+                errorMessage: 'Failed to get cert from Microsoft CA'
               }),
               target: 'FAILED'
             }
@@ -182,7 +266,7 @@ export class TLS {
         PULL_PUBLIC_PRIVATE_KEY_PAIR_RESPONSE: {
           always: [{
             cond: 'hasPublicPrivateKeyPairs',
-            target: 'ADD_CERTIFICATE'
+            target: 'CHECK_CERT_MODE_AFTER_REQUEST'
           }, 'CREATE_TLS_CREDENTIAL_CONTEXT']
         },
         ADD_CERTIFICATE: {
@@ -198,42 +282,6 @@ export class TLS {
             onError: {
               actions: assign({
                 errorMessage: 'Failed to add certificate'
-              }),
-              target: 'FAILED'
-            }
-          }
-        },
-        ENUMERATE_TLS_CREDENTIAL_CONTEXT: {
-          invoke: {
-            src: this.enumerateTLSCredentialContext.bind(this),
-            id: 'enumerate-tls-credential-context',
-            onDone: {
-              actions: [
-                assign({ message: (context, event) => event.data })
-              ],
-              target: 'PULL_TLS_CREDENTIAL_CONTEXT'
-            },
-            onError: {
-              actions: assign({
-                errorMessage: 'Failed to enumerate TLS credential context'
-              }),
-              target: 'FAILED'
-            }
-          }
-        },
-        PULL_TLS_CREDENTIAL_CONTEXT: {
-          invoke: {
-            src: this.pullTLSCredentialContext.bind(this),
-            id: 'pull-tls-credential-context',
-            onDone: {
-              actions: [
-                assign({ message: (context, event) => event.data, tlsCredentialContext: (context, event) => event.data.Envelope.Body.PullResponse.Items })
-              ],
-              target: 'CREATE_TLS_CREDENTIAL_CONTEXT'
-            },
-            onError: {
-              actions: assign({
-                errorMessage: 'Failed to pull TLS credential context'
               }),
               target: 'FAILED'
             }
@@ -394,19 +442,62 @@ export class TLS {
       }
     }, {
       guards: {
-        hasPublicPrivateKeyPairs: (context, event) => context.message.Envelope.Body.PullResponse.Items !== ''
+        hasPublicPrivateKeyPairs: (context, event) => context.message.Envelope.Body.PullResponse.Items !== '',
+        useTLSEnterpriseAssistantCert: (context, event) => context.amtProfile.tlsSigningAuthority === TlsSigningAuthority.MICROSOFT_CA
       },
       actions: {
         'Update Configuration Status': this.updateConfigurationStatus.bind(this)
       }
     })
 
-  constructor () {
-    this.nodeForge = new NodeForge()
-    this.certManager = new CertManager(new Logger('CertManager'), this.nodeForge)
+  async getCertFromEnterpriseAssistant (context: TLSContext, event: TLSEvent): Promise<EnterpriseAssistantMessage> {
+    const signedCSR = context.message.Envelope?.Body?.GeneratePKCS10RequestEx_OUTPUT?.SignedCertificateRequest
+    context.message = {
+      action: 'satellite',
+      subaction: '802.1x-CSR-Response',
+      satelliteFlags: 2,
+      nodeid: context.clientId,
+      domain: '',
+      reqid: '',
+      authProtocol: 0,
+      osname: 'win11',
+      devname: devices[context.clientId].hostname,
+      icon: 1,
+      signedcsr: signedCSR,
+      ver: ''
+    }
+    return await invokeEnterpriseAssistantCall(context)
   }
 
-  async addCertificate (context: TLSContext, event: TLSEvent): Promise<void> {
+  async signCSR (context: TLSContext, event: TLSEvent): Promise<void> {
+    context.xmlMessage = context.amt.PublicKeyManagementService.GeneratePKCS10RequestEx({
+      KeyPair: '<a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address><a:ReferenceParameters><w:ResourceURI>http://intel.com/wbem/wscim/1/amt-schema/1/AMT_PublicPrivateKeyPair</w:ResourceURI><w:SelectorSet><w:Selector Name="InstanceID">' + (context.message.response.keyInstanceId as string) + '</w:Selector></w:SelectorSet></a:ReferenceParameters>',
+      SigningAlgorithm: 1,
+      NullSignedCertificateRequest: context.message.response.csr
+    })
+    return await invokeWsmanCall(context)
+  }
+
+  async initiateCertRequest (context: TLSContext, event: TLSEvent): Promise<EnterpriseAssistantMessage> {
+    context.message = {
+      action: 'satellite',
+      subaction: '802.1x-ProFile-Request',
+      satelliteFlags: 2,
+      nodeid: context.clientId,
+      domain: '',
+      reqid: '',
+      authProtocol: 0,
+      osname: 'win11',
+      devname: devices[context.clientId].hostname,
+      icon: 1,
+      cert: null,
+      certid: null,
+      ver: ''
+    }
+    return await invokeEnterpriseAssistantCall(context)
+  }
+
+  async sendEnterpriseAssistantKeyPairResponse (context: TLSContext, event: TLSEvent): Promise<EnterpriseAssistantMessage> {
     const clientObj = devices[context.clientId]
     const potentialArray = context.message.Envelope.Body.PullResponse.Items.AMT_PublicPrivateKeyPair
     if (Array.isArray(potentialArray)) {
@@ -415,22 +506,64 @@ export class TLS {
       clientObj.tls.PublicPrivateKeyPair = [potentialArray]
     }
     const DERKey = clientObj.tls.PublicPrivateKeyPair[0]?.DERKey
-    const certAttributes: CertAttributes = { CN: 'AMT', O: 'None', ST: 'None', C: 'None' }
-    const issuerAttributes: CertAttributes = { CN: clientObj.uuid ?? 'Untrusted Root Certificate' }
 
-    const keyUsages: AMTKeyUsage = {
-      name: 'extKeyUsage',
-      '2.16.840.1.113741.1.2.1': false,
-      '2.16.840.1.113741.1.2.2': false,
-      '2.16.840.1.113741.1.2.3': false,
-      serverAuth: true,
-      clientAuth: false,
-      emailProtection: false,
-      codeSigning: false,
-      timeStamping: false
+    context.message = {
+      action: 'satellite',
+      subaction: '802.1x-KeyPair-Response',
+      satelliteFlags: 2,
+      nodeid: context.clientId,
+      domain: '',
+      reqid: '',
+      devname: devices[context.clientId].hostname,
+      authProtocol: 0,
+      osname: 'win11',
+      icon: 1,
+      DERKey,
+      keyInstanceId: 'Intel(r) AMT Key: Handle: 0', // todo: don't hardcode this, pull it from the response
+      ver: ''
     }
-    const cert = this.certManager.amtCertSignWithCAKey(DERKey, null, certAttributes, issuerAttributes, keyUsages)
-    context.xmlMessage = context.amt.PublicKeyManagementService.AddCertificate({ CertificateBlob: cert.pem.substring(27, cert.pem.length - 25) })
+    return await invokeEnterpriseAssistantCall(context)
+  }
+
+  constructor () {
+    this.nodeForge = new NodeForge()
+    this.certManager = new CertManager(new Logger('CertManager'), this.nodeForge)
+  }
+
+  async addCertificate (context: TLSContext, event: TLSEvent): Promise<void> {
+    const clientObj = devices[context.clientId]
+
+    let cert = ''
+    if (context.amtProfile.tlsSigningAuthority === TlsSigningAuthority.SELF_SIGNED || context.amtProfile.tlsSigningAuthority == null) {
+      const potentialArray = context.message.Envelope.Body.PullResponse.Items.AMT_PublicPrivateKeyPair
+      if (Array.isArray(potentialArray)) {
+        clientObj.tls.PublicPrivateKeyPair = potentialArray
+      } else {
+        clientObj.tls.PublicPrivateKeyPair = [potentialArray]
+      }
+      const DERKey = clientObj.tls.PublicPrivateKeyPair[0]?.DERKey
+      const certAttributes: CertAttributes = { CN: 'AMT', O: 'None', ST: 'None', C: 'None' }
+      const issuerAttributes: CertAttributes = { CN: clientObj.uuid ?? 'Untrusted Root Certificate' }
+
+      const keyUsages: AMTKeyUsage = {
+        name: 'extKeyUsage',
+        '2.16.840.1.113741.1.2.1': false,
+        '2.16.840.1.113741.1.2.2': false,
+        '2.16.840.1.113741.1.2.3': false,
+        serverAuth: true,
+        clientAuth: false,
+        emailProtection: false,
+        codeSigning: false,
+        timeStamping: false
+      }
+      const certResult = this.certManager.amtCertSignWithCAKey(DERKey, null, certAttributes, issuerAttributes, keyUsages)
+      cert = certResult.pem.substring(27, certResult.pem.length - 25)
+    } else {
+      cert = event.data.response.certificate
+    }
+
+    context.xmlMessage = context.amt.PublicKeyManagementService.AddCertificate({ CertificateBlob: cert })
+
     return await invokeWsmanCall(context)
   }
 
@@ -456,15 +589,10 @@ export class TLS {
   }
 
   async createTLSCredentialContext (context: TLSContext, event: TLSEvent): Promise<void> {
-    const amtPrefix = 'http://intel.com/wbem/wscim/1/amt-schema/1/'
-    // TBD: Need to pull certHandle from WSMan response object
-    const certHandle = 'Intel(r) AMT Certificate: Handle: 1'
-    const putObj = {
-      ElementInContext: `<a:Address>/wsman</a:Address><a:ReferenceParameters><w:ResourceURI>${amtPrefix}AMT_PublicKeyCertificate</w:ResourceURI><w:SelectorSet><w:Selector Name="InstanceID">${certHandle}</w:Selector></w:SelectorSet></a:ReferenceParameters>`,
-      ElementProvidingContext: `<a:Address>/wsman</a:Address><a:ReferenceParameters><w:ResourceURI>${amtPrefix}AMT_TLSProtocolEndpointCollection</w:ResourceURI><w:SelectorSet><w:Selector Name="ElementName">TLSProtocolEndpointInstances Collection</w:Selector></w:SelectorSet></a:ReferenceParameters>`
-    }
+    // TODO: 802.1x shoudl be set here right?
 
-    context.xmlMessage = context.amt.TLSCredentialContext.Create(putObj as any)
+    const certHandle = event.data.Envelope.Body?.AddCertificate_OUTPUT?.CreatedCertificate?.ReferenceParameters?.SelectorSet?.Selector?._ ?? 'Intel(r) AMT Certificate: Handle: 1'
+    context.xmlMessage = context.amt.TLSCredentialContext.Create(certHandle)
     return await invokeWsmanCall(context)
   }
 
@@ -511,31 +639,20 @@ export class TLS {
     context.tlsSettingData[0].Enabled = true
     context.tlsSettingData[0].AcceptNonSecureConnections = (context.amtProfile.tlsMode !== 1 && context.amtProfile.tlsMode !== 3) // TODO: check what these values should explicitly be
     context.tlsSettingData[0].MutualAuthentication = (context.amtProfile.tlsMode === 3 || context.amtProfile.tlsMode === 4)
-    if (context.amtProfile.tlsMode === 3 || context.amtProfile.tlsMode === 4) {
-      const certificate = forge.pki.certificateFromPem(context.amtProfile.tlsCerts.ISSUED_CERTIFICATE.pem)
-      const commonName = certificate.subject.getField('CN').value
-      if (Array.isArray(context.tlsSettingData[0].TrustedCN) && context.tlsSettingData[0].TrustedCN.length > 0) {
-        context.tlsSettingData[0].TrustedCN.push(commonName)
-      } else {
-        context.tlsSettingData[0].TrustedCN = [commonName]
-      }
-    }
+
     context.xmlMessage = context.amt.TLSSettingData.Put(context.tlsSettingData[0])
     return await invokeWsmanCall(context)
   }
 
   async putLocalTLSData (context: TLSContext, event: TLSEvent): Promise<void> {
     context.tlsSettingData[1].Enabled = true
-    if (context.amtProfile.tlsMode === 3 || context.amtProfile.tlsMode === 4) {
-      const certificate = forge.pki.certificateFromPem(context.amtProfile.tlsCerts.ISSUED_CERTIFICATE.pem)
-      const commonName = certificate.subject.getField('CN').value
 
-      if (Array.isArray(context.tlsSettingData[1].TrustedCN) && context.tlsSettingData[1].TrustedCN.length > 0) {
-        context.tlsSettingData[1].TrustedCN.push(commonName)
-      } else {
-        context.tlsSettingData[1].TrustedCN = [commonName]
-      }
-    }
+    // if (Array.isArray(context.tlsSettingData[1].TrustedCN) && context.tlsSettingData[1].TrustedCN.length > 0) {
+    //   context.tlsSettingData[1].TrustedCN.push(commonName)
+    // } else {
+    //   context.tlsSettingData[1].TrustedCN = [commonName]
+    // }
+    // }
     context.xmlMessage = context.amt.TLSSettingData.Put(context.tlsSettingData[1])
     return await invokeWsmanCall(context)
   }

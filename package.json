@@ -1,6 +1,6 @@
 {
   "name": "@open-amt-cloud-toolkit/rps",
-  "version": "2.7.0",
+  "version": "2.8.0",
   "description": "Containerized RPS service for activating and configuring Intel&reg; AMT devices",
   "homepage": "https://github.com/open-amt-cloud-toolkit/rps",
   "contributors": [
@@ -50,11 +50,11 @@
     "exponential-backoff": "^3.1.0",
     "express": "^4.18.2",
     "express-promise-router": "^4.1.1",
-    "express-validator": "^6.14.3",
+    "express-validator": "^6.15.0",
     "express-ws": "^5.0.2",
     "got": "^11.8.6",
     "http-z": "^6.1.2",
-    "minimist": "^1.2.7",
+    "minimist": "^1.2.8",
     "mqtt": "^4.3.7",
     "node-forge": "^1.3.1",
     "pg": "^8.9.0",
@@ -62,9 +62,9 @@
     "rc": "^1.2.8",
     "uuid": "^9.0.0",
     "winston": "^3.8.2",
-    "ws": "^8.11.0",
+    "ws": "^8.12.1",
     "xml2js": "^0.4.23",
-    "xstate": "^4.35.4"
+    "xstate": "^4.36.0"
   },
   "devDependencies": {
     "@types/express": "^4.17.16",
@@ -73,9 +73,9 @@
     "@types/node-forge": "^1.3.1",
     "@types/pg": "^8.6.6",
     "@types/ws": "^8.5.4",
-    "@typescript-eslint/eslint-plugin": "^5.51.0",
-    "@typescript-eslint/parser": "^5.51.0",
-    "eslint": "^8.33.0",
+    "@typescript-eslint/eslint-plugin": "^5.52.0",
+    "@typescript-eslint/parser": "^5.52.0",
+    "eslint": "^8.34.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-config-standard-with-typescript": "^34.0.0",
     "eslint-plugin-import": "^2.27.5",

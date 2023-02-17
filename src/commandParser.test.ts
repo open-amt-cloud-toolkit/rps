@@ -14,6 +14,7 @@ function getBasicMessage (): ClientMsg {
     protocolVersion: '4.0.0',
     status: 'ok',
     message: "all's good!",
+    tenantId: '',
     payload: {
       ver: '11.8.50',
       build: '3425',

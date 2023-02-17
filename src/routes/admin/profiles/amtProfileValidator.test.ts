@@ -4,12 +4,12 @@
  **********************************************************************/
 
 import { validationResult } from 'express-validator'
-import { ClientAction } from '../../../models/RCS.Config'
+import { ClientAction, TlsMode, TlsSigningAuthority } from '../../../models/RCS.Config'
 import { AMTUserConsent } from '../../../models'
 import { amtProfileValidator, profileUpdateValidator } from './amtProfileValidator'
 import { createSpyObj } from '../../../test/helper/jest'
 
-describe('Profiles - Create', () => {
+describe('AMT Profile Validation', () => {
   const testExpressValidatorMiddleware = async (req: Request, res: Response, middlewares): Promise<void> => {
     await Promise.all(middlewares.map(async (middleware) => {
       await middleware(req, res, () => undefined)
@@ -20,7 +20,21 @@ describe('Profiles - Create', () => {
   let res
   beforeEach(() => {
     req = {
-      body: {},
+      body: {
+        profileName: 'acm',
+        activation: ClientAction.ADMINCTLMODE,
+        tags: ['acm'],
+        tlsMode: 2,
+        dhcpEnabled: false,
+        generateRandomPassword: false,
+        amtPassword: 'ABCabc123!@#',
+        generateRandomMEBxPassword: false,
+        mebxPassword: 'ABCabc123!@#',
+        userConsent: AMTUserConsent.NONE,
+        iderEnabled: true,
+        kvmEnabled: true,
+        solEnabled: true
+      },
       query: {}
     }
     res = createSpyObj('Response', ['status', 'json', 'end', 'send'])
@@ -29,47 +43,50 @@ describe('Profiles - Create', () => {
     res.send.mockReturnThis()
   })
 
-  it('should test amtProfileValidator', async () => {
-    req.body = {
-      profileName: 'acm',
-      activation: ClientAction.ADMINCTLMODE,
-      tags: ['acm'],
-      tlsMode: 2,
-      dhcpEnabled: false,
-      generateRandomPassword: false,
-      password: 'password',
-      generateRandomMEBxPassword: false,
-      mebxPassword: 'password',
-      userConsent: AMTUserConsent.NONE,
-      iderEnabled: true,
-      kvmEnabled: true,
-      solEnabled: true
-    }
-
-    await testExpressValidatorMiddleware(req, res, amtProfileValidator())
-    const result = validationResult(req)
-    expect(result.isEmpty()).toBeFalsy()
+  describe('Create', () => {
+    it('should pass on creation happy path', async () => {
+      await testExpressValidatorMiddleware(req, res, amtProfileValidator())
+      const errors = validationResult(req)
+      expect(errors.isEmpty()).toBeTruthy()
+    })
+    it('should pass on creation with valid TLS values', async () => {
+      req.body.tlsMode = TlsMode.MUTUAL_ONLY
+      req.body.tlsSigningAuthority = TlsSigningAuthority.MICROSOFT_CA
+      await testExpressValidatorMiddleware(req, res, amtProfileValidator())
+      const errors = validationResult(req)
+      expect(errors.isEmpty()).toBeTruthy()
+    })
+    it('should fail on creation with invalid TLS values', async () => {
+      req.body.tlsMode = 99
+      req.body.tlsSigningAuthority = 'not an option'
+      await testExpressValidatorMiddleware(req, res, amtProfileValidator())
+      const errors = validationResult(req)
+      const errMap = errors.mapped()
+      expect(errMap.tlsMode).toBeTruthy()
+      expect(errMap.tlsSigningAuthority).toBeTruthy()
+    })
   })
-
-  it('should test profileUpdateValidator', async () => {
-    req.body = {
-      profileName: 'acm',
-      activation: ClientAction.ADMINCTLMODE,
-      tags: ['acm'],
-      tlsMode: 2,
-      dhcpEnabled: false,
-      generateRandomPassword: false,
-      password: 'password',
-      generateRandomMEBxPassword: false,
-      mebxPassword: 'password',
-      userConsent: AMTUserConsent.NONE,
-      iderEnabled: true,
-      kvmEnabled: true,
-      solEnabled: true
-    }
-
-    await testExpressValidatorMiddleware(req, res, profileUpdateValidator())
-    const result = validationResult(req)
-    expect(result.isEmpty()).toBeFalsy()
+  describe('Update', () => {
+    it('should pass on update happy path', async () => {
+      await testExpressValidatorMiddleware(req, res, profileUpdateValidator())
+      const errors = validationResult(req)
+      expect(errors.isEmpty()).toBeTruthy()
+    })
+    it('should pass on update with valid TLS values', async () => {
+      req.body.tlsMode = TlsMode.MUTUAL_ONLY
+      req.body.tlsSigningAuthority = TlsSigningAuthority.MICROSOFT_CA
+      await testExpressValidatorMiddleware(req, res, profileUpdateValidator())
+      const errors = validationResult(req)
+      expect(errors.isEmpty()).toBeTruthy()
+    })
+    it('should fail on update with invalid TLS values', async () => {
+      req.body.tlsMode = 99
+      req.body.tlsSigningAuthority = 'not an option'
+      await testExpressValidatorMiddleware(req, res, profileUpdateValidator())
+      const errors = validationResult(req)
+      const errMap = errors.mapped()
+      expect(errMap.tlsMode).toBeTruthy()
+      expect(errMap.tlsSigningAuthority).toBeTruthy()
+    })
   })
 })

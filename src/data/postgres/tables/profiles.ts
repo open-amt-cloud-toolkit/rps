@@ -21,6 +21,7 @@ export class ProfilesTable implements IProfilesTable {
 
   /**
    * @description Get count of all profiles from DB
+   * @param {string} tenantId
    * @returns {number}
    */
   async getCount (tenantId: string = ''): Promise<number> {
@@ -39,6 +40,7 @@ export class ProfilesTable implements IProfilesTable {
    * @description Get all AMT Profiles from DB
    * @param {number} top
    * @param {number} skip
+   * @param {string} tenantId
    * @returns {Pagination} returns an array of AMT profiles from DB
    */
   async get (top: number = DEFAULT_TOP, skip: number = DEFAULT_SKIP, tenantId: string = ''): Promise<AMTConfiguration[]> {
@@ -57,6 +59,7 @@ export class ProfilesTable implements IProfilesTable {
       kvm_enabled as "kvmEnabled",
       sol_enabled as "solEnabled",
       p.tenant_id as "tenantId",
+      tls_signing_authority as "tlsSigningAuthority",
       p.xmin as "version",
       COALESCE(json_agg(json_build_object('profileName',wc.wireless_profile_name, 'priority', wc.priority)) FILTER (WHERE wc.wireless_profile_name IS NOT NULL), '[]') AS "wifiConfigs" 
     FROM profiles p
@@ -75,6 +78,7 @@ export class ProfilesTable implements IProfilesTable {
       ider_enabled,
       kvm_enabled,
       sol_enabled,
+      tls_signing_authority,
       p.tenant_id
     ORDER BY p.profile_name 
     LIMIT $1 OFFSET $2`, [top, skip, tenantId])
@@ -85,6 +89,7 @@ export class ProfilesTable implements IProfilesTable {
   /**
    * @description Get AMT Profile from DB by name
    * @param {string} profileName
+   * @param {string} tenantId
    * @returns {AMTConfiguration} AMT Profile object
    */
   async getByName (profileName: string, tenantId: string = ''): Promise<AMTConfiguration> {
@@ -103,6 +108,7 @@ export class ProfilesTable implements IProfilesTable {
       kvm_enabled as "kvmEnabled",
       sol_enabled as "solEnabled",
       p.tenant_id as "tenantId",
+      tls_signing_authority as "tlsSigningAuthority",
       p.xmin as "version",
       COALESCE(json_agg(json_build_object('profileName',wc.wireless_profile_name, 'priority', wc.priority)) FILTER (WHERE wc.wireless_profile_name IS NOT NULL), '[]') AS "wifiConfigs"
     FROM profiles p
@@ -121,6 +127,7 @@ export class ProfilesTable implements IProfilesTable {
       ider_enabled,
       kvm_enabled,
       sol_enabled,
+      tls_signing_authority,
       p.tenant_id
     `, [profileName, tenantId])
 
@@ -130,15 +137,17 @@ export class ProfilesTable implements IProfilesTable {
   /**
    * @description Get CIRA config from DB by name
    * @param {string} configName
+   * @param {string} tenantId
    * @returns {CIRAConfig} CIRA config object
    */
-  async getCiraConfigForProfile (configName: string): Promise<CIRAConfig> {
-    return await this.db.ciraConfigs.getByName(configName)
+  async getCiraConfigForProfile (configName: string, tenantId: string): Promise<CIRAConfig> {
+    return await this.db.ciraConfigs.getByName(configName, tenantId)
   }
 
   /**
    * @description Delete AMT Profile from DB by name
    * @param {string} profileName
+   * @param {string} tenantId
    * @returns {boolean} Return true on successful deletion
    */
   async delete (profileName: string, tenantId: string = ''): Promise<boolean> {
@@ -164,14 +173,14 @@ export class ProfilesTable implements IProfilesTable {
     try {
       const results = await this.db.query(`
         INSERT INTO profiles(
-          profile_name, activation, 
-          amt_password, generate_random_password, 
-          cira_config_name, 
-          mebx_password, generate_random_mebx_password, 
+          profile_name, activation,
+          amt_password, generate_random_password,
+          cira_config_name,
+          mebx_password, generate_random_mebx_password,
           tags, dhcp_enabled, tls_mode,
           user_consent, ider_enabled, kvm_enabled, sol_enabled,
-          tenant_id)
-        values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
+          tenant_id, tls_signing_authority)
+        values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`,
       [
         amtConfig.profileName,
         amtConfig.activation,
@@ -187,7 +196,8 @@ export class ProfilesTable implements IProfilesTable {
         amtConfig.iderEnabled,
         amtConfig.kvmEnabled,
         amtConfig.solEnabled,
-        amtConfig.tenantId
+        amtConfig.tenantId,
+        amtConfig.tlsSigningAuthority
       ])
 
       if (results.rowCount === 0) {
@@ -198,7 +208,7 @@ export class ProfilesTable implements IProfilesTable {
         await this.db.profileWirelessConfigs.createProfileWifiConfigs(amtConfig.wifiConfigs, amtConfig.profileName, amtConfig.tenantId)
       }
 
-      return await this.getByName(amtConfig.profileName)
+      return await this.getByName(amtConfig.profileName, amtConfig.tenantId)
     } catch (error) {
       this.log.error(`Failed to insert AMT profile: ${amtConfig.profileName}`, error)
       if (error instanceof RPSError) {
@@ -225,7 +235,7 @@ export class ProfilesTable implements IProfilesTable {
       const results = await this.db.query(`
       UPDATE profiles 
       SET activation=$2, amt_password=$3, generate_random_password=$4, cira_config_name=$5, mebx_password=$6, generate_random_mebx_password=$7, tags=$8, dhcp_enabled=$9, tls_mode=$10, user_consent=$13,
-      ider_enabled=$14, kvm_enabled=$15, sol_enabled=$16
+      ider_enabled=$14, kvm_enabled=$15, sol_enabled=$16, tls_signing_authority=$17
       WHERE profile_name=$1 and tenant_id = $11 and xmin = $12`,
       [
         amtConfig.profileName,
@@ -243,17 +253,18 @@ export class ProfilesTable implements IProfilesTable {
         amtConfig.userConsent,
         amtConfig.iderEnabled,
         amtConfig.kvmEnabled,
-        amtConfig.solEnabled
+        amtConfig.solEnabled,
+        amtConfig.tlsSigningAuthority
       ])
       if (results.rowCount > 0) {
         if (amtConfig.wifiConfigs?.length > 0) {
           await this.db.profileWirelessConfigs.createProfileWifiConfigs(amtConfig.wifiConfigs, amtConfig.profileName)
         }
-        latestItem = await this.getByName(amtConfig.profileName)
+        latestItem = await this.getByName(amtConfig.profileName, amtConfig.tenantId)
         return latestItem
       }
       // if rowcount is 0, we assume update failed and grab the current reflection of the record in the DB to be returned in the Concurrency Error
-      latestItem = await this.getByName(amtConfig.profileName)
+      latestItem = await this.getByName(amtConfig.profileName, amtConfig.tenantId)
     } catch (error) {
       this.log.error(`Failed to update AMT profile: ${amtConfig.profileName}`, error)
       if (error.code === '23503') { // Foreign key constraint violation

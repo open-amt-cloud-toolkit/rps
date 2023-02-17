@@ -16,7 +16,8 @@ describe('CIRA Config - Get', () => {
     req = {
       db: { ciraConfigs: { getByName: jest.fn() } },
       query: { },
-      params: { ciraConfigName: 'ciraConfig' }
+      params: { ciraConfigName: 'ciraConfig' },
+      tenantId: ''
     }
     getByNameSpy = jest.spyOn(req.db.ciraConfigs, 'getByName').mockResolvedValue({})
 
@@ -26,13 +27,13 @@ describe('CIRA Config - Get', () => {
   })
   it('should get', async () => {
     await getCiraConfig(req, resSpy)
-    expect(getByNameSpy).toHaveBeenCalledWith('ciraConfig')
+    expect(getByNameSpy).toHaveBeenCalledWith('ciraConfig', req.tenantId)
     expect(resSpy.status).toHaveBeenCalledWith(200)
   })
   it('should handle error', async () => {
     jest.spyOn(req.db.ciraConfigs, 'getByName').mockRejectedValue(null)
     await getCiraConfig(req, resSpy)
-    expect(getByNameSpy).toHaveBeenCalledWith('ciraConfig')
+    expect(getByNameSpy).toHaveBeenCalledWith('ciraConfig', req.tenantId)
     expect(resSpy.status).toHaveBeenCalledWith(500)
   })
 })

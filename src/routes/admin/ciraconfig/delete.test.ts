@@ -14,7 +14,7 @@ describe('CIRA Config - delete', () => {
     resSpy = createSpyObj('Response', ['status', 'json', 'end', 'send'])
     req = {
       db: { ciraConfigs: { delete: jest.fn() } },
-
+      tenantId: '',
       query: { },
       params: { ciraConfigName: 'ciraConfig' }
     }
@@ -35,7 +35,7 @@ describe('CIRA Config - delete', () => {
   it('should handle error', async () => {
     jest.spyOn(req.db.ciraConfigs, 'delete').mockRejectedValue(null)
     await deleteCiraConfig(req, resSpy)
-    expect(deleteSpy).toHaveBeenCalledWith('ciraConfig')
+    expect(deleteSpy).toHaveBeenCalledWith('ciraConfig', req.tenantId)
     expect(resSpy.status).toHaveBeenCalledWith(500)
   })
 })

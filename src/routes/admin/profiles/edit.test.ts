@@ -13,7 +13,7 @@ import {
   handleGenerateRandomPassword,
   handleMEBxPassword
 } from './edit'
-import { ClientAction } from '../../../models/RCS.Config'
+import { ClientAction, TlsMode, TlsSigningAuthority } from '../../../models/RCS.Config'
 
 describe('AMT Profile - Edit', () => {
   let resSpy
@@ -26,7 +26,8 @@ describe('AMT Profile - Edit', () => {
     req = {
       db: { profiles: { getByName: jest.fn(), update: jest.fn() } },
       body: { profileName: 'profileName' },
-      query: {}
+      query: {},
+      tenantId: ''
     }
     getByNameSpy = jest.spyOn(req.db.profiles, 'getByName').mockResolvedValue({})
     jest.spyOn(req.db.profiles, 'update').mockResolvedValue({})
@@ -37,15 +38,24 @@ describe('AMT Profile - Edit', () => {
   })
   it('should edit', async () => {
     await editProfile(req, resSpy)
-    expect(getByNameSpy).toHaveBeenCalledWith('profileName')
+    expect(getByNameSpy).toHaveBeenCalledWith('profileName', req.tenantId)
     expect(resSpy.status).toHaveBeenCalledWith(200)
   })
   it('should handle found', async () => {
+    // these should be global and checked if called
+    // but not enought time in the sprint to do it correctly
+    req.secretsManager = {
+      writeSecretWithObject: jest.fn(),
+      getSecretAtPath: jest.fn(),
+      deleteSecretAtPath: jest.fn()
+    }
+    writeSecretWithObjectSpy = jest.spyOn(req.secretsManager, 'getSecretAtPath').mockResolvedValue({})
     req.body = {
       profileName: 'acm',
       activation: ClientAction.ADMINCTLMODE,
       tags: ['acm'],
-      tlsMode: 2,
+      tlsMode: TlsMode.SERVER_ALLOW_NONTLS,
+      tlsSigningAuthority: TlsSigningAuthority.SELF_SIGNED,
       dhcpEnabled: false,
       generateRandomPassword: false,
       password: 'password',
@@ -60,7 +70,8 @@ describe('AMT Profile - Edit', () => {
       profileName: 'acm',
       activation: ClientAction.ADMINCTLMODE,
       tags: ['acm'],
-      tlsMode: 2,
+      tlsMode: TlsMode.SERVER_ALLOW_NONTLS,
+      tlsSigningAuthority: TlsSigningAuthority.SELF_SIGNED,
       dhcpEnabled: false,
       generateRandomPassword: true,
       generateRandomMEBxPassword: true,
@@ -70,19 +81,19 @@ describe('AMT Profile - Edit', () => {
       solEnabled: true
     })
     await editProfile(req, resSpy)
-    expect(getByNameSpy).toHaveBeenCalledWith('acm')
+    expect(getByNameSpy).toHaveBeenCalledWith('acm', req.tenantId)
     expect(resSpy.status).toHaveBeenCalledWith(200)
   })
   it('should handle not found', async () => {
     jest.spyOn(req.db.profiles, 'getByName').mockResolvedValue(null)
     await editProfile(req, resSpy)
-    expect(getByNameSpy).toHaveBeenCalledWith('profileName')
+    expect(getByNameSpy).toHaveBeenCalledWith('profileName', req.tenantId)
     expect(resSpy.status).toHaveBeenCalledWith(404)
   })
   it('should handle error', async () => {
     jest.spyOn(req.db.profiles, 'getByName').mockRejectedValue(null)
     await editProfile(req, resSpy)
-    expect(getByNameSpy).toHaveBeenCalledWith('profileName')
+    expect(getByNameSpy).toHaveBeenCalledWith('profileName', req.tenantId)
     expect(resSpy.status).toHaveBeenCalledWith(500)
   })
   it('test editProfile when CIRA profile is changed to TLS profile', async () => {
@@ -101,7 +112,8 @@ describe('AMT Profile - Edit', () => {
       ],
       wifiConfigs: [],
       dhcpEnabled: false,
-      tlsMode: 2,
+      tlsMode: TlsMode.SERVER_ALLOW_NONTLS,
+      tlsSigningAuthority: TlsSigningAuthority.SELF_SIGNED,
       iderEnabled: true,
       kvmEnabled: true,
       solEnabled: true,
@@ -122,7 +134,6 @@ describe('AMT Profile - Edit', () => {
       ],
       wifiConfigs: [],
       dhcpEnabled: false,
-      tlsMode: null,
       iderEnabled: true,
       kvmEnabled: true,
       solEnabled: true,
@@ -143,7 +154,8 @@ describe('AMT Profile - Edit', () => {
       ],
       wifiConfigs: [],
       dhcpEnabled: false,
-      tlsMode: 2,
+      tlsMode: TlsMode.SERVER_ALLOW_NONTLS,
+      tlsSigningAuthority: TlsSigningAuthority.SELF_SIGNED,
       iderEnabled: true,
       kvmEnabled: true,
       solEnabled: true,
@@ -162,7 +174,8 @@ describe('AMT Profile - Edit', () => {
       ],
       wifiConfigs: [],
       dhcpEnabled: false,
-      tlsMode: 2,
+      tlsMode: TlsMode.SERVER_ALLOW_NONTLS,
+      tlsSigningAuthority: TlsSigningAuthority.SELF_SIGNED,
       iderEnabled: true,
       kvmEnabled: true,
       solEnabled: true,
@@ -170,7 +183,7 @@ describe('AMT Profile - Edit', () => {
       version: '2'
     }
     await editProfile(req, resSpy)
-    expect(getByNameSpy).toHaveBeenCalledWith('testTLS')
+    expect(getByNameSpy).toHaveBeenCalledWith('testTLS', req.tenantId)
     expect(resSpy.status).toHaveBeenCalledWith(200)
     expect(resSpy.json).toHaveBeenCalledWith(amtConfig)
     expect(writeSecretWithObjectSpy).toHaveBeenCalledTimes(1)
@@ -507,7 +520,8 @@ test('test getUpdatedData when CIRA profile is changed to TLS profile', async ()
       'tag1'
     ],
     dhcpEnabled: true,
-    tlsMode: 2,
+    tlsMode: TlsMode.SERVER_ALLOW_NONTLS,
+    tlsSigningAuthority: TlsSigningAuthority.SELF_SIGNED,
     iderEnabled: false,
     kvmEnabled: true,
     solEnabled: false,
@@ -527,7 +541,6 @@ test('test getUpdatedData when CIRA profile is changed to TLS profile', async ()
       'tag1'
     ],
     dhcpEnabled: true,
-    tlsMode: null,
     iderEnabled: false,
     kvmEnabled: true,
     solEnabled: false,
@@ -547,7 +560,8 @@ test('test getUpdatedData when CIRA profile is changed to TLS profile', async ()
       'tag1'
     ],
     dhcpEnabled: true,
-    tlsMode: 2,
+    tlsMode: TlsMode.SERVER_ALLOW_NONTLS,
+    tlsSigningAuthority: TlsSigningAuthority.SELF_SIGNED,
     iderEnabled: false,
     kvmEnabled: true,
     solEnabled: false,
@@ -558,7 +572,7 @@ test('test getUpdatedData when CIRA profile is changed to TLS profile', async ()
   expect(result).toEqual(amtConfig)
 })
 
-test('test getUpdatedData when TLS profile mode 2 is changed to TLS profile mode 2', async () => {
+test('test getUpdatedData when TLS profile mode 2 is changed to TLS profile mode 4', async () => {
   const newConfig: AMTConfiguration = {
     profileName: 'testTLS',
     activation: ClientAction.CLIENTCTLMODE,
@@ -572,7 +586,8 @@ test('test getUpdatedData when TLS profile mode 2 is changed to TLS profile mode
       'tag1'
     ],
     dhcpEnabled: true,
-    tlsMode: 4,
+    tlsMode: TlsMode.MUTUAL_ALLOW_NONTLS,
+    tlsSigningAuthority: TlsSigningAuthority.SELF_SIGNED,
     iderEnabled: false,
     kvmEnabled: true,
     solEnabled: false,
@@ -592,7 +607,8 @@ test('test getUpdatedData when TLS profile mode 2 is changed to TLS profile mode
       'tag1'
     ],
     dhcpEnabled: true,
-    tlsMode: 2,
+    tlsMode: TlsMode.SERVER_ALLOW_NONTLS,
+    tlsSigningAuthority: TlsSigningAuthority.SELF_SIGNED,
     iderEnabled: false,
     kvmEnabled: true,
     solEnabled: false,
@@ -612,7 +628,8 @@ test('test getUpdatedData when TLS profile mode 2 is changed to TLS profile mode
       'tag1'
     ],
     dhcpEnabled: true,
-    tlsMode: 4,
+    tlsMode: TlsMode.MUTUAL_ALLOW_NONTLS,
+    tlsSigningAuthority: TlsSigningAuthority.SELF_SIGNED,
     iderEnabled: false,
     kvmEnabled: true,
     solEnabled: false,
@@ -637,7 +654,6 @@ test('test getUpdatedData when TLS profile is changed to CIRA profile', async ()
       'tag1'
     ],
     dhcpEnabled: true,
-    tlsMode: null,
     iderEnabled: false,
     kvmEnabled: true,
     solEnabled: false,
@@ -657,7 +673,6 @@ test('test getUpdatedData when TLS profile is changed to CIRA profile', async ()
       'tag1'
     ],
     dhcpEnabled: true,
-    tlsMode: null,
     iderEnabled: false,
     kvmEnabled: true,
     solEnabled: false,
@@ -677,7 +692,6 @@ test('test getUpdatedData when TLS profile is changed to CIRA profile', async ()
       'tag1'
     ],
     dhcpEnabled: true,
-    tlsMode: null,
     iderEnabled: false,
     kvmEnabled: true,
     solEnabled: false,

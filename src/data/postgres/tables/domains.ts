@@ -134,7 +134,7 @@ export class DomainsTable implements IDomainsTable {
         amtDomain.tenantId
       ])
       if (results.rowCount > 0) {
-        const domain = await this.getByName(amtDomain.profileName)
+        const domain = await this.getByName(amtDomain.profileName, amtDomain.tenantId)
         return domain
       }
       return null
@@ -168,7 +168,7 @@ export class DomainsTable implements IDomainsTable {
         amtDomain.tenantId,
         amtDomain.version
       ])
-      latestItem = await this.getByName(amtDomain.profileName)
+      latestItem = await this.getByName(amtDomain.profileName, amtDomain.tenantId)
       if (results.rowCount > 0) {
         return latestItem
       }

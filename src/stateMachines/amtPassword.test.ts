@@ -105,7 +105,6 @@ describe('AMT Password State Machine', () => {
       'SUCCESS'
     ]
     const amtPwdService = interpret(mockAmtPwdMachine).onTransition((state) => {
-      console.log(state.value)
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('SUCCESS') && currentStateIndex === flowStates.length) {
         done()
@@ -126,7 +125,6 @@ describe('AMT Password State Machine', () => {
       'FAILED'
     ]
     const amtPwdService = interpret(mockAmtPwdMachine).onTransition((state) => {
-      console.log(state.value)
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
         done()

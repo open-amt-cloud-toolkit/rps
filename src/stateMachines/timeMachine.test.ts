@@ -56,7 +56,6 @@ describe('TLS State Machine', () => {
     ]
 
     const timeMachineService = interpret(timeMachineStateMachine).onTransition((state) => {
-      console.log(state.value)
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('SUCCESS') && currentStateIndex === flowStates.length) {
         done()

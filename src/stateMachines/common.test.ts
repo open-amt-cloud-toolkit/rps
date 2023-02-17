@@ -4,17 +4,20 @@
  **********************************************************************/
 
 import { HttpHandler } from '../HttpHandler'
+import Logger from '../Logger'
 import ClientResponseMsg from '../utils/ClientResponseMsg'
 import { devices } from '../WebSocketListener'
-import { invokeWsmanCall } from './common'
 import { UNEXPECTED_PARSE_ERROR } from '../utils/constants'
 import { v4 as uuid } from 'uuid'
+import * as enterpriseAssistantListener from '../WSEnterpriseAssistantListener'
+import { invokeEnterpriseAssistantCall, invokeWsmanCall } from './common'
 
 describe('Common', () => {
   const clientId = uuid()
   let sendSpy
   let responseMessageSpy: jest.SpyInstance
   let wrapItSpy: jest.SpyInstance
+  let enterpriseAssistantSocketSendSpy: jest.SpyInstance
   const context = {
     message: '',
     clientId,
@@ -36,6 +39,12 @@ describe('Common', () => {
     wrapItSpy = jest.spyOn(context.httpHandler, 'wrapIt')
     responseMessageSpy = jest.spyOn(ClientResponseMsg, 'get')
     sendSpy = jest.spyOn(devices[clientId].ClientSocket, 'send').mockReturnValue()
+    const x = new enterpriseAssistantListener.WSEnterpriseAssistantListener(new Logger('test'), null)
+    x.onClientConnected({
+      send: jest.fn(),
+      on: jest.fn()
+    } as any)
+    enterpriseAssistantSocketSendSpy = jest.spyOn(enterpriseAssistantListener.enterpriseAssistantSocket, 'send').mockImplementation(() => ({} as any))
   })
   it('should send a WSMan message once with successful reply', async () => {
     const expected = '123'
@@ -92,5 +101,13 @@ describe('Common', () => {
     await devices[clientId].reject(expected)
     await expect(wsmanPromise).rejects.toEqual(expected)
     expect(sendSpy).toHaveBeenCalledTimes(2)
+  })
+  it('should send an enterprise-assistant message', async () => {
+    void invokeEnterpriseAssistantCall(context)
+
+    expect(enterpriseAssistantSocketSendSpy).toHaveBeenCalled()
+    expect(enterpriseAssistantListener.promises[clientId].pendingPromise).toBeDefined()
+    expect(enterpriseAssistantListener.promises[clientId].resolve).toBeDefined()
+    expect(enterpriseAssistantListener.promises[clientId].reject).toBeDefined()
   })
 })

@@ -5,19 +5,10 @@
 
 // ./routes/index.js
 import adminRouter from './admin/index'
-import { Router, type Request, type Response } from 'express'
+import { Router } from 'express'
 
 const router: Router = Router()
 
-const tenantMiddleware = (req: Request, res: Response, next): void => {
-  req.tenantId = req.headers['x-tenant-id'] as string ?? ''
-  req.next()
-}
-
-router.use('/admin', tenantMiddleware, adminRouter)
-
-router.get('/', (req: Request, res: Response) => {
-  res.status(200).json({ message: 'Connected!' })
-})
+router.use('/admin', adminRouter)
 
 export default router

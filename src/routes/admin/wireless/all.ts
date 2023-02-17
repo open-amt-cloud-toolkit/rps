@@ -17,7 +17,7 @@ export async function allProfiles (req: Request, res: Response): Promise<void> {
   const skip = Number(req.query.$skip)
   const includeCount = req.query.$count
   try {
-    let wirelessConfigs: WirelessConfig[] = await req.db.wirelessProfiles.get(top, skip)
+    let wirelessConfigs: WirelessConfig[] = await req.db.wirelessProfiles.get(top, skip, req.tenantId)
     if (wirelessConfigs.length >= 0) {
       wirelessConfigs = wirelessConfigs.map((result: WirelessConfig) => {
         delete result.pskPassphrase
@@ -27,7 +27,7 @@ export async function allProfiles (req: Request, res: Response): Promise<void> {
     if (includeCount == null || includeCount === 'false') {
       res.status(200).json(API_RESPONSE(wirelessConfigs)).end()
     } else {
-      const count: number = await req.db.wirelessProfiles.getCount()
+      const count: number = await req.db.wirelessProfiles.getCount(req.tenantId)
       const dataWithCount: DataWithCount = {
         data: wirelessConfigs,
         totalCount: count

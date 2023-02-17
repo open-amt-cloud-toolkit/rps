@@ -31,7 +31,8 @@ describe('profiles tests', () => {
       userConsent: AMTUserConsent.ALL,
       iderEnabled: true,
       kvmEnabled: true,
-      solEnabled: true
+      solEnabled: true,
+      tlsSigningAuthority: null
     }
     db = new PostgresDb('')
     profilesTable = new ProfilesTable(db)
@@ -72,6 +73,7 @@ describe('profiles tests', () => {
       kvm_enabled as "kvmEnabled",
       sol_enabled as "solEnabled",
       p.tenant_id as "tenantId",
+      tls_signing_authority as "tlsSigningAuthority",
       p.xmin as "version",
       COALESCE(json_agg(json_build_object('profileName',wc.wireless_profile_name, 'priority', wc.priority)) FILTER (WHERE wc.wireless_profile_name IS NOT NULL), '[]') AS "wifiConfigs" 
     FROM profiles p
@@ -90,6 +92,7 @@ describe('profiles tests', () => {
       ider_enabled,
       kvm_enabled,
       sol_enabled,
+      tls_signing_authority,
       p.tenant_id
     ORDER BY p.profile_name 
     LIMIT $1 OFFSET $2`, [DEFAULT_TOP, DEFAULT_SKIP, ''])
@@ -115,6 +118,7 @@ describe('profiles tests', () => {
       kvm_enabled as "kvmEnabled",
       sol_enabled as "solEnabled",
       p.tenant_id as "tenantId",
+      tls_signing_authority as "tlsSigningAuthority",
       p.xmin as "version",
       COALESCE(json_agg(json_build_object('profileName',wc.wireless_profile_name, 'priority', wc.priority)) FILTER (WHERE wc.wireless_profile_name IS NOT NULL), '[]') AS "wifiConfigs"
     FROM profiles p
@@ -133,6 +137,7 @@ describe('profiles tests', () => {
       ider_enabled,
       kvm_enabled,
       sol_enabled,
+      tls_signing_authority,
       p.tenant_id
     `, [profileName, ''])
     })
@@ -144,9 +149,9 @@ describe('profiles tests', () => {
     test('should get ciraconfig for profile', async () => {
       const ciraConfigSpy = jest.spyOn(db.ciraConfigs, 'getByName')
       ciraConfigSpy.mockResolvedValue({} as any)
-      const result = await profilesTable.getCiraConfigForProfile(profileName)
+      const result = await profilesTable.getCiraConfigForProfile(profileName, '')
       expect(result).toStrictEqual({})
-      expect(ciraConfigSpy).toHaveBeenCalledWith(profileName)
+      expect(ciraConfigSpy).toHaveBeenCalledWith(profileName, '')
     })
   })
   describe('Delete', () => {
@@ -188,18 +193,18 @@ describe('profiles tests', () => {
 
       expect(result).toBe(amtConfig)
       expect(profileWirelessConfigsSpy).toHaveBeenCalledWith(amtConfig.wifiConfigs, amtConfig.profileName, amtConfig.tenantId)
-      expect(getByNameSpy).toHaveBeenCalledWith(amtConfig.profileName)
+      expect(getByNameSpy).toHaveBeenCalledWith(amtConfig.profileName, amtConfig.tenantId)
       expect(querySpy).toBeCalledTimes(1)
       expect(querySpy).toBeCalledWith(`
         INSERT INTO profiles(
-          profile_name, activation, 
-          amt_password, generate_random_password, 
-          cira_config_name, 
-          mebx_password, generate_random_mebx_password, 
+          profile_name, activation,
+          amt_password, generate_random_password,
+          cira_config_name,
+          mebx_password, generate_random_mebx_password,
           tags, dhcp_enabled, tls_mode,
           user_consent, ider_enabled, kvm_enabled, sol_enabled,
-          tenant_id)
-        values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`, [
+          tenant_id, tls_signing_authority)
+        values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`, [
         amtConfig.profileName,
         amtConfig.activation,
         amtConfig.amtPassword,
@@ -214,7 +219,8 @@ describe('profiles tests', () => {
         amtConfig.iderEnabled,
         amtConfig.kvmEnabled,
         amtConfig.solEnabled,
-        amtConfig.tenantId
+        amtConfig.tenantId,
+        amtConfig.tlsSigningAuthority
       ])
     })
     test('should insert without wificonfigs', async () => {
@@ -227,18 +233,18 @@ describe('profiles tests', () => {
 
       expect(result).toBe(amtConfig)
       expect(profileWirelessConfigsSpy).not.toHaveBeenCalledWith(amtConfig.wifiConfigs, amtConfig.profileName, amtConfig.tenantId)
-      expect(getByNameSpy).toHaveBeenCalledWith(amtConfig.profileName)
+      expect(getByNameSpy).toHaveBeenCalledWith(amtConfig.profileName, amtConfig.tenantId)
       expect(querySpy).toBeCalledTimes(1)
       expect(querySpy).toBeCalledWith(`
         INSERT INTO profiles(
-          profile_name, activation, 
-          amt_password, generate_random_password, 
-          cira_config_name, 
-          mebx_password, generate_random_mebx_password, 
+          profile_name, activation,
+          amt_password, generate_random_password,
+          cira_config_name,
+          mebx_password, generate_random_mebx_password,
           tags, dhcp_enabled, tls_mode,
           user_consent, ider_enabled, kvm_enabled, sol_enabled,
-          tenant_id)
-        values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`, [
+          tenant_id, tls_signing_authority)
+        values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`, [
         amtConfig.profileName,
         amtConfig.activation,
         amtConfig.amtPassword,
@@ -253,7 +259,8 @@ describe('profiles tests', () => {
         amtConfig.iderEnabled,
         amtConfig.kvmEnabled,
         amtConfig.solEnabled,
-        amtConfig.tenantId
+        amtConfig.tenantId,
+        amtConfig.tlsSigningAuthority
       ])
     })
     test('should NOT insert when duplicate name', async () => {
@@ -285,7 +292,7 @@ describe('profiles tests', () => {
       expect(querySpy).toBeCalledWith(`
       UPDATE profiles 
       SET activation=$2, amt_password=$3, generate_random_password=$4, cira_config_name=$5, mebx_password=$6, generate_random_mebx_password=$7, tags=$8, dhcp_enabled=$9, tls_mode=$10, user_consent=$13,
-      ider_enabled=$14, kvm_enabled=$15, sol_enabled=$16
+      ider_enabled=$14, kvm_enabled=$15, sol_enabled=$16, tls_signing_authority=$17
       WHERE profile_name=$1 and tenant_id = $11 and xmin = $12`,
       [
         amtConfig.profileName,
@@ -303,7 +310,8 @@ describe('profiles tests', () => {
         amtConfig.userConsent,
         amtConfig.iderEnabled,
         amtConfig.kvmEnabled,
-        amtConfig.solEnabled
+        amtConfig.solEnabled,
+        amtConfig.tlsSigningAuthority
       ])
     })
     test('should update with wificonfigs', async () => {
@@ -320,7 +328,7 @@ describe('profiles tests', () => {
       expect(querySpy).toBeCalledWith(`
       UPDATE profiles 
       SET activation=$2, amt_password=$3, generate_random_password=$4, cira_config_name=$5, mebx_password=$6, generate_random_mebx_password=$7, tags=$8, dhcp_enabled=$9, tls_mode=$10, user_consent=$13,
-      ider_enabled=$14, kvm_enabled=$15, sol_enabled=$16
+      ider_enabled=$14, kvm_enabled=$15, sol_enabled=$16, tls_signing_authority=$17
       WHERE profile_name=$1 and tenant_id = $11 and xmin = $12`,
       [
         amtConfig.profileName,
@@ -338,7 +346,8 @@ describe('profiles tests', () => {
         amtConfig.userConsent,
         amtConfig.iderEnabled,
         amtConfig.kvmEnabled,
-        amtConfig.solEnabled
+        amtConfig.solEnabled,
+        amtConfig.tlsSigningAuthority
       ])
     })
 

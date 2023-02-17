@@ -17,7 +17,7 @@ export async function allCiraConfigs (req: Request, res: Response): Promise<void
   const skip = Number(req.query.$skip)
   const includeCount = req.query.$count
   try {
-    let ciraConfigs: CIRAConfig[] = await req.db.ciraConfigs.get(top, skip)
+    let ciraConfigs: CIRAConfig[] = await req.db.ciraConfigs.get(top, skip, req.tenantId)
     if (ciraConfigs.length >= 0) {
       ciraConfigs = ciraConfigs.map((result: CIRAConfig) => {
         delete result.password
@@ -27,7 +27,7 @@ export async function allCiraConfigs (req: Request, res: Response): Promise<void
     if (includeCount == null || includeCount === 'false') {
       res.status(200).json(API_RESPONSE(ciraConfigs))
     } else {
-      const count: number = await req.db.ciraConfigs.getCount()
+      const count: number = await req.db.ciraConfigs.getCount(req.tenantId)
       const dataWithCount: DataWithCount = {
         data: ciraConfigs,
         totalCount: count
