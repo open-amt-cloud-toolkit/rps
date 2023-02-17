@@ -584,8 +584,8 @@ export class Activation {
         console.log(`AMT Features State: ${childState.value}`)
       })
     }
-    if (state.children['tls-configuration-machine'] != null) {
-      state.children['tls-configuration-machine'].subscribe((childState) => {
+    if (state.children['tls-machine'] != null) {
+      state.children['tls-machine'].subscribe((childState) => {
         console.log(`TLS State: ${childState.value}`)
       })
     }
