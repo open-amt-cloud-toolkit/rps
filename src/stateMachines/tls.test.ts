@@ -10,6 +10,8 @@ import { TLS, type TLSContext } from './tls'
 import * as common from './common'
 import * as forge from 'node-forge'
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
+import { UNEXPECTED_PARSE_ERROR } from '../utils/constants'
+import { wsmanAlreadyExistsAllChunks } from '../test/helper/AMTMessages'
 
 describe('TLS State Machine', () => {
   let tls: TLS
@@ -73,6 +75,13 @@ describe('TLS State Machine', () => {
   jest.setTimeout(15000)
   it('should configure TLS', (done) => {
     context.amtProfile = { tlsMode: 3, tlsSigningAuthoritys: 'SelfSigned' } as any
+    // already existing error case is covered with this reject
+    // eslint-disable-next-line prefer-promise-reject-errors
+    config.services['create-tls-credential-context'] = Promise.reject({
+      body: {
+        text: wsmanAlreadyExistsAllChunks
+      }
+    })
     const tlsStateMachine = tls.machine.withConfig(config).withContext(context)
     const flowStates = [
       'PROVISIONED',
@@ -97,6 +106,35 @@ describe('TLS State Machine', () => {
     const tlsService = interpret(tlsStateMachine).onTransition((state) => {
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('SUCCESS') && currentStateIndex === flowStates.length) {
+        done()
+      }
+    })
+
+    tlsService.start()
+    tlsService.send({ type: 'CONFIGURE_TLS', clientId })
+  })
+
+  it('should retry', (done) => {
+    context.amtProfile = { tlsMode: 3, tlsSigningAuthoritys: 'SelfSigned' } as any
+    config.services['pull-public-key-certificate'] = Promise.reject(UNEXPECTED_PARSE_ERROR)
+    const tlsStateMachine = tls.machine.withConfig(config).withContext(context)
+    const flowStates = [
+      'PROVISIONED',
+      'ENUMERATE_PUBLIC_KEY_CERTIFICATE',
+      'PULL_PUBLIC_KEY_CERTIFICATE',
+      'ENUMERATE_PUBLIC_KEY_CERTIFICATE',
+      'PULL_PUBLIC_KEY_CERTIFICATE',
+      'ENUMERATE_PUBLIC_KEY_CERTIFICATE',
+      'PULL_PUBLIC_KEY_CERTIFICATE',
+      'ENUMERATE_PUBLIC_KEY_CERTIFICATE',
+      'PULL_PUBLIC_KEY_CERTIFICATE',
+      'FAILED'
+    ]
+
+    const tlsService = interpret(tlsStateMachine).onTransition((state) => {
+      const expected = flowStates[currentStateIndex++]
+      expect(state.matches(expected)).toBe(true)
+      if (state.matches('FAILED') || currentStateIndex === flowStates.length) {
         done()
       }
     })
