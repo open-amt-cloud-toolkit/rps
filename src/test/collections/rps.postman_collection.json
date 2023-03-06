@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "77039974-d752-4bea-912f-b765f6262a23",
+		"_postman_id": "45a07e63-5f50-40fa-9961-20101771511f",
 		"name": "RPS API Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "2229705"
+		"_exporter_id": "2243498"
 	},
 	"item": [
 		{
@@ -2642,6 +2642,106 @@
 					"response": []
 				},
 				{
+					"name": "Create CIRA Config with invalid configname containing spaces",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"pm.test(\"Creation should fail\", function () {\r",
+									"    var result = pm.response.json();\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"CIRA profile name accepts letters, numbers and no spaces\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"configName\")\r",
+									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\t\"configName\": \"cira config2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"ciraconfigs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create CIRA Config with invalid configname containing special characters",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"pm.test(\"Creation should fail\", function () {\r",
+									"    var result = pm.response.json();\r",
+									"    pm.expect(result.errors[0].msg).to.eql(\"CIRA profile name accepts letters, numbers and no spaces\")\r",
+									"    pm.expect(result.errors[0].param).to.eql(\"configName\")\r",
+									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\t\"configName\": \"cira$%config2\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"admin\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"ciraconfigs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Create CIRA Config",
 					"event": [
 						{
@@ -2663,7 +2763,11 @@
 									"\tpm.expect(result.authMethod).to.eql(2),\r",
 									"\tpm.expect(result.mpsRootCertificate).to.eql(\"rootcert\"),\r",
 									"\tpm.expect(result.proxyDetails).to.eql(\"\")\r",
-									"});"
+									"});\r",
+									"\r",
+									"var result = pm.response.json();\r",
+									"pm.globals.set(\"recordVersion\", result.version)\r",
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -3546,7 +3650,10 @@
 									"        pm.expect(jsonData.authMethod).to.eql(2)\r",
 									"        pm.expect(jsonData.mpsRootCertificate).to.eql(\"rootcert\")\r",
 									"        pm.expect(jsonData.proxyDetails).to.eql(\"\")\r",
-									"    });"
+									"    });\r",
+									"\r",
+									"var result = pm.response.json();\r",
+									"pm.globals.set(\"recordVersion\", result.version)"
 								],
 								"type": "text/javascript"
 							}
@@ -3563,7 +3670,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.55\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"commonName\": \"192.168.8.55\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\",\r\n    \"regeneratePassword\": false,\r\n    \"version\" : \"755\"\r\n}\r\n"
+							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.55\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"commonName\": \"192.168.8.55\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\",\r\n    \"regeneratePassword\": false,\r\n    \"version\" : \"{{recordVersion}}\"\r\n}\r\n"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -3619,7 +3726,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.55\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"commonName\": \"192.168.8.55\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\",\r\n    \"regeneratePassword\": false,\r\n    \"version\" : \"123\"\r\n}\r\n"
+							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.55\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"commonName\": \"192.168.8.55\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\",\r\n    \"regeneratePassword\": false,\r\n    \"version\" : \"11111\"\r\n}\r\n"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -3719,7 +3826,10 @@
 									"        pm.expect(jsonData.authMethod).to.eql(2)\r",
 									"        pm.expect(jsonData.mpsRootCertificate).to.eql(\"rootcert\")\r",
 									"        pm.expect(jsonData.proxyDetails).to.eql(\"\")\r",
-									"    });"
+									"    });\r",
+									"    \r",
+									"var result = pm.response.json();\r",
+									"pm.globals.set(\"recordVersion\", result.version)"
 								],
 								"type": "text/javascript"
 							}
@@ -3736,7 +3846,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.55\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"commonName\": \"192.168.8.55\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\",\r\n    \"regeneratePassword\": true,\r\n    \"version\": \"759\"\r\n}\r\n"
+							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.55\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"commonName\": \"192.168.8.55\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\",\r\n    \"regeneratePassword\": true,\r\n    \"version\": \"{{recordVersion}}\"\r\n}\r\n"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -3775,7 +3885,10 @@
 									"        pm.expect(jsonData.authMethod).to.eql(2)\r",
 									"        pm.expect(jsonData.mpsRootCertificate).to.eql(\"rootcert\")\r",
 									"        pm.expect(jsonData.proxyDetails).to.eql(\"\")\r",
-									"    });"
+									"    });\r",
+									"\r",
+									"var result = pm.response.json();\r",
+									"pm.globals.set(\"CIRAversion\", result.version)"
 								],
 								"type": "text/javascript"
 							}
@@ -3792,7 +3905,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"configName\": \"ciraConfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.5\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"commonName\": \"192.168.8.5\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\",\r\n    \"version\": \"760\"\r\n}\r\n"
+							"raw": "{\r\n    \"configName\": \"ciraConfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.5\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"commonName\": \"192.168.8.5\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\",\r\n    \"version\": \"{{recordVersion}}\"\r\n}\r\n"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
