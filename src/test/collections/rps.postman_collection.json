@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "45a07e63-5f50-40fa-9961-20101771511f",
+		"_postman_id": "8bbe22f6-4d72-4af9-a08f-1eff56bc6ba7",
 		"name": "RPS API Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "2243498"
+		"_exporter_id": "25986370"
 	},
 	"item": [
 		{
@@ -591,6 +591,9 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"var result = pm.response.json();\r",
+									"pm.globals.set(\"domainVersion\", result.version);\r",
+									"\r",
 									"pm.test(\"Status code is 201\", function () {\r",
 									"    pm.response.to.have.status(201);\r",
 									"});\r",
@@ -1027,6 +1030,9 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"var result = pm.response.json();\r",
+									"pm.globals.set(\"domainVersion\", result.version);\r",
+									"\r",
 									"pm.test(\"Status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
@@ -1052,7 +1058,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"newvprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\",\r\n    \"version\": \"744\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"newvprodemo.com\",\r\n    \"provisioningCert\": \"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\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\",\r\n    \"version\": {{domainVersion}}\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
@@ -1201,7 +1207,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"test.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\",\r\n    \"version\": \"748\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"test.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"P@ssw0rd\",\r\n    \"version\": {{domainVersion}}\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
@@ -1226,6 +1232,9 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"var result = pm.response.json();\r",
+									"pm.globals.set(\"domainVersion\", result.version);\r",
+									"\r",
 									"pm.test(\"Status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
@@ -1252,7 +1261,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"newvprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"Intel123!\",\r\n    \"version\": \"748\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"newvprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"Intel123!\",\r\n    \"version\": {{domainVersion}}\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
@@ -1303,7 +1312,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"newvprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"01234567890123456789012345678901234567890123456789012345678901234\",\r\n    \"version\": \"750\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"newvprodemo.com\",\r\n    \"provisioningCert\": \"test\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"01234567890123456789012345678901234567890123456789012345678901234\",\r\n    \"version\": {{domainVersion}}\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
@@ -1331,6 +1340,7 @@
 									"pm.test(\"Status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
+									"\r",
 									"pm.test(\"Result should be equal to payload\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.profileName).to.eql(\"vprodemo\")\r",
@@ -1353,7 +1363,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"newvprodemo.com\",\r\n    \"provisioningCert\": \"provisioning certificate\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"Intel123!\",\r\n    \"version\": \"750\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"vprodemo\",\r\n    \"domainSuffix\": \"newvprodemo.com\",\r\n    \"provisioningCert\": \"provisioning certificate\",\r\n    \"provisioningCertStorageFormat\": \"raw\",\r\n    \"provisioningCertPassword\": \"Intel123!\",\r\n    \"version\": {{domainVersion}}\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/domains",
@@ -3171,6 +3181,9 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"var result = pm.response.json();\r",
+									"pm.globals.set(\"ciraVersion\", result[0].version);\r",
+									"\r",
 									"pm.test(\"Status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
@@ -3636,16 +3649,19 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"var result = pm.response.json();\r",
+									"pm.globals.set(\"ciraVersion\", result.version);\r",
+									"\r",
 									"pm.test(\"Status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
 									" pm.test(\"Result should be equal to example\", function () {\r",
 									"        var jsonData = pm.response.json();\r",
 									"        pm.expect(jsonData.configName).to.eql(\"ciraconfig2\")\r",
-									"        pm.expect(jsonData.mpsServerAddress).to.eql(\"192.168.8.55\")\r",
+									"        pm.expect(jsonData.mpsServerAddress).to.eql(\"192.168.8.50\")\r",
 									"        pm.expect(jsonData.mpsPort).to.eql(4433)\r",
 									"        pm.expect(jsonData.username).to.eql(\"admin\")\r",
-									"        pm.expect(jsonData.commonName).to.eql(\"192.168.8.55\")\r",
+									"        pm.expect(jsonData.commonName).to.eql(\"192.168.8.50\")\r",
 									"        pm.expect(jsonData.serverAddressFormat).to.eql(3)\r",
 									"        pm.expect(jsonData.authMethod).to.eql(2)\r",
 									"        pm.expect(jsonData.mpsRootCertificate).to.eql(\"rootcert\")\r",
@@ -3670,7 +3686,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.55\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"commonName\": \"192.168.8.55\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\",\r\n    \"regeneratePassword\": false,\r\n    \"version\" : \"{{recordVersion}}\"\r\n}\r\n"
+							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.50\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"commonName\": \"192.168.8.50\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\",\r\n    \"regeneratePassword\": false,\r\n    \"version\" : {{ciraVersion}}\r\n}\r\n"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -3701,10 +3717,10 @@
 									" pm.test(\"Result should be equal to example\", function () {\r",
 									"        var jsonData = pm.response.json();\r",
 									"        pm.expect(jsonData.configName).to.eql(\"ciraconfig2\")\r",
-									"        pm.expect(jsonData.mpsServerAddress).to.eql(\"192.168.8.55\")\r",
+									"        pm.expect(jsonData.mpsServerAddress).to.eql(\"192.168.8.50\")\r",
 									"        pm.expect(jsonData.mpsPort).to.eql(4433)\r",
 									"        pm.expect(jsonData.username).to.eql(\"admin\")\r",
-									"        pm.expect(jsonData.commonName).to.eql(\"192.168.8.55\")\r",
+									"        pm.expect(jsonData.commonName).to.eql(\"192.168.8.50\")\r",
 									"        pm.expect(jsonData.serverAddressFormat).to.eql(3)\r",
 									"        pm.expect(jsonData.authMethod).to.eql(2)\r",
 									"        pm.expect(jsonData.mpsRootCertificate).to.eql(\"rootcert\")\r",
@@ -3726,7 +3742,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.55\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"commonName\": \"192.168.8.55\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\",\r\n    \"regeneratePassword\": false,\r\n    \"version\" : \"11111\"\r\n}\r\n"
+							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.50\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"commonName\": \"192.168.8.50\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\",\r\n    \"regeneratePassword\": false,\r\n    \"version\" : \"123\"\r\n}\r\n"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -3757,10 +3773,10 @@
 									"pm.test(\"Result should be equal to example\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.configName).to.eql(\"ciraconfig2\")\r",
-									"    pm.expect(jsonData.mpsServerAddress).to.eql(\"192.168.8.55\")\r",
+									"    pm.expect(jsonData.mpsServerAddress).to.eql(\"192.168.8.50\")\r",
 									"    pm.expect(jsonData.mpsPort).to.eql(4433)\r",
 									"    pm.expect(jsonData.username).to.eql(\"admin\")\r",
-									"    pm.expect(jsonData.commonName).to.eql(\"192.168.8.55\")\r",
+									"    pm.expect(jsonData.commonName).to.eql(\"192.168.8.50\")\r",
 									"    pm.expect(jsonData.serverAddressFormat).to.eql(3)\r",
 									"    pm.expect(jsonData.authMethod).to.eql(2)\r",
 									"    pm.expect(jsonData.mpsRootCertificate).to.eql(\"rootcert\")\r",
@@ -3787,7 +3803,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.55\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"commonName\": \"192.168.8.55\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\",\r\n    \"regeneratePassword\": false,\r\n    \"version\" : \"123\"\r\n}\r\n"
+							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.50\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"commonName\": \"192.168.8.50\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\",\r\n    \"regeneratePassword\": false,\r\n    \"version\" : \"123\"\r\n}\r\n"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -3812,16 +3828,19 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"var result = pm.response.json();\r",
+									"pm.globals.set(\"ciraVersion\", result.version);\r",
+									"\r",
 									"pm.test(\"Status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
 									" pm.test(\"Result should be equal to example\", function () {\r",
 									"        var jsonData = pm.response.json();\r",
 									"        pm.expect(jsonData.configName).to.eql(\"ciraconfig2\")\r",
-									"        pm.expect(jsonData.mpsServerAddress).to.eql(\"192.168.8.55\")\r",
+									"        pm.expect(jsonData.mpsServerAddress).to.eql(\"192.168.8.50\")\r",
 									"        pm.expect(jsonData.mpsPort).to.eql(4433)\r",
 									"        pm.expect(jsonData.username).to.eql(\"admin\")\r",
-									"        pm.expect(jsonData.commonName).to.eql(\"192.168.8.55\")\r",
+									"        pm.expect(jsonData.commonName).to.eql(\"192.168.8.50\")\r",
 									"        pm.expect(jsonData.serverAddressFormat).to.eql(3)\r",
 									"        pm.expect(jsonData.authMethod).to.eql(2)\r",
 									"        pm.expect(jsonData.mpsRootCertificate).to.eql(\"rootcert\")\r",
@@ -3846,7 +3865,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.55\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"commonName\": \"192.168.8.55\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\",\r\n    \"regeneratePassword\": true,\r\n    \"version\": \"{{recordVersion}}\"\r\n}\r\n"
+							"raw": "{\r\n    \"configName\": \"ciraconfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.50\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"commonName\": \"192.168.8.50\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\",\r\n    \"regeneratePassword\": true,\r\n    \"version\": {{ciraVersion}}\r\n}\r\n"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -3871,16 +3890,19 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"var result = pm.response.json();\r",
+									"pm.globals.set(\"ciraVersion\", result.version);\r",
+									"\r",
 									"pm.test(\"Status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
 									" pm.test(\"Result should be equal to example\", function () {\r",
 									"        var jsonData = pm.response.json();\r",
 									"        pm.expect(jsonData.configName).to.eql(\"ciraconfig2\")\r",
-									"        pm.expect(jsonData.mpsServerAddress).to.eql(\"192.168.8.5\")\r",
+									"        pm.expect(jsonData.mpsServerAddress).to.eql(\"192.168.8.50\")\r",
 									"        pm.expect(jsonData.mpsPort).to.eql(4433)\r",
 									"        pm.expect(jsonData.username).to.eql(\"admin\")\r",
-									"        pm.expect(jsonData.commonName).to.eql(\"192.168.8.5\")\r",
+									"        pm.expect(jsonData.commonName).to.eql(\"192.168.8.50\")\r",
 									"        pm.expect(jsonData.serverAddressFormat).to.eql(3)\r",
 									"        pm.expect(jsonData.authMethod).to.eql(2)\r",
 									"        pm.expect(jsonData.mpsRootCertificate).to.eql(\"rootcert\")\r",
@@ -3905,7 +3927,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"configName\": \"ciraConfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.5\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"commonName\": \"192.168.8.5\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\",\r\n    \"version\": \"{{recordVersion}}\"\r\n}\r\n"
+							"raw": "{\r\n    \"configName\": \"ciraConfig2\",\r\n    \"mpsServerAddress\": \"192.168.8.50\",\r\n    \"mpsPort\": 4433,\r\n    \"username\": \"admin\",\r\n    \"commonName\": \"192.168.8.50\",\r\n    \"serverAddressFormat\": 3,\r\n    \"authMethod\": 2,\r\n    \"mpsRootCertificate\": \"rootcert\",\r\n    \"proxyDetails\": \"\",\r\n    \"version\": {{ciraVersion}}\r\n}\r\n"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -6507,6 +6529,9 @@
 									"listen": "test",
 									"script": {
 										"exec": [
+											"var result = pm.response.json();\r",
+											"pm.globals.set(\"ciraVersion\", result.version);\r",
+											"\r",
 											"pm.test(\"Status code is 201\", function () {\r",
 											"    pm.response.to.have.status(201);\r",
 											"});\r",
@@ -6625,6 +6650,9 @@
 									"listen": "test",
 									"script": {
 										"exec": [
+											"var result = pm.response.json();\r",
+											"pm.globals.set(\"ciraStaticConfigVersion\", result.version);\r",
+											"\r",
 											"pm.test(\"Status code is 201\", function () {\r",
 											"    pm.response.to.have.status(201);\r",
 											"});\r",
@@ -6802,8 +6830,11 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 409\", function () {\r",
-											"    pm.response.to.have.status(409);\r",
+											"var result = pm.response.json();\r",
+											"pm.globals.set(\"ciraVersion\", result.version);\r",
+											"\r",
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
 											"});\r",
 											"pm.test(\"Update should succeed\", function () {\r",
 											"    var jsonData = pm.response.json();\r",
@@ -6839,7 +6870,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"configName\": \"ciraconfig\",\r\n    \"regeneratePassword\": true,\r\n    \"version\": \"771\"\r\n}"
+									"raw": "{\r\n    \"configName\": \"ciraconfig\",\r\n    \"regeneratePassword\": true,\r\n    \"version\": {{ciraVersion}}\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
@@ -6987,8 +7018,8 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 409\", function () {\r",
-											"    pm.response.to.have.status(409);\r",
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
 											"});\r",
 											"pm.test(\"Creation should pass when DHCP is disabled and CIRA config name is given\", function () {\r",
 											"    var result = pm.response.json();\r",
@@ -7021,7 +7052,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig-static\",\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\",\r\n    \"dhcpEnabled\": false,\r\n    \"version\": \"773\"\r\n}"
+									"raw": "{\r\n    \"profileName\": \"profile-ciraconfig-static\",\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"activation\": \"acmactivate\",\r\n    \"ciraConfigName\": \"ciraconfig\",\r\n    \"dhcpEnabled\": false,\r\n    \"version\": {{ciraStaticConfigVersion}}\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -7602,6 +7633,9 @@
 									"listen": "test",
 									"script": {
 										"exec": [
+											"var result = pm.response.json();\r",
+											"pm.globals.set(\"wifiProfileVersion\", result.version);\r",
+											"\r",
 											"pm.test(\"Status code is 201\", function () {\r",
 											"    pm.response.to.have.status(201);\r",
 											"});\r",
@@ -7940,8 +7974,11 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 409\", function () {\r",
-											"    pm.response.to.have.status(409);\r",
+											"var result = pm.response.json();\r",
+											"pm.globals.set(\"wifiProfileVersion\", result.version);\r",
+											"\r",
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
 											"});\r",
 											"pm.test(\"Creation should succeed\", function () {\r",
 											"    var result = pm.response.json();\r",
@@ -7950,7 +7987,7 @@
 											"    pm.expect(result.mebxPassword).to.eql(),\r",
 											"    pm.expect(result.activation).to.eql(\"ccmactivate\")\r",
 											"    pm.expect(result.tags.length).to.equal(1)\r",
-											"    pm.expect(result.dhcpEnabled).to.equal(true)\r",
+											"    pm.expect(result.dhcpEnabled).to.equal(false)\r",
 											"});"
 										],
 										"type": "text/javascript"
@@ -7974,7 +8011,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n   \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"version\": \"783\"\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n   \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"version\": {{wifiProfileVersion}}\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -8000,8 +8037,11 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 409\", function () {\r",
-											"    pm.response.to.have.status(409);\r",
+											"var result = pm.response.json();\r",
+											"pm.globals.set(\"wifiProfileVersion\", result.version);\r",
+											"\r",
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
 											"});\r",
 											"pm.test(\"Creation should succeed\", function () {\r",
 											"    var result = pm.response.json();\r",
@@ -8010,7 +8050,7 @@
 											"    pm.expect(result.mebxPassword).to.eql(),\r",
 											"    pm.expect(result.activation).to.eql(\"ccmactivate\")\r",
 											"    pm.expect(result.tags.length).to.equal(1)\r",
-											"    pm.expect(result.dhcpEnabled).to.equal(true)\r",
+											"    pm.expect(result.dhcpEnabled).to.equal(false)\r",
 											"});"
 										],
 										"type": "text/javascript"
@@ -8034,7 +8074,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n   \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"version\": \"783\"\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n   \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"version\": {{wifiProfileVersion}}\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -8070,7 +8110,7 @@
 											"    pm.expect(result.mebxPassword).to.eql(),\r",
 											"    pm.expect(result.activation).to.eql(\"ccmactivate\")\r",
 											"    pm.expect(result.tags.length).to.equal(1)\r",
-											"    pm.expect(result.dhcpEnabled).to.equal(true)\r",
+											"    pm.expect(result.dhcpEnabled).to.equal(false)\r",
 											"});"
 										],
 										"type": "text/javascript"
@@ -8093,7 +8133,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n   \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"version\": \"783\"\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n   \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"version\": {{wifiProfileVersion}}\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -8175,8 +8215,11 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 409\", function () {\r",
-											"    pm.response.to.have.status(409);\r",
+											"var result = pm.response.json();\r",
+											"pm.globals.set(\"wifiProfileVersion\", result.version);\r",
+											"\r",
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
 											"});\r",
 											"pm.test(\"Creation should succeed\", function () {\r",
 											"    var result = pm.response.json();\r",
@@ -8186,7 +8229,7 @@
 											"    pm.expect(result.activation).to.eql(\"ccmactivate\")\r",
 											"    pm.expect(result.tags.length).to.equal(1)\r",
 											"    pm.expect(result.dhcpEnabled).to.equal(true)\r",
-											"    pm.expect(result.wifiConfigs.length).to.equal(0)\r",
+											"    pm.expect(result.wifiConfigs.length).to.equal(2)\r",
 											"});"
 										],
 										"type": "text/javascript"
@@ -8210,7 +8253,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"version\": \"786\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"version\": {{wifiProfileVersion}},\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": true,\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -8290,8 +8333,11 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 409\", function () {\r",
-											"    pm.response.to.have.status(409);\r",
+											"var result = pm.response.json();\r",
+											"pm.globals.set(\"wifiProfileVersion\", result.version);\r",
+											"\r",
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
 											"});\r",
 											"pm.test(\"Creation should succeed\", function () {\r",
 											"    var result = pm.response.json();\r",
@@ -8301,7 +8347,7 @@
 											"    pm.expect(result.activation).to.eql(\"ccmactivate\")\r",
 											"    pm.expect(result.tags.length).to.equal(1)\r",
 											"    pm.expect(result.dhcpEnabled).to.equal(true)\r",
-											"    pm.expect(result.wifiConfigs.length).to.equal(0)\r",
+											"    pm.expect(result.wifiConfigs.length).to.equal(3)\r",
 											"});"
 										],
 										"type": "text/javascript"
@@ -8325,7 +8371,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"dhcpEnabled\": true,\r\n    \"version\": \"787\",\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        },\r\n        {\r\n            \"priority\": 3,\r\n            \"profileName\": \"business\"\r\n        }\r\n    ]\r\n}"
+									"raw": "{\r\n    \"profileName\": \"wifi-profile\",\r\n    \"amtPassword\": \"Intel123!\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"dhcpEnabled\": true,\r\n    \"version\": {{wifiProfileVersion}},\r\n    \"wifiConfigs\": [\r\n        {\r\n            \"priority\": 1,\r\n            \"profileName\": \"home\"\r\n        },\r\n        {\r\n            \"priority\": 2,\r\n            \"profileName\": \"office\"\r\n        },\r\n        {\r\n            \"priority\": 3,\r\n            \"profileName\": \"business\"\r\n        }\r\n    ]\r\n}"
 								},
 								"url": {
 									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -8431,7 +8477,7 @@
 											"    pm.expect(result[0].mebxPassword).to.eql(),\r",
 											"    pm.expect(result[0].activation).to.eql(\"ccmactivate\")\r",
 											"    pm.expect(result[0].tags.length).to.equal(1)\r",
-											"    pm.expect(result[0].wifiConfigs.length).to.equal(0)\r",
+											"    pm.expect(result[0].wifiConfigs.length).to.equal(3)\r",
 											"});\r",
 											"\r",
 											"pm.test(\"Profile two\", function () {\r",
