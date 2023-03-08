@@ -3,7 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type DeviceCredentials, type ISecretManagerService, type TLSCredentials, type WifiCredentials } from '../../interfaces/ISecretManagerService'
+import {
+  type CiraConfigSecrets,
+  type DeviceCredentials,
+  type ISecretManagerService,
+  type TLSCredentials,
+  type WifiCredentials
+} from '../../interfaces/ISecretManagerService'
 import { type ILogger } from '../../interfaces/ILogger'
 import { Environment } from '../../utils/Environment'
 import got, { type Got } from 'got'
@@ -36,7 +42,7 @@ export class VaultService implements ISecretManagerService {
     return null
   }
 
-  async getSecretAtPath (path: string): Promise<DeviceCredentials | TLSCredentials | WifiCredentials> {
+  async getSecretAtPath (path: string): Promise<DeviceCredentials | TLSCredentials | WifiCredentials | CiraConfigSecrets> {
     try {
       this.logger.verbose(`getting secrets from ${path}`)
       const rspJson: any = await this.gotClient.get(path).json()

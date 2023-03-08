@@ -23,6 +23,10 @@ export interface TLSCredentials {
   version?: string
 }
 
+export interface CiraConfigSecrets {
+  MPS_PASSWORD: string
+}
+
 // these credentials refer to the domain provisioning cert
 export interface CertCredentials {
   CERT: string
@@ -32,8 +36,11 @@ export interface CertCredentials {
 
 export interface ISecretManagerService {
   getSecretFromKey: (path: string, key: string) => Promise<string>
-  getSecretAtPath: (path: string) => Promise<DeviceCredentials | WifiCredentials | TLSCredentials | CertCredentials>
-  writeSecretWithObject: (path: string, data: DeviceCredentials | WifiCredentials | TLSCredentials | CertCredentials) => Promise<any>
+  getSecretAtPath: (path: string) => Promise<DeviceCredentials | WifiCredentials | TLSCredentials | CertCredentials | CiraConfigSecrets>
+  writeSecretWithObject: (
+    path: string,
+    data: DeviceCredentials | WifiCredentials | TLSCredentials | CertCredentials | CiraConfigSecrets
+  ) => Promise<any>
   deleteSecretAtPath: (path: string) => Promise<boolean>
   health: () => Promise<any>
 }
