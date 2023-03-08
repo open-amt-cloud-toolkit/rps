@@ -7,9 +7,6 @@ import { type apiResponse } from '../models/RCS.Config'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const packageObj = require('../../package.json')
 
-export const AMTRandomPasswordChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^*()'
-export const AMTRandomPasswordLength = 16
-
 export const ServiceVersion = packageObj.version
 export const ProtocolVersion = '4.0.0'
 export const AMTUserName = 'admin'

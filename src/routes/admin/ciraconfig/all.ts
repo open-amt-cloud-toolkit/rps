@@ -4,7 +4,6 @@
  **********************************************************************/
 
 import Logger from '../../../Logger'
-import { API_RESPONSE } from '../../../utils/constants'
 import { type CIRAConfig } from '../../../models/RCS.Config'
 import { type DataWithCount } from '../../../models'
 import { MqttProvider } from '../../../utils/MqttProvider'
@@ -19,21 +18,21 @@ export async function allCiraConfigs (req: Request, res: Response): Promise<void
   try {
     let ciraConfigs: CIRAConfig[] = await req.db.ciraConfigs.get(top, skip, req.tenantId)
     if (ciraConfigs.length >= 0) {
+      // secrets rules: never return sensitive data (passwords) in a response
       ciraConfigs = ciraConfigs.map((result: CIRAConfig) => {
         delete result.password
         return result
       })
     }
     if (includeCount == null || includeCount === 'false') {
-      res.status(200).json(API_RESPONSE(ciraConfigs))
+      res.status(200).json(ciraConfigs).end()
     } else {
       const count: number = await req.db.ciraConfigs.getCount(req.tenantId)
       const dataWithCount: DataWithCount = {
         data: ciraConfigs,
         totalCount: count
       }
-
-      res.status(200).json(API_RESPONSE(dataWithCount))
+      res.status(200).json(dataWithCount).end()
     }
     MqttProvider.publishEvent('success', ['allCiraConfigs'], 'Sent configs')
   } catch (error) {

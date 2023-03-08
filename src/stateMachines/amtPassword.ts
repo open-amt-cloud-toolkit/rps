@@ -12,7 +12,7 @@ import Logger from '../Logger'
 import { Error } from './error'
 import { Configurator } from '../Configurator'
 import { devices } from '../WebSocketListener'
-import { AMTUserName, AMTRandomPasswordLength } from '../utils/constants'
+import { AMTUserName } from '../utils/constants'
 import { SignatureHelper } from '../utils/SignatureHelper'
 import { Validator } from '../Validator'
 import { PasswordHelper } from '../utils/PasswordHelper'
@@ -155,7 +155,7 @@ export class AMTPassword {
     const password = context.amtPassword
     let data: string = `admin:${context.generalSettings.DigestRealm}:${password}`
     if (data.length === 0) {
-      data = PasswordHelper.generateRandomPassword(AMTRandomPasswordLength)
+      data = PasswordHelper.generateRandomPassword()
       if (data) {
         this.logger.debug('Created random password')
       } else {
