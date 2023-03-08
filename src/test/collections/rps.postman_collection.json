@@ -1,9 +1,8 @@
 {
 	"info": {
-		"_postman_id": "8bbe22f6-4d72-4af9-a08f-1eff56bc6ba7",
+		"_postman_id": "51dbbd0f-207d-4462-b8b0-cddece62ed83",
 		"name": "RPS API Tests",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "25986370"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
@@ -9220,11 +9219,13 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"var jsonData = pm.response.json();\r",
+									"pm.globals.set(\"recordVersion\", jsonData.version);\r",
+									"\r",
 									"pm.test(\"Status code is 201\", function () {\r",
 									"    pm.response.to.have.status(201);\r",
 									"});\r",
 									"pm.test(\"Request should return profile just created\", function () {\r",
-									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.profileName).to.eql(\"P1\");\r",
 									"    pm.expect(jsonData.authenticationMethod).to.eql(4);\r",
 									"    pm.expect(jsonData.encryptionMethod).to.eql(4);\r",
@@ -9644,11 +9645,13 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"var jsonData = pm.response.json();\r",
+									"pm.globals.set(\"recordVersion\", jsonData.version);\r",
+									"\r",
 									"pm.test(\"Status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
 									"pm.test(\"Request should return profile just created\", function () {\r",
-									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.profileName).to.eql(\"P1\");\r",
 									"    pm.expect(jsonData.authenticationMethod).to.eql(4);\r",
 									"    pm.expect(jsonData.encryptionMethod).to.eql(4);\r",
@@ -9656,6 +9659,56 @@
 									"    pm.expect(jsonData.linkPolicy.length).to.eql(2);\r",
 									"    pm.expect(jsonData.linkPolicy[0]).to.eql(14);\r",
 									"    pm.expect(jsonData.linkPolicy[1]).to.eql(16);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"profileName\": \"P1\",\r\n    \"authenticationMethod\": 4,\r\n    \"encryptionMethod\": 4,\r\n    \"ssid\": \"test1\",\r\n    \"pskPassphrase\": \"Intel@123!\",\r\n    \"linkPolicy\": [14,16],\r\n    \"version\": {{recordVersion}}\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"wirelessconfigs",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile missing version",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"pm.test(\"Update request should fail missing version info\", function () {\r",
+									"    pm.expect(jsonData.errors[0].msg).to.eql(\"Version is required to patch/update a record.\");\r",
+									"    pm.expect(jsonData.errors[0].param).to.eql(\"version\");\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -9716,7 +9769,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"P1\",\r\n    \"authenticationMethod\": 4,\r\n    \"encryptionMethod\": 6,\r\n    \"ssid\": \"test\",\r\n    \"priority\": 1,\r\n    \"pskPassphrase\": \"Intel@123\",\r\n    \"linkPolicy\": [14,16]\r\n}\r\n",
+							"raw": "{\r\n    \"profileName\": \"P1\",\r\n    \"authenticationMethod\": 4,\r\n    \"encryptionMethod\": 6,\r\n    \"ssid\": \"test\",\r\n    \"priority\": 1,\r\n    \"pskPassphrase\": \"Intel@123\",\r\n    \"linkPolicy\": [14,16],\r\n    \"version\": {{recordVersion}}\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -9765,7 +9818,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"P1\",\r\n    \"authenticationMethod\": 10,\r\n    \"encryptionMethod\": 4,\r\n    \"ssid\": \"test\",\r\n    \"priority\": 1,\r\n    \"pskPassphrase\": \"Intel@123\",\r\n    \"linkPolicy\": [14,16]\r\n}\r\n",
+							"raw": "{\r\n    \"profileName\": \"P1\",\r\n    \"authenticationMethod\": 10,\r\n    \"encryptionMethod\": 4,\r\n    \"ssid\": \"test\",\r\n    \"priority\": 1,\r\n    \"pskPassphrase\": \"Intel@123\",\r\n    \"linkPolicy\": [14,16],\r\n    \"version\": {{recordVersion}}\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -9814,7 +9867,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"P1\",\r\n    \"authenticationMethod\": 4,\r\n    \"encryptionMethod\": 4,\r\n    \"ssid\": \"wirelessProfile1234512345123456789\",\r\n    \"priority\": 1,\r\n    \"pskPassphrase\": \"Intel@123\",\r\n    \"linkPolicy\": [14,16]\r\n}\r\n",
+							"raw": "{\r\n    \"profileName\": \"P1\",\r\n    \"authenticationMethod\": 4,\r\n    \"encryptionMethod\": 4,\r\n    \"ssid\": \"wirelessProfile1234512345123456789\",\r\n    \"priority\": 1,\r\n    \"pskPassphrase\": \"Intel@123\",\r\n    \"linkPolicy\": [14,16],\r\n    \"version\": {{recordVersion}}\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -9863,7 +9916,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"P1\",\r\n    \"authenticationMethod\": 4,\r\n    \"encryptionMethod\": 4,\r\n    \"ssid\": \"test\",\r\n    \"priority\": 1,\r\n    \"pskPassphrase\": \"Inte123\",\r\n    \"linkPolicy\": [14,16]\r\n}\r\n",
+							"raw": "{\r\n    \"profileName\": \"P1\",\r\n    \"authenticationMethod\": 4,\r\n    \"encryptionMethod\": 4,\r\n    \"ssid\": \"test\",\r\n    \"priority\": 1,\r\n    \"pskPassphrase\": \"Inte123\",\r\n    \"linkPolicy\": [14,16],\r\n    \"version\": {{recordVersion}}\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -9912,7 +9965,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"P1\",\r\n    \"authenticationMethod\": 4,\r\n    \"encryptionMethod\": 4,\r\n    \"ssid\": \"test\",\r\n    \"priority\": 1,\r\n    \"pskPassphrase\": \"Intel@123!Intel@123!Intel@123!Intel@123!Intel@123!Intel@123!Intel@123!Intel@123!\",\r\n    \"linkPolicy\": [14,16]\r\n}\r\n",
+							"raw": "{\r\n    \"profileName\": \"P1\",\r\n    \"authenticationMethod\": 4,\r\n    \"encryptionMethod\": 4,\r\n    \"ssid\": \"test\",\r\n    \"priority\": 1,\r\n    \"pskPassphrase\": \"Intel@123!Intel@123!Intel@123!Intel@123!Intel@123!Intel@123!Intel@123!Intel@123!\",\r\n    \"linkPolicy\": [14,16],\r\n    \"version\": {{recordVersion}}\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -9961,7 +10014,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"P12\",\r\n    \"authenticationMethod\": 4,\r\n    \"encryptionMethod\": 4,\r\n    \"ssid\": \"test\",\r\n    \"priority\": 1,\r\n    \"pskPassphrase\": \"Intel@123\",\r\n    \"linkPolicy\": [14,16]\r\n}\r\n",
+							"raw": "{\r\n    \"profileName\": \"P12\",\r\n    \"authenticationMethod\": 4,\r\n    \"encryptionMethod\": 4,\r\n    \"ssid\": \"test\",\r\n    \"priority\": 1,\r\n    \"pskPassphrase\": \"Intel@123\",\r\n    \"linkPolicy\": [14,16],\r\n    \"version\": {{recordVersion}}\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
