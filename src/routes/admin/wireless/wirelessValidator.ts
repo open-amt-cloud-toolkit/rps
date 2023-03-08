@@ -85,5 +85,9 @@ export const wirelessEditValidator = (): any => [
       if (!value.every(Number.isInteger)) throw new Error('Array does not contain integers') // check that contains Integers
       if (!value.every(isValidLinkPolicy)) throw new Error('Array values should be either 1: available on S0 AC, 14: available on Sx AC, 16: available on S0 DC, 224: available on Sx DC')
       return true
-    })
+    }),
+  check('version')
+    .not()
+    .isEmpty()
+    .withMessage('Version is required to patch/update a record.')
 ]

@@ -25,6 +25,9 @@ export async function editWirelessProfile (req: Request, res: Response): Promise
       } else {
         config = { ...config, ...req.body }
       }
+      if (!req.body.version) {
+        config.version = null
+      }
 
       const results: WirelessConfig = await req.db.wirelessProfiles.update(config)
       if (req.secretsManager && passphrase) {
