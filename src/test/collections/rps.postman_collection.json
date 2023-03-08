@@ -3292,6 +3292,108 @@
 					"response": []
 				},
 				{
+					"name": "Create CIRA Config with static password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"pm.test(\"Creation should succeed\", function () {\r",
+									"    var result = pm.response.json();\r",
+									"    pm.expect(result.configName).to.eql(\"ciraCfgWithStaticPassword\")\r",
+									"    pm.expect(result.mpsServerAddress).to.eql(\"192.168.8.50\"),\r",
+									"\tpm.expect(result.mpsPort).to.eql(4433),\r",
+									"\tpm.expect(result.username).to.eql(\"adminuser\"),\r",
+									"\tpm.expect(result.commonName).to.eql(\"192.168.8.50\"),\r",
+									"\tpm.expect(result.serverAddressFormat).to.eql(3),\r",
+									"\tpm.expect(result.authMethod).to.eql(2),\r",
+									"\tpm.expect(result.mpsRootCertificate).to.eql(\"rootcert\"),\r",
+									"\tpm.expect(result.proxyDetails).to.eql(\"\")\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\t\"configName\": \"ciraCfgWithStaticPassword\",\r\n\t\"mpsServerAddress\": \"192.168.8.50\",\r\n\t\"mpsPort\": 4433,\r\n\t\"username\": \"adminuser\",\r\n\t\"password\": \"TestPassw0rd!\",\r\n\t\"commonName\": \"192.168.8.50\",\r\n\t\"serverAddressFormat\": 3,\r\n\t\"authMethod\": 2,\r\n\t\"mpsRootCertificate\": \"rootcert\",\r\n\t\"proxyDetails\": \"\"\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"ciraconfigs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete CIRA Config with static password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {\r",
+									"    pm.response.to.have.status(204);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ciraconfigs/ciraCfgWithStaticPassword",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"ciraconfigs",
+								"ciraCfgWithStaticPassword"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Edit CIRA Config server address without server address format",
 					"event": [
 						{

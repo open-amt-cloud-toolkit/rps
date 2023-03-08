@@ -4,152 +4,102 @@
  **********************************************************************/
 
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
-import { CIRAConfiguration, type CIRAConfigContext, MPSType } from './ciraConfiguration'
+import { CIRAConfiguration, type CIRAConfigEvent, MPSType } from './ciraConfiguration'
 import { v4 as uuid } from 'uuid'
 import { devices } from '../WebSocketListener'
 import { Environment } from '../utils/Environment'
 import { config } from '../test/helper/Config'
-import { ClientAction } from '../models/RCS.Config'
+import { type CIRAConfig } from '../models/RCS.Config'
 import { HttpHandler } from '../HttpHandler'
 import { interpret } from 'xstate'
 import * as common from './common'
+import { UNEXPECTED_PARSE_ERROR } from '../utils/constants'
 
-const clientId = uuid()
 Environment.Config = config
 
 describe('CIRA Configuration State Machine', () => {
-  let ciraConfiguration: CIRAConfiguration
-  let currentStateIndex: number
+  const clientId = uuid()
+  const httpHandler = new HttpHandler()
+  const initialEvent: CIRAConfigEvent = {
+    type: 'CONFIGURE_CIRA',
+    clientId,
+    data: null,
+    tenantId: ''
+  }
+  const wsmanEnumerationResponse = {
+    Envelope: { Body: { EnumerateResponse: { EnumerationContext: 'abcd' } } }
+  }
+  let ciraStateMachineImpl: CIRAConfiguration
   let invokeWsmanCallSpy: jest.SpyInstance
-  let ciraConfigContext: CIRAConfigContext
-  let configuration
-
+  let machineConfig
+  let machineContext
+  let ciraConfig: CIRAConfig
   beforeEach(() => {
-    ciraConfiguration = new CIRAConfiguration()
-    ciraConfigContext = {
-      clientId,
-      httpHandler: new HttpHandler(),
-      status: 'success',
-      errorMessage: '',
-      xmlMessage: '',
-      statusMessage: '',
-      message: null,
-      tenantId: '',
-      ciraConfig: {
-        configName: 'config1',
-        mpsServerAddress: '192.168.1.38',
-        mpsPort: 4433,
-        username: 'admin',
-        password: null,
-        commonName: '192.168.1.38',
-        serverAddressFormat: 3,
-        authMethod: 2,
-        proxyDetails: null,
-        tenantId: '',
-        mpsRootCertificate: 'MIIEOzCCAqOgAwIBAgIDATghMA0GCSqGSIb3DQEBDAUAMD0xFzAVBgNVBAMTDk1QU1Jvb3QtZjI5NzdjMRAwDgYDVQQKEwd1bmtub3duMRAwDgYDVQQGEwd1bmtub3duMCAXDTIxMDIwOTE2NTA1NloYDzIwNTIwMjA5MTY1MDU2WjA9MRcwFQYDVQQDEw5NUFNSb290LWYyOTc3YzEQMA4GA1UEChMHdW5rbm93bjEQMA4GA1UEBhMHdW5rbm93bjCCAaIwDQYJKoZIhvcNAQEBBQADggGPADCCAYoCggGBALh5/XVfcshMOarCLJ4RHMZ6sGS8PGaDiCdL4V0SwxCju4n9ZJFr2O6Bv2/qNl1enjgC/YRguHeNlYa1usbJReNJXb6Mv7G4z7NCVnPmvJtCI78CIeZ0+r6H1VZyw0Jft7S6U0G6ZQue21Ycr6ELJhNz9b4QZUMujd863TWWtE3peejYGEY8hIgMk6YfNyzFx/Xd4wpQToYoN6kBrrKK8R0rYBVR19YZg36ZWhfdg9saLhPy+7L2ScE4KW92+DUK++aXxt3Aq1dMzjHewii98c//TwCpJQBEQhzTyyuSicfWj78Q61IgtLpHWlkKvoFldYcH4vHVZiMbjSyW6EA5tQET4GKef2fY4OnEIvfyJEn7P6WDHz4vbSMZBwBBgpzwWQGeU2+W5lAblmuL48gk5byED6qXSBt4BV2c8IAMEAnShBxjJRDkYJfjEg3t/Gd5lskrcwTSh6AqEGAJqM4251+jO84gvuTqGwwejC/kdiCi9lR+KNEb25S3REfTQQAxgwIDAQABo0IwQDAMBgNVHRMEBTADAQH/MBEGCWCGSAGG+EIBAQQEAwIABzAdBgNVHQ4EFgQU8pd839uyitiRmIpp2R1MvZtvhW0wDQYJKoZIhvcNAQEMBQADggGBAAcbf4vdlTz0ZJkOaW7NwILAvfqeRvn0bTr8PZKGLW9BOcovtKPa8VjoBAar/LjGBvhdXXRYKpQqYUsJcCf53OKVhUx5vX0B6TYZYQtu6KtlmdbxrSEz/wermV5mMYM7yONVeZSUZmOT9iNwE5hTiNzRXNFlx/1+cDCRt8ApsjmYNdoKgxNjoY+ynqmtMkTNXKWd0KKsietOEciPS4UZ5tx6WZ+BH+vEpWw9u3cLeX8iLJXfPHsDmqqHIyjkGNCDsZmDIeyPxBe9CXPGCcMLX1WhBfSma9NMiRI2l18vryo7SRME600RbnkBZyjlzquL9aILZnmiHQOCJ9d75P1MtUdpBYVpqR0Owd8JtAZOqnm+u54oU4OZ+IZmJDT7S5/qytf5lJdIfHKp2RNNL3PoNgmANLop8UKQMoZ2QHl+8L6xJuZSYZMzKDIYXJCCucZSHxx8G41P6rTCylorEjFudqk0OoEb+30vOUqrd5ib/nXp+opwQaEdXYkZ+Wxim9quVw=='
-      },
-      profile: null,
-      privateCerts: [],
-      amt: new AMT.Messages()
-    }
-
+    jest.clearAllMocks()
+    ciraStateMachineImpl = new CIRAConfiguration()
     devices[clientId] = {
-      unauthCount: 0,
       ClientId: clientId,
-      ClientSocket: { send: jest.fn() } as any,
-      ClientData: {
-        method: 'activation',
-        apiKey: 'key',
-        appVersion: '1.2.0',
-        protocolVersion: '4.0.0',
-        status: 'ok',
-        message: "all's good!",
-        payload: {
-          ver: '11.8.50',
-          build: '3425',
-          fqdn: 'vprodemo.com',
-          password: 'KQGnH+N5qJ8YLqjEFJMnGSgcnFLMv0Tk',
-          hostname: 'DESKTOP-9CC12U7',
-          currentMode: 0,
-          certHashes: [
-            'e7685634efacf69ace939a6b255b7b4fabef42935b50a265acb5cb6027e44e70',
-            'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244'
-          ],
-          sku: '16392',
-          uuid: '4bac9510-04a6-4321-bae2-d45ddf07b684',
-          username: '$$OsAdmin',
-          client: 'PPC',
-          profile: {
-            profileName: 'acm',
-            activation: ClientAction.ADMINCTLMODE,
-            ciraConfigName: 'config1',
-            ciraConfigObject: {
-              configName: 'config1',
-              mpsServerAddress: '192.168.1.38',
-              mpsPort: 4433,
-              username: 'admin',
-              password: null,
-              commonName: '192.168.1.38',
-              serverAddressFormat: 3,
-              authMethod: 2,
-              mpsRootCertificate: 'MIIEOzCCAqOgAwIBAgIDATghMA0GCSqGSIb3DQEBDAUAMD0xFzAVBgNVBAMTDk1QU1Jvb3QtZjI5NzdjMRAwDgYDVQQKEwd1bmtub3duMRAwDgYDVQQGEwd1bmtub3duMCAXDTIxMDIwOTE2NTA1NloYDzIwNTIwMjA5MTY1MDU2WjA9MRcwFQYDVQQDEw5NUFNSb290LWYyOTc3YzEQMA4GA1UEChMHdW5rbm93bjEQMA4GA1UEBhMHdW5rbm93bjCCAaIwDQYJKoZIhvcNAQEBBQADggGPADCCAYoCggGBALh5/XVfcshMOarCLJ4RHMZ6sGS8PGaDiCdL4V0SwxCju4n9ZJFr2O6Bv2/qNl1enjgC/YRguHeNlYa1usbJReNJXb6Mv7G4z7NCVnPmvJtCI78CIeZ0+r6H1VZyw0Jft7S6U0G6ZQue21Ycr6ELJhNz9b4QZUMujd863TWWtE3peejYGEY8hIgMk6YfNyzFx/Xd4wpQToYoN6kBrrKK8R0rYBVR19YZg36ZWhfdg9saLhPy+7L2ScE4KW92+DUK++aXxt3Aq1dMzjHewii98c//TwCpJQBEQhzTyyuSicfWj78Q61IgtLpHWlkKvoFldYcH4vHVZiMbjSyW6EA5tQET4GKef2fY4OnEIvfyJEn7P6WDHz4vbSMZBwBBgpzwWQGeU2+W5lAblmuL48gk5byED6qXSBt4BV2c8IAMEAnShBxjJRDkYJfjEg3t/Gd5lskrcwTSh6AqEGAJqM4251+jO84gvuTqGwwejC/kdiCi9lR+KNEb25S3REfTQQAxgwIDAQABo0IwQDAMBgNVHRMEBTADAQH/MBEGCWCGSAGG+EIBAQQEAwIABzAdBgNVHQ4EFgQU8pd839uyitiRmIpp2R1MvZtvhW0wDQYJKoZIhvcNAQEMBQADggGBAAcbf4vdlTz0ZJkOaW7NwILAvfqeRvn0bTr8PZKGLW9BOcovtKPa8VjoBAar/LjGBvhdXXRYKpQqYUsJcCf53OKVhUx5vX0B6TYZYQtu6KtlmdbxrSEz/wermV5mMYM7yONVeZSUZmOT9iNwE5hTiNzRXNFlx/1+cDCRt8ApsjmYNdoKgxNjoY+ynqmtMkTNXKWd0KKsietOEciPS4UZ5tx6WZ+BH+vEpWw9u3cLeX8iLJXfPHsDmqqHIyjkGNCDsZmDIeyPxBe9CXPGCcMLX1WhBfSma9NMiRI2l18vryo7SRME600RbnkBZyjlzquL9aILZnmiHQOCJ9d75P1MtUdpBYVpqR0Owd8JtAZOqnm+u54oU4OZ+IZmJDT7S5/qytf5lJdIfHKp2RNNL3PoNgmANLop8UKQMoZ2QHl+8L6xJuZSYZMzKDIYXJCCucZSHxx8G41P6rTCylorEjFudqk0OoEb+30vOUqrd5ib/nXp+opwQaEdXYkZ+Wxim9quVw=='
-            }
-          },
-          action: ClientAction.ADMINCTLMODE
-        }
-      },
-      ciraconfig: { TLSSettingData: { Enabled: true, AcceptNonSecureConnections: true, MutualAuthentication: true, TrustedCN: null } },
-      network: {},
-      status: {},
-      activationStatus: false,
-      connectionParams: {
-        guid: '4c4c4544-004b-4210-8033-b6c04f504633',
-        port: 16992,
-        digestChallenge: null,
-        username: 'admin',
-        password: 'P@ssw0rd'
-      },
-      uuid: '4c4c4544-004b-4210-8033-b6c04f504633',
-      messageId: 1
+      unauthCount: 0,
+      status: {
+        CIRAConnection: 'should not need this'
+      }
+    }
+    ciraConfig = {
+      proxyDetails: '',
+      tenantId: '',
+      configName: 'config1',
+      mpsServerAddress: '192.168.1.38',
+      mpsPort: 4433,
+      username: 'admin',
+      password: null,
+      commonName: '192.168.1.38',
+      serverAddressFormat: 3,
+      authMethod: 2,
+      mpsRootCertificate: 'NotReallyACert'
     }
     invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue(null)
-    currentStateIndex = 0
-    configuration = {
+    machineConfig = {
       services: {
-        'get-cira-config': Promise.resolve({ clientId }),
-        'error-machine': Promise.resolve({ clientId }),
-        'add-trusted-root-certificate': Promise.resolve({ clientId }),
-        'save-mps-password-to-secret-provider': Promise.resolve({ clientId }),
-        'save-device-to-mps': Promise.resolve({ clientId }),
-        'add-mps': Promise.resolve({ clientId }),
-        'enumerate-management-presence-remote-sap': Promise.resolve({ clientId }),
+        'get-cira-config': Promise.resolve(ciraConfig),
+        'set-mps-password': Promise.resolve({ whatever: false }),
+        'add-trusted-root-certificate': Promise.resolve({}),
+        'save-mps-password-to-secret-provider': Promise.resolve({}),
+        'save-device-to-mps': Promise.resolve({}),
+        'add-mps': Promise.resolve({}),
+        'enumerate-management-presence-remote-sap': Promise.resolve(wsmanEnumerationResponse),
         'pull-management-presence-remote-sap': Promise.resolve({ clientId }),
         'add-remote-policy-access-rule': Promise.resolve({ clientId }),
-        'enumerate-remote-access-policy-rule': Promise.resolve({ clientId }),
-        'pull-remote-access-policy-rule': Promise.resolve({ clientId }),
-        'put-remote-access-policy-rule': Promise.resolve({ clientId }),
+        'enumerate-remote-access-policy-rule': Promise.resolve(wsmanEnumerationResponse),
+        'pull-remote-access-policy-rule': Promise.resolve({}),
+        'put-remote-access-policy-rule': Promise.resolve({}),
         'user-initiated-connection-service': Promise.resolve({ Envelope: { Body: { RequestStateChange_OUTPUT: { ReturnValue: 0 } } } }),
-        'get-environment-detection-settings': Promise.resolve({ clientId }),
-        'put-environment-detection-settings': Promise.resolve({ clientId })
-      },
-      actions: {
-        'Reset Unauth Count': () => {}
+        'get-environment-detection-settings': Promise.resolve({}),
+        'put-environment-detection-settings': Promise.resolve({})
       }
+    }
+    machineContext = {
+      clientId,
+      profile: null,
+      httpHandler,
+      amt: new AMT.Messages(),
+      tenantId: ''
     }
   })
 
-  it('should eventually reach "REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED"', (done) => {
-    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration).withContext(ciraConfigContext)
+  it('should succeed for happy path', (done) => {
+    const mockCiraConfigurationMachine = ciraStateMachineImpl.machine.withConfig(machineConfig).withContext(machineContext)
+    // TODO: [tech debt] most references to XState suggest unit testing internal implementation states is not BKM
     const flowStates = [
       'CIRACONFIGURED',
       'GET_CIRA_CONFIG',
+      'SET_MPS_PASSWORD',
       'ADD_TRUSTED_ROOT_CERTIFICATE',
       'SAVE_MPS_PASSWORD_TO_SECRET_PROVIDER',
       'SAVE_DEVICE_TO_MPS',
       'ADD_MPS',
       'ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP',
       'PULL_MANAGEMENT_PRESENCE_REMOTE_SAP',
-      'ADD_REMOTE_POLICY_ACCESS_RULE',
+      'ADD_REMOTE_ACCESS_POLICY_RULE',
       'ENUMERATE_REMOTE_ACCESS_POLICY_RULE',
       'PULL_REMOTE_ACCESS_POLICY_RULE',
       'PUT_REMOTE_ACCESS_POLICY_RULE',
@@ -158,391 +108,160 @@ describe('CIRA Configuration State Machine', () => {
       'PUT_ENVIRONMENT_DETECTION_SETTINGS',
       'SUCCESS'
     ]
+    let currentStateIndex = 0
+
     const ciraConfigurationService = interpret(mockCiraConfigurationMachine).onTransition((state) => {
-      expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
-      if (state.matches('SUCCESS') && currentStateIndex === flowStates.length) {
+      const expected = flowStates[currentStateIndex++]
+      const actual = state.value as string
+      expect(actual).toEqual(expected)
+      // expect(state.matches(expected)).toBe(true)
+      if (state.matches('SUCCESS') || state.matches('FAILURE') || currentStateIndex === flowStates.length) {
         const status = devices[clientId].status.CIRAConnection
         expect(status).toEqual('Configured')
         done()
       }
     })
-
     ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId, data: null, tenantId: '' })
+    ciraConfigurationService.send(initialEvent)
   })
 
-  it('should eventually reach "Failed"', (done) => {
-    configuration.services['get-cira-config'] = Promise.reject(new Error())
-    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration).withContext(ciraConfigContext)
-    const flowStates = ['CIRACONFIGURED', 'GET_CIRA_CONFIG', 'FAILURE']
+  it('should fail on error response for user-initiated-connection-service', (done) => {
+    const failedResponse = { Envelope: { Body: { RequestStateChange_OUTPUT: { ReturnValue: 1 } } } }
+    machineConfig.services['user-initiated-connection-service'] = Promise.resolve(failedResponse)
+    const mockCiraConfigurationMachine = ciraStateMachineImpl.machine.withConfig(machineConfig).withContext(machineContext)
+
     const ciraConfigurationService = interpret(mockCiraConfigurationMachine).onTransition((state) => {
-      expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
-      if (state.matches('FAILURE') && currentStateIndex === flowStates.length) {
+      if (state.matches('SUCCESS') || state.matches('FAILURE')) {
+        expect(state.matches('FAILURE')).toBeTruthy()
         done()
       }
     })
-
     ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId, data: null, tenantId: '' })
+    ciraConfigurationService.send(initialEvent)
   })
 
-  it('should eventually reach "Failed" at add-trusted-root-certificate state ', (done) => {
-    configuration.services['add-trusted-root-certificate'] = Promise.reject(new Error())
-    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration).withContext(ciraConfigContext)
-    const flowStates = [
-      'CIRACONFIGURED',
-      'GET_CIRA_CONFIG',
-      'ADD_TRUSTED_ROOT_CERTIFICATE',
-      'FAILURE']
-    const ciraConfigurationService = interpret(mockCiraConfigurationMachine).onTransition((state) => {
-      expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
-      if (state.matches('FAILURE') && currentStateIndex === flowStates.length) {
+  interface FailureTestInput {
+    stateValue: string
+    service: string
+  }
+
+  test.each<FailureTestInput | jest.DoneCallback>([
+    { stateValue: 'GET_CIRA_CONFIG', service: 'get-cira-config' },
+    { stateValue: 'SET_MPS_PASSWORD', service: 'set-mps-password' },
+    { stateValue: 'ADD_TRUSTED_ROOT_CERTIFICATE', service: 'add-trusted-root-certificate' },
+    { stateValue: 'SAVE_MPS_PASSWORD_TO_SECRET_PROVIDER', service: 'save-mps-password-to-secret-provider' },
+    { stateValue: 'SAVE_DEVICE_TO_MPS', service: 'save-device-to-mps' },
+    { stateValue: 'ADD_MPS', service: 'add-mps' },
+    { stateValue: 'ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP', service: 'enumerate-management-presence-remote-sap' },
+    { stateValue: 'PULL_MANAGEMENT_PRESENCE_REMOTE_SAP', service: 'pull-management-presence-remote-sap' },
+    { stateValue: 'ADD_REMOTE_ACCESS_POLICY_RULE', service: 'add-remote-policy-access-rule' },
+    { stateValue: 'ENUMERATE_REMOTE_ACCESS_POLICY_RULE', service: 'enumerate-remote-access-policy-rule' },
+    { stateValue: 'PULL_REMOTE_ACCESS_POLICY_RULE', service: 'pull-remote-access-policy-rule' },
+    { stateValue: 'PUT_REMOTE_ACCESS_POLICY_RULE', service: 'put-remote-access-policy-rule' },
+    { stateValue: 'USER_INITIATED_CONNECTION_SERVICE', service: 'user-initiated-connection-service' },
+    { stateValue: 'GET_ENVIRONMENT_DETECTION_SETTINGS', service: 'get-environment-detection-settings' },
+    { stateValue: 'PUT_ENVIRONMENT_DETECTION_SETTINGS', service: 'put-environment-detection-settings' }
+  ])('should fail at state $stateValue', (ti: FailureTestInput, done: jest.DoneCallback) => {
+    let previousState: any
+    // exercise the UNEXPECTED_PARSE_ERROR retry in one of the pull calls
+    let rejectionValue: any = new Error('expected test failure')
+    if (ti.service.includes('pull')) {
+      rejectionValue = UNEXPECTED_PARSE_ERROR
+    }
+    machineConfig.services[ti.service] = Promise.reject(rejectionValue)
+    const machine = ciraStateMachineImpl.machine.withConfig(machineConfig).withContext(machineContext)
+    const service = interpret(machine).onTransition((state) => {
+      if (state.matches('SUCCESS') || state.matches('FAILURE')) {
+        expect(state.matches('FAILURE')).toBe(true)
+        expect(previousState.matches(ti.stateValue)).toBe(true)
         done()
+      } else {
+        previousState = state
       }
     })
-
-    ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId, data: null, tenantId: '' })
-  })
-
-  it('should eventually reach "Failed" at enumerate-management-presence-remote-sap state ', (done) => {
-    configuration.services['enumerate-management-presence-remote-sap'] = Promise.reject(new Error())
-    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration).withContext(ciraConfigContext)
-    const flowStates = [
-      'CIRACONFIGURED',
-      'GET_CIRA_CONFIG',
-      'ADD_TRUSTED_ROOT_CERTIFICATE',
-      'SAVE_MPS_PASSWORD_TO_SECRET_PROVIDER',
-      'SAVE_DEVICE_TO_MPS',
-      'ADD_MPS',
-      'ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP',
-      'FAILURE']
-    const ciraConfigurationService = interpret(mockCiraConfigurationMachine).onTransition((state) => {
-      expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
-      if (state.matches('FAILURE') && currentStateIndex === flowStates.length) {
-        done()
-      }
-    })
-
-    ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId, data: null, tenantId: '' })
-  })
-
-  it('should eventually reach "Failed" at add-mps state ', (done) => {
-    configuration.services['add-mps'] = Promise.reject(new Error())
-    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration).withContext(ciraConfigContext)
-    const flowStates = [
-      'CIRACONFIGURED',
-      'GET_CIRA_CONFIG',
-      'ADD_TRUSTED_ROOT_CERTIFICATE',
-      'SAVE_MPS_PASSWORD_TO_SECRET_PROVIDER',
-      'SAVE_DEVICE_TO_MPS',
-      'ADD_MPS',
-      'FAILURE']
-    const ciraConfigurationService = interpret(mockCiraConfigurationMachine).onTransition((state) => {
-      expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
-      if (state.matches('FAILURE') && currentStateIndex === flowStates.length) {
-        done()
-      }
-    })
-
-    ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId, data: null, tenantId: '' })
-  })
-
-  it('should eventually reach "Failed" at pull-management-presence-remote-sap state ', (done) => {
-    configuration.services['pull-management-presence-remote-sap'] = Promise.reject(new Error())
-    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration).withContext(ciraConfigContext)
-    const flowStates = [
-      'CIRACONFIGURED',
-      'GET_CIRA_CONFIG',
-      'ADD_TRUSTED_ROOT_CERTIFICATE',
-      'SAVE_MPS_PASSWORD_TO_SECRET_PROVIDER',
-      'SAVE_DEVICE_TO_MPS',
-      'ADD_MPS',
-      'ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP',
-      'PULL_MANAGEMENT_PRESENCE_REMOTE_SAP',
-      'FAILURE']
-    const ciraConfigurationService = interpret(mockCiraConfigurationMachine).onTransition((state) => {
-      expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
-      if (state.matches('FAILURE') && currentStateIndex === flowStates.length) {
-        done()
-      }
-    })
-
-    ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId, data: null, tenantId: '' })
-  })
-
-  it('should eventually reach "Failed" at add-remote-policy-access-rule state ', (done) => {
-    configuration.services['add-remote-policy-access-rule'] = Promise.reject(new Error())
-    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration).withContext(ciraConfigContext)
-    const flowStates = [
-      'CIRACONFIGURED',
-      'GET_CIRA_CONFIG',
-      'ADD_TRUSTED_ROOT_CERTIFICATE',
-      'SAVE_MPS_PASSWORD_TO_SECRET_PROVIDER',
-      'SAVE_DEVICE_TO_MPS',
-      'ADD_MPS',
-      'ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP',
-      'PULL_MANAGEMENT_PRESENCE_REMOTE_SAP',
-      'ADD_REMOTE_POLICY_ACCESS_RULE',
-      'FAILURE']
-    const ciraConfigurationService = interpret(mockCiraConfigurationMachine).onTransition((state) => {
-      expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
-      if (state.matches('FAILURE') && currentStateIndex === flowStates.length) {
-        done()
-      }
-    })
-
-    ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId, data: null, tenantId: '' })
-  })
-
-  it('should eventually reach "Failed" at enumerate-remote-access-policy-rule state ', (done) => {
-    configuration.services['enumerate-remote-access-policy-rule'] = Promise.reject(new Error())
-    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration).withContext(ciraConfigContext)
-    const flowStates = [
-      'CIRACONFIGURED',
-      'GET_CIRA_CONFIG',
-      'ADD_TRUSTED_ROOT_CERTIFICATE',
-      'SAVE_MPS_PASSWORD_TO_SECRET_PROVIDER',
-      'SAVE_DEVICE_TO_MPS',
-      'ADD_MPS',
-      'ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP',
-      'PULL_MANAGEMENT_PRESENCE_REMOTE_SAP',
-      'ADD_REMOTE_POLICY_ACCESS_RULE',
-      'ENUMERATE_REMOTE_ACCESS_POLICY_RULE',
-      'FAILURE']
-    const ciraConfigurationService = interpret(mockCiraConfigurationMachine).onTransition((state) => {
-      expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
-      if (state.matches('FAILURE') && currentStateIndex === flowStates.length) {
-        done()
-      }
-    })
-
-    ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId, data: null, tenantId: '' })
-  })
-
-  it('should eventually reach "Failed" at pull-remote-access-policy-rule state ', (done) => {
-    configuration.services['pull-remote-access-policy-rule'] = Promise.reject(new Error())
-    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration).withContext(ciraConfigContext)
-    const flowStates = [
-      'CIRACONFIGURED',
-      'GET_CIRA_CONFIG',
-      'ADD_TRUSTED_ROOT_CERTIFICATE',
-      'SAVE_MPS_PASSWORD_TO_SECRET_PROVIDER',
-      'SAVE_DEVICE_TO_MPS',
-      'ADD_MPS',
-      'ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP',
-      'PULL_MANAGEMENT_PRESENCE_REMOTE_SAP',
-      'ADD_REMOTE_POLICY_ACCESS_RULE',
-      'ENUMERATE_REMOTE_ACCESS_POLICY_RULE',
-      'PULL_REMOTE_ACCESS_POLICY_RULE',
-      'FAILURE']
-    const ciraConfigurationService = interpret(mockCiraConfigurationMachine).onTransition((state) => {
-      expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
-      if (state.matches('FAILURE') && currentStateIndex === flowStates.length) {
-        done()
-      }
-    })
-
-    ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId, data: null, tenantId: '' })
-  })
-
-  it('should eventually reach "Failed" at put-remote-access-policy-rule state ', (done) => {
-    configuration.services['put-remote-access-policy-rule'] = Promise.reject(new Error())
-    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration).withContext(ciraConfigContext)
-    const flowStates = [
-      'CIRACONFIGURED',
-      'GET_CIRA_CONFIG',
-      'ADD_TRUSTED_ROOT_CERTIFICATE',
-      'SAVE_MPS_PASSWORD_TO_SECRET_PROVIDER',
-      'SAVE_DEVICE_TO_MPS',
-      'ADD_MPS',
-      'ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP',
-      'PULL_MANAGEMENT_PRESENCE_REMOTE_SAP',
-      'ADD_REMOTE_POLICY_ACCESS_RULE',
-      'ENUMERATE_REMOTE_ACCESS_POLICY_RULE',
-      'PULL_REMOTE_ACCESS_POLICY_RULE',
-      'PUT_REMOTE_ACCESS_POLICY_RULE',
-      'FAILURE']
-    const ciraConfigurationService = interpret(mockCiraConfigurationMachine).onTransition((state) => {
-      expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
-      if (state.matches('FAILURE') && currentStateIndex === flowStates.length) {
-        done()
-      }
-    })
-
-    ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId, data: null, tenantId: '' })
-  })
-
-  it('should eventually reach "Failed" at user-initiated-connection-service state ', (done) => {
-    configuration.services['user-initiated-connection-service'] = Promise.reject(new Error())
-    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration).withContext(ciraConfigContext)
-    const flowStates = [
-      'CIRACONFIGURED',
-      'GET_CIRA_CONFIG',
-      'ADD_TRUSTED_ROOT_CERTIFICATE',
-      'SAVE_MPS_PASSWORD_TO_SECRET_PROVIDER',
-      'SAVE_DEVICE_TO_MPS',
-      'ADD_MPS',
-      'ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP',
-      'PULL_MANAGEMENT_PRESENCE_REMOTE_SAP',
-      'ADD_REMOTE_POLICY_ACCESS_RULE',
-      'ENUMERATE_REMOTE_ACCESS_POLICY_RULE',
-      'PULL_REMOTE_ACCESS_POLICY_RULE',
-      'PUT_REMOTE_ACCESS_POLICY_RULE',
-      'USER_INITIATED_CONNECTION_SERVICE',
-      'FAILURE']
-    const ciraConfigurationService = interpret(mockCiraConfigurationMachine).onTransition((state) => {
-      expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
-      if (state.matches('FAILURE') && currentStateIndex === flowStates.length) {
-        done()
-      }
-    })
-
-    ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId, data: null, tenantId: '' })
-  })
-
-  it('should eventually reach "Failed" at get-environment-detection-settings state ', (done) => {
-    configuration.services['get-environment-detection-settings'] = Promise.reject(new Error())
-    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration).withContext(ciraConfigContext)
-    const flowStates = [
-      'CIRACONFIGURED',
-      'GET_CIRA_CONFIG',
-      'ADD_TRUSTED_ROOT_CERTIFICATE',
-      'SAVE_MPS_PASSWORD_TO_SECRET_PROVIDER',
-      'SAVE_DEVICE_TO_MPS',
-      'ADD_MPS',
-      'ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP',
-      'PULL_MANAGEMENT_PRESENCE_REMOTE_SAP',
-      'ADD_REMOTE_POLICY_ACCESS_RULE',
-      'ENUMERATE_REMOTE_ACCESS_POLICY_RULE',
-      'PULL_REMOTE_ACCESS_POLICY_RULE',
-      'PUT_REMOTE_ACCESS_POLICY_RULE',
-      'USER_INITIATED_CONNECTION_SERVICE',
-      'GET_ENVIRONMENT_DETECTION_SETTINGS',
-      'FAILURE']
-    const ciraConfigurationService = interpret(mockCiraConfigurationMachine).onTransition((state) => {
-      expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
-      if (state.matches('FAILURE') && currentStateIndex === flowStates.length) {
-        done()
-      }
-    })
-
-    ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId, data: null, tenantId: '' })
-  })
-
-  it('should eventually reach "Failed" at put-environment-detection-settings state ', (done) => {
-    configuration.services['put-environment-detection-settings'] = Promise.reject(new Error())
-    const mockCiraConfigurationMachine = ciraConfiguration.machine.withConfig(configuration).withContext(ciraConfigContext)
-    const flowStates = [
-      'CIRACONFIGURED',
-      'GET_CIRA_CONFIG',
-      'ADD_TRUSTED_ROOT_CERTIFICATE',
-      'SAVE_MPS_PASSWORD_TO_SECRET_PROVIDER',
-      'SAVE_DEVICE_TO_MPS',
-      'ADD_MPS',
-      'ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP',
-      'PULL_MANAGEMENT_PRESENCE_REMOTE_SAP',
-      'ADD_REMOTE_POLICY_ACCESS_RULE',
-      'ENUMERATE_REMOTE_ACCESS_POLICY_RULE',
-      'PULL_REMOTE_ACCESS_POLICY_RULE',
-      'PUT_REMOTE_ACCESS_POLICY_RULE',
-      'USER_INITIATED_CONNECTION_SERVICE',
-      'GET_ENVIRONMENT_DETECTION_SETTINGS',
-      'PUT_ENVIRONMENT_DETECTION_SETTINGS',
-      'FAILURE']
-    const ciraConfigurationService = interpret(mockCiraConfigurationMachine).onTransition((state) => {
-      expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
-      if (state.matches('FAILURE') && currentStateIndex === flowStates.length) {
-        const status = devices[clientId].status.CIRAConnection
-        expect(status).toEqual('Failed to set user initiated connection service')
-        done()
-      }
-    })
-
-    ciraConfigurationService.start()
-    ciraConfigurationService.send({ type: 'CONFIGURE_CIRA', clientId, data: null, tenantId: '' })
+    service.start()
+    service.send(initialEvent)
   })
 
   describe('send wsman message with Management Presence Remote SAP', () => {
     it('should send wsman message to enumerate ManagementPresenceRemoteSAP', async () => {
-      await ciraConfiguration.enumerateManagementPresenceRemoteSAP(ciraConfigContext, null)
+      await ciraStateMachineImpl.enumerateManagementPresenceRemoteSAP(machineContext, null)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
 
     it('should send wsman message to pull ManagementPresenceRemoteSAP', async () => {
-      ciraConfigContext.message = {
+      machineContext.message = {
         Envelope: { Body: { EnumerateResponse: { EnumerationContext: 'abcd' } } }
       }
-      await ciraConfiguration.pullManagementPresenceRemoteSAP(ciraConfigContext, null)
+      await ciraStateMachineImpl.pullManagementPresenceRemoteSAP(machineContext, null)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
     it('should send to add RemoteAccessService', async () => {
-      ciraConfigContext.message = {
+      machineContext.message = {
         Envelope: { Body: { PullResponse: { Items: { AMT_ManagementPresenceRemoteSAP: { Name: 'abcd' } } } } }
       }
-      await ciraConfiguration.addRemoteAccessService(ciraConfigContext, null)
+      await ciraStateMachineImpl.addRemoteAccessPolicyRule(machineContext, null)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
   })
+
   describe('send wsman message for Environment Detection Settings', () => {
     it('should send wsman message to get Environment Detection Settings', async () => {
-      await ciraConfiguration.getEnvironmentDetectionSettings(ciraConfigContext, null)
+      await ciraStateMachineImpl.getEnvironmentDetectionSettings(machineContext, null)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
 
     it('should send wsman message to put Environment Detection Settings', async () => {
-      ciraConfigContext.message = {
+      expect(Environment.Config.disableCIRADomainName).toBeFalsy()
+      machineContext.message = {
         Envelope: { Body: { AMT_EnvironmentDetectionSettingData: { DetectionStrings: 'abcde' } } }
       }
-      await ciraConfiguration.putEnvironmentDetectionSettings(ciraConfigContext, null)
-      expect(invokeWsmanCallSpy).toHaveBeenCalled()
+      await ciraStateMachineImpl.putEnvironmentDetectionSettings(machineContext, null)
+      Environment.Config.disableCIRADomainName = 'disablethis.com'
+      await ciraStateMachineImpl.putEnvironmentDetectionSettings(machineContext, null)
+      expect(invokeWsmanCallSpy).toHaveBeenCalledTimes(2)
     })
   })
 
   describe('send wsman message for Remote Access Policy Applies To MPS', () => {
     it('should send wsman message to enumerate Remote Access Policy Applies To MPS', async () => {
-      await ciraConfiguration.enumerateRemoteAccessPolicyAppliesToMPS(ciraConfigContext, null)
+      await ciraStateMachineImpl.enumerateRemoteAccessPolicyAppliesToMPS(machineContext, null)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
 
     it('should send wsman message to pull Remote Access Policy Applies To MPS', async () => {
-      ciraConfigContext.message = {
+      machineContext.message = {
         Envelope: { Body: { EnumerateResponse: { EnumerationContext: 'abcde' } } }
       }
-      await ciraConfiguration.pullRemoteAccessPolicyAppliesToMPS(ciraConfigContext, null)
+      await ciraStateMachineImpl.pullRemoteAccessPolicyAppliesToMPS(machineContext, null)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
 
     it('should send wsman message to put Remote Access Policy Applies To MPS', async () => {
-      ciraConfigContext.message = {
+      machineContext.message = {
         Envelope: { Body: { PullResponse: { Items: { AMT_RemoteAccessPolicyAppliesToMPS: MPSType } } } }
       }
-      await ciraConfiguration.putRemoteAccessPolicyAppliesToMPS(ciraConfigContext, null)
+      await ciraStateMachineImpl.putRemoteAccessPolicyAppliesToMPS(machineContext, null)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
 
     it('should send wsman message to User Initiated Connection Service', async () => {
-      await ciraConfiguration.userInitiatedConnectionService(ciraConfigContext, null)
+      await ciraStateMachineImpl.userInitiatedConnectionService(machineContext, null)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
   })
 
   describe('send wsman message to add MPS server and certificate', () => {
+    beforeEach(() => {
+      // spoof getCiraConfiguration
+      machineContext.ciraConfig = ciraConfig
+    })
     it('should send wsman message to add Trusted Root Certificate', async () => {
-      await ciraConfiguration.addTrustedRootCertificate(ciraConfigContext, null)
+      await ciraStateMachineImpl.addTrustedRootCertificate(machineContext, null)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
     it('should send wsman message to add MPS server', async () => {
-      await ciraConfiguration.addMPS(ciraConfigContext, null)
+      await ciraStateMachineImpl.addMPS(machineContext, null)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
   })

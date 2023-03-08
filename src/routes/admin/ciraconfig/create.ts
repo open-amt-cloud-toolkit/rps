@@ -8,6 +8,7 @@ import Logger from '../../../Logger'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { type Request, type Response } from 'express'
 import handleError from '../../../utils/handleError'
+import { type CiraConfigSecrets } from '../../../interfaces/ISecretManagerService'
 
 export async function createCiraConfig (req: Request, res: Response): Promise<void> {
   const log = new Logger('createCiraConfig')
@@ -15,12 +16,22 @@ export async function createCiraConfig (req: Request, res: Response): Promise<vo
   ciraConfig.tenantId = req.tenantId || ''
 
   try {
-    // SQL Query > Insert Data
+    // secrets rules: if secret manager is available, keep password out of database
+    if (ciraConfig.password && req.secretsManager) {
+      const secrets: CiraConfigSecrets = {
+        MPS_PASSWORD: ciraConfig.password
+      }
+      const secretRsp = await req.secretsManager.writeSecretWithObject(`CIRAConfigs/${ciraConfig.configName}`, secrets)
+      if (secretRsp == null) {
+        throw new Error('Error saving cira configuration secrets to secret provider')
+      }
+      delete ciraConfig.password
+    }
     const results: CIRAConfig = await req.db.ciraConfigs.insert(ciraConfig)
-    // CIRA profile inserted  into db successfully.
     if (results != null) {
-      log.verbose(`Created CIRA config : ${ciraConfig.configName}`)
+      // secrets rules: never return sensitive data (passwords) in a response
       delete results.password
+      log.verbose(`Created CIRA config : ${ciraConfig.configName}`)
       MqttProvider.publishEvent('success', ['createCiraConfig'], `Created ${results.configName}`)
       res.status(201).json(results).end()
     }
