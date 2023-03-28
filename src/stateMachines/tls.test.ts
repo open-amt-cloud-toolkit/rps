@@ -12,6 +12,10 @@ import * as forge from 'node-forge'
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 import { UNEXPECTED_PARSE_ERROR } from '../utils/constants'
 import { wsmanAlreadyExistsAllChunks } from '../test/helper/AMTMessages'
+import { config } from '../test/helper/Config'
+import { Environment } from '../utils/Environment'
+
+Environment.Config = config
 
 describe('TLS State Machine', () => {
   let tls: TLS

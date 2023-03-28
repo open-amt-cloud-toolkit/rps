@@ -394,7 +394,7 @@ export class Activation {
         },
         DELAYED_TRANSITION: {
           after: {
-            10000: { target: 'UPDATE_CREDENTIALS' }
+            DELAY_TIME_ACTIVATION_SYNC: { target: 'UPDATE_CREDENTIALS' }
           }
         },
         UPDATE_CREDENTIALS: {
@@ -620,6 +620,9 @@ export class Activation {
         }
       }
     }, {
+      delays: {
+        DELAY_TIME_ACTIVATION_SYNC: () => Environment.Config.delayActivationSync
+      },
       guards: {
         isAdminMode: (context, event) => context.profile.activation === ClientAction.ADMINCTLMODE,
         isCertExtracted: (context, event) => context.certChainPfx != null,
@@ -671,8 +674,8 @@ export class Activation {
         console.log(`AMT Features State: ${childState.value}`)
       })
     }
-    if (state.children['tls-configuration-machine'] != null) {
-      state.children['tls-configuration-machine'].subscribe((childState) => {
+    if (state.children['tls-machine'] != null) {
+      state.children['tls-machine'].subscribe((childState) => {
         console.log(`TLS State: ${childState.value}`)
       })
     }
