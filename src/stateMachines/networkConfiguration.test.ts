@@ -23,7 +23,6 @@ describe('Network Configuration', () => {
   let context
   let invokeWsmanCallSpy
 
-  jest.setTimeout(15000)
   beforeEach(() => {
     devices[clientId] = {
       unauthCount: 0,

@@ -11,6 +11,7 @@ import { config } from '../test/helper/Config'
 import { Environment } from '../utils/Environment'
 import ClientResponseMsg from '../utils/ClientResponseMsg'
 import { HttpHandler } from '../HttpHandler'
+import * as common from './common'
 
 const clientId = uuid()
 Environment.Config = config
@@ -19,6 +20,8 @@ describe('Deactivation State Machine', () => {
   let deactivation: Deactivation
   let deactivationContext: DeactivationContext
   let config
+  let invokeWsmanCallSpy: jest.SpyInstance
+
   let currentStateIndex: number
   let setupAndConfigurationServiceSpy: jest.SpyInstance
   let sendSpy: jest.SpyInstance
@@ -57,6 +60,7 @@ describe('Deactivation State Machine', () => {
       httpHandler: new HttpHandler()
     }
     sendSpy = jest.spyOn(devices[clientId].ClientSocket, 'send').mockImplementation().mockReturnValue()
+    invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue(null)
     currentStateIndex = 0
     config = {
       services: {
@@ -176,8 +180,9 @@ describe('Deactivation State Machine', () => {
 
   it('should invoke unprovision and return promise', async () => {
     void deactivation.invokeUnprovision(deactivationContext)
-    expect(devices[clientId].pendingPromise).toBeDefined()
     expect(setupAndConfigurationServiceSpy).toHaveBeenCalled()
+    expect(deactivationContext.xmlMessage).toBe('abcdef')
+    expect(invokeWsmanCallSpy).toHaveBeenCalledWith(deactivationContext)
   })
 
   it('should send success message to device', () => {

@@ -115,7 +115,7 @@ test('test if profile exists', () => {
   expect(actual).toBeTruthy()
 })
 
-test('test if profile exists', async () => {
+test('test if profile does not exists', async () => {
   const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub)
 
   const actual = await profileManager.doesProfileExist('profile 5', '')
