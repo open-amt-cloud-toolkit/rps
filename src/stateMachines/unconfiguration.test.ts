@@ -23,7 +23,6 @@ describe('Unconfiguration State Machine', () => {
   let remoteAccessPolicyRuleSpy: jest.SpyInstance
   let unconfigContext: UnconfigContext
   let configuration
-  jest.setTimeout(15000)
   beforeEach(() => {
     unconfiguration = new Unconfiguration()
     invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue(null)
