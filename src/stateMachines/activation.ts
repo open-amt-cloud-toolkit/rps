@@ -512,7 +512,10 @@ export class Activation {
             onDone: 'NEXT_STATE'
           },
           on: {
-            ONFAILED: 'FAILED'
+            ONFAILED: {
+              actions: assign({ errorMessage: (context, event) => event.data }),
+              target: 'FAILED'
+            }
           }
         },
         NEXT_STATE: {
