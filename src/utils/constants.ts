@@ -113,7 +113,23 @@ export const WIFIENDPOINT = {
 export const DEFAULT_TOP = 25
 export const DEFAULT_SKIP = 0
 
-export const UNEXPECTED_PARSE_ERROR = {
-  statusCode: 599,
-  statusMessage: 'Unexpected Parse Error'
+export class UnexpectedParseError extends Error {
+  statusCode: number
+  constructor (message: string = 'Unexpected Parse Error', statusCode: number = 599) {
+    super(message)
+    this.name = this.constructor.name
+    this.statusCode = statusCode
+    Error.captureStackTrace(this, this.constructor)
+  }
 }
+export const UNEXPECTED_PARSE_ERROR = UnexpectedParseError
+export class GatewayTimeoutError extends Error {
+  statusCode: number
+  constructor (message: string = 'Gateway Timeout', statusCode: number = 504) {
+    super(message)
+    this.name = this.constructor.name
+    this.statusCode = statusCode
+    Error.captureStackTrace(this, this.constructor)
+  }
+}
+export const GATEWAY_TIMEOUT_ERROR = GatewayTimeoutError

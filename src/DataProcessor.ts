@@ -108,13 +108,13 @@ export class DataProcessor {
         resolveValue = this.httpHandler.parseXML(xmlBody)
         if (!xmlBody || !resolveValue) {
           // AMT fulfilled the request, but there is some problem with the response
-          rejectValue = UNEXPECTED_PARSE_ERROR
+          rejectValue = new UNEXPECTED_PARSE_ERROR()
         }
       } else {
         rejectValue = httpRsp
       }
     } catch (error) {
-      rejectValue = UNEXPECTED_PARSE_ERROR
+      rejectValue = new UNEXPECTED_PARSE_ERROR()
     }
     if (clientObj.pendingPromise != null) {
       if (resolveValue) {

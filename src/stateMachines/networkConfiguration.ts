@@ -374,7 +374,7 @@ export class NetworkConfiguration {
         isWifiProfileDeleted: (context, event) => context.message.Envelope.Body == null,
         isLocalProfileSynchronizationNotEnabled: (context, event) => context.message.Envelope.Body.AMT_WiFiPortConfigurationService.localProfileSynchronizationEnabled === 0,
         isNotAMTNetworkEnabled: this.isNotAMTNetworkEnabled.bind(this),
-        shouldRetry: (context, event) => context.retryCount < 3 && event.data === UNEXPECTED_PARSE_ERROR
+        shouldRetry: (context, event) => context.retryCount < 3 && event.data instanceof UNEXPECTED_PARSE_ERROR
       },
       actions: {
         'Reset Unauth Count': (context, event) => { devices[context.clientId].unauthCount = 0 },

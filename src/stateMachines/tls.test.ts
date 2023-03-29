@@ -123,7 +123,7 @@ describe('TLS State Machine', () => {
 
   it('should retry', (done) => {
     context.amtProfile = { tlsMode: 3, tlsSigningAuthoritys: 'SelfSigned' } as any
-    config.services['pull-public-key-certificate'] = Promise.reject(UNEXPECTED_PARSE_ERROR)
+    config.services['pull-public-key-certificate'] = Promise.reject(new UNEXPECTED_PARSE_ERROR())
     const tlsStateMachine = tls.machine.withConfig(config).withContext(context)
     const flowStates = [
       'PROVISIONED',
