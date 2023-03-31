@@ -81,17 +81,17 @@ describe('handle AMT response', () => {
   it('should reject with UNEXPECTED_PARSE_ERROR on 200 but out of order', async () => {
     clientMsg.payload = response200OutOfOrder
     await dataProcessor.handleResponse(clientMsg, clientId)
-    await expect(promise).rejects.toEqual(UNEXPECTED_PARSE_ERROR)
+    await expect(promise).rejects.toBeInstanceOf(UNEXPECTED_PARSE_ERROR)
   })
   it('should reject with UNEXPECTED_PARSE_ERROR on 200 but incomplete', async () => {
     clientMsg.payload = response200Incomplete
     await dataProcessor.handleResponse(clientMsg, clientId)
-    await expect(promise).rejects.toEqual(UNEXPECTED_PARSE_ERROR)
+    await expect(promise).rejects.toBeInstanceOf(UNEXPECTED_PARSE_ERROR)
   })
   it('should reject with UNEXPECTED_PARSE_ERROR on 200 but bad wsman xml', async () => {
     clientMsg.payload = response200BadWsmanXML
     await dataProcessor.handleResponse(clientMsg, clientId)
-    await expect(promise).rejects.toEqual(UNEXPECTED_PARSE_ERROR)
+    await expect(promise).rejects.toBeInstanceOf(UNEXPECTED_PARSE_ERROR)
   })
   it('should reject with HttpZReponseModel on 400', async () => {
     clientMsg.payload = response400

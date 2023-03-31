@@ -105,8 +105,8 @@ export interface ClientObject {
   connectionParams?: connectionParams
   messageId?: number
   pendingPromise?: Promise<any>
-  resolve?: any
-  reject?: any
+  resolve?: (value: unknown) => void
+  reject?: (value: unknown) => void
 }
 
 export interface CIRAConfigFlow {

@@ -348,7 +348,7 @@ export class CIRAConfiguration {
     }, {
       guards: {
         userInitiatedConnectionServiceSuccessful: (_, event) => event.data.Envelope.Body?.RequestStateChange_OUTPUT?.ReturnValue === 0,
-        shouldRetry: (context, event) => context.retryCount < 3 && event.data === UNEXPECTED_PARSE_ERROR
+        shouldRetry: (context, event) => context.retryCount < 3 && event.data instanceof UNEXPECTED_PARSE_ERROR
       },
       actions: {
         'Update Configuration Status': (context, event) => {

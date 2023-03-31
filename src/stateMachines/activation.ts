@@ -24,7 +24,7 @@ import { NodeForge } from '../NodeForge'
 import { Configurator } from '../Configurator'
 import { Validator } from '../Validator'
 import { DbCreatorFactory } from '../factories/DbCreatorFactory'
-import { AMTUserName } from '../utils/constants'
+import { AMTUserName, GATEWAY_TIMEOUT_ERROR } from '../utils/constants'
 import { CIRAConfiguration } from './ciraConfiguration'
 import { TLS } from './tls'
 import { invokeWsmanCall } from './common'
@@ -59,6 +59,7 @@ interface ActivationEvent {
   data?: any
   tenantId: string
 }
+
 export class Activation {
   nodeForge: NodeForge
   certManager: CertManager
@@ -106,7 +107,10 @@ export class Activation {
         UNPROVISIONED: {
           on: {
             ACTIVATION: {
-              actions: assign({ clientId: (context, event) => event.clientId, tenantId: (context, event) => event.tenantId }),
+              actions: assign({
+                clientId: (context, event) => event.clientId,
+                tenantId: (context, event) => event.tenantId
+              }),
               target: 'GET_AMT_PROFILE'
             },
             ACTIVATED: {
@@ -220,7 +224,10 @@ export class Activation {
               target: 'READ_GENERAL_SETTINGS'
             },
             onError: {
-              actions: assign({ message: (context, event) => event.data, targetAfterError: (context, event) => 'GET_GENERAL_SETTINGS' }),
+              actions: assign({
+                message: (context, event) => event.data,
+                targetAfterError: (context, event) => 'GET_GENERAL_SETTINGS'
+              }),
               target: 'ERROR'
             }
           }
@@ -289,19 +296,30 @@ export class Activation {
         },
         ADMIN_SETUP: {
           invoke: {
-            src: this.getAdminSetup.bind(this),
+            src: this.sendAdminSetup.bind(this),
             id: 'send-adminsetup',
             onDone: {
               actions: assign({ message: (context, event) => event.data }),
               target: 'CHECK_ADMIN_SETUP'
             },
-            onError: {
-              target: 'ERROR'
-            }
+            onError: [
+              {
+                cond: (_, event) => event.data instanceof GATEWAY_TIMEOUT_ERROR,
+                target: 'CHECK_ACTIVATION_ON_AMT'
+              },
+              {
+                target: 'ERROR'
+              }
+            ]
           }
         },
         CHECK_ADMIN_SETUP: {
           always: [
+            {
+              cond: 'isDeviceActivated',
+              actions: [(context, event) => { devices[context.clientId].status.Status = 'Admin control mode.' }, 'Set activation status'],
+              target: 'UPDATE_CREDENTIALS'
+            },
             {
               cond: 'isDeviceAdminModeActivated',
               actions: [(context, event) => { devices[context.clientId].status.Status = 'Admin control mode.' }, 'Set activation status'],
@@ -314,19 +332,30 @@ export class Activation {
         },
         SETUP: {
           invoke: {
-            src: this.getClientSetup.bind(this),
+            src: this.sendClientSetup.bind(this),
             id: 'send-setup',
             onDone: {
               actions: assign({ message: (context, event) => event.data }),
               target: 'CHECK_SETUP'
             },
-            onError: {
-              target: 'ERROR'
-            }
+            onError: [
+              {
+                cond: (_, event) => event.data instanceof GATEWAY_TIMEOUT_ERROR,
+                target: 'CHECK_ACTIVATION_ON_AMT'
+              },
+              {
+                target: 'ERROR'
+              }
+            ]
           }
         },
         CHECK_SETUP: {
           always: [
+            {
+              cond: 'isDeviceActivated',
+              actions: [(context, event) => { devices[context.clientId].status.Status = 'Client control mode.' }, 'Set activation status'],
+              target: 'UPDATE_CREDENTIALS'
+            },
             {
               cond: 'isDeviceClientModeActivated',
               actions: [(context, event) => { devices[context.clientId].status.Status = 'Client control mode.' }, 'Set activation status'],
@@ -336,6 +365,30 @@ export class Activation {
               target: 'FAILED'
             }
           ]
+        },
+        CHECK_ACTIVATION_ON_AMT: {
+          invoke: {
+            src: this.getActivationStatus.bind(this),
+            id: 'get-activationstatus',
+            onDone: [
+              {
+                cond: 'isAdminMode',
+                actions: assign({ message: (context, event) => event.data }),
+                target: 'CHECK_ADMIN_SETUP'
+              }, {
+                actions: assign({ message: (context, event) => event.data }),
+                target: 'CHECK_SETUP'
+              }],
+            onError: [
+              {
+                actions: assign({
+                  message: (context, event) => event.data,
+                  targetAfterError: (context, event) => 'CHECK_ACTIVATION_ON_AMT'
+                }),
+                target: 'ERROR'
+              }
+            ]
+          }
         },
         DELAYED_TRANSITION: {
           after: {
@@ -526,6 +579,9 @@ export class Activation {
             }, {
               cond: 'isMebxPassword',
               target: 'SET_MEBX_PASSWORD'
+            }, {
+              cond: 'isCheckActivationOnAMT',
+              target: 'CHECK_ACTIVATION_ON_AMT'
             }]
         },
         INVALID_DIGEST_REALM: {
@@ -549,11 +605,13 @@ export class Activation {
         isValidCert: (context, event) => devices[context.clientId].certObj != null,
         isDigestRealmInvalid: (context, event) => !this.validator.isDigestRealmValid(devices[context.clientId].ClientData.payload.digestRealm),
         maxCertLength: (context, event) => devices[context.clientId].count <= devices[context.clientId].certObj.certChain.length,
-        isDeviceAdminModeActivated: (context, event) => context.message.Envelope.Body.AdminSetup_OUTPUT.ReturnValue === 0,
-        isDeviceClientModeActivated: (context, event) => context.message.Envelope.Body.Setup_OUTPUT.ReturnValue === 0,
+        isDeviceAdminModeActivated: (context, event) => context.message.Envelope.Body?.AdminSetup_OUTPUT?.ReturnValue === 0,
+        isDeviceClientModeActivated: (context, event) => context.message.Envelope.Body?.Setup_OUTPUT?.ReturnValue === 0,
+        isDeviceActivated: (context, event) => context.message.Envelope.Body?.IPS_HostBasedSetupService?.CurrentControlMode > 0,
         isCertNotAdded: (context, event) => context.message.Envelope.Body.AddNextCertInChain_OUTPUT.ReturnValue !== 0,
         isGeneralSettings: (context, event) => context.targetAfterError === 'GET_GENERAL_SETTINGS',
         isMebxPassword: (context, event) => context.targetAfterError === 'SET_MEBX_PASSWORD',
+        isCheckActivationOnAMT: (context, event) => context.targetAfterError === 'CHECK_ACTIVATION_ON_AMT',
         hasCIRAProfile: (context, event) => context.profile.ciraConfigName != null,
         isActivated: (context, event) => context.isActivated,
         canActivate: (context, event) => context.canActivate
@@ -636,7 +694,8 @@ export class Activation {
       if (result?.body != null && result?.body !== '') {
         return true // if we have a result the device is already in their tenant and can activated
       }
-      return false // if we have a success repsonse, but no result -- it means the device belongs to another tenant -- prevent activation without unprovision first.
+      return false // if we have a success repsonse, but no result -- it means the device belongs to another tenant --
+      // prevent activation without unprovision first.
     } catch (err) {
       return true // no one has registered this device and can be activated
     }
@@ -704,7 +763,7 @@ export class Activation {
     return password
   }
 
-  async getAdminSetup (context): Promise<any> {
+  async sendAdminSetup (context): Promise<any> {
     const ips: IPS.Messages = context.ips
     const { clientId } = context
     const password = await this.getPassword(context)
@@ -714,7 +773,13 @@ export class Activation {
     return await invokeWsmanCall(context)
   }
 
-  async getClientSetup (context): Promise<any> {
+  async getActivationStatus (context): Promise<any> {
+    const ips: IPS.Messages = context.ips
+    context.xmlMessage = ips.HostBasedSetupService.Get()
+    return await invokeWsmanCall(context)
+  }
+
+  async sendClientSetup (context): Promise<any> {
     const ips: IPS.Messages = context.ips
     const password = await this.getPassword(context)
     context.xmlMessage = ips.HostBasedSetupService.Setup(2, password)

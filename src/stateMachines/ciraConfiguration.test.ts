@@ -166,7 +166,7 @@ describe('CIRA Configuration State Machine', () => {
     // exercise the UNEXPECTED_PARSE_ERROR retry in one of the pull calls
     let rejectionValue: any = new Error('expected test failure')
     if (ti.service.includes('pull')) {
-      rejectionValue = UNEXPECTED_PARSE_ERROR
+      rejectionValue = new UNEXPECTED_PARSE_ERROR()
     }
     machineConfig.services[ti.service] = Promise.reject(rejectionValue)
     const machine = ciraStateMachineImpl.machine.withConfig(machineConfig).withContext(machineContext)
