@@ -78,7 +78,7 @@ export class Unconfiguration {
           on: {
             REMOVEPOLICY: {
               actions: 'Reset Unauth Count',
-              target: 'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED'
+              target: 'GET_8021X_PROFILE'
             }
           }
         },
@@ -92,10 +92,43 @@ export class Unconfiguration {
               message: (context, event) => event.data,
               clientId: (context, event) => context.clientId
             },
-            onDone: 'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED'
+            onDone: 'GET_8021X_PROFILE'
           },
           on: {
             ONFAILED: 'FAILURE'
+          }
+        },
+        GET_8021X_PROFILE: {
+          invoke: {
+            src: this.get8021xProfile.bind(this),
+            id: 'get-8021x-profile',
+            onDone: {
+              actions: assign({ message: (context, event) => event.data }),
+              target: 'CHECK_GET_8021X_PROFILE_RESPONSE'
+            },
+            onError: {
+              target: 'ERROR'
+            }
+          }
+        },
+        CHECK_GET_8021X_PROFILE_RESPONSE: {
+          always: [
+            {
+              cond: 'is8021xProfileEnabled',
+              target: 'DISABLE_IEEE8021X_WIRED'
+            }, {
+              target: 'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED'
+            }
+          ]
+        },
+        DISABLE_IEEE8021X_WIRED: {
+          invoke: {
+            src: this.disableWired8021xConfiguration.bind(this),
+            id: 'disable-Wired-8021x-Configuration',
+            onDone: 'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED',
+            onError: {
+              target: 'ERROR'
+            }
           }
         },
         REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED: {
@@ -448,7 +481,8 @@ export class Unconfiguration {
         hasMPSEntries: (context, event) => context.message.Envelope.Body.PullResponse.Items?.AMT_ManagementPresenceRemoteSAP != null,
         hasPublicKeyCertificate: (context, event) => context.publicKeyCertificates?.length > 0,
         hasEnvSettings: (context, event) => context.message.Envelope.Body.AMT_EnvironmentDetectionSettingData.DetectionStrings != null,
-        hasTLSCredentialContext: (context, event) => context.message.Envelope.Body.PullResponse.Items?.AMT_TLSCredentialContext != null
+        hasTLSCredentialContext: (context, event) => context.message.Envelope.Body.PullResponse.Items?.AMT_TLSCredentialContext != null,
+        is8021xProfileEnabled: (context, event) => context.message.Envelope.Body.AMT_8021XProfile.Enabled === true
       },
       actions: {
         'Update CIRA Status': (context, event) => {
@@ -474,6 +508,24 @@ export class Unconfiguration {
     this.validator = new Validator(new Logger('Validator'), this.configurator)
     this.dbFactory = new DbCreatorFactory()
     this.logger = new Logger('Activation_State_Machine')
+  }
+
+  async get8021xProfile (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
+    context.xmlMessage = context.amt.IEEE8021xProfile.Get()
+    return await invokeWsmanCall(context, 2)
+  }
+
+  async disableWired8021xConfiguration (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
+    const ieee8021xProfile = context.message.Envelope.Body.AMT_8021XProfile
+    delete ieee8021xProfile.Username
+    delete ieee8021xProfile.AuthenticationProtocol
+    delete ieee8021xProfile.ServerCertificateNameComparison
+    delete ieee8021xProfile.ServerCertificateName
+    delete ieee8021xProfile.ServerCertificateIssuer
+    delete ieee8021xProfile.ClientCertificate
+    ieee8021xProfile.Enabled = false
+    context.xmlMessage = context.amt.IEEE8021xProfile.Put(ieee8021xProfile)
+    return await invokeWsmanCall(context, 2)
   }
 
   async removeRemoteAccessPolicyRuleUserInitiated (context: UnconfigContext, event: UnconfigEvent): Promise<void> {

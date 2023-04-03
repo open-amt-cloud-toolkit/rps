@@ -32,7 +32,8 @@ describe('profiles tests', () => {
       iderEnabled: true,
       kvmEnabled: true,
       solEnabled: true,
-      tlsSigningAuthority: null
+      tlsSigningAuthority: null,
+      ieee8021xProfileName: null
     }
     db = new PostgresDb('')
     profilesTable = new ProfilesTable(db)
@@ -75,6 +76,7 @@ describe('profiles tests', () => {
       p.tenant_id as "tenantId",
       tls_signing_authority as "tlsSigningAuthority",
       p.xmin as "version",
+      ieee8021x_profile_name as "ieee8021xProfileName",
       COALESCE(json_agg(json_build_object('profileName',wc.wireless_profile_name, 'priority', wc.priority)) FILTER (WHERE wc.wireless_profile_name IS NOT NULL), '[]') AS "wifiConfigs" 
     FROM profiles p
     LEFT JOIN profiles_wirelessconfigs wc ON wc.profile_name = p.profile_name AND wc.tenant_id = p.tenant_id
@@ -93,7 +95,8 @@ describe('profiles tests', () => {
       kvm_enabled,
       sol_enabled,
       tls_signing_authority,
-      p.tenant_id
+      p.tenant_id,
+      ieee8021x_profile_name
     ORDER BY p.profile_name 
     LIMIT $1 OFFSET $2`, [DEFAULT_TOP, DEFAULT_SKIP, ''])
     })
@@ -120,6 +123,7 @@ describe('profiles tests', () => {
       p.tenant_id as "tenantId",
       tls_signing_authority as "tlsSigningAuthority",
       p.xmin as "version",
+      ieee8021x_profile_name as "ieee8021xProfileName",
       COALESCE(json_agg(json_build_object('profileName',wc.wireless_profile_name, 'priority', wc.priority)) FILTER (WHERE wc.wireless_profile_name IS NOT NULL), '[]') AS "wifiConfigs"
     FROM profiles p
     LEFT JOIN profiles_wirelessconfigs wc ON wc.profile_name = p.profile_name AND wc.tenant_id = p.tenant_id
@@ -138,7 +142,8 @@ describe('profiles tests', () => {
       kvm_enabled,
       sol_enabled,
       tls_signing_authority,
-      p.tenant_id
+      p.tenant_id,
+      ieee8021x_profile_name
     `, [profileName, ''])
     })
     test('should NOT get by name when no profiles exists', async () => {
@@ -203,8 +208,8 @@ describe('profiles tests', () => {
           mebx_password, generate_random_mebx_password,
           tags, dhcp_enabled, tls_mode,
           user_consent, ider_enabled, kvm_enabled, sol_enabled,
-          tenant_id, tls_signing_authority)
-        values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`, [
+          tenant_id, tls_signing_authority, ieee8021x_profile_name)
+        values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`, [
         amtConfig.profileName,
         amtConfig.activation,
         amtConfig.amtPassword,
@@ -220,7 +225,8 @@ describe('profiles tests', () => {
         amtConfig.kvmEnabled,
         amtConfig.solEnabled,
         amtConfig.tenantId,
-        amtConfig.tlsSigningAuthority
+        amtConfig.tlsSigningAuthority,
+        amtConfig.ieee8021xProfileName
       ])
     })
     test('should insert without wificonfigs', async () => {
@@ -243,8 +249,9 @@ describe('profiles tests', () => {
           mebx_password, generate_random_mebx_password,
           tags, dhcp_enabled, tls_mode,
           user_consent, ider_enabled, kvm_enabled, sol_enabled,
-          tenant_id, tls_signing_authority)
-        values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`, [
+          tenant_id, tls_signing_authority, ieee8021x_profile_name)
+        values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`,
+      [
         amtConfig.profileName,
         amtConfig.activation,
         amtConfig.amtPassword,
@@ -260,7 +267,8 @@ describe('profiles tests', () => {
         amtConfig.kvmEnabled,
         amtConfig.solEnabled,
         amtConfig.tenantId,
-        amtConfig.tlsSigningAuthority
+        amtConfig.tlsSigningAuthority,
+        amtConfig.ieee8021xProfileName
       ])
     })
     test('should NOT insert when duplicate name', async () => {
@@ -292,7 +300,7 @@ describe('profiles tests', () => {
       expect(querySpy).toBeCalledWith(`
       UPDATE profiles 
       SET activation=$2, amt_password=$3, generate_random_password=$4, cira_config_name=$5, mebx_password=$6, generate_random_mebx_password=$7, tags=$8, dhcp_enabled=$9, tls_mode=$10, user_consent=$13,
-      ider_enabled=$14, kvm_enabled=$15, sol_enabled=$16, tls_signing_authority=$17
+      ider_enabled=$14, kvm_enabled=$15, sol_enabled=$16, tls_signing_authority=$17, ieee8021x_profile_name=$18 
       WHERE profile_name=$1 and tenant_id = $11 and xmin = $12`,
       [
         amtConfig.profileName,
@@ -311,7 +319,8 @@ describe('profiles tests', () => {
         amtConfig.iderEnabled,
         amtConfig.kvmEnabled,
         amtConfig.solEnabled,
-        amtConfig.tlsSigningAuthority
+        amtConfig.tlsSigningAuthority,
+        amtConfig.ieee8021xProfileName
       ])
     })
     test('should update with wificonfigs', async () => {
@@ -328,7 +337,7 @@ describe('profiles tests', () => {
       expect(querySpy).toBeCalledWith(`
       UPDATE profiles 
       SET activation=$2, amt_password=$3, generate_random_password=$4, cira_config_name=$5, mebx_password=$6, generate_random_mebx_password=$7, tags=$8, dhcp_enabled=$9, tls_mode=$10, user_consent=$13,
-      ider_enabled=$14, kvm_enabled=$15, sol_enabled=$16, tls_signing_authority=$17
+      ider_enabled=$14, kvm_enabled=$15, sol_enabled=$16, tls_signing_authority=$17, ieee8021x_profile_name=$18 
       WHERE profile_name=$1 and tenant_id = $11 and xmin = $12`,
       [
         amtConfig.profileName,
@@ -347,7 +356,8 @@ describe('profiles tests', () => {
         amtConfig.iderEnabled,
         amtConfig.kvmEnabled,
         amtConfig.solEnabled,
-        amtConfig.tlsSigningAuthority
+        amtConfig.tlsSigningAuthority,
+        amtConfig.ieee8021xProfileName
       ])
     })
 

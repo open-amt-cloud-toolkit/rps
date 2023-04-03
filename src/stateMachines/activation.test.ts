@@ -187,6 +187,7 @@ describe('Activation State Machine', () => {
         'save-device-to-mps': Promise.resolve(true),
         'unconfiguration-machine': Promise.resolve({ clientId }),
         'network-configuration-machine': Promise.resolve({ clientId }),
+        'IEEE8021x-configuration-machine': Promise.resolve({ clientId }),
         'features-configuration-machine': Promise.resolve({ clientId }),
         'tls-machine': Promise.resolve({ clientId }),
         'cira-machine': Promise.resolve({ clientId }),
@@ -484,6 +485,7 @@ describe('Activation State Machine', () => {
         'SAVE_DEVICE_TO_MPS',
         'UNCONFIGURATION',
         'NETWORK_CONFIGURATION',
+        'IEEE8021X_CONFIGURATION',
         'FEATURES_CONFIGURATION',
         'TLS',
         'PROVISIONED'
@@ -526,6 +528,7 @@ describe('Activation State Machine', () => {
         'SAVE_DEVICE_TO_MPS',
         'UNCONFIGURATION',
         'NETWORK_CONFIGURATION',
+        'IEEE8021X_CONFIGURATION',
         'FEATURES_CONFIGURATION',
         'TLS',
         'PROVISIONED'
@@ -568,6 +571,7 @@ describe('Activation State Machine', () => {
         'SAVE_DEVICE_TO_MPS',
         'UNCONFIGURATION',
         'NETWORK_CONFIGURATION',
+        'IEEE8021X_CONFIGURATION',
         'FEATURES_CONFIGURATION',
         'CIRA',
         'PROVISIONED'

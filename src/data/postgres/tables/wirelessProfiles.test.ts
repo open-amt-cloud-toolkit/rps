@@ -147,7 +147,7 @@ describe('wireless profiles tests', () => {
         }
         throw new Error('unknown')
       })
-      await expect(wirelessProfilesTable.delete(profileName)).rejects.toThrow(API_UNEXPECTED_EXCEPTION(`Delete network configuration : ${profileName}`))
+      await expect(wirelessProfilesTable.delete(profileName)).rejects.toThrow(API_UNEXPECTED_EXCEPTION(`Delete wireless configuration : ${profileName}`))
     })
   })
   describe('Insert', () => {

@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import { type IProfilesTable } from '../../../interfaces/database/IProfilesDb'
-import { type CIRAConfig } from '../../../models/RCS.Config'
+import { type Ieee8021xConfig, type CIRAConfig } from '../../../models/RCS.Config'
 import { type AMTConfiguration } from '../../../models'
 import { PROFILE_INSERTION_FAILED_DUPLICATE, PROFILE_INSERTION_CIRA_CONSTRAINT, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP, PROFILE_INSERTION_GENERIC_CONSTRAINT, CONCURRENCY_EXCEPTION, CONCURRENCY_MESSAGE } from '../../../utils/constants'
 import Logger from '../../../Logger'
@@ -61,6 +61,7 @@ export class ProfilesTable implements IProfilesTable {
       p.tenant_id as "tenantId",
       tls_signing_authority as "tlsSigningAuthority",
       p.xmin as "version",
+      ieee8021x_profile_name as "ieee8021xProfileName",
       COALESCE(json_agg(json_build_object('profileName',wc.wireless_profile_name, 'priority', wc.priority)) FILTER (WHERE wc.wireless_profile_name IS NOT NULL), '[]') AS "wifiConfigs" 
     FROM profiles p
     LEFT JOIN profiles_wirelessconfigs wc ON wc.profile_name = p.profile_name AND wc.tenant_id = p.tenant_id
@@ -79,7 +80,8 @@ export class ProfilesTable implements IProfilesTable {
       kvm_enabled,
       sol_enabled,
       tls_signing_authority,
-      p.tenant_id
+      p.tenant_id,
+      ieee8021x_profile_name
     ORDER BY p.profile_name 
     LIMIT $1 OFFSET $2`, [top, skip, tenantId])
 
@@ -110,6 +112,7 @@ export class ProfilesTable implements IProfilesTable {
       p.tenant_id as "tenantId",
       tls_signing_authority as "tlsSigningAuthority",
       p.xmin as "version",
+      ieee8021x_profile_name as "ieee8021xProfileName",
       COALESCE(json_agg(json_build_object('profileName',wc.wireless_profile_name, 'priority', wc.priority)) FILTER (WHERE wc.wireless_profile_name IS NOT NULL), '[]') AS "wifiConfigs"
     FROM profiles p
     LEFT JOIN profiles_wirelessconfigs wc ON wc.profile_name = p.profile_name AND wc.tenant_id = p.tenant_id
@@ -128,7 +131,8 @@ export class ProfilesTable implements IProfilesTable {
       kvm_enabled,
       sol_enabled,
       tls_signing_authority,
-      p.tenant_id
+      p.tenant_id,
+      ieee8021x_profile_name
     `, [profileName, tenantId])
 
     return results.rowCount > 0 ? results.rows[0] : null
@@ -142,6 +146,10 @@ export class ProfilesTable implements IProfilesTable {
    */
   async getCiraConfigForProfile (configName: string, tenantId: string): Promise<CIRAConfig> {
     return await this.db.ciraConfigs.getByName(configName, tenantId)
+  }
+
+  async get8021XConfigForProfile (profileName: string, tenantId?: string): Promise<Ieee8021xConfig> {
+    return await this.db.ieee8021xProfiles.getByName(profileName, tenantId)
   }
 
   /**
@@ -158,10 +166,7 @@ export class ProfilesTable implements IProfilesTable {
       DELETE 
       FROM profiles 
       WHERE profile_name = $1 and tenant_id = $2`, [profileName, tenantId])
-    if (results.rowCount > 0) {
-      return true
-    }
-    return false
+    return results.rowCount > 0
   }
 
   /**
@@ -179,8 +184,8 @@ export class ProfilesTable implements IProfilesTable {
           mebx_password, generate_random_mebx_password,
           tags, dhcp_enabled, tls_mode,
           user_consent, ider_enabled, kvm_enabled, sol_enabled,
-          tenant_id, tls_signing_authority)
-        values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`,
+          tenant_id, tls_signing_authority, ieee8021x_profile_name)
+        values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`,
       [
         amtConfig.profileName,
         amtConfig.activation,
@@ -197,7 +202,8 @@ export class ProfilesTable implements IProfilesTable {
         amtConfig.kvmEnabled,
         amtConfig.solEnabled,
         amtConfig.tenantId,
-        amtConfig.tlsSigningAuthority
+        amtConfig.tlsSigningAuthority,
+        amtConfig.ieee8021xProfileName
       ])
 
       if (results.rowCount === 0) {
@@ -235,7 +241,7 @@ export class ProfilesTable implements IProfilesTable {
       const results = await this.db.query(`
       UPDATE profiles 
       SET activation=$2, amt_password=$3, generate_random_password=$4, cira_config_name=$5, mebx_password=$6, generate_random_mebx_password=$7, tags=$8, dhcp_enabled=$9, tls_mode=$10, user_consent=$13,
-      ider_enabled=$14, kvm_enabled=$15, sol_enabled=$16, tls_signing_authority=$17
+      ider_enabled=$14, kvm_enabled=$15, sol_enabled=$16, tls_signing_authority=$17, ieee8021x_profile_name=$18 
       WHERE profile_name=$1 and tenant_id = $11 and xmin = $12`,
       [
         amtConfig.profileName,
@@ -254,7 +260,8 @@ export class ProfilesTable implements IProfilesTable {
         amtConfig.iderEnabled,
         amtConfig.kvmEnabled,
         amtConfig.solEnabled,
-        amtConfig.tlsSigningAuthority
+        amtConfig.tlsSigningAuthority,
+        amtConfig.ieee8021xProfileName
       ])
       if (results.rowCount > 0) {
         if (amtConfig.wifiConfigs?.length > 0) {
