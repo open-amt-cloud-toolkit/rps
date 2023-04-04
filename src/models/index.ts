@@ -5,6 +5,7 @@
 
 import { type pki } from 'node-forge'
 import {
+  type Ieee8021xConfig,
   type CIRAConfig,
   type ProfileWifiConfigs,
   type TlsMode,
@@ -152,6 +153,8 @@ export class AMTConfiguration {
   iderEnabled?: boolean
   kvmEnabled?: boolean
   solEnabled?: boolean
+  ieee8021xProfileName?: string
+  ieee8021xProfileObject?: Ieee8021xConfig
   version?: string
 }
 

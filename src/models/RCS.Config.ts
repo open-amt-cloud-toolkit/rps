@@ -30,6 +30,26 @@ export interface ProfileWifiConfigs {
   tenantId: string
 }
 
+export interface Ieee8021xConfig {
+  profileName: string
+  authenticationProtocol: number
+  serverName?: string
+  domain?: string
+  username?: string
+  password?: string
+  roamingIdentity?: string
+  activeInS0?: boolean
+  pxeTimeout: number
+  wiredInterface: boolean
+  tenantId: string
+  version?: string
+}
+
+export interface Ieee8021xCountByInterface {
+  wired: number
+  wireless: number
+}
+
 /*
 - AddMpServer Method:
 

@@ -16,8 +16,9 @@ export const wirelessValidator = (): any => [
     .isEmpty()
     .withMessage('Wireless profile name is required')
     .matches('^[a-zA-Z0-9]+$')
+    .withMessage('802.1x profile name should be alphanumeric')
     .isLength({ max: 32 })
-    .withMessage('Wireless profile name should be alphanumeric and maximum length is 32'),
+    .withMessage('802.1x profile name maximum length is 32'),
   check('authenticationMethod')
     .not()
     .isEmpty()
@@ -59,8 +60,9 @@ export const wirelessEditValidator = (): any => [
     .isEmpty()
     .withMessage('Wireless profile name is required')
     .matches('^[a-zA-Z0-9]+$')
+    .withMessage('802.1x profile name should be alphanumeric')
     .isLength({ max: 32 })
-    .withMessage('Wireless profile name should be alphanumeric and maximum length is 32'),
+    .withMessage('802.1x profile name maximum length is 32'),
   check('authenticationMethod')
     .optional()
     .isIn([4, 6])

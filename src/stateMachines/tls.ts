@@ -33,6 +33,7 @@ export interface TLSContext {
   unauthCount: number
   amt?: AMT.Messages
   retryCount?: number
+  keyPairHandle?: string
 }
 
 interface TLSEvent {
@@ -550,7 +551,8 @@ export class TLS {
     } else {
       clientObj.tls.PublicPrivateKeyPair = [potentialArray]
     }
-    const DERKey = clientObj.tls.PublicPrivateKeyPair[0]?.DERKey
+    const PublicPrivateKeyPair = clientObj.tls.PublicPrivateKeyPair.filter(x => x.InstanceID === context.keyPairHandle)[0]
+    const DERKey = PublicPrivateKeyPair?.DERKey
 
     context.message = {
       action: 'satellite',
@@ -564,7 +566,7 @@ export class TLS {
       osname: 'win11',
       icon: 1,
       DERKey,
-      keyInstanceId: 'Intel(r) AMT Key: Handle: 0', // todo: don't hardcode this, pull it from the response
+      keyInstanceId: PublicPrivateKeyPair?.InstanceID,
       ver: ''
     }
     return await invokeEnterpriseAssistantCall(context)
@@ -577,7 +579,6 @@ export class TLS {
 
   async addCertificate (context: TLSContext, event: TLSEvent): Promise<void> {
     const clientObj = devices[context.clientId]
-
     let cert = ''
     if (context.amtProfile.tlsSigningAuthority === TlsSigningAuthority.SELF_SIGNED || context.amtProfile.tlsSigningAuthority == null) {
       const potentialArray = context.message.Envelope.Body.PullResponse.Items.AMT_PublicPrivateKeyPair
@@ -586,7 +587,8 @@ export class TLS {
       } else {
         clientObj.tls.PublicPrivateKeyPair = [potentialArray]
       }
-      const DERKey = clientObj.tls.PublicPrivateKeyPair[0]?.DERKey
+      const PublicPrivateKeyPair = clientObj.tls.PublicPrivateKeyPair.filter(x => x.InstanceID === context.keyPairHandle)[0]
+      const DERKey = PublicPrivateKeyPair?.DERKey
       const certAttributes: CertAttributes = { CN: 'AMT', O: 'None', ST: 'None', C: 'None' }
       const issuerAttributes: CertAttributes = { CN: clientObj.uuid ?? 'Untrusted Root Certificate' }
 
@@ -635,7 +637,6 @@ export class TLS {
 
   async createTLSCredentialContext (context: TLSContext, event: TLSEvent): Promise<void> {
     // TODO: 802.1x shoudl be set here right?
-
     const certHandle = event.data.Envelope.Body?.AddCertificate_OUTPUT?.CreatedCertificate?.ReferenceParameters?.SelectorSet?.Selector?._ ?? 'Intel(r) AMT Certificate: Handle: 1'
     context.xmlMessage = context.amt.TLSCredentialContext.Create(certHandle)
     return await invokeWsmanCall(context, 2)
@@ -652,6 +653,7 @@ export class TLS {
   }
 
   async enumeratePublicPrivateKeyPair (context: TLSContext, event: TLSEvent): Promise<void> {
+    context.keyPairHandle = context.message?.Envelope?.Body?.GenerateKeyPair_OUTPUT?.KeyPair?.ReferenceParameters?.SelectorSet?.Selector?._
     context.xmlMessage = context.amt.PublicPrivateKeyPair.Enumerate()
     return await invokeWsmanCall(context, 2)
   }

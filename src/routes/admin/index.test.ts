@@ -22,6 +22,7 @@ describe('Check index from admin', () => {
     { path: '/profiles', method: 'use' },
     { path: '/ciraconfigs', method: 'use' },
     { path: '/wirelessconfigs', method: 'use' },
+    { path: '/ieee8021xconfigs', method: 'use' },
     { path: '/version', method: 'use' },
     { path: '/health', method: 'use' }]
 

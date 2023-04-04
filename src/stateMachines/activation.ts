@@ -31,6 +31,7 @@ import { invokeWsmanCall } from './common'
 import ClientResponseMsg from '../utils/ClientResponseMsg'
 import { Unconfiguration } from './unconfiguration'
 import { type DeviceCredentials } from '../interfaces/ISecretManagerService'
+import { IEEE8021xConfiguration } from './ieee8021xConfiguration'
 
 export interface ActivationContext {
   profile: AMTConfiguration
@@ -72,6 +73,7 @@ export class Activation {
   error: Error = new Error()
   networkConfiguration: NetworkConfiguration = new NetworkConfiguration()
   featuresConfiguration: FeaturesConfiguration = new FeaturesConfiguration()
+  ieee8021xConfiguration: IEEE8021xConfiguration = new IEEE8021xConfiguration()
   cira: CIRAConfiguration = new CIRAConfiguration()
   unconfiguration: Unconfiguration = new Unconfiguration()
   tls: TLS = new TLS()
@@ -488,10 +490,29 @@ export class Activation {
               amt: (context, event) => context.amt,
               cim: (context, event) => context.cim
             },
-            onDone: 'FEATURES_CONFIGURATION'
+            onDone: 'IEEE8021X_CONFIGURATION'
           },
           on: {
             ONFAILED: 'FAILED'
+          }
+        },
+        IEEE8021X_CONFIGURATION: {
+          entry: send({ type: 'CONFIGURE_8021X' }, { to: 'IEEE8021x-configuration-machine' }),
+          invoke: {
+            src: this.ieee8021xConfiguration.machine,
+            id: 'IEEE8021x-configuration-machine',
+            data: {
+              clientId: (context, event) => context.clientId,
+              amtProfile: (context, event) => context.profile,
+              httpHandler: (context, _) => context.httpHandler,
+              amt: (context, event) => context.amt,
+              ips: (context, event) => context.ips
+            },
+            onDone: [
+              {
+                target: 'FEATURES_CONFIGURATION'
+              }
+            ]
           }
         },
         FEATURES_CONFIGURATION: {
@@ -633,6 +654,11 @@ export class Activation {
     if (state.children['unconfiguration-machine'] != null) {
       state.children['unconfiguration-machine'].subscribe((childState) => {
         console.log(`Unconfiguration State: ${childState.value}`)
+      })
+    }
+    if (state.children['IEEE8021x-configuration-machine'] != null) {
+      state.children['IEEE8021x-configuration-machine'].subscribe((childState) => {
+        console.log(`IEEE8021x configuration State: ${childState.value}`)
       })
     }
     if (state.children['network-configuration-machine'] != null) {
