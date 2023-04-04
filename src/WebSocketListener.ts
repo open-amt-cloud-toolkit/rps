@@ -10,7 +10,7 @@ import { type ClientMsg, type ClientObject, type WebSocketConfig } from './model
 import { type ILogger } from './interfaces/ILogger'
 import { type DataProcessor } from './DataProcessor'
 const devices: Record<string, ClientObject> = {}
-const maxMessageSize = 1024 * 10
+const maxMessageSize = 1024 * 10 * 10
 export { devices }
 export class WebSocketListener {
   dataProcessor: DataProcessor

@@ -182,6 +182,10 @@ export class ProfileManager implements IProfileManager {
           amtProfile.tlsCerts = results as TLSCredentials
         }
       }
+      // If the CIRA Config associated with profile, retrieves from DB
+      if (amtProfile?.ieee8021xProfileName != null) {
+        amtProfile.ieee8021xProfileObject = await this.amtConfigurations.get8021XConfigForProfile(amtProfile.ieee8021xProfileName, tenantId)
+      }
       this.logger.debug(`AMT Profile returned from db: ${amtProfile?.profileName}`)
       return amtProfile
     } catch (error) {

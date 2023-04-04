@@ -10,6 +10,7 @@ import ciraConfigs from './ciraconfig/index'
 import version from './version/index'
 import wirelessconfigs from './wireless/index'
 import health from './health/index'
+import ieee8021x from './ieee8021x/index'
 
 const adminRouter: Router = Router()
 
@@ -19,6 +20,7 @@ adminRouter.use('/ciraconfigs', ciraConfigs)
 adminRouter.use('/wirelessconfigs', wirelessconfigs)
 adminRouter.use('/version', version)
 adminRouter.use('/health', health)
+adminRouter.use('/ieee8021xconfigs', ieee8021x)
 adminRouter.get('/', (req: Request, res: Response) => {
   res.status(200).json({ message: 'admin path. use admin/profiles' })
 })

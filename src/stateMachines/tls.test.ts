@@ -171,6 +171,7 @@ describe('TLS State Machine', () => {
     expect(invokeEnterpriseAssistantCallSpy).toHaveBeenCalledWith(context)
   })
   it('should sendEnterpriseAssistantKeyPairResponse', async () => {
+    context.keyPairHandle = 'Intel(r) AMT Key: Handle: 0'
     context.message = {
       Envelope: {
         Body: {
@@ -178,6 +179,7 @@ describe('TLS State Machine', () => {
             Items: {
               AMT_PublicPrivateKeyPair: [
                 {
+                  InstanceID: 'Intel(r) AMT Key: Handle: 0',
                   DERKey: 'DERKey'
                 }
               ]
@@ -206,6 +208,7 @@ describe('TLS State Machine', () => {
     expect(invokeEnterpriseAssistantCallSpy).toHaveBeenCalledWith(context)
     expect(devices[context.clientId].tls.PublicPrivateKeyPair).toEqual([
       {
+        InstanceID: 'Intel(r) AMT Key: Handle: 0',
         DERKey: 'DERKey'
       }
     ])

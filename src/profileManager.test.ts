@@ -8,7 +8,7 @@ import { ProfileManager } from './ProfileManager'
 import { type ILogger } from './interfaces/ILogger'
 import Logger from './Logger'
 import { type IProfilesTable } from './interfaces/database/IProfilesDb'
-import { type CIRAConfig, ClientAction } from './models/RCS.Config'
+import { type CIRAConfig, ClientAction, type Ieee8021xConfig } from './models/RCS.Config'
 
 const logger: ILogger = new Logger('ProfileManagerTests')
 
@@ -63,6 +63,22 @@ const ciraConfigurations: CIRAConfig[] = [{
   tenantId: ''
 }]
 
+const ieee8021xConfigurations: Ieee8021xConfig[] = [
+  {
+    profileName: 'p1',
+    authenticationProtocol: 0,
+    pxeTimeout: 120,
+    wiredInterface: true,
+    tenantId: ''
+  },
+  {
+    profileName: 'p2',
+    authenticationProtocol: 0,
+    pxeTimeout: 120,
+    wiredInterface: false,
+    tenantId: ''
+  }]
+
 const amtConfigurations: AMTConfiguration[] = [
   {
     profileName: 'profile 1',
@@ -93,6 +109,7 @@ const profileStub: IProfilesTable = {
   getByName: async (name) => amtConfigurations.find(c => c.profileName === name),
   get: async (top, skip) => amtConfigurations,
   getCiraConfigForProfile: async (ciraConfigName) => ciraConfigurations.find(c => c.configName === ciraConfigName),
+  get8021XConfigForProfile: async (profileName) => ieee8021xConfigurations.find(p => p.profileName === profileName),
   delete: async (profileName) => true,
   insert: async (amtConfig: AMTConfiguration) => {
     amtConfigurations.push(amtConfig)

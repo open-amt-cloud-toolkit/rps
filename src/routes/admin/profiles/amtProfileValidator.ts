@@ -125,6 +125,15 @@ export const amtProfileValidator = (): ValidationChain[] => [
         throw new Error(`wifi configs ${wifiConfigs.toString()} does not exists in db`)
       }
     }),
+  check('ieee8021xProfileName')
+    .optional({ nullable: true })
+    .custom(async (value, { req }) => {
+      const isProfileExist = await validateIEEE8021xConfigs(value, req as Request)
+      if (!isProfileExist) {
+        throw new Error(`IEEEProfile config ${value} does not exists in db`)
+      }
+      return true
+    }),
   check('userConsent')
     .optional({ nullable: true })
     .isIn(Object.values(AMTUserConsent))
@@ -159,6 +168,14 @@ const validatewifiConfigs = async (value: any, req: Request): Promise<string[]> 
     }
   }
   return wifiConfigNames
+}
+
+const validateIEEE8021xConfigs = async (value: any, req: Request): Promise<boolean> => {
+  const isProfileExist = await req.db.ieee8021xProfiles.checkProfileExits(value, req.tenantId)
+  if (!isProfileExist) {
+    return false
+  }
+  return true
 }
 
 export const profileUpdateValidator = (): any => [
@@ -275,6 +292,15 @@ export const profileUpdateValidator = (): any => [
       if (wifiConfigs.length > 0) {
         throw new Error(`wifi configs ${wifiConfigs.toString()} does not exists in db`)
       }
+    }),
+  check('ieee8021xProfileName')
+    .optional({ nullable: true })
+    .custom(async (value, { req }) => {
+      const isProfileExist = await validateIEEE8021xConfigs(value, req as Request)
+      if (!isProfileExist) {
+        throw new Error(`IEEEProfile config ${value.ieee8021xProfileName} does not exists in db`)
+      }
+      return true
     }),
   check('userConsent')
     .optional({ nullable: true })
