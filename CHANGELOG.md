@@ -1,3 +1,79 @@
+<a name="2.9.0"></a>
+## [2.9.0] - 2023-04-05
+### Build
+- updated Node to 18 ([#888](https://github.com/open-amt-cloud-toolkit/rps/issues/888)) (#167cd01) 
+- update package.json to v2.9.0 (#49433c1) 
+- **deps:** bump [@open](https://github.com/open)-amt-cloud-toolkit/wsman-messages ([#928](https://github.com/open-amt-cloud-toolkit/rps/issues/928)) (#fcb3295) 
+- **deps:** bump express-validator from 6.14.3 to 6.15.0 ([#891](https://github.com/open-amt-cloud-toolkit/rps/issues/891)) (#3ff6d46) 
+- **deps:** bump body-parser from 1.20.1 to 1.20.2 (#7186140) 
+- **deps:** bump ws from 8.12.0 to 8.12.1 ([#885](https://github.com/open-amt-cloud-toolkit/rps/issues/885)) (#169988c) 
+- **deps:** bump [@open](https://github.com/open)-amt-cloud-toolkit/wsman-messages ([#892](https://github.com/open-amt-cloud-toolkit/rps/issues/892)) (#fb4c4cc) 
+- **deps:** bump exponential-backoff from 3.1.0 to 3.1.1 (#d8e8ad8) 
+- **deps:** bump xstate from 4.36.0 to 4.37.0 (#4bf3959) 
+- **deps:** bump [@open](https://github.com/open)-amt-cloud-toolkit/wsman-messages ([#939](https://github.com/open-amt-cloud-toolkit/rps/issues/939)) (#e33121b) 
+- **deps:** bump pg from 8.9.0 to 8.10.0 ([#911](https://github.com/open-amt-cloud-toolkit/rps/issues/911)) (#6c93a50) 
+- **deps:** bump ws from 8.12.1 to 8.13.0 ([#918](https://github.com/open-amt-cloud-toolkit/rps/issues/918)) (#139d515) 
+- **deps:** bump xstate from 4.37.0 to 4.37.1 ([#934](https://github.com/open-amt-cloud-toolkit/rps/issues/934)) (#ceee7ef) 
+- **deps-dev:** bump eslint from 8.36.0 to 8.37.0 ([#943](https://github.com/open-amt-cloud-toolkit/rps/issues/943)) (#11e46e4) 
+- **deps-dev:** bump nodemon from 2.0.21 to 2.0.22 (#ae02355) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 5.55.0 to 5.56.0 ([#925](https://github.com/open-amt-cloud-toolkit/rps/issues/925)) (#91afd0f) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 16.18.16 to 16.18.18 ([#926](https://github.com/open-amt-cloud-toolkit/rps/issues/926)) (#715a272) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin ([#927](https://github.com/open-amt-cloud-toolkit/rps/issues/927)) (#60f04af) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 16.18.18 to 16.18.19 ([#935](https://github.com/open-amt-cloud-toolkit/rps/issues/935)) (#010fc59) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin (#226f46e) 
+- **deps-dev:** bump eslint-config-standard-with-typescript (#72e99fb) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 5.54.1 to 5.55.0 (#5d1ead2) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 16.18.14 to 16.18.16 ([#922](https://github.com/open-amt-cloud-toolkit/rps/issues/922)) (#49e8f47) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 16.18.19 to 16.18.21 ([#938](https://github.com/open-amt-cloud-toolkit/rps/issues/938)) (#af9a810) 
+- **deps-dev:** bump sinon from 15.0.1 to 15.0.2 ([#919](https://github.com/open-amt-cloud-toolkit/rps/issues/919)) (#0d6d4ce) 
+- **deps-dev:** bump eslint from 8.35.0 to 8.36.0 ([#917](https://github.com/open-amt-cloud-toolkit/rps/issues/917)) (#07b3108) 
+- **deps-dev:** bump sinon from 15.0.2 to 15.0.3 ([#937](https://github.com/open-amt-cloud-toolkit/rps/issues/937)) (#5e10625) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin ([#912](https://github.com/open-amt-cloud-toolkit/rps/issues/912)) (#7ec7c53) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 5.54.0 to 5.54.1 ([#913](https://github.com/open-amt-cloud-toolkit/rps/issues/913)) (#13af38b) 
+- **deps-dev:** bump nodemon from 2.0.20 to 2.0.21 (#03f7906) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin (#2d5e73d) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 16.18.13 to 16.18.14 ([#906](https://github.com/open-amt-cloud-toolkit/rps/issues/906)) (#219a034) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin ([#941](https://github.com/open-amt-cloud-toolkit/rps/issues/941)) (#5ed8bf0) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 16.18.12 to 16.18.13 (#6f3afb1) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 5.53.0 to 5.54.0 (#3bbca73) 
+- **deps-dev:** bump eslint from 8.34.0 to 8.35.0 (#1db7608) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 5.51.0 to 5.52.0 ([#887](https://github.com/open-amt-cloud-toolkit/rps/issues/887)) (#87541bd) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 5.52.0 to 5.53.0 (#15ac714) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin (#ee94c32) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 16.18.21 to 16.18.22 ([#944](https://github.com/open-amt-cloud-toolkit/rps/issues/944)) (#5010965) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 16.18.22 to 16.18.23 ([#946](https://github.com/open-amt-cloud-toolkit/rps/issues/946)) (#38c6879) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 5.56.0 to 5.57.0 ([#940](https://github.com/open-amt-cloud-toolkit/rps/issues/940)) (#a0b1e76) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 5.57.0 to 5.57.1 (#fecda77) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin ([#949](https://github.com/open-amt-cloud-toolkit/rps/issues/949)) (#e7cf595) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin ([#886](https://github.com/open-amt-cloud-toolkit/rps/issues/886)) (#f667d10) 
+- **deps-dev:** bump [@types](https://github.com/types)/node-forge from 1.3.1 to 1.3.2 ([#947](https://github.com/open-amt-cloud-toolkit/rps/issues/947)) (#505ffb5) 
+- **deps-dev:** bump [@types](https://github.com/types)/express from 4.17.15 to 4.17.16 ([#862](https://github.com/open-amt-cloud-toolkit/rps/issues/862)) (#792de13) 
+
+### Docs
+- add discord info ([#907](https://github.com/open-amt-cloud-toolkit/rps/issues/907)) (#5b1fbfc) 
+
+### Feat
+- 802.1x wired network configuration ([#936](https://github.com/open-amt-cloud-toolkit/rps/issues/936)) (#1952c69) 
+
+### Fix
+- handle missing AMT activation response ([#929](https://github.com/open-amt-cloud-toolkit/rps/issues/929)) (#5e82295) 
+- updated error message on auth failure ([#933](https://github.com/open-amt-cloud-toolkit/rps/issues/933)) (#d6e09dc) 
+- exclude test.js files from custom middleware (#ba6afd7) 
+- required version for wirless patch ([#914](https://github.com/open-amt-cloud-toolkit/rps/issues/914)) (#70ff74f) 
+- CIRA static password being saved to DB ([#909](https://github.com/open-amt-cloud-toolkit/rps/issues/909)) (#6a03292) 
+
+### Refactor
+- updated ips interface instead amt for 8021x unconfig ([#951](https://github.com/open-amt-cloud-toolkit/rps/issues/951)) (#dc2444f) 
+- check cira config name for special characters ([#904](https://github.com/open-amt-cloud-toolkit/rps/issues/904)) (#3ce906a) 
+- **state-machine:** add retry logic to TLS (#661814b) 
+
+### Revert
+- cira config name for special characters ([#952](https://github.com/open-amt-cloud-toolkit/rps/issues/952)) (#8dbb75a) 
+
+### Test
+- use fake timers and clean up (#1d1f794) 
+- removed hardcoded versions from rest api tests ([#902](https://github.com/open-amt-cloud-toolkit/rps/issues/902)) (#f37f4c9) 
+
 <a name="2.8.0"></a>
 ## [2.8.0] - 2023-02-16
 ### Build
