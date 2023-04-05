@@ -12,7 +12,7 @@ import { HttpHandler } from '../HttpHandler'
 import { interpret } from 'xstate'
 import { MPSType } from './ciraConfiguration'
 import * as common from './common'
-import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
+import { AMT, IPS } from '@open-amt-cloud-toolkit/wsman-messages'
 const clientId = uuid()
 Environment.Config = config
 
@@ -39,7 +39,8 @@ describe('Unconfiguration State Machine', () => {
       privateCerts: [],
       TLSSettingData: [],
       publicKeyCertificates: [],
-      amt: new AMT.Messages()
+      amt: new AMT.Messages(),
+      ips: new IPS.Messages()
     }
     remoteAccessPolicyRuleSpy = jest.spyOn(unconfigContext.amt.RemoteAccessPolicyRule, 'Delete').mockReturnValue('abcdef')
     devices[clientId] = {
@@ -419,13 +420,9 @@ describe('Unconfiguration State Machine', () => {
       unconfigContext.message = {
         Envelope: {
           Body: {
-            AMT_8021XProfile: {
+            IPS_IEEE8021xSettings: {
               Username: 'abc',
               AuthenticationProtocol: 0,
-              ServerCertificateNameComparison: 3,
-              ServerCertificateName: 'test',
-              ServerCertificateIssuer: '',
-              ClientCertificate: '',
               Enabled: true
             }
           }
