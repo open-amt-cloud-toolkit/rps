@@ -35,7 +35,7 @@
   },
   "main": "index.js",
   "scripts": {
-    "compile": "tsc",
+    "compile": "tsc --project tsconfig.build.json",
     "start": "tsc && node ./dist/Index.js",
     "test": "jest --coverage --detectOpenHandles",
     "watch": "nodemon -e ts -w ./src -x npm run start",

@@ -16,7 +16,6 @@
         "./src/**/*"
     ],
     "type": [
-        "@types/jest",
         "@types/node"
     ]
 }
