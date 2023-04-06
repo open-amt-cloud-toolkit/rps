@@ -94,6 +94,10 @@ export class RPSConfig {
   corsMethods: string
   mpsServer: string
   delayTimer: number
+  delayActivationSync: number
+  delaySetupAndConfigSync: number
+  delayTlsPutDataSync: number
+  timemoutWsmanResponse: number
   mqttAddress?: string
   disableCIRADomainName?: string
   jwtTokenHeader: string
@@ -326,7 +330,13 @@ const recipeRCSConfig = {
 }
 
 export function mapConfig (src, dot): RPSConfig {
-  return dot.transform(recipeRCSConfig, src) as RPSConfig
+  const config = dot.transform(recipeRCSConfig, src) as RPSConfig
+  // set up the rest of the delays and timeouts that aren't exposed
+  config.delayActivationSync = config.delayTimer * 1000
+  config.delaySetupAndConfigSync = 5000
+  config.delayTlsPutDataSync = 5000
+  config.timemoutWsmanResponse = config.delayTimer * 1000
+  return config
 }
 
 export type eventType = 'request' | 'success' | 'fail'

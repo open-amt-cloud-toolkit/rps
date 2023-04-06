@@ -19,7 +19,11 @@ export const config: RPSConfig = {
   corsMethods: '*',
   corsOrigin: '*',
   mpsServer: 'https://localhost:3000',
-  delayTimer: 12,
+  delayTimer: 1,
+  delayActivationSync: 1,
+  delaySetupAndConfigSync: 1,
+  delayTlsPutDataSync: 1,
+  timemoutWsmanResponse: 1,
   WSConfiguration: {
     WebSocketPort: 8080
   },

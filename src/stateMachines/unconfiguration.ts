@@ -18,6 +18,7 @@ import { devices } from '../WebSocketListener'
 import { type AMTConfiguration } from '../models'
 import { Error } from './error'
 import { invokeWsmanCall } from './common'
+import { Environment } from '../utils/Environment'
 
 export interface UnconfigContext {
   clientId: string
@@ -289,7 +290,7 @@ export class Unconfiguration {
           }
         },
         SETUP_AND_CONFIGURATION_SERVICE_COMMIT_CHANGES_RESPONSE: {
-          after: { 5000: 'ENUMERATE_TLS_CREDENTIAL_CONTEXT' }
+          after: { DELAY_TIME_SETUP_AND_CONFIG_SYNC: 'ENUMERATE_TLS_CREDENTIAL_CONTEXT' }
         },
         ENUMERATE_TLS_CREDENTIAL_CONTEXT: {
           invoke: {
@@ -478,6 +479,9 @@ export class Unconfiguration {
         }
       }
     }, {
+      delays: {
+        DELAY_TIME_SETUP_AND_CONFIG_SYNC: () => Environment.Config.delaySetupAndConfigSync
+      },
       guards: {
         isExpectedBadRequest: (context, event) => event.data?.statusCode === 400,
         hasPrivateCerts: (context, event) => context.privateCerts.length > 0,

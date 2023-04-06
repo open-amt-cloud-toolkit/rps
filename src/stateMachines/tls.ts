@@ -18,6 +18,7 @@ import { TimeSync } from './timeMachine'
 import { TlsSigningAuthority } from '../models/RCS.Config'
 import { UNEXPECTED_PARSE_ERROR } from '../utils/constants'
 import { parseChunkedMessage } from '../utils/parseChunkedMessage'
+import { Environment } from '../utils/Environment'
 
 export interface TLSContext {
   message: any
@@ -404,7 +405,7 @@ export class TLS {
         },
         WAIT_A_BIT: {
           after: {
-            5000: 'PUT_LOCAL_TLS_DATA'
+            DELAY_TIME_TLS_PUT_DATA_SYNC: 'PUT_LOCAL_TLS_DATA'
           }
         },
         PUT_LOCAL_TLS_DATA: {
@@ -469,6 +470,9 @@ export class TLS {
         }
       }
     }, {
+      delays: {
+        DELAY_TIME_TLS_PUT_DATA_SYNC: () => Environment.Config.delayTlsPutDataSync
+      },
       guards: {
         hasPublicPrivateKeyPairs: (context, event) => context.message.Envelope.Body.PullResponse.Items !== '',
         useTLSEnterpriseAssistantCert: (context, event) => context.amtProfile.tlsSigningAuthority === TlsSigningAuthority.MICROSOFT_CA,
