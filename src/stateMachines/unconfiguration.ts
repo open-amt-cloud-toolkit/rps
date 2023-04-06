@@ -33,6 +33,7 @@ export interface UnconfigContext {
   httpHandler: HttpHandler
   TLSSettingData: any[]
   publicKeyCertificates: any[]
+  is8021xProfileUpdated?: boolean
   amt?: AMT.Messages
   ips?: IPS.Messages
 }
@@ -70,7 +71,8 @@ export class Unconfiguration {
         profile: null,
         privateCerts: [],
         TLSSettingData: [],
-        publicKeyCertificates: []
+        publicKeyCertificates: [],
+        is8021xProfileUpdated: false
       },
       id: 'unconfiuration-machine',
       initial: 'UNCONFIGURED',
@@ -126,7 +128,10 @@ export class Unconfiguration {
           invoke: {
             src: this.disableWired8021xConfiguration.bind(this),
             id: 'disable-Wired-8021x-Configuration',
-            onDone: 'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED',
+            onDone: {
+              actions: assign({ is8021xProfileUpdated: true }),
+              target: 'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED'
+            },
             onError: {
               target: 'ERROR'
             }
@@ -240,6 +245,7 @@ export class Unconfiguration {
         PULL_TLS_SETTING_DATA_RESPONSE: {
           always: [
             { cond: 'tlsSettingDataEnabled', target: 'DISABLE_TLS_SETTING_DATA' },
+            { cond: 'is8021xProfileDisabled', target: 'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR' },
             { target: 'ENUMERATE_PUBLIC_KEY_CERTIFICATE' }
           ]
         },
@@ -421,7 +427,7 @@ export class Unconfiguration {
             src: this.deletePublicKeyCertificate.bind(this),
             id: 'delete-public-key-certificate',
             onDone: {
-              actions: assign({ publicKeyCertificates: (context, event) => context.publicKeyCertificates.slice(1) }),
+              actions: assign({ message: (context, event) => event.data }),
               target: 'PULL_PUBLIC_KEY_CERTIFICATE_RESPONSE'
             }, // check if there is any more certificates
             onError: {
@@ -486,7 +492,9 @@ export class Unconfiguration {
         hasPublicKeyCertificate: (context, event) => context.publicKeyCertificates?.length > 0,
         hasEnvSettings: (context, event) => context.message.Envelope.Body.AMT_EnvironmentDetectionSettingData.DetectionStrings != null,
         hasTLSCredentialContext: (context, event) => context.message.Envelope.Body.PullResponse.Items?.AMT_TLSCredentialContext != null,
-        is8021xProfileEnabled: (context, event) => context.message.Envelope.Body.AMT_8021XProfile.Enabled === true
+        is8021xProfileEnabled: (context, event) => context.message.Envelope.Body.IPS_IEEE8021xSettings.Enabled === 2,
+        is8021xProfileDisabled: (context, event) => context.is8021xProfileUpdated
+
       },
       actions: {
         'Update CIRA Status': (context, event) => {
@@ -515,20 +523,16 @@ export class Unconfiguration {
   }
 
   async get8021xProfile (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.IEEE8021xProfile.Get()
+    context.xmlMessage = context.ips.IEEE8021xSettings.Get()
     return await invokeWsmanCall(context, 2)
   }
 
   async disableWired8021xConfiguration (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    const ieee8021xProfile = context.message.Envelope.Body.AMT_8021XProfile
+    const ieee8021xProfile = context.message.Envelope.Body.IPS_IEEE8021xSettings
     delete ieee8021xProfile.Username
     delete ieee8021xProfile.AuthenticationProtocol
-    delete ieee8021xProfile.ServerCertificateNameComparison
-    delete ieee8021xProfile.ServerCertificateName
-    delete ieee8021xProfile.ServerCertificateIssuer
-    delete ieee8021xProfile.ClientCertificate
-    ieee8021xProfile.Enabled = false
-    context.xmlMessage = context.amt.IEEE8021xProfile.Put(ieee8021xProfile)
+    ieee8021xProfile.Enabled = 3
+    context.xmlMessage = context.ips.IEEE8021xSettings.Put(ieee8021xProfile)
     return await invokeWsmanCall(context, 2)
   }
 
@@ -578,6 +582,7 @@ export class Unconfiguration {
 
   async deletePublicKeyCertificate (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
     const selector = { name: 'InstanceID', value: context.publicKeyCertificates[0].InstanceID }
+    context.publicKeyCertificates = context.publicKeyCertificates.slice(1)
     context.xmlMessage = context.amt.PublicKeyCertificate.Delete(selector)
     return await invokeWsmanCall(context)
   }
