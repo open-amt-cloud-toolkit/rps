@@ -4,7 +4,6 @@
  **********************************************************************/
 
 import * as crypto from 'crypto'
-import { AMTRandomPasswordChars } from '../utils/constants'
 import cryptoRandomString from 'crypto-random-string'
 
 const PasswordHelper = {
@@ -51,9 +50,11 @@ const PasswordHelper = {
      * @param {number} length Length of desired password
      * @returns {string} Returns random password string
      */
-  generateRandomPassword: (length: number): string => {
+  generateRandomPassword: (length: number = 16): string => {
+    const PasswordChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^*()'
+
     for (let i = 0; i < 10000; ++i) {
-      const password: string = cryptoRandomString({ length, characters: AMTRandomPasswordChars })
+      const password: string = cryptoRandomString({ length, characters: PasswordChars })
 
       if (PasswordHelper.passwordCheck(password)) {
         return password

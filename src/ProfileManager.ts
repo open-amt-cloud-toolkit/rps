@@ -9,7 +9,6 @@ import { type IProfileManager } from './interfaces/IProfileManager'
 import { PasswordHelper } from './utils/PasswordHelper'
 import { type CIRAConfig } from './models/RCS.Config'
 import { type IProfilesTable } from './interfaces/database/IProfilesDb'
-import { AMTRandomPasswordLength } from './utils/constants'
 import { type Configurator } from './Configurator'
 import { type TLSCredentials } from './interfaces/ISecretManagerService'
 
@@ -65,7 +64,7 @@ export class ProfileManager implements IProfileManager {
   }
 
   /**
-   * @description Retrieves the amt password set in the configuration or generates non static password
+   * @description Retrieves the amt password set in the configuration or generates non-static password
    * @param {string} profileName profile name of amt password
    * @returns {string} returns the amt password for a given profile
    */
@@ -74,7 +73,7 @@ export class ProfileManager implements IProfileManager {
     let amtPassword: string
     if (profile) {
       if (profile.generateRandomPassword) {
-        amtPassword = PasswordHelper.generateRandomPassword(AMTRandomPasswordLength)
+        amtPassword = PasswordHelper.generateRandomPassword()
 
         if (amtPassword) {
           this.logger.debug(`Created random password for ${profile.profileName}`)
@@ -107,7 +106,7 @@ export class ProfileManager implements IProfileManager {
     let mebxPassword: string
     if (profile) {
       if (profile.generateRandomMEBxPassword) {
-        mebxPassword = PasswordHelper.generateRandomPassword(AMTRandomPasswordLength)
+        mebxPassword = PasswordHelper.generateRandomPassword()
 
         if (mebxPassword) {
           this.logger.debug(`Created random MEBx password for ${profile.profileName}`)
@@ -142,7 +141,7 @@ export class ProfileManager implements IProfileManager {
     let mpsPassword: string
 
     if (profile?.ciraConfigObject) {
-      mpsPassword = PasswordHelper.generateRandomPassword(AMTRandomPasswordLength)
+      mpsPassword = PasswordHelper.generateRandomPassword()
 
       if (mpsPassword) {
         this.logger.debug(`Created random MPS password for ${profile.profileName}`)
@@ -182,6 +181,10 @@ export class ProfileManager implements IProfileManager {
           const results = await this.configurator.secretsManager.getSecretAtPath(`TLS/${amtProfile.profileName}`)
           amtProfile.tlsCerts = results as TLSCredentials
         }
+      }
+      // If the CIRA Config associated with profile, retrieves from DB
+      if (amtProfile?.ieee8021xProfileName != null) {
+        amtProfile.ieee8021xProfileObject = await this.amtConfigurations.get8021XConfigForProfile(amtProfile.ieee8021xProfileName, tenantId)
       }
       this.logger.debug(`AMT Profile returned from db: ${amtProfile?.profileName}`)
       return amtProfile

@@ -3,38 +3,17 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type AMTConfiguration, type RPSConfig } from './models'
+import { type AMTConfiguration } from './models'
 import { ProfileManager } from './ProfileManager'
 import { type ILogger } from './interfaces/ILogger'
 import Logger from './Logger'
 import { type IProfilesTable } from './interfaces/database/IProfilesDb'
-import { type CIRAConfig, ClientAction } from './models/RCS.Config'
+import { type CIRAConfig, ClientAction, type Ieee8021xConfig } from './models/RCS.Config'
+import { config } from './test/helper/Config'
+import { Environment } from './utils/Environment'
 
+Environment.Config = config
 const logger: ILogger = new Logger('ProfileManagerTests')
-
-const rcsConfig: RPSConfig = {
-  WSConfiguration: {
-    WebSocketPort: 8080
-  },
-  VaultConfig: {
-    usevault: false,
-    SecretsPath: 'kv/data/rcs/',
-    token: '',
-    address: ''
-  },
-  webport: 8081,
-  credentialspath: '../../../MPS_MicroService/private/data.json',
-  corsHeaders: '*',
-  corsMethods: '*',
-  corsOrigin: '*',
-  mpsServer: 'https://localhost:3000',
-  dbProvider: 'postgres',
-  secretsProvider: 'vault',
-  connectionString: 'postgresql://postgresadmin:admin123@localhost:5432/rpsdb',
-  delayTimer: 12,
-  jwtTenantProperty: '',
-  jwtTokenHeader: ''
-}
 
 const ciraConfigurations: CIRAConfig[] = [{
   configName: 'ciraconfig1',
@@ -62,6 +41,22 @@ const ciraConfigurations: CIRAConfig[] = [{
   proxyDetails: '',
   tenantId: ''
 }]
+
+const ieee8021xConfigurations: Ieee8021xConfig[] = [
+  {
+    profileName: 'p1',
+    authenticationProtocol: 0,
+    pxeTimeout: 120,
+    wiredInterface: true,
+    tenantId: ''
+  },
+  {
+    profileName: 'p2',
+    authenticationProtocol: 0,
+    pxeTimeout: 120,
+    wiredInterface: false,
+    tenantId: ''
+  }]
 
 const amtConfigurations: AMTConfiguration[] = [
   {
@@ -93,6 +88,7 @@ const profileStub: IProfilesTable = {
   getByName: async (name) => amtConfigurations.find(c => c.profileName === name),
   get: async (top, skip) => amtConfigurations,
   getCiraConfigForProfile: async (ciraConfigName) => ciraConfigurations.find(c => c.configName === ciraConfigName),
+  get8021XConfigForProfile: async (profileName) => ieee8021xConfigurations.find(p => p.profileName === profileName),
   delete: async (profileName) => true,
   insert: async (amtConfig: AMTConfiguration) => {
     amtConfigurations.push(amtConfig)
@@ -115,7 +111,7 @@ test('test if profile exists', () => {
   expect(actual).toBeTruthy()
 })
 
-test('test if profile exists', async () => {
+test('test if profile does not exists', async () => {
   const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub)
 
   const actual = await profileManager.doesProfileExist('profile 5', '')
@@ -131,7 +127,7 @@ test('retrieve activation based on profile', async () => {
 })
 
 test('retrieve activation based on profile', async () => {
-  const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub, rcsConfig)
+  const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub, Environment.Config)
 
   const expected = ClientAction.CLIENTCTLMODE
   const actual = await profileManager.getActivationMode('profile 1', '')
@@ -139,7 +135,7 @@ test('retrieve activation based on profile', async () => {
 })
 
 test('retrieve configuration for cira', async () => {
-  const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub, rcsConfig)
+  const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub, Environment.Config)
 
   const expected = 'ciraconfig1'
   const actual = await profileManager.getCiraConfiguration('profile 2', '')
@@ -157,7 +153,7 @@ test('retrieve amt password', async () => {
 })
 
 test('retrieve amt password auto generated', async () => {
-  const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub, rcsConfig)
+  const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub, Environment.Config)
 
   const profile = 'profile 2'
   const expected = '<StrongPassword2!>'

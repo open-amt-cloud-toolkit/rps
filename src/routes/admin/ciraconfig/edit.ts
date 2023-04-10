@@ -25,9 +25,10 @@ export async function editCiraConfig (req: Request, res: Response): Promise<void
       // SQL Query > Insert Data
       const results = await req.db.ciraConfigs.update(ciraConfig)
       if (results != null) {
-        MqttProvider.publishEvent('success', ['editCiraConfig'], `Updated CIRA config profile : ${ciraConfig.configName}`)
-        log.verbose(`Updated CIRA config profile : ${ciraConfig.configName}`)
+        // secrets rules: never return sensitive data (passwords) in a response
         delete results.password
+        log.verbose(`Updated CIRA config profile : ${ciraConfig.configName}`)
+        MqttProvider.publishEvent('success', ['editCiraConfig'], `Updated CIRA config profile : ${ciraConfig.configName}`)
         res.status(200).json(results).end()
       }
     }

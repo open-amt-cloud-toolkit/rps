@@ -4,38 +4,16 @@
  **********************************************************************/
 
 import { MqttProvider } from './MqttProvider'
-import { type RPSConfig } from '../models'
+import { Environment } from './Environment'
+import { config } from '../test/helper/Config'
 import mqtt1 from 'mqtt'
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
 jest.mock('mqtt', () => ({ ...jest.requireActual('mqtt') as object }))
 
 describe('MQTT Turned ON Tests', () => {
-  const config: RPSConfig = {
-    WSConfiguration: {
-      WebSocketPort: 8080
-    },
-    VaultConfig: {
-      usevault: false,
-      SecretsPath: 'kv/data/rcs/',
-      token: '',
-      address: ''
-    },
-    secretsProvider: 'vault',
-    webport: 8081,
-    credentialspath: '../../../MPS_MicroService/private/data.json',
-    corsHeaders: '*',
-    corsMethods: '*',
-    corsOrigin: '*',
-    mpsServer: 'https://localhost:3000',
-    dbProvider: 'postgres',
-    connectionString: 'postgresql://postgresadmin:admin123@localhost:5432/rpsdb',
-    delayTimer: 12,
-    mqttAddress: 'mqtt://127.0.0.1:8883',
-    jwtTenantProperty: '',
-    jwtTokenHeader: ''
-  }
-
   beforeEach(() => {
+    config.mqttAddress = 'mqtt://127.0.0.1:8883'
+    Environment.Config = config
     MqttProvider.instance = new MqttProvider(config)
   })
 
@@ -108,32 +86,8 @@ describe('MQTT Turned ON Tests', () => {
 })
 
 describe('MQTT Turned OFF Tests', () => {
-  const config: RPSConfig = {
-    WSConfiguration: {
-      WebSocketPort: 8080
-    },
-    VaultConfig: {
-      usevault: false,
-      SecretsPath: 'kv/data/rcs/',
-      token: '',
-      address: ''
-    },
-    webport: 8081,
-    credentialspath: '../../../MPS_MicroService/private/data.json',
-    corsHeaders: '*',
-    corsMethods: '*',
-    corsOrigin: '*',
-    mpsServer: 'https://localhost:3000',
-    secretsProvider: 'vault',
-    dbProvider: 'postgres',
-    connectionString: 'postgresql://postgresadmin:admin123@localhost:5432/rpsdb',
-    delayTimer: 12,
-    mqttAddress: 'mqtt://127.0.0.1:8883',
-    jwtTenantProperty: '',
-    jwtTokenHeader: ''
-  }
-
   beforeEach(() => {
+    Environment.Config = config
     MqttProvider.instance = new MqttProvider(config)
   })
 

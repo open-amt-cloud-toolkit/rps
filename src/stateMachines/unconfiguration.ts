@@ -18,6 +18,7 @@ import { devices } from '../WebSocketListener'
 import { type AMTConfiguration } from '../models'
 import { Error } from './error'
 import { invokeWsmanCall } from './common'
+import { Environment } from '../utils/Environment'
 
 export interface UnconfigContext {
   clientId: string
@@ -32,6 +33,7 @@ export interface UnconfigContext {
   httpHandler: HttpHandler
   TLSSettingData: any[]
   publicKeyCertificates: any[]
+  is8021xProfileUpdated?: boolean
   amt?: AMT.Messages
   ips?: IPS.Messages
 }
@@ -69,7 +71,8 @@ export class Unconfiguration {
         profile: null,
         privateCerts: [],
         TLSSettingData: [],
-        publicKeyCertificates: []
+        publicKeyCertificates: [],
+        is8021xProfileUpdated: false
       },
       id: 'unconfiuration-machine',
       initial: 'UNCONFIGURED',
@@ -78,7 +81,7 @@ export class Unconfiguration {
           on: {
             REMOVEPOLICY: {
               actions: 'Reset Unauth Count',
-              target: 'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED'
+              target: 'GET_8021X_PROFILE'
             }
           }
         },
@@ -92,10 +95,46 @@ export class Unconfiguration {
               message: (context, event) => event.data,
               clientId: (context, event) => context.clientId
             },
-            onDone: 'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED'
+            onDone: 'GET_8021X_PROFILE'
           },
           on: {
             ONFAILED: 'FAILURE'
+          }
+        },
+        GET_8021X_PROFILE: {
+          invoke: {
+            src: this.get8021xProfile.bind(this),
+            id: 'get-8021x-profile',
+            onDone: {
+              actions: assign({ message: (context, event) => event.data }),
+              target: 'CHECK_GET_8021X_PROFILE_RESPONSE'
+            },
+            onError: {
+              target: 'ERROR'
+            }
+          }
+        },
+        CHECK_GET_8021X_PROFILE_RESPONSE: {
+          always: [
+            {
+              cond: 'is8021xProfileEnabled',
+              target: 'DISABLE_IEEE8021X_WIRED'
+            }, {
+              target: 'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED'
+            }
+          ]
+        },
+        DISABLE_IEEE8021X_WIRED: {
+          invoke: {
+            src: this.disableWired8021xConfiguration.bind(this),
+            id: 'disable-Wired-8021x-Configuration',
+            onDone: {
+              actions: assign({ is8021xProfileUpdated: true }),
+              target: 'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED'
+            },
+            onError: {
+              target: 'ERROR'
+            }
           }
         },
         REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED: {
@@ -206,6 +245,7 @@ export class Unconfiguration {
         PULL_TLS_SETTING_DATA_RESPONSE: {
           always: [
             { cond: 'tlsSettingDataEnabled', target: 'DISABLE_TLS_SETTING_DATA' },
+            { cond: 'is8021xProfileDisabled', target: 'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR' },
             { target: 'ENUMERATE_PUBLIC_KEY_CERTIFICATE' }
           ]
         },
@@ -250,7 +290,7 @@ export class Unconfiguration {
           }
         },
         SETUP_AND_CONFIGURATION_SERVICE_COMMIT_CHANGES_RESPONSE: {
-          after: { 5000: 'ENUMERATE_TLS_CREDENTIAL_CONTEXT' }
+          after: { DELAY_TIME_SETUP_AND_CONFIG_SYNC: 'ENUMERATE_TLS_CREDENTIAL_CONTEXT' }
         },
         ENUMERATE_TLS_CREDENTIAL_CONTEXT: {
           invoke: {
@@ -387,7 +427,7 @@ export class Unconfiguration {
             src: this.deletePublicKeyCertificate.bind(this),
             id: 'delete-public-key-certificate',
             onDone: {
-              actions: assign({ publicKeyCertificates: (context, event) => context.publicKeyCertificates.slice(1) }),
+              actions: assign({ message: (context, event) => event.data }),
               target: 'PULL_PUBLIC_KEY_CERTIFICATE_RESPONSE'
             }, // check if there is any more certificates
             onError: {
@@ -439,6 +479,9 @@ export class Unconfiguration {
         }
       }
     }, {
+      delays: {
+        DELAY_TIME_SETUP_AND_CONFIG_SYNC: () => Environment.Config.delaySetupAndConfigSync
+      },
       guards: {
         isExpectedBadRequest: (context, event) => event.data?.statusCode === 400,
         hasPrivateCerts: (context, event) => context.privateCerts.length > 0,
@@ -448,7 +491,10 @@ export class Unconfiguration {
         hasMPSEntries: (context, event) => context.message.Envelope.Body.PullResponse.Items?.AMT_ManagementPresenceRemoteSAP != null,
         hasPublicKeyCertificate: (context, event) => context.publicKeyCertificates?.length > 0,
         hasEnvSettings: (context, event) => context.message.Envelope.Body.AMT_EnvironmentDetectionSettingData.DetectionStrings != null,
-        hasTLSCredentialContext: (context, event) => context.message.Envelope.Body.PullResponse.Items?.AMT_TLSCredentialContext != null
+        hasTLSCredentialContext: (context, event) => context.message.Envelope.Body.PullResponse.Items?.AMT_TLSCredentialContext != null,
+        is8021xProfileEnabled: (context, event) => context.message.Envelope.Body.IPS_IEEE8021xSettings.Enabled === 2,
+        is8021xProfileDisabled: (context, event) => context.is8021xProfileUpdated
+
       },
       actions: {
         'Update CIRA Status': (context, event) => {
@@ -474,6 +520,20 @@ export class Unconfiguration {
     this.validator = new Validator(new Logger('Validator'), this.configurator)
     this.dbFactory = new DbCreatorFactory()
     this.logger = new Logger('Activation_State_Machine')
+  }
+
+  async get8021xProfile (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
+    context.xmlMessage = context.ips.IEEE8021xSettings.Get()
+    return await invokeWsmanCall(context, 2)
+  }
+
+  async disableWired8021xConfiguration (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
+    const ieee8021xProfile = context.message.Envelope.Body.IPS_IEEE8021xSettings
+    delete ieee8021xProfile.Username
+    delete ieee8021xProfile.AuthenticationProtocol
+    ieee8021xProfile.Enabled = 3
+    context.xmlMessage = context.ips.IEEE8021xSettings.Put(ieee8021xProfile)
+    return await invokeWsmanCall(context, 2)
   }
 
   async removeRemoteAccessPolicyRuleUserInitiated (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
@@ -522,6 +582,7 @@ export class Unconfiguration {
 
   async deletePublicKeyCertificate (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
     const selector = { name: 'InstanceID', value: context.publicKeyCertificates[0].InstanceID }
+    context.publicKeyCertificates = context.publicKeyCertificates.slice(1)
     context.xmlMessage = context.amt.PublicKeyCertificate.Delete(selector)
     return await invokeWsmanCall(context)
   }

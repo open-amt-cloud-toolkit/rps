@@ -21,7 +21,7 @@ services:
       - db
       - vault
   db:
-    image: postgres:14
+    image: postgres
     networks:
       - openamtnetwork1
     restart: always

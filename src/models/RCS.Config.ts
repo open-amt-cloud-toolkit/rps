@@ -30,6 +30,26 @@ export interface ProfileWifiConfigs {
   tenantId: string
 }
 
+export interface Ieee8021xConfig {
+  profileName: string
+  authenticationProtocol: number
+  serverName?: string
+  domain?: string
+  username?: string
+  password?: string
+  roamingIdentity?: string
+  activeInS0?: boolean
+  pxeTimeout: number
+  wiredInterface: boolean
+  tenantId: string
+  version?: string
+}
+
+export interface Ieee8021xCountByInterface {
+  wired: number
+  wireless: number
+}
+
 /*
 - AddMpServer Method:
 
@@ -105,8 +125,8 @@ export interface ClientObject {
   connectionParams?: connectionParams
   messageId?: number
   pendingPromise?: Promise<any>
-  resolve?: any
-  reject?: any
+  resolve?: (value: unknown) => void
+  reject?: (value: unknown) => void
 }
 
 export interface CIRAConfigFlow {

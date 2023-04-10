@@ -18,6 +18,7 @@ import { TimeSync } from './timeMachine'
 import { TlsSigningAuthority } from '../models/RCS.Config'
 import { UNEXPECTED_PARSE_ERROR } from '../utils/constants'
 import { parseChunkedMessage } from '../utils/parseChunkedMessage'
+import { Environment } from '../utils/Environment'
 
 export interface TLSContext {
   message: any
@@ -33,6 +34,7 @@ export interface TLSContext {
   unauthCount: number
   amt?: AMT.Messages
   retryCount?: number
+  keyPairHandle?: string
 }
 
 interface TLSEvent {
@@ -403,7 +405,7 @@ export class TLS {
         },
         WAIT_A_BIT: {
           after: {
-            5000: 'PUT_LOCAL_TLS_DATA'
+            DELAY_TIME_TLS_PUT_DATA_SYNC: 'PUT_LOCAL_TLS_DATA'
           }
         },
         PUT_LOCAL_TLS_DATA: {
@@ -468,10 +470,13 @@ export class TLS {
         }
       }
     }, {
+      delays: {
+        DELAY_TIME_TLS_PUT_DATA_SYNC: () => Environment.Config.delayTlsPutDataSync
+      },
       guards: {
         hasPublicPrivateKeyPairs: (context, event) => context.message.Envelope.Body.PullResponse.Items !== '',
         useTLSEnterpriseAssistantCert: (context, event) => context.amtProfile.tlsSigningAuthority === TlsSigningAuthority.MICROSOFT_CA,
-        shouldRetry: (context, event) => context.retryCount < 3 && event.data === UNEXPECTED_PARSE_ERROR,
+        shouldRetry: (context, event) => context.retryCount < 3 && event.data instanceof UNEXPECTED_PARSE_ERROR,
         alreadyExists: (context, event) => {
           let exists = false
           try {
@@ -550,7 +555,8 @@ export class TLS {
     } else {
       clientObj.tls.PublicPrivateKeyPair = [potentialArray]
     }
-    const DERKey = clientObj.tls.PublicPrivateKeyPair[0]?.DERKey
+    const PublicPrivateKeyPair = clientObj.tls.PublicPrivateKeyPair.filter(x => x.InstanceID === context.keyPairHandle)[0]
+    const DERKey = PublicPrivateKeyPair?.DERKey
 
     context.message = {
       action: 'satellite',
@@ -564,7 +570,7 @@ export class TLS {
       osname: 'win11',
       icon: 1,
       DERKey,
-      keyInstanceId: 'Intel(r) AMT Key: Handle: 0', // todo: don't hardcode this, pull it from the response
+      keyInstanceId: PublicPrivateKeyPair?.InstanceID,
       ver: ''
     }
     return await invokeEnterpriseAssistantCall(context)
@@ -577,7 +583,6 @@ export class TLS {
 
   async addCertificate (context: TLSContext, event: TLSEvent): Promise<void> {
     const clientObj = devices[context.clientId]
-
     let cert = ''
     if (context.amtProfile.tlsSigningAuthority === TlsSigningAuthority.SELF_SIGNED || context.amtProfile.tlsSigningAuthority == null) {
       const potentialArray = context.message.Envelope.Body.PullResponse.Items.AMT_PublicPrivateKeyPair
@@ -586,7 +591,8 @@ export class TLS {
       } else {
         clientObj.tls.PublicPrivateKeyPair = [potentialArray]
       }
-      const DERKey = clientObj.tls.PublicPrivateKeyPair[0]?.DERKey
+      const PublicPrivateKeyPair = clientObj.tls.PublicPrivateKeyPair.filter(x => x.InstanceID === context.keyPairHandle)[0]
+      const DERKey = PublicPrivateKeyPair?.DERKey
       const certAttributes: CertAttributes = { CN: 'AMT', O: 'None', ST: 'None', C: 'None' }
       const issuerAttributes: CertAttributes = { CN: clientObj.uuid ?? 'Untrusted Root Certificate' }
 
@@ -635,7 +641,6 @@ export class TLS {
 
   async createTLSCredentialContext (context: TLSContext, event: TLSEvent): Promise<void> {
     // TODO: 802.1x shoudl be set here right?
-
     const certHandle = event.data.Envelope.Body?.AddCertificate_OUTPUT?.CreatedCertificate?.ReferenceParameters?.SelectorSet?.Selector?._ ?? 'Intel(r) AMT Certificate: Handle: 1'
     context.xmlMessage = context.amt.TLSCredentialContext.Create(certHandle)
     return await invokeWsmanCall(context, 2)
@@ -652,6 +657,7 @@ export class TLS {
   }
 
   async enumeratePublicPrivateKeyPair (context: TLSContext, event: TLSEvent): Promise<void> {
+    context.keyPairHandle = context.message?.Envelope?.Body?.GenerateKeyPair_OUTPUT?.KeyPair?.ReferenceParameters?.SelectorSet?.Selector?._
     context.xmlMessage = context.amt.PublicPrivateKeyPair.Enumerate()
     return await invokeWsmanCall(context, 2)
   }

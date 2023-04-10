@@ -31,6 +31,20 @@ CREATE TABLE IF NOT EXISTS wirelessconfigs(
   tenant_id varchar(36) NOT NULL,
   PRIMARY KEY (wireless_profile_name, tenant_id)
 );
+CREATE TABLE IF NOT EXISTS ieee8021xconfigs(
+    profile_name citext,
+    auth_protocol integer,
+    servername VARCHAR(255),
+    domain VARCHAR(255),
+    username VARCHAR(255),
+    password VARCHAR(255),
+    roaming_identity VARCHAR(255),
+    active_in_s0 BOOLEAN,
+    pxe_timeout integer,
+    wired_interface BOOLEAN NOT NULL,
+    tenant_id varchar(36) NOT NULL,
+    PRIMARY KEY (profile_name, tenant_id)
+);
 CREATE TABLE IF NOT EXISTS profiles(
   profile_name citext NOT NULL,
   activation varchar(20) NOT NULL,
@@ -51,6 +65,8 @@ CREATE TABLE IF NOT EXISTS profiles(
   kvm_enabled BOOLEAN NULL,
   sol_enabled BOOLEAN NULL,
   tls_signing_authority varchar(40) NULL,
+  ieee8021x_profile_name citext,
+  FOREIGN KEY (ieee8021x_profile_name,tenant_id)  REFERENCES ieee8021xconfigs(profile_name,tenant_id),
   PRIMARY KEY (profile_name, tenant_id)
 );
 CREATE TABLE IF NOT EXISTS profiles_wirelessconfigs(

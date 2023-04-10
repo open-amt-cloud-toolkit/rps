@@ -7,9 +7,6 @@ import { type apiResponse } from '../models/RCS.Config'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const packageObj = require('../../package.json')
 
-export const AMTRandomPasswordChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^*()'
-export const AMTRandomPasswordLength = 16
-
 export const ServiceVersion = packageObj.version
 export const ProtocolVersion = '4.0.0'
 export const AMTUserName = 'admin'
@@ -40,7 +37,7 @@ export const API_UNEXPECTED_EXCEPTION = (message: string): string => `Operation 
 export const CONCURRENCY_EXCEPTION = 'Concurrency'
 export const CONCURRENCY_MESSAGE = 'No records were updated'
 export const NOT_FOUND_EXCEPTION = 'Not Found'
-export const NOT_FOUND_MESSAGE = (type: 'Domain' | 'Wireless' | 'CIRA' | 'AMT', name: string): string => `${type} profile ${name} Not Found`
+export const NOT_FOUND_MESSAGE = (type: 'Domain' | 'Wireless' | '802.1x' | 'CIRA' | 'AMT', name: string): string => `${type} profile ${name} Not Found`
 // JSON response
 export const API_RESPONSE = (data?: any, error?: string, message?: string): apiResponse => {
   const response: apiResponse = {}
@@ -116,7 +113,23 @@ export const WIFIENDPOINT = {
 export const DEFAULT_TOP = 25
 export const DEFAULT_SKIP = 0
 
-export const UNEXPECTED_PARSE_ERROR = {
-  statusCode: 599,
-  statusMessage: 'Unexpected Parse Error'
+export class UnexpectedParseError extends Error {
+  statusCode: number
+  constructor (message: string = 'Unexpected Parse Error', statusCode: number = 599) {
+    super(message)
+    this.name = this.constructor.name
+    this.statusCode = statusCode
+    Error.captureStackTrace(this, this.constructor)
+  }
 }
+export const UNEXPECTED_PARSE_ERROR = UnexpectedParseError
+export class GatewayTimeoutError extends Error {
+  statusCode: number
+  constructor (message: string = 'Gateway Timeout', statusCode: number = 504) {
+    super(message)
+    this.name = this.constructor.name
+    this.statusCode = statusCode
+    Error.captureStackTrace(this, this.constructor)
+  }
+}
+export const GATEWAY_TIMEOUT_ERROR = GatewayTimeoutError

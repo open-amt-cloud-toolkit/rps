@@ -162,6 +162,7 @@ export const getUpdatedData = async (newConfig: any, oldConfig: AMTConfiguration
   amtConfig.kvmEnabled = newConfig.kvmEnabled ?? oldConfig.kvmEnabled
   amtConfig.solEnabled = newConfig.solEnabled ?? oldConfig.solEnabled
   amtConfig.tlsSigningAuthority = newConfig.tlsSigningAuthority ?? oldConfig.tlsSigningAuthority
+  amtConfig.ieee8021xProfileName = newConfig.ieee8021xProfileName
   amtConfig.version = newConfig.version
   return amtConfig
 }

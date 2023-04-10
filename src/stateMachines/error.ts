@@ -81,7 +81,7 @@ export class Error {
       actions: {
         respondUnauthorized: pure((context) => {
           devices[context.clientId].unauthCount = 0
-          return sendParent({ type: 'ONFAILED', data: 'Unable to authenticate with AMT. Exceeded Retry Attempts' })
+          return sendParent({ type: 'ONFAILED', data: 'Unable to authenticate with AMT' })
         }),
         respondBadRequest: pure((context) => this.respondBadRequest(context)),
         respondUnknown: pure((context) => {

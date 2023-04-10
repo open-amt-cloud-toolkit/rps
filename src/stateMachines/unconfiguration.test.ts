@@ -12,7 +12,7 @@ import { HttpHandler } from '../HttpHandler'
 import { interpret } from 'xstate'
 import { MPSType } from './ciraConfiguration'
 import * as common from './common'
-import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
+import { AMT, IPS } from '@open-amt-cloud-toolkit/wsman-messages'
 const clientId = uuid()
 Environment.Config = config
 
@@ -23,7 +23,6 @@ describe('Unconfiguration State Machine', () => {
   let remoteAccessPolicyRuleSpy: jest.SpyInstance
   let unconfigContext: UnconfigContext
   let configuration
-  jest.setTimeout(15000)
   beforeEach(() => {
     unconfiguration = new Unconfiguration()
     invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue(null)
@@ -40,7 +39,8 @@ describe('Unconfiguration State Machine', () => {
       privateCerts: [],
       TLSSettingData: [],
       publicKeyCertificates: [],
-      amt: new AMT.Messages()
+      amt: new AMT.Messages(),
+      ips: new IPS.Messages()
     }
     remoteAccessPolicyRuleSpy = jest.spyOn(unconfigContext.amt.RemoteAccessPolicyRule, 'Delete').mockReturnValue('abcdef')
     devices[clientId] = {
@@ -65,6 +65,8 @@ describe('Unconfiguration State Machine', () => {
     configuration = {
       services: {
         'error-machine': Promise.resolve({ clientId }),
+        'get-8021x-profile': Promise.resolve({ clientId }),
+        'disable-Wired-8021x-Configuration': Promise.resolve({ clientId }),
         'remove-remote-access-policy-rule-user-initiated': Promise.resolve({ clientId }),
         'remove-remote-access-policy-rule-rule-alert': Promise.resolve({ clientId }),
         'remove-remote-access-policy-rule-periodic': Promise.resolve({ clientId }),
@@ -98,7 +100,8 @@ describe('Unconfiguration State Machine', () => {
         hasMPSEntries: () => false,
         hasPublicKeyCertificate: () => false,
         hasEnvSettings: () => false,
-        hasTLSCredentialContext: () => false
+        hasTLSCredentialContext: () => false,
+        is8021xProfileEnabled: () => false
       }
     }
   })
@@ -106,7 +109,9 @@ describe('Unconfiguration State Machine', () => {
   it('should eventually reach "FAILURE" after "ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP"', (done) => {
     configuration.services['enumerate-management-presence-remote-sap'] = Promise.reject(new Error())
     const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
-    const flowStates = ['UNCONFIGURED',
+    const flowStates = [
+      'UNCONFIGURED',
+      'GET_8021X_PROFILE',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_PERIODIC',
@@ -125,9 +130,13 @@ describe('Unconfiguration State Machine', () => {
   })
 
   it('should eventually reach "FAILURE" after "PULL_MANAGEMENT_PRESENCE_REMOTE_SAP"', (done) => {
+    configuration.guards.is8021xProfileEnabled = () => true
     configuration.services['pull-management-presence-remote-sap'] = Promise.reject(new Error())
     const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
-    const flowStates = ['UNCONFIGURED',
+    const flowStates = [
+      'UNCONFIGURED',
+      'GET_8021X_PROFILE',
+      'DISABLE_IEEE8021X_WIRED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_PERIODIC',
@@ -148,6 +157,7 @@ describe('Unconfiguration State Machine', () => {
     configuration.services['enumerate-tls-setting-data'] = Promise.reject(new Error())
     const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
+      'GET_8021X_PROFILE',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_PERIODIC',
@@ -169,6 +179,7 @@ describe('Unconfiguration State Machine', () => {
     configuration.services['pull-tls-setting-data'] = Promise.reject(new Error())
     const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
+      'GET_8021X_PROFILE',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_PERIODIC',
@@ -191,6 +202,7 @@ describe('Unconfiguration State Machine', () => {
     configuration.services['enumerate-public-key-certificate'] = Promise.reject(new Error())
     const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
+      'GET_8021X_PROFILE',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_PERIODIC',
@@ -214,6 +226,7 @@ describe('Unconfiguration State Machine', () => {
     configuration.services['pull-public-key-certificate'] = Promise.reject(new Error())
     const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
+      'GET_8021X_PROFILE',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_PERIODIC',
@@ -238,6 +251,7 @@ describe('Unconfiguration State Machine', () => {
     configuration.services['get-environment-detection-settings'] = Promise.reject(new Error())
     const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
+      'GET_8021X_PROFILE',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_PERIODIC',
@@ -260,7 +274,9 @@ describe('Unconfiguration State Machine', () => {
   })
 
   it('should eventually reach "SUCCESS"', (done) => {
-    configuration.guards = {}
+    configuration.guards = {
+      is8021xProfileEnabled: () => false
+    }
     const fault = { statusCode: 400 }
     configuration.services['remove-remote-access-policy-rule-user-initiated'] = Promise.reject(fault)
     configuration.services['remove-remote-access-policy-rule-rule-alert'] = Promise.reject(fault)
@@ -271,6 +287,7 @@ describe('Unconfiguration State Machine', () => {
     configuration.services['get-environment-detection-settings'] = Promise.resolve({ Envelope: { Body: { AMT_EnvironmentDetectionSettingData: { DetectionStrings: 'abcde' } } } })
     const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
+      'GET_8021X_PROFILE',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_PERIODIC',
@@ -296,6 +313,7 @@ describe('Unconfiguration State Machine', () => {
     service.start()
     service.send({ type: 'REMOVEPOLICY', clientId })
   })
+
   it('should eventually reach "FAILURE" after "DISABLE_TLS_SETTING_DATA"', (done) => {
     devices[clientId].ciraconfig = { TLSSettingData: [{ Enabled: false }, { Enabled: true }] }
     configuration.guards = {
@@ -303,11 +321,13 @@ describe('Unconfiguration State Machine', () => {
       tlsSettingDataEnabled: () => true,
       hasMPSEntries: () => false,
       hasPublicKeyCertificate: () => false,
-      hasEnvSettings: () => false
+      hasEnvSettings: () => false,
+      is8021xProfileEnabled: () => false
     }
     configuration.services['disable-tls-setting-data'] = Promise.reject(new Error())
     const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
+      'GET_8021X_PROFILE',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_PERIODIC',
@@ -334,7 +354,8 @@ describe('Unconfiguration State Machine', () => {
       tlsSettingDataEnabled: () => true,
       hasMPSEntries: () => false,
       hasPublicKeyCertificate: () => false,
-      hasEnvSettings: () => false
+      hasEnvSettings: () => false,
+      is8021xProfileEnabled: () => false
     }
     configuration.services['disable-tls-setting-data-2'] = Promise.resolve({ Envelope: { Body: { AMT_TLSSettingData: { ElementName: 'Intel(r) AMT LMS TLS Settings' } } } })
     configuration.services['disable-tls-setting-data'] = Promise.resolve({ Envelope: { Body: { AMT_TLSSettingData: { ElementName: 'Intel(r) AMT 802.3 TLS Settings' } } } })
@@ -342,6 +363,7 @@ describe('Unconfiguration State Machine', () => {
     configuration.services['setup-and-configuration-service-commit-changes'] = Promise.reject(new Error())
     const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
+      'GET_8021X_PROFILE',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_PERIODIC',
@@ -364,7 +386,9 @@ describe('Unconfiguration State Machine', () => {
   })
 
   it('should eventually reach "FAILURE" after "DELETE_MANAGEMENT_PRESENCE_REMOTE_SAP"', (done) => {
-    configuration.guards = {}
+    configuration.guards = {
+      is8021xProfileEnabled: () => false
+    }
     const fault = { statusCode: 400 }
     configuration.services['remove-remote-access-policy-rule-user-initiated'] = Promise.reject(fault)
     configuration.services['remove-remote-access-policy-rule-rule-alert'] = Promise.reject(fault)
@@ -373,6 +397,7 @@ describe('Unconfiguration State Machine', () => {
     configuration.services['delete-management-presence-remote-sap'] = Promise.reject(new Error())
     const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
+      'GET_8021X_PROFILE',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_PERIODIC',
@@ -388,6 +413,24 @@ describe('Unconfiguration State Machine', () => {
     })
     service.start()
     service.send({ type: 'REMOVEPOLICY', clientId })
+  })
+
+  describe('unconfiguration of Wired 802.1x configuration ', () => {
+    it('should disable wired 802.1x configuration', async () => {
+      unconfigContext.message = {
+        Envelope: {
+          Body: {
+            IPS_IEEE8021xSettings: {
+              Username: 'abc',
+              AuthenticationProtocol: 0,
+              Enabled: true
+            }
+          }
+        }
+      }
+      await unconfiguration.disableWired8021xConfiguration(unconfigContext, null)
+      expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    })
   })
 
   describe('send wsman message with Remote Access Policy Rule', () => {

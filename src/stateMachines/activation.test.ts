@@ -35,7 +35,6 @@ describe('Activation State Machine', () => {
   const configurator = new Configurator()
   let currentStateIndex: number
   const cert = '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'
-  jest.setTimeout(15000)
   beforeEach(() => {
     activation = new Activation()
     devices[clientId] = {
@@ -188,6 +187,7 @@ describe('Activation State Machine', () => {
         'save-device-to-mps': Promise.resolve(true),
         'unconfiguration-machine': Promise.resolve({ clientId }),
         'network-configuration-machine': Promise.resolve({ clientId }),
+        'IEEE8021x-configuration-machine': Promise.resolve({ clientId }),
         'features-configuration-machine': Promise.resolve({ clientId }),
         'tls-machine': Promise.resolve({ clientId }),
         'cira-machine': Promise.resolve({ clientId }),
@@ -314,7 +314,7 @@ describe('Activation State Machine', () => {
         }
       )
       devices[clientId].nonce = PasswordHelper.generateNonce()
-      await activation.getAdminSetup(context)
+      await activation.sendAdminSetup(context)
       expect(getPasswordSpy).toHaveBeenCalled()
       expect(createSignedStringSpy).toHaveBeenCalled()
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
@@ -325,7 +325,7 @@ describe('Activation State Machine', () => {
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
     it('should send WSMan to set up client mode', async () => {
-      await activation.getClientSetup(context)
+      await activation.sendClientSetup(context)
       expect(getPasswordSpy).toHaveBeenCalled()
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
@@ -469,7 +469,11 @@ describe('Activation State Machine', () => {
   })
 
   describe('test state machine', () => {
+    afterEach(() => {
+      jest.useRealTimers()
+    })
     it('should eventually reach "PROVISIONED" for ccm activation TLS', (done) => {
+      jest.useFakeTimers()
       const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
       const flowStates = [
         'UNPROVISIONED',
@@ -481,22 +485,27 @@ describe('Activation State Machine', () => {
         'SAVE_DEVICE_TO_MPS',
         'UNCONFIGURATION',
         'NETWORK_CONFIGURATION',
+        'IEEE8021X_CONFIGURATION',
         'FEATURES_CONFIGURATION',
         'TLS',
         'PROVISIONED'
       ]
       const ccmActivationService = interpret(mockActivationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
-        if (state.matches('PROVISIONED') && currentStateIndex === flowStates.length) {
+        if (state.matches('DELAYED_TRANSITION')) {
+          jest.advanceTimersByTime(10000)
+        } else if (state.matches('PROVISIONED') && currentStateIndex === flowStates.length) {
           done()
         }
       })
 
       ccmActivationService.start()
       ccmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '' })
+      jest.runAllTicks()
     })
 
     it('should eventually reach "PROVISIONED" in Admin mode', (done) => {
+      jest.useFakeTimers()
       context.certChainPfx = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprint: 'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244' }
       devices[context.clientId].certObj = context.certChainPfx.provisioningCertificateObj
 
@@ -519,22 +528,27 @@ describe('Activation State Machine', () => {
         'SAVE_DEVICE_TO_MPS',
         'UNCONFIGURATION',
         'NETWORK_CONFIGURATION',
+        'IEEE8021X_CONFIGURATION',
         'FEATURES_CONFIGURATION',
         'TLS',
         'PROVISIONED'
       ]
       const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
-        if (state.matches('PROVISIONED') && currentStateIndex === flowStates.length) {
+        if (state.matches('DELAYED_TRANSITION')) {
+          jest.advanceTimersByTime(10000)
+        } else if (state.matches('PROVISIONED') && currentStateIndex === flowStates.length) {
           done()
         }
       })
 
       acmActivationService.start()
       acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '' })
+      jest.runAllTicks()
     })
 
     it('should eventually reach "PROVISIONED" in Admin mode with CIRA profile', (done) => {
+      jest.useFakeTimers()
       context.certChainPfx = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprint: 'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244' }
       devices[context.clientId].certObj = context.certChainPfx.provisioningCertificateObj
       config.guards = {
@@ -557,19 +571,23 @@ describe('Activation State Machine', () => {
         'SAVE_DEVICE_TO_MPS',
         'UNCONFIGURATION',
         'NETWORK_CONFIGURATION',
+        'IEEE8021X_CONFIGURATION',
         'FEATURES_CONFIGURATION',
         'CIRA',
         'PROVISIONED'
       ]
       const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
-        if (state.matches('PROVISIONED') && currentStateIndex === flowStates.length) {
+        if (state.matches('DELAYED_TRANSITION')) {
+          jest.advanceTimersByTime(10000)
+        } else if (state.matches('PROVISIONED') && currentStateIndex === flowStates.length) {
           done()
         }
       })
 
       acmActivationService.start()
       acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '' })
+      jest.runAllTicks()
     })
 
     it('should eventually reach "FAILED" at "GET_AMT_PROFILE"', (done) => {

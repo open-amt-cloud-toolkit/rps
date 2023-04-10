@@ -271,6 +271,7 @@ describe('validator', () => {
       expect(rpsError.message).toEqual(`Device ${msg.payload.uuid} activation failed. Missing password.`)
     })
     test('should throw an exception if profile does not match', async () => {
+      const getAMTProfileSpy = jest.spyOn(configurator.profileManager, 'getAmtProfile').mockReturnValue(null)
       let rpsError = null
       try {
         msg.payload.profile = 'profile5'
@@ -279,6 +280,7 @@ describe('validator', () => {
         rpsError = error
       }
       expect(rpsError).toBeInstanceOf(RPSError)
+      expect(getAMTProfileSpy).toHaveBeenCalled()
       expect(rpsError.message).toEqual(`Device ${msg.payload.uuid} activation failed. ${msg.payload.profile} does not match list of available AMT profiles.`)
     })
     test('Should throw an exception if uuid length is not 36', async () => {

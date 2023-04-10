@@ -12,6 +12,10 @@ import * as forge from 'node-forge'
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 import { UNEXPECTED_PARSE_ERROR } from '../utils/constants'
 import { wsmanAlreadyExistsAllChunks } from '../test/helper/AMTMessages'
+import { config } from '../test/helper/Config'
+import { Environment } from '../utils/Environment'
+
+Environment.Config = config
 
 describe('TLS State Machine', () => {
   let tls: TLS
@@ -72,8 +76,12 @@ describe('TLS State Machine', () => {
       }
     }
   })
-  jest.setTimeout(15000)
+  afterEach(() => {
+    jest.resetAllMocks()
+    jest.useRealTimers()
+  })
   it('should configure TLS', (done) => {
+    jest.useFakeTimers()
     context.amtProfile = { tlsMode: 3, tlsSigningAuthoritys: 'SelfSigned' } as any
     // already existing error case is covered with this reject
     // eslint-disable-next-line prefer-promise-reject-errors
@@ -105,18 +113,21 @@ describe('TLS State Machine', () => {
 
     const tlsService = interpret(tlsStateMachine).onTransition((state) => {
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
-      if (state.matches('SUCCESS') && currentStateIndex === flowStates.length) {
+      if (state.matches('WAIT_A_BIT')) {
+        jest.advanceTimersByTime(5000)
+      } else if (state.matches('SUCCESS') && currentStateIndex === flowStates.length) {
         done()
       }
     })
 
     tlsService.start()
     tlsService.send({ type: 'CONFIGURE_TLS', clientId })
+    jest.runAllTicks()
   })
 
   it('should retry', (done) => {
     context.amtProfile = { tlsMode: 3, tlsSigningAuthoritys: 'SelfSigned' } as any
-    config.services['pull-public-key-certificate'] = Promise.reject(UNEXPECTED_PARSE_ERROR)
+    config.services['pull-public-key-certificate'] = Promise.reject(new UNEXPECTED_PARSE_ERROR())
     const tlsStateMachine = tls.machine.withConfig(config).withContext(context)
     const flowStates = [
       'PROVISIONED',
@@ -164,6 +175,7 @@ describe('TLS State Machine', () => {
     expect(invokeEnterpriseAssistantCallSpy).toHaveBeenCalledWith(context)
   })
   it('should sendEnterpriseAssistantKeyPairResponse', async () => {
+    context.keyPairHandle = 'Intel(r) AMT Key: Handle: 0'
     context.message = {
       Envelope: {
         Body: {
@@ -171,6 +183,7 @@ describe('TLS State Machine', () => {
             Items: {
               AMT_PublicPrivateKeyPair: [
                 {
+                  InstanceID: 'Intel(r) AMT Key: Handle: 0',
                   DERKey: 'DERKey'
                 }
               ]
@@ -199,6 +212,7 @@ describe('TLS State Machine', () => {
     expect(invokeEnterpriseAssistantCallSpy).toHaveBeenCalledWith(context)
     expect(devices[context.clientId].tls.PublicPrivateKeyPair).toEqual([
       {
+        InstanceID: 'Intel(r) AMT Key: Handle: 0',
         DERKey: 'DERKey'
       }
     ])
@@ -295,9 +309,19 @@ describe('TLS State Machine', () => {
     await tls.pullPublicPrivateKeyPair(context, null)
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
-  it('should updateConfigurationStatus', async () => {
+  it('should updateConfigurationStatus when success', async () => {
+    context.status = 'success'
+    context.statusMessage = 'success status message'
     tls.updateConfigurationStatus(context)
-    expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    expect(devices[context.clientId].status.TLSConfiguration).toEqual('success status message')
+    expect(invokeWsmanCallSpy).not.toHaveBeenCalled()
+  })
+  it('should updateConfigurationStatus when failure', async () => {
+    context.status = 'error'
+    context.errorMessage = 'error status message'
+    tls.updateConfigurationStatus(context)
+    expect(devices[context.clientId].status.TLSConfiguration).toEqual('error status message')
+    expect(invokeWsmanCallSpy).not.toHaveBeenCalled()
   })
   it('should enumerateTlsData', async () => {
     await tls.enumerateTlsData(context, null)

@@ -19,5 +19,6 @@ module.exports = {
     "!src/middleware/custom/**/*.{js,ts}",
   ],
   reporters: ["default", "jest-junit"],
-  testEnvironment: 'node'
+  testEnvironment: 'node',
+  detectOpenHandles: true
 }

@@ -94,7 +94,7 @@ describe('Websocket Listener', () => {
   })
   it('Should generate error when maximum message length exceeded', async () => {
     const loggerSpy = jest.spyOn(server.logger, 'error')
-    const message: WebSocket.Data = 'X'.repeat(1024 * 10 + 1)
+    const message: WebSocket.Data = 'X'.repeat(1024 * 10 * 10 + 1)
     await server.onMessageReceived(message as any, clientid)
     expect(loggerSpy).toHaveBeenCalled()
     expect(loggerSpy).toHaveBeenCalledWith('Incoming message exceeds allowed length')

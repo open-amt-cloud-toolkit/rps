@@ -134,7 +134,10 @@ export class Deactivation {
           },
           entry: send({ type: 'PARSE' }, { to: 'error-machine' }),
           on: {
-            ONFAILED: 'FAILED'
+            ONFAILED: {
+              actions: assign({ errorMessage: (context, event) => event.data }),
+              target: 'FAILED'
+            }
           }
         },
         FAILED: {

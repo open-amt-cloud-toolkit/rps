@@ -16,8 +16,9 @@ export const wirelessValidator = (): any => [
     .isEmpty()
     .withMessage('Wireless profile name is required')
     .matches('^[a-zA-Z0-9]+$')
+    .withMessage('802.1x profile name should be alphanumeric')
     .isLength({ max: 32 })
-    .withMessage('Wireless profile name should be alphanumeric and maximum length is 32'),
+    .withMessage('802.1x profile name maximum length is 32'),
   check('authenticationMethod')
     .not()
     .isEmpty()
@@ -59,8 +60,9 @@ export const wirelessEditValidator = (): any => [
     .isEmpty()
     .withMessage('Wireless profile name is required')
     .matches('^[a-zA-Z0-9]+$')
+    .withMessage('802.1x profile name should be alphanumeric')
     .isLength({ max: 32 })
-    .withMessage('Wireless profile name should be alphanumeric and maximum length is 32'),
+    .withMessage('802.1x profile name maximum length is 32'),
   check('authenticationMethod')
     .optional()
     .isIn([4, 6])
@@ -85,5 +87,9 @@ export const wirelessEditValidator = (): any => [
       if (!value.every(Number.isInteger)) throw new Error('Array does not contain integers') // check that contains Integers
       if (!value.every(isValidLinkPolicy)) throw new Error('Array values should be either 1: available on S0 AC, 14: available on Sx AC, 16: available on S0 DC, 224: available on Sx DC')
       return true
-    })
+    }),
+  check('version')
+    .not()
+    .isEmpty()
+    .withMessage('Version is required to patch/update a record.')
 ]

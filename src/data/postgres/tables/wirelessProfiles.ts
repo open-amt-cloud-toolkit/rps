@@ -121,7 +121,7 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
       if (error.code === '23503') { // foreign key violation
         throw new RPSError(NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT('Wireless', configName))
       }
-      throw new RPSError(API_UNEXPECTED_EXCEPTION(`Delete network configuration : ${configName}`))
+      throw new RPSError(API_UNEXPECTED_EXCEPTION(`Delete wireless configuration : ${configName}`))
     }
   }
 

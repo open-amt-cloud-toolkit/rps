@@ -5,6 +5,7 @@
 
 import { type pki } from 'node-forge'
 import {
+  type Ieee8021xConfig,
   type CIRAConfig,
   type ProfileWifiConfigs,
   type TlsMode,
@@ -93,6 +94,10 @@ export class RPSConfig {
   corsMethods: string
   mpsServer: string
   delayTimer: number
+  delayActivationSync: number
+  delaySetupAndConfigSync: number
+  delayTlsPutDataSync: number
+  timemoutWsmanResponse: number
   mqttAddress?: string
   disableCIRADomainName?: string
   jwtTokenHeader: string
@@ -152,6 +157,8 @@ export class AMTConfiguration {
   iderEnabled?: boolean
   kvmEnabled?: boolean
   solEnabled?: boolean
+  ieee8021xProfileName?: string
+  ieee8021xProfileObject?: Ieee8021xConfig
   version?: string
 }
 
@@ -323,7 +330,13 @@ const recipeRCSConfig = {
 }
 
 export function mapConfig (src, dot): RPSConfig {
-  return dot.transform(recipeRCSConfig, src) as RPSConfig
+  const config = dot.transform(recipeRCSConfig, src) as RPSConfig
+  // set up the rest of the delays and timeouts that aren't exposed
+  config.delayActivationSync = config.delayTimer * 1000
+  config.delaySetupAndConfigSync = 5000
+  config.delayTlsPutDataSync = 5000
+  config.timemoutWsmanResponse = config.delayTimer * 1000
+  return config
 }
 
 export type eventType = 'request' | 'success' | 'fail'

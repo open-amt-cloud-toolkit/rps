@@ -5,7 +5,7 @@
 
 import { type CIRAConfig } from '../../../models/RCS.Config'
 import Logger from '../../../Logger'
-import { API_RESPONSE, NOT_FOUND_EXCEPTION, NOT_FOUND_MESSAGE } from '../../../utils/constants'
+import { NOT_FOUND_EXCEPTION, NOT_FOUND_MESSAGE } from '../../../utils/constants'
 import { MqttProvider } from '../../../utils/MqttProvider'
 import { type Request, type Response } from 'express'
 import handleError from '../../../utils/handleError'
@@ -17,11 +17,11 @@ export async function getCiraConfig (req: Request, res: Response): Promise<void>
   try {
     const results: CIRAConfig = await req.db.ciraConfigs.getByName(ciraConfigName, req.tenantId)
     if (results != null) {
-      // Return null. Check Security objectives around returning passwords.
+      // secrets rules: never return sensitive data (passwords) in a response
       delete results.password
       MqttProvider.publishEvent('success', ['getCiraConfig'], `Get CIRA config profile : ${ciraConfigName}`)
       log.verbose(`CIRA config profile : ${JSON.stringify(results)}`)
-      res.status(200).json(API_RESPONSE(results)).end()
+      res.status(200).json(results).end()
     } else {
       throw new RPSError(NOT_FOUND_MESSAGE('CIRA', ciraConfigName), NOT_FOUND_EXCEPTION)
     }
