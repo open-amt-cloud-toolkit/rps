@@ -70,7 +70,7 @@ jobs:
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
     - name: Generate Security Report
-      uses: rsdmike/github-security-report-action@v3.0.0
+      uses: rsdmike/github-security-report-action@v3.0.4
       with:
         template: report
         token: ${{ secrets.SECURITY_TOKEN }}
@@ -78,6 +78,4 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: report
-        path: |
-          ./report.pdf
-          /home/runner/work/rps/results/javascript.sarif
+        path: ./*.pdf

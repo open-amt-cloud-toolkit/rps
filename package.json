@@ -35,7 +35,7 @@
   },
   "main": "index.js",
   "scripts": {
-    "compile": "tsc",
+    "compile": "tsc --project tsconfig.build.json",
     "start": "tsc && node ./dist/Index.js",
     "test": "jest --coverage --detectOpenHandles",
     "watch": "nodemon -e ts -w ./src -x npm run start",
@@ -63,7 +63,7 @@
     "uuid": "^9.0.0",
     "winston": "^3.8.2",
     "ws": "^8.13.0",
-    "xml2js": "^0.4.23",
+    "xml2js": "^0.5.0",
     "xstate": "^4.37.1"
   },
   "devDependencies": {
@@ -75,7 +75,7 @@
     "@types/ws": "^8.5.4",
     "@typescript-eslint/eslint-plugin": "^5.57.1",
     "@typescript-eslint/parser": "^5.57.1",
-    "eslint": "^8.37.0",
+    "eslint": "^8.38.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-config-standard-with-typescript": "^34.0.1",
     "eslint-plugin-import": "^2.27.5",
