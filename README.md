@@ -20,7 +20,6 @@ To succesfully deploy RPS, the following software must be installed on your deve
 - [Node.js* LTS 18.x.x or newer](https://nodejs.org/en/)
 - [git](https://git-scm.com/downloads)
 
-
 ## Deploy the Remote Provisioning Server (RPS) Microservice
 
 To deploy the RPS on a local development system: 
