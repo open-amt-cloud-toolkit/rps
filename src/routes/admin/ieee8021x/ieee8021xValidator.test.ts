@@ -3,23 +3,66 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { validatePxeTimeout } from './ieee8021xValidator'
+import { type Meta } from 'express-validator'
+import { validatePxeTimeout, validateAuthProtocol } from './ieee8021xValidator'
 
-describe('Checks - ieee8021xValidator', () => {
-  it('should pass', () => {
-    const pxeTimeout: number = 120
-    expect(validatePxeTimeout(pxeTimeout, null)).toBeTruthy()
+describe('ieee802.1x validator', () => {
+  describe('PXE Checks', () => {
+    it('should pass', () => {
+      const pxeTimeout: number = 120
+      expect(validatePxeTimeout(pxeTimeout, null)).toBeTruthy()
+    })
+    it('should fail if pxe timeout is not a number', () => {
+      const pxeTimeout: string = '123'
+      expect(() => { validatePxeTimeout(pxeTimeout, null) }).toThrowError('PXE Timeout must be number')
+    })
+    it('should fail if pxe timeout is below range', () => {
+      const pxeTimeout: number = -1
+      expect(() => { validatePxeTimeout(pxeTimeout, null) }).toThrowError('PXE Timeout value should be 0 - 86400')
+    })
+    it('should fail if pxe timeout is above range', () => {
+      const pxeTimeout: number = (60 * 60 * 24) + 1
+      expect(() => { validatePxeTimeout(pxeTimeout, null) }).toThrowError('PXE Timeout value should be 0 - 86400')
+    })
   })
-  it('should fail if pxe timeout is not a number', () => {
-    const pxeTimeout: string = '123'
-    expect(() => { validatePxeTimeout(pxeTimeout, null) }).toThrowError('PXE Timeout must be number')
-  })
-  it('should fail if pxe timeout is below range', () => {
-    const pxeTimeout: number = -1
-    expect(() => { validatePxeTimeout(pxeTimeout, null) }).toThrowError('PXE Timeout value should be 0 - 86400')
-  })
-  it('should fail if pxe timeout is above range', () => {
-    const pxeTimeout: number = (60 * 60 * 24) + 1
-    expect(() => { validatePxeTimeout(pxeTimeout, null) }).toThrowError('PXE Timeout value should be 0 - 86400')
+
+  describe('Protocol Checks', () => {
+    let metaReq: Meta
+
+    beforeEach(() => {
+      metaReq = {
+        req: {
+          body: {
+            profileName: 'ieee8021xProfileName',
+            authenticationProtocol: 3,
+            pxeTimeout: 120,
+            wiredInterface: true
+          }
+        }
+      } as any
+    })
+
+    describe('Protocol Checks - ieee8021xValidator', () => {
+      it('wired should pass', () => {
+        expect(validateAuthProtocol(metaReq.req.body.authenticationProtocol, metaReq)).toBeTruthy()
+      })
+      it('wired should fail with invalid authentication protocol ', async () => {
+        metaReq.req.body.wiredInterface = true
+        metaReq.req.body.authenticationProtocol = 100
+        expect(() => { validateAuthProtocol(metaReq.req.body.authenticationProtocol, metaReq) })
+          .toThrowError('Authentication protocol must be one of 0:EAP-TLS, 3:PEAPv1/EAP-GTC, 5:EAP-FAST/GTC, 10:EAP-FAST/TLS')
+      })
+      it('wireless should pass', async () => {
+        metaReq.req.body.wiredInterface = false
+        metaReq.req.body.authenticationProtocol = 2
+        expect(validateAuthProtocol(metaReq.req.body.authenticationProtocol, metaReq)).toBeTruthy()
+      })
+      it('wireless should fail with invalid authentication protocol', async () => {
+        metaReq.req.body.wiredInterface = false
+        metaReq.req.body.authenticationProtocol = 100
+        expect(() => { validateAuthProtocol(metaReq.req.body.authenticationProtocol, metaReq) })
+          .toThrowError('Authentication protocol must be one of 0:EAP-TLS, 2:PEAPv0/EAP-MSCHAPv2')
+      })
+    })
   })
 })

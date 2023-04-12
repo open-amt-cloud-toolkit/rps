@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import PostgresDb from '..'
-import { type Ieee8021xConfig, type Ieee8021xCountByInterface } from '../../../models/RCS.Config'
+import { type Ieee8021xConfig } from '../../../models/RCS.Config'
 import {
   API_UNEXPECTED_EXCEPTION,
   CONCURRENCY_MESSAGE,
@@ -46,18 +46,6 @@ describe('8021x profiles tests', () => {
       querySpy.mockResolvedValueOnce({ rows: [{ total_count: 1 }], rowCount: 0 })
       const count = await ieee8021xprofilesTable.getCount()
       expect(count).toBe(1)
-      expect(querySpy).toBeCalledTimes(1)
-    })
-    test('should get count by interface', async () => {
-      querySpy.mockResolvedValueOnce({
-        rows: [
-          { wired_interface: true, total_count: 1 },
-          { wired_interface: false, total_count: 3 }
-        ]
-      })
-      const counts: Ieee8021xCountByInterface = await ieee8021xprofilesTable.getCountByInterface()
-      expect(counts.wired).toBe(1)
-      expect(counts.wireless).toBe(3)
       expect(querySpy).toBeCalledTimes(1)
     })
     test('should Get', async () => {

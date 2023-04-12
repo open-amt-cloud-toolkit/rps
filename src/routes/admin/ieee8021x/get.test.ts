@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import { createSpyObj } from '../../../test/helper/jest'
-import { getIEEE8021xProfile, getIEEE8021xCountByInterface } from './get'
+import { getIEEE8021xProfile } from './get'
 
 describe('Checks - getIEEE8021xProfile', () => {
   let resSpy
@@ -45,31 +45,6 @@ describe('Checks - getIEEE8021xProfile', () => {
     jest.spyOn(req.db.ieee8021xProfiles, 'getByName').mockRejectedValue(null)
     await getIEEE8021xProfile(req, resSpy)
     expect(getByNameSpy).toHaveBeenCalledWith('profileName', req.tenantId)
-    expect(resSpy.status).toHaveBeenCalledWith(500)
-  })
-
-  it('should get wired interface profile', async () => {
-    const getSpy = jest
-      .spyOn(req.db.ieee8021xProfiles, 'getCountByInterface')
-      .mockResolvedValue({ profileName: 'doesntmatter' })
-    await getIEEE8021xCountByInterface(req, resSpy)
-    expect(getSpy).toHaveBeenCalledWith(req.tenantId)
-    expect(resSpy.status).toHaveBeenCalledWith(200)
-  })
-  it('should handle wired interface profile not found', async () => {
-    const getSpy = jest
-      .spyOn(req.db.ieee8021xProfiles, 'getCountByInterface')
-      .mockResolvedValue(null)
-    await getIEEE8021xCountByInterface(req, resSpy)
-    expect(getSpy).toHaveBeenCalledWith(req.tenantId)
-    expect(resSpy.status).toHaveBeenCalledWith(404)
-  })
-  it('should handle wired interface profile error', async () => {
-    const getSpy = jest
-      .spyOn(req.db.ieee8021xProfiles, 'getCountByInterface')
-      .mockRejectedValue('test error')
-    await getIEEE8021xCountByInterface(req, resSpy)
-    expect(getSpy).toHaveBeenCalledWith(req.tenantId)
     expect(resSpy.status).toHaveBeenCalledWith(500)
   })
 })

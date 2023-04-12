@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type Ieee8021xConfig, type Ieee8021xCountByInterface } from '../../../models/RCS.Config'
+import { type Ieee8021xConfig } from '../../../models/RCS.Config'
 import {
   NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE,
   NETWORK_CONFIG_ERROR,
@@ -58,7 +58,7 @@ export class IEEE8021xProfilesTable implements IIEEE8021xProfileTable {
     return results.rows
   }
 
-  public async getByName (profileName: string, tenantId: string = ''): Promise<Ieee8021xConfig> {
+  public async getByName (profileName: string, tenantId: string = ''): Promise<Ieee8021xConfig | null> {
     const results = await this.db.query<Ieee8021xConfig>(`
       SELECT 
         profile_name as "profileName",
@@ -77,31 +77,7 @@ export class IEEE8021xProfilesTable implements IIEEE8021xProfileTable {
       return results.rows[0]
     }
     return null
-  }
-
-  public async getCountByInterface (tenantId: string = ''): Promise<Ieee8021xCountByInterface> {
-    const counts: Ieee8021xCountByInterface = {
-      wired: 0,
-      wireless: 0
-    }
-    const result = await this.db.query<{ wired_interface: boolean, total_count: number }>(`
-      SELECT
-        wired_interface AS "wired_interface",
-        COUNT(*) AS total_count
-      FROM ieee8021xconfigs
-      WHERE tenant_id = $1
-      GROUP BY wired_interface`
-    , [tenantId])
-
-    if (!result?.rows) { return counts }
-    for (const row of result.rows) {
-      if (row.wired_interface) {
-        counts.wired = row.total_count
-      } else {
-        counts.wireless = row.total_count
-      }
-    }
-    return counts
+    // return results.rowCount > 0 ? results.rows[0] : null
   }
 
   async checkProfileExits (profileName: string, tenantId: string = ''): Promise<boolean> {
