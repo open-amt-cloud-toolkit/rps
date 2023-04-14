@@ -133,3 +133,13 @@ export class GatewayTimeoutError extends Error {
   }
 }
 export const GATEWAY_TIMEOUT_ERROR = GatewayTimeoutError
+export class EATimeoutError extends Error {
+  statusCode: number
+  constructor (message: string = 'Enterprise Assistant Timeout', statusCode: number = 504) {
+    super(message)
+    this.name = this.constructor.name
+    this.statusCode = statusCode
+    Error.captureStackTrace(this, this.constructor)
+  }
+}
+export const EA_TIMEOUT_ERROR = EATimeoutError

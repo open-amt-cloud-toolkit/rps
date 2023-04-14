@@ -23,7 +23,6 @@ describe('TLS State Machine', () => {
   let context: TLSContext
   let currentStateIndex = 0
   let invokeWsmanCallSpy: jest.SpyInstance
-  let invokeEnterpriseAssistantCallSpy: jest.SpyInstance
   const clientId = '4c4c4544-004b-4210-8033-b6c04f504633'
   beforeEach(() => {
     currentStateIndex = 0
@@ -49,7 +48,6 @@ describe('TLS State Machine', () => {
     }
     tls = new TLS()
     invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue(null)
-    invokeEnterpriseAssistantCallSpy = jest.spyOn(common, 'invokeEnterpriseAssistantCall').mockResolvedValue({} as any)
 
     config = {
       services: {
@@ -154,69 +152,6 @@ describe('TLS State Machine', () => {
     tlsService.send({ type: 'CONFIGURE_TLS', clientId })
   })
 
-  it('should initiateCertRequest', async () => {
-    await tls.initiateCertRequest(context, null)
-
-    expect(context.message).toEqual({
-      action: 'satellite',
-      subaction: '802.1x-ProFile-Request',
-      satelliteFlags: 2,
-      nodeid: context.clientId,
-      domain: '',
-      reqid: '',
-      authProtocol: 0,
-      osname: 'win11',
-      devname: 'WinDev2211Eval',
-      icon: 1,
-      cert: null,
-      certid: null,
-      ver: ''
-    })
-    expect(invokeEnterpriseAssistantCallSpy).toHaveBeenCalledWith(context)
-  })
-  it('should sendEnterpriseAssistantKeyPairResponse', async () => {
-    context.keyPairHandle = 'Intel(r) AMT Key: Handle: 0'
-    context.message = {
-      Envelope: {
-        Body: {
-          PullResponse: {
-            Items: {
-              AMT_PublicPrivateKeyPair: [
-                {
-                  InstanceID: 'Intel(r) AMT Key: Handle: 0',
-                  DERKey: 'DERKey'
-                }
-              ]
-            }
-          }
-        }
-      }
-    }
-    const expectedMessage = {
-      action: 'satellite',
-      subaction: '802.1x-KeyPair-Response',
-      satelliteFlags: 2,
-      nodeid: context.clientId,
-      domain: '',
-      reqid: '',
-      devname: 'WinDev2211Eval',
-      authProtocol: 0,
-      osname: 'win11',
-      icon: 1,
-      DERKey: 'DERKey',
-      keyInstanceId: 'Intel(r) AMT Key: Handle: 0',
-      ver: ''
-    }
-    await tls.sendEnterpriseAssistantKeyPairResponse(context, null)
-    expect(context.message).toEqual(expectedMessage)
-    expect(invokeEnterpriseAssistantCallSpy).toHaveBeenCalledWith(context)
-    expect(devices[context.clientId].tls.PublicPrivateKeyPair).toEqual([
-      {
-        InstanceID: 'Intel(r) AMT Key: Handle: 0',
-        DERKey: 'DERKey'
-      }
-    ])
-  })
   it('should signCSR', async () => {
     context.message = {
       response: {
@@ -239,33 +174,6 @@ describe('TLS State Machine', () => {
     context.message = { Envelope: { Body: { PullResponse: { Items: { AMT_PublicPrivateKeyPair: {} } } } } }
     await tls.addCertificate(context, null)
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
-  })
-  it('should getCertFromEnterpriseAssistant', async () => {
-    context.message = {
-      Envelope: {
-        Body: {
-          GeneratePKCS10RequestEx_OUTPUT: {
-            SignedCertificateRequest: 'certificate'
-          }
-        }
-      }
-    }
-    await tls.getCertFromEnterpriseAssistant(context, null)
-    expect(context.message).toEqual({
-      action: 'satellite',
-      subaction: '802.1x-CSR-Response',
-      satelliteFlags: 2,
-      nodeid: context.clientId,
-      domain: '',
-      reqid: '',
-      authProtocol: 0,
-      osname: 'win11',
-      devname: 'WinDev2211Eval',
-      icon: 1,
-      signedcsr: 'certificate',
-      ver: ''
-    })
-    expect(invokeEnterpriseAssistantCallSpy).toHaveBeenCalledWith(context)
   })
 
   it('should generateKeyPair', async () => {
