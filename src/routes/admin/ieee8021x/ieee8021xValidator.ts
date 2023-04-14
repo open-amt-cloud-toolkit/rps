@@ -60,16 +60,5 @@ export const validateAuthProtocol: CustomValidator = (value, meta: Meta) => {
     throw new Error('Authentication protocol must be one of ' +
       validProtocols.map(m => m.value.toString() + ':' + m.label.toString()).join(', '))
   }
-  // const validWired = [0, 3, 5, 10]
-  // const validWireless = [0, 2]
-  // if (wiredInterface) {
-  //   if (!validWired.includes(reqBody.authenticationProtocol)) {
-  //     throw new Error('Authentication protocol for wired should be either 0(EAP_TLS), 3(EAP_GTC), 5(EAPFAST_GTC) or 10(EAPFAST_TLS)')
-  //   }
-  // } else {
-  //   if (!validWireless.includes(reqBody.authenticationProtocol)) {
-  //     throw new Error('Authentication protocol for wireless should be either 0(EAP_TLS), 2(PEAP_MSCHAPv2))')
-  //   }
-  // }
   return true
 }

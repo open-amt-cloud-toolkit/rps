@@ -187,7 +187,6 @@ describe('Activation State Machine', () => {
         'save-device-to-mps': Promise.resolve(true),
         'unconfiguration-machine': Promise.resolve({ clientId }),
         'network-configuration-machine': Promise.resolve({ clientId }),
-        'IEEE8021x-configuration-machine': Promise.resolve({ clientId }),
         'features-configuration-machine': Promise.resolve({ clientId }),
         'tls-machine': Promise.resolve({ clientId }),
         'cira-machine': Promise.resolve({ clientId }),
@@ -280,6 +279,14 @@ describe('Activation State Machine', () => {
   })
 
   describe('send wsman message from RPS to AMT', () => {
+    it('should send WSMan to get activation status', async () => {
+      context.profile = null
+      context.amtDomain = null
+      const hostBasedSetupServiceSpy = jest.spyOn(context.ips.HostBasedSetupService, 'Get').mockImplementation().mockReturnValue('abcdef')
+      await activation.getActivationStatus(context)
+      expect(hostBasedSetupServiceSpy).toHaveBeenCalled()
+      expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    })
     it('should send WSMan to get amt general settings', async () => {
       context.profile = null
       context.amtDomain = null
@@ -485,7 +492,6 @@ describe('Activation State Machine', () => {
         'SAVE_DEVICE_TO_MPS',
         'UNCONFIGURATION',
         'NETWORK_CONFIGURATION',
-        'IEEE8021X_CONFIGURATION',
         'FEATURES_CONFIGURATION',
         'TLS',
         'PROVISIONED'
@@ -528,7 +534,6 @@ describe('Activation State Machine', () => {
         'SAVE_DEVICE_TO_MPS',
         'UNCONFIGURATION',
         'NETWORK_CONFIGURATION',
-        'IEEE8021X_CONFIGURATION',
         'FEATURES_CONFIGURATION',
         'TLS',
         'PROVISIONED'
@@ -571,7 +576,6 @@ describe('Activation State Machine', () => {
         'SAVE_DEVICE_TO_MPS',
         'UNCONFIGURATION',
         'NETWORK_CONFIGURATION',
-        'IEEE8021X_CONFIGURATION',
         'FEATURES_CONFIGURATION',
         'CIRA',
         'PROVISIONED'

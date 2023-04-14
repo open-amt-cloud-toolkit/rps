@@ -18,7 +18,6 @@ import { PasswordHelper } from '../utils/PasswordHelper'
 import { SignatureHelper } from '../utils/SignatureHelper'
 import { send } from 'xstate/lib/actions'
 import { Error } from './error'
-import { NetworkConfiguration } from './networkConfiguration'
 import { FeaturesConfiguration } from './featuresConfiguration'
 import { NodeForge } from '../NodeForge'
 import { Configurator } from '../Configurator'
@@ -31,7 +30,7 @@ import { invokeWsmanCall } from './common'
 import ClientResponseMsg from '../utils/ClientResponseMsg'
 import { Unconfiguration } from './unconfiguration'
 import { type DeviceCredentials } from '../interfaces/ISecretManagerService'
-import { IEEE8021xConfiguration } from './ieee8021xConfiguration'
+import { NetworkConfiguration } from './networkConfiguration'
 
 export interface ActivationContext {
   profile: AMTConfiguration
@@ -73,7 +72,6 @@ export class Activation {
   error: Error = new Error()
   networkConfiguration: NetworkConfiguration = new NetworkConfiguration()
   featuresConfiguration: FeaturesConfiguration = new FeaturesConfiguration()
-  ieee8021xConfiguration: IEEE8021xConfiguration = new IEEE8021xConfiguration()
   cira: CIRAConfiguration = new CIRAConfiguration()
   unconfiguration: Unconfiguration = new Unconfiguration()
   tls: TLS = new TLS()
@@ -488,31 +486,10 @@ export class Activation {
               clientId: (context, event) => context.clientId,
               httpHandler: (context, _) => context.httpHandler,
               amt: (context, event) => context.amt,
+              ips: (context, event) => context.ips,
               cim: (context, event) => context.cim
             },
-            onDone: 'IEEE8021X_CONFIGURATION'
-          },
-          on: {
-            ONFAILED: 'FAILED'
-          }
-        },
-        IEEE8021X_CONFIGURATION: {
-          entry: send({ type: 'CONFIGURE_8021X' }, { to: 'IEEE8021x-configuration-machine' }),
-          invoke: {
-            src: this.ieee8021xConfiguration.machine,
-            id: 'IEEE8021x-configuration-machine',
-            data: {
-              clientId: (context, event) => context.clientId,
-              amtProfile: (context, event) => context.profile,
-              httpHandler: (context, _) => context.httpHandler,
-              amt: (context, event) => context.amt,
-              ips: (context, event) => context.ips
-            },
-            onDone: [
-              {
-                target: 'FEATURES_CONFIGURATION'
-              }
-            ]
+            onDone: 'FEATURES_CONFIGURATION'
           }
         },
         FEATURES_CONFIGURATION: {
@@ -666,7 +643,7 @@ export class Activation {
     }
     if (state.children['network-configuration-machine'] != null) {
       state.children['network-configuration-machine'].subscribe((childState) => {
-        console.log(`Network Configuration State: ${childState.value}`)
+        console.log(`Network Configuration Machine: ${childState.value}`)
       })
     }
     if (state.children['features-configuration-machine'] != null) {
