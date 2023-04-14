@@ -16,6 +16,7 @@ import { DbCreatorFactory } from '../factories/DbCreatorFactory'
 import { invokeWsmanCall } from './common'
 import { type WifiCredentials } from '../interfaces/ISecretManagerService'
 import { UNEXPECTED_PARSE_ERROR } from '../utils/constants'
+import { getCertFromEnterpriseAssistant, initiateCertRequest, sendEnterpriseAssistantKeyPairResponse } from './enterpriseAssistant'
 
 interface WiFiConfigContext {
   amtProfile: AMTConfiguration
@@ -32,6 +33,11 @@ interface WiFiConfigContext {
   amt?: AMT.Messages
   cim?: CIM.Messages
   retryCount?: number
+  eaResponse?: any
+  addTrustedRootCertResponse?: any
+  addCertResponse?: any
+  keyPairHandle?: string
+  wifiProfile?: any
 }
 
 interface WiFiConfigEvent {
@@ -117,11 +123,6 @@ export class WiFiConfiguration {
               target: 'DELETE_WIFI_ENDPOINT_SETTINGS'
             }, {
               target: 'GET_WIFI_PORT_CONFIGURATION_SERVICE'
-            }, {
-              cond: 'isWiFiProfilesExits',
-              target: 'REQUEST_STATE_CHANGE_FOR_WIFI_PORT'
-            }, {
-              target: 'SUCCESS'
             }
           ]
         },
@@ -174,10 +175,7 @@ export class WiFiConfiguration {
               target: 'PUT_WIFI_PORT_CONFIGURATION_SERVICE'
             },
             {
-              cond: 'isWiFiProfilesExits',
               target: 'REQUEST_STATE_CHANGE_FOR_WIFI_PORT'
-            }, {
-              target: 'SUCCESS'
             }
           ]
         },
@@ -187,7 +185,7 @@ export class WiFiConfiguration {
             id: 'put-wifi-port-configuration-service',
             onDone: {
               actions: assign({ message: (context, event) => event.data }),
-              target: 'CHECK_WIFI_PORT_CONFIGURATION_SERVICE'
+              target: 'REQUEST_STATE_CHANGE_FOR_WIFI_PORT'
             },
             onError: {
               actions: assign({ errorMessage: (context, event) => 'Failed to put WiFi Port Configuration Service' }),
@@ -201,10 +199,153 @@ export class WiFiConfiguration {
             id: 'request-state-change-for-wifi-port',
             onDone: {
               actions: assign({ message: (context, event) => event.data }),
-              target: 'ADD_WIFI_SETTINGS'
+              target: 'CHECK_TO_ADD_WIFI_SETTINGS'
             },
             onError: {
               actions: assign({ errorMessage: (context, event) => 'Failed to update state change for wifi port' }),
+              target: 'FAILED'
+            }
+          }
+        },
+        CHECK_TO_ADD_WIFI_SETTINGS:{
+          always: [
+            {
+              cond: 'is8021xProfileExits',
+              target: 'ENTERPRISE_ASSISTANT_REQUEST'
+            },
+            {
+              target: 'ADD_WIFI_SETTINGS'
+            }
+          ]
+        },
+        ENTERPRISE_ASSISTANT_REQUEST: {
+          invoke: {
+            src: async (context, event) => await initiateCertRequest(context, event),
+            id: 'enterprise-assistant-request',
+            onDone: {
+              actions: [
+                assign({ message: (context, event) => event.data })
+              ],
+              target: 'GENERATE_KEY_PAIR'
+            },
+            onError: {
+              actions: assign({ errorMessage: 'Failed to initiate cert request with enterprise assistant in 802.1x' }),
+              target: 'FAILED'
+            }
+          }
+        },
+        GENERATE_KEY_PAIR: {
+          invoke: {
+            src: this.generateKeyPair.bind(this),
+            id: 'generate-key-pair',
+            onDone: {
+              actions: assign({ message: (context, event) => event.data }),
+              target: 'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR'
+            },
+            onError: {
+              actions: assign({ errorMessage: 'Failed to generate key pair in 802.1x' }),
+              target: 'FAILED'
+            }
+          }
+        },
+        ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR: {
+          invoke: {
+            src: this.enumeratePublicPrivateKeyPair.bind(this),
+            id: 'enumerate-public-private-key-pair',
+            onDone: {
+              actions: assign({ message: (context, event) => event.data }),
+              target: 'PULL_PUBLIC_PRIVATE_KEY_PAIR'
+            },
+            onError: {
+              actions: assign({ errorMessage: 'Failed to enumerate public private key pair in 802.1x' }),
+              target: 'FAILED'
+            }
+          }
+        },
+        PULL_PUBLIC_PRIVATE_KEY_PAIR: {
+          invoke: {
+            src: this.pullPublicPrivateKeyPair.bind(this),
+            id: 'pull-public-private-key-pair',
+            onDone: {
+              actions: [assign({ message: (context, event) => event.data }), 'Reset Retry Count'],
+              target: 'ENTERPRISE_ASSISTANT_RESPONSE'
+            },
+            onError: [{
+              cond: 'shouldRetry',
+              actions: 'Increment Retry Count',
+              target: 'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR'
+            }, {
+              actions: assign({ errorMessage: 'Failed to pull public private key pair in 802.1x' }),
+              target: 'FAILED'
+            }]
+          }
+        },
+        ENTERPRISE_ASSISTANT_RESPONSE: {
+          invoke: {
+            src: async (context, event) => await sendEnterpriseAssistantKeyPairResponse(context, event),
+            id: 'enterprise-assistant-response',
+            onDone: {
+              actions: assign({ message: (context, event) => event.data }),
+              target: 'SIGN_CSR'
+            },
+            onError: {
+              actions: assign({ errorMessage: 'Failed to send key pair to enterprise assistant in 802.1x' }),
+              target: 'FAILED'
+            }
+          }
+        },
+        SIGN_CSR: {
+          invoke: {
+            src: this.signCSR.bind(this),
+            id: 'sign-csr',
+            onDone: {
+              actions: assign({ message: (context, event) => event.data }),
+              target: 'GET_CERT_FROM_ENTERPRISE_ASSISTANT'
+            },
+            onError: {
+              actions: assign({ errorMessage: 'Failed to have AMT sign CSR in 802.1x' }),
+              target: 'FAILED'
+            }
+          }
+        },
+        GET_CERT_FROM_ENTERPRISE_ASSISTANT: {
+          invoke: {
+            src: async (context, event) => await getCertFromEnterpriseAssistant(context, event),
+            id: 'get-cert-from-enterprise-assistant',
+            onDone: {
+              actions: assign({ message: (context, event) => event.data }),
+              target: 'ADD_CERTIFICATE'
+            },
+            onError: {
+              actions: assign({ errorMessage: 'Failed to get cert from Microsoft CA in 802.1x' }),
+              target: 'FAILED'
+            }
+          }
+        },
+        ADD_CERTIFICATE: {
+          invoke: {
+            src: this.addCertificate.bind(this),
+            id: 'add-certificate',
+            onDone: {
+              actions: assign({ message: (context, event) => event.data }),
+              target: 'ADD_RADIUS_SERVER_ROOT_CERTIFICATE'
+            },
+            onError: {
+              actions: assign({ errorMessage: 'Failed to add certificate in 802.1x' }),
+              target: 'FAILED'
+            }
+          }
+        },
+        ADD_RADIUS_SERVER_ROOT_CERTIFICATE: {
+          invoke: {
+            src: this.addRadiusServerRootCertificate.bind(this),
+            id: 'add-radius-server-root-certificate',
+            onDone: {
+              actions: assign({ message: (context, event) => event.data }),
+              target: 'ADD_WIFI_SETTINGS'
+            },
+            onError: {
+              actions: assign({ errorMessage: 'Failed to add radius server root certificate in 802.1x' }),
               target: 'FAILED'
             }
           }
@@ -231,8 +372,8 @@ export class WiFiConfiguration {
               target: 'FAILED'
             },
             {
-              cond: 'isWiFiProfilesExits',
-              target: 'ADD_WIFI_SETTINGS'
+              cond: 'isWiFiProfilesExists',
+              target: 'CHECK_TO_ADD_WIFI_SETTINGS'
             },
             {
               target: 'SUCCESS'
@@ -265,7 +406,8 @@ export class WiFiConfiguration {
       }
     }, {
       guards: {
-        isWiFiProfilesExits: (context, event) => context.wifiProfileCount < context.amtProfile.wifiConfigs.length,
+        is8021xProfileExists: this.check8021xProfileExists.bind(this),
+        isWiFiProfilesExists: (context, event) => context.wifiProfileCount < context.amtProfile.wifiConfigs.length,
         isWifiProfilesExistsOnDevice: (context, event) => context.wifiEndPointSettings.length !== 0,
         isNotWifiProfileAdded: (context, event) => context.message.Envelope.Body.AddWiFiSettings_OUTPUT.ReturnValue !== 0,
         isWifiProfileDeleted: (context, event) => context.message.Envelope.Body == null,
@@ -353,19 +495,23 @@ export class WiFiConfiguration {
     return wifiConfig
   }
 
+  async check8021xProfileExists (context: WiFiConfigContext, event: WiFiConfigEvent): Promise<boolean> { 
+    context.wifiProfile = await this.getWifiProfile(context.amtProfile.wifiConfigs[context.wifiProfileCount].profileName)
+    return true
+  }
+
   async addWifiConfigs (context: WiFiConfigContext, event: WiFiConfigEvent): Promise<any> {
     // Get WiFi profile information based on the profile name.
-    const wifiConfig = await this.getWifiProfile(context.amtProfile.wifiConfigs[context.wifiProfileCount].profileName)
     const selector = { name: 'Name', value: 'WiFi Endpoint 0' }
     // Add  WiFi profile information to WiFi endpoint settings object
     const wifiEndpointSettings: CIM.Models.WiFiEndpointSettings = {
-      ElementName: wifiConfig.profileName,
-      InstanceID: `Intel(r) AMT:WiFi Endpoint Settings ${wifiConfig.profileName}`,
-      AuthenticationMethod: wifiConfig.authenticationMethod as CIM.Types.WiFiEndpointSettings.AuthenticationMethod,
-      EncryptionMethod: wifiConfig.encryptionMethod as CIM.Types.WiFiEndpointSettings.EncryptionMethod,
-      SSID: wifiConfig.ssid,
+      ElementName: context.wifiProfile.profileName,
+      InstanceID: `Intel(r) AMT:WiFi Endpoint Settings ${context.wifiProfile.profileName}`,
+      AuthenticationMethod: context.wifiProfile.authenticationMethod as CIM.Types.WiFiEndpointSettings.AuthenticationMethod,
+      EncryptionMethod: context.wifiProfile.encryptionMethod as CIM.Types.WiFiEndpointSettings.EncryptionMethod,
+      SSID: context.wifiProfile.ssid,
       Priority: context.amtProfile.wifiConfigs[context.wifiProfileCount].priority,
-      PSKPassPhrase: wifiConfig.pskPassphrase
+      PSKPassPhrase: context.wifiProfile.pskPassphrase
     }
 
     // Increment the count to keep track of profiles added to AMT
@@ -384,5 +530,45 @@ export class WiFiConfiguration {
     wifiPortConfigurationService.localProfileSynchronizationEnabled = 3
     context.xmlMessage = context.amt.WiFiPortConfigurationService.Put(wifiPortConfigurationService)
     return await invokeWsmanCall(context, 2)
+  }
+
+  async generateKeyPair (context: WiFiConfigContext, event: WiFiConfigEvent): Promise<void> {
+    context.xmlMessage = context.amt.PublicKeyManagementService.GenerateKeyPair({ KeyAlgorithm: 0, KeyLength: 2048 })
+    return await invokeWsmanCall(context)
+  }
+
+  async enumeratePublicPrivateKeyPair (context: WiFiConfigContext, event: WiFiConfigEvent): Promise<void> {
+    context.keyPairHandle = context.message.Envelope.Body?.GenerateKeyPair_OUTPUT?.KeyPair?.ReferenceParameters?.SelectorSet?.Selector?._
+    context.xmlMessage = context.amt.PublicPrivateKeyPair.Enumerate()
+    return await invokeWsmanCall(context, 2)
+  }
+
+  async pullPublicPrivateKeyPair (context: WiFiConfigContext, event: WiFiConfigEvent): Promise<void> {
+    context.xmlMessage = context.amt.PublicPrivateKeyPair.Pull(context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+    return await invokeWsmanCall(context)
+  }
+
+  async signCSR (context: WiFiConfigContext, event: WiFiConfigEvent): Promise<void> {
+    context.xmlMessage = context.amt.PublicKeyManagementService.GeneratePKCS10RequestEx({
+      KeyPair: '<a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address><a:ReferenceParameters><w:ResourceURI>http://intel.com/wbem/wscim/1/amt-schema/1/AMT_PublicPrivateKeyPair</w:ResourceURI><w:SelectorSet><w:Selector Name="InstanceID">' + (context.message.response.keyInstanceId as string) + '</w:Selector></w:SelectorSet></a:ReferenceParameters>',
+      SigningAlgorithm: 1,
+      NullSignedCertificateRequest: context.message.response.csr
+    })
+    return await invokeWsmanCall(context)
+  }
+
+  async addCertificate (context: WiFiConfigContext, event: WiFiConfigEvent): Promise<void> {
+    context.eaResponse = event.data.response
+    const cert = event.data.response.certificate
+    context.xmlMessage = context.amt.PublicKeyManagementService.AddCertificate({ CertificateBlob: cert })
+    return await invokeWsmanCall(context)
+  }
+
+  async addRadiusServerRootCertificate (context: WiFiConfigContext, event: WiFiConfigEvent): Promise<void> {
+    // To Do: Needs to replace the logic with how we will pull the radius server root certificate
+    context.addCertResponse = context.message.Envelope.Body
+    const cert = context.eaResponse.rootcert
+    context.xmlMessage = context.amt.PublicKeyManagementService.AddTrustedRootCertificate({ CertificateBlob: cert })
+    return await invokeWsmanCall(context)
   }
 }
