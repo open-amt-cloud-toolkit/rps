@@ -52,6 +52,7 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
       link_policy as "linkPolicy", 
       count(*) OVER() AS "total_count", 
       tenant_id as "tenantId",
+      ieee8021x_profile_name as "ieee8021xProfileName",
       xmin as "version"
     FROM wirelessconfigs 
     WHERE tenant_id = $3
@@ -76,6 +77,7 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
       psk_passphrase as "pskPassphrase", 
       link_policy as "linkPolicy", 
       tenant_id as "tenantId",
+      ieee8021x_profile_name as "ieee8021xProfileName",
       xmin as "version"
     FROM wirelessconfigs 
     WHERE wireless_profile_name = $1 and tenant_id = $2`, [configName, tenantId])
@@ -135,8 +137,8 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
       const date = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
       const results = await this.db.query(`
         INSERT INTO wirelessconfigs
-        (wireless_profile_name, authentication_method, encryption_method, ssid, psk_value, psk_passphrase, link_policy, creation_date, tenant_id)
-        values($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        (wireless_profile_name, authentication_method, encryption_method, ssid, psk_value, psk_passphrase, link_policy, creation_date, tenant_id, ieee8021x_profile_name)
+        values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
       [
         wirelessConfig.profileName,
         wirelessConfig.authenticationMethod,
@@ -146,7 +148,8 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
         wirelessConfig.pskPassphrase,
         wirelessConfig.linkPolicy,
         date,
-        wirelessConfig.tenantId
+        wirelessConfig.tenantId,
+        wirelessConfig.ieee8021xProfileName
       ])
       if (results?.rowCount > 0) {
         const profile = await this.getByName(wirelessConfig.profileName, wirelessConfig.tenantId)
@@ -173,8 +176,8 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
     try {
       const results = await this.db.query(`
       UPDATE wirelessconfigs 
-      SET authentication_method=$2, encryption_method=$3, ssid=$4, psk_value=$5, psk_passphrase=$6, link_policy=$7 
-      WHERE wireless_profile_name=$1 and tenant_id = $8 and xmin = $9`,
+      SET authentication_method=$2, encryption_method=$3, ssid=$4, psk_value=$5, psk_passphrase=$6, link_policy=$7, ieee8021x_profile_name=$9 
+      WHERE wireless_profile_name=$1 and tenant_id = $8 and xmin = $10`,
       [
         wirelessConfig.profileName,
         wirelessConfig.authenticationMethod,
@@ -184,6 +187,7 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
         wirelessConfig.pskPassphrase,
         wirelessConfig.linkPolicy,
         wirelessConfig.tenantId,
+        wirelessConfig.ieee8021xProfileName,
         wirelessConfig.version
       ])
       latestItem = await this.getByName(wirelessConfig.profileName, wirelessConfig.tenantId)

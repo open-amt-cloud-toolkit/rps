@@ -23,7 +23,8 @@ describe('wireless profiles tests', () => {
       pskValue: 0,
       pskPassphrase: 'pskPassphrase',
       linkPolicy: ['linkPolicy'],
-      tenantId: ''
+      tenantId: '',
+      ieee8021xProfileName: 'ieee8021xProfileName'
     }
     db = new PostgresDb('')
     wirelessProfilesTable = new WirelessProfilesTable(db)
@@ -43,6 +44,7 @@ describe('wireless profiles tests', () => {
     FROM wirelessconfigs 
     WHERE tenant_id = $1`, [''])
     })
+
     test('should Get', async () => {
       querySpy.mockResolvedValueOnce({ rows: [{}], rowCount: 1 })
       const result = await wirelessProfilesTable.get()
@@ -59,6 +61,7 @@ describe('wireless profiles tests', () => {
       link_policy as "linkPolicy", 
       count(*) OVER() AS "total_count", 
       tenant_id as "tenantId",
+      ieee8021x_profile_name as "ieee8021xProfileName",
       xmin as "version"
     FROM wirelessconfigs 
     WHERE tenant_id = $3
@@ -81,6 +84,7 @@ describe('wireless profiles tests', () => {
       psk_passphrase as "pskPassphrase", 
       link_policy as "linkPolicy", 
       tenant_id as "tenantId",
+      ieee8021x_profile_name as "ieee8021xProfileName",
       xmin as "version"
     FROM wirelessconfigs 
     WHERE wireless_profile_name = $1 and tenant_id = $2`, [profileName, ''])
@@ -162,8 +166,8 @@ describe('wireless profiles tests', () => {
       expect(querySpy).toBeCalledTimes(1)
       expect(querySpy).toBeCalledWith(`
         INSERT INTO wirelessconfigs
-        (wireless_profile_name, authentication_method, encryption_method, ssid, psk_value, psk_passphrase, link_policy, creation_date, tenant_id)
-        values($1, $2, $3, $4, $5, $6, $7, $8, $9)`, [
+        (wireless_profile_name, authentication_method, encryption_method, ssid, psk_value, psk_passphrase, link_policy, creation_date, tenant_id, ieee8021x_profile_name)
+        values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`, [
         wirelessConfig.profileName,
         wirelessConfig.authenticationMethod,
         wirelessConfig.encryptionMethod,
@@ -172,7 +176,8 @@ describe('wireless profiles tests', () => {
         wirelessConfig.pskPassphrase,
         wirelessConfig.linkPolicy,
         new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
-        wirelessConfig.tenantId
+        wirelessConfig.tenantId,
+        wirelessConfig.ieee8021xProfileName
       ])
     })
     test('should NOT insert when duplicate name', async () => {
@@ -195,8 +200,8 @@ describe('wireless profiles tests', () => {
       expect(querySpy).toBeCalledTimes(1)
       expect(querySpy).toBeCalledWith(`
       UPDATE wirelessconfigs 
-      SET authentication_method=$2, encryption_method=$3, ssid=$4, psk_value=$5, psk_passphrase=$6, link_policy=$7 
-      WHERE wireless_profile_name=$1 and tenant_id = $8 and xmin = $9`,
+      SET authentication_method=$2, encryption_method=$3, ssid=$4, psk_value=$5, psk_passphrase=$6, link_policy=$7, ieee8021x_profile_name=$9 
+      WHERE wireless_profile_name=$1 and tenant_id = $8 and xmin = $10`,
       [
         wirelessConfig.profileName,
         wirelessConfig.authenticationMethod,
@@ -206,6 +211,7 @@ describe('wireless profiles tests', () => {
         wirelessConfig.pskPassphrase,
         wirelessConfig.linkPolicy,
         wirelessConfig.tenantId,
+        wirelessConfig.ieee8021xProfileName,
         wirelessConfig.version
       ])
     })
@@ -222,8 +228,8 @@ describe('wireless profiles tests', () => {
       expect(querySpy).toBeCalledTimes(1)
       expect(querySpy).toBeCalledWith(`
       UPDATE wirelessconfigs 
-      SET authentication_method=$2, encryption_method=$3, ssid=$4, psk_value=$5, psk_passphrase=$6, link_policy=$7 
-      WHERE wireless_profile_name=$1 and tenant_id = $8 and xmin = $9`,
+      SET authentication_method=$2, encryption_method=$3, ssid=$4, psk_value=$5, psk_passphrase=$6, link_policy=$7, ieee8021x_profile_name=$9 
+      WHERE wireless_profile_name=$1 and tenant_id = $8 and xmin = $10`,
       [
         wirelessConfig.profileName,
         wirelessConfig.authenticationMethod,
@@ -233,6 +239,7 @@ describe('wireless profiles tests', () => {
         wirelessConfig.pskPassphrase,
         wirelessConfig.linkPolicy,
         wirelessConfig.tenantId,
+        wirelessConfig.ieee8021xProfileName,
         wirelessConfig.version
       ])
     })

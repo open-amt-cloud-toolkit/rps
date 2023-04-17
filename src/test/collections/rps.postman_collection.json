@@ -1,9 +1,8 @@
 {
 	"info": {
-		"_postman_id": "1f6c8a01-51a2-4d24-8aa6-c8fe2a0ceb4c",
+		"_postman_id": "e8502aa8-b21b-44b4-972d-9de912dc0dd5",
 		"name": "RPS API Tests",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "10487608"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
@@ -4910,172 +4909,6 @@
 					"response": []
 				},
 				{
-					"name": "Create 8021x Profile",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = pm.response.json();\r",
-									"pm.globals.set(\"recordVersion\", jsonData.version);\r",
-									"\r",
-									"pm.test(\"Status code is 201\", function () {\r",
-									"    pm.response.to.have.status(201);\r",
-									"});\r",
-									"pm.test(\"Request should return profile just created\", function () {\r",
-									"    var profile = pm.environment.get(\"ieee8021xProfileName\")\r",
-									"    pm.expect(jsonData.profileName).to.eql(profile);\r",
-									"    pm.expect(jsonData.authenticationProtocol).to.eql(0);\r",
-									"    pm.expect(jsonData.pxeTimeout).to.eql(120);\r",
-									"    pm.expect(jsonData.wiredInterface).to.eql(true);\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"var protocol = pm.environment.get(\"protocol\")\r",
-									"var host = pm.environment.get(\"host\");\r",
-									"var profile = pm.environment.get(\"ieee8021xProfileName\");\r",
-									"const postRequest = {\r",
-									"    url: protocol + '://' + host + '/api/v1/admin/ieee8021xconfigs/' + profile,\r",
-									"    method: 'DELETE',\r",
-									"};\r",
-									"pm.sendRequest(postRequest, (error, response) => {\r",
-									"    if (error) {\r",
-									"        console.log(error);\r",
-									"    };\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"{{ieee8021xProfileName}}\",\r\n    \"authenticationProtocol\": 0,\r\n    \"pxeTimeout\": 120,\r\n    \"wiredInterface\": true\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/ieee8021xconfigs/",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"ieee8021xconfigs",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create Profile \"test8021x\" - CCM with 8021x",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var responseBody = pm.response.json();\r",
-									"\r",
-									"pm.test(\"Status code is 201\", function () {\r",
-									"    pm.response.to.have.status(201);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Creation should succeed\", function () {\r",
-									"    var result = pm.response.json();\r",
-									"    pm.expect(result.profileName).to.eql(pm.environment.get(\"ieee8021xProfileName\")),\r",
-									"    pm.expect(result.ciraConfigName).to.eql(null)\r",
-									"    pm.expect(result.amtPassword).to.eql(),\r",
-									"    pm.expect(result.mebxPassword).to.eql(),\r",
-									"    pm.expect(result.activation).to.eql(\"ccmactivate\")\r",
-									"    pm.expect(result.tags.length).to.equal(1)\r",
-									"    pm.expect(result.userConsent).to.eql(\"All\")\r",
-									"    pm.expect(result.iderEnabled).to.eql(false)\r",
-									"    pm.expect(result.kvmEnabled).to.eql(true)\r",
-									"    pm.expect(result.solEnabled).to.eql(false)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Should delete the \" + pm.environment.get(\"ieee8021xProfileName\") + \" profile just created\", function () {\r",
-									"    var protocol = pm.environment.get(\"protocol\")\r",
-									"    var host = pm.environment.get(\"host\");\r",
-									"    var profile = pm.environment.get(\"ieee8021xProfileName\");\r",
-									"    const postRequest = {\r",
-									"        url: protocol + '://' + host + '/api/v1/admin/profiles/' + profile,\r",
-									"        method: 'DELETE',\r",
-									"    };\r",
-									"    pm.sendRequest(postRequest, (error, response) => {\r",
-									"        if (error) {\r",
-									"            console.log(error);\r",
-									"        };\r",
-									"    });\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Should delete the \" + pm.environment.get(\"ieee8021xProfileName\") + \" ieee8021xProfile just created ealier for this test\", function () {\r",
-									"    var protocol = pm.environment.get(\"protocol\")\r",
-									"    var host = pm.environment.get(\"host\");\r",
-									"    var profile = pm.environment.get(\"ieee8021xProfileName\");\r",
-									"    const postRequest = {\r",
-									"        url: protocol + '://' + host + '/api/v1/admin/ieee8021x/' + profile,\r",
-									"        method: 'DELETE',\r",
-									"    };\r",
-									"    pm.sendRequest(postRequest, (error, response) => {\r",
-									"        if (error) {\r",
-									"            console.log(error);\r",
-									"        };\r",
-									"    });\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"test8021x\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"ciraConfigName\": null,\r\n    \"ieee8021xProfileName\": \"test8021x\",\r\n    \"tlsMode\": null\r\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"profiles",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "Create Profile \"profileKVMOptions\" with valid kvm options",
 					"event": [
 						{
@@ -5764,7 +5597,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"activate\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"mebxPassword\": \"Intel123!\",\r\n    \"activation\": \"activate\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"version\": {{profile6Version}}\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5815,7 +5648,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"amtPassword\": \"Intel123\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"amtPassword\": \"Intel123\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"version\": {{profile6Version}}\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -5879,7 +5712,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profileKVMOptions\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"userConsent\": \"BadValue\",\r\n    \"iderEnabled\": \"foo\",\r\n    \"kvmEnabled\": \"foo\",\r\n    \"solEnabled\": \"foo\"\r\n}"
+							"raw": "{\r\n    \"profileName\": \"profileKVMOptions\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"userConsent\": \"BadValue\",\r\n    \"iderEnabled\": \"foo\",\r\n    \"kvmEnabled\": \"foo\",\r\n    \"solEnabled\": \"foo\",\r\n    \"version\": {{profileKVMOptionsVersion}}\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -6041,7 +5874,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false    \r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"version\": {{profile6Version}}    \r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -6368,6 +6201,57 @@
 					"response": []
 				},
 				{
+					"name": "Update Profile \"profile6\" without version",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();\r",
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"pm.test(\"Update request should fail missing version info\", function () {\r",
+									"    pm.expect(jsonData.errors[0].msg).to.eql(\"Version is required to patch/update a record.\");\r",
+									"    pm.expect(jsonData.errors[0].param).to.eql(\"version\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag123\"],\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": false\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"profiles",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Update Profile \"profile6\" activation to acmactivate without mebx password",
 					"event": [
 						{
@@ -6429,15 +6313,14 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"var responseBody = pm.response.json();\r",
-									"versionVar = responseBody.version;\r",
+									"var jsonData = pm.response.json();\r",
+									"versionVar = jsonData.version;\r",
 									"pm.globals.set(\"profile6Version\", versionVar);\r",
 									"\r",
 									"pm.test(\"Status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
 									"pm.test(\"Result 1 should be equal to example\", function () {\r",
-									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
 									"    pm.expect(jsonData.activation).to.equal(\"acmactivate\") \r",
 									"    pm.expect(jsonData.dhcpEnabled).to.equal(false)\r",
@@ -6486,11 +6369,14 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"var jsonData = pm.response.json();\r",
+									"versionVar = jsonData.version;\r",
+									"pm.globals.set(\"profile6Version\", versionVar);\r",
+									"\r",
 									"pm.test(\"Status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
 									"pm.test(\"Update should succeed\", function () {\r",
-									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
 									"    pm.expect(jsonData.activation).to.equal(\"ccmactivate\")    \r",
 									"    pm.expect(jsonData.tags.length).to.equal(1)    \r",
@@ -6885,7 +6771,7 @@
 			"name": "Integration",
 			"item": [
 				{
-					"name": "AMT - CIRA Profiles",
+					"name": "AMT Profiles w/ CIRA Profiles",
 					"item": [
 						{
 							"name": "Create CIRA Config",
@@ -7595,7 +7481,7 @@
 					]
 				},
 				{
-					"name": "AMT - WIFI Profiles",
+					"name": "AMT Profiles w/ WIFI Profiles",
 					"item": [
 						{
 							"name": "Create Wireless Profile(home)",
@@ -9146,6 +9032,1092 @@
 							"response": []
 						}
 					]
+				},
+				{
+					"name": "AMT Profiles w/ 8021x Profiles",
+					"item": [
+						{
+							"name": "Create wired 8021x Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = pm.response.json();\r",
+											"pm.globals.set(\"recordVersion\", jsonData.version);\r",
+											"\r",
+											"pm.test(\"Status code is 201\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
+											"});\r",
+											"pm.test(\"Request should return profile just created\", function () {\r",
+											"    var profile = pm.environment.get(\"ieee8021xProfileWired\")\r",
+											"    pm.expect(jsonData.profileName).to.eql(profile);\r",
+											"    pm.expect(jsonData.authenticationProtocol).to.eql(0);\r",
+											"    pm.expect(jsonData.pxeTimeout).to.eql(120);\r",
+											"    pm.expect(jsonData.wiredInterface).to.eql(true);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"{{ieee8021xProfileWired}}\",\r\n    \"authenticationProtocol\": 0,\r\n    \"pxeTimeout\": 120,\r\n    \"wiredInterface\": true\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/ieee8021xconfigs/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"ieee8021xconfigs",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create 2nd wired 8021x Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = pm.response.json();\r",
+											"pm.globals.set(\"recordVersion\", jsonData.version);\r",
+											"\r",
+											"pm.test(\"Status code is 201\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
+											"});\r",
+											"pm.test(\"Request should return profile just created\", function () {\r",
+											"    pm.expect(jsonData.profileName).to.eql(\"extraProf\");\r",
+											"    pm.expect(jsonData.authenticationProtocol).to.eql(0);\r",
+											"    pm.expect(jsonData.pxeTimeout).to.eql(120);\r",
+											"    pm.expect(jsonData.wiredInterface).to.eql(true);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"extraProf\",\r\n    \"authenticationProtocol\": 0,\r\n    \"pxeTimeout\": 120,\r\n    \"wiredInterface\": true\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/ieee8021xconfigs/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"ieee8021xconfigs",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create wireless 8021x Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = pm.response.json();\r",
+											"pm.globals.set(\"recordVersion\", jsonData.version);\r",
+											"\r",
+											"pm.test(\"Status code is 201\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
+											"});\r",
+											"pm.test(\"Request should return profile just created\", function () {\r",
+											"    var profile = pm.environment.get(\"ieee8021xProfileWireless\")\r",
+											"    pm.expect(jsonData.profileName).to.eql(profile);\r",
+											"    pm.expect(jsonData.authenticationProtocol).to.eql(0);\r",
+											"    pm.expect(jsonData.pxeTimeout).to.eql(120);\r",
+											"    pm.expect(jsonData.wiredInterface).to.eql(false);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"{{ieee8021xProfileWireless}}\",\r\n    \"authenticationProtocol\": 0,\r\n    \"pxeTimeout\": 120,\r\n    \"wiredInterface\": false\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/ieee8021xconfigs/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"ieee8021xconfigs",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Profile w/ wrong interface 8021x Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = pm.response.json();\r",
+											"pm.globals.set(\"recordVersion\", jsonData.version);\r",
+											"\r",
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Request should return 8021x profile is for wireless interfaces\", function () {\r",
+											"    pm.expect(jsonData.errors[0].msg).to.eql(\"Ieee8021x profile \" + pm.environment.get(\"ieee8021xProfileWireless\") + \" is for wireless interfaces\");\r",
+											"    pm.expect(jsonData.errors[0].param).to.eql(\"ieee8021xProfileName\");\r",
+											"    pm.expect(jsonData.errors[0].value).to.eql(pm.environment.get(\"ieee8021xProfileWireless\"));\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"test8021x\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"ciraConfigName\": null,\r\n    \"ieee8021xProfileName\": \"{{ieee8021xProfileWireless}}\",\r\n    \"tlsMode\": null\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Profile w/ nonexistent 8021x Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = pm.response.json();\r",
+											"var profName = pm.environment.get(\"badProf\")\r",
+											"pm.globals.set(\"recordVersion\", jsonData.version);\r",
+											"\r",
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Request should return 8021x profile can not be specified\", function () {\r",
+											"    pm.expect(jsonData.errors[0].msg).to.eql(\"Ieee8021x profile \" + profName + \" does not exist in db\");\r",
+											"    pm.expect(jsonData.errors[0].param).to.eql(\"ieee8021xProfileName\");\r",
+											"    pm.expect(jsonData.errors[0].value).to.eql(profName);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"test8021x\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"ciraConfigName\": null,\r\n    \"ieee8021xProfileName\": \"{{badProf}}\",\r\n    \"tlsMode\": null\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Profile - CCM with 8021x",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = pm.response.json();\r",
+											"pm.globals.set(\"recordVersion\", jsonData.version);\r",
+											"\r",
+											"pm.test(\"Status code is 201\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Creation should succeed\", function () {\r",
+											"    var result = pm.response.json();\r",
+											"    pm.expect(result.profileName).to.eql(pm.environment.get(\"ieee8021xProfileWired\")),\r",
+											"    pm.expect(result.ciraConfigName).to.eql(null)\r",
+											"    pm.expect(result.amtPassword).to.eql(),\r",
+											"    pm.expect(result.mebxPassword).to.eql(),\r",
+											"    pm.expect(result.activation).to.eql(\"ccmactivate\")\r",
+											"    pm.expect(result.tags.length).to.equal(1)\r",
+											"    pm.expect(result.userConsent).to.eql(\"All\")\r",
+											"    pm.expect(result.iderEnabled).to.eql(false)\r",
+											"    pm.expect(result.kvmEnabled).to.eql(true)\r",
+											"    pm.expect(result.solEnabled).to.eql(false)\r",
+											"});\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"test8021x\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"ciraConfigName\": null,\r\n    \"ieee8021xProfileName\": \"{{ieee8021xProfileWired}}\",\r\n    \"tlsMode\": null\r\n}"
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "update Profile - CCM with 8021x",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = pm.response.json();\r",
+											"pm.globals.set(\"recordVersion\", jsonData.version);\r",
+											"\r",
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Creation should succeed\", function () {\r",
+											"    var result = pm.response.json();\r",
+											"    pm.expect(result.profileName).to.eql(pm.environment.get(\"ieee8021xProfileWired\")),\r",
+											"    pm.expect(result.ciraConfigName).to.eql(null)\r",
+											"    pm.expect(result.amtPassword).to.eql(),\r",
+											"    pm.expect(result.mebxPassword).to.eql(),\r",
+											"    pm.expect(result.activation).to.eql(\"ccmactivate\")\r",
+											"    pm.expect(result.tags.length).to.equal(1)\r",
+											"    pm.expect(result.userConsent).to.eql(\"All\")\r",
+											"    pm.expect(result.iderEnabled).to.eql(false)\r",
+											"    pm.expect(result.kvmEnabled).to.eql(true)\r",
+											"    pm.expect(result.solEnabled).to.eql(false)\r",
+											"    pm.expect(result.ieee8021xProfileName).to.eql(\"extraProf\")\r",
+											"});\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"test8021x\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"ciraConfigName\": null,\r\n    \"ieee8021xProfileName\": \"extraProf\",\r\n    \"tlsMode\": null,\r\n    \"version\": {{recordVersion}}\r\n}"
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Remove Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 204\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/test8021x",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"profiles",
+										"test8021x"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete wired 8021x Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 204\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/ieee8021xconfigs/{{ieee8021xProfileWired}}",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"ieee8021xconfigs",
+										"{{ieee8021xProfileWired}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete 2nd wired 8021x Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 204\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/ieee8021xconfigs/extraProf",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"ieee8021xconfigs",
+										"extraProf"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete wireless 8021x Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 204\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/ieee8021xconfigs/{{ieee8021xProfileWireless}}",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"ieee8021xconfigs",
+										"{{ieee8021xProfileWireless}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "WIFI Profiles w/ 8021x Profiles",
+					"item": [
+						{
+							"name": "Create wired 8021x Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = pm.response.json();\r",
+											"pm.globals.set(\"recordVersion\", jsonData.version);\r",
+											"\r",
+											"pm.test(\"Status code is 201\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
+											"});\r",
+											"pm.test(\"Request should return profile just created\", function () {\r",
+											"    var profile = pm.environment.get(\"ieee8021xProfileWired\")\r",
+											"    pm.expect(jsonData.profileName).to.eql(profile);\r",
+											"    pm.expect(jsonData.authenticationProtocol).to.eql(0);\r",
+											"    pm.expect(jsonData.pxeTimeout).to.eql(120);\r",
+											"    pm.expect(jsonData.wiredInterface).to.eql(true);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"{{ieee8021xProfileWired}}\",\r\n    \"authenticationProtocol\": 0,\r\n    \"pxeTimeout\": 120,\r\n    \"wiredInterface\": true\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/ieee8021xconfigs/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"ieee8021xconfigs",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create wireless 8021x Profile Copy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = pm.response.json();\r",
+											"pm.globals.set(\"recordVersion\", jsonData.version);\r",
+											"\r",
+											"pm.test(\"Status code is 201\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
+											"});\r",
+											"pm.test(\"Request should return profile just created\", function () {\r",
+											"    var profile = pm.environment.get(\"ieee8021xProfileWireless\")\r",
+											"    pm.expect(jsonData.profileName).to.eql(profile);\r",
+											"    pm.expect(jsonData.authenticationProtocol).to.eql(0);\r",
+											"    pm.expect(jsonData.pxeTimeout).to.eql(120);\r",
+											"    pm.expect(jsonData.wiredInterface).to.eql(false);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"{{ieee8021xProfileWireless}}\",\r\n    \"authenticationProtocol\": 0,\r\n    \"pxeTimeout\": 120,\r\n    \"wiredInterface\": false\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/ieee8021xconfigs/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"ieee8021xconfigs",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create WIFI Profile w/ missing 8021x Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = pm.response.json();\r",
+											"pm.globals.set(\"recordVersion\", jsonData.version);\r",
+											"\r",
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"pm.test(\"Request should return 8021x profile is required\", function () {\r",
+											"    pm.expect(jsonData.errors[0].msg).to.eql(\"ieee8021xProfileName is required\");\r",
+											"    pm.expect(jsonData.errors[0].param).to.eql(\"ieee8021xProfileName\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"P1\",\r\n    \"authenticationMethod\": 5,\r\n    \"encryptionMethod\": 4,\r\n    \"ssid\": \"test\",\r\n    \"pskPassphrase\": \"Intel@123\",\r\n    \"linkPolicy\": [14,16]\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"wirelessconfigs",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create WIFI Profile w/ errant 8021x Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = pm.response.json();\r",
+											"pm.globals.set(\"recordVersion\", jsonData.version);\r",
+											"\r",
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"pm.test(\"Request should return 8021x profile can not be specified\", function () {\r",
+											"    pm.expect(jsonData.errors[0].msg).to.eql(\"ieee8021xProfileName can not be specified with the provided authenticationMethod\");\r",
+											"    pm.expect(jsonData.errors[0].param).to.eql(\"ieee8021xProfileName\");\r",
+											"    pm.expect(jsonData.errors[0].value).to.eql(\"errant\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"P1\",\r\n    \"authenticationMethod\": 4,\r\n    \"encryptionMethod\": 4,\r\n    \"ssid\": \"test\",\r\n    \"pskPassphrase\": \"Intel@123\",\r\n    \"linkPolicy\": [14,16],\r\n    \"ieee8021xProfileName\": \"errant\"\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"wirelessconfigs",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create WIFI Profile w/ nonexistent 8021x Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = pm.response.json();\r",
+											"var profName = pm.environment.get(\"badProf\")\r",
+											"pm.globals.set(\"recordVersion\", jsonData.version);\r",
+											"\r",
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"pm.test(\"Request should return 8021x profile can not be specified\", function () {\r",
+											"    pm.expect(jsonData.errors[0].msg).to.eql(\"Ieee8021x profile \" + profName + \" does not exist in db\");\r",
+											"    pm.expect(jsonData.errors[0].param).to.eql(\"ieee8021xProfileName\");\r",
+											"    pm.expect(jsonData.errors[0].value).to.eql(profName);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"P1\",\r\n    \"authenticationMethod\": 5,\r\n    \"encryptionMethod\": 4,\r\n    \"ssid\": \"test\",\r\n    \"pskPassphrase\": \"Intel@123\",\r\n    \"linkPolicy\": [14,16],\r\n    \"ieee8021xProfileName\": \"{{badProf}}\"\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"wirelessconfigs",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create WIFI Profile w/ wrong interface 8021x Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = pm.response.json();\r",
+											"pm.globals.set(\"recordVersion\", jsonData.version);\r",
+											"\r",
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"pm.test(\"Request should return 8021x profile is for wired interfaces\", function () {\r",
+											"    pm.expect(jsonData.errors[0].msg).to.eql(\"Ieee8021x profile \" + pm.environment.get(\"ieee8021xProfileWired\") + \" is for wired interfaces\");\r",
+											"    pm.expect(jsonData.errors[0].param).to.eql(\"ieee8021xProfileName\");\r",
+											"    pm.expect(jsonData.errors[0].value).to.eql(pm.environment.get(\"ieee8021xProfileWired\"));\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"P1\",\r\n    \"authenticationMethod\": 5,\r\n    \"encryptionMethod\": 4,\r\n    \"ssid\": \"test\",\r\n    \"pskPassphrase\": \"Intel@123\",\r\n    \"linkPolicy\": [14,16],\r\n    \"ieee8021xProfileName\": \"{{ieee8021xProfileWired}}\"\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"wirelessconfigs",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create WIFI Profile w/ 8021x",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = pm.response.json();\r",
+											"pm.globals.set(\"recordVersion\", jsonData.version);\r",
+											"\r",
+											"pm.test(\"Status code is 201\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
+											"});\r",
+											"pm.test(\"Request should return profile just created\", function () {\r",
+											"    pm.expect(jsonData.profileName).to.eql(\"P1\");\r",
+											"    pm.expect(jsonData.authenticationMethod).to.eql(5);\r",
+											"    pm.expect(jsonData.encryptionMethod).to.eql(4);\r",
+											"    pm.expect(jsonData.ssid).to.eql(\"test\");\r",
+											"    pm.expect(jsonData.linkPolicy.length).to.eql(2);\r",
+											"    pm.expect(jsonData.linkPolicy[0]).to.eql(14);\r",
+											"    pm.expect(jsonData.linkPolicy[1]).to.eql(16);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"P1\",\r\n    \"authenticationMethod\": 5,\r\n    \"encryptionMethod\": 4,\r\n    \"ssid\": \"test\",\r\n    \"pskPassphrase\": \"Intel@123\",\r\n    \"linkPolicy\": [14,16],\r\n    \"ieee8021xProfileName\": \"{{ieee8021xProfileWireless}}\"\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"wirelessconfigs",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update WIFI Profile w/ wrong interface 8021x Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = pm.response.json();\r",
+											"pm.globals.set(\"recordVersion\", jsonData.version);\r",
+											"\r",
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"pm.test(\"Request should return 8021x profile can not be specified\", function () {\r",
+											"    pm.expect(jsonData.errors[0].msg).to.eql(\"Ieee8021x profile \" + pm.environment.get(\"ieee8021xProfileWired\") + \" is for wired interfaces\");\r",
+											"    pm.expect(jsonData.errors[0].param).to.eql(\"ieee8021xProfileName\");\r",
+											"    pm.expect(jsonData.errors[0].value).to.eql(pm.environment.get(\"ieee8021xProfileWired\"));\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profileName\": \"P1\",\r\n    \"authenticationMethod\": 5,\r\n    \"encryptionMethod\": 4,\r\n    \"ssid\": \"test\",\r\n    \"pskPassphrase\": \"Intel@123\",\r\n    \"linkPolicy\": [14,16],\r\n    \"ieee8021xProfileName\": \"{{ieee8021xProfileWired}}\",\r\n    \"version\": {{recordVersion}}\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"wirelessconfigs",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 204\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/wirelessconfigs/P1",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"wirelessconfigs",
+										"P1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete wired 8021x Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 204\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/ieee8021xconfigs/{{ieee8021xProfileWired}}",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"ieee8021xconfigs",
+										"{{ieee8021xProfileWired}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete wireless 8021x Profile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 204\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{host}}/api/v1/admin/ieee8021xconfigs/{{ieee8021xProfileWireless}}",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"ieee8021xconfigs",
+										"{{ieee8021xProfileWireless}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
 				}
 			]
 		},
@@ -9243,7 +10215,7 @@
 									"});\r",
 									"pm.test(\"Result should contain an error and message\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
-									"    pm.expect(jsonData.errors[0].msg).to.eql(\"Authentication method should be either 4(WPA PSK) or 6(WPA2 PSK)\");\r",
+									"    pm.expect(jsonData.errors[0].msg).to.eql(\"Authentication method must be one of 4:WPA PSK, 5:WPA IEEE 802.1x, 6:WPA2 PSK, 7:WPA2 IEEE 802.1x\");\r",
 									"    pm.expect(jsonData.errors[0].param).to.eql(\"authenticationMethod\");\r",
 									"});"
 								],
@@ -9292,7 +10264,7 @@
 									"});\r",
 									"pm.test(\"Result should contain an error and message\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
-									"    pm.expect(jsonData.errors[0].msg).to.eql(\"Encryption method should be either 3(TKIP) or 4(CCMP)\");\r",
+									"    pm.expect(jsonData.errors[0].msg).to.eql(\"Encryption method must be one of 3:TKIP, 4:CCMP\");\r",
 									"    pm.expect(jsonData.errors[0].param).to.eql(\"encryptionMethod\");\r",
 									"});"
 								],
@@ -10020,7 +10992,7 @@
 									"});\r",
 									"pm.test(\"Result should contain an error and message\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
-									"    pm.expect(jsonData.errors[0].msg).to.eql(\"Encryption method should be either 3(TKIP) or 4(CCMP)\");\r",
+									"    pm.expect(jsonData.errors[0].msg).to.eql(\"Encryption method must be one of 3:TKIP, 4:CCMP\");\r",
 									"    pm.expect(jsonData.errors[0].param).to.eql(\"encryptionMethod\");\r",
 									"});"
 								],
@@ -10069,7 +11041,7 @@
 									"});\r",
 									"pm.test(\"Result should contain an error and message\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
-									"    pm.expect(jsonData.errors[0].msg).to.eql(\"Authentication method should be either 4(WPA PSK) or 6(WPA2 PSK)\");\r",
+									"    pm.expect(jsonData.errors[0].msg).to.eql(\"Authentication method must be one of 4:WPA PSK, 5:WPA IEEE 802.1x, 6:WPA2 PSK, 7:WPA2 IEEE 802.1x\");\r",
 									"    pm.expect(jsonData.errors[0].param).to.eql(\"authenticationMethod\");\r",
 									"});"
 								],
@@ -10406,7 +11378,7 @@
 								"exec": [
 									"var protocol = pm.environment.get(\"protocol\")\r",
 									"var host = pm.environment.get(\"host\");\r",
-									"var profile = pm.environment.get(\"ieee8021xProfileName\");\r",
+									"var profile = pm.environment.get(\"ieee8021xProfileWired\");\r",
 									"const postRequest = {\r",
 									"    url: protocol + '://' + host + '/api/v1/admin/ieee8021xconfigs/' + profile,\r",
 									"    method: 'DELETE',\r",
@@ -10590,7 +11562,7 @@
 					"response": []
 				},
 				{
-					"name": "Create 8021x Profile - Invalid Auth Protocol",
+					"name": "Create 8021x Profile - Invalid Wired Auth Protocol",
 					"event": [
 						{
 							"listen": "test",
@@ -10602,7 +11574,7 @@
 									"pm.test(\"Result should contain an error and message\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.errors[0].value).to.eql(2);\r",
-									"    pm.expect(jsonData.errors[0].msg).to.eql(\"Authentication protocol should be either 0(EAP_TLS), 3(EAP_GTC), 5(EAPFAST_GTC) or 10(EAPFAST_TLS)\");\r",
+									"    pm.expect(jsonData.errors[0].msg).to.eql(\"Authentication protocol must be one of 0:EAP-TLS, 3:PEAPv1/EAP-GTC, 5:EAP-FAST/GTC, 10:EAP-FAST/TLS\");\r",
 									"    pm.expect(jsonData.errors[0].param).to.eql(\"authenticationProtocol\");\r",
 									"});"
 								],
@@ -10615,7 +11587,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"{{ieee8021xProfileName}}\",\r\n    \"authenticationProtocol\": 2,\r\n    \"pxeTimeout\": 120,\r\n    \"wiredInterface\": true\r\n}",
+							"raw": "{\r\n    \"profileName\": \"{{ieee8021xProfileWired}}\",\r\n    \"authenticationProtocol\": 2,\r\n    \"pxeTimeout\": 120,\r\n    \"wiredInterface\": true\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -10665,7 +11637,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"{{ieee8021xProfileName}}\",\r\n    \"authenticationProtocol\": 0,\r\n    \"pxeTimeout\": 86401,\r\n    \"wiredInterface\": true\r\n}",
+							"raw": "{\r\n    \"profileName\": \"{{ieee8021xProfileWired}}\",\r\n    \"authenticationProtocol\": 0,\r\n    \"pxeTimeout\": 86401,\r\n    \"wiredInterface\": true\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -10714,7 +11686,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"{{ieee8021xProfileName}}\",\r\n    \"authenticationProtocol\": 0,\r\n    \"pxeTimeout\": \"120\",\r\n    \"wiredInterface\": true\r\n}",
+							"raw": "{\r\n    \"profileName\": \"{{ieee8021xProfileWired}}\",\r\n    \"authenticationProtocol\": 0,\r\n    \"pxeTimeout\": \"120\",\r\n    \"wiredInterface\": true\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -10745,30 +11717,13 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"var jsonData = pm.response.json();\r",
-									"pm.globals.set(\"recordVersion\", jsonData.version);\r",
-									"\r",
-									"pm.test(\"Status code is 201\", function () {\r",
-									"    pm.response.to.have.status(201);\r",
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
 									"});\r",
-									"pm.test(\"Request should return profile just created\", function () {\r",
-									"    var profile = pm.environment.get(\"ieee8021xProfileName\")\r",
-									"    pm.expect(jsonData.profileName).to.eql(profile);\r",
-									"    pm.expect(jsonData.authenticationProtocol).to.eql(0);\r",
-									"});\r",
-									"pm.test(\"Should delete profile just created\", function () {\r",
-									"    var protocol = pm.environment.get(\"protocol\")\r",
-									"    var host = pm.environment.get(\"host\");\r",
-									"    var profile = pm.environment.get(\"ieee8021xProfileName\");\r",
-									"    const postRequest = {\r",
-									"        url: protocol + '://' + host + '/api/v1/admin/ieee8021xconfigs/' + profile,\r",
-									"        method: 'DELETE',\r",
-									"    };\r",
-									"    pm.sendRequest(postRequest, (error, response) => {\r",
-									"        if (error) {\r",
-									"            console.log(error);\r",
-									"        };\r",
-									"    });\r",
+									"pm.test(\"Result should contain an error and message\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.errors[0].msg).to.eql(\"PXE Timeout is required\");\r",
+									"    pm.expect(jsonData.errors[0].param).to.eql(\"pxeTimeout\");\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -10780,7 +11735,57 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"{{ieee8021xProfileName}}\",\r\n    \"authenticationProtocol\": 0,\r\n    \"wiredInterface\": true\r\n}",
+							"raw": "{\r\n    \"profileName\": \"{{ieee8021xProfileWired}}\",\r\n    \"authenticationProtocol\": 0,\r\n    \"wiredInterface\": true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ieee8021xconfigs/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"ieee8021xconfigs",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create 8021x Profile - Invalid Wireless Auth Protocol",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"pm.test(\"Result should contain an error and message\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.errors[0].value).to.eql(3);\r",
+									"    pm.expect(jsonData.errors[0].msg).to.eql(\"Authentication protocol must be one of 0:EAP-TLS, 2:PEAPv0/EAP-MSCHAPv2\");\r",
+									"    pm.expect(jsonData.errors[0].param).to.eql(\"authenticationProtocol\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"profileName\": \"{{ieee8021xProfileWireless}}\",\r\n    \"authenticationProtocol\": 3,\r\n    \"pxeTimeout\": 120,\r\n    \"wiredInterface\": false\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -10818,7 +11823,7 @@
 									"    pm.response.to.have.status(201);\r",
 									"});\r",
 									"pm.test(\"Request should return profile just created\", function () {\r",
-									"    var profile = pm.environment.get(\"ieee8021xProfileName\")\r",
+									"    var profile = pm.environment.get(\"ieee8021xProfileWired\")\r",
 									"    pm.expect(jsonData.profileName).to.eql(profile);\r",
 									"    pm.expect(jsonData.authenticationProtocol).to.eql(0);\r",
 									"    pm.expect(jsonData.pxeTimeout).to.eql(120);\r",
@@ -10834,7 +11839,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"{{ieee8021xProfileName}}\",\r\n    \"authenticationProtocol\": 0,\r\n    \"pxeTimeout\": 120,\r\n    \"wiredInterface\": true\r\n}",
+							"raw": "{\r\n    \"profileName\": \"{{ieee8021xProfileWired}}\",\r\n    \"authenticationProtocol\": 0,\r\n    \"pxeTimeout\": 120,\r\n    \"wiredInterface\": true\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -10870,7 +11875,7 @@
 									"});\r",
 									"pm.test(\"Request should return an error message\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
-									"    var profile = pm.environment.get(\"ieee8021xProfileName\")\r",
+									"    var profile = pm.environment.get(\"ieee8021xProfileWired\")\r",
 									"    pm.expect(jsonData.error).to.eql(\"Unique key violation\");\r",
 									"    pm.expect(jsonData.message).to.eql(\"802.1x profile \" + profile + \" already exists\");\r",
 									"});"
@@ -10884,7 +11889,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"{{ieee8021xProfileName}}\",\r\n    \"authenticationProtocol\": 10,\r\n    \"pxeTimeout\": 0,\r\n    \"wiredInterface\": true\r\n}",
+							"raw": "{\r\n    \"profileName\": \"{{ieee8021xProfileWired}}\",\r\n    \"authenticationProtocol\": 10,\r\n    \"pxeTimeout\": 0,\r\n    \"wiredInterface\": true\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -10920,7 +11925,7 @@
 									"});\r",
 									"pm.test(\"Result should contain 802.1x profile\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
-									"    pm.expect(jsonData.profileName).to.eql(pm.environment.get(\"ieee8021xProfileName\"));\r",
+									"    pm.expect(jsonData.profileName).to.eql(pm.environment.get(\"ieee8021xProfileWired\"));\r",
 									"    pm.expect(jsonData.authenticationProtocol).to.eql(0);\r",
 									"    pm.expect(jsonData.pxeTimeout).to.eql(120);\r",
 									"});"
@@ -10933,7 +11938,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/ieee8021xconfigs/{{ieee8021xProfileName}}",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ieee8021xconfigs/{{ieee8021xProfileWired}}",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
@@ -10943,7 +11948,7 @@
 								"v1",
 								"admin",
 								"ieee8021xconfigs",
-								"{{ieee8021xProfileName}}"
+								"{{ieee8021xProfileWired}}"
 							]
 						}
 					},
@@ -11016,7 +12021,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"{{ieee8021xProfileName}}\",\r\n    \"authenticationProtocol\": 5,\r\n    \"pxeTimeout\": 0,\r\n    \"wiredInterface\": false\r\n}",
+							"raw": "{\r\n    \"profileName\": \"{{ieee8021xProfileWired}}\",\r\n    \"authenticationProtocol\": 5,\r\n    \"pxeTimeout\": 0,\r\n    \"wiredInterface\": true\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -11054,7 +12059,7 @@
 									"    pm.response.to.have.status(409);\r",
 									"});\r",
 									"pm.test(\"Request should fail and return profile in db\", function () {\r",
-									"    var profile = pm.environment.get(\"ieee8021xProfileName\")\r",
+									"    var profile = pm.environment.get(\"ieee8021xProfileWired\")\r",
 									"    pm.expect(jsonData.profileName).to.eql(profile);\r",
 									"    pm.expect(jsonData.authenticationProtocol).to.eql(0);\r",
 									"    pm.expect(jsonData.pxeTimeout).to.eql(120);\r",
@@ -11070,7 +12075,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"{{ieee8021xProfileName}}\",\r\n    \"authenticationProtocol\": 5,\r\n    \"pxeTimeout\": 0,\r\n    \"wiredInterface\": false,\r\n    \"version\": 100\r\n}",
+							"raw": "{\r\n    \"profileName\": \"{{ieee8021xProfileWired}}\",\r\n    \"authenticationProtocol\": 5,\r\n    \"pxeTimeout\": 0,\r\n    \"wiredInterface\": true,\r\n    \"version\": 100\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -11108,11 +12113,11 @@
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
 									"pm.test(\"Request should return profile just created\", function () {\r",
-									"    var profile = pm.environment.get(\"ieee8021xProfileName\")\r",
+									"    var profile = pm.environment.get(\"ieee8021xProfileWired\")\r",
 									"    pm.expect(jsonData.profileName).to.eql(profile);\r",
 									"    pm.expect(jsonData.authenticationProtocol).to.eql(5);\r",
 									"    pm.expect(jsonData.pxeTimeout).to.eql(0);\r",
-									"    pm.expect(jsonData.wiredInterface).to.eql(false);\r",
+									"    pm.expect(jsonData.wiredInterface).to.eql(true);\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -11124,7 +12129,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"{{ieee8021xProfileName}}\",\r\n    \"authenticationProtocol\": 5,\r\n    \"pxeTimeout\": 0,\r\n    \"wiredInterface\": false,\r\n    \"version\": {{recordVersion}}\r\n}",
+							"raw": "{\r\n    \"profileName\": \"{{ieee8021xProfileWired}}\",\r\n    \"authenticationProtocol\": 5,\r\n    \"pxeTimeout\": 0,\r\n    \"wiredInterface\": true,\r\n    \"version\": {{recordVersion}}\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -11167,7 +12172,7 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{protocol}}://{{host}}/api/v1/admin/ieee8021xconfigs/{{ieee8021xProfileName}}",
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/ieee8021xconfigs/{{ieee8021xProfileWired}}",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{host}}"
@@ -11177,7 +12182,7 @@
 								"v1",
 								"admin",
 								"ieee8021xconfigs",
-								"{{ieee8021xProfileName}}"
+								"{{ieee8021xProfileWired}}"
 							]
 						}
 					},
