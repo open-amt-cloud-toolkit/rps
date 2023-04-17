@@ -8,7 +8,7 @@ import { HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
 import ClientResponseMsg from '../utils/ClientResponseMsg'
 import { devices } from '../WebSocketListener'
-import { GATEWAY_TIMEOUT_ERROR, UNEXPECTED_PARSE_ERROR } from '../utils/constants'
+import { GATEWAY_TIMEOUT_ERROR, UNEXPECTED_PARSE_ERROR, EA_TIMEOUT_ERROR } from '../utils/constants'
 import { v4 as uuid } from 'uuid'
 import * as enterpriseAssistantListener from '../WSEnterpriseAssistantListener'
 import * as common from './common'
@@ -143,7 +143,7 @@ describe('Common', () => {
     expect(sendSpy).toHaveBeenCalledTimes(2)
   })
   it('should send an enterprise-assistant message', async () => {
-    void common.invokeEnterpriseAssistantCall(context)
+    void common.invokeEnterpriseAssistantCallInternal(context)
 
     expect(enterpriseAssistantSocketSendSpy).toHaveBeenCalled()
     expect(enterpriseAssistantListener.promises[clientId].pendingPromise).toBeDefined()
@@ -151,13 +151,23 @@ describe('Common', () => {
     expect(enterpriseAssistantListener.promises[clientId].reject).toBeDefined()
   })
 
-  it('should timeout on no response', async () => {
+  it('should timeout on no response from AMT', async () => {
     try {
       const x = common.invokeWsmanCall(context)
       jest.advanceTimersByTime(Environment.Config.delayTimer * 1000)
       await x
     } catch (err) {
       expect(err).toBeInstanceOf(GATEWAY_TIMEOUT_ERROR)
+    }
+  })
+
+  it('should timeout on no response from EA', async () => {
+    try {
+      const x = common.invokeEnterpriseAssistantCall(context)
+      jest.advanceTimersByTime(Environment.Config.delayTimer * 1000)
+      await x
+    } catch (err) {
+      expect(err).toBeInstanceOf(EA_TIMEOUT_ERROR)
     }
   })
 })
