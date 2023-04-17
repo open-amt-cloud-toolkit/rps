@@ -33,7 +33,8 @@ describe('AMT Profile Validation', () => {
         userConsent: AMTUserConsent.NONE,
         iderEnabled: true,
         kvmEnabled: true,
-        solEnabled: true
+        solEnabled: true,
+        version: '100'
       },
       query: {}
     }

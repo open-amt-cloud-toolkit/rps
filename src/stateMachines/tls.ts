@@ -11,14 +11,14 @@ import Logger from '../Logger'
 import { type AMTConfiguration, type AMTKeyUsage, type CertAttributes } from '../models'
 import { NodeForge } from '../NodeForge'
 import { devices } from '../WebSocketListener'
-import { type EnterpriseAssistantMessage } from '../WSEnterpriseAssistantListener'
-import { invokeEnterpriseAssistantCall, invokeWsmanCall } from './common'
 import { Error } from './error'
 import { TimeSync } from './timeMachine'
 import { TlsSigningAuthority } from '../models/RCS.Config'
 import { UNEXPECTED_PARSE_ERROR } from '../utils/constants'
 import { parseChunkedMessage } from '../utils/parseChunkedMessage'
 import { Environment } from '../utils/Environment'
+import { getCertFromEnterpriseAssistant, initiateCertRequest, sendEnterpriseAssistantKeyPairResponse } from './enterpriseAssistant'
+import { invokeWsmanCall } from './common'
 
 export interface TLSContext {
   message: any
@@ -133,7 +133,7 @@ export class TLS {
         },
         ENTERPRISE_ASSISTANT_REQUEST: {
           invoke: {
-            src: this.initiateCertRequest.bind(this),
+            src: async (context, event) => await initiateCertRequest(context, event),
             id: 'enterprise-assistant-request',
             onDone: {
               actions: [
@@ -151,7 +151,7 @@ export class TLS {
         },
         ENTERPRISE_ASSISTANT_RESPONSE: {
           invoke: {
-            src: this.sendEnterpriseAssistantKeyPairResponse.bind(this),
+            src: async (context, event) => await sendEnterpriseAssistantKeyPairResponse(context, event),
             id: 'enterprise-assistant-response',
             onDone: {
               actions: [
@@ -187,7 +187,7 @@ export class TLS {
         },
         GET_CERT_FROM_ENTERPRISE_ASSISTANT: {
           invoke: {
-            src: this.getCertFromEnterpriseAssistant.bind(this),
+            src: async (context, event) => await getCertFromEnterpriseAssistant(context, event),
             id: 'get-cert-from-enterprise-assistant',
             onDone: {
               actions: [
@@ -500,25 +500,6 @@ export class TLS {
       }
     })
 
-  async getCertFromEnterpriseAssistant (context: TLSContext, event: TLSEvent): Promise<EnterpriseAssistantMessage> {
-    const signedCSR = context.message.Envelope?.Body?.GeneratePKCS10RequestEx_OUTPUT?.SignedCertificateRequest
-    context.message = {
-      action: 'satellite',
-      subaction: '802.1x-CSR-Response',
-      satelliteFlags: 2,
-      nodeid: context.clientId,
-      domain: '',
-      reqid: '',
-      authProtocol: 0,
-      osname: 'win11',
-      devname: devices[context.clientId].hostname,
-      icon: 1,
-      signedcsr: signedCSR,
-      ver: ''
-    }
-    return await invokeEnterpriseAssistantCall(context)
-  }
-
   async signCSR (context: TLSContext, event: TLSEvent): Promise<void> {
     context.xmlMessage = context.amt.PublicKeyManagementService.GeneratePKCS10RequestEx({
       KeyPair: '<a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address><a:ReferenceParameters><w:ResourceURI>http://intel.com/wbem/wscim/1/amt-schema/1/AMT_PublicPrivateKeyPair</w:ResourceURI><w:SelectorSet><w:Selector Name="InstanceID">' + (context.message.response.keyInstanceId as string) + '</w:Selector></w:SelectorSet></a:ReferenceParameters>',
@@ -526,54 +507,6 @@ export class TLS {
       NullSignedCertificateRequest: context.message.response.csr
     })
     return await invokeWsmanCall(context, 2)
-  }
-
-  async initiateCertRequest (context: TLSContext, event: TLSEvent): Promise<EnterpriseAssistantMessage> {
-    context.message = {
-      action: 'satellite',
-      subaction: '802.1x-ProFile-Request',
-      satelliteFlags: 2,
-      nodeid: context.clientId,
-      domain: '',
-      reqid: '',
-      authProtocol: 0,
-      osname: 'win11',
-      devname: devices[context.clientId].hostname,
-      icon: 1,
-      cert: null,
-      certid: null,
-      ver: ''
-    }
-    return await invokeEnterpriseAssistantCall(context)
-  }
-
-  async sendEnterpriseAssistantKeyPairResponse (context: TLSContext, event: TLSEvent): Promise<EnterpriseAssistantMessage> {
-    const clientObj = devices[context.clientId]
-    const potentialArray = context.message.Envelope.Body.PullResponse.Items.AMT_PublicPrivateKeyPair
-    if (Array.isArray(potentialArray)) {
-      clientObj.tls.PublicPrivateKeyPair = potentialArray
-    } else {
-      clientObj.tls.PublicPrivateKeyPair = [potentialArray]
-    }
-    const PublicPrivateKeyPair = clientObj.tls.PublicPrivateKeyPair.filter(x => x.InstanceID === context.keyPairHandle)[0]
-    const DERKey = PublicPrivateKeyPair?.DERKey
-
-    context.message = {
-      action: 'satellite',
-      subaction: '802.1x-KeyPair-Response',
-      satelliteFlags: 2,
-      nodeid: context.clientId,
-      domain: '',
-      reqid: '',
-      devname: devices[context.clientId].hostname,
-      authProtocol: 0,
-      osname: 'win11',
-      icon: 1,
-      DERKey,
-      keyInstanceId: PublicPrivateKeyPair?.InstanceID,
-      ver: ''
-    }
-    return await invokeEnterpriseAssistantCall(context)
   }
 
   constructor () {

@@ -7,7 +7,7 @@ import ClientResponseMsg from '../utils/ClientResponseMsg'
 import { Environment } from '../utils/Environment'
 import { devices } from '../WebSocketListener'
 import { type EnterpriseAssistantMessage, enterpriseAssistantSocket, promises } from '../WSEnterpriseAssistantListener'
-import { GATEWAY_TIMEOUT_ERROR, UNEXPECTED_PARSE_ERROR } from '../utils/constants'
+import { GATEWAY_TIMEOUT_ERROR, UNEXPECTED_PARSE_ERROR, EA_TIMEOUT_ERROR } from '../utils/constants'
 import Logger from '../Logger'
 
 const invokeWsmanLogger = new Logger('invokeWsmanCall')
@@ -61,7 +61,7 @@ const invokeWsmanCall = async (context: any, maxRetries = 0): Promise<any> => {
     }
   }
 }
-const invokeEnterpriseAssistantCall = async (context: any): Promise<EnterpriseAssistantMessage> => {
+const invokeEnterpriseAssistantCallInternal = async (context: any): Promise<EnterpriseAssistantMessage> => {
   const { clientId, message } = context
   enterpriseAssistantSocket.send(JSON.stringify(message))
   if (promises[clientId] == null) {
@@ -74,4 +74,18 @@ const invokeEnterpriseAssistantCall = async (context: any): Promise<EnterpriseAs
   return await promises[clientId].pendingPromise
 }
 
-export { invokeWsmanCall, invokeEnterpriseAssistantCall, invokeWsmanCallInternal }
+const eaTimeout = (ms): any => new Promise((resolve, reject) => {
+  setTimeout(() => {
+    reject(new EA_TIMEOUT_ERROR())
+  }, ms)
+})
+
+const invokeEnterpriseAssistantCall = async (context: any): Promise<EnterpriseAssistantMessage> => {
+  const result = await Promise.race([
+    invokeEnterpriseAssistantCallInternal(context),
+    eaTimeout(Environment.Config.delayTimer * 1000)
+  ])
+  return result
+}
+
+export { invokeWsmanCall, invokeEnterpriseAssistantCall, invokeEnterpriseAssistantCallInternal, invokeWsmanCallInternal }

@@ -128,9 +128,13 @@ export const amtProfileValidator = (): ValidationChain[] => [
   check('ieee8021xProfileName')
     .optional({ nullable: true })
     .custom(async (value, { req }) => {
-      const isProfileExist = await validateIEEE8021xConfigs(value, req as Request)
-      if (!isProfileExist) {
-        throw new Error(`IEEEProfile config ${value} does not exists in db`)
+      const profileExists = await validateIEEE8021xConfigs(value, req as Request)
+      if (!profileExists) {
+        throw new Error(`Ieee8021x profile ${value} does not exist in db`)
+      }
+      const isWired = await getProfileInterface(value, req as Request)
+      if (!isWired) {
+        throw new Error(`Ieee8021x profile ${value} is for wireless interfaces`)
       }
       return true
     }),
@@ -176,6 +180,11 @@ const validateIEEE8021xConfigs = async (value: any, req: Request): Promise<boole
     return false
   }
   return true
+}
+
+const getProfileInterface = async (value: any, req: Request): Promise<boolean | null> => {
+  const prof = await req.db.ieee8021xProfiles.getByName(value, req.tenantId)
+  return prof?.wiredInterface
 }
 
 export const profileUpdateValidator = (): any => [
@@ -298,7 +307,7 @@ export const profileUpdateValidator = (): any => [
     .custom(async (value, { req }) => {
       const isProfileExist = await validateIEEE8021xConfigs(value, req as Request)
       if (!isProfileExist) {
-        throw new Error(`IEEEProfile config ${value.ieee8021xProfileName} does not exists in db`)
+        throw new Error(`IEEEProfile config ${value} does not exists in db`)
       }
       return true
     }),
@@ -324,5 +333,9 @@ export const profileUpdateValidator = (): any => [
   check('solEnabled')
     .optional({ nullable: true })
     .isBoolean()
-    .withMessage('Serial Over Lan (sol) enabled must be a boolean')
+    .withMessage('Serial Over Lan (sol) enabled must be a boolean'),
+  check('version')
+    .not()
+    .isEmpty()
+    .withMessage('Version is required to patch/update a record.')
 ]
