@@ -239,7 +239,8 @@ describe('WiFi Network Configuration', () => {
         pskPassphrase: 'Intel@123',
         linkPolicy: ['14', '16'],
         pskValue: 1,
-        tenantId: ''
+        tenantId: '',
+        ieee8021xProfileName: 'nacProfile'
       })
       const WiFiPortConfigurationServiceSpy = jest.spyOn(context.amt.WiFiPortConfigurationService, 'AddWiFiSettings').mockReturnValue('done')
       await wifiConfiguration.addWifiConfigs(context, null)

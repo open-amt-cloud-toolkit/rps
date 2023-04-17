@@ -21,6 +21,7 @@ export interface WirelessConfig {
   pskPassphrase: string
   linkPolicy: string[]
   tenantId: string
+  ieee8021xProfileName: string
   version?: string
 }
 
@@ -43,11 +44,6 @@ export interface Ieee8021xConfig {
   wiredInterface: boolean
   tenantId: string
   version?: string
-}
-
-export interface Ieee8021xCountByInterface {
-  wired: number
-  wireless: number
 }
 
 /*
