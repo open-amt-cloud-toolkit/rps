@@ -133,9 +133,9 @@ export const handleGenerateRandomMEBxPassword = (amtConfig: AMTConfiguration, ne
 export const handleWifiConfigs = async (newConfig: AMTConfiguration, oldConfig: AMTConfiguration, profileWifiConfigsDb: IProfilesWifiConfigsTable): Promise<ProfileWifiConfigs[]> => {
   let wifiConfigs: ProfileWifiConfigs[] = null
   if (oldConfig.dhcpEnabled && !newConfig.dhcpEnabled) {
-    await profileWifiConfigsDb.deleteProfileWifiConfigs(newConfig.profileName)
+    await profileWifiConfigsDb.deleteProfileWifiConfigs(newConfig.profileName, newConfig.tenantId)
   } else if ((oldConfig.dhcpEnabled && newConfig.dhcpEnabled) || (!oldConfig.dhcpEnabled && newConfig.dhcpEnabled)) {
-    await profileWifiConfigsDb.deleteProfileWifiConfigs(newConfig.profileName)
+    await profileWifiConfigsDb.deleteProfileWifiConfigs(newConfig.profileName, newConfig.tenantId)
     wifiConfigs = newConfig.wifiConfigs
   }
   return wifiConfigs
