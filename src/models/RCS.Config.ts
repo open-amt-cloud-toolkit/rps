@@ -22,6 +22,7 @@ export interface WirelessConfig {
   linkPolicy: string[]
   tenantId: string
   ieee8021xProfileName: string
+  ieee8021xProfileObject?: Ieee8021xConfig
   version?: string
 }
 

@@ -37,7 +37,7 @@ interface WiFiConfigContext {
   addTrustedRootCertResponse?: any
   addCertResponse?: any
   keyPairHandle?: string
-  wifiProfile?: any
+  wifiProfile?: WirelessConfig
 }
 
 interface WiFiConfigEvent {
@@ -199,7 +199,7 @@ export class WiFiConfiguration {
             id: 'request-state-change-for-wifi-port',
             onDone: {
               actions: assign({ message: (context, event) => event.data }),
-              target: 'CHECK_TO_ADD_WIFI_SETTINGS'
+              target: 'GET_WIFI_PROFILE'
             },
             onError: {
               actions: assign({ errorMessage: (context, event) => 'Failed to update state change for wifi port' }),
@@ -207,10 +207,23 @@ export class WiFiConfiguration {
             }
           }
         },
+        GET_WIFI_PROFILE: {
+          invoke: {
+            src: this.getWifiProfile.bind(this),
+            id: 'get-wifi-profile',
+            onDone: {
+              target: 'CHECK_TO_ADD_WIFI_SETTINGS'
+            },
+            onError: {
+              actions: assign({ errorMessage: 'Failed to get wifi profile from DB' }),
+              target: 'FAILED'
+            }
+          }
+        },
         CHECK_TO_ADD_WIFI_SETTINGS:{
           always: [
             {
-              cond: 'is8021xProfileExits',
+              cond: 'is8021xProfileAssociated',
               target: 'ENTERPRISE_ASSISTANT_REQUEST'
             },
             {
@@ -373,7 +386,7 @@ export class WiFiConfiguration {
             },
             {
               cond: 'isWiFiProfilesExists',
-              target: 'CHECK_TO_ADD_WIFI_SETTINGS'
+              target: 'GET_WIFI_PROFILE'
             },
             {
               target: 'SUCCESS'
@@ -406,7 +419,7 @@ export class WiFiConfiguration {
       }
     }, {
       guards: {
-        is8021xProfileExists: this.check8021xProfileExists.bind(this),
+        is8021xProfileAssociated: (context, event) => context.wifiProfile.ieee8021xProfileName != null , 
         isWiFiProfilesExists: (context, event) => context.wifiProfileCount < context.amtProfile.wifiConfigs.length,
         isWifiProfilesExistsOnDevice: (context, event) => context.wifiEndPointSettings.length !== 0,
         isNotWifiProfileAdded: (context, event) => context.message.Envelope.Body.AddWiFiSettings_OUTPUT.ReturnValue !== 0,
@@ -481,24 +494,29 @@ export class WiFiConfiguration {
     return await invokeWsmanCall(context)
   }
 
-  async getWifiProfile (profileName: string): Promise<WirelessConfig> {
+  async getWifiProfile (context: WiFiConfigContext, event: WiFiConfigEvent): Promise<void> {
     // Get WiFi profile information based on the profile name from db.
     this.db = await this.dbFactory.getDb()
-    const wifiConfig = await this.db.wirelessProfiles.getByName(profileName)
+    context.wifiProfile = await this.db.wirelessProfiles.getByName(context.amtProfile.wifiConfigs[context.wifiProfileCount].profileName, context.amtProfile.tenantId)
+    if( context.wifiProfile.ieee8021xProfileName != null) {
+      context.wifiProfile.ieee8021xProfileObject = await this.db.ieee8021xProfiles.getByName(context.wifiProfile.ieee8021xProfileName, context.wifiProfile.tenantId)
+    }
     if (this.configurator?.secretsManager) {
       // Get WiFi profile pskPassphrase from vault
-      const data = await this.configurator.secretsManager.getSecretAtPath(`Wireless/${wifiConfig.profileName}`) as WifiCredentials
+      const data = await this.configurator.secretsManager.getSecretAtPath(`Wireless/${context.wifiProfile.profileName}`) as WifiCredentials
       if (data != null) {
-        wifiConfig.pskPassphrase = data.PSK_PASSPHRASE
+        context.wifiProfile.pskPassphrase = data.PSK_PASSPHRASE
       }
     }
-    return wifiConfig
   }
 
-  async check8021xProfileExists (context: WiFiConfigContext, event: WiFiConfigEvent): Promise<boolean> { 
-    context.wifiProfile = await this.getWifiProfile(context.amtProfile.wifiConfigs[context.wifiProfileCount].profileName)
-    return true
-  }
+  // async check8021xProfileExists (context: WiFiConfigContext, event: WiFiConfigEvent): Promise<boolean> { 
+  //   context.wifiProfile = await this.getWifiProfile(context.amtProfile.wifiConfigs[context.wifiProfileCount].profileName, context.amtProfile.tenantId)
+  //   if(context.wifiProfile.ieee8021xProfileName != null) {
+  //     return true
+  //   }
+  //   return false
+  // }
 
   async addWifiConfigs (context: WiFiConfigContext, event: WiFiConfigEvent): Promise<any> {
     // Get WiFi profile information based on the profile name.
