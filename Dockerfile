@@ -34,6 +34,8 @@ RUN addgroup -g 1000 node && adduser -u 1000 -G node -s /bin/sh -D node
 RUN apk update && apk add nodejs && rm -rf /var/cache/apk/*
 
 COPY --from=builder  /rps/dist /rps/dist
+# for healthcheck backwards compatibility
+COPY --from=builder  /rps/dist/Healthcheck.js /dist/Healthcheck.js 
 COPY --from=builder  /rps/.rpsrc /.rpsrc
 COPY --from=builder  /rps/node_modules /rps/node_modules
 COPY --from=builder  /rps/package.json /rps/package.json
