@@ -22,8 +22,10 @@ export async function createWirelessProfile (req: Request, res: Response): Promi
     const results: WirelessConfig = await req.db.wirelessProfiles.insert(wirelessConfig)
     // store the password into Vault
     if (req.secretsManager) {
-      await req.secretsManager.writeSecretWithObject(`Wireless/${wirelessConfig.profileName}`, { PSK_PASSPHRASE: passphrase } as WifiCredentials)
-      log.debug(`pskPassphrase stored in Vault for wireless profile: ${wirelessConfig.profileName}`)
+      if (req.body.ieee8021xProfileName == null) {
+        await req.secretsManager.writeSecretWithObject(`Wireless/${wirelessConfig.profileName}`, { PSK_PASSPHRASE: passphrase } as WifiCredentials)
+        log.debug(`pskPassphrase stored in Vault for wireless profile: ${wirelessConfig.profileName}`)
+      }
     }
     log.verbose(`Created wireless profile : ${wirelessConfig.profileName}`)
     delete results.pskPassphrase
