@@ -5,10 +5,20 @@
 
 import { type WirelessConfig } from '../../../models/RCS.Config'
 import { type IWirelessProfilesTable } from '../../../interfaces/database/IWirelessProfilesDB'
-import { API_UNEXPECTED_EXCEPTION, CONCURRENCY_EXCEPTION, CONCURRENCY_MESSAGE, DEFAULT_SKIP, DEFAULT_TOP, NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT, NETWORK_CONFIG_ERROR, NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE, NETWORK_UPDATE_ERROR } from '../../../utils/constants'
+import {
+  API_UNEXPECTED_EXCEPTION,
+  CONCURRENCY_EXCEPTION,
+  CONCURRENCY_MESSAGE,
+  DEFAULT_SKIP,
+  DEFAULT_TOP,
+  NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT,
+  NETWORK_CONFIG_ERROR,
+  NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE
+} from '../../../utils/constants'
 import { RPSError } from '../../../utils/RPSError'
 import Logger from '../../../Logger'
 import type PostgresDb from '..'
+import { PostgresErr } from '../errors'
 
 export class WirelessProfilesTable implements IWirelessProfilesTable {
   db: PostgresDb
@@ -110,7 +120,7 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
     FROM profiles_wirelessconfigs
     WHERE wireless_profile_name = $1 and tenant_id = $2`, [configName, tenantId])
     if (profiles.rowCount > 0) {
-      throw new RPSError(NETWORK_UPDATE_ERROR('Wireless', configName), 'Foreign key violation')
+      throw new RPSError(NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT('Wireless', configName), 'Foreign key violation')
     }
     try {
       const results = await this.db.query(`
@@ -120,7 +130,7 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
       return results.rowCount > 0
     } catch (error) {
       this.log.error(`Failed to delete wireless configuration : ${configName}`, error)
-      if (error.code === '23503') { // foreign key violation
+      if (error.code === PostgresErr.C23_FOREIGN_KEY_VIOLATION) {
         throw new RPSError(NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT('Wireless', configName))
       }
       throw new RPSError(API_UNEXPECTED_EXCEPTION(`Delete wireless configuration : ${configName}`))
@@ -152,12 +162,12 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
         wirelessConfig.ieee8021xProfileName
       ])
       if (results?.rowCount > 0) {
-        const profile = await this.getByName(wirelessConfig.profileName, wirelessConfig.tenantId)
-        return profile
+        const config = await this.getByName(wirelessConfig.profileName, wirelessConfig.tenantId)
+        return config
       }
       return null
     } catch (error) {
-      if (error.code === '23505') { // Unique key violation
+      if (error.code === PostgresErr.C23_UNIQUE_VIOLATION) {
         throw new RPSError(NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE('Wireless', wirelessConfig.profileName), 'Unique key violation')
       }
       throw new RPSError(NETWORK_CONFIG_ERROR('Wireless', wirelessConfig.profileName)

@@ -5,18 +5,21 @@
 
 import { type Ieee8021xConfig } from '../../../models/RCS.Config'
 import {
-  NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE,
-  NETWORK_CONFIG_ERROR,
   API_UNEXPECTED_EXCEPTION,
   DEFAULT_SKIP,
   DEFAULT_TOP,
   CONCURRENCY_EXCEPTION,
-  CONCURRENCY_MESSAGE, NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT
+  CONCURRENCY_MESSAGE,
+  IEEE8021X_DELETION_FAILED_CONSTRAINT_AMT_PROFILE,
+  IEEE8021X_DELETION_FAILED_CONSTRAINT_WIRELESS,
+  IEEE8021X_INSERTION_FAILED_DUPLICATE,
+  IEEE8021X_INSERTION_FAILED
 } from '../../../utils/constants'
 import Logger from '../../../Logger'
 import { RPSError } from '../../../utils/RPSError'
 import type PostgresDb from '..'
 import { type IIEEE8021xProfileTable } from '../../../interfaces/database/IIEEE8021xProfilesDB'
+import { PostgresErr } from '../errors'
 
 export class IEEE8021xProfilesTable implements IIEEE8021xProfileTable {
   db: PostgresDb
@@ -77,7 +80,6 @@ export class IEEE8021xProfilesTable implements IIEEE8021xProfileTable {
       return results.rows[0]
     }
     return null
-    // return results.rowCount > 0 ? results.rows[0] : null
   }
 
   async checkProfileExits (profileName: string, tenantId: string = ''): Promise<boolean> {
@@ -88,17 +90,6 @@ export class IEEE8021xProfilesTable implements IIEEE8021xProfileTable {
         AND tenant_id = $2`
     , [profileName, tenantId])
 
-    return results.rowCount > 0
-  }
-
-  async checkWiredInterfaceProfileExists (tenantId: string = ''): Promise<boolean> {
-    const results = await this.db.query(`
-      SELECT 1
-      FROM ieee8021xconfigs
-      WHERE wired_interface = true
-        AND tenant_id = $1`
-    , [tenantId]
-    )
     return results.rowCount > 0
   }
 
@@ -114,9 +105,13 @@ export class IEEE8021xProfilesTable implements IIEEE8021xProfileTable {
 
       return result.rowCount > 0
     } catch (error) {
-      this.log.error(`Failed to delete 802.1x configuration : ${profileName}`, error)
-      if (error.code === '23503') { // foreign key violation
-        throw new RPSError(NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT('802.1x', profileName))
+      this.log.error(`Failed to delete 802.1x configuration : ${profileName} `, error)
+      if (error.code === PostgresErr.C23_FOREIGN_KEY_VIOLATION) {
+        if (error.table === 'profiles') {
+          throw new RPSError(IEEE8021X_DELETION_FAILED_CONSTRAINT_AMT_PROFILE(profileName))
+        } else if (error.table === 'wirelessconfigs') {
+          throw new RPSError(IEEE8021X_DELETION_FAILED_CONSTRAINT_WIRELESS(profileName))
+        }
       }
       throw new RPSError(API_UNEXPECTED_EXCEPTION(`Delete 802.1x configuration : ${profileName}`))
     }
@@ -143,10 +138,10 @@ export class IEEE8021xProfilesTable implements IIEEE8021xProfileTable {
       return await this.getByName(item.profileName)
     } catch (error) {
       this.log.error(`Failed to insert 802.1x configuration : ${item.profileName}`, error.message || JSON.stringify(error))
-      if (error.code === '23505') { // Unique key violation
-        throw new RPSError(NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE('802.1x', item.profileName), 'Unique key violation')
+      if (error.code === PostgresErr.C23_UNIQUE_VIOLATION) {
+        throw new RPSError(IEEE8021X_INSERTION_FAILED_DUPLICATE(item.profileName), 'Unique key violation')
       }
-      throw new RPSError(NETWORK_CONFIG_ERROR('802.1x', item.profileName))
+      throw new RPSError(IEEE8021X_INSERTION_FAILED(item.profileName))
     }
   }
 

@@ -9,6 +9,7 @@ import { type AMTDomain } from '../../../models'
 import { RPSError } from '../../../utils/RPSError'
 import Logger from '../../../Logger'
 import type PostgresDb from '..'
+import { PostgresErr } from '../errors'
 
 export class DomainsTable implements IDomainsTable {
   db: PostgresDb
@@ -29,8 +30,8 @@ export class DomainsTable implements IDomainsTable {
     WHERE tenant_id = $1
     `, [tenantId])
     let count = 0
-    if (result != null) {
-      count = Number(result?.rows[0]?.total_count)
+    if (result != null && result.rows?.length > 0) {
+      count = Number(result.rows[0].total_count)
     }
     return count
   }
@@ -140,7 +141,7 @@ export class DomainsTable implements IDomainsTable {
       return null
     } catch (error) {
       this.log.error(`Failed to insert Domain: ${amtDomain.profileName}`, error)
-      if (error.code === '23505') { // Unique key violation
+      if (error.code === PostgresErr.C23_UNIQUE_VIOLATION) {
         throw new RPSError(DUPLICATE_DOMAIN_FAILED(amtDomain.profileName), 'Unique key violation')
       }
       throw new RPSError(API_UNEXPECTED_EXCEPTION(amtDomain.profileName))
@@ -174,7 +175,7 @@ export class DomainsTable implements IDomainsTable {
       }
     } catch (error) {
       this.log.error('Failed to update Domain :', error)
-      if (error.code === '23505') { // Unique key violation
+      if (error.code === PostgresErr.C23_UNIQUE_VIOLATION) {
         throw new RPSError(DUPLICATE_DOMAIN_FAILED(amtDomain.profileName), 'Unique key violation')
       }
       throw new RPSError(API_UNEXPECTED_EXCEPTION(amtDomain.profileName))
