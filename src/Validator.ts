@@ -194,7 +194,12 @@ export class Validator implements IValidator {
     } else {
       throw new RPSError(`Device ${payload.uuid} is in pre-provisioning mode.`)
     }
-    await this.verifyDevicePassword(payload, clientId)
+    if (msg.payload.force) {
+      this.logger.debug('bypassing password check')
+    } else {
+      await this.verifyDevicePassword(payload, clientId)
+    }
+    clientObj.uuid = payload.uuid
     clientObj.ClientData = msg
   }
 

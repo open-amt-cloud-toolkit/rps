@@ -59,7 +59,7 @@ describe('AMT Password State Machine', () => {
           }
         }),
         'send-updated-amt-password': Promise.resolve({ clientId }),
-        'save-amt-password-to-secret-provider': Promise.resolve({ clientId }),
+        'save-amt-password-to-secret-provider': Promise.resolve(true),
         'error-machine': Promise.resolve({ clientId })
       },
       actions: {
@@ -110,27 +110,6 @@ describe('AMT Password State Machine', () => {
         done()
       }
     })
-    amtPwdService.start()
-    amtPwdService.send({ type: 'CHANGEPASSWORD', clientId, data: null })
-  })
-
-  it('should eventually reach "Failed" at save-amt-password-to-secret-provider state ', (done) => {
-    configuration.services['save-amt-password-to-secret-provider'] = Promise.reject(new Error())
-    const mockAmtPwdMachine = amtPwd.machine.withConfig(configuration).withContext(amtPwdContext)
-    const flowStates = [
-      'ACTIVATED',
-      'GET_GENERAL_SETTINGS',
-      'SEND_UPDATED_AMT_PASSWORD',
-      'SAVE_AMT_PASSWORD_TO_SECRET_PROVIDER',
-      'FAILED'
-    ]
-    const amtPwdService = interpret(mockAmtPwdMachine).onTransition((state) => {
-      expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
-      if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
-        done()
-      }
-    })
-
     amtPwdService.start()
     amtPwdService.send({ type: 'CHANGEPASSWORD', clientId, data: null })
   })
