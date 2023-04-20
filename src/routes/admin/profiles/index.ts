@@ -20,6 +20,6 @@ profileRouter.get('/', odataValidator(), validateMiddleware, allProfiles)
 profileRouter.get('/:profileName', getProfile)
 profileRouter.post('/', amtProfileValidator(), validateMiddleware, createProfile)
 profileRouter.patch('/', profileUpdateValidator(), validateMiddleware, ifMatchMiddleware, editProfile)
-profileRouter.delete('/:profileName', validateMiddleware, deleteProfile)
+profileRouter.delete('/:profileName', deleteProfile)
 
 export default profileRouter
