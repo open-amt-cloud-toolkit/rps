@@ -17,6 +17,7 @@ export async function createProfile (req: Request, res: Response): Promise<void>
   const log = new Logger('createProfile')
   let amtConfig: AMTConfiguration = req.body
   amtConfig.tenantId = req.tenantId || ''
+  // amtConfig.tenantId = '123qwerty123123'
   try {
     const pwdBefore = amtConfig.amtPassword
     const mebxPwdBefore = amtConfig.mebxPassword
