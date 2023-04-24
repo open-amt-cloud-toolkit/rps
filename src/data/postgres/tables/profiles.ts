@@ -212,9 +212,11 @@ export class ProfilesTable implements IProfilesTable {
 
       if (amtConfig.wifiConfigs?.length > 0) {
         await this.db.profileWirelessConfigs.createProfileWifiConfigs(amtConfig.wifiConfigs, amtConfig.profileName, amtConfig.tenantId)
+        // await this.db.profileWirelessConfigs.createProfileWifiConfigs(amtConfig.wifiConfigs, amtConfig.profileName, tenantId)
       }
 
-      return await this.getByName(amtConfig.profileName, amtConfig.tenantId)
+      return await this.getByName(amtConfig.profileName)
+      // return await this.getByName(amtConfig.profileName, tenantId)
     } catch (error) {
       this.log.error(`Failed to insert AMT profile: ${amtConfig.profileName}`, error)
       if (error instanceof RPSError) {

@@ -18,15 +18,15 @@ import { adjustTlsConfiguration, generateSelfSignedCertificate } from './common'
 export async function editProfile (req: Request, res: Response): Promise<void> {
   const log = new Logger('editProfile')
   const newConfig: AMTConfiguration = req.body
-  newConfig.tenantId = req.tenantId
+  const tenantId = req.tenantId || ''
   try {
-    const oldConfig: AMTConfiguration = await req.db.profiles.getByName(newConfig.profileName, req.tenantId)
+    const oldConfig: AMTConfiguration = await req.db.profiles.getByName(newConfig.profileName, tenantId)
 
     if (oldConfig == null) {
       throw new RPSError(NOT_FOUND_MESSAGE('AMT', newConfig.profileName), NOT_FOUND_EXCEPTION)
     } else {
       let amtConfig: AMTConfiguration = await getUpdatedData(newConfig, oldConfig)
-      amtConfig.wifiConfigs = await handleWifiConfigs(newConfig, oldConfig, req.db.profileWirelessConfigs)
+      amtConfig.wifiConfigs = await handleWifiConfigs(newConfig, oldConfig, req.db.profileWirelessConfigs, tenantId)
       // Assigning value key value for AMT Random Password and MEBx Random Password to store in database
       const amtPwdBefore = amtConfig.amtPassword
       const mebxPwdBefore = amtConfig.mebxPassword
@@ -130,12 +130,12 @@ export const handleGenerateRandomMEBxPassword = (amtConfig: AMTConfiguration, ne
   return amtConfig
 }
 
-export const handleWifiConfigs = async (newConfig: AMTConfiguration, oldConfig: AMTConfiguration, profileWifiConfigsDb: IProfilesWifiConfigsTable): Promise<ProfileWifiConfigs[]> => {
+export const handleWifiConfigs = async (newConfig: AMTConfiguration, oldConfig: AMTConfiguration, profileWifiConfigsDb: IProfilesWifiConfigsTable, tenantId: string): Promise<ProfileWifiConfigs[]> => {
   let wifiConfigs: ProfileWifiConfigs[] = null
   if (oldConfig.dhcpEnabled && !newConfig.dhcpEnabled) {
-    await profileWifiConfigsDb.deleteProfileWifiConfigs(newConfig.profileName, newConfig.tenantId)
+    await profileWifiConfigsDb.deleteProfileWifiConfigs(newConfig.profileName, tenantId)
   } else if ((oldConfig.dhcpEnabled && newConfig.dhcpEnabled) || (!oldConfig.dhcpEnabled && newConfig.dhcpEnabled)) {
-    await profileWifiConfigsDb.deleteProfileWifiConfigs(newConfig.profileName, newConfig.tenantId)
+    await profileWifiConfigsDb.deleteProfileWifiConfigs(newConfig.profileName, tenantId)
     wifiConfigs = newConfig.wifiConfigs
   }
   return wifiConfigs

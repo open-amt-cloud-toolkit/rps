@@ -14,12 +14,14 @@ import { RPSError } from '../../../utils/RPSError'
 export async function deleteProfile (req: Request, res: Response): Promise<void> {
   const log = new Logger('deleteProfile')
   const { profileName } = req.params
+  const tenantId = req.tenantId || ''
+
   try {
-    const profile: AMTConfiguration = await req.db.profiles.getByName(profileName, req.tenantId)
+    const profile: AMTConfiguration = await req.db.profiles.getByName(profileName, tenantId)
     if (profile == null) {
       throw new RPSError(NOT_FOUND_MESSAGE('AMT', profileName), NOT_FOUND_EXCEPTION)
     } else {
-      const results: boolean = await req.db.profiles.delete(profileName, req.tenantId)
+      const results: boolean = await req.db.profiles.delete(profileName, tenantId)
       if (results) {
         if (req.secretsManager) {
           if (!profile.generateRandomPassword || !profile.generateRandomMEBxPassword) {

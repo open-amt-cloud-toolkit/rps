@@ -14,6 +14,7 @@ describe('ciraconfig tests', () => {
   let querySpy: jest.SpyInstance
   let ciraConfig: CIRAConfig
   const configName = 'configName'
+  const tenantId = 'tenantId'
 
   beforeEach(() => {
     ciraConfig = {
@@ -74,7 +75,7 @@ describe('ciraconfig tests', () => {
 
     test('should get a ciraconfig by hostname when exist', async () => {
       querySpy.mockResolvedValueOnce({ rows: [ciraConfig], command: '', fields: null, rowCount: 1, oid: 0 })
-      const result: CIRAConfig = await ciraConfigTable.getByName(configName)
+      const result: CIRAConfig = await ciraConfigTable.getByName(configName, tenantId)
       expect(result).toBe(ciraConfig)
       expect(querySpy).toBeCalledTimes(1)
       expect(querySpy).toBeCalledWith(`
