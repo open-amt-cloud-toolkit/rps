@@ -64,7 +64,7 @@ export class ProfilesWifiConfigsTable implements IProfilesWifiConfigsTable {
   * @param {string} profileName
   * @returns {boolean} Return true on successful deletion
   */
-  async deleteProfileWifiConfigs (profileName: string, tenantId: string = ''): Promise<boolean> {
+  async deleteProfileWifiConfigs (profileName: string, tenantId: string): Promise<boolean> {
     const deleteProfileWifiResults = await this.db.query(`
     DELETE
     FROM profiles_wirelessconfigs

@@ -14,6 +14,7 @@ describe('profilewificonfig tests', () => {
   let querySpy: jest.SpyInstance
   const wifiConfigs: ProfileWifiConfigs[] = [{ profileName: 'wirelessConfig', priority: 1 } as any]
   const profileName = 'profileName'
+  const tenantId = 'tenantId'
 
   beforeEach(() => {
     db = new PostgresDb('')
@@ -41,13 +42,13 @@ describe('profilewificonfig tests', () => {
   describe('Delete', () => {
     test('should Delete', async () => {
       querySpy.mockResolvedValueOnce({ rows: [{ }], rowCount: 1 })
-      const result = await profilesWifiConfigsTable.deleteProfileWifiConfigs(profileName)
+      const result = await profilesWifiConfigsTable.deleteProfileWifiConfigs(profileName, tenantId)
       expect(result).toBe(true)
       expect(querySpy).toBeCalledTimes(1)
       expect(querySpy).toBeCalledWith(`
     DELETE
     FROM profiles_wirelessconfigs
-    WHERE profile_name = $1 and tenant_id = $2`, [profileName, ''])
+    WHERE profile_name = $1 and tenant_id = $2`, [profileName, tenantId])
     })
   })
   describe('Insert', () => {
