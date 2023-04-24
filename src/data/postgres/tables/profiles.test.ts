@@ -199,7 +199,7 @@ describe('profiles tests', () => {
 
       expect(result).toBe(amtConfig)
       expect(profileWirelessConfigsSpy).toHaveBeenCalledWith(amtConfig.wifiConfigs, amtConfig.profileName, amtConfig.tenantId)
-      expect(getByNameSpy).toHaveBeenCalledWith(amtConfig.profileName, amtConfig.tenantId)
+      expect(getByNameSpy).toHaveBeenCalledWith(amtConfig.profileName)
       expect(querySpy).toBeCalledTimes(1)
       expect(querySpy).toBeCalledWith(`
         INSERT INTO profiles(
@@ -240,7 +240,7 @@ describe('profiles tests', () => {
 
       expect(result).toBe(amtConfig)
       expect(profileWirelessConfigsSpy).not.toHaveBeenCalledWith(amtConfig.wifiConfigs, amtConfig.profileName, amtConfig.tenantId)
-      expect(getByNameSpy).toHaveBeenCalledWith(amtConfig.profileName, amtConfig.tenantId)
+      expect(getByNameSpy).toHaveBeenCalledWith(amtConfig.profileName)
       expect(querySpy).toBeCalledTimes(1)
       expect(querySpy).toBeCalledWith(`
         INSERT INTO profiles(

@@ -93,7 +93,7 @@ describe('ciraconfig tests', () => {
       tenant_id as "tenantId",
       xmin as "version"
     FROM ciraconfigs 
-    WHERE cira_config_name = $1 and tenant_id = $2`, [configName, ''])
+    WHERE cira_config_name = $1 and tenant_id = $2`, [configName, tenantId])
     })
   })
   describe('Insert', () => {
