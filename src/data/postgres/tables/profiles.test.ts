@@ -15,6 +15,7 @@ describe('profiles tests', () => {
   let querySpy: jest.SpyInstance
   let amtConfig: AMTConfiguration
   const profileName = 'profileName'
+  const tenantId = 'tenantId'
   beforeEach(() => {
     amtConfig = {
       profileName: 'profileName',
@@ -164,20 +165,20 @@ describe('profiles tests', () => {
       querySpy.mockResolvedValueOnce({ rows: [], rowCount: 1 })
       const wirelessConfigSpy = jest.spyOn(db.profileWirelessConfigs, 'deleteProfileWifiConfigs')
       wirelessConfigSpy.mockResolvedValue(true)
-      const result = await profilesTable.delete(profileName)
+      const result = await profilesTable.delete(profileName, tenantId)
       expect(result).toBeTruthy()
-      expect(wirelessConfigSpy).toHaveBeenLastCalledWith(profileName)
+      expect(wirelessConfigSpy).toHaveBeenLastCalledWith(profileName, tenantId)
       expect(querySpy).toBeCalledTimes(1)
       expect(querySpy).toBeCalledWith(`
       DELETE 
       FROM profiles 
-      WHERE profile_name = $1 and tenant_id = $2`, [profileName, ''])
+      WHERE profile_name = $1 and tenant_id = $2`, [profileName, tenantId])
     })
     test('should NOT delete', async () => {
       querySpy.mockResolvedValueOnce({ rows: [], rowCount: 0 })
       const wirelessConfigSpy = jest.spyOn(db.profileWirelessConfigs, 'deleteProfileWifiConfigs')
       wirelessConfigSpy.mockResolvedValue(false)
-      const result = await profilesTable.delete(profileName)
+      const result = await profilesTable.delete(profileName, tenantId)
       expect(result).toBe(false)
     })
   })
