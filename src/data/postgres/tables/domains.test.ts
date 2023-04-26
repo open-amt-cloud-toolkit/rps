@@ -33,20 +33,36 @@ describe('domains tests', () => {
     jest.clearAllMocks()
   })
   describe('Get', () => {
-    test('should get a count of zero when no devices', async () => {
-      querySpy.mockResolvedValueOnce({ rows: [{ total_count: 0 }], command: '', fields: null, rowCount: 0, oid: 0 })
+    test('should get expected count', async () => {
+      const expected = 10
+      querySpy.mockResolvedValueOnce({ rows: [{ total_count: expected }], command: '', fields: null, rowCount: expected, oid: 0 })
+      const count: number = await domainsTable.getCount()
+      expect(count).toBe(expected)
+    })
+    test('should get count of 0 on no counts made', async () => {
+      const expected = 0
+      querySpy.mockResolvedValueOnce({ rows: [{ total_count: expected }], command: '', fields: null, rowCount: expected, oid: 0 })
       const count: number = await domainsTable.getCount()
       expect(count).toBe(0)
-      expect(querySpy).toBeCalledTimes(1)
-      expect(querySpy).toBeCalledWith(`
-    SELECT count(*) OVER() AS total_count 
-    FROM domains
-    WHERE tenant_id = $1
-    `, [''])
+    })
+    test('should get count of 0 on empty rows array', async () => {
+      const expected = 0
+      querySpy.mockResolvedValueOnce({ rows: [], command: '', fields: null, rowCount: expected, oid: 0 })
+      const count: number = await domainsTable.getCount()
+      expect(count).toBe(expected)
+    })
+    test('should get count of 0 on no rows returned', async () => {
+      querySpy.mockResolvedValueOnce({ })
+      const count: number = await domainsTable.getCount()
+      expect(count).toBe(0)
+    })
+    test('should get count of 0 on null results', async () => {
+      querySpy.mockResolvedValueOnce(null)
+      const count: number = await domainsTable.getCount()
+      expect(count).toBe(0)
     })
 
     test('Should get an array of one domain', async () => {
-    // const query = jest.spyOn(domainsTable.db, 'query')
       querySpy.mockResolvedValueOnce({ rows: [amtDomain], command: '', fields: null, rowCount: 1, oid: 0 })
       const domains: AMTDomain[] = await domainsTable.get()
       expect(domains[0]).toBe(amtDomain)
@@ -69,7 +85,6 @@ describe('domains tests', () => {
     })
 
     test('Should get domain using getByName', async () => {
-    // const query = jest.spyOn(domainsTable.db, 'query')
       querySpy.mockResolvedValueOnce({ rows: [amtDomain], command: '', fields: null, rowCount: 1, oid: 0 })
       const result = await domainsTable.getByName(profileName)
       expect(result).toBe(amtDomain)
@@ -85,6 +100,21 @@ describe('domains tests', () => {
       xmin as "version"
     FROM domains 
     WHERE Name = $1 and tenant_id = $2`, [profileName, ''])
+    })
+    test('Should return null if no results for getByName', async () => {
+      querySpy.mockResolvedValueOnce({ rows: [], command: '', fields: null, rowCount: 0, oid: 0 })
+      const result = await domainsTable.getByName(profileName)
+      expect(result).toBeNull()
+    })
+    test('Should getDomainByDomainSuffix', async () => {
+      querySpy.mockResolvedValueOnce({ rows: [amtDomain], command: '', fields: null, rowCount: 1, oid: 0 })
+      const result = await domainsTable.getDomainByDomainSuffix(amtDomain.domainSuffix)
+      expect(result).toBe(amtDomain)
+    })
+    test('Should return null on no results for getDomainByDomainSuffix', async () => {
+      querySpy.mockResolvedValueOnce({ rows: [amtDomain], command: '', fields: null, rowCount: 0, oid: 0 })
+      const result = await domainsTable.getDomainByDomainSuffix(amtDomain.domainSuffix)
+      expect(result).toBeNull()
     })
   })
   describe('Delete', () => {

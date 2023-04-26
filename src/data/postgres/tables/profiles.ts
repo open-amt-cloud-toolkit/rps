@@ -10,6 +10,7 @@ import { PROFILE_INSERTION_FAILED_DUPLICATE, PROFILE_INSERTION_CIRA_CONSTRAINT, 
 import Logger from '../../../Logger'
 import { RPSError } from '../../../utils/RPSError'
 import type PostgresDb from '..'
+import { PostgresErr } from '../errors'
 
 export class ProfilesTable implements IProfilesTable {
   db: PostgresDb
@@ -220,10 +221,10 @@ export class ProfilesTable implements IProfilesTable {
       if (error instanceof RPSError) {
         throw error
       }
-      if (error.code === '23505') { // Unique key violation
+      if (error.code === PostgresErr.C23_UNIQUE_VIOLATION) {
         throw new RPSError(PROFILE_INSERTION_FAILED_DUPLICATE(amtConfig.profileName), 'Unique key violation')
       }
-      if (error.code === '23503') { // Unique key violation
+      if (error.code === PostgresErr.C23_FOREIGN_KEY_VIOLATION) {
         throw new RPSError(PROFILE_INSERTION_GENERIC_CONSTRAINT(amtConfig.ciraConfigName), `Foreign key constraint violation: ${error.message}`)
       }
       throw new RPSError(API_UNEXPECTED_EXCEPTION(amtConfig.profileName))
@@ -274,7 +275,7 @@ export class ProfilesTable implements IProfilesTable {
       latestItem = await this.getByName(amtConfig.profileName, amtConfig.tenantId)
     } catch (error) {
       this.log.error(`Failed to update AMT profile: ${amtConfig.profileName}`, error)
-      if (error.code === '23503') { // Foreign key constraint violation
+      if (error.code === PostgresErr.C23_FOREIGN_KEY_VIOLATION) {
         if (error.message.includes('profiles_cira_config_name_fkey')) {
           throw new RPSError(PROFILE_INSERTION_CIRA_CONSTRAINT(amtConfig.ciraConfigName), 'Foreign key constraint violation')
         }

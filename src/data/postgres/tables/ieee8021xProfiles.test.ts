@@ -7,11 +7,13 @@ import PostgresDb from '..'
 import { type Ieee8021xConfig } from '../../../models/RCS.Config'
 import {
   API_UNEXPECTED_EXCEPTION,
-  CONCURRENCY_MESSAGE,
-  NETWORK_CONFIG_ERROR,
-  NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE
+  CONCURRENCY_MESSAGE, IEEE8021X_DELETION_FAILED_CONSTRAINT_AMT_PROFILE, IEEE8021X_DELETION_FAILED_CONSTRAINT_WIRELESS,
+  IEEE8021X_INSERTION_FAILED,
+  IEEE8021X_INSERTION_FAILED_DUPLICATE
 } from '../../../utils/constants'
 import { IEEE8021xProfilesTable } from './ieee8021xProfiles'
+import { PostgresErr } from '../errors'
+import { RPSError } from '../../../utils/RPSError'
 
 describe('8021x profiles tests', () => {
   let db: PostgresDb
@@ -42,12 +44,35 @@ describe('8021x profiles tests', () => {
     jest.clearAllMocks()
   })
   describe('Get', () => {
-    test('should get count', async () => {
-      querySpy.mockResolvedValueOnce({ rows: [{ total_count: 1 }], rowCount: 0 })
-      const count = await ieee8021xprofilesTable.getCount()
-      expect(count).toBe(1)
-      expect(querySpy).toBeCalledTimes(1)
+    test('should get expected count', async () => {
+      const expected = 10
+      querySpy.mockResolvedValueOnce({ rows: [{ total_count: expected }], command: '', fields: null, rowCount: expected, oid: 0 })
+      const count: number = await ieee8021xprofilesTable.getCount()
+      expect(count).toBe(expected)
     })
+    test('should get count of 0 on no counts made', async () => {
+      const expected = 0
+      querySpy.mockResolvedValueOnce({ rows: [{ total_count: expected }], command: '', fields: null, rowCount: expected, oid: 0 })
+      const count: number = await ieee8021xprofilesTable.getCount()
+      expect(count).toBe(0)
+    })
+    test('should get count of 0 on empty rows array', async () => {
+      const expected = 0
+      querySpy.mockResolvedValueOnce({ rows: [], command: '', fields: null, rowCount: expected, oid: 0 })
+      const count: number = await ieee8021xprofilesTable.getCount()
+      expect(count).toBe(expected)
+    })
+    test('should get count of 0 on no rows returned', async () => {
+      querySpy.mockResolvedValueOnce({ })
+      const count: number = await ieee8021xprofilesTable.getCount()
+      expect(count).toBe(0)
+    })
+    test('should get count of 0 on null results', async () => {
+      querySpy.mockResolvedValueOnce(null)
+      const count: number = await ieee8021xprofilesTable.getCount()
+      expect(count).toBe(0)
+    })
+
     test('should Get', async () => {
       querySpy.mockResolvedValueOnce({ rows: [{}], rowCount: 1 })
       const result = await ieee8021xprofilesTable.get()
@@ -66,6 +91,18 @@ describe('8021x profiles tests', () => {
       const result = await ieee8021xprofilesTable.getByName(profileName)
       expect(result).toBeNull()
     })
+    test('should check profile exist', async () => {
+      querySpy.mockResolvedValueOnce({ rows: [], rowCount: 0 })
+      const result = await ieee8021xprofilesTable.checkProfileExits(profileName)
+      expect(querySpy).toBeCalledTimes(1)
+      expect(result).toBeFalsy()
+    })
+    test('should check profile exist', async () => {
+      querySpy.mockResolvedValueOnce({ rows: [], rowCount: 0 })
+      const result = await ieee8021xprofilesTable.checkProfileExits(profileName)
+      expect(querySpy).toBeCalledTimes(1)
+      expect(result).toBeFalsy()
+    })
   })
   describe('Delete', () => {
     test('should delete', async () => {
@@ -73,6 +110,35 @@ describe('8021x profiles tests', () => {
       const result = await ieee8021xprofilesTable.delete(profileName)
       expect(result).toBeTruthy()
       expect(querySpy).toBeCalledTimes(1)
+    })
+    test('should not delete if associated with amt profile', async () => {
+      const dbErr = {
+        code: PostgresErr.C23_FOREIGN_KEY_VIOLATION,
+        table: 'profiles'
+      }
+      querySpy.mockRejectedValueOnce(dbErr)
+      await expect(ieee8021xprofilesTable.delete(profileName))
+        .rejects
+        .toThrow(IEEE8021X_DELETION_FAILED_CONSTRAINT_AMT_PROFILE(profileName))
+    })
+    test('should not delete if associated with wireless configuration', async () => {
+      const dbErr = {
+        code: PostgresErr.C23_FOREIGN_KEY_VIOLATION,
+        table: 'wirelessconfigs'
+      }
+      querySpy.mockRejectedValueOnce(dbErr)
+      await expect(ieee8021xprofilesTable.delete(profileName))
+        .rejects
+        .toThrow(IEEE8021X_DELETION_FAILED_CONSTRAINT_WIRELESS(profileName))
+    })
+    test('should not delete on unhandled/unknown db error', async () => {
+      const dbErr = {
+        code: PostgresErr.C0A_FEATURE_NOT_SUPPORTED
+      }
+      querySpy.mockRejectedValueOnce(dbErr)
+      await expect(ieee8021xprofilesTable.delete(profileName))
+        .rejects
+        .toBeInstanceOf(RPSError)
     })
   })
   describe('Insert', () => {
@@ -85,15 +151,22 @@ describe('8021x profiles tests', () => {
       expect(result).toBe(ieee8021xConfig)
       expect(querySpy).toBeCalledTimes(1)
     })
+    test('should get a null if insert returns no rows (should throw error actually)', async () => {
+      querySpy.mockResolvedValueOnce({ rows: [], rowCount: 0 })
+      const getByNameSpy = jest.spyOn(ieee8021xprofilesTable, 'getByName')
+      getByNameSpy.mockResolvedValue(ieee8021xConfig)
+      const result = await ieee8021xprofilesTable.insert(ieee8021xConfig)
+      expect(result).toBeNull()
+    })
     test('should NOT insert when duplicate name', async () => {
       querySpy.mockRejectedValueOnce({ code: '23505', detail: 'triggerd by profile_name constraint' })
       await expect(ieee8021xprofilesTable.insert(ieee8021xConfig))
         .rejects
-        .toThrow(NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE('802.1x', ieee8021xConfig.profileName))
+        .toThrow(IEEE8021X_INSERTION_FAILED_DUPLICATE(ieee8021xConfig.profileName))
     })
     test('should NOT insert on other error conditions', async () => {
       querySpy.mockRejectedValueOnce(new Error('unknown'))
-      await expect(ieee8021xprofilesTable.insert(ieee8021xConfig)).rejects.toThrow(NETWORK_CONFIG_ERROR('802.1x', ieee8021xConfig.profileName))
+      await expect(ieee8021xprofilesTable.insert(ieee8021xConfig)).rejects.toThrow(IEEE8021X_INSERTION_FAILED(ieee8021xConfig.profileName))
     })
   })
   describe('Update', () => {

@@ -11877,7 +11877,7 @@
 									"    var jsonData = pm.response.json();\r",
 									"    var profile = pm.environment.get(\"ieee8021xProfileWired\")\r",
 									"    pm.expect(jsonData.error).to.eql(\"Unique key violation\");\r",
-									"    pm.expect(jsonData.message).to.eql(\"802.1x profile \" + profile + \" already exists\");\r",
+									"    pm.expect(jsonData.message).to.eql(\"802.1x config: \" + profile + \" already exists\");\r",
 									"});"
 								],
 								"type": "text/javascript"
