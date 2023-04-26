@@ -289,7 +289,7 @@
 									"pm.test(\"Creation should fail when payload doesn't contain suffix\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Domain suffix name is required\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"domainSuffix\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"domainSuffix\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -339,7 +339,7 @@
 									"pm.test(\"Creation should fail when payload doesn't contain password\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Provisioning Cert Password is required\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"provisioningCertPassword\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"provisioningCertPassword\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -389,7 +389,7 @@
 									"pm.test(\"Creation should fail when password length greater than 64\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Password should not exceed 64 characters in length\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"provisioningCertPassword\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"provisioningCertPassword\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -439,10 +439,10 @@
 									"pm.test(\"Creation should fail when certificate doesn't exist\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Unable to decrypt provisioning certificate. Please check that the password is correct, and that the certificate is a valid certificate.\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"provisioningCertPassword\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"provisioningCertPassword\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"    pm.expect(result.errors[1].msg).to.eql(\"Provisioning certificate is required\")\r",
-									"    pm.expect(result.errors[1].param).to.eql(\"provisioningCert\")\r",
+									"    pm.expect(result.errors[1].path).to.eql(\"provisioningCert\")\r",
 									"    pm.expect(result.errors[1].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -492,11 +492,11 @@
 									"pm.test(\"Creation should fail when cert storage format doesn't exist\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Provisioning Cert Storage Format is required\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"provisioningCertStorageFormat\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"provisioningCertStorageFormat\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"\r",
 									"     pm.expect(result.errors[1].msg).to.eql(\"Provisioning Cert Storage Format should be either 'raw' or 'string'\")\r",
-									"    pm.expect(result.errors[1].param).to.eql(\"provisioningCertStorageFormat\")\r",
+									"    pm.expect(result.errors[1].path).to.eql(\"provisioningCertStorageFormat\")\r",
 									"    pm.expect(result.errors[1].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -546,7 +546,7 @@
 									"pm.test(\"Creation should fail when storage format is invalid\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Provisioning Cert Storage Format should be either \\'raw\\' or \\'string\\'\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"provisioningCertStorageFormat\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"provisioningCertStorageFormat\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -854,13 +854,13 @@
 									"\r",
 									"pm.test(\"Request should fail with invalid query string\", function () {\r",
 									"    var errors = pm.response.json().errors;\r",
-									"    pm.expect(errors[0].param).to.equal('$top');\r",
+									"    pm.expect(errors[0].path).to.equal('$top');\r",
 									"    pm.expect(errors[0].msg).to.equal('The number of items to return should be a positive integer');\r",
 									"\r",
-									"    pm.expect(errors[1].param).to.equal('$skip');\r",
+									"    pm.expect(errors[1].path).to.equal('$skip');\r",
 									"    pm.expect(errors[1].msg).to.equal('The number of items to skip before starting to collect the result set should be a positive integer');\r",
 									"    \r",
-									"    pm.expect(errors[2].param).to.equal('$count');\r",
+									"    pm.expect(errors[2].path).to.equal('$count');\r",
 									"    pm.expect(errors[2].msg).to.equal('To return total number of records in result set should be boolean');\r",
 									"});"
 								],
@@ -1292,7 +1292,7 @@
 									"pm.test(\"Updaste should fail when password length greater than 64\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Password should not exceed 64 characters in length\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"provisioningCertPassword\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"provisioningCertPassword\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -1787,7 +1787,7 @@
 									"pm.test(\"Creation should fail when payload doesn't contain mps cert\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"MPS public root certificate is required\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"mpsRootCertificate\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"mpsRootCertificate\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -1837,11 +1837,11 @@
 									"pm.test(\"Creation should fail when payload doesn't contain mps port\", function () {\r",
 									"     var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"MPS port is required\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"mpsPort\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"mpsPort\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"\r",
 									"    pm.expect(result.errors[1].msg).to.eql(\"MPS Port value should range between 1024 and 49151\")\r",
-									"    pm.expect(result.errors[1].param).to.eql(\"mpsPort\")\r",
+									"    pm.expect(result.errors[1].path).to.eql(\"mpsPort\")\r",
 									"    pm.expect(result.errors[1].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -1891,7 +1891,7 @@
 									"pm.test(\"Creation should fail when mps port is invalid\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"MPS Port value should range between 1024 and 49151\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"mpsPort\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"mpsPort\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -1941,7 +1941,7 @@
 									"pm.test(\"Creation should fail when mps port is invalid\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"MPS Port value should range between 1024 and 49151\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"mpsPort\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"mpsPort\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -1991,7 +1991,7 @@
 									"pm.test(\"Creation should fail when mps port is invalid\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"MPS Port value should range between 1024 and 49151\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"mpsPort\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"mpsPort\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -2041,7 +2041,7 @@
 									"pm.test(\"Creation should fail when payload doesn't conatain mps server address\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"MPS server address is required\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"mpsServerAddress\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"mpsServerAddress\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -2091,7 +2091,7 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"MPS user name should be alphanumeric\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"username\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"username\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -2141,7 +2141,7 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"MPS user name should be alphanumeric\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"username\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"username\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -2247,15 +2247,15 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"MPS user name is required\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"username\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"username\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"\r",
 									"    pm.expect(result.errors[1].msg).to.eql(\"MPS user name should be alphanumeric\")\r",
-									"    pm.expect(result.errors[1].param).to.eql(\"username\")\r",
+									"    pm.expect(result.errors[1].path).to.eql(\"username\")\r",
 									"    pm.expect(result.errors[1].location).to.eql(\"body\")\r",
 									"\r",
 									"    pm.expect(result.errors[2].msg).to.eql(\"MPS user name length should be in between 5 to 16\")\r",
-									"    pm.expect(result.errors[2].param).to.eql(\"username\")\r",
+									"    pm.expect(result.errors[2].path).to.eql(\"username\")\r",
 									"    pm.expect(result.errors[2].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -2305,11 +2305,11 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"MPS server address format is required\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"serverAddressFormat\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"serverAddressFormat\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"\r",
 									"    pm.expect(result.errors[1].msg).to.eql(\"MPS server address format should be either 3(IPV4) , 4(IPV6) or 201(FQDN)\")\r",
-									"    pm.expect(result.errors[1].param).to.eql(\"serverAddressFormat\")\r",
+									"    pm.expect(result.errors[1].path).to.eql(\"serverAddressFormat\")\r",
 									"    pm.expect(result.errors[1].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -2359,7 +2359,7 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"serverAddressFormat 4 requires IPV6 server address\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"mpsServerAddress\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"mpsServerAddress\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -2409,7 +2409,7 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"MPS server address format should be either 3(IPV4) , 4(IPV6) or 201(FQDN)\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"serverAddressFormat\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"serverAddressFormat\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -2459,7 +2459,7 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"MPS server address format should be either 3(IPV4) , 4(IPV6) or 201(FQDN)\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"serverAddressFormat\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"serverAddressFormat\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -2509,11 +2509,11 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Authentication method is required\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"authMethod\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"authMethod\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"\r",
 									"    pm.expect(result.errors[1].msg).to.eql(\"Authentication method should be either 1 (Mutual Auth) or 2 (username and password)\")\r",
-									"    pm.expect(result.errors[1].param).to.eql(\"authMethod\")\r",
+									"    pm.expect(result.errors[1].path).to.eql(\"authMethod\")\r",
 									"    pm.expect(result.errors[1].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -2563,7 +2563,7 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Authentication method should be either 1 (Mutual Auth) or 2 (username and password)\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"authMethod\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"authMethod\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -2613,7 +2613,7 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Authentication method should be either 1 (Mutual Auth) or 2 (username and password)\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"authMethod\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"authMethod\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -2944,11 +2944,11 @@
 									"\r",
 									"pm.test(\"Request should fail with invalid query string\", function () {\r",
 									"    var errors = pm.response.json().errors;\r",
-									"    pm.expect(errors[0].param).to.equal('$top');\r",
+									"    pm.expect(errors[0].path).to.equal('$top');\r",
 									"    pm.expect(errors[0].msg).to.equal('The number of items to return should be a positive integer');\r",
-									"    pm.expect(errors[1].param).to.equal('$skip');\r",
+									"    pm.expect(errors[1].path).to.equal('$skip');\r",
 									"    pm.expect(errors[1].msg).to.equal('The number of items to skip before starting to collect the result set should be a positive integer');\r",
-									"    pm.expect(errors[2].param).to.equal('$count');\r",
+									"    pm.expect(errors[2].path).to.equal('$count');\r",
 									"    pm.expect(errors[2].msg).to.equal('To return total number of records in result set should be boolean');\r",
 									"});"
 								],
@@ -3305,7 +3305,7 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"serverAddressFormat is required\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"mpsServerAddress\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"mpsServerAddress\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -3355,7 +3355,7 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"commonName is required when serverAddressFormat is 3\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"mpsServerAddress\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"mpsServerAddress\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -3405,7 +3405,7 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"serverAddressFormat and mpsServerAddress is required\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"commonName\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"commonName\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -3455,7 +3455,7 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"MPS Port value should range between 1024 and 49151\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"mpsPort\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"mpsPort\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -3505,7 +3505,7 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"MPS Port value should range between 1024 and 49151\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"mpsPort\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"mpsPort\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -3555,7 +3555,7 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"MPS Port value should range between 1024 and 49151\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"mpsPort\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"mpsPort\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -3606,7 +3606,7 @@
 									"pm.test(\"Creation should fail\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"MPS user name should be alphanumeric\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"username\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"username\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -4220,11 +4220,11 @@
 									"pm.test(\"Creation should fail without activation\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Activation is required\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"activation\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"activation\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"\r",
 									"    pm.expect(result.errors[1].msg).to.eql(\"Activation accepts either acmactivate (admin control activation) or ccmactivate (client control mode activation)\")\r",
-									"    pm.expect(result.errors[1].param).to.eql(\"activation\")\r",
+									"    pm.expect(result.errors[1].path).to.eql(\"activation\")\r",
 									"    pm.expect(result.errors[1].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -4281,7 +4281,7 @@
 									"pm.test(\"Creation should fail when activation is inavlid\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Activation accepts either acmactivate (admin control activation) or ccmactivate (client control mode activation)\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"activation\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"activation\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -4332,11 +4332,11 @@
 									"pm.test(\"Creation should fail when activation is valid\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Either generateRandomPassword should be enabled or provide amtPassword\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"activation\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"activation\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"\r",
 									"    pm.expect(result.errors[1].msg).to.eql(\"If generate random AMT password is disabled, amtPassword is mandatory\")\r",
-									"    pm.expect(result.errors[1].param).to.eql(\"generateRandomPassword\")\r",
+									"    pm.expect(result.errors[1].path).to.eql(\"generateRandomPassword\")\r",
 									"    pm.expect(result.errors[1].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -4388,7 +4388,7 @@
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].value).to.eql(true)\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Either generate Random AMT Password should be enabled or should provide AMT Password but not both\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"generateRandomPassword\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"generateRandomPassword\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -4439,7 +4439,7 @@
 									"pm.test(\"Creation should fail when payload contains invalid amtPassword\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"AMT password is required field should contains at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"amtPassword\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"amtPassword\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -4490,7 +4490,7 @@
 									"pm.test(\"Creation should fail when payload contains acmactivate but no mebxPassword\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"MEBx Password is required for acmactivate\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"activation\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"activation\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -4541,7 +4541,7 @@
 									"pm.test(\"Creation should fail when mebxPassword is invalid\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"MEBx password is required field should contains at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"mebxPassword\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"mebxPassword\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -4599,7 +4599,7 @@
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].value).to.equal(\"BogusCA\")\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"TLS Signing Authority must be one of SelfSigned,MicrosoftCA\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"tlsSigningAuthority\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"tlsSigningAuthority\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -4801,7 +4801,7 @@
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].value).to.equal(\"ciraconfig3\")\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"CIRA cannot be configured if TLS is enabled\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"ciraConfigName\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"ciraConfigName\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -4985,15 +4985,15 @@
 									"pm.test(\"Creation should fail with invalid kvm options\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"User consent must be one of None,All,KVM\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"userConsent\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"userConsent\")\r",
 									"    pm.expect(result.errors[1].msg).to.eql(\"User consent is required for all the actions in client control mode\")\r",
-									"    pm.expect(result.errors[1].param).to.eql(\"userConsent\")\r",
+									"    pm.expect(result.errors[1].path).to.eql(\"userConsent\")\r",
 									"    pm.expect(result.errors[2].msg).to.eql(\"IDER enabled must be a boolean\")\r",
-									"    pm.expect(result.errors[2].param).to.eql(\"iderEnabled\")\r",
+									"    pm.expect(result.errors[2].path).to.eql(\"iderEnabled\")\r",
 									"    pm.expect(result.errors[3].msg).to.eql(\"KVM enabled must be a boolean\")\r",
-									"    pm.expect(result.errors[3].param).to.eql(\"kvmEnabled\")\r",
+									"    pm.expect(result.errors[3].path).to.eql(\"kvmEnabled\")\r",
 									"    pm.expect(result.errors[4].msg).to.eql(\"Serial Over Lan (sol) enabled must be a boolean\")\r",
-									"    pm.expect(result.errors[4].param).to.eql(\"solEnabled\")\r",
+									"    pm.expect(result.errors[4].path).to.eql(\"solEnabled\")\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -5109,7 +5109,7 @@
 									"pm.test(\"Creation should fail when tlsMode is invalid\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"tlsMode must be set to one of these values: 1 (Server Authentication Only), 2 (Server and Non-TLS Authentication), 3 (Mutual TLS only), 4 (Mutual and Non-TLS authentication)\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"tlsMode\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"tlsMode\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"    pm.expect(result.errors[0].value).to.eql(5)\r",
 									"});"
@@ -5349,13 +5349,13 @@
 									"\r",
 									"pm.test(\"Request should fail with invalid query string\", function () {\r",
 									"    var errors = pm.response.json().errors;\r",
-									"    pm.expect(errors[0].param).to.equal('$top');\r",
+									"    pm.expect(errors[0].path).to.equal('$top');\r",
 									"    pm.expect(errors[0].msg).to.equal('The number of items to return should be a positive integer');\r",
 									"\r",
-									"    pm.expect(errors[1].param).to.equal('$skip');\r",
+									"    pm.expect(errors[1].path).to.equal('$skip');\r",
 									"    pm.expect(errors[1].msg).to.equal('The number of items to skip before starting to collect the result set should be a positive integer');\r",
 									"    \r",
-									"    pm.expect(errors[2].param).to.equal('$count');\r",
+									"    pm.expect(errors[2].path).to.equal('$count');\r",
 									"    pm.expect(errors[2].msg).to.equal('To return total number of records in result set should be boolean');\r",
 									"});"
 								],
@@ -5578,7 +5578,7 @@
 									"pm.test(\"Update should fail when payload contains invalid activation\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Activation accepts either acmactivate (admin control activation) or ccmactivate (client control mode activation)\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"activation\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"activation\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -5629,7 +5629,7 @@
 									"pm.test(\"Creation should fail when payload contains invalid amtPassword\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"AMT password is required field should contains at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"amtPassword\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"amtPassword\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -5680,15 +5680,15 @@
 									"pm.test(\"Update (PATCH->edit) should fail with invalid kvm options\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"User consent must be one of None,All,KVM\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"userConsent\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"userConsent\")\r",
 									"    pm.expect(result.errors[1].msg).to.eql(\"User consent is required for all the actions in client control mode\")\r",
-									"    pm.expect(result.errors[1].param).to.eql(\"userConsent\")\r",
+									"    pm.expect(result.errors[1].path).to.eql(\"userConsent\")\r",
 									"    pm.expect(result.errors[2].msg).to.eql(\"IDER enabled must be a boolean\")\r",
-									"    pm.expect(result.errors[2].param).to.eql(\"iderEnabled\")\r",
+									"    pm.expect(result.errors[2].path).to.eql(\"iderEnabled\")\r",
 									"    pm.expect(result.errors[3].msg).to.eql(\"KVM enabled must be a boolean\")\r",
-									"    pm.expect(result.errors[3].param).to.eql(\"kvmEnabled\")\r",
+									"    pm.expect(result.errors[3].path).to.eql(\"kvmEnabled\")\r",
 									"    pm.expect(result.errors[4].msg).to.eql(\"Serial Over Lan (sol) enabled must be a boolean\")\r",
-									"    pm.expect(result.errors[4].param).to.eql(\"solEnabled\")\r",
+									"    pm.expect(result.errors[4].path).to.eql(\"solEnabled\")\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -5802,7 +5802,7 @@
 									"pm.test(\"Creation should fail when payload contains invalid tlsMode\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"tlsMode must be set to one of these values: 1 (Server Authentication Only), 2 (Server and Non-TLS Authentication), 3 (Mutual TLS only), 4 (Mutual and Non-TLS authentication)\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"tlsMode\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"tlsMode\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"      pm.expect(result.errors[0].value).to.eql(\"invalid\")\r",
 									"});"
@@ -5855,7 +5855,7 @@
 									"pm.test(\"Request fail\", function () {\r",
 									"     var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Either generateRandomPassword should be enabled or provide amtPassword\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"activation\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"activation\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -6213,7 +6213,7 @@
 									"});\r",
 									"pm.test(\"Update request should fail missing version info\", function () {\r",
 									"    pm.expect(jsonData.errors[0].msg).to.eql(\"Version is required to patch/update a record.\");\r",
-									"    pm.expect(jsonData.errors[0].param).to.eql(\"version\");\r",
+									"    pm.expect(jsonData.errors[0].path).to.eql(\"version\");\r",
 									"});\r",
 									""
 								],
@@ -6264,11 +6264,11 @@
 									"pm.test(\"Creation should fail when payload contains acmactivate without mebx password\", function () {\r",
 									"    var result = pm.response.json();\r",
 									"    pm.expect(result.errors[0].msg).to.eql(\"Either generateRandomPassword should be enabled or provide amtPassword\")\r",
-									"    pm.expect(result.errors[0].param).to.eql(\"activation\")\r",
+									"    pm.expect(result.errors[0].path).to.eql(\"activation\")\r",
 									"    pm.expect(result.errors[0].location).to.eql(\"body\")\r",
 									"\r",
 									"    pm.expect(result.errors[1].msg).to.eql(\"If generate random AMT password is disabled, amtPassword is mandatory\")\r",
-									"    pm.expect(result.errors[1].param).to.eql(\"generateRandomPassword\")\r",
+									"    pm.expect(result.errors[1].path).to.eql(\"generateRandomPassword\")\r",
 									"    pm.expect(result.errors[1].location).to.eql(\"body\")\r",
 									"});"
 								],
@@ -7604,7 +7604,7 @@
 											"pm.test(\"Creation should fail\", function () {\r",
 											"    var result = pm.response.json();\r",
 											"    pm.expect(result.errors[0].msg).to.eql(\"Wifi supports only DHCP in AMT\"),\r",
-											"    pm.expect(result.errors[0].param).to.eql(\"wifiConfigs\")\r",
+											"    pm.expect(result.errors[0].path).to.eql(\"wifiConfigs\")\r",
 											"});"
 										],
 										"type": "text/javascript"
@@ -7660,7 +7660,7 @@
 											"pm.test(\"Creation should fail\", function () {\r",
 											"    var result = pm.response.json();\r",
 											"    pm.expect(result.errors[0].msg).to.eql(\"wifi config priority should be an integer and between 1 and 255\"),\r",
-											"    pm.expect(result.errors[0].param).to.eql(\"wifiConfigs\")\r",
+											"    pm.expect(result.errors[0].path).to.eql(\"wifiConfigs\")\r",
 											"});"
 										],
 										"type": "text/javascript"
@@ -7716,7 +7716,7 @@
 											"pm.test(\"Creation should fail\", function () {\r",
 											"    var result = pm.response.json();\r",
 											"    pm.expect(result.errors[0].msg).to.eql(\"wifi config priority should be an integer and between 1 and 255\"),\r",
-											"    pm.expect(result.errors[0].param).to.eql(\"wifiConfigs\")\r",
+											"    pm.expect(result.errors[0].path).to.eql(\"wifiConfigs\")\r",
 											"});"
 										],
 										"type": "text/javascript"
@@ -7772,13 +7772,13 @@
 											"pm.test(\"Creation should fail\", function () {\r",
 											"    var result = pm.response.json();\r",
 											"    pm.expect(result.errors[0].msg).to.eql(\"Invalid value\"),\r",
-											"    pm.expect(result.errors[0].param).to.eql(\"dhcpEnabled\")\r",
+											"    pm.expect(result.errors[0].path).to.eql(\"dhcpEnabled\")\r",
 											"\r",
 											"    pm.expect(result.errors[1].msg).to.eql(\"DHCP enabled must be a boolean\"),\r",
-											"    pm.expect(result.errors[1].param).to.eql(\"dhcpEnabled\")\r",
+											"    pm.expect(result.errors[1].path).to.eql(\"dhcpEnabled\")\r",
 											"\r",
 											"    pm.expect(result.errors[2].msg).to.eql(\"Wifi supports only DHCP in AMT\"),\r",
-											"    pm.expect(result.errors[2].param).to.eql(\"wifiConfigs\")\r",
+											"    pm.expect(result.errors[2].path).to.eql(\"wifiConfigs\")\r",
 											"});"
 										],
 										"type": "text/javascript"
@@ -7834,7 +7834,7 @@
 											"pm.test(\"Creation should fail\", function () {\r",
 											"    var result = pm.response.json();\r",
 											"    pm.expect(result.errors[0].msg).to.eql(\"wifi configs home2,test does not exists in db\"),\r",
-											"    pm.expect(result.errors[0].param).to.eql(\"wifiConfigs\")\r",
+											"    pm.expect(result.errors[0].path).to.eql(\"wifiConfigs\")\r",
 											"});"
 										],
 										"type": "text/javascript"
@@ -8007,7 +8007,7 @@
 											"pm.test(\"Creation should fail\", function () {\r",
 											"    var result = pm.response.json();\r",
 											"    pm.expect(result.errors[0].msg).to.eql(\"wifi configs test does not exists in db\"),\r",
-											"    pm.expect(result.errors[0].param).to.eql(\"wifiConfigs\")\r",
+											"    pm.expect(result.errors[0].path).to.eql(\"wifiConfigs\")\r",
 											"});"
 										],
 										"type": "text/javascript"
@@ -8063,7 +8063,7 @@
 											"pm.test(\"Creation should fail\", function () {\r",
 											"    var result = pm.response.json();\r",
 											"    pm.expect(result.errors[0].msg).to.eql(\"Wifi supports only DHCP in AMT\"),\r",
-											"    pm.expect(result.errors[0].param).to.eql(\"wifiConfigs\")\r",
+											"    pm.expect(result.errors[0].path).to.eql(\"wifiConfigs\")\r",
 											"});"
 										],
 										"type": "text/javascript"
@@ -8119,7 +8119,7 @@
 											"pm.test(\"Creation should fail\", function () {\r",
 											"    var result = pm.response.json();\r",
 											"    pm.expect(result.errors[0].msg).to.eql(\"wifi config priority should be an integer and between 1 and 255\"),\r",
-											"    pm.expect(result.errors[0].param).to.eql(\"wifiConfigs\")\r",
+											"    pm.expect(result.errors[0].path).to.eql(\"wifiConfigs\")\r",
 											"});"
 										],
 										"type": "text/javascript"
@@ -8175,7 +8175,7 @@
 											"pm.test(\"Creation should fail\", function () {\r",
 											"    var result = pm.response.json();\r",
 											"    pm.expect(result.errors[0].msg).to.eql(\"wifi config priority should be an integer and between 1 and 255\"),\r",
-											"    pm.expect(result.errors[0].param).to.eql(\"wifiConfigs\")\r",
+											"    pm.expect(result.errors[0].path).to.eql(\"wifiConfigs\")\r",
 											"});"
 										],
 										"type": "text/javascript"
@@ -8416,7 +8416,7 @@
 											"pm.test(\"Creation should fail\", function () {\r",
 											"    var result = pm.response.json();\r",
 											"    pm.expect(result.errors[0].msg).to.eql(\"DHCP enabled should be true\");\r",
-											"    pm.expect(result.errors[0].param).to.eql(\"wifiConfigs\");\r",
+											"    pm.expect(result.errors[0].path).to.eql(\"wifiConfigs\");\r",
 											"});"
 										],
 										"type": "text/javascript"
@@ -9213,7 +9213,7 @@
 											"\r",
 											"pm.test(\"Request should return 8021x profile is for wireless interfaces\", function () {\r",
 											"    pm.expect(jsonData.errors[0].msg).to.eql(\"Ieee8021x profile \" + pm.environment.get(\"ieee8021xProfileWireless\") + \" is for wireless interfaces\");\r",
-											"    pm.expect(jsonData.errors[0].param).to.eql(\"ieee8021xProfileName\");\r",
+											"    pm.expect(jsonData.errors[0].path).to.eql(\"ieee8021xProfileName\");\r",
 											"    pm.expect(jsonData.errors[0].value).to.eql(pm.environment.get(\"ieee8021xProfileWireless\"));\r",
 											"});"
 										],
@@ -9267,7 +9267,7 @@
 											"\r",
 											"pm.test(\"Request should return 8021x profile can not be specified\", function () {\r",
 											"    pm.expect(jsonData.errors[0].msg).to.eql(\"Ieee8021x profile \" + profName + \" does not exist in db\");\r",
-											"    pm.expect(jsonData.errors[0].param).to.eql(\"ieee8021xProfileName\");\r",
+											"    pm.expect(jsonData.errors[0].path).to.eql(\"ieee8021xProfileName\");\r",
 											"    pm.expect(jsonData.errors[0].value).to.eql(profName);\r",
 											"});"
 										],
@@ -9711,7 +9711,7 @@
 											"});\r",
 											"pm.test(\"Request should return 8021x profile is required\", function () {\r",
 											"    pm.expect(jsonData.errors[0].msg).to.eql(\"ieee8021xProfileName is required\");\r",
-											"    pm.expect(jsonData.errors[0].param).to.eql(\"ieee8021xProfileName\");\r",
+											"    pm.expect(jsonData.errors[0].path).to.eql(\"ieee8021xProfileName\");\r",
 											"});"
 										],
 										"type": "text/javascript"
@@ -9762,7 +9762,7 @@
 											"});\r",
 											"pm.test(\"Request should return 8021x profile can not be specified\", function () {\r",
 											"    pm.expect(jsonData.errors[0].msg).to.eql(\"ieee8021xProfileName can not be specified with the provided authenticationMethod\");\r",
-											"    pm.expect(jsonData.errors[0].param).to.eql(\"ieee8021xProfileName\");\r",
+											"    pm.expect(jsonData.errors[0].path).to.eql(\"ieee8021xProfileName\");\r",
 											"    pm.expect(jsonData.errors[0].value).to.eql(\"errant\");\r",
 											"});"
 										],
@@ -9815,7 +9815,7 @@
 											"});\r",
 											"pm.test(\"Request should return 8021x profile can not be specified\", function () {\r",
 											"    pm.expect(jsonData.errors[0].msg).to.eql(\"Ieee8021x profile \" + profName + \" does not exist in db\");\r",
-											"    pm.expect(jsonData.errors[0].param).to.eql(\"ieee8021xProfileName\");\r",
+											"    pm.expect(jsonData.errors[0].path).to.eql(\"ieee8021xProfileName\");\r",
 											"    pm.expect(jsonData.errors[0].value).to.eql(profName);\r",
 											"});"
 										],
@@ -9867,7 +9867,7 @@
 											"});\r",
 											"pm.test(\"Request should return 8021x profile is for wired interfaces\", function () {\r",
 											"    pm.expect(jsonData.errors[0].msg).to.eql(\"Ieee8021x profile \" + pm.environment.get(\"ieee8021xProfileWired\") + \" is for wired interfaces\");\r",
-											"    pm.expect(jsonData.errors[0].param).to.eql(\"ieee8021xProfileName\");\r",
+											"    pm.expect(jsonData.errors[0].path).to.eql(\"ieee8021xProfileName\");\r",
 											"    pm.expect(jsonData.errors[0].value).to.eql(pm.environment.get(\"ieee8021xProfileWired\"));\r",
 											"});"
 										],
@@ -9975,7 +9975,7 @@
 											"});\r",
 											"pm.test(\"Request should return 8021x profile can not be specified\", function () {\r",
 											"    pm.expect(jsonData.errors[0].msg).to.eql(\"Ieee8021x profile \" + pm.environment.get(\"ieee8021xProfileWired\") + \" is for wired interfaces\");\r",
-											"    pm.expect(jsonData.errors[0].param).to.eql(\"ieee8021xProfileName\");\r",
+											"    pm.expect(jsonData.errors[0].path).to.eql(\"ieee8021xProfileName\");\r",
 											"    pm.expect(jsonData.errors[0].value).to.eql(pm.environment.get(\"ieee8021xProfileWired\"));\r",
 											"});"
 										],
@@ -10216,7 +10216,7 @@
 									"pm.test(\"Result should contain an error and message\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.errors[0].msg).to.eql(\"Authentication method must be one of 4:WPA PSK, 5:WPA IEEE 802.1x, 6:WPA2 PSK, 7:WPA2 IEEE 802.1x\");\r",
-									"    pm.expect(jsonData.errors[0].param).to.eql(\"authenticationMethod\");\r",
+									"    pm.expect(jsonData.errors[0].path).to.eql(\"authenticationMethod\");\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -10265,7 +10265,7 @@
 									"pm.test(\"Result should contain an error and message\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.errors[0].msg).to.eql(\"Encryption method must be one of 3:TKIP, 4:CCMP\");\r",
-									"    pm.expect(jsonData.errors[0].param).to.eql(\"encryptionMethod\");\r",
+									"    pm.expect(jsonData.errors[0].path).to.eql(\"encryptionMethod\");\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -10314,7 +10314,7 @@
 									"pm.test(\"Result should contain an error and message\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.errors[0].msg).to.eql(\"Maximum length is 32\");\r",
-									"    pm.expect(jsonData.errors[0].param).to.eql(\"ssid\");\r",
+									"    pm.expect(jsonData.errors[0].path).to.eql(\"ssid\");\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -10363,7 +10363,7 @@
 									"pm.test(\"Result should contain an error and message\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.errors[0].msg).to.eql(\"PSK Passphrase length should be greater than or equal to 8 and less than or equal to 63\");\r",
-									"    pm.expect(jsonData.errors[0].param).to.eql(\"pskPassphrase\");\r",
+									"    pm.expect(jsonData.errors[0].path).to.eql(\"pskPassphrase\");\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -10412,7 +10412,7 @@
 									"pm.test(\"Result should contain an error and message\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.errors[0].msg).to.eql(\"PSK Passphrase length should be greater than or equal to 8 and less than or equal to 63\");\r",
-									"    pm.expect(jsonData.errors[0].param).to.eql(\"pskPassphrase\");\r",
+									"    pm.expect(jsonData.errors[0].path).to.eql(\"pskPassphrase\");\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -10722,13 +10722,13 @@
 									"\r",
 									"pm.test(\"Request should fail with invalid query string\", function () {\r",
 									"    var errors = pm.response.json().errors;\r",
-									"    pm.expect(errors[0].param).to.equal('$top');\r",
+									"    pm.expect(errors[0].path).to.equal('$top');\r",
 									"    pm.expect(errors[0].msg).to.equal('The number of items to return should be a positive integer');\r",
 									"\r",
-									"    pm.expect(errors[1].param).to.equal('$skip');\r",
+									"    pm.expect(errors[1].path).to.equal('$skip');\r",
 									"    pm.expect(errors[1].msg).to.equal('The number of items to skip before starting to collect the result set should be a positive integer');\r",
 									"    \r",
-									"    pm.expect(errors[2].param).to.equal('$count');\r",
+									"    pm.expect(errors[2].path).to.equal('$count');\r",
 									"    pm.expect(errors[2].msg).to.equal('To return total number of records in result set should be boolean');\r",
 									"});"
 								],
@@ -10944,7 +10944,7 @@
 									"});\r",
 									"pm.test(\"Update request should fail missing version info\", function () {\r",
 									"    pm.expect(jsonData.errors[0].msg).to.eql(\"Version is required to patch/update a record.\");\r",
-									"    pm.expect(jsonData.errors[0].param).to.eql(\"version\");\r",
+									"    pm.expect(jsonData.errors[0].path).to.eql(\"version\");\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -10993,7 +10993,7 @@
 									"pm.test(\"Result should contain an error and message\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.errors[0].msg).to.eql(\"Encryption method must be one of 3:TKIP, 4:CCMP\");\r",
-									"    pm.expect(jsonData.errors[0].param).to.eql(\"encryptionMethod\");\r",
+									"    pm.expect(jsonData.errors[0].path).to.eql(\"encryptionMethod\");\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -11042,7 +11042,7 @@
 									"pm.test(\"Result should contain an error and message\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.errors[0].msg).to.eql(\"Authentication method must be one of 4:WPA PSK, 5:WPA IEEE 802.1x, 6:WPA2 PSK, 7:WPA2 IEEE 802.1x\");\r",
-									"    pm.expect(jsonData.errors[0].param).to.eql(\"authenticationMethod\");\r",
+									"    pm.expect(jsonData.errors[0].path).to.eql(\"authenticationMethod\");\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -11091,7 +11091,7 @@
 									"pm.test(\"Result should contain an error and message\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.errors[0].msg).to.eql(\"Maximum length is 32\");\r",
-									"    pm.expect(jsonData.errors[0].param).to.eql(\"ssid\");\r",
+									"    pm.expect(jsonData.errors[0].path).to.eql(\"ssid\");\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -11140,7 +11140,7 @@
 									"pm.test(\"Result should contain an error and message\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.errors[0].msg).to.eql(\"PSK Passphrase length should be greater than or equal to 8 and less than or equal to 63\");\r",
-									"    pm.expect(jsonData.errors[0].param).to.eql(\"pskPassphrase\");\r",
+									"    pm.expect(jsonData.errors[0].path).to.eql(\"pskPassphrase\");\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -11189,7 +11189,7 @@
 									"pm.test(\"Result should contain an error and message\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.errors[0].msg).to.eql(\"PSK Passphrase length should be greater than or equal to 8 and less than or equal to 63\");\r",
-									"    pm.expect(jsonData.errors[0].param).to.eql(\"pskPassphrase\");\r",
+									"    pm.expect(jsonData.errors[0].path).to.eql(\"pskPassphrase\");\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -11427,7 +11427,7 @@
 									"pm.test(\"Result should contain an error and message\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.errors[0].msg).to.eql(\"802.1x profile name is required\");\r",
-									"    pm.expect(jsonData.errors[0].param).to.eql(\"profileName\");\r",
+									"    pm.expect(jsonData.errors[0].path).to.eql(\"profileName\");\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -11476,7 +11476,7 @@
 									"pm.test(\"Result should contain an error and message\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.errors[0].msg).to.eql(\"802.1x profile name should be alphanumeric\");\r",
-									"    pm.expect(jsonData.errors[0].param).to.eql(\"profileName\");\r",
+									"    pm.expect(jsonData.errors[0].path).to.eql(\"profileName\");\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -11525,7 +11525,7 @@
 									"pm.test(\"Result should contain an error and message\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.errors[0].msg).to.eql(\"802.1x profile name maximum length is 32\");\r",
-									"    pm.expect(jsonData.errors[0].param).to.eql(\"profileName\");\r",
+									"    pm.expect(jsonData.errors[0].path).to.eql(\"profileName\");\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -11575,7 +11575,7 @@
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.errors[0].value).to.eql(2);\r",
 									"    pm.expect(jsonData.errors[0].msg).to.eql(\"Authentication protocol must be one of 0:EAP-TLS, 3:PEAPv1/EAP-GTC, 5:EAP-FAST/GTC, 10:EAP-FAST/TLS\");\r",
-									"    pm.expect(jsonData.errors[0].param).to.eql(\"authenticationProtocol\");\r",
+									"    pm.expect(jsonData.errors[0].path).to.eql(\"authenticationProtocol\");\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -11625,7 +11625,7 @@
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.errors[0].msg).to.eql(\"PXE Timeout value should be 0 - 86400\");\r",
 									"    pm.expect(jsonData.errors[0].value).to.eql(86401);\r",
-									"    pm.expect(jsonData.errors[0].param).to.eql(\"pxeTimeout\");\r",
+									"    pm.expect(jsonData.errors[0].path).to.eql(\"pxeTimeout\");\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -11723,7 +11723,7 @@
 									"pm.test(\"Result should contain an error and message\", function () {\r",
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.errors[0].msg).to.eql(\"PXE Timeout is required\");\r",
-									"    pm.expect(jsonData.errors[0].param).to.eql(\"pxeTimeout\");\r",
+									"    pm.expect(jsonData.errors[0].path).to.eql(\"pxeTimeout\");\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -11773,7 +11773,7 @@
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.errors[0].value).to.eql(3);\r",
 									"    pm.expect(jsonData.errors[0].msg).to.eql(\"Authentication protocol must be one of 0:EAP-TLS, 2:PEAPv0/EAP-MSCHAPv2\");\r",
-									"    pm.expect(jsonData.errors[0].param).to.eql(\"authenticationProtocol\");\r",
+									"    pm.expect(jsonData.errors[0].path).to.eql(\"authenticationProtocol\");\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -12009,7 +12009,7 @@
 									"});\r",
 									"pm.test(\"Update request should fail missing version info\", function () {\r",
 									"    pm.expect(jsonData.errors[0].msg).to.eql(\"Version is required to patch/update a record.\");\r",
-									"    pm.expect(jsonData.errors[0].param).to.eql(\"version\");\r",
+									"    pm.expect(jsonData.errors[0].path).to.eql(\"version\");\r",
 									"});"
 								],
 								"type": "text/javascript"
