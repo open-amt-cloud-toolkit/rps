@@ -25,11 +25,13 @@ export interface DeactivationContext {
   errorMessage: string
   statusMessage: string
   httpHandler: HttpHandler
+  tenantId: string
 }
 
 interface DeactivationEvent {
   type: 'UNPROVISION' | 'ONFAILED'
   clientId: string
+  tenantId: string
   data: any
 }
 export class Deactivation {
@@ -49,6 +51,7 @@ export class Deactivation {
         xmlMessage: '',
         errorMessage: '',
         statusMessage: '',
+        tenantId: '',
         httpHandler: new HttpHandler()
       },
       id: 'Deactivation Machine',
@@ -57,7 +60,7 @@ export class Deactivation {
         PROVISIONED: {
           on: {
             UNPROVISION: {
-              actions: [assign({ clientId: (context: DeactivationContext, event) => event.clientId }), 'Reset Unauth Count'],
+              actions: [assign({ clientId: (context: DeactivationContext, event) => event.clientId, tenantId: (context: DeactivationContext, event) => event.tenantId }), 'Reset Unauth Count'],
               target: 'UNPROVISIONING'
             }
           }
@@ -179,7 +182,7 @@ export class Deactivation {
   }
 
   async removeDeviceFromMPS (context: DeactivationContext): Promise<any> {
-    return await got(`${Environment.Config.mpsServer}/api/v1/devices/${devices[context.clientId].uuid}`, {
+    return await got(`${Environment.Config.mpsServer}/api/v1/devices/${devices[context.clientId].uuid}?tenantId=${context.tenantId}`, {
       method: 'DELETE'
     })
   }
