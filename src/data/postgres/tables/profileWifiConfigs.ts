@@ -9,6 +9,7 @@ import { API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
 import { RPSError } from '../../../utils/RPSError'
 import format from 'pg-format'
 import type PostgresDb from '..'
+import { PostgresErr } from '../errors'
 
 export class ProfilesWifiConfigsTable implements IProfilesWifiConfigsTable {
   db: PostgresDb
@@ -52,7 +53,7 @@ export class ProfilesWifiConfigsTable implements IProfilesWifiConfigsTable {
 
       return wifiProfilesQueryResults.rowCount > 0
     } catch (error) {
-      if (error.code === '23503') {
+      if (error.code === PostgresErr.C23_FOREIGN_KEY_VIOLATION) {
         throw new RPSError(error.detail, 'Foreign key constraint violation')
       }
       throw new RPSError(API_UNEXPECTED_EXCEPTION(profileName))

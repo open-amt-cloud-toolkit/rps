@@ -43,16 +43,35 @@ describe('profiles tests', () => {
     jest.clearAllMocks()
   })
   describe('Get', () => {
-    test('should get count', async () => {
-      querySpy.mockResolvedValueOnce({ rows: [{ total_count: 1 }], rowCount: 0 })
-      const count = await profilesTable.getCount()
-      expect(count).toBe(1)
-      expect(querySpy).toBeCalledTimes(1)
-      expect(querySpy).toBeCalledWith(`
-    SELECT count(*) OVER() AS total_count 
-    FROM profiles
-    WHERE tenant_id = $1`, [''])
+    test('should get expected count', async () => {
+      const expected = 10
+      querySpy.mockResolvedValueOnce({ rows: [{ total_count: expected }], command: '', fields: null, rowCount: expected, oid: 0 })
+      const count: number = await profilesTable.getCount()
+      expect(count).toBe(expected)
     })
+    test('should get count of 0 on no counts made', async () => {
+      const expected = 0
+      querySpy.mockResolvedValueOnce({ rows: [{ total_count: expected }], command: '', fields: null, rowCount: expected, oid: 0 })
+      const count: number = await profilesTable.getCount()
+      expect(count).toBe(0)
+    })
+    test('should get count of 0 on empty rows array', async () => {
+      const expected = 0
+      querySpy.mockResolvedValueOnce({ rows: [], command: '', fields: null, rowCount: expected, oid: 0 })
+      const count: number = await profilesTable.getCount()
+      expect(count).toBe(expected)
+    })
+    test('should get count of 0 on no rows returned', async () => {
+      querySpy.mockResolvedValueOnce({ })
+      const count: number = await profilesTable.getCount()
+      expect(count).toBe(0)
+    })
+    test('should get count of 0 on null results', async () => {
+      querySpy.mockResolvedValueOnce(null)
+      const count: number = await profilesTable.getCount()
+      expect(count).toBe(0)
+    })
+
     test('should get profiles', async () => {
       const rows = [{}, {}]
       querySpy.mockResolvedValueOnce({ rows, rowCount: rows.length })
@@ -155,6 +174,13 @@ describe('profiles tests', () => {
       const ciraConfigSpy = jest.spyOn(db.ciraConfigs, 'getByName')
       ciraConfigSpy.mockResolvedValue({} as any)
       const result = await profilesTable.getCiraConfigForProfile(profileName, '')
+      expect(result).toStrictEqual({})
+      expect(ciraConfigSpy).toHaveBeenCalledWith(profileName, '')
+    })
+    test('should get 8021X config for profile', async () => {
+      const ciraConfigSpy = jest.spyOn(db.ieee8021xProfiles, 'getByName')
+      ciraConfigSpy.mockResolvedValue({} as any)
+      const result = await profilesTable.get8021XConfigForProfile(profileName, '')
       expect(result).toStrictEqual({})
       expect(ciraConfigSpy).toHaveBeenCalledWith(profileName, '')
     })

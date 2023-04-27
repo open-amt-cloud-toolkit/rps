@@ -61,15 +61,39 @@ describe('ciraconfig tests', () => {
     LIMIT $1 OFFSET $2`, [DEFAULT_TOP, DEFAULT_SKIP, ''])
     })
 
-    test('should get a count of zero when no devices', async () => {
-      querySpy.mockResolvedValueOnce({ rows: [{ total_count: 0 }], command: '', fields: null, rowCount: 0, oid: 0 })
+    test('should get null for non existant getByName', async () => {
+      querySpy.mockResolvedValueOnce({ rows: [], command: '', fields: null, rowCount: 0, oid: 0 })
+      const config: CIRAConfig = await ciraConfigTable.getByName(configName)
+      expect(config).toBeNull()
+    })
+
+    test('should get expected count', async () => {
+      const expected = 10
+      querySpy.mockResolvedValueOnce({ rows: [{ total_count: expected }], command: '', fields: null, rowCount: expected, oid: 0 })
+      const count: number = await ciraConfigTable.getCount()
+      expect(count).toBe(expected)
+    })
+    test('should get count of 0 on no counts made', async () => {
+      const expected = 0
+      querySpy.mockResolvedValueOnce({ rows: [{ total_count: expected }], command: '', fields: null, rowCount: expected, oid: 0 })
       const count: number = await ciraConfigTable.getCount()
       expect(count).toBe(0)
-      expect(querySpy).toBeCalledTimes(1)
-      expect(querySpy).toBeCalledWith(`
-    SELECT count(*) OVER() AS total_count 
-    FROM ciraconfigs
-    WHERE tenant_id = $1`, [''])
+    })
+    test('should get count of 0 on empty rows array', async () => {
+      const expected = 0
+      querySpy.mockResolvedValueOnce({ rows: [], command: '', fields: null, rowCount: expected, oid: 0 })
+      const count: number = await ciraConfigTable.getCount()
+      expect(count).toBe(expected)
+    })
+    test('should get count of 0 on rows property missing', async () => {
+      querySpy.mockResolvedValueOnce({ })
+      const count: number = await ciraConfigTable.getCount()
+      expect(count).toBe(0)
+    })
+    test('should get count of 0 on null results', async () => {
+      querySpy.mockResolvedValueOnce(null)
+      const count: number = await ciraConfigTable.getCount()
+      expect(count).toBe(0)
     })
 
     test('should get a ciraconfig by hostname when exist', async () => {
@@ -168,7 +192,7 @@ describe('ciraconfig tests', () => {
     })
     test('should NOT delete when constraint violation', async () => {
       querySpy.mockRejectedValueOnce({ code: '23503' })
-      await expect(ciraConfigTable.delete(ciraConfig.configName, '')).rejects.toThrow('CIRA Config: test config associated with an AMT profile')
+      await expect(ciraConfigTable.delete(ciraConfig.configName, '')).rejects.toThrow('CIRA Config: test config is associated with an AMT profile')
     })
 
     test('should NOT delete when unexpected exception', async () => {

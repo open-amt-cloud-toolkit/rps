@@ -9,6 +9,7 @@ import { CIRA_CONFIG_DELETION_FAILED_CONSTRAINT, API_UNEXPECTED_EXCEPTION, CIRA_
 import { RPSError } from '../../../utils/RPSError'
 import Logger from '../../../Logger'
 import type PostgresDb from '..'
+import { PostgresErr } from '../errors'
 export class CiraConfigTable implements ICiraConfigTable {
   db: PostgresDb
   log: Logger
@@ -27,8 +28,8 @@ export class CiraConfigTable implements ICiraConfigTable {
     FROM ciraconfigs
     WHERE tenant_id = $1`, [tenantId])
     let count = 0
-    if (result != null) {
-      count = Number(result?.rows[0]?.total_count)
+    if (result != null && result.rows?.length > 0) {
+      count = Number(result.rows[0].total_count)
     }
     return count
   }
@@ -100,7 +101,7 @@ export class CiraConfigTable implements ICiraConfigTable {
       return results.rowCount > 0
     } catch (error) {
       this.log.error(`Failed to delete CIRA config : ${ciraConfigName}`, error)
-      if (error.code === '23503') { // foreign key violation
+      if (error.code === PostgresErr.C23_FOREIGN_KEY_VIOLATION) {
         throw new RPSError(CIRA_CONFIG_DELETION_FAILED_CONSTRAINT(ciraConfigName), 'Foreign key violation')
       }
       throw new RPSError(API_UNEXPECTED_EXCEPTION(`Delete CIRA config : ${ciraConfigName}`))
@@ -135,7 +136,7 @@ export class CiraConfigTable implements ICiraConfigTable {
       return null
     } catch (error) {
       this.log.error('Failed to insert CIRA config :', error)
-      if (error.code === '23505') { // Unique key violation
+      if (error.code === PostgresErr.C23_UNIQUE_VIOLATION) {
         throw new RPSError(CIRA_CONFIG_INSERTION_FAILED_DUPLICATE(ciraConfig.configName), 'Unique key violation')
       }
       throw new RPSError(API_UNEXPECTED_EXCEPTION(ciraConfig.configName))

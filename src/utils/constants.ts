@@ -19,9 +19,15 @@ export const PROFILE_INSERTION_NETWORK_CONSTRAINT = (config: string): string => 
 export const PROFILE_INSERTION_GENERIC_CONSTRAINT = (name: string): string => `Referenced constraint ${name} doesn't exist`
 
 // CIRA REST API
-export const CIRA_CONFIG_DELETION_FAILED_CONSTRAINT = (ciraConfig: string): string => `CIRA Config: ${ciraConfig} associated with an AMT profile`
+export const CIRA_CONFIG_DELETION_FAILED_CONSTRAINT = (ciraConfig: string): string => `CIRA Config: ${ciraConfig} is associated with an AMT profile`
 export const CIRA_CONFIG_INSERTION_FAILED = (ciraConfig: string): string => `CIRA Config insertion failed for ${ciraConfig}`
 export const CIRA_CONFIG_INSERTION_FAILED_DUPLICATE = (ciraConfig: string): string => `CIRA Config ${ciraConfig} already exists.`
+
+// IEEE 802.1X
+export const IEEE8021X_DELETION_FAILED_CONSTRAINT_WIRELESS = (config: string): string => `802.1x config: ${config} is associated with a wireless profile.`
+export const IEEE8021X_DELETION_FAILED_CONSTRAINT_AMT_PROFILE = (config: string): string => `802.1x config: ${config} is associated with an AMT Profile.`
+export const IEEE8021X_INSERTION_FAILED = (config: string): string => `802.1x insertion failed for ${config}`
+export const IEEE8021X_INSERTION_FAILED_DUPLICATE = (config: string): string => `802.1x config: ${config} already exists`
 
 // Network configs REST API
 export const NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT = (type: string, config: string): string => `${type} profile: ${config} is associated with an AMT Profile.`

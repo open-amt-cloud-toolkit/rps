@@ -7,6 +7,7 @@ import PostgresDb from '..'
 import { type WirelessConfig } from '../../../models/RCS.Config'
 import { API_UNEXPECTED_EXCEPTION, CONCURRENCY_MESSAGE, DEFAULT_SKIP, DEFAULT_TOP, NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT, NETWORK_CONFIG_ERROR, NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE } from '../../../utils/constants'
 import { WirelessProfilesTable } from './wirelessProfiles'
+import { RPSError } from '../../../utils/RPSError'
 
 describe('wireless profiles tests', () => {
   let db: PostgresDb
@@ -34,15 +35,33 @@ describe('wireless profiles tests', () => {
     jest.clearAllMocks()
   })
   describe('Get', () => {
-    test('should get count', async () => {
-      querySpy.mockResolvedValueOnce({ rows: [{ total_count: 1 }], rowCount: 0 })
-      const count = await wirelessProfilesTable.getCount()
-      expect(count).toBe(1)
-      expect(querySpy).toBeCalledTimes(1)
-      expect(querySpy).toBeCalledWith(`
-    SELECT count(*) OVER() AS total_count 
-    FROM wirelessconfigs 
-    WHERE tenant_id = $1`, [''])
+    test('should get expected count', async () => {
+      const expected = 10
+      querySpy.mockResolvedValueOnce({ rows: [{ total_count: expected }], command: '', fields: null, rowCount: expected, oid: 0 })
+      const count: number = await wirelessProfilesTable.getCount()
+      expect(count).toBe(expected)
+    })
+    test('should get count of 0 on no counts made', async () => {
+      const expected = 0
+      querySpy.mockResolvedValueOnce({ rows: [{ total_count: expected }], command: '', fields: null, rowCount: expected, oid: 0 })
+      const count: number = await wirelessProfilesTable.getCount()
+      expect(count).toBe(0)
+    })
+    test('should get count of 0 on empty rows array', async () => {
+      const expected = 0
+      querySpy.mockResolvedValueOnce({ rows: [], command: '', fields: null, rowCount: expected, oid: 0 })
+      const count: number = await wirelessProfilesTable.getCount()
+      expect(count).toBe(expected)
+    })
+    test('should get count of 0 on no rows returned', async () => {
+      querySpy.mockResolvedValueOnce({ })
+      const count: number = await wirelessProfilesTable.getCount()
+      expect(count).toBe(0)
+    })
+    test('should get count of 0 on null results', async () => {
+      querySpy.mockResolvedValueOnce(null)
+      const count: number = await wirelessProfilesTable.getCount()
+      expect(count).toBe(0)
     })
 
     test('should Get', async () => {
@@ -124,7 +143,7 @@ describe('wireless profiles tests', () => {
     })
     test('should NOT delete when relationship still exists to profile', async () => {
       querySpy.mockResolvedValueOnce({ rows: [], rowCount: 1 })
-      await expect(wirelessProfilesTable.delete(profileName)).rejects.toThrow('Operation failed for Wireless profile: profileName. Cannot modify Wireless settings if its already associated with a profile.')
+      await expect(wirelessProfilesTable.delete(profileName)).rejects.toThrow(NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT('Wireless', profileName))
       expect(querySpy).toBeCalledTimes(1)
       expect(querySpy).toBeCalledWith(`
     SELECT 1
@@ -180,6 +199,15 @@ describe('wireless profiles tests', () => {
         wirelessConfig.ieee8021xProfileName
       ])
     })
+    test('should return null if insert does not return any rows (should throw an error though)', async () => {
+      querySpy.mockResolvedValueOnce({ rows: [], rowCount: 0 })
+      let result = await wirelessProfilesTable.insert(wirelessConfig)
+      expect(result).toBeNull()
+
+      querySpy.mockResolvedValueOnce(null)
+      result = await wirelessProfilesTable.insert(wirelessConfig)
+      expect(result).toBeNull()
+    })
     test('should NOT insert when duplicate name', async () => {
       querySpy.mockRejectedValueOnce({ code: '23505' })
       await expect(wirelessProfilesTable.insert(wirelessConfig)).rejects.toThrow(NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE('Wireless', wirelessConfig.profileName))
@@ -215,10 +243,25 @@ describe('wireless profiles tests', () => {
         wirelessConfig.version
       ])
     })
+    test('should throw RPSError with no results from update query', async () => {
+      querySpy.mockResolvedValueOnce({ rows: [], rowCount: 0 })
+      const getByNameSpy = jest.spyOn(wirelessProfilesTable, 'getByName')
+      getByNameSpy.mockResolvedValue(wirelessConfig)
+      await expect(wirelessProfilesTable.update(wirelessConfig)).rejects.toBeInstanceOf(RPSError)
+    })
+    test('should throw RPSError with return from update query', async () => {
+      querySpy.mockResolvedValueOnce(null)
+      const getByNameSpy = jest.spyOn(wirelessProfilesTable, 'getByName')
+      getByNameSpy.mockResolvedValue(wirelessConfig)
+      await expect(wirelessProfilesTable.update(wirelessConfig)).rejects.toBeInstanceOf(RPSError)
+    })
     test('should NOT update when unexpected error', async () => {
       querySpy.mockRejectedValueOnce('unknown')
+      const getByNameSpy = jest.spyOn(wirelessProfilesTable, 'getByName')
+      getByNameSpy.mockResolvedValue(wirelessConfig)
       await expect(wirelessProfilesTable.update(wirelessConfig)).rejects.toThrow(NETWORK_CONFIG_ERROR('Wireless', wirelessConfig.profileName))
     })
+
     test('should NOT update when concurrency issue', async () => {
       querySpy.mockResolvedValueOnce({ rows: [], rowCount: 0 })
       const getByNameSpy = jest.spyOn(wirelessProfilesTable, 'getByName')
