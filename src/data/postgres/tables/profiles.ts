@@ -161,7 +161,7 @@ export class ProfilesTable implements IProfilesTable {
    */
   async delete (profileName: string, tenantId: string = ''): Promise<boolean> {
     // delete any associations with wificonfigs
-    await this.db.profileWirelessConfigs.deleteProfileWifiConfigs(profileName)
+    await this.db.profileWirelessConfigs.deleteProfileWifiConfigs(profileName, tenantId)
 
     const results = await this.db.query(`
       DELETE 
@@ -266,7 +266,7 @@ export class ProfilesTable implements IProfilesTable {
       ])
       if (results.rowCount > 0) {
         if (amtConfig.wifiConfigs?.length > 0) {
-          await this.db.profileWirelessConfigs.createProfileWifiConfigs(amtConfig.wifiConfigs, amtConfig.profileName)
+          await this.db.profileWirelessConfigs.createProfileWifiConfigs(amtConfig.wifiConfigs, amtConfig.profileName, amtConfig.tenantId)
         }
         latestItem = await this.getByName(amtConfig.profileName, amtConfig.tenantId)
         return latestItem

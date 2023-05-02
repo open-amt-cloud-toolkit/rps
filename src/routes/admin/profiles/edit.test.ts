@@ -11,7 +11,8 @@ import {
   handleAMTPassword,
   handleGenerateRandomMEBxPassword,
   handleGenerateRandomPassword,
-  handleMEBxPassword
+  handleMEBxPassword,
+  handleWifiConfigs
 } from './edit'
 import { ClientAction, TlsMode, TlsSigningAuthority } from '../../../models/RCS.Config'
 
@@ -348,6 +349,79 @@ test('test handleGenerateRandomMEBxPassword when the request body generateRandom
   }
   const result: AMTConfiguration = handleGenerateRandomMEBxPassword(amtConfig, newConfig, oldConfig)
   expect(result).toEqual(expected)
+})
+
+describe('handleWifiConfigs tests', () => {
+  let newConfig: AMTConfiguration
+  let oldConfig: AMTConfiguration
+
+  const profileWifiConfigsDb = {
+    deleteProfileWifiConfigs: jest.fn().mockReturnValue(null),
+    createProfileWifiConfigs: jest.fn().mockReturnValue(null),
+    getProfileWifiConfigs: jest.fn().mockReturnValue(null)
+  }
+
+  beforeEach(() => {
+    newConfig = {
+      profileName: 'profileName1',
+      activation: '1',
+      tenantId: 'tenantId',
+      dhcpEnabled: true,
+      wifiConfigs: [
+        {
+          profileName: 'P1',
+          priority: 1,
+          tenantId: '123'
+        },
+        {
+          profileName: 'P1',
+          priority: 1,
+          tenantId: '123'
+        }
+      ]
+    }
+    oldConfig = {
+      profileName: 'profileName2',
+      tenantId: 'tenantId',
+      activation: '1',
+      dhcpEnabled: false,
+      wifiConfigs: [
+        {
+          profileName: 'P1',
+          priority: 1,
+          tenantId: '123'
+        },
+        {
+          profileName: 'P1',
+          priority: 1,
+          tenantId: '123'
+        }
+      ]
+    }
+  })
+
+  const deleteProfileWifiConfigsSpy = jest.spyOn(profileWifiConfigsDb, 'deleteProfileWifiConfigs')
+
+  afterEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('should delete profile wifi configs if oldConfig has dhcp enabled and newConfig does not have dhcp enabled', async () => {
+    const result = await handleWifiConfigs(newConfig, oldConfig, profileWifiConfigsDb)
+
+    expect(deleteProfileWifiConfigsSpy).toHaveBeenCalledWith('profileName1', 'tenantId')
+    expect(result).toEqual([{ profileName: 'P1', priority: 1, tenantId: '123' }, { profileName: 'P1', priority: 1, tenantId: '123' }])
+  })
+
+  it('should delete profile wifi configs and set wifiConfigs to newConfig.wifiConfigs if oldConfig and newConfig have different dhcpEnabled values', async () => {
+    oldConfig.dhcpEnabled = true
+    newConfig.dhcpEnabled = false
+
+    const result = await handleWifiConfigs(newConfig, oldConfig, profileWifiConfigsDb)
+
+    expect(deleteProfileWifiConfigsSpy).toHaveBeenCalledWith('profileName1', 'tenantId')
+    expect(result).toEqual(null)
+  })
 })
 
 test('test getUpdatedData when the request body when activation changed', () => {

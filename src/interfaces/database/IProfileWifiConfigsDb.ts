@@ -7,6 +7,6 @@ import { type ProfileWifiConfigs } from '../../models/RCS.Config'
 
 export interface IProfilesWifiConfigsTable {
   getProfileWifiConfigs: (profileName: string) => Promise<ProfileWifiConfigs[]>
-  deleteProfileWifiConfigs: (profileName: string) => Promise<boolean>
+  deleteProfileWifiConfigs: (profileName: string, tenantId: string) => Promise<boolean>
   createProfileWifiConfigs: (wifiConfigs: ProfileWifiConfigs[], profileName: string, tenantId?: string) => Promise<boolean>
 }
