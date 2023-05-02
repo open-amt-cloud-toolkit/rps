@@ -14,6 +14,7 @@ import { HttpHandler } from '../HttpHandler'
 import * as common from './common'
 
 const clientId = uuid()
+const tenantId = ''
 Environment.Config = config
 
 describe('Deactivation State Machine', () => {
@@ -57,6 +58,7 @@ describe('Deactivation State Machine', () => {
       xmlMessage: '',
       errorMessage: '',
       statusMessage: '',
+      tenantId,
       httpHandler: new HttpHandler()
     }
     sendSpy = jest.spyOn(devices[clientId].ClientSocket, 'send').mockImplementation().mockReturnValue()
@@ -92,7 +94,7 @@ describe('Deactivation State Machine', () => {
     })
 
     deactivationService.start()
-    deactivationService.send({ type: 'UNPROVISION', clientId, data: null })
+    deactivationService.send({ type: 'UNPROVISION', clientId, tenantId, data: null })
   })
   it('should eventually reach "UNPROVISIONED" when service provider gives not found error', (done) => {
     config.services['remove-device-from-secret-provider'] = Promise.reject(new Error('HTTPError: Response code 404 (Not Found)'))
@@ -113,7 +115,7 @@ describe('Deactivation State Machine', () => {
     })
 
     deactivationService.start()
-    deactivationService.send({ type: 'UNPROVISION', clientId, data: null })
+    deactivationService.send({ type: 'UNPROVISION', clientId, tenantId, data: null })
   })
   it('should eventually reach "UNPROVISIONED" when mps not running', (done) => {
     config.services['remove-device-from-mps'] = Promise.reject(new Error('RequestError: getaddrinfo EAI_AGAIN mps'))
@@ -133,7 +135,7 @@ describe('Deactivation State Machine', () => {
     })
 
     deactivationService.start()
-    deactivationService.send({ type: 'UNPROVISION', clientId, data: null })
+    deactivationService.send({ type: 'UNPROVISION', clientId, tenantId, data: null })
   })
   it('should eventually reach "Unprovisioned" when mps running and device is not found', (done) => {
     config.services['remove-device-from-mps'] = Promise.reject(new Error('HTTPError: Response code 404 (Not Found)'))
@@ -154,13 +156,13 @@ describe('Deactivation State Machine', () => {
     })
 
     deactivationService.start()
-    deactivationService.send({ type: 'UNPROVISION', clientId, data: null })
+    deactivationService.send({ type: 'UNPROVISION', clientId, tenantId, data: null })
   })
   it('should eventually reach "Failed"', (done) => {
     config.services['send-unprovision-message'] = Promise.reject(new Error())
     config.services['error-machine'] = async (_, event) => await new Promise((resolve, reject) => {
       setTimeout(() => {
-        deactivationService.send({ type: 'ONFAILED', clientId, data: null })
+        deactivationService.send({ type: 'ONFAILED', clientId, tenantId, data: null })
         reject(new Error())
       }, 50)
     })
@@ -175,7 +177,7 @@ describe('Deactivation State Machine', () => {
     })
 
     deactivationService.start()
-    deactivationService.send({ type: 'UNPROVISION', clientId, data: null })
+    deactivationService.send({ type: 'UNPROVISION', clientId, tenantId, data: null })
   })
 
   it('should invoke unprovision and return promise', async () => {
@@ -206,6 +208,6 @@ describe('Deactivation State Machine', () => {
       }
     })
     service.start()
-    service.send({ type: 'UNPROVISION', clientId, data: null })
+    service.send({ type: 'UNPROVISION', clientId, tenantId, data: null })
   })
 })
