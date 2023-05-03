@@ -470,7 +470,8 @@ export class Activation {
               profile: (context, event) => context.profile,
               httpHandler: (context, _) => context.httpHandler,
               amt: (context, event) => context.amt,
-              ips: (context, event) => context.ips
+              ips: (context, event) => context.ips,
+              cim: (context, event) => context.cim
             },
             onDone: 'NETWORK_CONFIGURATION'
           }

@@ -22,6 +22,7 @@ export interface WirelessConfig {
   linkPolicy: string[]
   tenantId: string
   ieee8021xProfileName: string
+  ieee8021xProfileObject?: Ieee8021xConfig
   version?: string
 }
 
@@ -120,6 +121,8 @@ export interface ClientObject {
   unauthCount: number
   connectionParams?: connectionParams
   messageId?: number
+  trustedRootCertificate?: string
+  trustedRootCertificateResponse?: any
   pendingPromise?: Promise<any>
   resolve?: (value: unknown) => void
   reject?: (value: unknown) => void

@@ -375,7 +375,8 @@ export class WiredConfiguration {
 
   async put8021xProfile (context: WiredConfigContext, event: WiredConfigEvent): Promise<void> {
     this.logger.info('EA Response :', JSON.stringify(context.eaResponse))
-    context.addTrustedRootCertResponse = context.message.Envelope.Body
+    devices[context.clientId].trustedRootCertificateResponse = context.message.Envelope.Body
+    context.addTrustedRootCertResponse = devices[context.clientId].trustedRootCertificateResponse
     context.ieee8021xProfile.Enabled = 2
     context.ieee8021xProfile.AuthenticationProtocol = context.amtProfile.ieee8021xProfileObject.authenticationProtocol
     context.ieee8021xProfile.ElementName = `${context.ieee8021xProfile.ElementName} ${context.amtProfile.ieee8021xProfileName}`
@@ -430,6 +431,7 @@ export class WiredConfiguration {
   async addRadiusServerRootCertificate (context: WiredConfigContext, event: WiredConfigEvent): Promise<void> {
     // To Do: Needs to replace the logic with how we will pull the radius server root certificate
     context.addCertResponse = context.message.Envelope.Body
+    devices[context.clientId].trustedRootCertificate = context.eaResponse.rootcert
     const cert = context.eaResponse.rootcert
     context.xmlMessage = context.amt.PublicKeyManagementService.AddTrustedRootCertificate({ CertificateBlob: cert })
     return await invokeWsmanCall(context)

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type AMT, type IPS } from '@open-amt-cloud-toolkit/wsman-messages'
+import { type CIM, type AMT, type IPS } from '@open-amt-cloud-toolkit/wsman-messages'
 import { createMachine, assign, send } from 'xstate'
 import { CertManager } from '../certManager'
 import { Configurator } from '../Configurator'
@@ -34,11 +34,14 @@ export interface UnconfigContext {
   TLSSettingData: any[]
   publicKeyCertificates: any[]
   is8021xProfileUpdated?: boolean
+  wifiEndPointSettings?: any[]
   amt?: AMT.Messages
   ips?: IPS.Messages
+  cim?: CIM.Messages
+  retryCount?: number
 }
 interface UnconfigEvent {
-  type: 'REMOVEPOLICY' | 'ONFAILED'
+  type: 'REMOVEPOLICY' | 'ONFAILURE'
   clientId: string
   data?: any
 }
@@ -72,7 +75,8 @@ export class Unconfiguration {
         privateCerts: [],
         TLSSettingData: [],
         publicKeyCertificates: [],
-        is8021xProfileUpdated: false
+        is8021xProfileUpdated: false,
+        wifiEndPointSettings: []
       },
       id: 'unconfiuration-machine',
       initial: 'UNCONFIGURED',
@@ -80,7 +84,7 @@ export class Unconfiguration {
         UNCONFIGURED: {
           on: {
             REMOVEPOLICY: {
-              actions: 'Reset Unauth Count',
+              actions: ['Reset Unauth Count', 'Reset Retry Count'],
               target: 'GET_8021X_PROFILE'
             }
           }
@@ -98,7 +102,7 @@ export class Unconfiguration {
             onDone: 'GET_8021X_PROFILE'
           },
           on: {
-            ONFAILED: 'FAILURE'
+            ONFAILURE: 'FAILURE'
           }
         },
         GET_8021X_PROFILE: {
@@ -120,7 +124,7 @@ export class Unconfiguration {
               cond: 'is8021xProfileEnabled',
               target: 'DISABLE_IEEE8021X_WIRED'
             }, {
-              target: 'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED'
+              target: 'ENUMERATE_WIFI_ENDPOINT_SETTINGS'
             }
           ]
         },
@@ -130,12 +134,86 @@ export class Unconfiguration {
             id: 'disable-Wired-8021x-Configuration',
             onDone: {
               actions: assign({ is8021xProfileUpdated: true }),
-              target: 'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED'
+              target: 'ENUMERATE_WIFI_ENDPOINT_SETTINGS'
             },
             onError: {
               target: 'ERROR'
             }
           }
+        },
+        ENUMERATE_WIFI_ENDPOINT_SETTINGS: {
+          invoke: {
+            src: this.enumerateWiFiEndpointSettings.bind(this),
+            id: 'enumerate-wifi-endpoint-settings',
+            onDone: {
+              actions: assign({ message: (context, event) => event.data }),
+              target: 'PULL_WIFI_ENDPOINT_SETTINGS'
+            },
+            onError: {
+              actions: assign({ errorMessage: (context, event) => 'Failed to get enumeration number for wifi endpoint settings' }),
+              target: 'FAILURE'
+            }
+          }
+        },
+        PULL_WIFI_ENDPOINT_SETTINGS: {
+          invoke: {
+            src: this.pullWiFiEndpointSettings.bind(this),
+            id: 'pull-wifi-endpoint-settings',
+            onDone: {
+              actions: [assign({ message: (context, event) => event.data }), 'Reset Retry Count'],
+              target: 'CHECK_WIFI_ENDPOINT_SETTINGS_PULL_RESPONSE'
+            },
+            onError: [
+              {
+                cond: 'shouldRetry',
+                actions: 'Increment Retry Count',
+                target: 'ENUMERATE_WIFI_ENDPOINT_SETTINGS'
+              },
+              {
+                actions: assign({ errorMessage: (context, event) => 'Failed to pull wifi endpoint settings' }),
+                target: 'FAILURE'
+              }
+            ]
+          }
+        },
+        CHECK_WIFI_ENDPOINT_SETTINGS_PULL_RESPONSE: {
+          entry: 'Read WiFi Endpoint Settings Pull Response',
+          always: [
+            {
+              cond: 'isWifiProfilesExistsOnDevice',
+              target: 'DELETE_WIFI_ENDPOINT_SETTINGS'
+            }, {
+              target: 'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED'
+            }
+          ]
+        },
+        DELETE_WIFI_ENDPOINT_SETTINGS: {
+          invoke: {
+            src: this.deleteWiFiProfileOnAMTDevice.bind(this),
+            id: 'delete-wifi-endpoint-settings',
+            onDone: {
+              actions: assign({ message: (context, event) => event.data }),
+              target: 'CHECK_WIFI_ENDPOINT_SETTINGS_DELETE_RESPONSE'
+            },
+            onError: {
+              actions: assign({ errorMessage: (context, event) => 'Failed to delete wifi endpoint settings' }),
+              target: 'FAILURE'
+            }
+          }
+        },
+        CHECK_WIFI_ENDPOINT_SETTINGS_DELETE_RESPONSE: {
+          always: [
+            {
+              cond: 'isWifiProfileDeleted',
+              target: 'FAILURE'
+            },
+            {
+              cond: 'isWifiProfilesExistsOnDevice',
+              target: 'DELETE_WIFI_ENDPOINT_SETTINGS'
+            }, {
+              target: 'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED'
+            }
+          ]
         },
         REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED: {
           invoke: {
@@ -493,7 +571,9 @@ export class Unconfiguration {
         hasEnvSettings: (context, event) => context.message.Envelope.Body.AMT_EnvironmentDetectionSettingData.DetectionStrings != null,
         hasTLSCredentialContext: (context, event) => context.message.Envelope.Body.PullResponse.Items?.AMT_TLSCredentialContext != null,
         is8021xProfileEnabled: (context, event) => context.message.Envelope.Body.IPS_IEEE8021xSettings.Enabled === 2,
-        is8021xProfileDisabled: (context, event) => context.is8021xProfileUpdated
+        is8021xProfileDisabled: (context, event) => context.is8021xProfileUpdated,
+        isWifiProfilesExistsOnDevice: (context, event) => context.wifiEndPointSettings.length !== 0,
+        isWifiProfileDeleted: (context, event) => context.message.Envelope.Body == null
 
       },
       actions: {
@@ -508,7 +588,10 @@ export class Unconfiguration {
           devices[context.clientId].status.CIRAConnection = ''
           devices[context.clientId].status.Status = context.statusMessage
         },
-        'Reset Unauth Count': (context, event) => { devices[context.clientId].unauthCount = 0 }
+        'Reset Unauth Count': (context, event) => { devices[context.clientId].unauthCount = 0 },
+        'Read WiFi Endpoint Settings Pull Response': this.readWiFiEndpointSettingsPullResponse.bind(this),
+        'Reset Retry Count': assign({ retryCount: (context, event) => 0 }),
+        'Increment Retry Count': assign({ retryCount: (context, event) => context.retryCount + 1 })
       }
     })
 
@@ -534,6 +617,48 @@ export class Unconfiguration {
     ieee8021xProfile.Enabled = 3
     context.xmlMessage = context.ips.IEEE8021xSettings.Put(ieee8021xProfile)
     return await invokeWsmanCall(context, 2)
+  }
+
+  async enumerateWiFiEndpointSettings (context): Promise<any> {
+    context.xmlMessage = context.cim.WiFiEndpointSettings.Enumerate()
+    return await invokeWsmanCall(context, 2)
+  }
+
+  async pullWiFiEndpointSettings (context): Promise<any> {
+    context.xmlMessage = context.cim.WiFiEndpointSettings.Pull(context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+    return await invokeWsmanCall(context)
+  }
+
+  readWiFiEndpointSettingsPullResponse (context: UnconfigContext, event: UnconfigEvent): void {
+    let wifiEndPointSettings = []
+    if (context.message.Envelope.Body.PullResponse.Items?.CIM_WiFiEndpointSettings != null) {
+      // CIM_WiFiEndpointSettings is an array if there more than one profile exists, otherwise its just an object from AMT
+      if (Array.isArray(context.message.Envelope.Body.PullResponse.Items.CIM_WiFiEndpointSettings)) {
+        wifiEndPointSettings = context.message.Envelope.Body.PullResponse.Items.CIM_WiFiEndpointSettings
+      } else {
+        wifiEndPointSettings.push(context.message.Envelope.Body.PullResponse.Items.CIM_WiFiEndpointSettings)
+      }
+    }
+
+    context.wifiEndPointSettings = []
+    if (wifiEndPointSettings.length > 0) {
+      //  ignore the profiles with Priority 0 and without InstanceID, which is required to delete a wifi profile on AMT device
+      wifiEndPointSettings.forEach(wifi => {
+        if (wifi.InstanceID != null && wifi.Priority !== 0) {
+          context.wifiEndPointSettings.push({ ...wifi })
+        }
+      })
+    }
+  }
+
+  async deleteWiFiProfileOnAMTDevice (context: UnconfigContext, event: UnconfigEvent): Promise<any> {
+    let wifiEndpoints = context.wifiEndPointSettings
+    // Deletes first profile in the array
+    const selector = { name: 'InstanceID', value: wifiEndpoints[0].InstanceID }
+    context.xmlMessage = context.cim.WiFiEndpointSettings.Delete(selector)
+    wifiEndpoints = wifiEndpoints.slice(1)
+    context.wifiEndPointSettings = wifiEndpoints
+    return await invokeWsmanCall(context)
   }
 
   async removeRemoteAccessPolicyRuleUserInitiated (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
