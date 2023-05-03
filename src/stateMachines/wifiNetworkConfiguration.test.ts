@@ -8,7 +8,7 @@ import { devices } from '../WebSocketListener'
 import { Environment } from '../utils/Environment'
 import { config } from '../test/helper/Config'
 import { ClientAction } from '../models/RCS.Config'
-import { WiFiConfiguration } from './wifiNetworkConfiguration'
+import { type WiFiConfigEvent, WiFiConfiguration } from './wifiNetworkConfiguration'
 import { interpret } from 'xstate'
 import { HttpHandler } from '../HttpHandler'
 import * as common from './common'
@@ -22,8 +22,18 @@ describe('WiFi Network Configuration', () => {
   let wifiConfiguration: WiFiConfiguration
   let context
   let invokeWsmanCallSpy
+  let wifiProfile
 
   beforeEach(() => {
+    wifiProfile = {
+      profileName: 'test-profile',
+      authenticationMethod: 5,
+      encryptionMethod: 3,
+      ssid: 'test-ssid',
+      priority: 1,
+      ieee8021xProfileName: 'test-profile',
+      ieee8021xProfileObject: { profileName: 'test-profile', authenticationProtocol: 0 }
+    }
     devices[clientId] = {
       unauthCount: 0,
       ClientId: clientId,
@@ -117,29 +127,20 @@ describe('WiFi Network Configuration', () => {
     config = {
       services: {
         'error-machine': async (_, event) => await Promise.resolve({ clientId: event.clientId }),
-        'enumerate-wifi-endpoint-settings': async (_, event) => await Promise.resolve({ clientId: event.clientId }),
-        'pull-wifi-endpoint-settings': Promise.resolve({ Envelope: { Body: { PullResponse: { Items: { CIM_WiFiEndpointSettings: null } } } } }),
-        'delete-wifi-endpoint-settings': Promise.resolve({ clientId }),
         'request-state-change-for-wifi-port': Promise.resolve({ clientId }),
+        'get-wifi-profile': Promise.resolve({ clientId }),
         'add-wifi-settings': Promise.resolve({ Envelope: { Body: { AddWiFiSettings_OUTPUT: { ReturnValue: 1 } } } }),
-        'get-wifi-port-configuration-service': Promise.resolve({
-          Envelope: {
-            Body: {
-              AMT_WiFiPortConfigurationService: {
-                localProfileSynchronizationEnabled: 0
-              }
-            }
-          }
-        }),
-        'put-wifi-port-configuration-service': Promise.resolve({
-          Envelope: {
-            Body: {
-              AMT_WiFiPortConfigurationService: {
-                localProfileSynchronizationEnabled: 3
-              }
-            }
-          }
-        })
+        'get-wifi-port-configuration-service': Promise.resolve({ Envelope: { Body: { AMT_WiFiPortConfigurationService: { localProfileSynchronizationEnabled: 0 } } } }),
+        'put-wifi-port-configuration-service': Promise.resolve({ Envelope: { Body: { AMT_WiFiPortConfigurationService: { localProfileSynchronizationEnabled: 3 } } } }),
+        'enterprise-assistant-request': Promise.resolve({ clientId }),
+        'generate-key-pair': Promise.resolve({ clientId }),
+        'enumerate-public-private-key-pair': Promise.resolve({ clientId }),
+        'pull-public-private-key-pair': Promise.resolve({ clientId }),
+        'enterprise-assistant-response': Promise.resolve({ clientId }),
+        'sign-csr': Promise.resolve({ clientId }),
+        'get-cert-from-enterprise-assistant': Promise.resolve({ clientId }),
+        'add-certificate': Promise.resolve({ clientId }),
+        'add-radius-server-root-certificate': Promise.resolve({ clientId })
       },
       guards: {
         shouldRetry: () => {}
@@ -152,20 +153,367 @@ describe('WiFi Network Configuration', () => {
   })
 
   describe('State machines', () => {
+    it('should eventually reach "FAILED" state', (done) => {
+      config.services['get-wifi-port-configuration-service'] = Promise.reject(new Error())
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'ACTIVATION',
+        'GET_WIFI_PORT_CONFIGURATION_SERVICE',
+        'FAILED'
+      ]
+      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
+          const status = devices[clientId].status.Network
+          expect(status).toEqual('Wired Network Configured. Failed to get WiFi Port Configuration Service')
+          done()
+        }
+      })
+      service.start()
+      service.send({ type: 'WIFICONFIG', clientId })
+    })
+
+    it('should eventually reach "FAILED" state', (done) => {
+      config.services['put-wifi-port-configuration-service'] = Promise.reject(new Error())
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'ACTIVATION',
+        'GET_WIFI_PORT_CONFIGURATION_SERVICE',
+        'PUT_WIFI_PORT_CONFIGURATION_SERVICE',
+        'FAILED'
+      ]
+      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
+          const status = devices[clientId].status.Network
+          expect(status).toEqual('Wired Network Configured. Failed to put WiFi Port Configuration Service')
+          done()
+        }
+      })
+      service.start()
+      service.send({ type: 'WIFICONFIG', clientId })
+    })
+
+    it('should eventually reach "FAILED" state', (done) => {
+      config.services['request-state-change-for-wifi-port'] = Promise.reject(new Error())
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'ACTIVATION',
+        'GET_WIFI_PORT_CONFIGURATION_SERVICE',
+        'PUT_WIFI_PORT_CONFIGURATION_SERVICE',
+        'REQUEST_STATE_CHANGE_FOR_WIFI_PORT',
+        'FAILED'
+      ]
+      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
+          const status = devices[clientId].status.Network
+          expect(status).toEqual('Wired Network Configured. Failed to update state change for wifi port')
+          done()
+        }
+      })
+      service.start()
+      service.send({ type: 'WIFICONFIG', clientId })
+    })
+
+    it('should eventually reach "FAILED" state', (done) => {
+      config.services['get-wifi-profile'] = Promise.reject(new Error())
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'ACTIVATION',
+        'GET_WIFI_PORT_CONFIGURATION_SERVICE',
+        'PUT_WIFI_PORT_CONFIGURATION_SERVICE',
+        'REQUEST_STATE_CHANGE_FOR_WIFI_PORT',
+        'GET_WIFI_PROFILE',
+        'FAILED'
+      ]
+      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
+          const status = devices[clientId].status.Network
+          expect(status).toEqual('Wired Network Configured. Failed to get wifi profile from DB')
+          done()
+        }
+      })
+      service.start()
+      service.send({ type: 'WIFICONFIG', clientId })
+    })
+
+    it('should eventually reach "FAILED" state', (done) => {
+      context.wifiProfile = wifiProfile
+      config.services['enterprise-assistant-request'] = Promise.reject(new Error())
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'ACTIVATION',
+        'GET_WIFI_PORT_CONFIGURATION_SERVICE',
+        'PUT_WIFI_PORT_CONFIGURATION_SERVICE',
+        'REQUEST_STATE_CHANGE_FOR_WIFI_PORT',
+        'GET_WIFI_PROFILE',
+        'ENTERPRISE_ASSISTANT_REQUEST',
+        'FAILED'
+      ]
+      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
+          const status = devices[clientId].status.Network
+          expect(status).toEqual('Wired Network Configured. Failed to initiate cert request with enterprise assistant in 802.1x')
+          done()
+        }
+      })
+      service.start()
+      service.send({ type: 'WIFICONFIG', clientId })
+    })
+
+    it('should eventually reach "FAILED" state', (done) => {
+      context.wifiProfile = wifiProfile
+      config.services['generate-key-pair'] = Promise.reject(new Error())
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'ACTIVATION',
+        'GET_WIFI_PORT_CONFIGURATION_SERVICE',
+        'PUT_WIFI_PORT_CONFIGURATION_SERVICE',
+        'REQUEST_STATE_CHANGE_FOR_WIFI_PORT',
+        'GET_WIFI_PROFILE',
+        'ENTERPRISE_ASSISTANT_REQUEST',
+        'GENERATE_KEY_PAIR',
+        'FAILED'
+      ]
+      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
+          const status = devices[clientId].status.Network
+          expect(status).toEqual('Wired Network Configured. Failed to generate key pair in 802.1x')
+          done()
+        }
+      })
+      service.start()
+      service.send({ type: 'WIFICONFIG', clientId })
+    })
+    it('should eventually reach "FAILED" state', (done) => {
+      context.wifiProfile = wifiProfile
+      config.services['enumerate-public-private-key-pair'] = Promise.reject(new Error())
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'ACTIVATION',
+        'GET_WIFI_PORT_CONFIGURATION_SERVICE',
+        'PUT_WIFI_PORT_CONFIGURATION_SERVICE',
+        'REQUEST_STATE_CHANGE_FOR_WIFI_PORT',
+        'GET_WIFI_PROFILE',
+        'ENTERPRISE_ASSISTANT_REQUEST',
+        'GENERATE_KEY_PAIR',
+        'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR',
+        'FAILED'
+      ]
+      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
+          const status = devices[clientId].status.Network
+          expect(status).toEqual('Wired Network Configured. Failed to enumerate public private key pair in 802.1x')
+          done()
+        }
+      })
+      service.start()
+      service.send({ type: 'WIFICONFIG', clientId })
+    })
+
+    it('should eventually reach "FAILED" state', (done) => {
+      context.wifiProfile = wifiProfile
+      config.services['pull-public-private-key-pair'] = Promise.reject(new Error())
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'ACTIVATION',
+        'GET_WIFI_PORT_CONFIGURATION_SERVICE',
+        'PUT_WIFI_PORT_CONFIGURATION_SERVICE',
+        'REQUEST_STATE_CHANGE_FOR_WIFI_PORT',
+        'GET_WIFI_PROFILE',
+        'ENTERPRISE_ASSISTANT_REQUEST',
+        'GENERATE_KEY_PAIR',
+        'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR',
+        'PULL_PUBLIC_PRIVATE_KEY_PAIR',
+        'FAILED'
+      ]
+      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
+          const status = devices[clientId].status.Network
+          expect(status).toEqual('Wired Network Configured. Failed to pull public private key pair in 802.1x')
+          done()
+        }
+      })
+      service.start()
+      service.send({ type: 'WIFICONFIG', clientId })
+    })
+
+    it('should eventually reach "FAILED" state', (done) => {
+      context.wifiProfile = wifiProfile
+      config.services['enterprise-assistant-response'] = Promise.reject(new Error())
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'ACTIVATION',
+        'GET_WIFI_PORT_CONFIGURATION_SERVICE',
+        'PUT_WIFI_PORT_CONFIGURATION_SERVICE',
+        'REQUEST_STATE_CHANGE_FOR_WIFI_PORT',
+        'GET_WIFI_PROFILE',
+        'ENTERPRISE_ASSISTANT_REQUEST',
+        'GENERATE_KEY_PAIR',
+        'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR',
+        'PULL_PUBLIC_PRIVATE_KEY_PAIR',
+        'ENTERPRISE_ASSISTANT_RESPONSE',
+        'FAILED'
+      ]
+      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
+          const status = devices[clientId].status.Network
+          expect(status).toEqual('Wired Network Configured. Failed to send key pair to enterprise assistant in 802.1x')
+          done()
+        }
+      })
+      service.start()
+      service.send({ type: 'WIFICONFIG', clientId })
+    })
+
+    it('should eventually reach "FAILED" state', (done) => {
+      context.wifiProfile = wifiProfile
+      config.services['sign-csr'] = Promise.reject(new Error())
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'ACTIVATION',
+        'GET_WIFI_PORT_CONFIGURATION_SERVICE',
+        'PUT_WIFI_PORT_CONFIGURATION_SERVICE',
+        'REQUEST_STATE_CHANGE_FOR_WIFI_PORT',
+        'GET_WIFI_PROFILE',
+        'ENTERPRISE_ASSISTANT_REQUEST',
+        'GENERATE_KEY_PAIR',
+        'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR',
+        'PULL_PUBLIC_PRIVATE_KEY_PAIR',
+        'ENTERPRISE_ASSISTANT_RESPONSE',
+        'SIGN_CSR',
+        'FAILED'
+      ]
+      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
+          const status = devices[clientId].status.Network
+          expect(status).toEqual('Wired Network Configured. Failed to have AMT sign CSR in 802.1x')
+          done()
+        }
+      })
+      service.start()
+      service.send({ type: 'WIFICONFIG', clientId })
+    })
+
+    it('should eventually reach "FAILED" state', (done) => {
+      context.wifiProfile = wifiProfile
+      config.services['get-cert-from-enterprise-assistant'] = Promise.reject(new Error())
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'ACTIVATION',
+        'GET_WIFI_PORT_CONFIGURATION_SERVICE',
+        'PUT_WIFI_PORT_CONFIGURATION_SERVICE',
+        'REQUEST_STATE_CHANGE_FOR_WIFI_PORT',
+        'GET_WIFI_PROFILE',
+        'ENTERPRISE_ASSISTANT_REQUEST',
+        'GENERATE_KEY_PAIR',
+        'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR',
+        'PULL_PUBLIC_PRIVATE_KEY_PAIR',
+        'ENTERPRISE_ASSISTANT_RESPONSE',
+        'SIGN_CSR',
+        'GET_CERT_FROM_ENTERPRISE_ASSISTANT',
+        'FAILED'
+      ]
+      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
+          const status = devices[clientId].status.Network
+          expect(status).toEqual('Wired Network Configured. Failed to get cert from Microsoft CA in 802.1x')
+          done()
+        }
+      })
+      service.start()
+      service.send({ type: 'WIFICONFIG', clientId })
+    })
+    it('should eventually reach "FAILED" state', (done) => {
+      context.wifiProfile = wifiProfile
+      config.services['add-certificate'] = Promise.reject(new Error())
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'ACTIVATION',
+        'GET_WIFI_PORT_CONFIGURATION_SERVICE',
+        'PUT_WIFI_PORT_CONFIGURATION_SERVICE',
+        'REQUEST_STATE_CHANGE_FOR_WIFI_PORT',
+        'GET_WIFI_PROFILE',
+        'ENTERPRISE_ASSISTANT_REQUEST',
+        'GENERATE_KEY_PAIR',
+        'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR',
+        'PULL_PUBLIC_PRIVATE_KEY_PAIR',
+        'ENTERPRISE_ASSISTANT_RESPONSE',
+        'SIGN_CSR',
+        'GET_CERT_FROM_ENTERPRISE_ASSISTANT',
+        'ADD_CERTIFICATE',
+        'FAILED'
+      ]
+      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
+          const status = devices[clientId].status.Network
+          expect(status).toEqual('Wired Network Configured. Failed to add certificate in 802.1x')
+          done()
+        }
+      })
+      service.start()
+      service.send({ type: 'WIFICONFIG', clientId })
+    })
+
+    it('should eventually reach "FAILED" state', (done) => {
+      devices[context.clientId].trustedRootCertificateResponse = null
+      devices[context.clientId].trustedRootCertificate = null
+      context.wifiProfile = wifiProfile
+      config.services['add-radius-server-root-certificate'] = Promise.reject(new Error())
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'ACTIVATION',
+        'GET_WIFI_PORT_CONFIGURATION_SERVICE',
+        'PUT_WIFI_PORT_CONFIGURATION_SERVICE',
+        'REQUEST_STATE_CHANGE_FOR_WIFI_PORT',
+        'GET_WIFI_PROFILE',
+        'ENTERPRISE_ASSISTANT_REQUEST',
+        'GENERATE_KEY_PAIR',
+        'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR',
+        'PULL_PUBLIC_PRIVATE_KEY_PAIR',
+        'ENTERPRISE_ASSISTANT_RESPONSE',
+        'SIGN_CSR',
+        'GET_CERT_FROM_ENTERPRISE_ASSISTANT',
+        'ADD_CERTIFICATE',
+        'ADD_RADIUS_SERVER_ROOT_CERTIFICATE',
+        'FAILED'
+      ]
+      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
+          const status = devices[clientId].status.Network
+          expect(status).toEqual('Wired Network Configured. Failed to add radius server root certificate in 802.1x')
+          done()
+        }
+      })
+      service.start()
+      service.send({ type: 'WIFICONFIG', clientId })
+    })
+
     it('should eventually reach "FAILED" state for WIRELESS devices', (done) => {
       context.wifiSettings = {
         ElementName: 'Intel(r) AMT Ethernet Port Settings',
         InstanceID: 'Intel(r) AMT Ethernet Port Settings 1',
         MACAddress: '00-00-00-00-00-00'
       }
+      config.guards = { is8021xProfileAssociated: () => false }
       const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
-        'ENUMERATE_WIFI_ENDPOINT_SETTINGS',
-        'PULL_WIFI_ENDPOINT_SETTINGS',
         'GET_WIFI_PORT_CONFIGURATION_SERVICE',
         'PUT_WIFI_PORT_CONFIGURATION_SERVICE',
         'REQUEST_STATE_CHANGE_FOR_WIFI_PORT',
+        'GET_WIFI_PROFILE',
         'ADD_WIFI_SETTINGS',
         'FAILED'
       ]
@@ -183,7 +531,7 @@ describe('WiFi Network Configuration', () => {
   })
 
   describe('Get profiles', () => {
-    test('should return WiFi Profile', async () => {
+    test('should get WiFi Profile', async () => {
       const expectedProfile = {
         profileName: 'home',
         authenticationMethod: 4,
@@ -204,10 +552,43 @@ describe('WiFi Network Configuration', () => {
       const getByNameSpy = jest.spyOn(mockDb.wirelessProfiles, 'getByName').mockReturnValue(expectedProfile)
       const getPSKPassphraseSpy = jest.spyOn(wifiConfiguration.configurator.secretsManager, 'getSecretAtPath').mockImplementation(async () => ({ PSK_PASSPHRASE: 'Intel@123' }))
 
-      const wifiProfile = await wifiConfiguration.getWifiProfile(context.amtProfile.profileName)
-      expect(wifiProfile).toBe(expectedProfile)
+      await wifiConfiguration.getWifiProfile(context, null)
+      expect(context.wifiProfile).toBe(expectedProfile)
       expect(getPSKPassphraseSpy).toHaveBeenCalled()
       expect(getByNameSpy).toHaveBeenCalled()
+    })
+
+    test('should get WiFi Profile and associated 8021x profile', async () => {
+      const expectedProfile = {
+        profileName: 'office',
+        authenticationMethod: 4,
+        encryptionMethod: 4,
+        ssid: 'firstfloor',
+        ieee8021xProfileName: 'test',
+        linkPolicy: [14, 16]
+      }
+      const ieee8021xProfile = { profileName: 'test', authenticationProtocol: 0 }
+      const mockDb = {
+        wirelessProfiles: {
+          getByName: jest.fn()
+        },
+        ieee8021xProfiles: {
+          getByName: jest.fn()
+        }
+      }
+
+      wifiConfiguration.dbFactory = {
+        getDb: async () => mockDb
+      } as any
+      const getByNameSpy = jest.spyOn(mockDb.wirelessProfiles, 'getByName').mockReturnValue(expectedProfile)
+      const getIEEE8021xProfileByNameSpy = jest.spyOn(mockDb.ieee8021xProfiles, 'getByName').mockReturnValue(ieee8021xProfile)
+      const getPSKPassphraseSpy = jest.spyOn(wifiConfiguration.configurator.secretsManager, 'getSecretAtPath').mockImplementation(async () => ({ PSK_PASSPHRASE: 'Intel@123' }))
+
+      await wifiConfiguration.getWifiProfile(context, null)
+      expect(context.wifiProfile).toBe(expectedProfile)
+      expect(getPSKPassphraseSpy).toHaveBeenCalled()
+      expect(getByNameSpy).toHaveBeenCalled()
+      expect(getIEEE8021xProfileByNameSpy).toHaveBeenCalled()
     })
   })
 
@@ -230,75 +611,68 @@ describe('WiFi Network Configuration', () => {
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
       expect(WiFiPortConfigurationServiceSpy).toHaveBeenCalled()
     })
-    test('should add a WiFi Profile to AMT', async () => {
-      const getWifiProfileSpy = jest.spyOn(wifiConfiguration, 'getWifiProfile').mockResolvedValue({
+    it('should add WiFi settings to AMT', async () => {
+      context.wifiProfileCount = 0
+      context.wifiProfile = {
         profileName: 'home',
-        authenticationMethod: 4,
-        encryptionMethod: 4,
-        ssid: 'test',
-        pskPassphrase: 'Intel@123',
-        linkPolicy: ['14', '16'],
-        pskValue: 1,
-        tenantId: '',
-        ieee8021xProfileName: 'nacProfile'
-      })
-      const WiFiPortConfigurationServiceSpy = jest.spyOn(context.amt.WiFiPortConfigurationService, 'AddWiFiSettings').mockReturnValue('done')
+        authenticationMethod: 6,
+        encryptionMethod: 3,
+        ssid: 'my-home',
+        Priority: 0
+      }
+      context.addTrustedRootCertResponse = {
+        AddTrustedRootCertificate_OUTPUT: {
+          CreatedCertificate: {
+            ReferenceParameters: {
+              SelectorSet: { Selector: { _: 'test-root-cert' } }
+            }
+          }
+        }
+      }
+      const addWiFiSettingsSpy = jest.spyOn(context.amt.WiFiPortConfigurationService, 'AddWiFiSettings').mockReturnValue('done')
       await wifiConfiguration.addWifiConfigs(context, null)
-      expect(getWifiProfileSpy).toHaveBeenCalled()
-      expect(WiFiPortConfigurationServiceSpy).toHaveBeenCalled()
+      expect(addWiFiSettingsSpy).toHaveBeenCalledTimes(1)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
-  })
-
-  describe('WiFi Endpoint Settings', () => {
-    test('should get enumeration number for WiFi end point settings', async () => {
-      const WiFiEndpointSettingsSpy = jest.spyOn(context.cim.WiFiEndpointSettings, 'Enumerate').mockReturnValue('done')
-      await wifiConfiguration.enumerateWiFiEndpointSettings(context)
-      expect(invokeWsmanCallSpy).toHaveBeenCalled()
-      expect(WiFiEndpointSettingsSpy).toHaveBeenCalled()
-    })
-    test('should pull WiFi end point settings', async () => {
-      context.message = {
-        Envelope: {
-          Header: {
-            Action: { _: 'http://schemas.xmlsoap.org/ws/2004/09/enumeration/EnumerateResponse' },
-            ResourceURI: 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_WiFiEndpointSettings'
-          },
-          Body: { EnumerateResponse: { EnumerationContext: '92340000-0000-0000-0000-000000000000' } }
+    it('should add WiFi settings with 802.1x config to AMT', async () => {
+      context.eaResponse = {
+        username: 'test-username'
+      }
+      context.wifiProfileCount = 0
+      context.wifiProfile = {
+        profileName: 'test-profile',
+        authenticationMethod: 5,
+        encryptionMethod: 3,
+        ssid: 'test-ssid',
+        priority: 1,
+        ieee8021xProfileName: 'test-profile',
+        ieee8021xProfileObject: {
+          profileName: 'test-profile',
+          authenticationProtocol: 0
         }
       }
-      const WiFiEndpointSettingsSpy = jest.spyOn(context.cim.WiFiEndpointSettings, 'Pull').mockReturnValue('done')
-      await wifiConfiguration.pullWiFiEndpointSettings(context)
-      expect(WiFiEndpointSettingsSpy).toHaveBeenCalled()
-      expect(invokeWsmanCallSpy).toHaveBeenCalled()
-    })
-    test('Should read WiFi end point settings, if CIM_WiFiEndpointSettings is an array', () => {
-      context.message = {
-        Envelope: {
-          Header: {},
-          Body: { PullResponse: { Items: { CIM_WiFiEndpointSettings: [{ InstanceID: 'home', Priority: 1 }, { InstanceID: 'office', Priority: 2 }] } } }
+      context.addTrustedRootCertResponse = {
+        AddTrustedRootCertificate_OUTPUT: {
+          CreatedCertificate: {
+            ReferenceParameters: {
+              SelectorSet: { Selector: { _: 'tesrt-root-cert' } }
+            }
+          }
         }
       }
-      wifiConfiguration.readWiFiEndpointSettingsPullResponse(context, null)
-      expect(context.wifiEndPointSettings.length).toBe(2)
-    })
-    test('Should read WiFi end point settings', () => {
-      context.message = {
-        Envelope: {
-          Header: {},
-          Body: { PullResponse: { Items: { CIM_WiFiEndpointSettings: { InstanceID: 'home', Priority: 1 } } } }
+      context.addCertResponse = {
+        AddCertificate_OUTPUT: {
+          CreatedCertificate: {
+            ReferenceParameters: {
+              SelectorSet: { Selector: { _: 'test-client-cert' } }
+            }
+          }
         }
       }
-      wifiConfiguration.readWiFiEndpointSettingsPullResponse(context, null)
-      expect(context.wifiEndPointSettings.length).toBe(1)
-    })
-    test('Should delete profile from WiFi end point settings', async () => {
-      context.wifiEndPointSettings = [{ InstanceID: 'home', Priority: 1 }]
-      const WiFiEndpointSettingsSpy = jest.spyOn(context.cim.WiFiEndpointSettings, 'Delete').mockReturnValue('done')
-      await wifiConfiguration.deleteWiFiProfileOnAMTDevice(context, null)
-      expect(context.wifiEndPointSettings.length).toBe(0)
+      const addWiFiSettingsSpy = jest.spyOn(context.amt.WiFiPortConfigurationService, 'AddWiFiSettings').mockReturnValue('done')
+      await wifiConfiguration.addWifiConfigs(context, null)
+      expect(addWiFiSettingsSpy).toHaveBeenCalledTimes(1)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
-      expect(WiFiEndpointSettingsSpy).toHaveBeenCalled()
     })
   })
 
@@ -307,6 +681,48 @@ describe('WiFi Network Configuration', () => {
       const wifiPortSpy = jest.spyOn(context.cim.WiFiPort, 'RequestStateChange').mockReturnValue('done')
       await wifiConfiguration.updateWifiPort(context, null)
       expect(wifiPortSpy).toHaveBeenCalled()
+      expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    })
+  })
+
+  describe('certificates', () => {
+    it('should generate a key pair', async () => {
+      context.amt = { PublicKeyManagementService: { GenerateKeyPair: jest.fn().mockResolvedValue({}) } }
+      await wifiConfiguration.generateKeyPair(context, null)
+      expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    })
+
+    it('should send a message to pull public private key pairs', async () => {
+      context.amt = { PublicPrivateKeyPair: { Pull: jest.fn().mockResolvedValue({}) } }
+      context.message = { Envelope: { Body: { EnumeratorResponse: { EnumeratorContext: 'abc' } } } }
+      await wifiConfiguration.pullPublicPrivateKeyPair(context, null)
+      expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    })
+
+    it('should send a message to get enumerate public private key pairs', async () => {
+      context.message = { Envelope: { Body: { GenerateKeyPair_OUTPUT: { KeyPair: { ReferenceParameters: { SelectorSet: { Selector: { _: 'xyz' } } } } } } } }
+      context.amt = { PublicPrivateKeyPair: { Enumerate: jest.fn().mockResolvedValue({}) } }
+      await wifiConfiguration.enumeratePublicPrivateKeyPair(context, null)
+      expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    })
+
+    it('should addCertificate', async () => {
+      context.message = { Envelope: { Body: { PullResponse: { Items: { AMT_PublicPrivateKeyPair: {} } } } } }
+      await wifiConfiguration.addCertificate(context, { data: { response: { certificate: 'abcde' } } } as WiFiConfigEvent)
+      expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    })
+
+    it('should send a WSMan call to add radius server root cert', async () => {
+      context.message = { Envelope: { Body: 'abcd' } }
+      context.eaResponse = { rootcert: '1234' }
+      await wifiConfiguration.addRadiusServerRootCertificate(context, null)
+      expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    })
+
+    it('should send a message to sign CSR', async () => {
+      context.amt = { PublicKeyManagementService: { GeneratePKCS10RequestEx: jest.fn().mockResolvedValue({}) } }
+      context.message = { response: { csr: 'abc' } }
+      await wifiConfiguration.signCSR(context, null)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
   })

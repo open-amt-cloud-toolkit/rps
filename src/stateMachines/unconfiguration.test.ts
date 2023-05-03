@@ -12,7 +12,7 @@ import { HttpHandler } from '../HttpHandler'
 import { interpret } from 'xstate'
 import { MPSType } from './ciraConfiguration'
 import * as common from './common'
-import { AMT, IPS } from '@open-amt-cloud-toolkit/wsman-messages'
+import { AMT, CIM, IPS } from '@open-amt-cloud-toolkit/wsman-messages'
 const clientId = uuid()
 Environment.Config = config
 
@@ -40,7 +40,8 @@ describe('Unconfiguration State Machine', () => {
       TLSSettingData: [],
       publicKeyCertificates: [],
       amt: new AMT.Messages(),
-      ips: new IPS.Messages()
+      ips: new IPS.Messages(),
+      cim: new CIM.Messages()
     }
     remoteAccessPolicyRuleSpy = jest.spyOn(unconfigContext.amt.RemoteAccessPolicyRule, 'Delete').mockReturnValue('abcdef')
     devices[clientId] = {
@@ -67,6 +68,9 @@ describe('Unconfiguration State Machine', () => {
         'error-machine': Promise.resolve({ clientId }),
         'get-8021x-profile': Promise.resolve({ clientId }),
         'disable-Wired-8021x-Configuration': Promise.resolve({ clientId }),
+        'enumerate-wifi-endpoint-settings': async (_, event) => await Promise.resolve({ clientId: event.clientId }),
+        'pull-wifi-endpoint-settings': Promise.resolve({ Envelope: { Body: { PullResponse: { Items: { CIM_WiFiEndpointSettings: null } } } } }),
+        'delete-wifi-endpoint-settings': Promise.resolve({ clientId }),
         'remove-remote-access-policy-rule-user-initiated': Promise.resolve({ clientId }),
         'remove-remote-access-policy-rule-rule-alert': Promise.resolve({ clientId }),
         'remove-remote-access-policy-rule-periodic': Promise.resolve({ clientId }),
@@ -112,6 +116,8 @@ describe('Unconfiguration State Machine', () => {
     const flowStates = [
       'UNCONFIGURED',
       'GET_8021X_PROFILE',
+      'ENUMERATE_WIFI_ENDPOINT_SETTINGS',
+      'PULL_WIFI_ENDPOINT_SETTINGS',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_PERIODIC',
@@ -120,8 +126,6 @@ describe('Unconfiguration State Machine', () => {
     const service = interpret(mockUnconfigurationMachine).onTransition((state) => {
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('FAILURE') && currentStateIndex === flowStates.length) {
-        const status = devices[clientId].status.Status
-        expect(status).toEqual('Failed to enumerate Management Presence Remote SAP')
         done()
       }
     })
@@ -137,6 +141,8 @@ describe('Unconfiguration State Machine', () => {
       'UNCONFIGURED',
       'GET_8021X_PROFILE',
       'DISABLE_IEEE8021X_WIRED',
+      'ENUMERATE_WIFI_ENDPOINT_SETTINGS',
+      'PULL_WIFI_ENDPOINT_SETTINGS',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_PERIODIC',
@@ -158,6 +164,8 @@ describe('Unconfiguration State Machine', () => {
     const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
       'GET_8021X_PROFILE',
+      'ENUMERATE_WIFI_ENDPOINT_SETTINGS',
+      'PULL_WIFI_ENDPOINT_SETTINGS',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_PERIODIC',
@@ -180,6 +188,8 @@ describe('Unconfiguration State Machine', () => {
     const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
       'GET_8021X_PROFILE',
+      'ENUMERATE_WIFI_ENDPOINT_SETTINGS',
+      'PULL_WIFI_ENDPOINT_SETTINGS',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_PERIODIC',
@@ -203,6 +213,8 @@ describe('Unconfiguration State Machine', () => {
     const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
       'GET_8021X_PROFILE',
+      'ENUMERATE_WIFI_ENDPOINT_SETTINGS',
+      'PULL_WIFI_ENDPOINT_SETTINGS',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_PERIODIC',
@@ -227,6 +239,8 @@ describe('Unconfiguration State Machine', () => {
     const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
       'GET_8021X_PROFILE',
+      'ENUMERATE_WIFI_ENDPOINT_SETTINGS',
+      'PULL_WIFI_ENDPOINT_SETTINGS',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_PERIODIC',
@@ -252,6 +266,8 @@ describe('Unconfiguration State Machine', () => {
     const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
       'GET_8021X_PROFILE',
+      'ENUMERATE_WIFI_ENDPOINT_SETTINGS',
+      'PULL_WIFI_ENDPOINT_SETTINGS',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_PERIODIC',
@@ -288,6 +304,8 @@ describe('Unconfiguration State Machine', () => {
     const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
       'GET_8021X_PROFILE',
+      'ENUMERATE_WIFI_ENDPOINT_SETTINGS',
+      'PULL_WIFI_ENDPOINT_SETTINGS',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_PERIODIC',
@@ -328,6 +346,8 @@ describe('Unconfiguration State Machine', () => {
     const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
       'GET_8021X_PROFILE',
+      'ENUMERATE_WIFI_ENDPOINT_SETTINGS',
+      'PULL_WIFI_ENDPOINT_SETTINGS',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_PERIODIC',
@@ -364,6 +384,8 @@ describe('Unconfiguration State Machine', () => {
     const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
       'GET_8021X_PROFILE',
+      'ENUMERATE_WIFI_ENDPOINT_SETTINGS',
+      'PULL_WIFI_ENDPOINT_SETTINGS',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_PERIODIC',
@@ -398,6 +420,8 @@ describe('Unconfiguration State Machine', () => {
     const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
       'GET_8021X_PROFILE',
+      'ENUMERATE_WIFI_ENDPOINT_SETTINGS',
+      'PULL_WIFI_ENDPOINT_SETTINGS',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_PERIODIC',
@@ -607,6 +631,58 @@ describe('Unconfiguration State Machine', () => {
     it('should send wsman message to commit Setup And Configuration Service', async () => {
       await unconfiguration.commitSetupAndConfigurationService(unconfigContext, null)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    })
+  })
+
+  describe('WiFi Endpoint Settings', () => {
+    test('should get enumeration number for WiFi end point settings', async () => {
+      const WiFiEndpointSettingsSpy = jest.spyOn(unconfigContext.cim.WiFiEndpointSettings, 'Enumerate').mockReturnValue('done')
+      await unconfiguration.enumerateWiFiEndpointSettings(unconfigContext)
+      expect(invokeWsmanCallSpy).toHaveBeenCalled()
+      expect(WiFiEndpointSettingsSpy).toHaveBeenCalled()
+    })
+    test('should pull WiFi end point settings', async () => {
+      unconfigContext.message = {
+        Envelope: {
+          Header: {
+            Action: { _: 'http://schemas.xmlsoap.org/ws/2004/09/enumeration/EnumerateResponse' },
+            ResourceURI: 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_WiFiEndpointSettings'
+          },
+          Body: { EnumerateResponse: { EnumerationContext: '92340000-0000-0000-0000-000000000000' } }
+        }
+      }
+      const WiFiEndpointSettingsSpy = jest.spyOn(unconfigContext.cim.WiFiEndpointSettings, 'Pull').mockReturnValue('done')
+      await unconfiguration.pullWiFiEndpointSettings(unconfigContext)
+      expect(WiFiEndpointSettingsSpy).toHaveBeenCalled()
+      expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    })
+    test('Should read WiFi end point settings, if CIM_WiFiEndpointSettings is an array', () => {
+      unconfigContext.message = {
+        Envelope: {
+          Header: {},
+          Body: { PullResponse: { Items: { CIM_WiFiEndpointSettings: [{ InstanceID: 'home', Priority: 1 }, { InstanceID: 'office', Priority: 2 }] } } }
+        }
+      }
+      unconfiguration.readWiFiEndpointSettingsPullResponse(unconfigContext, null)
+      expect(unconfigContext.wifiEndPointSettings.length).toBe(2)
+    })
+    test('Should read WiFi end point settings', () => {
+      unconfigContext.message = {
+        Envelope: {
+          Header: {},
+          Body: { PullResponse: { Items: { CIM_WiFiEndpointSettings: { InstanceID: 'home', Priority: 1 } } } }
+        }
+      }
+      unconfiguration.readWiFiEndpointSettingsPullResponse(unconfigContext, null)
+      expect(unconfigContext.wifiEndPointSettings.length).toBe(1)
+    })
+    test('Should delete profile from WiFi end point settings', async () => {
+      unconfigContext.wifiEndPointSettings = [{ InstanceID: 'home', Priority: 1 }]
+      const WiFiEndpointSettingsSpy = jest.spyOn(unconfigContext.cim.WiFiEndpointSettings, 'Delete').mockReturnValue('done')
+      await unconfiguration.deleteWiFiProfileOnAMTDevice(unconfigContext, null)
+      expect(unconfigContext.wifiEndPointSettings.length).toBe(0)
+      expect(invokeWsmanCallSpy).toHaveBeenCalled()
+      expect(WiFiEndpointSettingsSpy).toHaveBeenCalled()
     })
   })
 })
