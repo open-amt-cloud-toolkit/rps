@@ -200,11 +200,36 @@ describe('validator', () => {
 
   describe('validate maintenance message', () => {
     let rpsError = null
+    let verifyDevicePasswordSpy
     beforeEach(() => {
+      jest.resetAllMocks()
       rpsError = null
       msg.method = 'maintenance'
+      msg.payload.task = 'synctime'
+      msg.payload.currentMode = 1
+      verifyDevicePasswordSpy = jest.spyOn(validator, 'verifyDevicePassword').mockResolvedValue()
+    })
+    test('should pass happy path', async () => {
+      try {
+        await validator.validateMaintenanceMsg(msg, clientId)
+      } catch (error) {
+        rpsError = error
+      }
+      expect(rpsError).toBeFalsy()
+      expect(verifyDevicePasswordSpy).toHaveBeenCalled()
+    })
+    test('should pass with force flag', async () => {
+      msg.payload.force = true
+      try {
+        await validator.validateMaintenanceMsg(msg, clientId)
+      } catch (error) {
+        rpsError = error
+      }
+      expect(rpsError).toBeFalsy()
+      expect(verifyDevicePasswordSpy).not.toHaveBeenCalled()
     })
     test('Should throw an exception if task is not specified', async () => {
+      msg.payload.task = ''
       try {
         await validator.validateMaintenanceMsg(msg, clientId)
       } catch (error) {
@@ -214,9 +239,7 @@ describe('validator', () => {
       expect(rpsError.message).toEqual(`${clientId} - missing maintenance task in message`)
     })
     test('Should throw an exception if device is in preprovisioning state', async () => {
-      // set mode explicitly to pre-provisioning
-      msg.payload.task = 'synctime'
-      msg.payload.mode = 0
+      msg.payload.currentMode = 0
       try {
         await validator.validateMaintenanceMsg(msg, clientId)
       } catch (error) {
@@ -310,11 +333,14 @@ describe('validator', () => {
   describe('validate deactivation message', () => {
     let rpsError
     let verifyAMTVersionSpy
+    let verifyDevicePasswordSpy
     beforeEach(() => {
+      jest.resetAllMocks()
       msg.method = 'deactivation'
       rpsError = null
       devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
       verifyAMTVersionSpy = jest.spyOn(validator, 'verifyAMTVersion')
+      verifyDevicePasswordSpy = jest.spyOn(validator, 'verifyDevicePassword').mockResolvedValue()
     })
     test('should throw an exception when device is already in pre-provisioning mode', async () => {
       try {
@@ -340,13 +366,15 @@ describe('validator', () => {
       msg.payload.force = true
       await validator.validateDeactivationMsg(msg, clientId)
       expect(verifyAMTVersionSpy).toHaveBeenCalled()
+      expect(verifyDevicePasswordSpy).not.toHaveBeenCalled()
       expect(devices[clientId].ClientData).toEqual(msg)
     })
     test('should set client data when current mode is 2', async () => {
       msg.payload.currentMode = 2
-      msg.payload.force = true
+      delete msg.payload.force
       await validator.validateDeactivationMsg(msg, clientId)
       expect(verifyAMTVersionSpy).toHaveBeenCalled()
+      expect(verifyDevicePasswordSpy).toHaveBeenCalled()
       expect(devices[clientId].ClientData).toEqual(msg)
     })
   })
