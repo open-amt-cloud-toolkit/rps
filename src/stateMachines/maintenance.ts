@@ -114,8 +114,10 @@ export class Maintenance {
             onDone: {
               actions: assign({ statusMessage: (context, event) => 'AMT Password Changed' }),
               target: 'SUCCESS'
-            },
-            onError: 'ERROR'
+            }
+          },
+          on: {
+            ONFAILED: 'FAILURE'
           }
         },
         SYNC_IP_ADDRESS: {

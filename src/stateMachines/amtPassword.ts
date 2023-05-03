@@ -5,7 +5,7 @@
 
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 import { assign, createMachine } from 'xstate'
-import { send } from 'xstate/lib/actions'
+import { pure, send, sendParent } from 'xstate/lib/actions'
 import { HttpHandler } from '../HttpHandler'
 import { invokeWsmanCall } from './common'
 import Logger from '../Logger'
@@ -126,11 +126,14 @@ export class AMTPassword {
           onDone: 'GET_GENERAL_SETTINGS'
         },
         on: {
-          ONFAILED: 'FAILED'
+          ONFAILED: {
+            actions: assign({ errorMessage: (context, event) => event.data }),
+            target: 'FAILED'
+          }
         }
       },
       FAILED: {
-        type: 'final'
+        entry: ['respondBadRequest']
       },
       SUCCESS: {
         type: 'final'
@@ -141,9 +144,14 @@ export class AMTPassword {
       isDigestRealmInvalid: (context, event) => !this.validator.isDigestRealmValid(context.generalSettings.DigestRealm)
     },
     actions: {
+      respondBadRequest: pure((context, event) => this.respondBadRequest(context, event)),
       'Reset Unauth Count': (context, event) => { devices[context.clientId].unauthCount = 0 }
     }
   })
+
+  respondBadRequest (context, event): any {
+    return sendParent({ type: 'ONFAILED', data: context.errorMessage })
+  }
 
   async getGeneralSettings (context): Promise<any> {
     const amt = new AMT.Messages()
