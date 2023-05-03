@@ -92,7 +92,7 @@ export class DataProcessor {
     await this.validator.validateDeactivationMsg(clientMsg, clientId) // Validate the deactivation message payload
     this.setConnectionParams(clientId, 'admin', clientMsg.payload.password, clientMsg.payload.uuid)
     deactivation.service.start()
-    deactivation.service.send({ type: 'UNPROVISION', clientId, data: null })
+    deactivation.service.send({ type: 'UNPROVISION', clientId, tenantId: clientMsg.tenantId, data: null })
   }
 
   async handleResponse (clientMsg: ClientMsg, clientId: string): Promise<void> {
