@@ -1,3 +1,51 @@
+<a name="2.10.0"></a>
+## [2.10.0] - 2023-05-04
+### Build
+- update package.json to v2.10.0 (#e81a8e6) 
+- **deps:** bump express-validator from 6.15.0 to 7.0.1 ([#967](https://github.com/open-amt-cloud-toolkit/rps/issues/967)) (#23bfcf7) 
+- **deps:** bump [@open](https://github.com/open)-amt-cloud-toolkit/wsman-messages (#86aa0fd) 
+- **deps:** bump xml2js from 0.4.23 to 0.5.0 (#d41dbd9) 
+- **deps:** bump xstate from 4.37.1 to 4.37.2 ([#986](https://github.com/open-amt-cloud-toolkit/rps/issues/986)) (#b334b9a) 
+- **deps:** bump [@open](https://github.com/open)-amt-cloud-toolkit/wsman-messages ([#983](https://github.com/open-amt-cloud-toolkit/rps/issues/983)) (#cbfcd5c) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 16.18.23 to 16.18.24 ([#976](https://github.com/open-amt-cloud-toolkit/rps/issues/976)) (#48ce3a7) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 5.59.0 to 5.59.1 ([#981](https://github.com/open-amt-cloud-toolkit/rps/issues/981)) (#a4d1a29) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin ([#982](https://github.com/open-amt-cloud-toolkit/rps/issues/982)) (#407f8e9) 
+- **deps-dev:** bump eslint from 8.38.0 to 8.39.0 ([#980](https://github.com/open-amt-cloud-toolkit/rps/issues/980)) (#b9340bf) 
+- **deps-dev:** bump sinon from 15.0.3 to 15.0.4 ([#979](https://github.com/open-amt-cloud-toolkit/rps/issues/979)) (#d94a0b9) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 16.18.24 to 16.18.25 ([#984](https://github.com/open-amt-cloud-toolkit/rps/issues/984)) (#cb0304c) 
+- **deps-dev:** bump jest-junit from 15.0.0 to 16.0.0 ([#968](https://github.com/open-amt-cloud-toolkit/rps/issues/968)) (#562078f) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 5.58.0 to 5.59.0 ([#970](https://github.com/open-amt-cloud-toolkit/rps/issues/970)) (#74fd2d8) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin ([#971](https://github.com/open-amt-cloud-toolkit/rps/issues/971)) (#90debe8) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 5.59.1 to 5.59.2 ([#990](https://github.com/open-amt-cloud-toolkit/rps/issues/990)) (#70d71ef) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 5.57.1 to 5.58.0 (#dd5c1f3) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin (#0023c4f) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin ([#989](https://github.com/open-amt-cloud-toolkit/rps/issues/989)) (#693658e) 
+- **deps-dev:** bump eslint from 8.37.0 to 8.38.0 (#0ed0081) 
+- **docker:** ensure healthcheck remains in same location ([#965](https://github.com/open-amt-cloud-toolkit/rps/issues/965)) (#11b2ec4) 
+- **docker:** reduce docker image size and reduce vulnerability surface area (#1fac691) 
+
+### Ci
+- break out codeql report into separate workflow (#113336e) 
+- add report of codeql ([#898](https://github.com/open-amt-cloud-toolkit/rps/issues/898)) (#8dbb72f) 
+- **deps:** bump codecov to v3.1.3 (#a5ed6cb) 
+
+### Feat
+- implemented configuration of 8021x wireless profiles on AMT ([#985](https://github.com/open-amt-cloud-toolkit/rps/issues/985)) (#f4693a2) 
+- implement wireless 8021x APIs ([#950](https://github.com/open-amt-cloud-toolkit/rps/issues/950)) (#cf9f402) 
+- **maintenance:** add -f (force) flag ([#977](https://github.com/open-amt-cloud-toolkit/rps/issues/977)) (#054604d) 
+
+### Fix
+- multitenancy and deactivation ([#987](https://github.com/open-amt-cloud-toolkit/rps/issues/987)) (#ca2eea6) 
+- handle multitenancy for profiles with wifi ([#988](https://github.com/open-amt-cloud-toolkit/rps/issues/988)) (#dd451a3) 
+- not saving passphrase in vault ([#972](https://github.com/open-amt-cloud-toolkit/rps/issues/972)) (#091de69) 
+- added timer on ea response calls ([#966](https://github.com/open-amt-cloud-toolkit/rps/issues/966)) (#61fd283) 
+- address hyphen in passwordValidation to be correct (#a3849d1) 
+- **db:** ieee8021x foreign key violoation message ([#975](https://github.com/open-amt-cloud-toolkit/rps/issues/975)) (#74769c9) 
+
+### Refactor
+- network configuration state machine ([#956](https://github.com/open-amt-cloud-toolkit/rps/issues/956)) (#d479cd4) 
+- configurable delays and timeouts primarily for state machines ([#942](https://github.com/open-amt-cloud-toolkit/rps/issues/942)) (#788043b) 
+
 <a name="2.9.0"></a>
 ## [2.9.0] - 2023-04-05
 ### Build
