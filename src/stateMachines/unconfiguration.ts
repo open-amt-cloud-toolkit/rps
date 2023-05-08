@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import { type CIM, type AMT, type IPS } from '@open-amt-cloud-toolkit/wsman-messages'
-import { createMachine, assign, send } from 'xstate'
+import { createMachine, assign, sendTo } from 'xstate'
 import { CertManager } from '../certManager'
 import { Configurator } from '../Configurator'
 import { type HttpHandler } from '../HttpHandler'
@@ -90,7 +90,7 @@ export class Unconfiguration {
           }
         },
         ERROR: {
-          entry: send({ type: 'PARSE' }, { to: 'error-machine' }),
+          entry: sendTo('error-machine', { type: 'PARSE' }),
           invoke: {
             src: this.error.machine,
             id: 'error-machine',

@@ -4,8 +4,8 @@
  **********************************************************************/
 
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
-import { assign, createMachine } from 'xstate'
-import { pure, send, sendParent } from 'xstate/lib/actions'
+import { assign, createMachine, sendTo, sendParent } from 'xstate'
+import { pure } from 'xstate/lib/actions'
 import { HttpHandler } from '../HttpHandler'
 import { invokeWsmanCall } from './common'
 import Logger from '../Logger'
@@ -114,7 +114,7 @@ export class AMTPassword {
         always: 'FAILED'
       },
       ERROR: {
-        entry: send({ type: 'PARSE' }, { to: 'error-machine' }),
+        entry: sendTo('error-machine', { type: 'PARSE' }),
         invoke: {
           src: this.error.machine,
           id: 'error-machine',

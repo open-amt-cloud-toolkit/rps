@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
-import { createMachine, interpret, send, assign } from 'xstate'
+import { createMachine, interpret, assign, sendTo } from 'xstate'
 import { HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
 import ClientResponseMsg from '../utils/ClientResponseMsg'
@@ -86,7 +86,7 @@ export class Maintenance {
           }
         },
         SYNC_TIME: {
-          entry: send({ type: 'TIMETRAVEL' }, { to: 'time-machine' }),
+          entry: sendTo('time-machine', { type: 'TIMETRAVEL' }),
           invoke: {
             src: this.timeSync.machine,
             id: 'time-machine',
@@ -101,7 +101,7 @@ export class Maintenance {
           }
         },
         CHANGE_PASSWORD: {
-          entry: send({ type: 'CHANGEPASSWORD' }, { to: 'change-amt-password' }),
+          entry: sendTo('change-amt-password', { type: 'CHANGEPASSWORD' }),
           invoke: {
             src: this.amtPassword.machine,
             id: 'change-amt-password',
@@ -121,7 +121,7 @@ export class Maintenance {
           }
         },
         SYNC_IP_ADDRESS: {
-          entry: send({ type: 'SYNC_IP' }, { to: 'sync-ip-address' }),
+          entry: sendTo('sync-ip-address', { type: 'SYNC_IP' }),
           invoke: {
             src: this.ipSync.machine,
             id: 'sync-ip-address',
@@ -141,7 +141,7 @@ export class Maintenance {
           }
         },
         SYNC_HOST_NAME: {
-          entry: send({ type: 'SYNCHOSTNAME' }, { to: 'sync-hostname' }),
+          entry: sendTo('sync-hostname', { type: 'SYNCHOSTNAME' }),
           invoke: {
             data: {
               unauthCount: (context, event) => context.unauthCount,
@@ -159,7 +159,7 @@ export class Maintenance {
           }
         },
         ERROR: {
-          entry: send({ type: 'PARSE' }, { to: 'error-machine' }),
+          entry: sendTo('error-machine', { type: 'PARSE' }),
           invoke: {
             src: this.error.machine,
             id: 'error-machine',

@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import { type AMT, type CIM, type IPS } from '@open-amt-cloud-toolkit/wsman-messages'
-import { assign, createMachine, send } from 'xstate'
+import { assign, createMachine, sendTo } from 'xstate'
 import { type HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
 import { type AMTConfiguration } from '../models'
@@ -286,7 +286,7 @@ export class WiredConfiguration {
           }
         },
         ERROR: {
-          entry: send({ type: 'PARSE' }, { to: 'error-machine' }),
+          entry: sendTo('error-machine', { type: 'PARSE' }),
           invoke: {
             src: this.error.machine,
             id: 'error-machine',
