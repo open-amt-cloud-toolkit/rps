@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import { type AMT, type CIM } from '@open-amt-cloud-toolkit/wsman-messages'
-import { assign, createMachine, send } from 'xstate'
+import { assign, createMachine, sendTo } from 'xstate'
 import { type WirelessConfig } from '../models/RCS.Config'
 import { type HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
@@ -331,7 +331,7 @@ export class WiFiConfiguration {
           ]
         },
         ERROR: {
-          entry: send({ type: 'PARSE' }, { to: 'error-machine' }),
+          entry: sendTo('error-machine', { type: 'PARSE' }),
           invoke: {
             src: this.error.machine,
             id: 'error-machine',

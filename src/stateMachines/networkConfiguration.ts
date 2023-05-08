@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import { type AMT, type CIM } from '@open-amt-cloud-toolkit/wsman-messages'
-import { assign, createMachine, send } from 'xstate'
+import { assign, createMachine, sendTo } from 'xstate'
 import { type HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
 import { type AMTConfiguration } from '../models'
@@ -149,7 +149,7 @@ export class NetworkConfiguration {
           ]
         },
         WIRED_CONFIGURATION: {
-          entry: send({ type: 'WIREDCONFIG' }, { to: 'wired-network-configuration-machine' }),
+          entry: sendTo('wired-network-configuration-machine', { type: 'WIREDCONFIG' }),
           invoke: {
             src: this.wiredConfiguration.machine,
             id: 'wired-network-configuration-machine',
@@ -172,7 +172,7 @@ export class NetworkConfiguration {
           }
         },
         WIFI_CONFIGURATION: {
-          entry: send({ type: 'WIFICONFIG' }, { to: 'wifi-network-configuration-machine' }),
+          entry: sendTo('wifi-network-configuration-machine', { type: 'WIFICONFIG' }),
           invoke: {
             src: this.wifiConfiguration.machine,
             id: 'wifi-network-configuration-machine',
@@ -189,7 +189,7 @@ export class NetworkConfiguration {
           }
         },
         ERROR: {
-          entry: send({ type: 'PARSE' }, { to: 'error-machine' }),
+          entry: sendTo('error-machine', { type: 'PARSE' }),
           invoke: {
             src: this.error.machine,
             id: 'error-machine',

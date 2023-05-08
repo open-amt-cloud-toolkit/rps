@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import { AMT, IPS, CIM } from '@open-amt-cloud-toolkit/wsman-messages'
-import { assign, createMachine, interpret } from 'xstate'
+import { assign, createMachine, interpret, sendTo } from 'xstate'
 import { ClientAction } from '../models/RCS.Config'
 import { HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
@@ -16,7 +16,6 @@ import got from 'got'
 import { CertManager } from '../certManager'
 import { PasswordHelper } from '../utils/PasswordHelper'
 import { SignatureHelper } from '../utils/SignatureHelper'
-import { send } from 'xstate/lib/actions'
 import { Error } from './error'
 import { FeaturesConfiguration } from './featuresConfiguration'
 import { NodeForge } from '../NodeForge'
@@ -461,7 +460,7 @@ export class Activation {
           }
         },
         UNCONFIGURATION: {
-          entry: send({ type: 'REMOVEPOLICY' }, { to: 'unconfiguration-machine' }),
+          entry: sendTo('unconfiguration-machine', { type: 'REMOVEPOLICY' }),
           invoke: {
             src: this.unconfiguration.machine,
             id: 'unconfiguration-machine',
@@ -477,7 +476,7 @@ export class Activation {
           }
         },
         NETWORK_CONFIGURATION: {
-          entry: send({ type: 'NETWORKCONFIGURATION' }, { to: 'network-configuration-machine' }),
+          entry: sendTo('network-configuration-machine', { type: 'NETWORKCONFIGURATION' }),
           invoke: {
             src: this.networkConfiguration.machine,
             id: 'network-configuration-machine',
@@ -494,7 +493,7 @@ export class Activation {
           }
         },
         FEATURES_CONFIGURATION: {
-          entry: send({ type: 'CONFIGURE_FEATURES' }, { to: 'features-configuration-machine' }),
+          entry: sendTo('features-configuration-machine', { type: 'CONFIGURE_FEATURES' }),
           invoke: {
             src: this.featuresConfiguration.machine,
             id: 'features-configuration-machine',
@@ -516,7 +515,7 @@ export class Activation {
           }
         },
         CIRA: {
-          entry: send({ type: 'CONFIGURE_CIRA' }, { to: 'cira-machine' }),
+          entry: sendTo('cira-machine', { type: 'CONFIGURE_CIRA' }),
           invoke: {
             src: this.cira.machine,
             id: 'cira-machine',
@@ -531,7 +530,7 @@ export class Activation {
           }
         },
         TLS: {
-          entry: send({ type: 'CONFIGURE_TLS' }, { to: 'tls-machine' }),
+          entry: sendTo('tls-machine', { type: 'CONFIGURE_TLS' }),
           invoke: {
             src: this.tls.machine,
             id: 'tls-machine',
@@ -552,7 +551,7 @@ export class Activation {
           type: 'final'
         },
         ERROR: {
-          entry: send({ type: 'PARSE' }, { to: 'error-machine' }),
+          entry: sendTo('error-machine', { type: 'PARSE' }),
           invoke: {
             src: this.error.machine,
             id: 'error-machine',

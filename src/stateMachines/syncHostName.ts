@@ -13,7 +13,7 @@ import { devices } from '../WebSocketListener'
 import { Environment } from '../utils/Environment'
 import { MqttProvider } from '../utils/MqttProvider'
 import got from 'got'
-import { send } from 'xstate/lib/actions'
+import { sendTo } from 'xstate/lib/actions'
 
 export interface HostnameConfiguration {
   dnsSuffixOS: string
@@ -111,7 +111,7 @@ export class SyncHostName {
         }
       },
       ERROR: {
-        entry: send({ type: 'PARSE' }, { to: 'error-machine' }),
+        entry: sendTo('error-machine', { type: 'PARSE' }),
         invoke: {
           src: this.error.machine,
           id: 'error-machine',

@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import { type AMT } from '@open-amt-cloud-toolkit/wsman-messages'
-import { assign, createMachine, send } from 'xstate'
+import { assign, createMachine, sendTo } from 'xstate'
 import { CertManager } from '../certManager'
 import { HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
@@ -328,7 +328,7 @@ export class TLS {
           }
         },
         SYNC_TIME: {
-          entry: send({ type: 'TIMETRAVEL' }, { to: 'time-machine' }),
+          entry: sendTo('time-machine', { type: 'TIMETRAVEL' }),
           invoke: {
             src: this.timeSync.machine,
             id: 'time-machine',
@@ -445,7 +445,7 @@ export class TLS {
           }
         },
         ERROR: {
-          entry: send({ type: 'PARSE' }, { to: 'error-machine' }),
+          entry: sendTo('error-machine', { type: 'PARSE' }),
           invoke: {
             src: 'this.error.machine',
             id: 'error-machine',

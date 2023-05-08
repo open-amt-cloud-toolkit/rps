@@ -4,8 +4,7 @@
  **********************************************************************/
 
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
-import { assign, createMachine, interpret } from 'xstate'
-import { send } from 'xstate/lib/actions'
+import { assign, createMachine, interpret, sendTo } from 'xstate'
 import { Configurator } from '../Configurator'
 import { HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
@@ -135,7 +134,7 @@ export class Deactivation {
             }],
             onError: 'FAILED'
           },
-          entry: send({ type: 'PARSE' }, { to: 'error-machine' }),
+          entry: sendTo('error-machine', { type: 'PARSE' }),
           on: {
             ONFAILED: {
               actions: assign({ errorMessage: (context, event) => event.data }),
