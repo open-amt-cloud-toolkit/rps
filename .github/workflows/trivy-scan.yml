@@ -1,27 +1,26 @@
-name: trivy-scan
+name: Trivy Container Scan
+
 on:
   push:
-    branches:
-      - master
+    branches: [ main ]
   pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ main ]
 jobs:
   build:
-    name: Build
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    runs-on: ubuntu-latest
 
-      - name: Run Trivy vulnerability scanner in repo mode
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build the Docker image
+
+        run: docker build . --file Dockerfile --tag vprodemo.azurecr.io/rps:${{ github.sha }} --tag vprodemo.azurecr.io/rps:latest
+      - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          scan-type: 'fs'
+          image-ref: 'vprodemo.azurecr.io/rps:${{ github.sha }}'
+          format: 'table'
+          exit-code: '1'
           ignore-unfixed: true
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-          severity: 'CRITICAL'
-
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: 'trivy-results.sarif'
+          vuln-type: 'os,library'
+          severity: 'UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL'
