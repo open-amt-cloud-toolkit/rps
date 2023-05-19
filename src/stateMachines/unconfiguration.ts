@@ -323,6 +323,7 @@ export class Unconfiguration {
         PULL_TLS_SETTING_DATA_RESPONSE: {
           always: [
             { cond: 'tlsSettingDataEnabled', target: 'DISABLE_TLS_SETTING_DATA' },
+            //            { cond: 'tlsSettingData2Enabled', target: 'DISABLE_TLS_SETTING_DATA' },
             { cond: 'is8021xProfileDisabled', target: 'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR' },
             { target: 'ENUMERATE_PUBLIC_KEY_CERTIFICATE' }
           ]
@@ -565,7 +566,9 @@ export class Unconfiguration {
         hasPrivateCerts: (context, event) => context.privateCerts.length > 0,
         isLMSTLSSettings: (context, event) => context.message.Envelope.Body.AMT_TLSSettingData?.ElementName === 'Intel(r) AMT LMS TLS Settings',
         is8023TLS: (context, event) => context.message.Envelope.Body.AMT_TLSSettingData?.ElementName === 'Intel(r) AMT 802.3 TLS Settings' && context.TLSSettingData[1].Enabled,
-        tlsSettingDataEnabled: (context, event) => context.message.Envelope.Body.PullResponse.Items.AMT_TLSSettingData?.[0].Enabled || context.message.Envelope.Body.PullResponse.Items.AMT_TLSSettingData?.[1].Enabled,
+        tlsSettingDataEnabled: (context, event) => context.message.Envelope.Body.PullResponse.Items.AMT_TLSSettingData?.[0].Enabled || context.message.Envelope.Body.PullResponse.Items.AMT_TLSSettingData?.[1].Enabled, // NonSecureConnectionsSupported === 'true',  //only disable if NonSecureConnectionsSupported  is true
+        //   tlsSettingDataEnabled: (context, event) => context.message.Envelope.Body.PullResponse.Items.AMT_TLSSettingData?.[0].Enabled && context.message.Envelope.Body.PullResponse.Items.NonSecureConnectionsSupported === 'true',  //only disable if NonSecureConnectionsSupported  is true
+        //   tlsSettingData2Enabled: (context, event) => context.message.Envelope.Body.PullResponse.Items.AMT_TLSSettingData?.[1].Enabled && context.message.Envelope.Body.PullResponse.Items.NonSecureConnectionsSupported === 'true',  //only disable if NonSecureConnectionsSupported  is true
         hasMPSEntries: (context, event) => context.message.Envelope.Body.PullResponse.Items?.AMT_ManagementPresenceRemoteSAP != null,
         hasPublicKeyCertificate: (context, event) => context.publicKeyCertificates?.length > 0,
         hasEnvSettings: (context, event) => context.message.Envelope.Body.AMT_EnvironmentDetectionSettingData.DetectionStrings != null,
