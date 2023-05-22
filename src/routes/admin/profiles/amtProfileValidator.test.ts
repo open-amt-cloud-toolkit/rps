@@ -26,6 +26,7 @@ describe('AMT Profile Validation', () => {
         tags: ['acm'],
         tlsMode: 2,
         dhcpEnabled: false,
+        ipSyncEnabled: true,
         generateRandomPassword: false,
         amtPassword: 'ABCabc123!@#',
         generateRandomMEBxPassword: false,

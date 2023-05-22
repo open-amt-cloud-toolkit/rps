@@ -148,6 +148,7 @@ export class AMTConfiguration {
   ciraConfigObject?: CIRAConfig
   tags?: string[]
   dhcpEnabled?: boolean
+  ipSyncEnabled?: boolean
   wifiConfigs?: ProfileWifiConfigs[]
   tenantId: string
   tlsMode?: TlsMode

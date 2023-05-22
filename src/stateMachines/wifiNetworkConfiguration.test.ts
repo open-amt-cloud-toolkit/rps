@@ -115,6 +115,7 @@ describe('WiFi Network Configuration', () => {
       generateRandomMEBxPassword: false,
       tags: ['acm'],
       dhcpEnabled: true,
+      ipSyncEnabled: true,
       wifiConfigs: [
         {
           priority: 1,
