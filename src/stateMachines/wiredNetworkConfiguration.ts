@@ -15,6 +15,7 @@ import { DbCreatorFactory } from '../factories/DbCreatorFactory'
 import { invokeWsmanCall } from './common'
 import { UNEXPECTED_PARSE_ERROR } from '../utils/constants'
 import { getCertFromEnterpriseAssistant, initiateCertRequest, sendEnterpriseAssistantKeyPairResponse } from './enterpriseAssistant'
+import { RPSError } from '../utils/RPSError'
 
 interface WiredConfigContext {
   amtProfile: AMTConfiguration
@@ -92,7 +93,7 @@ export class WiredConfiguration {
               target: 'CHECK_ETHERNET_PORT_SETTINGS_PUT_RESPONSE'
             },
             onError: {
-              actions: assign({ errorMessage: (context, event) => 'Failed to put to ethernet port settings' }),
+              actions: assign({ errorMessage: (context, event) => event.data.message }),
               target: 'FAILED'
             }
           }
@@ -312,11 +313,14 @@ export class WiredConfiguration {
     }, {
       guards: {
         isNotEthernetSettingsUpdated: (context, event) => {
-          const amtEthernetPortSettings: AMT.Models.EthernetPortSettings = context.message.Envelope.Body.AMT_EthernetPortSettings
-          if (context.amtProfile.dhcpEnabled === amtEthernetPortSettings.DHCPEnabled && !(context.amtProfile.dhcpEnabled) === amtEthernetPortSettings.SharedStaticIp && amtEthernetPortSettings.IpSyncEnabled) {
-            return false
+          const settings: AMT.Models.EthernetPortSettings = context.message.Envelope.Body.AMT_EthernetPortSettings
+          if (context.amtProfile.dhcpEnabled) {
+            return !settings.DHCPEnabled || !settings.IpSyncEnabled || settings.SharedStaticIp
+          } else {
+            return settings.DHCPEnabled ||
+              settings.IpSyncEnabled !== (context.amtProfile.ipSyncEnabled ?? true) ||
+              settings.SharedStaticIp !== settings.IpSyncEnabled
           }
-          return true
         },
         is8021xProfilesExists: (context, event) => context.amtProfile.ieee8021xProfileName != null,
         shouldRetry: (context, event) => context.retryCount < 3 && event.data instanceof UNEXPECTED_PARSE_ERROR
@@ -338,14 +342,34 @@ export class WiredConfiguration {
   }
 
   async putEthernetPortSettings (context): Promise<any> {
+    /**
+     * CONFIGURATION | DHCPEnabled | IpSyncEnabled | SharedStaticIp | IPAddress | SubnetMask | DefaultGwy | PrimaryDNS | SecondaryDNS
+     * ------------------------------------------------------------------------------------------------------------------------------------------------
+     *     DHCP      | TRUE        | TRUE          | FALSE          | NULL      | NULL       | NULL       | NULL       | NULL
+     * ------------------------------------------------------------------------------------------------------------------------------------------------
+     *   Static IP   | FALSE       | FALSE         | FALSE          | Required  | Required   | Optional   | Optional   | Optional
+     *   Static IP   | FALSE       | TRUE          | TRUE           | NULL      | NULL       | NULL       | NULL       | NULL
+     * ------------------------------------------------------------------------------------------------------------------------------------------------
+     */
     if (context.amtProfile.dhcpEnabled) {
       context.wiredSettings.DHCPEnabled = true
+      context.wiredSettings.IpSyncEnabled = true
       context.wiredSettings.SharedStaticIp = false
     } else {
       context.wiredSettings.DHCPEnabled = false
-      context.wiredSettings.SharedStaticIp = true
+      // Enable Intel AMT to synchronize to the host IP by setting IPSyncEnabled to TRUE
+      // if this value is FALSE, then the IP address must be set by supplying the IPAddress property manually
+      // The value can match the host IP address.
+      //
+      // initially, RPS always set IpSyncEnabled to true
+      // there are some customers that have configured AMT with static IP different
+      // from the host OS ... so ipSyncEnabled comes from the profile, but might not
+      // be present.
+      context.wiredSettings.IpSyncEnabled = context.amtProfile.ipSyncEnabled ?? true
+      // SharedStaticIp follows IpSyncEnabled
+      context.wiredSettings.SharedStaticIp = context.wiredSettings.IpSyncEnabled
     }
-    context.wiredSettings.IpSyncEnabled = true
+
     if (context.wiredSettings.DHCPEnabled || context.wiredSettings.IpSyncEnabled) {
       // When 'DHCPEnabled' property is set to true the following properties should be removed:
       // SubnetMask, DefaultGateway, IPAddress, PrimaryDNS, SecondaryDNS.
@@ -355,15 +379,11 @@ export class WiredConfiguration {
       delete context.wiredSettings.PrimaryDNS
       delete context.wiredSettings.SecondaryDNS
     } else {
-      // TBD: To set static IP address the values should be read from the REST API
-      // ethernetPortSettings.SubnetMask = "255.255.255.0";
-      // ethernetPortSettings.DefaultGateway = "192.168.1.1";
-      // ethernetPortSettings.IPAddress = "192.168.1.223";
-      // ethernetPortSettings.PrimaryDNS = "192.168.1.1";
-      // ethernetPortSettings.SecondaryDNS = "192.168.1.1";
+      if (!context.wiredSettings.IPAddress || !context.wiredSettings.SubnetMask) {
+        throw new RPSError(
+          'Invalid configuration - IPAddress and SubnetMask are required when AMT profile is static and IpSyncEnabled is false')
+      }
     }
-    // this.logger.debug(`Updated Network configuration to set on device :  ${JSON.stringify(context.message, null, '\t')}`)
-    // put request to update ethernet port settings on the device
     context.xmlMessage = context.amt.EthernetPortSettings.Put(context.wiredSettings)
     return await invokeWsmanCall(context, 2)
   }

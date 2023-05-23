@@ -53,7 +53,7 @@ export class ProfilesTable implements IProfilesTable {
       generate_random_password as "generateRandomPassword",
       generate_random_mebx_password as "generateRandomMEBxPassword",
       tags as "tags", 
-      dhcp_enabled as "dhcpEnabled", 
+      dhcp_enabled as "dhcpEnabled",
       tls_mode as "tlsMode",
       user_consent as "userConsent",
       ider_enabled as "iderEnabled",
@@ -63,7 +63,8 @@ export class ProfilesTable implements IProfilesTable {
       tls_signing_authority as "tlsSigningAuthority",
       p.xmin as "version",
       ieee8021x_profile_name as "ieee8021xProfileName",
-      COALESCE(json_agg(json_build_object('profileName',wc.wireless_profile_name, 'priority', wc.priority)) FILTER (WHERE wc.wireless_profile_name IS NOT NULL), '[]') AS "wifiConfigs" 
+      COALESCE(json_agg(json_build_object('profileName',wc.wireless_profile_name, 'priority', wc.priority)) FILTER (WHERE wc.wireless_profile_name IS NOT NULL), '[]') AS "wifiConfigs",
+      ip_sync_enabled as "ipSyncEnabled"
     FROM profiles p
     LEFT JOIN profiles_wirelessconfigs wc ON wc.profile_name = p.profile_name AND wc.tenant_id = p.tenant_id
     WHERE p.tenant_id = $3
@@ -82,7 +83,8 @@ export class ProfilesTable implements IProfilesTable {
       sol_enabled,
       tls_signing_authority,
       p.tenant_id,
-      ieee8021x_profile_name
+      ieee8021x_profile_name,
+      ip_sync_enabled
     ORDER BY p.profile_name 
     LIMIT $1 OFFSET $2`, [top, skip, tenantId])
 
@@ -114,7 +116,8 @@ export class ProfilesTable implements IProfilesTable {
       tls_signing_authority as "tlsSigningAuthority",
       p.xmin as "version",
       ieee8021x_profile_name as "ieee8021xProfileName",
-      COALESCE(json_agg(json_build_object('profileName',wc.wireless_profile_name, 'priority', wc.priority)) FILTER (WHERE wc.wireless_profile_name IS NOT NULL), '[]') AS "wifiConfigs"
+      COALESCE(json_agg(json_build_object('profileName',wc.wireless_profile_name, 'priority', wc.priority)) FILTER (WHERE wc.wireless_profile_name IS NOT NULL), '[]') AS "wifiConfigs",
+      ip_sync_enabled as "ipSyncEnabled"
     FROM profiles p
     LEFT JOIN profiles_wirelessconfigs wc ON wc.profile_name = p.profile_name AND wc.tenant_id = p.tenant_id
     WHERE p.profile_name = $1 and p.tenant_id = $2
@@ -133,7 +136,8 @@ export class ProfilesTable implements IProfilesTable {
       sol_enabled,
       tls_signing_authority,
       p.tenant_id,
-      ieee8021x_profile_name
+      ieee8021x_profile_name,
+      ip_sync_enabled
     `, [profileName, tenantId])
 
     return results.rowCount > 0 ? results.rows[0] : null
@@ -185,8 +189,8 @@ export class ProfilesTable implements IProfilesTable {
           mebx_password, generate_random_mebx_password,
           tags, dhcp_enabled, tls_mode,
           user_consent, ider_enabled, kvm_enabled, sol_enabled,
-          tenant_id, tls_signing_authority, ieee8021x_profile_name)
-        values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`,
+          tenant_id, tls_signing_authority, ieee8021x_profile_name, ip_sync_enabled)
+        values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)`,
       [
         amtConfig.profileName,
         amtConfig.activation,
@@ -204,7 +208,8 @@ export class ProfilesTable implements IProfilesTable {
         amtConfig.solEnabled,
         amtConfig.tenantId,
         amtConfig.tlsSigningAuthority,
-        amtConfig.ieee8021xProfileName
+        amtConfig.ieee8021xProfileName,
+        amtConfig.ipSyncEnabled
       ])
 
       if (results.rowCount === 0) {
@@ -241,8 +246,12 @@ export class ProfilesTable implements IProfilesTable {
     try {
       const results = await this.db.query(`
       UPDATE profiles 
-      SET activation=$2, amt_password=$3, generate_random_password=$4, cira_config_name=$5, mebx_password=$6, generate_random_mebx_password=$7, tags=$8, dhcp_enabled=$9, tls_mode=$10, user_consent=$13,
-      ider_enabled=$14, kvm_enabled=$15, sol_enabled=$16, tls_signing_authority=$17, ieee8021x_profile_name=$18 
+      SET activation=$2, amt_password=$3, generate_random_password=$4, cira_config_name=$5,
+          mebx_password=$6, generate_random_mebx_password=$7,
+          tags=$8, dhcp_enabled=$9, tls_mode=$10, user_consent=$13,
+          ider_enabled=$14, kvm_enabled=$15, sol_enabled=$16,
+          tls_signing_authority=$17, ieee8021x_profile_name=$18,
+          ip_sync_enabled=$19
       WHERE profile_name=$1 and tenant_id = $11 and xmin = $12`,
       [
         amtConfig.profileName,
@@ -262,7 +271,8 @@ export class ProfilesTable implements IProfilesTable {
         amtConfig.kvmEnabled,
         amtConfig.solEnabled,
         amtConfig.tlsSigningAuthority,
-        amtConfig.ieee8021xProfileName
+        amtConfig.ieee8021xProfileName,
+        amtConfig.ipSyncEnabled
       ])
       if (results.rowCount > 0) {
         if (amtConfig.wifiConfigs?.length > 0) {

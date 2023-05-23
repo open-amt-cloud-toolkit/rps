@@ -155,6 +155,7 @@ export const getUpdatedData = async (newConfig: any, oldConfig: AMTConfiguration
   amtConfig.ciraConfigName = newConfig.ciraConfigName
   amtConfig.tags = newConfig.tags ?? oldConfig.tags
   amtConfig.dhcpEnabled = newConfig.dhcpEnabled ?? oldConfig.dhcpEnabled
+  amtConfig.ipSyncEnabled = newConfig.ipSyncEnabled ?? oldConfig.ipSyncEnabled
   amtConfig.tenantId = newConfig.tenantId ?? oldConfig.tenantId
   amtConfig.tlsMode = newConfig.tlsMode
   amtConfig.userConsent = newConfig.userConsent ?? oldConfig.userConsent

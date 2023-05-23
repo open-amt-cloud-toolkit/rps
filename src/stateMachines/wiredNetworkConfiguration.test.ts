@@ -111,6 +111,7 @@ describe('Wired Network Configuration', () => {
       generateRandomMEBxPassword: false,
       tags: ['acm'],
       dhcpEnabled: true,
+      ipSyncEnabled: true,
       wifiConfigs: [
         {
           priority: 1,
@@ -245,6 +246,7 @@ describe('Wired Network Configuration', () => {
       activation: 'acmactivate',
       tags: ['acm'],
       dhcpEnabled: true,
+      ipSyncEnabled: true,
       ieee8021xProfileName: 'p1',
       tenantId: ''
     }
@@ -328,7 +330,22 @@ describe('Wired Network Configuration', () => {
     expect(ethernetPortSettingsSpy).toHaveBeenCalled()
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
-
+  it('should fail putEthernetPortSettings if ipSyncEnabled is false and missing ip address or subnetmask', async () => {
+    context.amtProfile.dhcpEnabled = false
+    context.amtProfile.ipSyncEnabled = false
+    context.wiredSettings = {
+      DefaultGateway: '',
+      IPAddress: '',
+      SubnetMask: ''
+    }
+    await expect(wiredConfig.putEthernetPortSettings(context)).rejects.toThrow()
+    context.wiredSettings = {
+      DefaultGateway: '',
+      IPAddress: '192.168.1.100',
+      SubnetMask: ''
+    }
+    await expect(wiredConfig.putEthernetPortSettings(context)).rejects.toThrow()
+  })
   describe('Wired Network State Machine Tests', () => {
     it('should eventually reach "SUCCESS" state', (done) => {
       const mockWiredNetworkConfigurationMachine = wiredConfig.machine.withConfig(config).withContext(context)
@@ -654,6 +671,99 @@ describe('Wired Network Configuration', () => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           done()
+        }
+      })
+      service.start()
+      service.send({ type: 'WIREDCONFIG', clientId })
+    })
+    it('should fail on isNotEthernetSettingsUpdated conditions', (done) => {
+      const amtPutResponse = {
+        Envelope: {
+          Body: {
+            AMT_EthernetPortSettings: {
+              DHCPEnabled: false,
+              IpSyncEnabled: true,
+              SharedStaticIp: false
+            }
+          }
+        }
+      }
+      config.services['put-ethernet-port-settings'] = Promise.resolve(amtPutResponse)
+      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.withConfig(config).withContext(context)
+      const service = interpret(mockWiredNetworkConfigurationMachine).onTransition((state) => {
+        if (state.matches('FAILED')) {
+          done()
+        }
+      })
+      service.start()
+      service.send({ type: 'WIREDCONFIG', clientId })
+    })
+    it('should fail on isNotEthernetSettingsUpdated conditions', (done) => {
+      const amtPutResponse = {
+        Envelope: {
+          Body: {
+            AMT_EthernetPortSettings: {
+              DHCPEnabled: true,
+              IpSyncEnabled: false,
+              SharedStaticIp: false
+            }
+          }
+        }
+      }
+      config.services['put-ethernet-port-settings'] = Promise.resolve(amtPutResponse)
+      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.withConfig(config).withContext(context)
+      const service = interpret(mockWiredNetworkConfigurationMachine).onTransition((state) => {
+        if (state.matches('FAILED')) {
+          done()
+        }
+      })
+      service.start()
+      service.send({ type: 'WIREDCONFIG', clientId })
+    })
+    it('should fail on isNotEthernetSettingsUpdated conditions', (done) => {
+      const amtPutResponse = {
+        Envelope: {
+          Body: {
+            AMT_EthernetPortSettings: {
+              DHCPEnabled: true,
+              IpSyncEnabled: true,
+              SharedStaticIp: true
+            }
+          }
+        }
+      }
+      config.services['put-ethernet-port-settings'] = Promise.resolve(amtPutResponse)
+      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.withConfig(config).withContext(context)
+      const service = interpret(mockWiredNetworkConfigurationMachine).onTransition((state) => {
+        if (state.matches('FAILED')) {
+          done()
+        }
+      })
+      service.start()
+      service.send({ type: 'WIREDCONFIG', clientId })
+    })
+    it('should fail on isNotEthernetSettingsUpdated conditions', (done) => {
+      context.amtProfile.dhcpEnabled = false
+      const amtPutResponse = {
+        Envelope: {
+          Body: {
+            AMT_EthernetPortSettings: {
+              DHCPEnabled: true,
+              IpSyncEnabled: true,
+              SharedStaticIp: false
+            }
+          }
+        }
+      }
+      config.services['put-ethernet-port-settings'] = Promise.resolve(amtPutResponse)
+      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.withConfig(config).withContext(context)
+      let prevState = null
+      const service = interpret(mockWiredNetworkConfigurationMachine).onTransition((state) => {
+        if (state.matches('FAILED')) {
+          done()
+          expect(prevState.matches('PUT_ETHERNET_PORT_SETTINGS')).toBeTruthy()
+        } else {
+          prevState = state
         }
       })
       service.start()

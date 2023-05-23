@@ -58,6 +58,7 @@ describe('AMT Profile - Edit', () => {
       tlsMode: TlsMode.SERVER_ALLOW_NONTLS,
       tlsSigningAuthority: TlsSigningAuthority.SELF_SIGNED,
       dhcpEnabled: false,
+      ipSyncEnabled: true,
       generateRandomPassword: false,
       password: 'password',
       generateRandomMEBxPassword: false,
@@ -74,6 +75,7 @@ describe('AMT Profile - Edit', () => {
       tlsMode: TlsMode.SERVER_ALLOW_NONTLS,
       tlsSigningAuthority: TlsSigningAuthority.SELF_SIGNED,
       dhcpEnabled: false,
+      ipSyncEnabled: true,
       generateRandomPassword: true,
       generateRandomMEBxPassword: true,
       userConsent: 'None',
@@ -113,6 +115,7 @@ describe('AMT Profile - Edit', () => {
       ],
       wifiConfigs: [],
       dhcpEnabled: false,
+      ipSyncEnabled: true,
       tlsMode: TlsMode.SERVER_ALLOW_NONTLS,
       tlsSigningAuthority: TlsSigningAuthority.SELF_SIGNED,
       iderEnabled: true,
@@ -135,6 +138,7 @@ describe('AMT Profile - Edit', () => {
       ],
       wifiConfigs: [],
       dhcpEnabled: false,
+      ipSyncEnabled: true,
       iderEnabled: true,
       kvmEnabled: true,
       solEnabled: true,
@@ -155,6 +159,7 @@ describe('AMT Profile - Edit', () => {
       ],
       wifiConfigs: [],
       dhcpEnabled: false,
+      ipSyncEnabled: true,
       tlsMode: TlsMode.SERVER_ALLOW_NONTLS,
       tlsSigningAuthority: TlsSigningAuthority.SELF_SIGNED,
       iderEnabled: true,
@@ -175,6 +180,7 @@ describe('AMT Profile - Edit', () => {
       ],
       wifiConfigs: [],
       dhcpEnabled: false,
+      ipSyncEnabled: true,
       tlsMode: TlsMode.SERVER_ALLOW_NONTLS,
       tlsSigningAuthority: TlsSigningAuthority.SELF_SIGNED,
       iderEnabled: true,
@@ -367,6 +373,7 @@ describe('handleWifiConfigs tests', () => {
       activation: '1',
       tenantId: 'tenantId',
       dhcpEnabled: true,
+      ipSyncEnabled: false,
       wifiConfigs: [
         {
           profileName: 'P1',
@@ -385,6 +392,7 @@ describe('handleWifiConfigs tests', () => {
       tenantId: 'tenantId',
       activation: '1',
       dhcpEnabled: false,
+      ipSyncEnabled: true,
       wifiConfigs: [
         {
           profileName: 'P1',
@@ -594,6 +602,7 @@ test('test getUpdatedData when CIRA profile is changed to TLS profile', async ()
       'tag1'
     ],
     dhcpEnabled: true,
+    ipSyncEnabled: true,
     tlsMode: TlsMode.SERVER_ALLOW_NONTLS,
     tlsSigningAuthority: TlsSigningAuthority.SELF_SIGNED,
     iderEnabled: false,
@@ -615,6 +624,7 @@ test('test getUpdatedData when CIRA profile is changed to TLS profile', async ()
       'tag1'
     ],
     dhcpEnabled: true,
+    ipSyncEnabled: true,
     iderEnabled: false,
     kvmEnabled: true,
     solEnabled: false,
@@ -634,6 +644,7 @@ test('test getUpdatedData when CIRA profile is changed to TLS profile', async ()
       'tag1'
     ],
     dhcpEnabled: true,
+    ipSyncEnabled: true,
     tlsMode: TlsMode.SERVER_ALLOW_NONTLS,
     tlsSigningAuthority: TlsSigningAuthority.SELF_SIGNED,
     iderEnabled: false,
@@ -660,6 +671,7 @@ test('test getUpdatedData when TLS profile mode 2 is changed to TLS profile mode
       'tag1'
     ],
     dhcpEnabled: true,
+    ipSyncEnabled: true,
     tlsMode: TlsMode.MUTUAL_ALLOW_NONTLS,
     tlsSigningAuthority: TlsSigningAuthority.SELF_SIGNED,
     iderEnabled: false,
@@ -681,6 +693,7 @@ test('test getUpdatedData when TLS profile mode 2 is changed to TLS profile mode
       'tag1'
     ],
     dhcpEnabled: true,
+    ipSyncEnabled: true,
     tlsMode: TlsMode.SERVER_ALLOW_NONTLS,
     tlsSigningAuthority: TlsSigningAuthority.SELF_SIGNED,
     iderEnabled: false,
@@ -702,6 +715,7 @@ test('test getUpdatedData when TLS profile mode 2 is changed to TLS profile mode
       'tag1'
     ],
     dhcpEnabled: true,
+    ipSyncEnabled: true,
     tlsMode: TlsMode.MUTUAL_ALLOW_NONTLS,
     tlsSigningAuthority: TlsSigningAuthority.SELF_SIGNED,
     iderEnabled: false,
@@ -728,6 +742,7 @@ test('test getUpdatedData when TLS profile is changed to CIRA profile', async ()
       'tag1'
     ],
     dhcpEnabled: true,
+    ipSyncEnabled: true,
     iderEnabled: false,
     kvmEnabled: true,
     solEnabled: false,
@@ -747,6 +762,7 @@ test('test getUpdatedData when TLS profile is changed to CIRA profile', async ()
       'tag1'
     ],
     dhcpEnabled: true,
+    ipSyncEnabled: true,
     iderEnabled: false,
     kvmEnabled: true,
     solEnabled: false,
@@ -766,6 +782,7 @@ test('test getUpdatedData when TLS profile is changed to CIRA profile', async ()
       'tag1'
     ],
     dhcpEnabled: true,
+    ipSyncEnabled: true,
     iderEnabled: false,
     kvmEnabled: true,
     solEnabled: false,
