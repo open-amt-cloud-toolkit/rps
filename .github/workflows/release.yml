@@ -23,7 +23,7 @@ jobs:
       with:
         node-version: "18.x"
     - run: npm ci
-    - run: npm run build
+    - run: npm run compile
     - name: Semantic Release
       uses: cycjimmy/semantic-release-action@v3
       with:
