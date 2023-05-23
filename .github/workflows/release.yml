@@ -27,7 +27,7 @@ jobs:
     - name: Semantic Release
       uses: cycjimmy/semantic-release-action@v3
       with:
-        semantic_version: 21.0.2  # It is recommended to specify a version range
+        semantic_version: 19.0.5  # It is recommended to specify a version range
                                 # for semantic-release when using
                                 # semantic-release-action lower than @v3
       env:
