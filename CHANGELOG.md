@@ -1,3 +1,43 @@
+<a name="2.11.0"></a>
+## [2.11.0] - 2023-05-23
+### Build
+- update package.json to v2.10.0 (#d0df5c1) 
+- automated versioning and publishing ([#1029](https://github.com/open-amt-cloud-toolkit/rps/issues/1029)) (#2f43336) 
+- **deps:** bump [@open](https://github.com/open)-amt-cloud-toolkit/wsman-messages (#a0a18dd) 
+- **deps:** bump [@open](https://github.com/open)-amt-cloud-toolkit/wsman-messages (#990e97a) 
+- **deps:** bump [@open](https://github.com/open)-amt-cloud-toolkit/wsman-messages (#b93afb9) 
+- **deps:** bump pg from 8.10.0 to 8.11.0 (#3396376) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 20.2.1 to 20.2.3 ([#1024](https://github.com/open-amt-cloud-toolkit/rps/issues/1024)) (#d519c80) 
+- **deps-dev:** bump sinon from 15.0.4 to 15.1.0 (#e9cca26) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 20.2.0 to 20.2.1 (#08aaea4) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 20.1.7 to 20.2.0 (#c39e398) 
+- **deps-dev:** bump eslint from 8.40.0 to 8.41.0 ([#1025](https://github.com/open-amt-cloud-toolkit/rps/issues/1025)) (#01e2445) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 20.1.5 to 20.1.7 (#d07f28f) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 20.1.4 to 20.1.5 (#2bd176c) 
+- **deps-dev:** bump [@types](https://github.com/types)/pg from 8.6.6 to 8.10.1 ([#1028](https://github.com/open-amt-cloud-toolkit/rps/issues/1028)) (#d813dae) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 5.59.5 to 5.59.6 (#88b0279) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin (#74b6650) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 20.1.3 to 20.1.4 ([#1007](https://github.com/open-amt-cloud-toolkit/rps/issues/1007)) (#1ca6a68) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 20.1.2 to 20.1.3 (#96d078e) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 20.1.1 to 20.1.2 ([#1004](https://github.com/open-amt-cloud-toolkit/rps/issues/1004)) (#80f0277) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 5.59.6 to 5.59.7 ([#1027](https://github.com/open-amt-cloud-toolkit/rps/issues/1027)) (#7a81bd8) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 20.1.0 to 20.1.1 (#eb3a270) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin (#694f493) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 5.59.2 to 5.59.5 ([#1002](https://github.com/open-amt-cloud-toolkit/rps/issues/1002)) (#5b0dd8b) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin ([#1026](https://github.com/open-amt-cloud-toolkit/rps/issues/1026)) (#aca171e) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 20.0.0 to 20.1.0 (#234d0b9) 
+- **deps-dev:** bump eslint from 8.39.0 to 8.40.0 (#68b9917) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 16.18.25 to 20.0.0 (#95be802) 
+
+### Ci
+- add trivy scan to PR checks (#12b273e) 
+
+### Feat
+- add/expose ipSyncEnabled in amt profile for wired interface ([#1012](https://github.com/open-amt-cloud-toolkit/rps/issues/1012)) (#314632a) 
+
+### Refactor
+- **state-machine:** replace deprecated send with sendTo (#1e4bb20) 
+
 <a name="2.10.0"></a>
 ## [2.10.0] - 2023-05-04
 ### Build
