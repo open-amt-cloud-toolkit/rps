@@ -3,15 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type WebSocketConfig } from './models/RCS.Config'
 import Logger from './Logger'
 import { type ILogger } from './interfaces/ILogger'
 // import { Data } from 'ws'
 import { promises, enterpriseAssistantSocket, WSEnterpriseAssistantListener } from './WSEnterpriseAssistantListener'
-
-const wsConfig: WebSocketConfig = {
-  WebSocketPort: 8082
-}
 
 describe('Websocket Listener', () => {
   const log: ILogger = new Logger('WebSocketListener')
@@ -24,7 +19,7 @@ describe('Websocket Listener', () => {
       on: jest.fn()
     } as any
     onSpy = jest.spyOn(serverStub, 'on')
-    server = new WSEnterpriseAssistantListener(log, wsConfig)
+    server = new WSEnterpriseAssistantListener(log)
   })
   it('should start WebSocket server', () => {
     isConnected = server.connect(serverStub)

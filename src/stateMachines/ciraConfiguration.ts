@@ -162,7 +162,7 @@ export class CIRAConfiguration {
         },
         SAVE_DEVICE_TO_MPS: {
           invoke: {
-            src: async (context, event) => await got(`${Environment.Config.mpsServer}/api/v1/devices`, {
+            src: async (context, event) => await got(`${Environment.Config.mps_server}/api/v1/devices`, {
               method: 'POST',
               json: {
                 guid: devices[context.clientId].uuid,
@@ -403,8 +403,8 @@ export class CIRAConfiguration {
 
   async putEnvironmentDetectionSettings (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
     const envSettings: AMT.Models.EnvironmentDetectionSettingData = context.message.Envelope.Body.AMT_EnvironmentDetectionSettingData
-    if (Environment.Config.disableCIRADomainName) {
-      envSettings.DetectionStrings = [Environment.Config.disableCIRADomainName]
+    if (Environment.Config.disable_cira_domain_name) {
+      envSettings.DetectionStrings = [Environment.Config.disable_cira_domain_name]
     } else {
       envSettings.DetectionStrings = [`${randomUUID()}.com`]
     }

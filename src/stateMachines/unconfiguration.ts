@@ -558,7 +558,7 @@ export class Unconfiguration {
       }
     }, {
       delays: {
-        DELAY_TIME_SETUP_AND_CONFIG_SYNC: () => Environment.Config.delaySetupAndConfigSync
+        DELAY_TIME_SETUP_AND_CONFIG_SYNC: () => Environment.Config.delay_setup_and_config_sync
       },
       guards: {
         isExpectedBadRequest: (context, event) => event.data?.statusCode === 400,

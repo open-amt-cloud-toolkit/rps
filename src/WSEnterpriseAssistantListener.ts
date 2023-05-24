@@ -4,8 +4,6 @@
  **********************************************************************/
 
 import { Server, type WebSocket, type Data } from 'ws'
-
-import { type WebSocketConfig } from './models/RCS.Config'
 import { type ILogger } from './interfaces/ILogger'
 import { type DataProcessor } from './DataProcessor'
 
@@ -16,12 +14,10 @@ export { promises, enterpriseAssistantSocket }
 export class WSEnterpriseAssistantListener {
   dataProcessor: DataProcessor
   wsServer: Server
-  wsConfig: WebSocketConfig
   logger: ILogger
 
-  constructor (logger: ILogger, wsConfig: WebSocketConfig) {
+  constructor (logger: ILogger) {
     this.logger = logger
-    this.wsConfig = wsConfig
   }
 
   /**

@@ -471,7 +471,7 @@ export class TLS {
       }
     }, {
       delays: {
-        DELAY_TIME_TLS_PUT_DATA_SYNC: () => Environment.Config.delayTlsPutDataSync
+        DELAY_TIME_TLS_PUT_DATA_SYNC: () => Environment.Config.delay_tls_put_data_sync
       },
       guards: {
         hasPublicPrivateKeyPairs: (context, event) => context.message.Envelope.Body.PullResponse.Items !== '',

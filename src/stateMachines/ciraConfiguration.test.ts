@@ -212,12 +212,12 @@ describe('CIRA Configuration State Machine', () => {
     })
 
     it('should send wsman message to put Environment Detection Settings', async () => {
-      expect(Environment.Config.disableCIRADomainName).toBeFalsy()
+      expect(Environment.Config.disable_cira_domain_name).toBeFalsy()
       machineContext.message = {
         Envelope: { Body: { AMT_EnvironmentDetectionSettingData: { DetectionStrings: 'abcde' } } }
       }
       await ciraStateMachineImpl.putEnvironmentDetectionSettings(machineContext, null)
-      Environment.Config.disableCIRADomainName = 'disablethis.com'
+      Environment.Config.disable_cira_domain_name = 'disablethis.com'
       await ciraStateMachineImpl.putEnvironmentDetectionSettings(machineContext, null)
       expect(invokeWsmanCallSpy).toHaveBeenCalledTimes(2)
     })

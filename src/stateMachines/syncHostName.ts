@@ -164,7 +164,7 @@ export class SyncHostName {
     const clientObj = devices[clientId]
     /* Register device metadata with MPS */
     try {
-      await got(`${Environment.Config.mpsServer}/api/v1/devices`, {
+      await got(`${Environment.Config.mps_server}/api/v1/devices`, {
         method: 'PATCH',
         json: {
           guid: clientObj.uuid,

@@ -598,7 +598,7 @@ export class Activation {
       }
     }, {
       delays: {
-        DELAY_TIME_ACTIVATION_SYNC: () => Environment.Config.delayActivationSync
+        DELAY_TIME_ACTIVATION_SYNC: () => Environment.Config.delay_activation_sync
       },
       guards: {
         isAdminMode: (context, event) => context.profile.activation === ClientAction.ADMINCTLMODE,
@@ -693,7 +693,7 @@ export class Activation {
   async getDeviceFromMPS (context: ActivationContext, event: ActivationEvent): Promise<any> {
     const clientObj = devices[context.clientId]
     try {
-      const result = await got(`${Environment.Config.mpsServer}/api/v1/devices/${clientObj.uuid}?tenantId=${context.profile.tenantId}`, {
+      const result = await got(`${Environment.Config.mps_server}/api/v1/devices/${clientObj.uuid}?tenantId=${context.profile.tenantId}`, {
         method: 'GET'
       })
 
@@ -895,7 +895,7 @@ export class Activation {
       if (profile?.tags != null) {
         tags = profile.tags
       }
-      await got(`${Environment.Config.mpsServer}/api/v1/devices`, {
+      await got(`${Environment.Config.mps_server}/api/v1/devices`, {
         method: 'POST',
         json: {
           guid: clientObj.uuid,

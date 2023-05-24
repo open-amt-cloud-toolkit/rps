@@ -6,21 +6,20 @@
 import * as WebSocket from 'ws'
 import { v4 as uuid } from 'uuid'
 
-import { type ClientMsg, type ClientObject, type WebSocketConfig } from './models/RCS.Config'
+import { type ClientMsg, type ClientObject } from './models/RCS.Config'
 import { type ILogger } from './interfaces/ILogger'
 import { type DataProcessor } from './DataProcessor'
+import { Environment } from './utils/Environment'
 const devices: Record<string, ClientObject> = {}
 const maxMessageSize = 1024 * 10 * 10
 export { devices }
 export class WebSocketListener {
   dataProcessor: DataProcessor
   wsServer: WebSocket.Server
-  wsConfig: WebSocketConfig
   logger: ILogger
 
-  constructor (logger: ILogger, wsConfig: WebSocketConfig, dataProcessor: DataProcessor) {
+  constructor (logger: ILogger, dataProcessor: DataProcessor) {
     this.logger = logger
-    this.wsConfig = wsConfig
     this.dataProcessor = dataProcessor
   }
 
@@ -29,9 +28,9 @@ export class WebSocketListener {
    */
   connect (): boolean {
     try {
-      this.wsServer = new WebSocket.Server({ port: this.wsConfig.WebSocketPort })
+      this.wsServer = new WebSocket.Server({ port: Environment.Config.websocketport })
       this.wsServer.on('connection', this.onClientConnected)
-      this.logger.info(`RPS Microservice socket listening on port: ${this.wsConfig.WebSocketPort} ...!`)
+      this.logger.info(`RPS Microservice socket listening on port: ${Environment.Config.websocketport} ...!`)
       return true
     } catch (error) {
       this.logger.error(`Failed to start WebSocket server : ${error}`)
