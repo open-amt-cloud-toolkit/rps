@@ -6363,7 +6363,7 @@
 					"response": []
 				},
 				{
-					"name": "Update Profile \"profile6\" with static amt password",
+					"name": "Update Profile \"profile6\" with static amt password Copy",
 					"event": [
 						{
 							"listen": "test",
@@ -6400,6 +6400,114 @@
 						"body": {
 							"mode": "raw",
 							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"mebxPassword\": \"P@ssw0rd\",\r\n    \"amtPassword\": \"P@ssw0rd\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"version\": {{profile6Version}}\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"profiles",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile \"profile6\" with ipSyncEnabled false",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();\r",
+									"versionVar = jsonData.version;\r",
+									"pm.globals.set(\"profile6Version\", versionVar);\r",
+									"\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"Update should succeed\", function () {\r",
+									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
+									"    pm.expect(jsonData.dhcpEnabled).to.equal(false)\r",
+									"    pm.expect(jsonData.ipSyncEnabled).to.equal(false)\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"mebxPassword\": \"P@ssw0rd\",\r\n    \"amtPassword\": \"P@ssw0rd\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"ipSyncEnabled\": false,\r\n    \"version\": {{profile6Version}}\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"profiles",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile \"profile6\" with ipSyncEnabled true",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();\r",
+									"versionVar = jsonData.version;\r",
+									"pm.globals.set(\"profile6Version\", versionVar);\r",
+									"\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"Update should succeed\", function () {\r",
+									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
+									"    pm.expect(jsonData.dhcpEnabled).to.equal(false)\r",
+									"    pm.expect(jsonData.ipSyncEnabled).to.equal(false)\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"mebxPassword\": \"P@ssw0rd\",\r\n    \"amtPassword\": \"P@ssw0rd\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"ipSyncEnabled\": false,\r\n    \"version\": {{profile6Version}}\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
