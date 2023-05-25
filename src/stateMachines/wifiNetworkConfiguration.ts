@@ -29,6 +29,7 @@ export interface WiFiConfigContext {
   generalSettings: AMT.Models.GeneralSettings
   wifiSettings: any
   wifiEndPointSettings?: any
+  wifiProfileName: string
   httpHandler: HttpHandler
   amt?: AMT.Messages
   cim?: CIM.Messages
@@ -38,6 +39,8 @@ export interface WiFiConfigContext {
   addCertResponse?: any
   keyPairHandle?: string
   wifiProfile?: WirelessConfig
+  profilesAdded?: string
+  profilesFailed?: string
 }
 
 export interface WiFiConfigEvent {
@@ -60,10 +63,11 @@ export class WiFiConfiguration {
         httpHandler: null,
         amtProfile: null,
         wifiProfileCount: 0,
+        wifiProfileName: null,
         message: null,
         clientId: '',
         xmlMessage: null,
-        errorMessage: null,
+        errorMessage: '',
         statusMessage: null,
         generalSettings: null,
         wifiSettings: null,
@@ -305,22 +309,19 @@ export class WiFiConfiguration {
             src: this.addWifiConfigs.bind(this),
             id: 'add-wifi-settings',
             onDone: {
-              actions: assign({ message: (context, event) => event.data }),
+              actions: 'Check Return Value',
               target: 'CHECK_ADD_WIFI_SETTINGS_RESPONSE'
             },
             onError: {
-              actions: assign({ errorMessage: (context, event) => 'Failed to add wifi settings' }),
-              target: 'FAILED'
+              actions: assign({
+                profilesFailed: (context, event) => context.profilesFailed == null ? `${context.wifiProfileName}` : `${context.profilesFailed}, ${context.wifiProfileName}`
+              }),
+              target: 'CHECK_ADD_WIFI_SETTINGS_RESPONSE'
             }
           }
         },
         CHECK_ADD_WIFI_SETTINGS_RESPONSE: {
           always: [
-            {
-              cond: 'isNotWifiProfileAdded', // This extra check is make sure return value is zero.
-              actions: assign({ errorMessage: (context, event) => 'Failed to add wifi settings' }),
-              target: 'FAILED'
-            },
             {
               cond: 'isWiFiProfilesExists',
               target: 'GET_WIFI_PROFILE'
@@ -358,7 +359,6 @@ export class WiFiConfiguration {
       guards: {
         is8021xProfileAssociated: (context, event) => context.wifiProfile.ieee8021xProfileName != null && context.eaResponse == null && context.addCertResponse == null,
         isWiFiProfilesExists: (context, event) => context.wifiProfileCount < context.amtProfile.wifiConfigs.length,
-        isNotWifiProfileAdded: (context, event) => context.message.Envelope.Body.AddWiFiSettings_OUTPUT.ReturnValue !== 0,
         isLocalProfileSynchronizationNotEnabled: (context, event) => context.message.Envelope.Body.AMT_WiFiPortConfigurationService.localProfileSynchronizationEnabled === 0,
         isTrustedRootCertifcateExists: (context, event) => {
           const res = devices[context.clientId].trustedRootCertificateResponse
@@ -373,12 +373,44 @@ export class WiFiConfiguration {
       actions: {
         'Reset Unauth Count': (context, event) => { devices[context.clientId].unauthCount = 0 },
         'Update Configuration Status': (context, event) => {
-          const status = devices[context.clientId].status.Network
-          const message = context.errorMessage ?? context.statusMessage
+          const { clientId, profilesAdded, profilesFailed, statusMessage, errorMessage } = context
+          const status = devices[clientId].status.Network
+          let message
+          if (errorMessage) {
+            message = errorMessage
+          } else if (profilesFailed) {
+            message = profilesAdded != null ? `Added ${profilesAdded} WiFi Profiles. Failed to add ${profilesFailed}` : `Failed to add ${profilesFailed}`
+          } else {
+            message = statusMessage
+          }
           devices[context.clientId].status.Network = `${status}. ${message}`
         },
         'Reset Retry Count': assign({ retryCount: (context, event) => 0 }),
-        'Increment Retry Count': assign({ retryCount: (context, event) => context.retryCount + 1 })
+        'Increment Retry Count': assign({ retryCount: (context, event) => context.retryCount + 1 }),
+        'Check Return Value': assign({
+          profilesAdded: (context, event) => {
+            if (event.data.Envelope?.Body?.AddWiFiSettings_OUTPUT?.ReturnValue === 0) {
+              if (context.profilesAdded == null) {
+                return `${context.wifiProfileName}`
+              } else {
+                return `${context.profilesAdded}, ${context.wifiProfileName}`
+              }
+            } else {
+              return context.profilesAdded
+            }
+          },
+          profilesFailed: (context, event) => {
+            if (event.data.Envelope?.Body?.AddWiFiSettings_OUTPUT?.ReturnValue !== 0) {
+              if (context.profilesFailed == null) {
+                return `${context.wifiProfileName}`
+              } else {
+                return `${context.profilesFailed}, ${context.wifiProfileName}`
+              }
+            } else {
+              return context.profilesFailed
+            }
+          }
+        })
       }
     })
 
@@ -444,6 +476,7 @@ export class WiFiConfiguration {
     }
 
     // Increment the count to keep track of profiles added to AMT
+    context.wifiProfileName = context.wifiProfile.profileName
     ++context.wifiProfileCount
     return await invokeWsmanCall(context)
   }
