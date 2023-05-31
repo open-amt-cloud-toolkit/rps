@@ -1,3 +1,8 @@
 {
-    "branches": ["main", "next"]
+    "branches": ["main", "next"],
+    "plugins": [
+        ["@semantic-release/npm", {
+          "npmPublish": false
+        }]
+    ]
 }
