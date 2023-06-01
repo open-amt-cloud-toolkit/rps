@@ -37,7 +37,7 @@ describe('Unconfiguration State Machine', () => {
       ciraConfig: null,
       profile: null,
       privateCerts: [],
-      TLSSettingData: [],
+      tlsSettingData: [],
       publicKeyCertificates: [],
       amt: new AMT.Messages(),
       ips: new IPS.Messages(),
@@ -93,7 +93,7 @@ describe('Unconfiguration State Machine', () => {
         'pull-public-key-certificate': Promise.resolve({ Envelope: { Body: { PullResponse: { Items: { AMT_PublicKeyCertificate: [{}] } } } } })
       },
       actions: {
-        'Reset Unauth Count': () => {}
+        'Reset Unauth Count': () => { }
       },
       guards: {
         isExpectedBadRequest: () => false,
@@ -368,7 +368,7 @@ describe('Unconfiguration State Machine', () => {
   })
 
   it('should eventually reach "FAILURE" after "SETUP_AND_CONFIGURATION_SERVICE_COMMIT_CHANGES"', (done) => {
-    unconfigContext.TLSSettingData = [{ Enabled: false }, { Enabled: true }]
+    unconfigContext.tlsSettingData = [{ Enabled: false }, { Enabled: true }]
     configuration.guards = {
       isExpectedBadRequest: () => false,
       tlsSettingDataEnabled: () => true,
@@ -601,31 +601,60 @@ describe('Unconfiguration State Machine', () => {
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
 
-    it('should send wsman message to disable TLS Setting Data', async () => {
+    it('should send wsman message to disable TLS Setting Data on AMT < 16.1', async () => {
       unconfigContext.message = {
         Envelope: {
           Body: {
             PullResponse: {
               Items: {
                 AMT_TLSSettingData: [
-                  { AcceptNonSecureConnections: true, ElementName: 'Intel(r) AMT 802.3 TLS Settings', Enabled: true, InstanceID: 'Intel(r) AMT 802.3 TLS Settings', MutualAuthentication: false },
-                  { AcceptNonSecureConnections: true, ElementName: 'Intel(r) AMT LMS TLS Settings', Enabled: true, InstanceID: 'Intel(r) AMT LMS TLS Settings', MutualAuthentication: false }
+                  { AcceptNonSecureConnections: false, NonSecureConnectionsSupported: true, ElementName: 'Intel(r) AMT 802.3 TLS Settings', Enabled: true, InstanceID: 'Intel(r) AMT 802.3 TLS Settings', MutualAuthentication: false },
+                  { AcceptNonSecureConnections: true, NonSecureConnectionsSupported: true, ElementName: 'Intel(r) AMT LMS TLS Settings', Enabled: true, InstanceID: 'Intel(r) AMT LMS TLS Settings', MutualAuthentication: false }
                 ]
               }
             }
           }
         }
       }
-      await unconfiguration.disableTLSSettingData(unconfigContext, null)
+      await unconfiguration.disableRemoteTLSSettingData(unconfigContext, null)
+      expect(unconfigContext.message.Envelope.Body.PullResponse.Items.AMT_TLSSettingData[0]['h:AcceptNonSecureConnections']).toBe(true)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
 
-    it('should send wsman message to disable TLS Setting Data', async () => {
-      unconfigContext.TLSSettingData = [
-        { AcceptNonSecureConnections: true, ElementName: 'Intel(r) AMT 802.3 TLS Settings', Enabled: true, InstanceID: 'Intel(r) AMT 802.3 TLS Settings', MutualAuthentication: false },
-        { AcceptNonSecureConnections: true, ElementName: 'Intel(r) AMT LMS TLS Settings', Enabled: true, InstanceID: 'Intel(r) AMT LMS TLS Settings', MutualAuthentication: false }
+    it('should send wsman message to disable TLS Setting Data on AMT < 16.1', async () => {
+      unconfigContext.tlsSettingData = [
+        { AcceptNonSecureConnections: true, NonSecureConnectionsSupported: true, ElementName: 'Intel(r) AMT 802.3 TLS Settings', Enabled: true, InstanceID: 'Intel(r) AMT 802.3 TLS Settings', MutualAuthentication: false },
+        { AcceptNonSecureConnections: true, NonSecureConnectionsSupported: true, ElementName: 'Intel(r) AMT LMS TLS Settings', Enabled: true, InstanceID: 'Intel(r) AMT LMS TLS Settings', MutualAuthentication: false }
       ]
-      await unconfiguration.disableTLSSettingData2(unconfigContext, null)
+      await unconfiguration.disableLocalTLSSettingData(unconfigContext, null)
+      expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    })
+    it('should send wsman message to disable TLS Setting Data on AMT 16.1+', async () => {
+      unconfigContext.message = {
+        Envelope: {
+          Body: {
+            PullResponse: {
+              Items: {
+                AMT_TLSSettingData: [
+                  { AcceptNonSecureConnections: false, NonSecureConnectionsSupported: false, ElementName: 'Intel(r) AMT 802.3 TLS Settings', Enabled: true, InstanceID: 'Intel(r) AMT 802.3 TLS Settings', MutualAuthentication: false },
+                  { AcceptNonSecureConnections: true, NonSecureConnectionsSupported: true, ElementName: 'Intel(r) AMT LMS TLS Settings', Enabled: true, InstanceID: 'Intel(r) AMT LMS TLS Settings', MutualAuthentication: false }
+                ]
+              }
+            }
+          }
+        }
+      }
+      await unconfiguration.disableRemoteTLSSettingData(unconfigContext, null)
+      expect(unconfigContext.message.Envelope.Body.PullResponse.Items.AMT_TLSSettingData[0]['h:AcceptNonSecureConnections']).toBe(false)
+      expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    })
+
+    it('should send wsman message to disable TLS Setting Data on AMT 16.1+', async () => {
+      unconfigContext.tlsSettingData = [
+        { AcceptNonSecureConnections: false, NonSecureConnectionsSupported: false, ElementName: 'Intel(r) AMT 802.3 TLS Settings', Enabled: true, InstanceID: 'Intel(r) AMT 802.3 TLS Settings', MutualAuthentication: false },
+        { AcceptNonSecureConnections: true, NonSecureConnectionsSupported: true, ElementName: 'Intel(r) AMT LMS TLS Settings', Enabled: true, InstanceID: 'Intel(r) AMT LMS TLS Settings', MutualAuthentication: false }
+      ]
+      await unconfiguration.disableLocalTLSSettingData(unconfigContext, null)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
     it('should send wsman message to commit Setup And Configuration Service', async () => {

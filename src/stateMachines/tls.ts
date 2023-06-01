@@ -621,7 +621,9 @@ export class TLS {
   async putRemoteTLSData (context: TLSContext, event: TLSEvent): Promise<void> {
     // Set remote TLS data on AMT
     context.tlsSettingData[0].Enabled = true
-    context.tlsSettingData[0].AcceptNonSecureConnections = (context.amtProfile.tlsMode !== 1 && context.amtProfile.tlsMode !== 3) // TODO: check what these values should explicitly be
+    if (!('NonSecureConnectionsSupported' in context.tlsSettingData[0]) || context.tlsSettingData[0].NonSecureConnectionsSupported === true) {
+      context.tlsSettingData[0].AcceptNonSecureConnections = (context.amtProfile.tlsMode !== 1 && context.amtProfile.tlsMode !== 3) // TODO: check what these values should explicitly be
+    }
     context.tlsSettingData[0].MutualAuthentication = (context.amtProfile.tlsMode === 3 || context.amtProfile.tlsMode === 4)
 
     context.xmlMessage = context.amt.TLSSettingData.Put(context.tlsSettingData[0])
@@ -630,13 +632,6 @@ export class TLS {
 
   async putLocalTLSData (context: TLSContext, event: TLSEvent): Promise<void> {
     context.tlsSettingData[1].Enabled = true
-
-    // if (Array.isArray(context.tlsSettingData[1].TrustedCN) && context.tlsSettingData[1].TrustedCN.length > 0) {
-    //   context.tlsSettingData[1].TrustedCN.push(commonName)
-    // } else {
-    //   context.tlsSettingData[1].TrustedCN = [commonName]
-    // }
-    // }
     context.xmlMessage = context.amt.TLSSettingData.Put(context.tlsSettingData[1])
     return await invokeWsmanCall(context, 2)
   }
