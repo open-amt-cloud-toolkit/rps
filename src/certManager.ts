@@ -32,12 +32,13 @@ export class CertManager {
    * @param {any} pfxobj Certificate object from convertPfxToObject function
    * @returns {any} Returns provisioning certificate object with certificate chain in proper order and fingerprint
    */
-  dumpPfx (pfxobj: CertsAndKeys): { provisioningCertificateObj: ProvisioningCertObj, fingerprint: string } {
+  dumpPfx (pfxobj: CertsAndKeys): { provisioningCertificateObj: ProvisioningCertObj, fingerprintSha256: string, fingerprintSha1: string } {
     const provisioningCertificateObj: ProvisioningCertObj = {} as ProvisioningCertObj
     const interObj: CertificateObject[] = []
     const leaf: CertificateObject = {} as CertificateObject
     const root: CertificateObject = {} as CertificateObject
-    let fingerprint: string
+    let fingerprintSha256: string
+    let fingerprintSha1: string
     if (pfxobj.certs?.length > 0) {
       for (let i = 0; i < pfxobj.certs.length; i++) {
         const cert = pfxobj.certs[i]
@@ -55,10 +56,10 @@ export class CertManager {
           root.subject = cert.subject.hash
           root.issuer = cert.issuer.hash
           const der = this.nodeForge.asn1ToDer(this.nodeForge.pkiCertificateToAsn1(cert)).getBytes()
-          const md = this.nodeForge.sha256Create()
-
-          md.update(der)
-          fingerprint = md.digest().toHex()
+          // Generate SHA256 fingerprint of root certificate
+          fingerprintSha256 = this.nodeForge.sha256Create().update(der).digest().toHex()
+          // Generate SHA1 fingerprint of root certificate
+          fingerprintSha1 = this.nodeForge.sha1Create().update(der).digest().toHex()
         } else {
           const inter: CertificateObject = {
             pem,
@@ -97,7 +98,7 @@ export class CertManager {
       }
     }
 
-    return { provisioningCertificateObj, fingerprint }
+    return { provisioningCertificateObj, fingerprintSha256, fingerprintSha1 }
   }
 
   /**

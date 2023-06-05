@@ -353,7 +353,7 @@ describe('Activation State Machine', () => {
       expect(convertPfxToObjectSpy).toHaveBeenCalled()
     })
     it('should assign return valid certificate object', () => {
-      const certObject = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprint: 'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244' }
+      const certObject = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprintSha256: 'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244', fingerprintSha1: '0284c930a712df63081505f566e703149e03acd5' }
       const convertPfxToObjectSpy = jest.spyOn(activation.certManager, 'convertPfxToObject').mockImplementation(() => ({ certs: null, keys: null }))
       const dumpPfxSpy = jest.spyOn(activation.certManager, 'dumpPfx').mockImplementation(() => certObject)
       activation.GetProvisioningCertObj(context, null)
@@ -362,7 +362,7 @@ describe('Activation State Machine', () => {
       expect(context.certChainPfx).toBe(certObject)
     })
     it('should return valid provisioning certificate', async () => {
-      context.certChainPfx = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprint: 'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244' }
+      context.certChainPfx = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprintSha256: 'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244', fingerprintSha1: '0284c930a712df63081505f566e703149e03acd5' }
       activation.compareCertHashes(context, null)
       expect(devices[clientId].certObj).toBe(context.certChainPfx.provisioningCertificateObj)
     })
@@ -512,7 +512,7 @@ describe('Activation State Machine', () => {
 
     it('should eventually reach "PROVISIONED" in Admin mode', (done) => {
       jest.useFakeTimers()
-      context.certChainPfx = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprint: 'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244' }
+      context.certChainPfx = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprintSha256: 'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244', fingerprintSha1: '0284c930a712df63081505f566e703149e03acd5' }
       devices[context.clientId].certObj = context.certChainPfx.provisioningCertificateObj
 
       config.guards = {
@@ -554,7 +554,7 @@ describe('Activation State Machine', () => {
 
     it('should eventually reach "PROVISIONED" in Admin mode with CIRA profile', (done) => {
       jest.useFakeTimers()
-      context.certChainPfx = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprint: 'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244' }
+      context.certChainPfx = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprintSha256: 'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244', fingerprintSha1: '0284c930a712df63081505f566e703149e03acd5' }
       devices[context.clientId].certObj = context.certChainPfx.provisioningCertificateObj
       config.guards = {
         isAdminMode: () => true,
@@ -642,7 +642,7 @@ describe('Activation State Machine', () => {
     })
 
     it('should eventually reach "FAILED" at "CHECKCERTCHAINRESPONSE"', (done) => {
-      context.certChainPfx = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprint: 'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244' }
+      context.certChainPfx = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprintSha256: 'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244', fingerprintSha1: '0284c930a712df63081505f566e703149e03acd5' }
       devices[context.clientId].certObj = context.certChainPfx.provisioningCertificateObj
       config.guards = {
         isAdminMode: () => true,

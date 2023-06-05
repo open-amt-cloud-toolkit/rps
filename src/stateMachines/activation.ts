@@ -847,7 +847,9 @@ export class Activation {
     const { clientId, certChainPfx } = context
     // check that provisioning certificate root matches one of the trusted roots from AMT
     for (const hash in devices[clientId].ClientData.payload.certHashes) {
-      if (devices[clientId].ClientData.payload.certHashes[hash]?.toLowerCase() === certChainPfx.fingerprint?.toLowerCase()) {
+      if (devices[clientId].ClientData.payload.certHashes[hash]?.toLowerCase() === certChainPfx.fingerprintSha256?.toLowerCase()) {
+        devices[clientId].certObj = certChainPfx.provisioningCertificateObj
+      } else if (devices[clientId].ClientData.payload.certHashes[hash]?.toLowerCase() === certChainPfx.fingerprintSha1?.toLowerCase()) {
         devices[clientId].certObj = certChainPfx.provisioningCertificateObj
       }
     }
