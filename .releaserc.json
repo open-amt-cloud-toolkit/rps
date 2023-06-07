@@ -1,8 +1,27 @@
 {
-    "branches": ["main", "next"],
-    "plugins": [
-        ["@semantic-release/npm", {
-          "npmPublish": false
-        }]
+  "branches": [
+    "main",
+    "next"
+  ],
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    [
+      "@semantic-release/release-notes-generator",
+      {
+        "preset": "angular",
+        "writerOpts": {
+          "commitsSort": [
+            "subject",
+            "scope"
+          ]
+        }
+      }
+    ],
+    [
+      "@semantic-release/npm",
+      {
+        "npmPublish": false
+      }
     ]
+  ]
 }
