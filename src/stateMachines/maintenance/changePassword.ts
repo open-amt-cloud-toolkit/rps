@@ -7,7 +7,7 @@ import { assign, createMachine } from 'xstate'
 import {
   coalesceMessage,
   commonContext,
-  type CommonMaintenanceContext,
+  type CommonMaintenanceContext, HttpResponseError,
   invokeWsmanCall,
   isDigestRealmValid
 } from './common'
@@ -21,6 +21,8 @@ import Logger from '../../Logger'
 import * as Task from './doneResponse'
 import { SecretManagerCreatorFactory } from '../../factories/SecretManagerCreatorFactory'
 import { getPTStatusName, PTStatus } from '../../utils/PTStatus'
+import got from 'got'
+import { Environment } from '../../utils/Environment'
 
 export interface SetAdminACLEntryExResponse {
   SetAdminAclEntryEx_OUTPUT: {
@@ -102,11 +104,26 @@ export class ChangePassword {
           src: this.saveToSecretProvider.bind(this),
           id: 'save-to-secret-provider',
           onDone: {
-            target: 'SUCCESS'
+            target: 'REFRESH_MPS'
           },
           onError: {
             actions: assign({
               statusMessage: (_, event) => coalesceMessage('at SAVE_TO_SECRET_PROVIDER', event.data)
+            }),
+            target: 'FAILED'
+          }
+        }
+      },
+      REFRESH_MPS: {
+        invoke: {
+          src: this.refreshMPS.bind(this),
+          id: 'refresh-mps',
+          onDone: {
+            target: 'SUCCESS'
+          },
+          onError: {
+            actions: assign({
+              statusMessage: (_, event) => coalesceMessage('at REFRESH_MPS', event.data)
             }),
             target: 'FAILED'
           }
@@ -173,6 +190,17 @@ export class ChangePassword {
     if (!writtenCredentials) {
       throw new Error('saved credentials were not returned as expected')
     }
+    return true
+  }
+
+  async refreshMPS (context: ChangePasswordContext): Promise<boolean> {
+    const clientObj = devices[context.clientId]
+    const url = `${Environment.Config.mpsServer}/api/v1/devices/refresh/${clientObj.uuid}`
+    const rsp = await got.delete(url)
+    if (rsp.statusCode !== 200) {
+      throw new HttpResponseError(rsp.statusMessage, rsp.statusCode)
+    }
+    logger.debug(`refreshMPS ${url}`)
     return true
   }
 }
