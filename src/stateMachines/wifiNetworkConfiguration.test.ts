@@ -130,7 +130,7 @@ describe('WiFi Network Configuration', () => {
         'error-machine': async (_, event) => await Promise.resolve({ clientId: event.clientId }),
         'request-state-change-for-wifi-port': Promise.resolve({ clientId }),
         'get-wifi-profile': Promise.resolve({ clientId }),
-        'add-wifi-settings': Promise.resolve({ Envelope: { Body: { AddWiFiSettings_OUTPUT: { ReturnValue: 1 } } } }),
+        'add-wifi-settings': Promise.resolve({ Envelope: { Body: { AddWiFiSettings_OUTPUT: { ReturnValue: 0 } } } }),
         'get-wifi-port-configuration-service': Promise.resolve({ Envelope: { Body: { AMT_WiFiPortConfigurationService: { localProfileSynchronizationEnabled: 0 } } } }),
         'put-wifi-port-configuration-service': Promise.resolve({ Envelope: { Body: { AMT_WiFiPortConfigurationService: { localProfileSynchronizationEnabled: 3 } } } }),
         'enterprise-assistant-request': Promise.resolve({ clientId }),
@@ -501,13 +501,20 @@ describe('WiFi Network Configuration', () => {
       service.send({ type: 'WIFICONFIG', clientId })
     })
 
-    it('should eventually reach "FAILED" state for WIRELESS devices', (done) => {
+    it('should add a WiFi profile to AMT.', (done) => {
       context.wifiSettings = {
         ElementName: 'Intel(r) AMT Ethernet Port Settings',
         InstanceID: 'Intel(r) AMT Ethernet Port Settings 1',
         MACAddress: '00-00-00-00-00-00'
       }
-      config.guards = { is8021xProfileAssociated: () => false }
+      context.wifiProfileName = 'unsupportedEncryption'
+      context.wifiProfileCount = 1
+      config.guards = {
+        is8021xProfileAssociated: () => true,
+        isWiFiProfilesExists: () => false,
+        isTrustedRootCertifcateExists: () => true
+      }
+
       const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
@@ -515,14 +522,204 @@ describe('WiFi Network Configuration', () => {
         'PUT_WIFI_PORT_CONFIGURATION_SERVICE',
         'REQUEST_STATE_CHANGE_FOR_WIFI_PORT',
         'GET_WIFI_PROFILE',
+        'ENTERPRISE_ASSISTANT_REQUEST',
+        'GENERATE_KEY_PAIR',
+        'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR',
+        'PULL_PUBLIC_PRIVATE_KEY_PAIR',
+        'ENTERPRISE_ASSISTANT_RESPONSE',
+        'SIGN_CSR',
+        'GET_CERT_FROM_ENTERPRISE_ASSISTANT',
+        'ADD_CERTIFICATE',
         'ADD_WIFI_SETTINGS',
-        'FAILED'
+        'SUCCESS'
       ]
       const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
-        if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
+        if (state.matches('SUCCESS') && currentStateIndex === flowStates.length) {
           const status = devices[clientId].status.Network
-          expect(status).toEqual('Wired Network Configured. Failed to add wifi settings')
+          expect(status).toEqual('Wired Network Configured. Wireless Configured')
+          done()
+        }
+      })
+      service.start()
+      service.send({ type: 'WIFICONFIG', clientId })
+    })
+
+    it('should fail to add wifi profile when not supported by AMT.', (done) => {
+      context.wifiSettings = {
+        ElementName: 'Intel(r) AMT Ethernet Port Settings',
+        InstanceID: 'Intel(r) AMT Ethernet Port Settings 1',
+        MACAddress: '00-00-00-00-00-00'
+      }
+      config.services['add-wifi-settings'] = Promise.reject(new Error())
+      context.wifiProfileName = 'unsupportedEncryption'
+      context.wifiProfileCount = 1
+      config.guards = {
+        is8021xProfileAssociated: () => true,
+        isWiFiProfilesExists: () => false,
+        isTrustedRootCertifcateExists: () => true
+      }
+
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'ACTIVATION',
+        'GET_WIFI_PORT_CONFIGURATION_SERVICE',
+        'PUT_WIFI_PORT_CONFIGURATION_SERVICE',
+        'REQUEST_STATE_CHANGE_FOR_WIFI_PORT',
+        'GET_WIFI_PROFILE',
+        'ENTERPRISE_ASSISTANT_REQUEST',
+        'GENERATE_KEY_PAIR',
+        'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR',
+        'PULL_PUBLIC_PRIVATE_KEY_PAIR',
+        'ENTERPRISE_ASSISTANT_RESPONSE',
+        'SIGN_CSR',
+        'GET_CERT_FROM_ENTERPRISE_ASSISTANT',
+        'ADD_CERTIFICATE',
+        'ADD_WIFI_SETTINGS',
+        'SUCCESS'
+      ]
+      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('SUCCESS') && currentStateIndex === flowStates.length) {
+          const status = devices[clientId].status.Network
+          expect(status).toEqual('Wired Network Configured. Failed to add unsupportedEncryption')
+          done()
+        }
+      })
+      service.start()
+      service.send({ type: 'WIFICONFIG', clientId })
+    })
+
+    it('should fail and report the detail message with added and failed profiles.', (done) => {
+      context.wifiSettings = {
+        ElementName: 'Intel(r) AMT Ethernet Port Settings',
+        InstanceID: 'Intel(r) AMT Ethernet Port Settings 1',
+        MACAddress: '00-00-00-00-00-00'
+      }
+      config.services['add-wifi-settings'] = Promise.reject(new Error())
+      context.profilesAdded = 'profile1, profile3'
+      context.profilesFailed = 'profile2'
+      context.wifiProfileName = 'profile4'
+      context.wifiProfileCount = 1
+      config.guards = {
+        is8021xProfileAssociated: () => true,
+        isWiFiProfilesExists: () => false,
+        isTrustedRootCertifcateExists: () => true
+      }
+
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'ACTIVATION',
+        'GET_WIFI_PORT_CONFIGURATION_SERVICE',
+        'PUT_WIFI_PORT_CONFIGURATION_SERVICE',
+        'REQUEST_STATE_CHANGE_FOR_WIFI_PORT',
+        'GET_WIFI_PROFILE',
+        'ENTERPRISE_ASSISTANT_REQUEST',
+        'GENERATE_KEY_PAIR',
+        'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR',
+        'PULL_PUBLIC_PRIVATE_KEY_PAIR',
+        'ENTERPRISE_ASSISTANT_RESPONSE',
+        'SIGN_CSR',
+        'GET_CERT_FROM_ENTERPRISE_ASSISTANT',
+        'ADD_CERTIFICATE',
+        'ADD_WIFI_SETTINGS',
+        'SUCCESS'
+      ]
+      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('SUCCESS') && currentStateIndex === flowStates.length) {
+          const status = devices[clientId].status.Network
+          expect(status).toEqual(`Wired Network Configured. Added ${context.profilesAdded} WiFi Profiles. Failed to add profile2, profile4`)
+          done()
+        }
+      })
+      service.start()
+      service.send({ type: 'WIFICONFIG', clientId })
+    })
+    it('should fail and report the detail message with added and return value 1.', (done) => {
+      context.wifiSettings = {
+        ElementName: 'Intel(r) AMT Ethernet Port Settings',
+        InstanceID: 'Intel(r) AMT Ethernet Port Settings 1',
+        MACAddress: '00-00-00-00-00-00'
+      }
+      config.services['add-wifi-settings'] = Promise.resolve({ Envelope: { Body: { AddWiFiSettings_OUTPUT: { ReturnValue: 1 } } } })
+      context.profilesAdded = 'profile1, profile3'
+      context.wifiProfileName = 'profile5'
+      context.wifiProfileCount = 1
+      config.guards = {
+        is8021xProfileAssociated: () => true,
+        isWiFiProfilesExists: () => false,
+        isTrustedRootCertifcateExists: () => true
+      }
+
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'ACTIVATION',
+        'GET_WIFI_PORT_CONFIGURATION_SERVICE',
+        'PUT_WIFI_PORT_CONFIGURATION_SERVICE',
+        'REQUEST_STATE_CHANGE_FOR_WIFI_PORT',
+        'GET_WIFI_PROFILE',
+        'ENTERPRISE_ASSISTANT_REQUEST',
+        'GENERATE_KEY_PAIR',
+        'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR',
+        'PULL_PUBLIC_PRIVATE_KEY_PAIR',
+        'ENTERPRISE_ASSISTANT_RESPONSE',
+        'SIGN_CSR',
+        'GET_CERT_FROM_ENTERPRISE_ASSISTANT',
+        'ADD_CERTIFICATE',
+        'ADD_WIFI_SETTINGS',
+        'SUCCESS'
+      ]
+      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('SUCCESS') && currentStateIndex === flowStates.length) {
+          const status = devices[clientId].status.Network
+          expect(status).toEqual(`Wired Network Configured. Added ${context.profilesAdded} WiFi Profiles. Failed to add profile5`)
+          done()
+        }
+      })
+      service.start()
+      service.send({ type: 'WIFICONFIG', clientId })
+    })
+    it('should fail and report the detail message with added', (done) => {
+      context.wifiSettings = {
+        ElementName: 'Intel(r) AMT Ethernet Port Settings',
+        InstanceID: 'Intel(r) AMT Ethernet Port Settings 1',
+        MACAddress: '00-00-00-00-00-00'
+      }
+      config.services['add-wifi-settings'] = Promise.resolve({ Envelope: { Body: { AddWiFiSettings_OUTPUT: { ReturnValue: 0 } } } })
+      context.profilesAdded = 'profile1'
+      context.wifiProfileName = 'profile2'
+      context.wifiProfileCount = 1
+      config.guards = {
+        is8021xProfileAssociated: () => true,
+        isWiFiProfilesExists: () => false,
+        isTrustedRootCertifcateExists: () => true
+      }
+
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'ACTIVATION',
+        'GET_WIFI_PORT_CONFIGURATION_SERVICE',
+        'PUT_WIFI_PORT_CONFIGURATION_SERVICE',
+        'REQUEST_STATE_CHANGE_FOR_WIFI_PORT',
+        'GET_WIFI_PROFILE',
+        'ENTERPRISE_ASSISTANT_REQUEST',
+        'GENERATE_KEY_PAIR',
+        'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR',
+        'PULL_PUBLIC_PRIVATE_KEY_PAIR',
+        'ENTERPRISE_ASSISTANT_RESPONSE',
+        'SIGN_CSR',
+        'GET_CERT_FROM_ENTERPRISE_ASSISTANT',
+        'ADD_CERTIFICATE',
+        'ADD_WIFI_SETTINGS',
+        'SUCCESS'
+      ]
+      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('SUCCESS') && currentStateIndex === flowStates.length) {
+          const status = devices[clientId].status.Network
+          expect(status).toEqual('Wired Network Configured. Wireless Configured')
           done()
         }
       })
