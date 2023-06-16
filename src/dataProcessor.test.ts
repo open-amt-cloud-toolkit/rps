@@ -183,6 +183,7 @@ describe('Activate a device', () => {
         username: '$$OsAdmin',
         password: 'P@ssw0rd',
         currentMode: 2,
+        friendlyName: 'ImaFriend',
         hostname: 'DESKTOP-9CC12U7',
         certHashes: ['c3846bf24b9e93ca64274c0ec67c1ecc5e024ffcacd2d74019350e81fe546ae4']
       }
