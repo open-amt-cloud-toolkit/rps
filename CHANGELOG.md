@@ -1,3 +1,18 @@
+<a name="2.12.0"></a>
+## [2.12.0] - 2023-06-16
+### Build
+- update version and changelog to v2.12.0 (#3a72cf5) 
+- **deps-dev:** bump sinon from 15.1.0 to 15.1.2 ([#1055](https://github.com/open-amt-cloud-toolkit/rps/issues/1055)) (#7ddf936) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 5.59.9 to 5.59.11 ([#1056](https://github.com/open-amt-cloud-toolkit/rps/issues/1056)) (#2fe4656) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 20.3.0 to 20.3.1 ([#1057](https://github.com/open-amt-cloud-toolkit/rps/issues/1057)) (#ce7bdde) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin ([#1058](https://github.com/open-amt-cloud-toolkit/rps/issues/1058)) (#b9469e8) 
+
+### Ci
+- add git to publish package.json version ([#1060](https://github.com/open-amt-cloud-toolkit/rps/issues/1060)) (#6d93ace) 
+
+### Feat
+- support device friendly name ([#1059](https://github.com/open-amt-cloud-toolkit/rps/issues/1059)) (#91376f0) 
+
 <a name="2.11.1"></a>
 ## [2.11.1] - 2023-06-12
 ### Build
