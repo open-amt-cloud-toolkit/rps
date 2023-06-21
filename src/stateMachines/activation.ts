@@ -897,19 +897,18 @@ export class Activation {
     /* Register device metadata with MPS */
     try {
       const url = `${Environment.Config.mpsServer}/api/v1/devices`
-      const jsonData = {
+      const jsonData: any = {
         guid: clientObj.uuid,
         hostname: clientObj.hostname,
         mpsusername: clientObj.mpsUsername,
         tags: profile?.tags ?? [],
-        tenantId: profile.tenantId,
-        friendlyName: context.friendlyName
+        tenantId: profile.tenantId
       }
       // friendlyName with an empty string indicates clearing the value
       // otherwise, do not include the property so an update of the device
-      // preserves existing value. (NOTE: '==' handles undefined too)
-      if (jsonData.friendlyName == null) {
-        delete jsonData.friendlyName
+      // preserves existing value
+      if (context.friendlyName != null) {
+        jsonData.friendlyName = context.friendlyName
       }
       await got.post(url, { json: jsonData })
       return true
