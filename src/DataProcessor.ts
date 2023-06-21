@@ -14,7 +14,7 @@ import { parse, type HttpZResponseModel } from 'http-z'
 import { devices } from './WebSocketListener'
 import { Deactivation } from './stateMachines/deactivation'
 import { Maintenance, type MaintenanceEvent } from './stateMachines/maintenance/maintenance'
-import { Activation } from './stateMachines/activation'
+import { Activation, type ActivationEvent } from './stateMachines/activation'
 import ClientResponseMsg from './utils/ClientResponseMsg'
 import { parseChunkedMessage } from './utils/parseChunkedMessage'
 import { UNEXPECTED_PARSE_ERROR } from './utils/constants'
@@ -81,14 +81,15 @@ export class DataProcessor {
   async activateDevice (clientMsg: ClientMsg, clientId: string, activation: Activation = new Activation()): Promise<void> {
     this.logger.debug(`ProcessData: Parsed Message received from device ${clientMsg.payload.uuid}: ${JSON.stringify(clientMsg, null, '\t')}`)
     await this.validator.validateActivationMsg(clientMsg, clientId) // Validate the activation message payload
-    // Makes the first wsman call
     this.setConnectionParams(clientId)
     activation.service.start()
-    if (devices[clientId].activationStatus) {
-      activation.service.send({ type: 'ACTIVATED', tenantId: clientMsg.tenantId, clientId, isActivated: true })
-    } else {
-      activation.service.send({ type: 'ACTIVATION', tenantId: clientMsg.tenantId, clientId })
+    const event: ActivationEvent = {
+      type: devices[clientId].activationStatus ? 'ACTIVATED' : 'ACTIVATION',
+      clientId,
+      tenantId: clientMsg.tenantId,
+      friendlyName: clientMsg.payload.friendlyName
     }
+    activation.service.send(event)
   }
 
   async deactivateDevice (clientMsg: ClientMsg, clientId: string, deactivation: Deactivation = new Deactivation()): Promise<void> {
