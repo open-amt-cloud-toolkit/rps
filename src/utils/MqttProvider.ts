@@ -21,11 +21,11 @@ export class MqttProvider {
   static instance: MqttProvider
 
   constructor (config: RPSConfig) {
-    if (!config?.mqttAddress) {
+    if (!config?.mqtt_address) {
       log.info('MQTT is turned off')
     } else {
       this.turnedOn = true
-      this.mqttUrl = new url.URL(config.mqttAddress)
+      this.mqttUrl = new url.URL(config.mqtt_address)
       this.baseUrl = 'mqtt://' + this.mqttUrl.host
       this.port = +this.mqttUrl.port
       this.options = {

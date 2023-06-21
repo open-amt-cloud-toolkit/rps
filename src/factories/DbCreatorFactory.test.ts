@@ -20,7 +20,7 @@ describe('DB Creator Factory', () => {
     const db2 = await factory.getDb()
     expect(db2).not.toBeNull()
     const { default: Provider }: { default: new () => IDB } =
-        await import(`../data/${Environment.Config.dbProvider}`)
+        await import(`../data/${Environment.Config.db_provider}`)
     const db3 = new Provider()
     expect(db3).not.toBeNull()
 

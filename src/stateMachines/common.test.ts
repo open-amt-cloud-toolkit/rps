@@ -42,7 +42,7 @@ describe('Common', () => {
     wrapItSpy = jest.spyOn(context.httpHandler, 'wrapIt')
     responseMessageSpy = jest.spyOn(ClientResponseMsg, 'get')
     sendSpy = jest.spyOn(devices[clientId].ClientSocket, 'send').mockReturnValue()
-    const x = new enterpriseAssistantListener.WSEnterpriseAssistantListener(new Logger('test'), null)
+    const x = new enterpriseAssistantListener.WSEnterpriseAssistantListener(new Logger('test'))
     x.onClientConnected({
       send: jest.fn(),
       on: jest.fn()
@@ -154,7 +154,7 @@ describe('Common', () => {
   it('should timeout on no response from AMT', async () => {
     try {
       const x = common.invokeWsmanCall(context)
-      jest.advanceTimersByTime(Environment.Config.delayTimer * 1000)
+      jest.advanceTimersByTime(Environment.Config.delay_timer * 1000)
       await x
     } catch (err) {
       expect(err).toBeInstanceOf(GATEWAY_TIMEOUT_ERROR)
@@ -164,7 +164,7 @@ describe('Common', () => {
   it('should timeout on no response from EA', async () => {
     try {
       const x = common.invokeEnterpriseAssistantCall(context)
-      jest.advanceTimersByTime(Environment.Config.delayTimer * 1000)
+      jest.advanceTimersByTime(Environment.Config.delay_timer * 1000)
       await x
     } catch (err) {
       expect(err).toBeInstanceOf(EA_TIMEOUT_ERROR)

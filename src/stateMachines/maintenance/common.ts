@@ -66,7 +66,7 @@ export const invokeWsmanCall = async <T> (clientId: string, wsmanXml: string, re
   clientObj.pendingPromise = new Promise<any>((resolve, reject) => {
     clientObj.resolve = resolve
     clientObj.reject = reject
-    timeoutId = setTimeout(reject, Environment.Config.delayTimer * 1000, new GatewayTimeoutError())
+    timeoutId = setTimeout(reject, Environment.Config.delay_timer * 1000, new GatewayTimeoutError())
     clientObj.ClientSocket.send(clientMsgStr)
   })
     .then((rsp) => {

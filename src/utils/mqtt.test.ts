@@ -12,7 +12,7 @@ jest.mock('mqtt', () => ({ ...jest.requireActual('mqtt') as object }))
 
 describe('MQTT Turned ON Tests', () => {
   beforeEach(() => {
-    config.mqttAddress = 'mqtt://127.0.0.1:8883'
+    config.mqtt_address = 'mqtt://127.0.0.1:8883'
     Environment.Config = config
     MqttProvider.instance = new MqttProvider(config)
   })

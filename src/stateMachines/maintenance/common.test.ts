@@ -24,7 +24,7 @@ let responseMessageSpy: jest.SpyInstance
 let wrapItSpy: jest.SpyInstance
 let wsmanRsp: any
 beforeEach(() => {
-  Environment.Config.delayTimer = 1
+  Environment.Config.delay_timer = 1
   devices[clientId] = {
     ClientSocket: {
       send: jest.fn()
@@ -52,13 +52,13 @@ beforeEach(() => {
 
 const delayedReject = function (value): null {
   setTimeout(() => { devices[clientId].reject(value) },
-    Environment.Config.delayTimer * 1000 * 0.55)
+    Environment.Config.delay_timer * 1000 * 0.55)
   return null
 }
 
 const delayedResolve = function (value): null {
   setTimeout(() => { devices[clientId].resolve(value) },
-    Environment.Config.delayTimer * 1000 * 0.55)
+    Environment.Config.delay_timer * 1000 * 0.55)
   return null
 }
 
