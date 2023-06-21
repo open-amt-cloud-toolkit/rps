@@ -3,7 +3,19 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
+import { v4 as uuid } from 'uuid'
 import { type RPSConfig } from '../../models'
+import { devices } from '../../WebSocketListener'
+
+export function setupTestClient (): string {
+  const clientId = uuid()
+  devices[clientId] = {
+    ClientId: clientId,
+    ClientSocket: { send: jest.fn() } as any,
+    unauthCount: 0
+  }
+  return clientId
+}
 
 export const config: RPSConfig = {
   secrets_path: 'secret/data/',

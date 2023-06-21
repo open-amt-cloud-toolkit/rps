@@ -49,14 +49,15 @@ export interface ActivationContext {
   certChainPfx: any
   tenantId: string
   canActivate: boolean
+  friendlyName?: string
 }
 
-interface ActivationEvent {
+export interface ActivationEvent {
   type: 'ACTIVATION' | 'ACTIVATED' | 'ONFAILED'
   clientId: string
-  isActivated?: boolean
   data?: any
   tenantId: string
+  friendlyName: string
 }
 
 export class Activation {
@@ -98,7 +99,8 @@ export class Activation {
         certChainPfx: null,
         amt: new AMT.Messages(),
         ips: new IPS.Messages(),
-        cim: new CIM.Messages()
+        cim: new CIM.Messages(),
+        friendlyName: null
       },
       id: 'activation-machine',
       initial: 'UNPROVISIONED',
@@ -108,15 +110,18 @@ export class Activation {
             ACTIVATION: {
               actions: assign({
                 clientId: (context, event) => event.clientId,
-                tenantId: (context, event) => event.tenantId
+                isActivated: () => false,
+                tenantId: (context, event) => event.tenantId,
+                friendlyName: (context, event) => event.friendlyName
               }),
               target: 'GET_AMT_PROFILE'
             },
             ACTIVATED: {
               actions: assign({
                 clientId: (context, event) => event.clientId,
-                isActivated: (context, event) => event.isActivated,
-                tenantId: (context, event) => event.tenantId
+                isActivated: () => true,
+                tenantId: (context, event) => event.tenantId,
+                friendlyName: (context, event) => event.friendlyName
               }),
               target: 'GET_AMT_PROFILE'
             }
@@ -891,20 +896,21 @@ export class Activation {
     const clientObj = devices[clientId]
     /* Register device metadata with MPS */
     try {
-      let tags = []
-      if (profile?.tags != null) {
-        tags = profile.tags
+      const url = `${Environment.Config.mps_server}/api/v1/devices`
+      const jsonData: any = {
+        guid: clientObj.uuid,
+        hostname: clientObj.hostname,
+        mpsusername: clientObj.mpsUsername,
+        tags: profile?.tags ?? [],
+        tenantId: profile.tenantId
       }
-      await got(`${Environment.Config.mps_server}/api/v1/devices`, {
-        method: 'POST',
-        json: {
-          guid: clientObj.uuid,
-          hostname: clientObj.hostname,
-          mpsusername: clientObj.mpsUsername,
-          tags,
-          tenantId: profile.tenantId
-        }
-      })
+      // friendlyName with an empty string indicates clearing the value
+      // otherwise, do not include the property so an update of the device
+      // preserves existing value
+      if (context.friendlyName != null) {
+        jsonData.friendlyName = context.friendlyName
+      }
+      await got.post(url, { json: jsonData })
       return true
     } catch (err) {
       MqttProvider.publishEvent('fail', ['Activator'], 'unable to register metadata with MPS', clientObj.uuid)

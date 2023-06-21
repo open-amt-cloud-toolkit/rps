@@ -1,3 +1,45 @@
+<a name="2.12.0"></a>
+## [2.12.0] - 2023-06-16
+### Build
+- update version and changelog to v2.12.0 (#3a72cf5) 
+- **deps-dev:** bump sinon from 15.1.0 to 15.1.2 ([#1055](https://github.com/open-amt-cloud-toolkit/rps/issues/1055)) (#7ddf936) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 5.59.9 to 5.59.11 ([#1056](https://github.com/open-amt-cloud-toolkit/rps/issues/1056)) (#2fe4656) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 20.3.0 to 20.3.1 ([#1057](https://github.com/open-amt-cloud-toolkit/rps/issues/1057)) (#ce7bdde) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin ([#1058](https://github.com/open-amt-cloud-toolkit/rps/issues/1058)) (#b9469e8) 
+
+### Ci
+- add git to publish package.json version ([#1060](https://github.com/open-amt-cloud-toolkit/rps/issues/1060)) (#6d93ace) 
+
+### Feat
+- support device friendly name ([#1059](https://github.com/open-amt-cloud-toolkit/rps/issues/1059)) (#91376f0) 
+
+<a name="2.11.1"></a>
+## [2.11.1] - 2023-06-12
+### Build
+- update version and changelog to v2.11.1 (#5c84091) 
+- updated semantic release (#719fd83) 
+- updated semantic release ([#1035](https://github.com/open-amt-cloud-toolkit/rps/issues/1035)) (#12f90cf) 
+- updated semantic release ([#1030](https://github.com/open-amt-cloud-toolkit/rps/issues/1030)) (#a8c1574) 
+- **deps:** bump xml2js from 0.5.0 to 0.6.0 ([#1037](https://github.com/open-amt-cloud-toolkit/rps/issues/1037)) (#730ec8a) 
+- **deps:** bump winston from 3.8.2 to 3.9.0 (#b670d30) 
+- **deps-dev:** bump eslint-config-standard-with-typescript ([#1044](https://github.com/open-amt-cloud-toolkit/rps/issues/1044)) (#9d27c4c) 
+- **deps-dev:** bump eslint-config-standard from 17.0.0 to 17.1.0 ([#1043](https://github.com/open-amt-cloud-toolkit/rps/issues/1043)) (#280cc0e) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 20.2.4 to 20.2.5 (#d52fb1e) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 5.59.8 to 5.59.9 ([#1048](https://github.com/open-amt-cloud-toolkit/rps/issues/1048)) (#3f2c3c9) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 5.59.7 to 5.59.8 (#d8c23ce) 
+- **deps-dev:** bump eslint from 8.41.0 to 8.42.0 ([#1045](https://github.com/open-amt-cloud-toolkit/rps/issues/1045)) (#5b2fea6) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 20.2.3 to 20.2.4 ([#1036](https://github.com/open-amt-cloud-toolkit/rps/issues/1036)) (#4e56cd4) 
+- **deps-dev:** bump [@types](https://github.com/types)/pg from 8.10.1 to 8.10.2 ([#1047](https://github.com/open-amt-cloud-toolkit/rps/issues/1047)) (#3ee66fd) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin ([#1046](https://github.com/open-amt-cloud-toolkit/rps/issues/1046)) (#244378f) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin (#c7c6180) 
+
+### Fix
+- continue to add the wifi profiles excluding unsupported profiles ([#1015](https://github.com/open-amt-cloud-toolkit/rps/issues/1015)) (#286aa43) 
+- **state-machine:** update tls config for AMT 16.1+ (#a29b829) 
+
+### Refactor
+- **maintenance:** several changes in stateMachines/maintenace ([#1003](https://github.com/open-amt-cloud-toolkit/rps/issues/1003)) (#71606db) 
+
 <a name="2.11.0"></a>
 ## [2.11.0] - 2023-05-23
 ### Build
