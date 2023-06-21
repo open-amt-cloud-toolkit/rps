@@ -11,8 +11,8 @@ export class DbCreatorFactory {
   async getDb (): Promise<IDB> {
     if (DbCreatorFactory.instance == null) {
       const { default: Provider }: { default: new (connectionString: string) => IDB } =
-        await import(`../data/${Environment.Config.dbProvider}`)
-      DbCreatorFactory.instance = new Provider(Environment.Config.connectionString)
+        await import(`../data/${Environment.Config.db_provider}`)
+      DbCreatorFactory.instance = new Provider(Environment.Config.connection_string)
     }
     return DbCreatorFactory.instance
   }

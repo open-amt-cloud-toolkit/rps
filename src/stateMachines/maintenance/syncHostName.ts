@@ -156,7 +156,7 @@ export class SyncHostName {
 
   async saveToMPS (context: SyncHostNameContext): Promise<string> {
     const clientObj = devices[context.clientId]
-    const url = `${Environment.Config.mpsServer}/api/v1/devices`
+    const url = `${Environment.Config.mps_server}/api/v1/devices`
     const jsonData = {
       guid: clientObj.uuid,
       hostname: context.hostNameInfo.hostname,

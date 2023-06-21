@@ -9,8 +9,7 @@ import {
   type CIRAConfig,
   type ProfileWifiConfigs,
   type TlsMode,
-  type TlsSigningAuthority,
-  type WebSocketConfig
+  type TlsSigningAuthority
 } from './RCS.Config'
 
 // guid: string, name: string, mpsuser: string, mpspass: string, amtuser: string, amtpassword: string, mebxpass: string) {
@@ -75,36 +74,27 @@ export interface CertificateObject {
   subject: string
 }
 
-export class VaultConfig {
-  usevault: boolean
-  SecretsPath: string
-  address: string
-  token: string
-}
-export class RPSConfig {
-  VaultConfig: VaultConfig
-  webport: number
-  credentialspath: string
-  WSConfiguration: WebSocketConfig
-  secretsProvider: string
-  dbProvider: string
-  connectionString: string
-  corsOrigin: string
-  corsHeaders: string
-  corsMethods: string
-  mpsServer: string
-  delayTimer: number
-  delayActivationSync: number
-  delaySetupAndConfigSync: number
-  delayTlsPutDataSync: number
-  timemoutWsmanResponse: number
-  mqttAddress?: string
-  disableCIRADomainName?: string
-  jwtTokenHeader: string
-  jwtTenantProperty: string
-  constructor () {
-    this.VaultConfig = new VaultConfig()
-  }
+export interface RPSConfig {
+  vault_token: string
+  vault_address: string
+  secrets_path: string
+  websocketport: number // no underlines to avoid breaking change
+  web_port: number
+  secrets_provider: string
+  db_provider: string
+  connection_string: string
+  cors_origin: string
+  cors_headers: string
+  cors_methods: string
+  mps_server: string
+  delay_timer: number
+  delay_activation_sync: number
+  delay_setup_and_config_sync: number
+  delay_tls_put_data_sync: number
+  mqtt_address?: string
+  disable_cira_domain_name?: string
+  jwt_token_header: string
+  jwt_tenant_property: string
 }
 export enum AMTRedirectionServiceEnabledStates {
   DISABLED = 32768,
@@ -303,41 +293,6 @@ export class Version {
     this.minor = 0
     this.revision = 0
   }
-}
-
-const recipeRCSConfig = {
-  web_port: 'webport',
-  credentials_path: 'credentialspath',
-  websocketport: 'WSConfiguration.WebSocketPort',
-  vault_address: 'VaultConfig.address',
-  vault_token: 'VaultConfig.token',
-  secrets_path: 'VaultConfig.SecretsPath',
-  db_provider: 'dbProvider',
-  secrets_provider: 'secretsProvider',
-  connection_string: 'connectionString',
-  amt_domains: 'AMTDomains',
-  amt_configurations: 'AMTConfigurations',
-  cira_configurations: 'CIRAConfigurations',
-  cors_origin: 'corsOrigin',
-  cors_headers: 'corsHeaders',
-  cors_methods: 'corsMethods',
-  cors_allow_credentials: 'corsAllowCredentials',
-  mps_server: 'mpsServer',
-  delay_timer: 'delayTimer',
-  mqtt_address: 'mqttAddress',
-  disable_cira_domain_name: 'disableCIRADomainName',
-  jwt_token_header: 'jwtTokenHeader',
-  jwt_tenant_property: 'jwtTenantProperty'
-}
-
-export function mapConfig (src, dot): RPSConfig {
-  const config = dot.transform(recipeRCSConfig, src) as RPSConfig
-  // set up the rest of the delays and timeouts that aren't exposed
-  config.delayActivationSync = config.delayTimer * 1000
-  config.delaySetupAndConfigSync = 5000
-  config.delayTlsPutDataSync = 5000
-  config.timemoutWsmanResponse = config.delayTimer * 1000
-  return config
 }
 
 export type eventType = 'request' | 'success' | 'fail'

@@ -3,15 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type WebSocketConfig, type ClientMsg } from './models/RCS.Config'
+import { type ClientMsg } from './models/RCS.Config'
 import { devices, WebSocketListener } from './WebSocketListener'
 import Logger from './Logger'
 import { type ILogger } from './interfaces/ILogger'
 import WebSocket from 'ws'
-
-const wsConfig: WebSocketConfig = {
-  WebSocketPort: 8080
-}
+import { Environment } from './utils/Environment'
+import { config } from './test/helper/Config'
 
 describe('Websocket Listener', () => {
   const log: ILogger = new Logger('WebSocketListener')
@@ -20,6 +18,7 @@ describe('Websocket Listener', () => {
   let onSpy: jest.SpyInstance
   let clientid: string
   beforeEach(() => {
+    Environment.Config = config
     clientid = 'abcd'
     devices[clientid] = {} as any
     const mockWebSocket: any = {
@@ -35,7 +34,7 @@ describe('Websocket Listener', () => {
     } as any
     onSpy = jest.spyOn(serverStub, 'on')
     jest.spyOn(WebSocket, 'Server').mockReturnValue(serverStub)
-    server = new WebSocketListener(log, wsConfig, stub)
+    server = new WebSocketListener(log, stub)
   })
   it('should start WebSocket server', () => {
     isConnected = server.connect()

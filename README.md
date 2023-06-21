@@ -15,7 +15,7 @@ The Remote Provisioning Server (RPS) enables the configuration and activation of
 
 ## Prerequisites
 
-To succesfully deploy RPS, the following software must be installed on your development system:
+To successfully deploy RPS, the following software must be installed on your development system:
 
 - [Node.js* LTS 18.x.x or newer](https://nodejs.org/en/)
 - [git](https://git-scm.com/downloads)
