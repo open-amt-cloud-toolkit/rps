@@ -1,3 +1,23 @@
+<a name="2.12.1"></a>
+## [2.12.1] - 2023-06-22
+### Build
+- updates package.json and changelog to v2.12.1 (#d682829) 
+- **deps:** remove dot-object package ([#1034](https://github.com/open-amt-cloud-toolkit/rps/issues/1034)) (#4e78cae) 
+- **deps-dev:** bump eslint from 8.42.0 to 8.43.0 ([#1062](https://github.com/open-amt-cloud-toolkit/rps/issues/1062)) (#406d492) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 5.59.11 to 5.60.0 ([#1063](https://github.com/open-amt-cloud-toolkit/rps/issues/1063)) (#e2ee624) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin ([#1064](https://github.com/open-amt-cloud-toolkit/rps/issues/1064)) (#6a0aea4) 
+- **deps-dev:** bump sinon from 15.1.2 to 15.2.0 ([#1065](https://github.com/open-amt-cloud-toolkit/rps/issues/1065)) (#83f7655) 
+
+### Ci
+- add trivy container scan, remove trivy code scan ([#1018](https://github.com/open-amt-cloud-toolkit/rps/issues/1018)) (#b77677e) 
+- remove nodejs 14 from build (#b747968) 
+
+### Fix
+- ensure req.tenantId is defaulted to blank (#30a5259) 
+
+### Refactor
+- simplify friendly name ([#1066](https://github.com/open-amt-cloud-toolkit/rps/issues/1066)) (#073fb55) 
+
 <a name="2.12.0"></a>
 ## [2.12.0] - 2023-06-16
 ### Build
