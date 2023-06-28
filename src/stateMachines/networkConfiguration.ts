@@ -272,24 +272,17 @@ export class NetworkConfiguration {
   readEthernetPortSettings (context: NetworkConfigContext, event: NetworkConfigEvent): void {
     // As per AMT SDK first entry is WIRED network port and second entry is WIFI
     const pullResponse = context.message.Envelope.Body.PullResponse.Items.AMT_EthernetPortSettings
+    const assignSettings = (item): void => {
+      if (item.InstanceID.includes('Settings 0')) {
+        context.wiredSettings = item
+      } else if (item.InstanceID.includes('Settings 1')) {
+        context.wifiSettings = item
+      }
+    }
     if (Array.isArray(pullResponse)) {
-      if (pullResponse[0].InstanceID.includes('Settings 0')) {
-        context.wiredSettings = pullResponse[0]
-      } else if (pullResponse[0].InstanceID.includes('Settings 1')) {
-        context.wifiSettings = pullResponse[0]
-      }
-
-      if (pullResponse[1].InstanceID.includes('Settings 0')) {
-        context.wiredSettings = pullResponse[1]
-      } else if (pullResponse[1].InstanceID.includes('Settings 1')) {
-        context.wifiSettings = pullResponse[1]
-      }
+      pullResponse.slice(0, 2).forEach(assignSettings)
     } else {
-      if (pullResponse.InstanceID.includes('Settings 0')) {
-        context.wiredSettings = pullResponse
-      } else if (pullResponse.InstanceID.includes('Settings 1')) {
-        context.wifiSettings = pullResponse
-      }
+      assignSettings(pullResponse)
     }
   }
 }

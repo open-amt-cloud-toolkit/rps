@@ -465,7 +465,7 @@ export class Activation {
           }
         },
         UNCONFIGURATION: {
-          entry: sendTo('unconfiguration-machine', { type: 'REMOVEPOLICY' }),
+          entry: sendTo('unconfiguration-machine', { type: 'REMOVECONFIG' }),
           invoke: {
             src: this.unconfiguration.machine,
             id: 'unconfiguration-machine',

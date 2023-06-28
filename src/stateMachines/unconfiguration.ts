@@ -39,9 +39,11 @@ export interface UnconfigContext {
   ips?: IPS.Messages
   cim?: CIM.Messages
   retryCount?: number
+  wiredSettings: any
+  wifiSettings: any
 }
 interface UnconfigEvent {
-  type: 'REMOVEPOLICY' | 'ONFAILURE'
+  type: 'REMOVECONFIG' | 'ONFAILURE'
   clientId: string
   data?: any
 }
@@ -76,16 +78,18 @@ export class Unconfiguration {
         tlsSettingData: [],
         publicKeyCertificates: [],
         is8021xProfileUpdated: false,
-        wifiEndPointSettings: []
+        wifiEndPointSettings: [],
+        wiredSettings: null,
+        wifiSettings: null
       },
       id: 'unconfiuration-machine',
       initial: 'UNCONFIGURED',
       states: {
         UNCONFIGURED: {
           on: {
-            REMOVEPOLICY: {
+            REMOVECONFIG: {
               actions: ['Reset Unauth Count', 'Reset Retry Count'],
-              target: 'GET_8021X_PROFILE'
+              target: 'ENUMERATE_ETHERNET_PORT_SETTINGS'
             }
           }
         },
@@ -99,11 +103,57 @@ export class Unconfiguration {
               message: (context, event) => event.data,
               clientId: (context, event) => context.clientId
             },
-            onDone: 'GET_8021X_PROFILE'
+            onDone: 'ENUMERATE_ETHERNET_PORT_SETTINGS'
           },
           on: {
             ONFAILURE: 'FAILURE'
           }
+        },
+        ENUMERATE_ETHERNET_PORT_SETTINGS: {
+          invoke: {
+            src: this.enumerateEthernetPortSettings.bind(this),
+            id: 'enumerate-ethernet-port-settings',
+            onDone: {
+              actions: assign({ message: (context, event) => event.data }),
+              target: 'PULL_ETHERNET_PORT_SETTINGS'
+            },
+            onError: {
+              target: 'ERROR'
+            }
+          }
+        },
+        PULL_ETHERNET_PORT_SETTINGS: {
+          invoke: {
+            src: this.pullEthernetPortSettings.bind(this),
+            id: 'pull-ethernet-port-settings',
+            onDone: {
+              actions: [assign({ message: (context, event) => event.data }), 'Reset Retry Count'],
+              target: 'CHECK_ETHERNET_PORT_SETTINGS_PULL_RESPONSE'
+            },
+            onError: [
+              {
+                cond: 'shouldRetry',
+                actions: 'Increment Retry Count',
+                target: 'ENUMERATE_ETHERNET_PORT_SETTINGS'
+              },
+              {
+                actions: assign({ errorMessage: (context, event) => 'Failed to pull ethernet port settings' }),
+                target: 'FAILURE'
+              }
+            ]
+          }
+        },
+        CHECK_ETHERNET_PORT_SETTINGS_PULL_RESPONSE: {
+          entry: 'Read Ethernet Port Settings',
+          always: [
+            {
+              cond: 'isWiredSupportedOnDevice',
+              target: 'GET_8021X_PROFILE'
+            }, {
+              cond: 'isWifiOnlyDevice',
+              target: 'ENUMERATE_WIFI_ENDPOINT_SETTINGS'
+            }
+          ]
         },
         GET_8021X_PROFILE: {
           invoke: {
@@ -114,7 +164,8 @@ export class Unconfiguration {
               target: 'CHECK_GET_8021X_PROFILE_RESPONSE'
             },
             onError: {
-              target: 'ERROR'
+              actions: assign({ errorMessage: (context, event) => 'Failed to get 8021x profile' }),
+              target: 'FAILURE'
             }
           }
         },
@@ -124,7 +175,10 @@ export class Unconfiguration {
               cond: 'is8021xProfileEnabled',
               target: 'DISABLE_IEEE8021X_WIRED'
             }, {
+              cond: 'isWifiSupportedOnDevice',
               target: 'ENUMERATE_WIFI_ENDPOINT_SETTINGS'
+            }, {
+              target: 'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED'
             }
           ]
         },
@@ -132,12 +186,16 @@ export class Unconfiguration {
           invoke: {
             src: this.disableWired8021xConfiguration.bind(this),
             id: 'disable-Wired-8021x-Configuration',
-            onDone: {
+            onDone: [{
+              cond: 'isWifiSupportedOnDevice',
               actions: assign({ is8021xProfileUpdated: true }),
               target: 'ENUMERATE_WIFI_ENDPOINT_SETTINGS'
-            },
+            }, {
+              target: 'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED'
+            }],
             onError: {
-              target: 'ERROR'
+              actions: assign({ errorMessage: (context, event) => 'Failed to disable 8021x profile' }),
+              target: 'FAILURE'
             }
           }
         },
@@ -570,10 +628,13 @@ export class Unconfiguration {
         hasPublicKeyCertificate: (context, event) => context.publicKeyCertificates?.length > 0,
         hasEnvSettings: (context, event) => context.message.Envelope.Body.AMT_EnvironmentDetectionSettingData.DetectionStrings != null,
         hasTLSCredentialContext: (context, event) => context.message.Envelope.Body.PullResponse.Items?.AMT_TLSCredentialContext != null,
-        is8021xProfileEnabled: (context, event) => context.message.Envelope.Body.IPS_IEEE8021xSettings.Enabled === 2,
+        is8021xProfileEnabled: (context, event) => context.message.Envelope.Body.IPS_IEEE8021xSettings.Enabled === 2 || context.message.Envelope.Body.IPS_IEEE8021xSettings.Enabled === 6,
         is8021xProfileDisabled: (context, event) => context.is8021xProfileUpdated,
         isWifiProfilesExistsOnDevice: (context, event) => context.wifiEndPointSettings.length !== 0,
-        isWifiProfileDeleted: (context, event) => context.message.Envelope.Body == null
+        isWifiProfileDeleted: (context, event) => context.message.Envelope.Body == null,
+        isWifiOnlyDevice: (context, event) => context.wifiSettings != null && context.wiredSettings?.MACAddress == null,
+        isWifiSupportedOnDevice: (context, event) => context.wifiSettings?.MACAddress != null,
+        isWiredSupportedOnDevice: (context, event) => context.wiredSettings?.MACAddress != null
 
       },
       actions: {
@@ -591,7 +652,8 @@ export class Unconfiguration {
         'Reset Unauth Count': (context, event) => { devices[context.clientId].unauthCount = 0 },
         'Read WiFi Endpoint Settings Pull Response': this.readWiFiEndpointSettingsPullResponse.bind(this),
         'Reset Retry Count': assign({ retryCount: (context, event) => 0 }),
-        'Increment Retry Count': assign({ retryCount: (context, event) => context.retryCount + 1 })
+        'Increment Retry Count': assign({ retryCount: (context, event) => context.retryCount + 1 }),
+        'Read Ethernet Port Settings': this.readEthernetPortSettings.bind(this)
       }
     })
 
@@ -605,6 +667,33 @@ export class Unconfiguration {
     this.logger = new Logger('Activation_State_Machine')
   }
 
+  async enumerateEthernetPortSettings (context): Promise<any> {
+    context.xmlMessage = context.amt.EthernetPortSettings.Enumerate()
+    return await invokeWsmanCall(context, 2)
+  }
+
+  async pullEthernetPortSettings (context): Promise<any> {
+    context.xmlMessage = context.amt.EthernetPortSettings.Pull(context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+    return await invokeWsmanCall(context)
+  }
+
+  readEthernetPortSettings (context: UnconfigContext, event: UnconfigEvent): void {
+    // As per AMT SDK first entry is WIRED network port and second entry is WIFI
+    const pullResponse = context.message.Envelope.Body.PullResponse.Items.AMT_EthernetPortSettings
+    const assignSettings = (item): void => {
+      if (item.InstanceID.includes('Settings 0')) {
+        context.wiredSettings = item
+      } else if (item.InstanceID.includes('Settings 1')) {
+        context.wifiSettings = item
+      }
+    }
+    if (Array.isArray(pullResponse)) {
+      pullResponse.slice(0, 2).forEach(assignSettings)
+    } else {
+      assignSettings(pullResponse)
+    }
+  }
+
   async get8021xProfile (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
     context.xmlMessage = context.ips.IEEE8021xSettings.Get()
     return await invokeWsmanCall(context, 2)
@@ -613,6 +702,7 @@ export class Unconfiguration {
   async disableWired8021xConfiguration (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
     const ieee8021xProfile = context.message.Envelope.Body.IPS_IEEE8021xSettings
     delete ieee8021xProfile.Username
+    delete ieee8021xProfile.Password
     delete ieee8021xProfile.AuthenticationProtocol
     ieee8021xProfile.Enabled = 3
     context.xmlMessage = context.ips.IEEE8021xSettings.Put(ieee8021xProfile)

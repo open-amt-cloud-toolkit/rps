@@ -44,6 +44,7 @@ describe('TLS State Machine', () => {
       tlsCredentialContext: '',
       amtProfile: { tlsMode: 3, tlsCerts: { ISSUED_CERTIFICATE: { pem: '' } } } as any,
       unauthCount: 0,
+      authProtocol: 0,
       amt: new AMT.Messages()
     }
     tls = new TLS()

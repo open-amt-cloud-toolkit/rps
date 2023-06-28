@@ -45,7 +45,8 @@ export const AuthenticationProtocols = {
       this.EAP_TLS,
       this.PEAP_GTC,
       this.EAP_FAST_GTC,
-      this.EAP_FAST_TLS
+      this.EAP_FAST_TLS,
+      this.PEAP_MSCHAPv2
     ]
   },
   forWirelessInterface (): AuthenticationProtocol[] {
