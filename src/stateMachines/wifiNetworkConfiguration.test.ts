@@ -144,7 +144,8 @@ describe('WiFi Network Configuration', () => {
         'add-radius-server-root-certificate': Promise.resolve({ clientId })
       },
       guards: {
-        shouldRetry: () => {}
+        shouldRetry: () => {},
+        isMSCHAPv2: () => false
       },
       actions: {
         'Reset Unauth Count': () => { },
@@ -512,7 +513,8 @@ describe('WiFi Network Configuration', () => {
       config.guards = {
         is8021xProfileAssociated: () => true,
         isWiFiProfilesExists: () => false,
-        isTrustedRootCertifcateExists: () => true
+        isTrustedRootCertifcateExists: () => true,
+        isMSCHAPv2: () => false
       }
 
       const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
@@ -557,7 +559,8 @@ describe('WiFi Network Configuration', () => {
       config.guards = {
         is8021xProfileAssociated: () => true,
         isWiFiProfilesExists: () => false,
-        isTrustedRootCertifcateExists: () => true
+        isTrustedRootCertifcateExists: () => true,
+        isMSCHAPv2: () => false
       }
 
       const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
@@ -604,7 +607,8 @@ describe('WiFi Network Configuration', () => {
       config.guards = {
         is8021xProfileAssociated: () => true,
         isWiFiProfilesExists: () => false,
-        isTrustedRootCertifcateExists: () => true
+        isTrustedRootCertifcateExists: () => true,
+        isMSCHAPv2: () => false
       }
 
       const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
@@ -649,7 +653,8 @@ describe('WiFi Network Configuration', () => {
       config.guards = {
         is8021xProfileAssociated: () => true,
         isWiFiProfilesExists: () => false,
-        isTrustedRootCertifcateExists: () => true
+        isTrustedRootCertifcateExists: () => true,
+        isMSCHAPv2: () => false
       }
 
       const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
@@ -694,7 +699,8 @@ describe('WiFi Network Configuration', () => {
       config.guards = {
         is8021xProfileAssociated: () => true,
         isWiFiProfilesExists: () => false,
-        isTrustedRootCertifcateExists: () => true
+        isTrustedRootCertifcateExists: () => true,
+        isMSCHAPv2: () => false
       }
 
       const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)

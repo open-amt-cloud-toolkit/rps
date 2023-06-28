@@ -173,6 +173,45 @@ describe('Network Configuration', () => {
       service.send({ type: 'NETWORKCONFIGURATION', clientId })
     })
     it('should eventually reach "FAILED" state for a device', (done) => {
+      config.services['put-general-settings'] = Promise.reject(new Error())
+      const mockNetworkConfigurationMachine = networkConfig.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'ACTIVATION',
+        'PUT_GENERAL_SETTINGS',
+        'FAILED'
+      ]
+      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
+          const status = devices[clientId].status.Network
+          expect(status).toEqual('Failed to update amt general settings on device')
+          done()
+        }
+      })
+      service.start()
+      service.send({ type: 'NETWORKCONFIGURATION', clientId })
+    })
+    it('should eventually reach "FAILED" state for a device', (done) => {
+      config.services['enumerate-ethernet-port-settings'] = Promise.reject(new Error())
+      const mockNetworkConfigurationMachine = networkConfig.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'ACTIVATION',
+        'PUT_GENERAL_SETTINGS',
+        'ENUMERATE_ETHERNET_PORT_SETTINGS',
+        'FAILED'
+      ]
+      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
+          const status = devices[clientId].status.Network
+          expect(status).toEqual('Failed to get enumeration number to ethernet port settings')
+          done()
+        }
+      })
+      service.start()
+      service.send({ type: 'NETWORKCONFIGURATION', clientId })
+    })
+    it('should eventually reach "FAILED" state for a device', (done) => {
       config.services['pull-ethernet-port-settings'] = Promise.reject(new Error())
       const mockNetworkConfigurationMachine = networkConfig.machine.withConfig(config).withContext(context)
       const flowStates = [

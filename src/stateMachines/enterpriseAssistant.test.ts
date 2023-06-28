@@ -42,7 +42,8 @@ describe('Enterprise Assistant', () => {
       targetAfterError: null,
       ieee8021xProfile: null,
       addTrustedRootCertResponse: null,
-      addCertResponse: null
+      addCertResponse: null,
+      authProtocol: 0
     }
     devices[clientId] = {
       unauthCount: 0,

@@ -41,6 +41,7 @@ export interface WiFiConfigContext {
   wifiProfile?: WirelessConfig
   profilesAdded?: string
   profilesFailed?: string
+  authProtocol: number
 }
 
 export interface WiFiConfigEvent {
@@ -71,7 +72,8 @@ export class WiFiConfiguration {
         statusMessage: null,
         generalSettings: null,
         wifiSettings: null,
-        wifiEndPointSettings: []
+        wifiEndPointSettings: [],
+        authProtocol: 0
       },
       id: 'wifi-network-configuration-machine',
       initial: 'ACTIVATION',
@@ -165,12 +167,14 @@ export class WiFiConfiguration {
           invoke: {
             src: async (context, event) => await initiateCertRequest(context, event),
             id: 'enterprise-assistant-request',
-            onDone: {
-              actions: [
-                assign({ message: (context, event) => event.data })
-              ],
+            onDone: [{
+              cond: 'isMSCHAPv2',
+              actions: assign({ eaResponse: (context, event) => event.data.response }),
+              target: 'CHECK_RADIUS_SERVER_ROOT_CERTIFICATE'
+            }, {
+              actions: assign({ message: (context, event) => event.data }),
               target: 'GENERATE_KEY_PAIR'
-            },
+            }],
             onError: {
               actions: assign({ errorMessage: 'Failed to initiate cert request with enterprise assistant in 802.1x' }),
               target: 'FAILED'
@@ -368,6 +372,7 @@ export class WiFiConfiguration {
           }
           return false
         },
+        isMSCHAPv2: (context, event) => context.wifiProfile.ieee8021xProfileObject.authenticationProtocol === 2,
         shouldRetry: (context, event) => context.retryCount < 3 && event.data instanceof UNEXPECTED_PARSE_ERROR
       },
       actions: {
@@ -432,6 +437,7 @@ export class WiFiConfiguration {
     context.wifiProfile = await this.db.wirelessProfiles.getByName(context.amtProfile.wifiConfigs[context.wifiProfileCount].profileName, context.amtProfile.tenantId)
     if (context.wifiProfile.ieee8021xProfileName != null) {
       context.wifiProfile.ieee8021xProfileObject = await this.db.ieee8021xProfiles.getByName(context.wifiProfile.ieee8021xProfileName, context.wifiProfile.tenantId)
+      context.authProtocol = context.wifiProfile.ieee8021xProfileObject.authenticationProtocol
     }
     if (this.configurator?.secretsManager) {
       // Get WiFi profile pskPassphrase from vault
@@ -461,13 +467,17 @@ export class WiFiConfiguration {
     }
 
     if (wifiEndpointSettings.AuthenticationMethod === 5 || wifiEndpointSettings.AuthenticationMethod === 7) {
+      // const authProtocol = context.wifiProfile.ieee8021xProfileObject.authenticationProtocol
       const ieee8021xSettings: CIM.Models.IEEE8021xSettings = {
         ElementName: context.wifiProfile.ieee8021xProfileObject.profileName,
         InstanceID: `Intel(r) AMT: 8021X Settings ${context.wifiProfile.ieee8021xProfileObject.profileName}`,
-        AuthenticationProtocol: context.wifiProfile.ieee8021xProfileObject.authenticationProtocol as CIM.Types.IEEE8021xSettings.AuthenticationProtocol,
+        AuthenticationProtocol: context.authProtocol as CIM.Types.IEEE8021xSettings.AuthenticationProtocol,
         Username: context.eaResponse?.username
       }
-      const cert = context.addCertResponse?.AddCertificate_OUTPUT?.CreatedCertificate?.ReferenceParameters?.SelectorSet?.Selector?._
+      if (context.authProtocol === 2) {
+        ieee8021xSettings.Password = context.eaResponse?.password
+      }
+      const cert = context.authProtocol === 2 ? null : context.addCertResponse?.AddCertificate_OUTPUT?.CreatedCertificate?.ReferenceParameters?.SelectorSet?.Selector?._
       const root = context.addTrustedRootCertResponse?.AddTrustedRootCertificate_OUTPUT?.CreatedCertificate?.ReferenceParameters?.SelectorSet?.Selector?._
       context.xmlMessage = context.amt.WiFiPortConfigurationService.AddWiFiSettings(wifiEndpointSettings, selector, ieee8021xSettings, cert, root)
     } else {

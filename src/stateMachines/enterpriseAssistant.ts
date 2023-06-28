@@ -15,7 +15,7 @@ const initiateCertRequest = async (context: any, event: any): Promise<Enterprise
     nodeid: context.clientId,
     domain: '',
     reqid: '',
-    authProtocol: 0,
+    authProtocol: context.authProtocol,
     osname: 'win11',
     devname: devices[context.clientId].hostname,
     icon: 1,

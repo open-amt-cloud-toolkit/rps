@@ -35,6 +35,7 @@ export interface TLSContext {
   amt?: AMT.Messages
   retryCount?: number
   keyPairHandle?: string
+  authProtocol: number
 }
 
 interface TLSEvent {
@@ -66,13 +67,14 @@ export class TLS {
         statusMessage: '',
         tlsSettingData: null,
         tlsCredentialContext: null,
-        amtProfile: null
+        amtProfile: null,
+        authProtocol: 0
       },
       states: {
         PROVISIONED: {
           on: {
             CONFIGURE_TLS: {
-              actions: ['Reset Retry Count'],
+              actions: ['Reset Retry Count', assign({ authProtocol: 0 })],
               target: 'ENUMERATE_PUBLIC_KEY_CERTIFICATE'
             }
           }
