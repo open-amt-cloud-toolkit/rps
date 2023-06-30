@@ -156,6 +156,7 @@ describe('WiFi Network Configuration', () => {
 
   describe('State machines', () => {
     it('should eventually reach "FAILED" state', (done) => {
+      devices[clientId].status.Network = undefined
       config.services['get-wifi-port-configuration-service'] = Promise.reject(new Error())
       const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
       const flowStates = [
@@ -167,7 +168,7 @@ describe('WiFi Network Configuration', () => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           const status = devices[clientId].status.Network
-          expect(status).toEqual('Wired Network Configured. Failed to get WiFi Port Configuration Service')
+          expect(status).toEqual('Failed to get WiFi Port Configuration Service')
           done()
         }
       })
