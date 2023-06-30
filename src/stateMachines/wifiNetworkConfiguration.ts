@@ -388,7 +388,7 @@ export class WiFiConfiguration {
           } else {
             message = statusMessage
           }
-          devices[context.clientId].status.Network = `${status}. ${message}`
+          devices[context.clientId].status.Network = status ? `${status}. ${message}` : message
         },
         'Reset Retry Count': assign({ retryCount: (context, event) => 0 }),
         'Increment Retry Count': assign({ retryCount: (context, event) => context.retryCount + 1 }),

@@ -70,13 +70,11 @@ describe('Unconfiguration State Machine', () => {
         'error-machine': Promise.resolve({ clientId }),
         'enumerate-ethernet-port-settings': Promise.resolve({
           Envelope: {
-            Header: {},
             Body: { EnumerateResponse: { EnumerationContext: '09000000-0000-0000-0000-000000000000' } }
           }
         }),
         'pull-ethernet-port-settings': Promise.resolve({
           Envelope: {
-            Header: {},
             Body: {
               PullResponse: {
                 Items: {
@@ -131,6 +129,26 @@ describe('Unconfiguration State Machine', () => {
         is8021xProfileEnabled: () => false
       }
     }
+  })
+
+  it('should eventually reach "FAILURE" after "ENUMERATE_WIFI_ENDPOINT_SETTINGS"', (done) => {
+    configuration.services['pull-ethernet-port-settings'] = Promise.resolve({ Envelope: { Body: { PullResponse: { Items: { AMT_EthernetPortSettings: [{ ElementName: 'Ethernet Settings', InstanceID: 'Settings 0' }, { ElementName: 'Ethernet Settings', InstanceID: 'Settings 1', MACAddress: '00-00-00-02-00-05' }] } } } } })
+    configuration.services['enumerate-wifi-endpoint-settings'] = Promise.reject(new Error())
+    const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
+    const flowStates = [
+      'UNCONFIGURED',
+      'ENUMERATE_ETHERNET_PORT_SETTINGS',
+      'PULL_ETHERNET_PORT_SETTINGS',
+      'ENUMERATE_WIFI_ENDPOINT_SETTINGS',
+      'FAILURE']
+    const service = interpret(mockUnconfigurationMachine).onTransition((state) => {
+      expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+      if (state.matches('FAILURE') && currentStateIndex === flowStates.length) {
+        done()
+      }
+    })
+    service.start()
+    service.send({ type: 'REMOVECONFIG', clientId })
   })
 
   it('should eventually reach "FAILURE" after "ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP"', (done) => {
@@ -609,6 +627,10 @@ describe('Unconfiguration State Machine', () => {
   })
 
   describe('unconfiguration of Wired 802.1x configuration ', () => {
+    it('should send a WSMan call to get 802.1x Profile', async () => {
+      await unconfiguration.get8021xProfile(unconfigContext, null)
+      expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    })
     it('should disable wired 802.1x configuration', async () => {
       unconfigContext.message = {
         Envelope: {
