@@ -1,3 +1,22 @@
+
+<a name="2.13.0"></a>
+## [2.13.0] - 2023-06-30
+### Build
+- update version in package.json and changelog (#e1cd47d) 
+-  update vault for docker compose ([#1077](https://github.com/open-amt-cloud-toolkit/rps/issues/1077)) (#7462e8b) 
+- **deps:** bump xstate from 4.37.2 to 4.38.0 ([#1071](https://github.com/open-amt-cloud-toolkit/rps/issues/1071)) (#86915d7) 
+- **deps:** bump pg from 8.11.0 to 8.11.1 ([#1074](https://github.com/open-amt-cloud-toolkit/rps/issues/1074)) (#bb5c777) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 5.60.0 to 5.60.1 ([#1073](https://github.com/open-amt-cloud-toolkit/rps/issues/1073)) (#a39fbde) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin ([#1075](https://github.com/open-amt-cloud-toolkit/rps/issues/1075)) (#77c0050) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 20.3.1 to 20.3.2 ([#1076](https://github.com/open-amt-cloud-toolkit/rps/issues/1076)) (#b88f8ae) 
+- **deps-dev:** bump eslint-config-standard-with-typescript ([#1079](https://github.com/open-amt-cloud-toolkit/rps/issues/1079)) (#aedfb24) 
+
+### Feat
+- adds MSCHAPv2 configuration for wired and wireless ([#1070](https://github.com/open-amt-cloud-toolkit/rps/issues/1070)) (#3fd7865) 
+
+### Fix
+- upated network status message ([#1080](https://github.com/open-amt-cloud-toolkit/rps/issues/1080)) (#972293b) 
+
 <a name="2.12.1"></a>
 ## [2.12.1] - 2023-06-22
 ### Build
