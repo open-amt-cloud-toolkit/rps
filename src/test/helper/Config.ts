@@ -3,32 +3,37 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
+import { v4 as uuid } from 'uuid'
 import { type RPSConfig } from '../../models'
+import { devices } from '../../WebSocketListener'
+
+export function setupTestClient (): string {
+  const clientId = uuid()
+  devices[clientId] = {
+    ClientId: clientId,
+    ClientSocket: { send: jest.fn() } as any,
+    unauthCount: 0
+  }
+  return clientId
+}
 
 export const config: RPSConfig = {
-  VaultConfig: {
-    usevault: false,
-    SecretsPath: 'secret/data/',
-    token: '',
-    address: 'http://localhost:8200'
-  },
-  webport: 8081,
-  secretsProvider: 'vault',
-  credentialspath: '../../../MPS_MicroService/private/data.json',
-  corsHeaders: '*',
-  corsMethods: '*',
-  corsOrigin: '*',
-  mpsServer: 'https://localhost:3000',
-  delayTimer: 1,
-  delayActivationSync: 1,
-  delaySetupAndConfigSync: 1,
-  delayTlsPutDataSync: 1,
-  timemoutWsmanResponse: 1,
-  WSConfiguration: {
-    WebSocketPort: 8080
-  },
-  dbProvider: 'postgres',
-  connectionString: 'postgresql://postgresadmin:admin123@localhost:5432/rpsdb',
-  jwtTenantProperty: '',
-  jwtTokenHeader: ''
+  secrets_path: 'secret/data/',
+  vault_address: 'http://localhost:8200',
+  vault_token: 'myroot',
+  web_port: 8081,
+  secrets_provider: 'vault',
+  cors_headers: '*',
+  cors_methods: '*',
+  cors_origin: '*',
+  mps_server: 'https://localhost:3000',
+  delay_timer: 1,
+  delay_activation_sync: 1,
+  delay_setup_and_config_sync: 1,
+  delay_tls_put_data_sync: 1,
+  websocketport: 8080,
+  db_provider: 'postgres',
+  connection_string: 'postgresql://postgresadmin:admin123@localhost:5432/rpsdb',
+  jwt_tenant_property: '',
+  jwt_token_header: ''
 }

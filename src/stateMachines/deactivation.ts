@@ -181,7 +181,7 @@ export class Deactivation {
   }
 
   async removeDeviceFromMPS (context: DeactivationContext): Promise<any> {
-    return await got(`${Environment.Config.mpsServer}/api/v1/devices/${devices[context.clientId].uuid}?tenantId=${context.tenantId}`, {
+    return await got(`${Environment.Config.mps_server}/api/v1/devices/${devices[context.clientId].uuid}?tenantId=${context.tenantId}`, {
       method: 'DELETE'
     })
   }

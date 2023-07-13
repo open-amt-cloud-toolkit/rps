@@ -44,6 +44,7 @@ describe('TLS State Machine', () => {
       tlsCredentialContext: '',
       amtProfile: { tlsMode: 3, tlsCerts: { ISSUED_CERTIFICATE: { pem: '' } } } as any,
       unauthCount: 0,
+      authProtocol: 0,
       amt: new AMT.Messages()
     }
     tls = new TLS()
@@ -240,11 +241,47 @@ describe('TLS State Machine', () => {
     await tls.pullTLSData(context, null)
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
-  it('should putRemoteTLSData', async () => {
+  it('should putRemoteTLSData on AMT 16.0 and older systems when tlsMode is not 1 or 3 and NonSecureConnectionsSupported does not exist', async () => {
     context.tlsSettingData = [{}]
+    context.amtProfile.tlsMode = 4
     jest.spyOn(forge.pki, 'certificateFromPem').mockReturnValue({ subject: { getField: () => ({}) } } as any)
     const tlsSettingDataSpy = jest.spyOn(context.amt.TLSSettingData, 'Put').mockReturnValue('')
     await tls.putRemoteTLSData(context, null)
+    expect(context.tlsSettingData[0].AcceptNonSecureConnections).toBe(true)
+    expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    expect(tlsSettingDataSpy).toHaveBeenCalled()
+  })
+  it('should putRemoteTLSData on AMT 16.0 and older systems when tlsMode is not 1 or 3', async () => {
+    context.tlsSettingData = [{
+      NonSecureConnectionsSupported: true
+    }]
+    context.amtProfile.tlsMode = 4
+    jest.spyOn(forge.pki, 'certificateFromPem').mockReturnValue({ subject: { getField: () => ({}) } } as any)
+    const tlsSettingDataSpy = jest.spyOn(context.amt.TLSSettingData, 'Put').mockReturnValue('')
+    await tls.putRemoteTLSData(context, null)
+    expect(context.tlsSettingData[0].AcceptNonSecureConnections).toBe(true)
+    expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    expect(tlsSettingDataSpy).toHaveBeenCalled()
+  })
+  it('should putRemoteTLSData on AMT 16.0 and older systems when tlsMode is 1 or 3', async () => {
+    context.tlsSettingData = [{
+      NonSecureConnectionsSupported: true
+    }]
+    jest.spyOn(forge.pki, 'certificateFromPem').mockReturnValue({ subject: { getField: () => ({}) } } as any)
+    const tlsSettingDataSpy = jest.spyOn(context.amt.TLSSettingData, 'Put').mockReturnValue('')
+    await tls.putRemoteTLSData(context, null)
+    expect(context.tlsSettingData[0].AcceptNonSecureConnections).toBe(false)
+    expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    expect(tlsSettingDataSpy).toHaveBeenCalled()
+  })
+  it('should putRemoteTLSData on AMT 16.1 and newer systems', async () => {
+    context.tlsSettingData = [{
+      NonSecureConnectionsSupported: false
+    }]
+    jest.spyOn(forge.pki, 'certificateFromPem').mockReturnValue({ subject: { getField: () => ({}) } } as any)
+    const tlsSettingDataSpy = jest.spyOn(context.amt.TLSSettingData, 'Put').mockReturnValue('')
+    await tls.putRemoteTLSData(context, null)
+    expect(context.tlsSettingData[0].AcceptNonSecureConnections).toBe(undefined)
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
     expect(tlsSettingDataSpy).toHaveBeenCalled()
   })

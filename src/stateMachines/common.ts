@@ -48,7 +48,7 @@ const invokeWsmanCall = async (context: any, maxRetries = 0): Promise<any> => {
     try {
       const result = await Promise.race([
         invokeWsmanCallInternal(context),
-        timeout(Environment.Config.delayTimer * 1000)
+        timeout(Environment.Config.delay_timer * 1000)
       ])
       return result
     } catch (error) {
@@ -83,7 +83,7 @@ const eaTimeout = (ms): any => new Promise((resolve, reject) => {
 const invokeEnterpriseAssistantCall = async (context: any): Promise<EnterpriseAssistantMessage> => {
   const result = await Promise.race([
     invokeEnterpriseAssistantCallInternal(context),
-    eaTimeout(Environment.Config.delayTimer * 1000)
+    eaTimeout(Environment.Config.delay_timer * 1000)
   ])
   return result
 }

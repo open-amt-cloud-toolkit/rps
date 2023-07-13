@@ -186,6 +186,7 @@ describe('Wired Network Configuration', () => {
       },
       guards: {
         is8021xProfilesExists: () => true,
+        isMSCHAPv2: () => false,
         shouldRetry: () => false
       },
       actions: {

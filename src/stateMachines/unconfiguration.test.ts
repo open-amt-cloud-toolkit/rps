@@ -37,11 +37,13 @@ describe('Unconfiguration State Machine', () => {
       ciraConfig: null,
       profile: null,
       privateCerts: [],
-      TLSSettingData: [],
+      tlsSettingData: [],
       publicKeyCertificates: [],
       amt: new AMT.Messages(),
       ips: new IPS.Messages(),
-      cim: new CIM.Messages()
+      cim: new CIM.Messages(),
+      wiredSettings: null,
+      wifiSettings: null
     }
     remoteAccessPolicyRuleSpy = jest.spyOn(unconfigContext.amt.RemoteAccessPolicyRule, 'Delete').mockReturnValue('abcdef')
     devices[clientId] = {
@@ -66,6 +68,25 @@ describe('Unconfiguration State Machine', () => {
     configuration = {
       services: {
         'error-machine': Promise.resolve({ clientId }),
+        'enumerate-ethernet-port-settings': Promise.resolve({
+          Envelope: {
+            Body: { EnumerateResponse: { EnumerationContext: '09000000-0000-0000-0000-000000000000' } }
+          }
+        }),
+        'pull-ethernet-port-settings': Promise.resolve({
+          Envelope: {
+            Body: {
+              PullResponse: {
+                Items: {
+                  AMT_EthernetPortSettings: [
+                    { DHCPEnabled: true, ElementName: 'Intel(r) AMT Ethernet Port Settings', InstanceID: 'Intel(r) AMT Ethernet Port Settings 0', IpSyncEnabled: false, MACAddress: '00-00-00-02-00-05' },
+                    { ElementName: 'Intel(r) AMT Ethernet Port Settings', InstanceID: 'Intel(r) AMT Ethernet Port Settings 1', MACAddress: '00-00-00-02-00-05' }
+                  ]
+                }
+              }
+            }
+          }
+        }),
         'get-8021x-profile': Promise.resolve({ clientId }),
         'disable-Wired-8021x-Configuration': Promise.resolve({ clientId }),
         'enumerate-wifi-endpoint-settings': async (_, event) => await Promise.resolve({ clientId: event.clientId }),
@@ -93,7 +114,7 @@ describe('Unconfiguration State Machine', () => {
         'pull-public-key-certificate': Promise.resolve({ Envelope: { Body: { PullResponse: { Items: { AMT_PublicKeyCertificate: [{}] } } } } })
       },
       actions: {
-        'Reset Unauth Count': () => {}
+        'Reset Unauth Count': () => { }
       },
       guards: {
         isExpectedBadRequest: () => false,
@@ -110,11 +131,33 @@ describe('Unconfiguration State Machine', () => {
     }
   })
 
+  it('should eventually reach "FAILURE" after "ENUMERATE_WIFI_ENDPOINT_SETTINGS"', (done) => {
+    configuration.services['pull-ethernet-port-settings'] = Promise.resolve({ Envelope: { Body: { PullResponse: { Items: { AMT_EthernetPortSettings: [{ ElementName: 'Ethernet Settings', InstanceID: 'Settings 0' }, { ElementName: 'Ethernet Settings', InstanceID: 'Settings 1', MACAddress: '00-00-00-02-00-05' }] } } } } })
+    configuration.services['enumerate-wifi-endpoint-settings'] = Promise.reject(new Error())
+    const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
+    const flowStates = [
+      'UNCONFIGURED',
+      'ENUMERATE_ETHERNET_PORT_SETTINGS',
+      'PULL_ETHERNET_PORT_SETTINGS',
+      'ENUMERATE_WIFI_ENDPOINT_SETTINGS',
+      'FAILURE']
+    const service = interpret(mockUnconfigurationMachine).onTransition((state) => {
+      expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+      if (state.matches('FAILURE') && currentStateIndex === flowStates.length) {
+        done()
+      }
+    })
+    service.start()
+    service.send({ type: 'REMOVECONFIG', clientId })
+  })
+
   it('should eventually reach "FAILURE" after "ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP"', (done) => {
     configuration.services['enumerate-management-presence-remote-sap'] = Promise.reject(new Error())
     const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = [
       'UNCONFIGURED',
+      'ENUMERATE_ETHERNET_PORT_SETTINGS',
+      'PULL_ETHERNET_PORT_SETTINGS',
       'GET_8021X_PROFILE',
       'ENUMERATE_WIFI_ENDPOINT_SETTINGS',
       'PULL_WIFI_ENDPOINT_SETTINGS',
@@ -130,7 +173,7 @@ describe('Unconfiguration State Machine', () => {
       }
     })
     service.start()
-    service.send({ type: 'REMOVEPOLICY', clientId })
+    service.send({ type: 'REMOVECONFIG', clientId })
   })
 
   it('should eventually reach "FAILURE" after "PULL_MANAGEMENT_PRESENCE_REMOTE_SAP"', (done) => {
@@ -139,6 +182,8 @@ describe('Unconfiguration State Machine', () => {
     const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = [
       'UNCONFIGURED',
+      'ENUMERATE_ETHERNET_PORT_SETTINGS',
+      'PULL_ETHERNET_PORT_SETTINGS',
       'GET_8021X_PROFILE',
       'DISABLE_IEEE8021X_WIRED',
       'ENUMERATE_WIFI_ENDPOINT_SETTINGS',
@@ -156,13 +201,15 @@ describe('Unconfiguration State Machine', () => {
       }
     })
     service.start()
-    service.send({ type: 'REMOVEPOLICY', clientId })
+    service.send({ type: 'REMOVECONFIG', clientId })
   })
 
   it('should eventually reach "FAILURE" after "ENUMERATE_TLS_SETTING_DATA"', (done) => {
     configuration.services['enumerate-tls-setting-data'] = Promise.reject(new Error())
     const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
+      'ENUMERATE_ETHERNET_PORT_SETTINGS',
+      'PULL_ETHERNET_PORT_SETTINGS',
       'GET_8021X_PROFILE',
       'ENUMERATE_WIFI_ENDPOINT_SETTINGS',
       'PULL_WIFI_ENDPOINT_SETTINGS',
@@ -180,13 +227,15 @@ describe('Unconfiguration State Machine', () => {
       }
     })
     service.start()
-    service.send({ type: 'REMOVEPOLICY', clientId })
+    service.send({ type: 'REMOVECONFIG', clientId })
   })
 
   it('should eventually reach "FAILURE" after "PULL_TLS_SETTING_DATA"', (done) => {
     configuration.services['pull-tls-setting-data'] = Promise.reject(new Error())
     const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
+      'ENUMERATE_ETHERNET_PORT_SETTINGS',
+      'PULL_ETHERNET_PORT_SETTINGS',
       'GET_8021X_PROFILE',
       'ENUMERATE_WIFI_ENDPOINT_SETTINGS',
       'PULL_WIFI_ENDPOINT_SETTINGS',
@@ -205,13 +254,15 @@ describe('Unconfiguration State Machine', () => {
       }
     })
     service.start()
-    service.send({ type: 'REMOVEPOLICY', clientId })
+    service.send({ type: 'REMOVECONFIG', clientId })
   })
 
   it('should eventually reach "FAILURE" after "ENUMERATE_PUBLIC_KEY_CERTIFICATE"', (done) => {
     configuration.services['enumerate-public-key-certificate'] = Promise.reject(new Error())
     const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
+      'ENUMERATE_ETHERNET_PORT_SETTINGS',
+      'PULL_ETHERNET_PORT_SETTINGS',
       'GET_8021X_PROFILE',
       'ENUMERATE_WIFI_ENDPOINT_SETTINGS',
       'PULL_WIFI_ENDPOINT_SETTINGS',
@@ -231,13 +282,15 @@ describe('Unconfiguration State Machine', () => {
       }
     })
     service.start()
-    service.send({ type: 'REMOVEPOLICY', clientId })
+    service.send({ type: 'REMOVECONFIG', clientId })
   })
 
   it('should eventually reach "FAILURE" after "PULL_PUBLIC_KEY_CERTIFICATE"', (done) => {
     configuration.services['pull-public-key-certificate'] = Promise.reject(new Error())
     const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
+      'ENUMERATE_ETHERNET_PORT_SETTINGS',
+      'PULL_ETHERNET_PORT_SETTINGS',
       'GET_8021X_PROFILE',
       'ENUMERATE_WIFI_ENDPOINT_SETTINGS',
       'PULL_WIFI_ENDPOINT_SETTINGS',
@@ -258,13 +311,15 @@ describe('Unconfiguration State Machine', () => {
       }
     })
     service.start()
-    service.send({ type: 'REMOVEPOLICY', clientId })
+    service.send({ type: 'REMOVECONFIG', clientId })
   })
 
   it('should eventually reach "FAILURE" after "GET_ENVIRONMENT_DETECTION_SETTINGS"', (done) => {
     configuration.services['get-environment-detection-settings'] = Promise.reject(new Error())
     const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
+      'ENUMERATE_ETHERNET_PORT_SETTINGS',
+      'PULL_ETHERNET_PORT_SETTINGS',
       'GET_8021X_PROFILE',
       'ENUMERATE_WIFI_ENDPOINT_SETTINGS',
       'PULL_WIFI_ENDPOINT_SETTINGS',
@@ -286,7 +341,7 @@ describe('Unconfiguration State Machine', () => {
       }
     })
     service.start()
-    service.send({ type: 'REMOVEPOLICY', clientId })
+    service.send({ type: 'REMOVECONFIG', clientId })
   })
 
   it('should eventually reach "SUCCESS"', (done) => {
@@ -303,6 +358,8 @@ describe('Unconfiguration State Machine', () => {
     configuration.services['get-environment-detection-settings'] = Promise.resolve({ Envelope: { Body: { AMT_EnvironmentDetectionSettingData: { DetectionStrings: 'abcde' } } } })
     const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
+      'ENUMERATE_ETHERNET_PORT_SETTINGS',
+      'PULL_ETHERNET_PORT_SETTINGS',
       'GET_8021X_PROFILE',
       'ENUMERATE_WIFI_ENDPOINT_SETTINGS',
       'PULL_WIFI_ENDPOINT_SETTINGS',
@@ -329,7 +386,7 @@ describe('Unconfiguration State Machine', () => {
       }
     })
     service.start()
-    service.send({ type: 'REMOVEPOLICY', clientId })
+    service.send({ type: 'REMOVECONFIG', clientId })
   })
 
   it('should eventually reach "FAILURE" after "DISABLE_TLS_SETTING_DATA"', (done) => {
@@ -345,6 +402,8 @@ describe('Unconfiguration State Machine', () => {
     configuration.services['disable-tls-setting-data'] = Promise.reject(new Error())
     const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
+      'ENUMERATE_ETHERNET_PORT_SETTINGS',
+      'PULL_ETHERNET_PORT_SETTINGS',
       'GET_8021X_PROFILE',
       'ENUMERATE_WIFI_ENDPOINT_SETTINGS',
       'PULL_WIFI_ENDPOINT_SETTINGS',
@@ -364,11 +423,11 @@ describe('Unconfiguration State Machine', () => {
       }
     })
     service.start()
-    service.send({ type: 'REMOVEPOLICY', clientId })
+    service.send({ type: 'REMOVECONFIG', clientId })
   })
 
   it('should eventually reach "FAILURE" after "SETUP_AND_CONFIGURATION_SERVICE_COMMIT_CHANGES"', (done) => {
-    unconfigContext.TLSSettingData = [{ Enabled: false }, { Enabled: true }]
+    unconfigContext.tlsSettingData = [{ Enabled: false }, { Enabled: true }]
     configuration.guards = {
       isExpectedBadRequest: () => false,
       tlsSettingDataEnabled: () => true,
@@ -383,6 +442,8 @@ describe('Unconfiguration State Machine', () => {
     configuration.services['setup-and-configuration-service-commit-changes'] = Promise.reject(new Error())
     const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
+      'ENUMERATE_ETHERNET_PORT_SETTINGS',
+      'PULL_ETHERNET_PORT_SETTINGS',
       'GET_8021X_PROFILE',
       'ENUMERATE_WIFI_ENDPOINT_SETTINGS',
       'PULL_WIFI_ENDPOINT_SETTINGS',
@@ -404,7 +465,7 @@ describe('Unconfiguration State Machine', () => {
       }
     })
     service.start()
-    service.send({ type: 'REMOVEPOLICY', clientId })
+    service.send({ type: 'REMOVECONFIG', clientId })
   })
 
   it('should eventually reach "FAILURE" after "DELETE_MANAGEMENT_PRESENCE_REMOTE_SAP"', (done) => {
@@ -419,6 +480,8 @@ describe('Unconfiguration State Machine', () => {
     configuration.services['delete-management-presence-remote-sap'] = Promise.reject(new Error())
     const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
+      'ENUMERATE_ETHERNET_PORT_SETTINGS',
+      'PULL_ETHERNET_PORT_SETTINGS',
       'GET_8021X_PROFILE',
       'ENUMERATE_WIFI_ENDPOINT_SETTINGS',
       'PULL_WIFI_ENDPOINT_SETTINGS',
@@ -436,10 +499,138 @@ describe('Unconfiguration State Machine', () => {
       }
     })
     service.start()
-    service.send({ type: 'REMOVEPOLICY', clientId })
+    service.send({ type: 'REMOVECONFIG', clientId })
+  })
+
+  describe('Ethernet Port Settings', () => {
+    test('should enumerate ethernet port settings', async () => {
+      const ethernetPortSettingsSpy = jest.spyOn(unconfigContext.amt.EthernetPortSettings, 'Enumerate').mockImplementation().mockReturnValue('abcdef')
+      await unconfiguration.enumerateEthernetPortSettings(unconfigContext)
+      expect(ethernetPortSettingsSpy).toHaveBeenCalled()
+      expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    })
+    test('should pull ethernet port settings', async () => {
+      unconfigContext.message = {
+        Envelope: {
+          Header: {},
+          Body: {
+            EnumerateResponse: {
+              EnumerationContext: '09000000-0000-0000-0000-000000000000'
+            }
+          }
+        }
+      }
+      const ethernetPortSettingsSpy = jest.spyOn(unconfigContext.amt.EthernetPortSettings, 'Pull').mockImplementation().mockReturnValue('abcdef')
+      await unconfiguration.pullEthernetPortSettings(unconfigContext)
+      expect(ethernetPortSettingsSpy).toHaveBeenCalled()
+      expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    })
+    test('should read ethernet port settings pull response', () => {
+      unconfigContext.message = {
+        Envelope: {
+          Header: {},
+          Body: {
+            PullResponse: {
+              Items: {
+                AMT_EthernetPortSettings: [
+                  {
+                    DHCPEnabled: true,
+                    ElementName: 'Intel(r) AMT Ethernet Port Settings',
+                    InstanceID: 'Intel(r) AMT Ethernet Port Settings 0',
+                    IpSyncEnabled: false
+                  },
+                  {
+                    ElementName: 'Intel(r) AMT Ethernet Port Settings',
+                    InstanceID: 'Intel(r) AMT Ethernet Port Settings 1',
+                    MACAddress: '00-00-00-00-00-00'
+                  }
+                ]
+              },
+              EndOfSequence: ''
+            }
+          }
+        }
+      }
+      unconfiguration.readEthernetPortSettings(unconfigContext, null)
+      expect(unconfigContext.wiredSettings).toBeDefined()
+      expect(unconfigContext.wifiSettings).toBeDefined()
+    })
+    test('should read ethernet port settings pull response', () => {
+      unconfigContext.message = {
+        Envelope: {
+          Header: {},
+          Body: {
+            PullResponse: {
+              Items: {
+                AMT_EthernetPortSettings: [
+                  {
+                    ElementName: 'Intel(r) AMT Ethernet Port Settings',
+                    InstanceID: 'Intel(r) AMT Ethernet Port Settings 1'
+                  },
+                  {
+                    DHCPEnabled: true,
+                    ElementName: 'Intel(r) AMT Ethernet Port Settings',
+                    InstanceID: 'Intel(r) AMT Ethernet Port Settings 0',
+                    IpSyncEnabled: false
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+      unconfiguration.readEthernetPortSettings(unconfigContext, null)
+      expect(unconfigContext.wiredSettings).toBeDefined()
+      expect(unconfigContext.wifiSettings).toBeDefined()
+    })
+    test('should read ethernet port settings pull response for wireless only device', () => {
+      unconfigContext.wiredSettings = null
+      unconfigContext.message = {
+        Envelope: {
+          Header: {},
+          Body: {
+            PullResponse: {
+              Items: {
+                AMT_EthernetPortSettings: {
+                  ElementName: 'Intel(r) AMT Ethernet Port Settings',
+                  InstanceID: 'Intel(r) AMT Ethernet Port Settings 1'
+                }
+              }
+            }
+          }
+        }
+      }
+      unconfiguration.readEthernetPortSettings(unconfigContext, null)
+      expect(unconfigContext.wiredSettings).toBeNull()
+      expect(unconfigContext.wifiSettings).toBeDefined()
+    })
+    test('should read ethernet port settings pull response for wired only device', () => {
+      unconfigContext.message = {
+        Envelope: {
+          Header: {},
+          Body: {
+            PullResponse: {
+              Items: {
+                AMT_EthernetPortSettings: {
+                  ElementName: 'Intel(r) AMT Ethernet Port Settings',
+                  InstanceID: 'Intel(r) AMT Ethernet Port Settings 0'
+                }
+              }
+            }
+          }
+        }
+      }
+      unconfiguration.readEthernetPortSettings(unconfigContext, null)
+      expect(unconfigContext.wifiSettings).toBeNull()
+      expect(unconfigContext.wiredSettings).toBeDefined()
+    })
   })
 
   describe('unconfiguration of Wired 802.1x configuration ', () => {
+    it('should send a WSMan call to get 802.1x Profile', async () => {
+      await unconfiguration.get8021xProfile(unconfigContext, null)
+      expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    })
     it('should disable wired 802.1x configuration', async () => {
       unconfigContext.message = {
         Envelope: {
@@ -601,31 +792,60 @@ describe('Unconfiguration State Machine', () => {
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
 
-    it('should send wsman message to disable TLS Setting Data', async () => {
+    it('should send wsman message to disable TLS Setting Data on AMT < 16.1', async () => {
       unconfigContext.message = {
         Envelope: {
           Body: {
             PullResponse: {
               Items: {
                 AMT_TLSSettingData: [
-                  { AcceptNonSecureConnections: true, ElementName: 'Intel(r) AMT 802.3 TLS Settings', Enabled: true, InstanceID: 'Intel(r) AMT 802.3 TLS Settings', MutualAuthentication: false },
-                  { AcceptNonSecureConnections: true, ElementName: 'Intel(r) AMT LMS TLS Settings', Enabled: true, InstanceID: 'Intel(r) AMT LMS TLS Settings', MutualAuthentication: false }
+                  { AcceptNonSecureConnections: false, NonSecureConnectionsSupported: true, ElementName: 'Intel(r) AMT 802.3 TLS Settings', Enabled: true, InstanceID: 'Intel(r) AMT 802.3 TLS Settings', MutualAuthentication: false },
+                  { AcceptNonSecureConnections: true, NonSecureConnectionsSupported: true, ElementName: 'Intel(r) AMT LMS TLS Settings', Enabled: true, InstanceID: 'Intel(r) AMT LMS TLS Settings', MutualAuthentication: false }
                 ]
               }
             }
           }
         }
       }
-      await unconfiguration.disableTLSSettingData(unconfigContext, null)
+      await unconfiguration.disableRemoteTLSSettingData(unconfigContext, null)
+      expect(unconfigContext.message.Envelope.Body.PullResponse.Items.AMT_TLSSettingData[0]['h:AcceptNonSecureConnections']).toBe(true)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
 
-    it('should send wsman message to disable TLS Setting Data', async () => {
-      unconfigContext.TLSSettingData = [
-        { AcceptNonSecureConnections: true, ElementName: 'Intel(r) AMT 802.3 TLS Settings', Enabled: true, InstanceID: 'Intel(r) AMT 802.3 TLS Settings', MutualAuthentication: false },
-        { AcceptNonSecureConnections: true, ElementName: 'Intel(r) AMT LMS TLS Settings', Enabled: true, InstanceID: 'Intel(r) AMT LMS TLS Settings', MutualAuthentication: false }
+    it('should send wsman message to disable TLS Setting Data on AMT < 16.1', async () => {
+      unconfigContext.tlsSettingData = [
+        { AcceptNonSecureConnections: true, NonSecureConnectionsSupported: true, ElementName: 'Intel(r) AMT 802.3 TLS Settings', Enabled: true, InstanceID: 'Intel(r) AMT 802.3 TLS Settings', MutualAuthentication: false },
+        { AcceptNonSecureConnections: true, NonSecureConnectionsSupported: true, ElementName: 'Intel(r) AMT LMS TLS Settings', Enabled: true, InstanceID: 'Intel(r) AMT LMS TLS Settings', MutualAuthentication: false }
       ]
-      await unconfiguration.disableTLSSettingData2(unconfigContext, null)
+      await unconfiguration.disableLocalTLSSettingData(unconfigContext, null)
+      expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    })
+    it('should send wsman message to disable TLS Setting Data on AMT 16.1+', async () => {
+      unconfigContext.message = {
+        Envelope: {
+          Body: {
+            PullResponse: {
+              Items: {
+                AMT_TLSSettingData: [
+                  { AcceptNonSecureConnections: false, NonSecureConnectionsSupported: false, ElementName: 'Intel(r) AMT 802.3 TLS Settings', Enabled: true, InstanceID: 'Intel(r) AMT 802.3 TLS Settings', MutualAuthentication: false },
+                  { AcceptNonSecureConnections: true, NonSecureConnectionsSupported: true, ElementName: 'Intel(r) AMT LMS TLS Settings', Enabled: true, InstanceID: 'Intel(r) AMT LMS TLS Settings', MutualAuthentication: false }
+                ]
+              }
+            }
+          }
+        }
+      }
+      await unconfiguration.disableRemoteTLSSettingData(unconfigContext, null)
+      expect(unconfigContext.message.Envelope.Body.PullResponse.Items.AMT_TLSSettingData[0]['h:AcceptNonSecureConnections']).toBe(false)
+      expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    })
+
+    it('should send wsman message to disable TLS Setting Data on AMT 16.1+', async () => {
+      unconfigContext.tlsSettingData = [
+        { AcceptNonSecureConnections: false, NonSecureConnectionsSupported: false, ElementName: 'Intel(r) AMT 802.3 TLS Settings', Enabled: true, InstanceID: 'Intel(r) AMT 802.3 TLS Settings', MutualAuthentication: false },
+        { AcceptNonSecureConnections: true, NonSecureConnectionsSupported: true, ElementName: 'Intel(r) AMT LMS TLS Settings', Enabled: true, InstanceID: 'Intel(r) AMT LMS TLS Settings', MutualAuthentication: false }
+      ]
+      await unconfiguration.disableLocalTLSSettingData(unconfigContext, null)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
     it('should send wsman message to commit Setup And Configuration Service', async () => {

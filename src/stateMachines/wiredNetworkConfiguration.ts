@@ -38,6 +38,7 @@ interface WiredConfigContext {
   keyPairHandle?: string
   targetAfterError: string
   wirelessSettings: any
+  authProtocol: number
 }
 
 interface WiredConfigEvent {
@@ -71,7 +72,8 @@ export class WiredConfiguration {
         ieee8021xProfile: null,
         eaResponse: null,
         addTrustedRootCertResponse: null,
-        addCertResponse: null
+        addCertResponse: null,
+        authProtocol: 0
       },
       id: 'wired-network-configuration-machine',
       initial: 'ACTIVATION',
@@ -79,7 +81,10 @@ export class WiredConfiguration {
         ACTIVATION: {
           on: {
             WIREDCONFIG: {
-              actions: [assign({ statusMessage: () => '' }), 'Reset Unauth Count', 'Reset Retry Count'],
+              actions: [
+                assign({ statusMessage: () => '', authProtocol: (context, event) => context.amtProfile?.ieee8021xProfileObject?.authenticationProtocol }),
+                'Reset Unauth Count',
+                'Reset Retry Count'],
               target: 'PUT_ETHERNET_PORT_SETTINGS'
             }
           }
@@ -130,12 +135,14 @@ export class WiredConfiguration {
           invoke: {
             src: async (context, event) => await initiateCertRequest(context, event),
             id: 'enterprise-assistant-request',
-            onDone: {
-              actions: [
-                assign({ message: (context, event) => event.data })
-              ],
+            onDone: [{
+              cond: 'isMSCHAPv2',
+              actions: assign({ eaResponse: (context, event) => event.data.response }),
+              target: 'ADD_RADIUS_SERVER_ROOT_CERTIFICATE'
+            }, {
+              actions: assign({ message: (context, event) => event.data }),
               target: 'GENERATE_KEY_PAIR'
-            },
+            }],
             onError: {
               actions: assign({ errorMessage: 'Failed to initiate cert request with enterprise assistant in 802.1x' }),
               target: 'FAILED'
@@ -235,7 +242,7 @@ export class WiredConfiguration {
             src: this.addCertificate.bind(this),
             id: 'add-certificate',
             onDone: {
-              actions: assign({ message: (context, event) => event.data }),
+              actions: assign({ addCertResponse: (context, event) => event.data?.Envelope?.Body }),
               target: 'ADD_RADIUS_SERVER_ROOT_CERTIFICATE'
             },
             onError: {
@@ -262,10 +269,14 @@ export class WiredConfiguration {
           invoke: {
             src: this.put8021xProfile.bind(this),
             id: 'put-8021x-profile',
-            onDone: {
+            onDone: [{
+              cond: 'isMSCHAPv2',
+              actions: assign({ message: (context, event) => event.data }),
+              target: 'SUCCESS'
+            }, {
               actions: [assign({ message: (context, event) => event.data }), 'Reset Unauth Count'],
               target: 'SET_CERTIFICATES'
-            },
+            }],
             onError: {
               actions: assign({ errorMessage: 'Failed to put 802.1x profile' }),
               target: 'FAILED'
@@ -323,7 +334,8 @@ export class WiredConfiguration {
           }
         },
         is8021xProfilesExists: (context, event) => context.amtProfile.ieee8021xProfileName != null,
-        shouldRetry: (context, event) => context.retryCount < 3 && event.data instanceof UNEXPECTED_PARSE_ERROR
+        shouldRetry: (context, event) => context.retryCount < 3 && event.data instanceof UNEXPECTED_PARSE_ERROR,
+        isMSCHAPv2: (context, event) => context.amtProfile.ieee8021xProfileObject.authenticationProtocol === 2
       },
       actions: {
         'Reset Unauth Count': (context, event) => { devices[context.clientId].unauthCount = 0 },
@@ -395,13 +407,29 @@ export class WiredConfiguration {
 
   async put8021xProfile (context: WiredConfigContext, event: WiredConfigEvent): Promise<void> {
     this.logger.info('EA Response :', JSON.stringify(context.eaResponse))
-    devices[context.clientId].trustedRootCertificateResponse = context.message.Envelope.Body
-    context.addTrustedRootCertResponse = devices[context.clientId].trustedRootCertificateResponse
-    context.ieee8021xProfile.Enabled = 2
+    switch (context.amtProfile.ieee8021xProfileObject.authenticationProtocol) {
+      case 0: {
+        devices[context.clientId].trustedRootCertificateResponse = context.message.Envelope.Body
+        context.addTrustedRootCertResponse = devices[context.clientId].trustedRootCertificateResponse
+        break
+      }
+      case 2: {
+        context.ieee8021xProfile.Password = context.eaResponse?.password
+        delete context.ieee8021xProfile.PSK
+        delete context.ieee8021xProfile.PACPassword
+        delete context.ieee8021xProfile.ProtectedAccessCredential
+        break
+      }
+      default: {
+        this.logger.info('Not a supported protocol')
+      }
+    }
     context.ieee8021xProfile.AuthenticationProtocol = context.amtProfile.ieee8021xProfileObject.authenticationProtocol
     context.ieee8021xProfile.ElementName = `${context.ieee8021xProfile.ElementName} ${context.amtProfile.ieee8021xProfileName}`
     context.ieee8021xProfile.PxeTimeout = context.amtProfile.ieee8021xProfileObject.pxeTimeout
     context.ieee8021xProfile.Username = context.eaResponse?.username
+    context.ieee8021xProfile.Enabled = 2
+    context.ieee8021xProfile.AvailableInS0 = true
     context.xmlMessage = context.ips.IEEE8021xSettings.Put(context.ieee8021xProfile)
     return await invokeWsmanCall(context, 2)
   }
@@ -450,7 +478,6 @@ export class WiredConfiguration {
 
   async addRadiusServerRootCertificate (context: WiredConfigContext, event: WiredConfigEvent): Promise<void> {
     // To Do: Needs to replace the logic with how we will pull the radius server root certificate
-    context.addCertResponse = context.message.Envelope.Body
     devices[context.clientId].trustedRootCertificate = context.eaResponse.rootcert
     const cert = context.eaResponse.rootcert
     context.xmlMessage = context.amt.PublicKeyManagementService.AddTrustedRootCertificate({ CertificateBlob: cert })

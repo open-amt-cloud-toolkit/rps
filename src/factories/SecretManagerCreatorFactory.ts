@@ -13,7 +13,7 @@ export class SecretManagerCreatorFactory {
   async getSecretManager (logger: ILogger): Promise<ISecretManagerService> {
     if (SecretManagerCreatorFactory.instance == null) {
       const { default: Provider }: { default: new (logger: ILogger) => ISecretManagerService } =
-        await import(`../secrets/${Environment.Config.secretsProvider}`)
+        await import(`../secrets/${Environment.Config.secrets_provider}`)
 
       SecretManagerCreatorFactory.instance = new Provider(logger)
     }

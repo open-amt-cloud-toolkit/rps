@@ -20,7 +20,8 @@ import { interpret } from 'xstate'
 import { AMTUserName } from '../utils/constants'
 import * as common from './common'
 import { Configurator } from '../Configurator'
-
+import got from 'got'
+jest.mock('got')
 const clientId = uuid()
 Environment.Config = config
 describe('Activation State Machine', () => {
@@ -113,7 +114,8 @@ describe('Activation State Machine', () => {
       amt: new AMT.Messages(),
       ips: new IPS.Messages(),
       cim: new CIM.Messages(),
-      certChainPfx: null
+      certChainPfx: null,
+      friendlyName: null
     }
 
     invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue(null)
@@ -369,7 +371,13 @@ describe('Activation State Machine', () => {
   })
 
   describe('save Device Information to MPS database', () => {
-    it(`should return true if saved for ${ClientAction.ADMINCTLMODE}`, async () => {
+    it('should return true on successful post to MPS', async () => {
+      jest.spyOn(got, 'post').mockResolvedValue({ })
+      const response = await activation.saveDeviceInfoToMPS(context, null)
+      expect(response).toBe(true)
+    })
+    it('should handle got exception on non 2XX,3XX response from post to MPS', async () => {
+      jest.spyOn(got, 'post').mockRejectedValue(new Error('SomeError'))
       const response = await activation.saveDeviceInfoToMPS(context, null)
       expect(response).toBe(false)
     })
@@ -506,7 +514,7 @@ describe('Activation State Machine', () => {
       })
 
       ccmActivationService.start()
-      ccmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '' })
+      ccmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
       jest.runAllTicks()
     })
 
@@ -548,7 +556,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '' })
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
       jest.runAllTicks()
     })
 
@@ -590,7 +598,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '' })
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
       jest.runAllTicks()
     })
 
@@ -614,7 +622,30 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '' })
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+    })
+
+    it('should eventually reach "FAILED" at "GET_AMT_PROFILE" if ACTIVATED', (done) => {
+      config.guards = {
+        isAdminMode: () => true,
+        maxCertLength: () => false
+      }
+      config.services['get-amt-profile'] = Promise.reject(new Error())
+      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'UNPROVISIONED',
+        'GET_AMT_PROFILE',
+        'FAILED'
+      ]
+      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
+          done()
+        }
+      })
+
+      acmActivationService.start()
+      acmActivationService.send({ type: 'ACTIVATED', clientId, tenantId: '', friendlyName: null })
     })
 
     it('should eventually reach "FAILED" at "GET_AMT_DOMAIN_CERT"', (done) => {
@@ -638,7 +669,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '' })
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
     })
 
     it('should eventually reach "FAILED" at "CHECKCERTCHAINRESPONSE"', (done) => {
@@ -667,7 +698,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '' })
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
     })
 
     it('should send success message to device', () => {

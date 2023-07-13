@@ -9,9 +9,8 @@ import Logger from './Logger'
 import { WebSocketListener } from './WebSocketListener'
 import { Configurator } from './Configurator'
 import { Environment } from './utils/Environment'
-import { type RPSConfig, mapConfig } from './models'
+import { type RPSConfig } from './models'
 import { parseValue } from './utils/parseEnvValue'
-import dot = require('dot-object')
 import routes from './routes'
 import rc = require('rc')
 import { MqttProvider } from './utils/MqttProvider'
@@ -32,10 +31,13 @@ process.env = Object.keys(process.env)
   }, {})
 
 // build config object
-const rcconfig = rc('rps')
-log.silly(`Before config... ${JSON.stringify(rcconfig, null, 2)}`)
-const config: RPSConfig = mapConfig(rcconfig, dot)
-log.silly(`Updated config... ${JSON.stringify(config, null, 2)}`)
+
+const config: RPSConfig = rc('rps')
+config.delay_activation_sync = config.delay_timer * 1000
+config.delay_setup_and_config_sync = 5000
+config.delay_tls_put_data_sync = 5000
+log.silly(`config: ${JSON.stringify(config, null, 2)}`)
+
 Environment.Config = config
 const app = express()
 app.use(cors())
@@ -43,9 +45,9 @@ app.use(express.urlencoded())
 app.use(express.json())
 
 const configurator = new Configurator()
-log.silly(`WebSocket Cert Info ${JSON.stringify(Environment.Config.WSConfiguration)}`)
-const serverForEnterpriseAssistant: WSEnterpriseAssistantListener = new WSEnterpriseAssistantListener(new Logger('WSEnterpriseAssistantListener'), Environment.Config.WSConfiguration)
-const server: WebSocketListener = new WebSocketListener(new Logger('WebSocketListener'), Environment.Config.WSConfiguration, configurator.dataProcessor)
+log.silly(`WebSocket Cert Info ${JSON.stringify(Environment.Config)}`)
+const serverForEnterpriseAssistant: WSEnterpriseAssistantListener = new WSEnterpriseAssistantListener(new Logger('WSEnterpriseAssistantListener'))
+const server: WebSocketListener = new WebSocketListener(new Logger('WebSocketListener'), configurator.dataProcessor)
 
 const mqtt: MqttProvider = new MqttProvider(config)
 mqtt.connectBroker()
@@ -114,8 +116,8 @@ if (process.env.node_env !== 'test') {
       await waitForSecretsManager(configurator.secretsManager)
     })
     .then(() => {
-      app.listen(config.webport, () => {
-        log.info(`RPS Microservice Rest APIs listening on http://:${config.webport}.`)
+      app.listen(config.web_port, () => {
+        log.info(`RPS Microservice Rest APIs listening on http://:${config.web_port}.`)
       })
       server.connect()
       serverForEnterpriseAssistant.connect()

@@ -13,15 +13,15 @@ import { DataProcessor } from './DataProcessor'
 import { Environment } from './utils/Environment'
 import { VersionChecker } from './VersionChecker'
 import { devices } from './WebSocketListener'
-import { parse, type HttpZResponseModel } from 'http-z'
+import { type HttpZResponseModel, parse } from 'http-z'
 import { HttpHandler } from './HttpHandler'
 import { Deactivation } from './stateMachines/deactivation'
 import { Activation } from './stateMachines/activation'
 import { ClientMethods, type ClientMsg } from './models/RCS.Config'
-import { Maintenance, type MaintenanceEvent } from './stateMachines/maintenance'
-import { type IPConfiguration } from './stateMachines/syncIP'
+import { Maintenance, type MaintenanceEvent } from './stateMachines/maintenance/maintenance'
+// import { type IPConfiguration } from './stateMachines/syncIP'
 import { RPSError } from './utils/RPSError'
-import { type HostnameConfiguration } from './stateMachines/syncHostName'
+// import { type HostnameConfiguration } from './stateMachines/syncHostName'
 import { parseChunkedMessage } from './utils/parseChunkedMessage'
 import {
   response200BadWsmanXML,
@@ -32,6 +32,14 @@ import {
   response401
 } from './test/helper/AMTMessages'
 import { UNEXPECTED_PARSE_ERROR } from './utils/constants'
+import { SyncTimeEventType } from './stateMachines/maintenance/syncTime'
+import { type IPConfiguration, type SyncIPEvent, SyncIPEventType } from './stateMachines/maintenance/syncIP'
+import { type ChangePasswordEvent, ChangePasswordEventType } from './stateMachines/maintenance/changePassword'
+import {
+  type HostNameInfo,
+  type SyncHostNameEvent,
+  SyncHostNameEventType
+} from './stateMachines/maintenance/syncHostName'
 
 Environment.Config = config
 const configurator = new Configurator()
@@ -175,6 +183,7 @@ describe('Activate a device', () => {
         username: '$$OsAdmin',
         password: 'P@ssw0rd',
         currentMode: 2,
+        friendlyName: 'ImaFriend',
         hostname: 'DESKTOP-9CC12U7',
         certHashes: ['c3846bf24b9e93ca64274c0ec67c1ecc5e024ffcacd2d74019350e81fe546ae4']
       }
@@ -320,9 +329,9 @@ it('should pass maintainDevice method', async () => {
   const clientId = uuid()
   devices[clientId] = { ClientId: clientId, ClientSocket: null, messageId: 0, connectionParams, unauthCount: 0 }
   VersionChecker.setCurrentVersion('4.0.0')
-  const expectedEvent: any = {
-    clientId,
-    type: 'SYNCTIME'
+  const expectedEvent: MaintenanceEvent = {
+    type: SyncTimeEventType,
+    clientId
   }
   await dataProcessor.maintainDevice(clientMsg, clientId, maintenance)
   expect(validatorSpy).toHaveBeenCalled()
@@ -352,17 +361,12 @@ describe('build maintenance event', () => {
   it('should pass - synctime', async () => {
     payload.task = 'synctime'
     const mEvent = dataProcessor.buildMaintenanceEvent(clientId, payload)
-    expect(mEvent.type).toEqual('SYNCTIME')
+    expect(mEvent.type).toEqual(SyncTimeEventType)
+    expect(mEvent.clientId).toEqual(clientId)
   })
   it('should fail - syncip requires ipConfiguration in payload', async () => {
-    try {
-      payload.task = 'syncip'
-      dataProcessor.buildMaintenanceEvent(clientId, payload)
-    } catch (error) {
-      rpsError = error
-    }
-    expect(rpsError).toBeInstanceOf(RPSError)
-    expect(rpsError.message).toEqual(`${clientId} - missing ipConfiguration`)
+    payload.task = 'syncip'
+    expect(() => dataProcessor.buildMaintenanceEvent(clientId, payload)).toThrow(RPSError)
   })
   it('should pass - syncip', async () => {
     const ipCfg: IPConfiguration = {
@@ -375,33 +379,41 @@ describe('build maintenance event', () => {
     payload.task = 'syncip'
     payload.ipConfiguration = ipCfg
     const mEvent: MaintenanceEvent = dataProcessor.buildMaintenanceEvent(clientId, payload)
-    expect(mEvent.type = 'SYNCIP')
-    expect(mEvent.data).toEqual(ipCfg)
+    expect(mEvent.type = SyncIPEventType)
+    expect(mEvent.clientId).toEqual(clientId)
+    expect((mEvent as SyncIPEvent).targetIPConfig).toEqual(ipCfg)
   })
   it('should pass - changepassword generate random', async () => {
     payload.task = 'changepassword'
     const mEvent = dataProcessor.buildMaintenanceEvent(clientId, payload)
-    expect(mEvent.type).toEqual('CHANGEPASSWORD')
-    expect(mEvent.data).toBeFalsy()
+    expect(mEvent.type).toEqual(ChangePasswordEventType)
+    expect(mEvent.clientId).toEqual(clientId)
+    expect((mEvent as ChangePasswordEvent).newStaticPassword).toBeFalsy()
   })
   it('should pass - changepassword static', async () => {
     const newPassword = 'SomeNewPassword!@#$'
     payload.task = 'changepassword'
     payload.taskArg = newPassword
     const mEvent = dataProcessor.buildMaintenanceEvent(clientId, payload)
-    expect(mEvent.type = 'CHANGEPASSWORD')
-    expect(mEvent.data).toEqual(newPassword)
+    expect(mEvent.type).toEqual(ChangePasswordEventType)
+    expect(mEvent.clientId).toEqual(clientId)
+    expect((mEvent as ChangePasswordEvent).newStaticPassword).toEqual(newPassword)
   })
   it('should pass - synchostname', async () => {
-    const HostnameInfo: HostnameConfiguration = {
+    const hostnameInfo: HostNameInfo = {
       dnsSuffixOS: 'os.suffix.test',
       hostname: 'some-test-name'
     }
     payload.task = 'synchostname'
-    payload.hostnameInfo = HostnameInfo
+    payload.hostnameInfo = hostnameInfo
     const mEvent: MaintenanceEvent = dataProcessor.buildMaintenanceEvent(clientId, payload)
-    expect(mEvent.type = 'SYNCHOSTNAME')
-    expect(mEvent.data).toEqual(HostnameInfo)
+    expect(mEvent.type).toEqual(SyncHostNameEventType)
+    expect(mEvent.clientId).toEqual(clientId)
+    expect((mEvent as SyncHostNameEvent).hostNameInfo).toEqual(hostnameInfo)
+  })
+  it('should fail - synchostname requires hostname info', async () => {
+    payload.task = 'synchostname'
+    expect(() => dataProcessor.buildMaintenanceEvent(clientId, payload)).toThrow(RPSError)
   })
   it('should fail - unknown task', async () => {
     payload.task = 'somerandomtask'

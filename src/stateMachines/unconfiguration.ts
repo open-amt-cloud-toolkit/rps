@@ -31,7 +31,7 @@ export interface UnconfigContext {
   statusMessage: string
   privateCerts: any[]
   httpHandler: HttpHandler
-  TLSSettingData: any[]
+  tlsSettingData: any[]
   publicKeyCertificates: any[]
   is8021xProfileUpdated?: boolean
   wifiEndPointSettings?: any[]
@@ -39,9 +39,11 @@ export interface UnconfigContext {
   ips?: IPS.Messages
   cim?: CIM.Messages
   retryCount?: number
+  wiredSettings: any
+  wifiSettings: any
 }
 interface UnconfigEvent {
-  type: 'REMOVEPOLICY' | 'ONFAILURE'
+  type: 'REMOVECONFIG' | 'ONFAILURE'
   clientId: string
   data?: any
 }
@@ -58,7 +60,7 @@ export class Unconfiguration {
 
   machine =
 
-  /** @xstate-layout N4IgpgJg5mDOIC5QEMDGAXAlgN2Vg9gHYC0AtmgBaaFgB0AqgHIAKASgPIBqAkgMrftGAUQAiAYgCCAYQAq3ThLmDEoAA75YmAoRUgAHogCMAVgDMABlrGATADZzt6+cOGA7IYAcHgDQgAnogALB7WtACcjubmxrYm1qaBgQC+Sb5oWLjaZJTUdADiQjIA+gXCrBIAMkW8hXKMebxiEER01Nj4ANZ0sGCEEMQwNABOyAA2PehYhFDwSCDqmtq6BghOgca0HoaBtmGudjHWxr4BCLGutNYers6uIdYHtilpGDh4mETZqFQ0tAXFpSE5SqNRkdQaYjAQyG+CGtFUozwADNYaRaD0+gNelCxhMpjNdAstB8dHMViYLFY7A4nC53F4Tohzpdrrd7o9niB0m8suRvrlaFJBJwgcUABoAWSqMnYRQAUrxBGJCRpiURlohrO5Qg8Yjs9o9rIyzoEwrRzGE4g9DLZXBEwpzuZkSV8fnRWEIJCISkIypVqrVuPVGirFiSNQhTLTLrYzB5zB5jGFTK5jv4mabzZabNbbfbHa9nZ8+W7BQAJIRSADSRRE3AKvGKHsqEuVcyJSzJiFMxlTlzCgUMV0HdtsDPTCF7ploiTCNgtUfMWuSqS5hfexZyv24zF4RTL7EbACEJDURKD6LugTwpEImi1aG1Ot1ev0KBp0AAjZA9CATACuqihmqpKgCswQeOEYQOLEjiGAuqbGi4xiQS4CTxlc6GxgWGQbiQJYCjue4Hsep6iBeV6sDed5QjCcIIsiqLoq+xDvrAX4-pAAFAe2qqdmBQReFBME2tY8HJohE5bIYlxalcWrbB4gSmB4OE8i6BG-F6IjCGKMi3qwdRSGWEhBvevxPl0zGYqgUJYEimCoHgYDAfx+iIPOtA9kmFqzlqaanAOoQJjYSmBPEISqauTp4a6Arabp+mikGxmmYwkLQrC8KIugKJDGiGL9LZQz2Y5zmueGXYINcoQ2h4pgJBECEBUYdiBOE5x7K4gSuHm1hqUW+FbnQXoSkGFHma0hDtFZhXEMgECkNQ3EVeqVU1bQdUNaa9gSS1CDhTJ5iBM4J13K4vXHQNsWaSNIhjYwE20VlDG5Uxc0LUthArbxYZrQJ1X7JtY7bU1e3GmOlimLsVzwdEiYDtdvLDbQE3NBZ03PtZ-Q-WofGVQDG1bY1u0pvtQ4ySdLi2Cm0N7JaTzReuyP8r8T2ZfROV5QVLG4-M+P-e5gO1SDJPNcaPZQ9Yg607sdo2qYSMaSjvASCKIhCNRk2Ppjs3INgYDEBAYDYI5Lm-SBEYUpYNj2JEdKeD4E7Rg1dohG4F0JCpSubqzdCq+rmvcLeGV0dljH5ei+uG8bpu2atoFC9bVJ27SbiO8ag46jsURiQasaMy8uEs6WQIcKw2uWXQz1DHFNAJ1bZg29S9vp+OpypjJsROBYS5hNY+ZM8Xyt+7QZfsBXggAGKmRUogN1Vye2zSzht07pyJhsSZxDY8HGMYCY+0No9BgoFTcN6dYNk2noVK2C8A+FzjmgmT-rLGSYQ5mFpWmJea7CkVchB8DG1mCgZmI9SxMDYFwPgAhhAiAfknCKVh+42H7hEa4+0D4bGCMdMI-dbS9i2EfOu+RCg+j9CCQMwYkHkhQu1W0RwTAeF2NsBwxokyQTEgfOwm8dheFIbdQUwpRRFElNKWUCplAWzcisJwQNEgxHOuJMmnC7i0FsMpcwPYvCsPcA6Ie6lfalmbN6QEwIAxgiDA0OhmpXAqU2DERwSk3CYPXh5MI3CTBLjHPvARUUi7GOPqWYylYaxXyEI2IozY752MjA8C4HgIjQ3iMdMcklTg0zNPGfeLgeo50RkYwaZDaBEX3IeGQJ4zwURqFRYOQh4nhWNOdGMDxWEpl2GYfqxSboowSkIPSBkjImSDPE4wJhNF-20bYLRNIkJiXaiFCwEUaYTKEf0+641CiXnGf3KwPknAENJh4g6vVNp3EcHOXsA8FYbNHhRPZoR97QSOWDFSSFzlmAiDYA+sZ4IriCSU4RAdRBB1vPE+CQNdE6IeIacmF0vL7C8ShUwXjlKpnuaXVg5d4nQUgnaZMNoTqOH2o4UIsYoxJi1A45SgS1zDxMYRRgZ8L61nrFEm+LZ4kqUSOaK4B94IPAiLYThXjLg+L4f4sc9KYolwFDPbgc9EGyIJkLcKWpNFoqptBTw+xOFjnNIOPUA52GOCxQKGBPB+CCHnqqwW9DeybV7MdBILrTBDgWZYK4o4VK2j1cYC19d7WJ3JKczwgCkhAA */
+    /** @xstate-layout N4IgpgJg5mDOIC5QEMDGAXAlgN2Vg9gHYC0AtmgBaaFgB0AqgHIAKASgPIBqAkgMrftGAUQAiAYgCCAYQAq3ThLmDEoAA75YmAoRUgAHogCMAVgDMABlrGATADZzt6+cOGA7IYAcHgDQgAnogALB7WtACcjubmxrYm1qaBgQC+Sb5oWLjaZJTUdADiQjIA+gXCrBIAMkW8hXKMebxiEER01Nj4ANZ0sGCEEMQwNABOyAA2PehYhFDwSCDqmtq6BghOgca0HoaBtmGudjHWxr4BCLGutNYers6uIdYHtilpGDh4mETZqFQ0tAXFpSE5SqNRkdQaYjAQyG+CGtFUozwADNYaRaD0+gNelCxhMpjNdAstB8dHMViYLFY7A4nC53F4Tohzpdrrd7o9niB0m8suRvrlaFJBJwgcUABoAWSqMnYRQAUrxBGJCRpiURlohrO5Qg8Yjs9o9rIyzoEwrRzGE4g9DLZXBEwpzuZkSV8fnRWEIJCISkIypVqrVuPVGirFiSNQhTLTLrYzB5zB5jGFTK5jv4mabzZabNbbfbHa9nZ8+W7BQAJIRSADSRRE3AKvGKHsqEuVcyJSzJiFMxlTlzCgUMV0HdtsDPTCF7ploiTCNgtUfMWuSqS5hfexZyv24zF4RTL7EbACEJDURKD6LugTwpEImi1aG1Ot1ev0KBp0AAjZA9CATACuqihmqpKgCswQeOEYQOLEjiGAuqbGi4xiQS4CTxlc6GxgWGQbiQJYCjue4Hsep6iBeV6sDed5QjCcIIsiqLoq+xDvrAX4-pAAFAe2qqdmBQReFBME2tY8HJohE5bIYlxalcWrbB4gSmB4OE8i6BG-F6IjCGKMi3qwdRSGWEhBvevxPl0zGYqgUJYEimCoHgYDAfx+iIPOtA9kmFqzlqaanAOoQJjYSmBPEISqauTp4a6Arabp+mikGxmmYwkLQrC8KIugKJDGiGL9LZQz2Y5zmueGXYINcoQ2h4pgJBECEBUYdiBOE5x7K4gSuHm1hqUW+FbnQXoSkGFHma0hDtFZhXEMgECkNQ3EVeqVU1bQdUNaa9gSS1CDhTJ5iBM4J13K4vXHQNsWaSNIhjYwE20VlDG5Uxc0LUthArbxYZrQJ1X7JtY7bU1e3GmOlimLsVzwdEiYDtdvLDbQE3NBZ03PtZ-Q-WofGVQDG1bY1u0pvtQ4ySdLi2Cm0N7JaTzReuyP8r8T2ZfROV5QVLG4-M+P-e5gO1SDJPNcaPZQ9Yg607sdo2qYSMaSjvASCKIhCNRk2Ppjs3INgYDEBAYDYI5Lm-SBEYUpYNj2JEdKeD4E7Rg1dohG4F0JCpSubqzdCq+rmvcLeGV0dljH5ei+uG8bpu2atoFC9bVJ27SbiO8ag46jsURiQasaMy8uEs6WQIcKw2uWXQz1DHFNAJ1bZg29S9vp+OpypjJsROBYS5hNY+ZM8Xyt+7QZfsBXggAGKmRUogN1Vye2zSzht07pyJhsSZxDY8HGMYCY+0No9BgoFTcN6dYNk2noVK2C8A+FzjmgmT-rLGSYQ5mFpWmJea7CkVchB8DG1mCgZmI9SxMDYFwPgAhhAiAfknCKVh+42H7hEa4+0D4bGCMdMI-dbS9i2EfOu+RCg+j9CCQMwYkHkhQu1W0RwTAeF2NsBwxokyQTEgfOwm8dheFIbdQUwpRRFElNKWUCplAWzcisJwQNEgxHOuJMmnC7i0FsMpcwPYvCsPcA6Ie6lfalmbN6QEwIAxgiDA0OhmpXAqU2DERwSk3CYPXh5MI3CTBLjHPvARUUi7GOPqWYylYaxXyEI2IozY752MjA8C4HgIjQ3iMdMcklTg0zNPGfeLgeo50RkYwaZDaBEX3IeGQJ4zwURqFRYOQh4nhWNOdGMDxWEpl2GYfqxSboowSkIPSBkjImSDPE4wJhNF-20bYLRNIkJiXaiFCwEUaYTKEf0+641CiXnGf3KwPknAENJh4g6vVNp3EcHOXsA8FYbNHhRPZoR97QSOWDFSSFzlmAiDYA+sZ4IriCSU4RAdRBB1vPE+CQNdE6IeIacmF0vL7C8ShUwXjlKpnuaXVg5d4nQUgnaZMNoTqOH2o4UIsYoxJi1A45SgS1zDxMYRRgZ8L61nrFEm+LZ4kqUSOaK4B94IPAiLYThXjLg+L4f4sc9KYolwFDPbgc9EGyIJkLcKWpNFoqptBTw+xOFjnNIOPUA52GOCxQKGBPB+CCHnqqwW9DeybV7MdBILrTBDgWZYK4o4VK2j1cYC19d7WJ3JKczwgCkhAA */
     createMachine<UnconfigContext, UnconfigEvent>({
       preserveActionOrder: true,
       predictableActionArguments: true,
@@ -73,19 +75,21 @@ export class Unconfiguration {
         ciraConfig: null,
         profile: null,
         privateCerts: [],
-        TLSSettingData: [],
+        tlsSettingData: [],
         publicKeyCertificates: [],
         is8021xProfileUpdated: false,
-        wifiEndPointSettings: []
+        wifiEndPointSettings: [],
+        wiredSettings: null,
+        wifiSettings: null
       },
       id: 'unconfiuration-machine',
       initial: 'UNCONFIGURED',
       states: {
         UNCONFIGURED: {
           on: {
-            REMOVEPOLICY: {
+            REMOVECONFIG: {
               actions: ['Reset Unauth Count', 'Reset Retry Count'],
-              target: 'GET_8021X_PROFILE'
+              target: 'ENUMERATE_ETHERNET_PORT_SETTINGS'
             }
           }
         },
@@ -99,11 +103,57 @@ export class Unconfiguration {
               message: (context, event) => event.data,
               clientId: (context, event) => context.clientId
             },
-            onDone: 'GET_8021X_PROFILE'
+            onDone: 'ENUMERATE_ETHERNET_PORT_SETTINGS'
           },
           on: {
             ONFAILURE: 'FAILURE'
           }
+        },
+        ENUMERATE_ETHERNET_PORT_SETTINGS: {
+          invoke: {
+            src: this.enumerateEthernetPortSettings.bind(this),
+            id: 'enumerate-ethernet-port-settings',
+            onDone: {
+              actions: assign({ message: (context, event) => event.data }),
+              target: 'PULL_ETHERNET_PORT_SETTINGS'
+            },
+            onError: {
+              target: 'ERROR'
+            }
+          }
+        },
+        PULL_ETHERNET_PORT_SETTINGS: {
+          invoke: {
+            src: this.pullEthernetPortSettings.bind(this),
+            id: 'pull-ethernet-port-settings',
+            onDone: {
+              actions: [assign({ message: (context, event) => event.data }), 'Reset Retry Count'],
+              target: 'CHECK_ETHERNET_PORT_SETTINGS_PULL_RESPONSE'
+            },
+            onError: [
+              {
+                cond: 'shouldRetry',
+                actions: 'Increment Retry Count',
+                target: 'ENUMERATE_ETHERNET_PORT_SETTINGS'
+              },
+              {
+                actions: assign({ errorMessage: (context, event) => 'Failed to pull ethernet port settings' }),
+                target: 'FAILURE'
+              }
+            ]
+          }
+        },
+        CHECK_ETHERNET_PORT_SETTINGS_PULL_RESPONSE: {
+          entry: 'Read Ethernet Port Settings',
+          always: [
+            {
+              cond: 'isWiredSupportedOnDevice',
+              target: 'GET_8021X_PROFILE'
+            }, {
+              cond: 'isWifiOnlyDevice',
+              target: 'ENUMERATE_WIFI_ENDPOINT_SETTINGS'
+            }
+          ]
         },
         GET_8021X_PROFILE: {
           invoke: {
@@ -114,7 +164,8 @@ export class Unconfiguration {
               target: 'CHECK_GET_8021X_PROFILE_RESPONSE'
             },
             onError: {
-              target: 'ERROR'
+              actions: assign({ errorMessage: (context, event) => 'Failed to get 8021x profile' }),
+              target: 'FAILURE'
             }
           }
         },
@@ -124,7 +175,10 @@ export class Unconfiguration {
               cond: 'is8021xProfileEnabled',
               target: 'DISABLE_IEEE8021X_WIRED'
             }, {
+              cond: 'isWifiSupportedOnDevice',
               target: 'ENUMERATE_WIFI_ENDPOINT_SETTINGS'
+            }, {
+              target: 'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED'
             }
           ]
         },
@@ -132,12 +186,16 @@ export class Unconfiguration {
           invoke: {
             src: this.disableWired8021xConfiguration.bind(this),
             id: 'disable-Wired-8021x-Configuration',
-            onDone: {
+            onDone: [{
+              cond: 'isWifiSupportedOnDevice',
               actions: assign({ is8021xProfileUpdated: true }),
               target: 'ENUMERATE_WIFI_ENDPOINT_SETTINGS'
-            },
+            }, {
+              target: 'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED'
+            }],
             onError: {
-              target: 'ERROR'
+              actions: assign({ errorMessage: (context, event) => 'Failed to disable 8021x profile' }),
+              target: 'FAILURE'
             }
           }
         },
@@ -329,7 +387,7 @@ export class Unconfiguration {
         },
         DISABLE_TLS_SETTING_DATA: {
           invoke: {
-            src: this.disableTLSSettingData.bind(this),
+            src: this.disableRemoteTLSSettingData.bind(this),
             id: 'disable-tls-setting-data',
             onDone: { actions: assign({ message: (context, event) => event.data }), target: 'DISABLE_TLS_SETTING_DATA_RESPONSE' },
             onError: {
@@ -340,7 +398,7 @@ export class Unconfiguration {
         },
         DISABLE_TLS_SETTING_DATA_2: { // TODO: REFACTOR TO USE EXISITING PUT
           invoke: {
-            src: this.disableTLSSettingData2.bind(this),
+            src: this.disableLocalTLSSettingData.bind(this),
             id: 'disable-tls-setting-data-2',
             onDone: { actions: assign({ message: (context, event) => event.data }), target: 'DISABLE_TLS_SETTING_DATA_RESPONSE' },
             onError: {
@@ -558,22 +616,25 @@ export class Unconfiguration {
       }
     }, {
       delays: {
-        DELAY_TIME_SETUP_AND_CONFIG_SYNC: () => Environment.Config.delaySetupAndConfigSync
+        DELAY_TIME_SETUP_AND_CONFIG_SYNC: () => Environment.Config.delay_setup_and_config_sync
       },
       guards: {
         isExpectedBadRequest: (context, event) => event.data?.statusCode === 400,
         hasPrivateCerts: (context, event) => context.privateCerts.length > 0,
         isLMSTLSSettings: (context, event) => context.message.Envelope.Body.AMT_TLSSettingData?.ElementName === 'Intel(r) AMT LMS TLS Settings',
-        is8023TLS: (context, event) => context.message.Envelope.Body.AMT_TLSSettingData?.ElementName === 'Intel(r) AMT 802.3 TLS Settings' && context.TLSSettingData[1].Enabled,
+        is8023TLS: (context, event) => context.message.Envelope.Body.AMT_TLSSettingData?.ElementName === 'Intel(r) AMT 802.3 TLS Settings' && context.tlsSettingData[1].Enabled,
         tlsSettingDataEnabled: (context, event) => context.message.Envelope.Body.PullResponse.Items.AMT_TLSSettingData?.[0].Enabled || context.message.Envelope.Body.PullResponse.Items.AMT_TLSSettingData?.[1].Enabled,
         hasMPSEntries: (context, event) => context.message.Envelope.Body.PullResponse.Items?.AMT_ManagementPresenceRemoteSAP != null,
         hasPublicKeyCertificate: (context, event) => context.publicKeyCertificates?.length > 0,
         hasEnvSettings: (context, event) => context.message.Envelope.Body.AMT_EnvironmentDetectionSettingData.DetectionStrings != null,
         hasTLSCredentialContext: (context, event) => context.message.Envelope.Body.PullResponse.Items?.AMT_TLSCredentialContext != null,
-        is8021xProfileEnabled: (context, event) => context.message.Envelope.Body.IPS_IEEE8021xSettings.Enabled === 2,
+        is8021xProfileEnabled: (context, event) => context.message.Envelope.Body.IPS_IEEE8021xSettings.Enabled === 2 || context.message.Envelope.Body.IPS_IEEE8021xSettings.Enabled === 6,
         is8021xProfileDisabled: (context, event) => context.is8021xProfileUpdated,
         isWifiProfilesExistsOnDevice: (context, event) => context.wifiEndPointSettings.length !== 0,
-        isWifiProfileDeleted: (context, event) => context.message.Envelope.Body == null
+        isWifiProfileDeleted: (context, event) => context.message.Envelope.Body == null,
+        isWifiOnlyDevice: (context, event) => context.wifiSettings != null && context.wiredSettings?.MACAddress == null,
+        isWifiSupportedOnDevice: (context, event) => context.wifiSettings?.MACAddress != null,
+        isWiredSupportedOnDevice: (context, event) => context.wiredSettings?.MACAddress != null
 
       },
       actions: {
@@ -591,7 +652,8 @@ export class Unconfiguration {
         'Reset Unauth Count': (context, event) => { devices[context.clientId].unauthCount = 0 },
         'Read WiFi Endpoint Settings Pull Response': this.readWiFiEndpointSettingsPullResponse.bind(this),
         'Reset Retry Count': assign({ retryCount: (context, event) => 0 }),
-        'Increment Retry Count': assign({ retryCount: (context, event) => context.retryCount + 1 })
+        'Increment Retry Count': assign({ retryCount: (context, event) => context.retryCount + 1 }),
+        'Read Ethernet Port Settings': this.readEthernetPortSettings.bind(this)
       }
     })
 
@@ -605,6 +667,33 @@ export class Unconfiguration {
     this.logger = new Logger('Activation_State_Machine')
   }
 
+  async enumerateEthernetPortSettings (context): Promise<any> {
+    context.xmlMessage = context.amt.EthernetPortSettings.Enumerate()
+    return await invokeWsmanCall(context, 2)
+  }
+
+  async pullEthernetPortSettings (context): Promise<any> {
+    context.xmlMessage = context.amt.EthernetPortSettings.Pull(context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+    return await invokeWsmanCall(context)
+  }
+
+  readEthernetPortSettings (context: UnconfigContext, event: UnconfigEvent): void {
+    // As per AMT SDK first entry is WIRED network port and second entry is WIFI
+    const pullResponse = context.message.Envelope.Body.PullResponse.Items.AMT_EthernetPortSettings
+    const assignSettings = (item): void => {
+      if (item.InstanceID.includes('Settings 0')) {
+        context.wiredSettings = item
+      } else if (item.InstanceID.includes('Settings 1')) {
+        context.wifiSettings = item
+      }
+    }
+    if (Array.isArray(pullResponse)) {
+      pullResponse.slice(0, 2).forEach(assignSettings)
+    } else {
+      assignSettings(pullResponse)
+    }
+  }
+
   async get8021xProfile (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
     context.xmlMessage = context.ips.IEEE8021xSettings.Get()
     return await invokeWsmanCall(context, 2)
@@ -613,6 +702,7 @@ export class Unconfiguration {
   async disableWired8021xConfiguration (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
     const ieee8021xProfile = context.message.Envelope.Body.IPS_IEEE8021xSettings
     delete ieee8021xProfile.Username
+    delete ieee8021xProfile.Password
     delete ieee8021xProfile.AuthenticationProtocol
     ieee8021xProfile.Enabled = 3
     context.xmlMessage = context.ips.IEEE8021xSettings.Put(ieee8021xProfile)
@@ -734,13 +824,15 @@ export class Unconfiguration {
     return await invokeWsmanCall(context)
   }
 
-  async disableTLSSettingData (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.TLSSettingData = context.message.Envelope.Body.PullResponse.Items.AMT_TLSSettingData
-    context.TLSSettingData[0].Enabled = false
-    context.TLSSettingData[0].AcceptNonSecureConnections = true
-    context.TLSSettingData[0].MutualAuthentication = false
-    delete context.TLSSettingData[0].TrustedCN
-    context.xmlMessage = context.amt.TLSSettingData.Put(context.TLSSettingData[0])
+  async disableRemoteTLSSettingData (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
+    context.tlsSettingData = context.message.Envelope.Body.PullResponse.Items.AMT_TLSSettingData
+    context.tlsSettingData[0].Enabled = false
+    if (!('NonSecureConnectionsSupported' in context.tlsSettingData[0]) || context.tlsSettingData[0].NonSecureConnectionsSupported === true) {
+      context.tlsSettingData[0].AcceptNonSecureConnections = true
+    }
+    context.tlsSettingData[0].MutualAuthentication = false
+    delete context.tlsSettingData[0].TrustedCN
+    context.xmlMessage = context.amt.TLSSettingData.Put(context.tlsSettingData[0])
     return await invokeWsmanCall(context)
   }
 
@@ -749,10 +841,10 @@ export class Unconfiguration {
     return await invokeWsmanCall(context)
   }
 
-  async disableTLSSettingData2 (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.TLSSettingData[1].Enabled = false
-    delete context.TLSSettingData[1].TrustedCN
-    context.xmlMessage = context.amt.TLSSettingData.Put(context.TLSSettingData[1])
+  async disableLocalTLSSettingData (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
+    context.tlsSettingData[1].Enabled = false
+    delete context.tlsSettingData[1].TrustedCN
+    context.xmlMessage = context.amt.TLSSettingData.Put(context.tlsSettingData[1])
     return await invokeWsmanCall(context)
   }
 

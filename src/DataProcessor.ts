@@ -13,11 +13,15 @@ import { HttpHandler } from './HttpHandler'
 import { parse, type HttpZResponseModel } from 'http-z'
 import { devices } from './WebSocketListener'
 import { Deactivation } from './stateMachines/deactivation'
-import { Maintenance } from './stateMachines/maintenance'
-import { Activation } from './stateMachines/activation'
+import { Maintenance, type MaintenanceEvent } from './stateMachines/maintenance/maintenance'
+import { Activation, type ActivationEvent } from './stateMachines/activation'
 import ClientResponseMsg from './utils/ClientResponseMsg'
 import { parseChunkedMessage } from './utils/parseChunkedMessage'
 import { UNEXPECTED_PARSE_ERROR } from './utils/constants'
+import { SyncTimeEventType } from './stateMachines/maintenance/syncTime'
+import { ChangePasswordEventType } from './stateMachines/maintenance/changePassword'
+import { SyncHostNameEventType } from './stateMachines/maintenance/syncHostName'
+import { SyncIPEventType } from './stateMachines/maintenance/syncIP'
 export class DataProcessor {
   httpHandler: HttpHandler
   constructor (
@@ -77,14 +81,15 @@ export class DataProcessor {
   async activateDevice (clientMsg: ClientMsg, clientId: string, activation: Activation = new Activation()): Promise<void> {
     this.logger.debug(`ProcessData: Parsed Message received from device ${clientMsg.payload.uuid}: ${JSON.stringify(clientMsg, null, '\t')}`)
     await this.validator.validateActivationMsg(clientMsg, clientId) // Validate the activation message payload
-    // Makes the first wsman call
     this.setConnectionParams(clientId)
     activation.service.start()
-    if (devices[clientId].activationStatus) {
-      activation.service.send({ type: 'ACTIVATED', tenantId: clientMsg.tenantId, clientId, isActivated: true })
-    } else {
-      activation.service.send({ type: 'ACTIVATION', tenantId: clientMsg.tenantId, clientId })
+    const event: ActivationEvent = {
+      type: devices[clientId].activationStatus ? 'ACTIVATED' : 'ACTIVATION',
+      clientId,
+      tenantId: clientMsg.tenantId,
+      friendlyName: clientMsg.payload.friendlyName
     }
+    activation.service.send(event)
   }
 
   async deactivateDevice (clientMsg: ClientMsg, clientId: string, deactivation: Deactivation = new Deactivation()): Promise<void> {
@@ -137,39 +142,29 @@ export class DataProcessor {
     maintenance.service.send(mEvent)
   }
 
-  buildMaintenanceEvent (clientId: string, payload: any): any {
-    const mEvent: any = {
-      clientId
-    }
+  buildMaintenanceEvent (clientId: string, payload: any): MaintenanceEvent {
     if (payload == null || payload.task == null) {
       throw new RPSError(`${clientId} - missing payload data`)
     }
+    let mEvent: MaintenanceEvent
     switch (payload.task) {
       case 'synctime':
-        mEvent.type = 'SYNCTIME'
+        mEvent = { type: SyncTimeEventType, clientId }
         break
       case 'syncip':
-        mEvent.type = 'SYNCIP'
-        if (payload.ipConfiguration) {
-          mEvent.data = payload.ipConfiguration
-        } else {
+        if (!payload.ipConfiguration) {
           throw new RPSError(`${clientId} - missing ipConfiguration`)
         }
+        mEvent = { type: SyncIPEventType, clientId, targetIPConfig: payload.ipConfiguration }
         break
       case 'changepassword':
-        mEvent.type = 'CHANGEPASSWORD'
-        // password is optional
-        if (payload.taskArg) {
-          mEvent.data = payload.taskArg
-        }
+        mEvent = { type: ChangePasswordEventType, clientId, newStaticPassword: payload.taskArg }
         break
       case 'synchostname':
-        mEvent.type = 'SYNCHOSTNAME'
-        if (payload.hostnameInfo) {
-          mEvent.data = payload.hostnameInfo
-        } else {
+        if (!payload.hostnameInfo) {
           throw new RPSError(`${clientId} - missing HostnameInfo`)
         }
+        mEvent = { type: SyncHostNameEventType, clientId, hostNameInfo: payload.hostnameInfo }
         break
       default:
         throw new RPSError(`${clientId} - unknown task ${payload.task}`)

@@ -17,7 +17,7 @@ export async function getHealthCheck (req: Request, res: Response): Promise<void
   try {
     const status: HealthCheck = {
       db: {
-        name: Environment.Config.dbProvider.toUpperCase(),
+        name: Environment.Config.db_provider.toUpperCase(),
         status: 'OK'
       },
       secretStore: {
