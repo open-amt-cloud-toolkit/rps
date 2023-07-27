@@ -77,6 +77,10 @@ export interface CertificateObject {
 export interface RPSConfig {
   vault_token: string
   vault_address: string
+  consul_enabled: boolean
+  consul_host: string
+  consul_port: string
+  consul_key_prefix: string
   secrets_path: string
   websocketport: number // no underlines to avoid breaking change
   web_port: number

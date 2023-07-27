@@ -7,6 +7,7 @@ import * as indexFile from './Index'
 import * as exponentialBackoff from 'exponential-backoff'
 import { type ISecretManagerService } from './interfaces/ISecretManagerService'
 import { type IDB } from './interfaces/database/IDb'
+import { config } from './test/helper/Config'
 
 describe('Index', () => {
   // const env = process.env
@@ -21,10 +22,10 @@ describe('Index', () => {
     jest.restoreAllMocks()
     jest.resetAllMocks()
     jest.resetModules()
+    config.consul_enabled = false
+    jest.spyOn(indexFile, 'startItUp').mockImplementation(() => {})
     // process.env = { ...env }
     process.env.NODE_ENV = 'test'
-    // indexFile = require('./Index')
-
     /*
     jest.mock('fs', () => ({
       existsSync: jest.fn(() => true),
@@ -52,10 +53,10 @@ describe('Index', () => {
         throw new Error('error')
       })
     } as any
-    // const indexFile = require('./Index')
     await indexFile.waitForDB(dbMock)
     expect(backOffSpy).toHaveBeenCalled()
   })
+
   it('should wait for secret provider', async () => {
     const backOffSpy = jest.spyOn(exponentialBackoff, 'backOff')
     let shouldBeOk = false

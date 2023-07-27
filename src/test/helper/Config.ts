@@ -19,6 +19,10 @@ export function setupTestClient (): string {
 
 export const config: RPSConfig = {
   secrets_path: 'secret/data/',
+  consul_enabled: true,
+  consul_host: 'consul',
+  consul_port: '8500',
+  consul_key_prefix: 'RPS',
   vault_address: 'http://localhost:8200',
   vault_token: 'myroot',
   web_port: 8081,
