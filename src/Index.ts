@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
+import * as indexFile from './Index'
 import express from 'express'
 import cors from 'cors'
 import Logger from './Logger'
@@ -141,22 +142,32 @@ export const startItUp = (): void => {
   }
 }
 
-if (config.consul_enabled) {
+export async function processServiceConfigs (consul: IServiceManager, config: RPSConfig): Promise<boolean> {
+  const prefix = Environment.Config.consul_key_prefix
+  const consulValues = await consul.get(prefix)
+  if (consulValues == null) {
+    await consul.seed(prefix, config)
+  } else {
+    consul.process(consulValues)
+  }
+  return true
+}
+
+export async function setupServiceManager (config: RPSConfig): Promise<void> {
   const consul: IServiceManager = new ConsulService(config.consul_host, config.consul_port)
 
-  const prefix = Environment.Config.consul_key_prefix
-  waitForServiceConfig(consul, 'consul').then(async () => {
-    const consulValues = await consul.get(prefix)
-    if (consulValues == null) {
-      await consul.seed(prefix, config)
-    } else {
-      consul.process(consulValues)
-    }
+  await indexFile.waitForServiceConfig(consul, 'consul').then(async () => {
+    await indexFile.processServiceConfigs(consul, config)
+  })
+}
+
+if (config.consul_enabled) {
+  setupServiceManager(config).then(() => {
+    startItUp()
   }).catch(err => {
     log.error(`Unable to reach consul: ${err}`)
     process.exit(0)
   })
-  startItUp()
 } else {
   startItUp()
 }
