@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import * as indexFile from './Index'
 import express from 'express'
 import cors from 'cors'
 import Logger from './Logger'
@@ -21,9 +20,10 @@ import { type ISecretManagerService } from './interfaces/ISecretManagerService'
 import { type IDB } from './interfaces/database/IDb'
 import { WSEnterpriseAssistantListener } from './WSEnterpriseAssistantListener'
 import { existsSync, lstatSync, readdirSync } from 'fs'
+import * as ServiceManager from './serviceManager'
 import { ConsulService } from './consul'
-import path = require('path')
 import { type IServiceManager } from './interfaces/IServiceManager'
+import path = require('path')
 
 const log = new Logger('Index')
 
@@ -61,14 +61,6 @@ export const waitForSecretsManager = async function (secretsManager: ISecretMana
   await backOff(async () => await secretsManager.health(), {
     retry: (e: any, attemptNumber: number) => {
       log.info(`waiting for secret manager service[${attemptNumber}] ${e.message || e.code || e}`)
-      return true
-    }
-  })
-}
-export const waitForServiceConfig = async function (service: IServiceManager, serviceName: string): Promise<void> {
-  await backOff(async () => await service.health(serviceName), {
-    retry: (e: any, attemptNumber: number) => {
-      log.info(`waiting for consul[${attemptNumber}] ${e.code || e.message || e}`)
       return true
     }
   })
@@ -142,23 +134,10 @@ export const startItUp = (): void => {
   }
 }
 
-export async function processServiceConfigs (consul: IServiceManager, config: RPSConfig): Promise<boolean> {
-  const prefix = Environment.Config.consul_key_prefix
-  const consulValues = await consul.get(prefix)
-  if (consulValues == null) {
-    await consul.seed(prefix, config)
-  } else {
-    consul.process(consulValues)
-  }
-  return true
-}
-
 export async function setupServiceManager (config: RPSConfig): Promise<void> {
   const consul: IServiceManager = new ConsulService(config.consul_host, config.consul_port)
-
-  await indexFile.waitForServiceConfig(consul, 'consul').then(async () => {
-    await indexFile.processServiceConfigs(consul, config)
-  })
+  await ServiceManager.waitForServiceManager(consul, 'consul')
+  await ServiceManager.processServiceConfigs(consul, config)
 }
 
 if (config.consul_enabled) {

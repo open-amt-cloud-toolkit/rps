@@ -4,19 +4,14 @@
  **********************************************************************/
 
 import * as indexFile from './Index'
+import * as svcMngr from './serviceManager'
 import * as exponentialBackoff from 'exponential-backoff'
 import { type ISecretManagerService } from './interfaces/ISecretManagerService'
 import { type IDB } from './interfaces/database/IDb'
 import { config } from './test/helper/Config'
-import { type IServiceManager } from './interfaces/IServiceManager'
-import { ConsulService } from './consul'
-
-const consul: IServiceManager = new ConsulService('consul', '8500')
-let componentName: string
 
 describe('Index', () => {
   // const env = process.env
-  componentName = 'RPS'
   afterEach(() => {
     jest.clearAllMocks()
     jest.restoreAllMocks()
@@ -50,50 +45,12 @@ describe('Index', () => {
   */
 
   it('Should pass setupServiceManager', async () => {
-    const waitSpy = jest.spyOn(indexFile, 'waitForServiceConfig').mockReturnValue(Promise.resolve())
-    const prcSpy = jest.spyOn(indexFile, 'processServiceConfigs').mockReturnValue(Promise.resolve(true))
+    const waitSpy = jest.spyOn(svcMngr, 'waitForServiceManager').mockReturnValue(Promise.resolve())
+    const prcSpy = jest.spyOn(svcMngr, 'processServiceConfigs').mockReturnValue(Promise.resolve(true))
 
     await indexFile.setupServiceManager(config)
     expect(waitSpy).toHaveBeenCalled()
     expect(prcSpy).toHaveBeenCalled()
-  })
-
-  it('should pass setupServiceManager', async () => {
-    const waitSpy = jest.spyOn(indexFile, 'waitForServiceConfig').mockReturnValue(Promise.resolve())
-    const prcSpy = jest.spyOn(indexFile, 'processServiceConfigs').mockReturnValue(Promise.resolve(true))
-
-    await indexFile.setupServiceManager(config)
-    expect(waitSpy).toHaveBeenCalled()
-    expect(prcSpy).toHaveBeenCalled()
-  })
-
-  it('should pass processServiceConfigs empty Consul', async () => {
-    consul.get = jest.fn(() => null)
-    consul.seed = jest.fn(async () => await Promise.resolve(true))
-    await indexFile.processServiceConfigs(consul, config)
-    expect(consul.get).toHaveBeenCalled()
-    expect(consul.seed).toHaveBeenCalled()
-  })
-
-  it('should pass processServiceConfigs empty Consul', async () => {
-    consul.get = jest.fn(() => null)
-    consul.seed = jest.fn(async () => await Promise.resolve(true))
-    await indexFile.processServiceConfigs(consul, config)
-    expect(consul.get).toHaveBeenCalledWith(config.consul_key_prefix)
-    expect(consul.seed).toHaveBeenCalledWith(config.consul_key_prefix, config)
-  })
-  it('should pass processServiceConfigs seeded Consul', async () => {
-    const consulValues: Array<{ Key: string, Value: string }> = [
-      {
-        Key: componentName + '/config',
-        Value: '{"web_port": 8081, "delay_timer": 12}'
-      }
-    ]
-    consul.get = jest.fn(async () => await Promise.resolve(consulValues))
-    consul.process = jest.fn(() => JSON.stringify(consulValues, null, 2))
-    await indexFile.processServiceConfigs(consul, config)
-    expect(consul.get).toHaveBeenCalledWith(config.consul_key_prefix)
-    expect(consul.process).toHaveBeenCalledWith(consulValues)
   })
 
   it('should wait for db', async () => {
