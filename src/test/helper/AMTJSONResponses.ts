@@ -120,6 +120,21 @@ export const AdminSetup = {
   }
 }
 
+export const UpgradeClientToAdmin = {
+  Header: {
+    To: 'http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous',
+    RelatesTo: '7', // wam??????
+    Action: 'http://intel.com/wbem/wscim/1/ips-schema/1/IPS_HostBasedSetupService/UpgradeClientToAdminResponse',
+    MessageID: 'uuid:00000000-8086-8086-8086-00000000004E', // wam?????
+    ResourceURI: 'http://intel.com/wbem/wscim/1/ips-schema/1/IPS_HostBasedSetupService',
+    Method: 'UpgradeClientToAdmin'
+  },
+  Body: {
+    ReturnValue: 0,
+    ReturnValueStr: 'SUCCESS'
+  }
+}
+
 export const AddNestCertInChain = {
   Header: {
     To: 'http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous',

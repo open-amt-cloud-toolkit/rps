@@ -518,14 +518,9 @@ describe('validator', () => {
     test('should throw an exception, when current mode is 1 and profile activation in acm', async () => {
       msg.payload.currentMode = 1
       profile.activation = 'acmactivate'
-      let rpsError = null
-      try {
-        await validator.verifyCurrentModeForActivation(msg, profile, clientId)
-      } catch (error) {
-        rpsError = error
-      }
-      expect(rpsError).toBeInstanceOf(RPSError)
-      expect(rpsError.message).toEqual(`Device ${msg.payload.uuid} already enabled in client control mode.`)
+      await validator.verifyCurrentModeForActivation(msg, profile, clientId)
+      expect(setNextStepsForConfigurationSpy).toHaveBeenCalled()
+      expect(devices[clientId].status.Status).toEqual('Upgraded to admin control mode.')
     })
     test('should throw an exception, when current mode is 2 and profile activation in ccm', async () => {
       msg.payload.currentMode = 2

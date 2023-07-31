@@ -43,6 +43,7 @@ export interface ActivationContext {
   targetAfterError: string
   httpHandler: HttpHandler
   isActivated?: boolean
+  hasToUpgrade?: boolean
   amt: AMT.Messages
   ips: IPS.Messages
   cim: CIM.Messages
@@ -92,6 +93,7 @@ export class Activation {
         errorMessage: '',
         tenantId: '',
         canActivate: true,
+        hasToUpgrade: false,
         generalSettings: null,
         targetAfterError: null,
         httpHandler: new HttpHandler(),
@@ -169,6 +171,10 @@ export class Activation {
         },
         DETERMINE_CAN_ACTIVATE: {
           always: [{
+            cond: 'canUpgrade',
+            actions: assign({ hasToUpgrade: (context, event) => true }),
+            target: 'GET_AMT_DOMAIN_CERT'
+          }, {
             cond: 'canActivate',
             target: 'GET_GENERAL_SETTINGS'
           }, {
@@ -248,6 +254,9 @@ export class Activation {
               cond: 'isDigestRealmInvalid',
               target: 'INVALID_DIGEST_REALM'
             }, {
+              cond: 'canUpgrade',
+              target: 'IPS_HOST_BASED_SETUP_SERVICE'
+            }, {
               cond: 'isActivated',
               target: 'CHANGE_AMT_PASSWORD'
             }, {
@@ -294,6 +303,9 @@ export class Activation {
               cond: 'maxCertLength',
               target: 'ADD_NEXT_CERT_IN_CHAIN'
             }, {
+              cond: 'canUpgrade',
+              target: 'UPGRADE_TO_ADMIN_SETUP'
+            }, {
               target: 'ADMIN_SETUP'
             }
           ]
@@ -320,7 +332,7 @@ export class Activation {
         CHECK_ADMIN_SETUP: {
           always: [
             {
-              cond: 'isDeviceActivated',
+              cond: 'isDeviceActivatedInACM',
               actions: [(context, event) => { devices[context.clientId].status.Status = 'Admin control mode.' }, 'Set activation status'],
               target: 'UPDATE_CREDENTIALS'
             },
@@ -330,6 +342,44 @@ export class Activation {
               target: 'DELAYED_TRANSITION'
             }, {
               actions: assign({ errorMessage: 'Failed to activate in admin control mode.' }),
+              target: 'FAILED'
+            }
+          ]
+        },
+        UPGRADE_TO_ADMIN_SETUP: {
+          invoke: {
+            src: this.sendUpgradeClientToAdmin.bind(this),
+            id: 'send-upgrade-to-admin',
+            onDone: [
+              {
+                actions: assign({ message: (context, event) => event.data }),
+                target: 'CHECK_UPGRADE'
+              }
+            ],
+            onError: [
+              {
+                cond: (_, event) => event.data instanceof GATEWAY_TIMEOUT_ERROR,
+                target: 'CHECK_ACTIVATION_ON_AMT'
+              },
+              {
+                target: 'ERROR'
+              }
+            ]
+          }
+        },
+        CHECK_UPGRADE: {
+          always: [
+            {
+              cond: 'isDeviceActivatedInACM',
+              actions: [(context, event) => { devices[context.clientId].status.Status = 'Upgraded to admin control mode.' }, 'Set activation status'],
+              target: 'CHANGE_AMT_PASSWORD'
+            },
+            {
+              cond: 'isUpgraded',
+              actions: [(context, event) => { devices[context.clientId].status.Status = 'Upgraded to admin control mode.' }, 'Set activation status'],
+              target: 'CHANGE_AMT_PASSWORD'
+            }, {
+              actions: assign({ errorMessage: 'Failed to upgrade to admin control mode.' }),
               target: 'FAILED'
             }
           ]
@@ -356,7 +406,7 @@ export class Activation {
         CHECK_SETUP: {
           always: [
             {
-              cond: 'isDeviceActivated',
+              cond: 'isDeviceActivatedInCCM',
               actions: [(context, event) => { devices[context.clientId].status.Status = 'Client control mode.' }, 'Set activation status'],
               target: 'UPDATE_CREDENTIALS'
             },
@@ -376,10 +426,16 @@ export class Activation {
             id: 'get-activationstatus',
             onDone: [
               {
+                cond: 'hasToUpgrade',
+                actions: assign({ message: (context, event) => event.data }),
+                target: 'CHECK_UPGRADE'
+              },
+              {
                 cond: 'isAdminMode',
                 actions: assign({ message: (context, event) => event.data }),
                 target: 'CHECK_ADMIN_SETUP'
-              }, {
+              },
+              {
                 actions: assign({ message: (context, event) => event.data }),
                 target: 'CHECK_SETUP'
               }],
@@ -613,14 +669,18 @@ export class Activation {
         maxCertLength: (context, event) => devices[context.clientId].count <= devices[context.clientId].certObj.certChain.length,
         isDeviceAdminModeActivated: (context, event) => context.message.Envelope.Body?.AdminSetup_OUTPUT?.ReturnValue === 0,
         isDeviceClientModeActivated: (context, event) => context.message.Envelope.Body?.Setup_OUTPUT?.ReturnValue === 0,
-        isDeviceActivated: (context, event) => context.message.Envelope.Body?.IPS_HostBasedSetupService?.CurrentControlMode > 0,
+        isDeviceActivatedInACM: (context, event) => context.message.Envelope.Body?.IPS_HostBasedSetupService?.CurrentControlMode === 2,
+        isDeviceActivatedInCCM: (context, event) => context.message.Envelope.Body?.IPS_HostBasedSetupService?.CurrentControlMode === 1,
         isCertNotAdded: (context, event) => context.message.Envelope.Body.AddNextCertInChain_OUTPUT.ReturnValue !== 0,
         isGeneralSettings: (context, event) => context.targetAfterError === 'GET_GENERAL_SETTINGS',
         isMebxPassword: (context, event) => context.targetAfterError === 'SET_MEBX_PASSWORD',
         isCheckActivationOnAMT: (context, event) => context.targetAfterError === 'CHECK_ACTIVATION_ON_AMT',
+        isUpgraded: (context, event) => context.message.Envelope.Body.UpgradeClientToAdmin_OUTPUT.ReturnValue === 0,
         hasCIRAProfile: (context, event) => context.profile.ciraConfigName != null,
         isActivated: (context, event) => context.isActivated,
-        canActivate: (context, event) => context.canActivate
+        canActivate: (context, event) => context.canActivate,
+        hasToUpgrade: (context, event) => context.hasToUpgrade,
+        canUpgrade: (context, event) => context.isActivated && devices[context.clientId].ClientData.payload.currentMode === 1 && context.profile.activation === ClientAction.ADMINCTLMODE
       },
       actions: {
         'Reset Unauth Count': (context, event) => { devices[context.clientId].unauthCount = 0 },
@@ -781,6 +841,15 @@ export class Activation {
     this.createSignedString(clientId)
     const clientObj = devices[clientId]
     context.xmlMessage = ips.HostBasedSetupService.AdminSetup(2, password, clientObj.nonce.toString('base64'), 2, clientObj.signature)
+    return await invokeWsmanCall(context)
+  }
+
+  async sendUpgradeClientToAdmin (context): Promise<any> {
+    const ips: IPS.Messages = context.ips
+    const { clientId } = context
+    this.createSignedString(clientId)
+    const clientObj = devices[clientId]
+    context.xmlMessage = ips.HostBasedSetupService.UpgradeClientToAdmin(clientObj.nonce.toString('base64'), 2, clientObj.signature)
     return await invokeWsmanCall(context)
   }
 
