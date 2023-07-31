@@ -17,10 +17,11 @@ import { ClientAction } from '../models/RCS.Config'
 import { HttpHandler } from '../HttpHandler'
 import ClientResponseMsg from '../utils/ClientResponseMsg'
 import { interpret } from 'xstate'
-import { AMTUserName } from '../utils/constants'
+import { AMTUserName, GATEWAY_TIMEOUT_ERROR } from '../utils/constants'
 import * as common from './common'
 import { Configurator } from '../Configurator'
 import got from 'got'
+
 jest.mock('got')
 const clientId = uuid()
 Environment.Config = config
@@ -193,6 +194,7 @@ describe('Activation State Machine', () => {
         'tls-machine': Promise.resolve({ clientId }),
         'cira-machine': Promise.resolve({ clientId }),
         'send-mebx-password': Promise.resolve({ clientId }),
+        'get-activationstatus': Promise.resolve({ clientId }),
         PROVISIONED: () => {},
         DELAYED_TRANSITION: () => {}
       },
@@ -325,6 +327,19 @@ describe('Activation State Machine', () => {
       devices[clientId].nonce = PasswordHelper.generateNonce()
       await activation.sendAdminSetup(context)
       expect(getPasswordSpy).toHaveBeenCalled()
+      expect(createSignedStringSpy).toHaveBeenCalled()
+      expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    })
+
+    it('should send WSMan to upgrade from client to admin mode', async () => {
+      const createSignedStringSpy = jest.spyOn(activation, 'createSignedString').mockImplementation(
+        (clientId: string): boolean => {
+          devices[clientId].signature = 'abcdefgh'
+          return true
+        }
+      )
+      devices[clientId].nonce = PasswordHelper.generateNonce()
+      await activation.sendUpgradeClientToAdmin(context)
       expect(createSignedStringSpy).toHaveBeenCalled()
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
@@ -544,6 +559,550 @@ describe('Activation State Machine', () => {
         'NETWORK_CONFIGURATION',
         'FEATURES_CONFIGURATION',
         'TLS',
+        'PROVISIONED'
+      ]
+      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('DELAYED_TRANSITION')) {
+          jest.advanceTimersByTime(10000)
+        } else if (state.matches('PROVISIONED') && currentStateIndex === flowStates.length) {
+          done()
+        }
+      })
+
+      acmActivationService.start()
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      jest.runAllTicks()
+    })
+
+    it('should eventually reach "PROVISIONED" in Upgrade to Admin mode', (done) => {
+      jest.useFakeTimers()
+      context.certChainPfx = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprint: 'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244' }
+      devices[context.clientId].certObj = context.certChainPfx.provisioningCertificateObj
+
+      config.guards = {
+        isAdminMode: () => true,
+        maxCertLength: () => false,
+        canUpgrade: () => true,
+        isUpgraded: () => true,
+        hasCIRAProfile: () => true,
+        isDeviceActivatedInCCM: () => true,
+        isDeviceActivatedInACM: () => true,
+        hasToUpgrade: () => true
+      }
+
+      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'UNPROVISIONED',
+        'GET_AMT_PROFILE',
+        'GET_AMT_DOMAIN_CERT',
+        'GET_GENERAL_SETTINGS',
+        'IPS_HOST_BASED_SETUP_SERVICE',
+        'ADD_NEXT_CERT_IN_CHAIN',
+        'UPGRADE_TO_ADMIN_SETUP',
+        'CHANGE_AMT_PASSWORD',
+        'SET_MEBX_PASSWORD',
+        'SAVE_DEVICE_TO_SECRET_PROVIDER',
+        'SAVE_DEVICE_TO_MPS',
+        'UNCONFIGURATION',
+        'NETWORK_CONFIGURATION',
+        'FEATURES_CONFIGURATION',
+        'CIRA',
+        'PROVISIONED'
+      ]
+      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('DELAYED_TRANSITION')) {
+          jest.advanceTimersByTime(10000)
+        } else if (state.matches('PROVISIONED') && currentStateIndex === flowStates.length) {
+          done()
+        }
+      })
+
+      acmActivationService.start()
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      jest.runAllTicks()
+    })
+
+    it('should eventually reach "FAILED" from get AMT domain state', (done) => {
+      jest.useFakeTimers()
+      context.certChainPfx = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprint: 'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244' }
+      devices[context.clientId].certObj = context.certChainPfx.provisioningCertificateObj
+
+      config.guards = {
+        isActivated: () => true,
+        isAdminMode: () => true,
+        maxCertLength: () => false,
+        canUpgrade: () => true,
+        isUpgraded: () => true
+      }
+
+      config.services['get-amt-domain'] = Promise.reject(new Error())
+      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'UNPROVISIONED',
+        'GET_AMT_PROFILE',
+        'CHECK_TENANT_ACCESS',
+        'GET_AMT_DOMAIN_CERT',
+        'FAILED'
+      ]
+      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('DELAYED_TRANSITION')) {
+          jest.advanceTimersByTime(10000)
+        } else if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
+          done()
+        }
+      })
+
+      acmActivationService.start()
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      jest.runAllTicks()
+    })
+
+    it('should eventually reach "FAILED" from get AMT domain state', (done) => {
+      jest.useFakeTimers()
+      context.certChainPfx = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprint: 'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244' }
+      devices[context.clientId].certObj = context.certChainPfx.provisioningCertificateObj
+
+      config.guards = {
+        isActivated: () => true,
+        isAdminMode: () => true,
+        maxCertLength: () => false,
+        canUpgrade: () => false,
+        isUpgraded: () => true,
+        canActivate: () => true
+      }
+
+      config.services['send-generalsettings'] = Promise.reject(new Error())
+      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'UNPROVISIONED',
+        'GET_AMT_PROFILE',
+        'CHECK_TENANT_ACCESS',
+        'GET_GENERAL_SETTINGS',
+        'ERROR'
+      ]
+      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('DELAYED_TRANSITION')) {
+          jest.advanceTimersByTime(10000)
+        } else if (state.matches('ERROR') && currentStateIndex === flowStates.length) {
+          done()
+        }
+      })
+
+      acmActivationService.start()
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      jest.runAllTicks()
+    })
+
+    it('should eventually reach "ERROR" in Upgrade to Admin mode', (done) => {
+      jest.useFakeTimers()
+      context.certChainPfx = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprint: 'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244' }
+      devices[context.clientId].certObj = context.certChainPfx.provisioningCertificateObj
+
+      config.guards = {
+        isAdminMode: () => true,
+        maxCertLength: () => false,
+        canUpgrade: () => true,
+        isUpgraded: () => true,
+        hasCIRAProfile: () => true,
+        isDeviceActivatedInCCM: () => true,
+        isDeviceActivatedInACM: () => true,
+        hasToUpgrade: () => true
+      }
+
+      config.services['send-upgrade-to-admin'] = Promise.reject(new Error())
+      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'UNPROVISIONED',
+        'GET_AMT_PROFILE',
+        'GET_AMT_DOMAIN_CERT',
+        'GET_GENERAL_SETTINGS',
+        'IPS_HOST_BASED_SETUP_SERVICE',
+        'ADD_NEXT_CERT_IN_CHAIN',
+        'UPGRADE_TO_ADMIN_SETUP',
+        'ERROR'
+      ]
+      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('DELAYED_TRANSITION')) {
+          jest.advanceTimersByTime(10000)
+        } else if (state.matches('ERROR') && currentStateIndex === flowStates.length) {
+          done()
+        }
+      })
+
+      acmActivationService.start()
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      jest.runAllTicks()
+    })
+
+    it('should eventually reach "PROVISIONED" in Upgrade to Admin mode if not in ACM', (done) => {
+      jest.useFakeTimers()
+      context.certChainPfx = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprint: 'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244' }
+      devices[context.clientId].certObj = context.certChainPfx.provisioningCertificateObj
+
+      config.guards = {
+        isAdminMode: () => true,
+        maxCertLength: () => false,
+        canUpgrade: () => true,
+        isUpgraded: () => true,
+        hasCIRAProfile: () => true,
+        isDeviceActivatedInCCM: () => true,
+        isDeviceActivatedInACM: () => false,
+        hasToUpgrade: () => true
+      }
+
+      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'UNPROVISIONED',
+        'GET_AMT_PROFILE',
+        'GET_AMT_DOMAIN_CERT',
+        'GET_GENERAL_SETTINGS',
+        'IPS_HOST_BASED_SETUP_SERVICE',
+        'ADD_NEXT_CERT_IN_CHAIN',
+        'UPGRADE_TO_ADMIN_SETUP',
+        'CHANGE_AMT_PASSWORD',
+        'SET_MEBX_PASSWORD',
+        'SAVE_DEVICE_TO_SECRET_PROVIDER',
+        'SAVE_DEVICE_TO_MPS',
+        'UNCONFIGURATION',
+        'NETWORK_CONFIGURATION',
+        'FEATURES_CONFIGURATION',
+        'CIRA',
+        'PROVISIONED'
+      ]
+      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('DELAYED_TRANSITION')) {
+          jest.advanceTimersByTime(10000)
+        } else if (state.matches('PROVISIONED') && currentStateIndex === flowStates.length) {
+          done()
+        }
+      })
+
+      acmActivationService.start()
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      jest.runAllTicks()
+    })
+
+    it('should eventually reach "FAILED" by error in General Setting', (done) => {
+      jest.useFakeTimers()
+      context.certChainPfx = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprint: 'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244' }
+      devices[context.clientId].certObj = context.certChainPfx.provisioningCertificateObj
+
+      config.guards = {
+        isAdminMode: () => true,
+        isActivated: () => false
+      }
+
+      config.services['send-generalsettings'] = Promise.reject(new Error())
+      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'UNPROVISIONED',
+        'GET_AMT_PROFILE',
+        'GET_AMT_DOMAIN_CERT',
+        'GET_GENERAL_SETTINGS',
+        'ERROR'
+      ]
+      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('DELAYED_TRANSITION')) {
+          jest.advanceTimersByTime(10000)
+        } else if (state.matches('ERROR') && currentStateIndex === flowStates.length) {
+          done()
+        }
+      })
+
+      acmActivationService.start()
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      jest.runAllTicks()
+    })
+
+    it('should eventually reach "FAILED" if Admin Setup failed', (done) => {
+      jest.useFakeTimers()
+      context.certChainPfx = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprint: 'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244' }
+      devices[context.clientId].certObj = context.certChainPfx.provisioningCertificateObj
+
+      config.guards = {
+        isAdminMode: () => true,
+        isCertNotAdded: () => false,
+        maxCertLength: () => false,
+        canUpgrade: () => false,
+        isUpgraded: () => true,
+        hasCIRAProfile: () => true,
+        isDeviceActivatedInCCM: () => true,
+        isDeviceActivatedInACM: () => false,
+        isDeviceAdminModeActivated: () => false,
+        hasToUpgrade: () => true
+      }
+
+      config.services['send-adminsetup'] = Promise.reject(new Error())
+      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'UNPROVISIONED',
+        'GET_AMT_PROFILE',
+        'GET_AMT_DOMAIN_CERT',
+        'GET_GENERAL_SETTINGS',
+        'IPS_HOST_BASED_SETUP_SERVICE',
+        'ADD_NEXT_CERT_IN_CHAIN',
+        'ADMIN_SETUP',
+        'ERROR'
+      ]
+      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('DELAYED_TRANSITION')) {
+          jest.advanceTimersByTime(10000)
+        } else if (state.matches('ERROR') && currentStateIndex === flowStates.length) {
+          done()
+        }
+      })
+
+      acmActivationService.start()
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      jest.runAllTicks()
+    })
+
+    it('should eventually reach "FAILED" if not in ACM mode', (done) => {
+      jest.useFakeTimers()
+      context.certChainPfx = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprint: 'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244' }
+      devices[context.clientId].certObj = context.certChainPfx.provisioningCertificateObj
+
+      config.guards = {
+        isAdminMode: () => true,
+        isCertNotAdded: () => false,
+        maxCertLength: () => false,
+        canUpgrade: () => false,
+        isUpgraded: () => true,
+        hasCIRAProfile: () => true,
+        isDeviceActivatedInCCM: () => true,
+        isDeviceActivatedInACM: () => false,
+        isDeviceAdminModeActivated: () => false,
+        hasToUpgrade: () => true
+      }
+
+      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'UNPROVISIONED',
+        'GET_AMT_PROFILE',
+        'GET_AMT_DOMAIN_CERT',
+        'GET_GENERAL_SETTINGS',
+        'IPS_HOST_BASED_SETUP_SERVICE',
+        'ADD_NEXT_CERT_IN_CHAIN',
+        'ADMIN_SETUP',
+        'FAILED'
+      ]
+      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('DELAYED_TRANSITION')) {
+          jest.advanceTimersByTime(10000)
+        } else if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
+          done()
+        }
+      })
+
+      acmActivationService.start()
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      jest.runAllTicks()
+    })
+
+    it('should eventually reach "PROVISIONED" if device is upgraded to ACM on AMT15 device with hasToUpgrade', (done) => {
+      jest.useFakeTimers()
+      context.certChainPfx = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprint: 'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244' }
+      devices[context.clientId].certObj = context.certChainPfx.provisioningCertificateObj
+      config.guards = {
+        isAdminMode: () => true,
+        maxCertLength: () => false,
+        hasCIRAProfile: () => true,
+        isDeviceActivatedInACM: () => true,
+        hasToUpgrade: () => true
+      }
+      config.services['send-adminsetup'] = Promise.reject(new GATEWAY_TIMEOUT_ERROR())
+      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'UNPROVISIONED',
+        'GET_AMT_PROFILE',
+        'GET_AMT_DOMAIN_CERT',
+        'GET_GENERAL_SETTINGS',
+        'IPS_HOST_BASED_SETUP_SERVICE',
+        'ADD_NEXT_CERT_IN_CHAIN',
+        'ADMIN_SETUP',
+        'CHECK_ACTIVATION_ON_AMT',
+        'CHANGE_AMT_PASSWORD',
+        'SET_MEBX_PASSWORD',
+        'SAVE_DEVICE_TO_SECRET_PROVIDER',
+        'SAVE_DEVICE_TO_MPS',
+        'UNCONFIGURATION',
+        'NETWORK_CONFIGURATION',
+        'FEATURES_CONFIGURATION',
+        'CIRA',
+        'PROVISIONED'
+      ]
+      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('DELAYED_TRANSITION')) {
+          jest.advanceTimersByTime(10000)
+        } else if (state.matches('PROVISIONED') && currentStateIndex === flowStates.length) {
+          done()
+        }
+      })
+
+      acmActivationService.start()
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      jest.runAllTicks()
+    })
+    it('should eventually reach "ERROR" if Check Activation fails', (done) => {
+      jest.useFakeTimers()
+      context.certChainPfx = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprint: 'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244' }
+      devices[context.clientId].certObj = context.certChainPfx.provisioningCertificateObj
+      config.guards = {
+        isAdminMode: () => true,
+        maxCertLength: () => false,
+        hasCIRAProfile: () => true,
+        isDeviceActivatedInACM: () => true,
+        hasToUpgrade: () => true
+      }
+      config.services['get-activationstatus'] = Promise.reject(new Error())
+      config.services['send-adminsetup'] = Promise.reject(new GATEWAY_TIMEOUT_ERROR())
+      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'UNPROVISIONED',
+        'GET_AMT_PROFILE',
+        'GET_AMT_DOMAIN_CERT',
+        'GET_GENERAL_SETTINGS',
+        'IPS_HOST_BASED_SETUP_SERVICE',
+        'ADD_NEXT_CERT_IN_CHAIN',
+        'ADMIN_SETUP',
+        'CHECK_ACTIVATION_ON_AMT',
+        'ERROR'
+      ]
+      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('DELAYED_TRANSITION')) {
+          jest.advanceTimersByTime(10000)
+        } else if (state.matches('ERROR') && currentStateIndex === flowStates.length) {
+          done()
+        }
+      })
+
+      acmActivationService.start()
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      jest.runAllTicks()
+    })
+
+    it('should eventually reach "PROVISIONED" if device is upgraded to ACM on AMT15 device', (done) => {
+      jest.useFakeTimers()
+      context.certChainPfx = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprint: 'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244' }
+      devices[context.clientId].certObj = context.certChainPfx.provisioningCertificateObj
+      config.guards = {
+        isAdminMode: () => true,
+        maxCertLength: () => false,
+        hasCIRAProfile: () => true,
+        isDeviceActivatedInACM: () => true,
+        hasToUpgrade: () => false
+      }
+      config.services['send-adminsetup'] = Promise.reject(new GATEWAY_TIMEOUT_ERROR())
+      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'UNPROVISIONED',
+        'GET_AMT_PROFILE',
+        'GET_AMT_DOMAIN_CERT',
+        'GET_GENERAL_SETTINGS',
+        'IPS_HOST_BASED_SETUP_SERVICE',
+        'ADD_NEXT_CERT_IN_CHAIN',
+        'ADMIN_SETUP',
+        'CHECK_ACTIVATION_ON_AMT',
+        'SET_MEBX_PASSWORD',
+        'SAVE_DEVICE_TO_SECRET_PROVIDER',
+        'SAVE_DEVICE_TO_MPS',
+        'UNCONFIGURATION',
+        'NETWORK_CONFIGURATION',
+        'FEATURES_CONFIGURATION',
+        'CIRA',
+        'PROVISIONED'
+      ]
+      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('DELAYED_TRANSITION')) {
+          jest.advanceTimersByTime(10000)
+        } else if (state.matches('PROVISIONED') && currentStateIndex === flowStates.length) {
+          done()
+        }
+      })
+
+      acmActivationService.start()
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      jest.runAllTicks()
+    })
+
+    it('should eventually reach "PROVISIONED" if device is upgraded to ACM on AMT15 device', (done) => {
+      jest.useFakeTimers()
+      context.certChainPfx = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprint: 'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244' }
+      devices[context.clientId].certObj = context.certChainPfx.provisioningCertificateObj
+      config.guards = {
+        isAdminMode: () => true,
+        maxCertLength: () => false,
+        hasCIRAProfile: () => true,
+        isDeviceActivatedInACM: () => true,
+        hasToUpgrade: () => false
+      }
+      config.services['send-adminsetup'] = Promise.reject(new GATEWAY_TIMEOUT_ERROR())
+      config.services['send-mebx-password'] = Promise.reject(new Error())
+      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'UNPROVISIONED',
+        'GET_AMT_PROFILE',
+        'GET_AMT_DOMAIN_CERT',
+        'GET_GENERAL_SETTINGS',
+        'IPS_HOST_BASED_SETUP_SERVICE',
+        'ADD_NEXT_CERT_IN_CHAIN',
+        'ADMIN_SETUP',
+        'CHECK_ACTIVATION_ON_AMT',
+        'SET_MEBX_PASSWORD',
+        'ERROR'
+      ]
+      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('DELAYED_TRANSITION')) {
+          jest.advanceTimersByTime(10000)
+        } else if (state.matches('ERROR') && currentStateIndex === flowStates.length) {
+          done()
+        }
+      })
+
+      acmActivationService.start()
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      jest.runAllTicks()
+    })
+
+    it('should eventually reach "PROVISIONED" if device is activated in ACM', (done) => {
+      jest.useFakeTimers()
+      context.certChainPfx = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprint: 'eb04cf5eb1f39afa762f2bb120f296cba520c1b97db1589565b81cb9a17b7244' }
+      devices[context.clientId].certObj = context.certChainPfx.provisioningCertificateObj
+      config.guards = {
+        isAdminMode: () => true,
+        maxCertLength: () => false,
+        hasCIRAProfile: () => true,
+        isDeviceActivatedInACM: () => true
+      }
+      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'UNPROVISIONED',
+        'GET_AMT_PROFILE',
+        'GET_AMT_DOMAIN_CERT',
+        'GET_GENERAL_SETTINGS',
+        'IPS_HOST_BASED_SETUP_SERVICE',
+        'ADD_NEXT_CERT_IN_CHAIN',
+        'ADMIN_SETUP',
+        'SET_MEBX_PASSWORD',
+        'SAVE_DEVICE_TO_SECRET_PROVIDER',
+        'SAVE_DEVICE_TO_MPS',
+        'UNCONFIGURATION',
+        'NETWORK_CONFIGURATION',
+        'FEATURES_CONFIGURATION',
+        'CIRA',
         'PROVISIONED'
       ]
       const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
