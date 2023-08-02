@@ -1,3 +1,36 @@
+<a name="2.14.0"></a>
+## [2.14.0] - 2023-07-31
+### Build
+- update version in package.json and changelog (#ffdd72f) 
+- bump [@open](https://github.com/open)-amt-cloud-toolkit/wsman-messages to 5.5.0 ([#1110](https://github.com/open-amt-cloud-toolkit/rps/issues/1110)) (#830d485) 
+- **deps:** bump semver from 5.7.1 to 5.7.2 ([#1090](https://github.com/open-amt-cloud-toolkit/rps/issues/1090)) (#b28a18f) 
+- **deps:** bump winston from 3.9.0 to 3.10.0 ([#1092](https://github.com/open-amt-cloud-toolkit/rps/issues/1092)) (#ae3a23b) 
+- **deps:** bump xml2js from 0.6.0 to 0.6.2 ([#1111](https://github.com/open-amt-cloud-toolkit/rps/issues/1111)) (#55abab4) 
+- **deps:** bump xstate from 4.38.0 to 4.38.1 ([#1095](https://github.com/open-amt-cloud-toolkit/rps/issues/1095)) (#b2163ab) 
+- **deps:** bump xstate from 4.38.1 to 4.38.2 ([#1114](https://github.com/open-amt-cloud-toolkit/rps/issues/1114)) (#191ef0b) 
+- **deps:** bump tough-cookie from 4.1.2 to 4.1.3 ([#1088](https://github.com/open-amt-cloud-toolkit/rps/issues/1088)) (#87c24d2) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 20.4.1 to 20.4.2 ([#1097](https://github.com/open-amt-cloud-toolkit/rps/issues/1097)) (#271b224) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 20.4.2 to 20.4.4 ([#1107](https://github.com/open-amt-cloud-toolkit/rps/issues/1107)) (#4e12dbc) 
+- **deps-dev:** bump eslint from 8.44.0 to 8.45.0 ([#1101](https://github.com/open-amt-cloud-toolkit/rps/issues/1101)) (#067bc01) 
+- **deps-dev:** bump eslint-config-standard-with-typescript ([#1100](https://github.com/open-amt-cloud-toolkit/rps/issues/1100)) (#a39b4d8) 
+- **deps-dev:** bump word-wrap from 1.2.3 to 1.2.4 ([#1104](https://github.com/open-amt-cloud-toolkit/rps/issues/1104)) (#792c961) 
+- **deps-dev:** bump eslint-config-standard-with-typescript ([#1106](https://github.com/open-amt-cloud-toolkit/rps/issues/1106)) (#1df810a) 
+- **deps-dev:** bump [@types](https://github.com/types)/node-forge from 1.3.2 to 1.3.3 ([#1096](https://github.com/open-amt-cloud-toolkit/rps/issues/1096)) (#c450beb) 
+- **deps-dev:** bump eslint-config-standard-with-typescript ([#1099](https://github.com/open-amt-cloud-toolkit/rps/issues/1099)) (#2c9e668) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 20.4.4 to 20.4.5 ([#1113](https://github.com/open-amt-cloud-toolkit/rps/issues/1113)) (#980cab5) 
+- **deps-dev:** bump eslint-plugin-import from 2.27.5 to 2.28.0 ([#1117](https://github.com/open-amt-cloud-toolkit/rps/issues/1117)) (#7fc593f) 
+- **deps-dev:** bump nodemon from 2.0.22 to 3.0.1 ([#1091](https://github.com/open-amt-cloud-toolkit/rps/issues/1091)) (#580871c) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 5.61.0 to 5.62.0 ([#1094](https://github.com/open-amt-cloud-toolkit/rps/issues/1094)) (#6a02921) 
+- **deps-dev:** bump [@types](https://github.com/types)/node-forge from 1.3.3 to 1.3.4 ([#1116](https://github.com/open-amt-cloud-toolkit/rps/issues/1116)) (#af2a2a9) 
+- **deps-dev:** bump eslint from 8.43.0 to 8.44.0 ([#1084](https://github.com/open-amt-cloud-toolkit/rps/issues/1084)) (#bfa30bc) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin ([#1085](https://github.com/open-amt-cloud-toolkit/rps/issues/1085)) (#4fe2462) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 5.60.1 to 5.61.0 ([#1086](https://github.com/open-amt-cloud-toolkit/rps/issues/1086)) (#14d4637) 
+- **deps-dev:** bump eslint from 8.45.0 to 8.46.0 ([#1118](https://github.com/open-amt-cloud-toolkit/rps/issues/1118)) (#dc815c0) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 20.3.2 to 20.4.1 ([#1089](https://github.com/open-amt-cloud-toolkit/rps/issues/1089)) (#f0addde) 
+
+### Feat
+- adds capability to upgrade to admin control mode ([#1098](https://github.com/open-amt-cloud-toolkit/rps/issues/1098)) (#7a409bd) 
+
 
 <a name="2.13.0"></a>
 ## [2.13.0] - 2023-06-30
