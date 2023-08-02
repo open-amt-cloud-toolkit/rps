@@ -1,3 +1,11 @@
+<a name="2.15.0"></a>
+## [2.15.0] - 2023-08-02
+### Build
+- update v2.15.0 in package.json and changelog (#5612084) 
+
+### Feat
+- add consul config support ([#1081](https://github.com/open-amt-cloud-toolkit/rps/issues/1081)) (#d39edab) 
+
 <a name="2.14.0"></a>
 ## [2.14.0] - 2023-07-31
 ### Build
