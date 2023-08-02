@@ -71,11 +71,13 @@ jobs:
       uses: github/codeql-action/analyze@v2
     - name: Generate Security Report
       uses: rsdmike/github-security-report-action@v3.0.4
+      continue-on-error: true
       with:
         template: report
         token: ${{ secrets.SECURITY_TOKEN }}
     - name: GitHub Upload Release Artifacts
       uses: actions/upload-artifact@v2
+      continue-on-error: true
       with:
         name: report
         path: ./*.pdf
