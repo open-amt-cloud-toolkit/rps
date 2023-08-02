@@ -263,11 +263,13 @@ export class Validator implements IValidator {
         break
       }
       case 1: {
-        if (profile.activation !== ClientAction.CLIENTCTLMODE) {
-          throw new RPSError(`Device ${msg.payload.uuid} already enabled in client control mode.`)
+        if (profile.activation === ClientAction.ADMINCTLMODE) {
+          this.logger.debug(`Device ${msg.payload.uuid} already enabled in client mode. Upgrading to admin control mode.`)
+          clientObj.status.Status = 'Upgraded to admin control mode.'
+        } else {
+          this.logger.debug(`Device ${msg.payload.uuid} already enabled in client mode.`)
+          clientObj.status.Status = 'already enabled in client mode.'
         }
-        this.logger.debug(`Device ${msg.payload.uuid} already enabled in client mode.`)
-        clientObj.status.Status = 'already enabled in client mode.'
         await this.setNextStepsForConfiguration(msg, clientId)
         break
       }
