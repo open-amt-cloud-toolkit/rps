@@ -13,5 +13,9 @@
   "mps_server": "http://localhost:3000",
   "delay_timer": 12,
   "mqtt_address": "",
-  "disable_cira_domain_name": ""
+  "disable_cira_domain_name": "",
+  "consul_enabled": false,
+  "consul_host": "localhost",
+  "consul_port": "8500",
+  "consul_key_prefix": "RPS"
 }
