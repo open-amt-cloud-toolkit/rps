@@ -44,6 +44,7 @@
   "dependencies": {
     "@open-amt-cloud-toolkit/wsman-messages": "^5.5.0",
     "body-parser": "^1.20.2",
+    "consul": "^1.2.0",
     "cors": "^2.8.5",
     "crypto-random-string": "^3.3.1",
     "exponential-backoff": "^3.1.1",

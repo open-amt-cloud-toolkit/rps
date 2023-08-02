@@ -15,11 +15,12 @@ services:
       dockerfile: ./Dockerfile
     environment:
       RPS_VAULT_ADDRESS: http://vault:8200
-      RPS_CONNECTION_STRING: "postgresql://postgresadmin:admin123@db:5432/rpsdb"
+      RPS_CONNECTION_STRING: postgresql://postgresadmin:admin123@db:5432/rpsdb
       RPS_LOG_LEVEL: "silly"
     depends_on:
       - db
       - vault
+      - consul
   db:
     image: postgres
     networks:
@@ -45,6 +46,12 @@ services:
       VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
     cap_add:
       - IPC_LOCK
+  consul:
+    image: hashicorp/consul
+    networks:
+      - openamtnetwork1
+    ports: 
+      - 8500:8500
 networks:
   openamtnetwork1:
     driver: "bridge"
