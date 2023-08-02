@@ -31,7 +31,7 @@ USER node
 FROM alpine:latest
 
 RUN addgroup -g 1000 node && adduser -u 1000 -G node -s /bin/sh -D node 
-RUN apk update && apk add nodejs && rm -rf /var/cache/apk/*
+RUN apk update && apk upgrade && apk add nodejs && rm -rf /var/cache/apk/*
 
 COPY --from=builder  /rps/dist /rps/dist
 # for healthcheck backwards compatibility
