@@ -411,6 +411,7 @@ export class Unconfiguration {
           always: [
             { cond: 'is8023TLS', target: 'DISABLE_TLS_SETTING_DATA_2' },
             { cond: 'isLMSTLSSettings', target: 'SETUP_AND_CONFIGURATION_SERVICE_COMMIT_CHANGES' },
+            { cond: 'isRemoteTlsAlwaysTrue', target: 'SETUP_AND_CONFIGURATION_SERVICE_COMMIT_CHANGES' },
             { target: 'FAILURE' }
           ]
         },
@@ -623,6 +624,7 @@ export class Unconfiguration {
         hasPrivateCerts: (context, event) => context.privateCerts.length > 0,
         isLMSTLSSettings: (context, event) => context.message.Envelope.Body.AMT_TLSSettingData?.ElementName === 'Intel(r) AMT LMS TLS Settings',
         is8023TLS: (context, event) => context.message.Envelope.Body.AMT_TLSSettingData?.ElementName === 'Intel(r) AMT 802.3 TLS Settings' && context.tlsSettingData[1].Enabled,
+        isRemoteTlsAlwaysTrue: (context, event) => context.message.Envelope.Body.AMT_TLSSettingData?.ElementName === 'Intel(r) AMT 802.3 TLS Settings' && context.message.Envelope.Body.AMT_TLSSettingData?.NonSecureConnectionsSupported === false ,
         tlsSettingDataEnabled: (context, event) => context.message.Envelope.Body.PullResponse.Items.AMT_TLSSettingData?.[0].Enabled || context.message.Envelope.Body.PullResponse.Items.AMT_TLSSettingData?.[1].Enabled,
         hasMPSEntries: (context, event) => context.message.Envelope.Body.PullResponse.Items?.AMT_ManagementPresenceRemoteSAP != null,
         hasPublicKeyCertificate: (context, event) => context.publicKeyCertificates?.length > 0,
@@ -826,9 +828,9 @@ export class Unconfiguration {
 
   async disableRemoteTLSSettingData (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
     context.tlsSettingData = context.message.Envelope.Body.PullResponse.Items.AMT_TLSSettingData
-    context.tlsSettingData[0].Enabled = false
     if (!('NonSecureConnectionsSupported' in context.tlsSettingData[0]) || context.tlsSettingData[0].NonSecureConnectionsSupported === true) {
       context.tlsSettingData[0].AcceptNonSecureConnections = true
+      context.tlsSettingData[0].Enabled = false
     }
     context.tlsSettingData[0].MutualAuthentication = false
     delete context.tlsSettingData[0].TrustedCN
