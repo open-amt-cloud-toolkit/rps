@@ -6,7 +6,8 @@
 import { MqttProvider } from './MqttProvider'
 import { Environment } from './Environment'
 import { config } from '../test/helper/Config'
-import mqtt1 from 'mqtt'
+import mqtt1, { type MqttClient } from 'mqtt'
+
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
 jest.mock('mqtt', () => ({ ...jest.requireActual('mqtt') as object }))
 
@@ -39,18 +40,17 @@ describe('MQTT Turned ON Tests', () => {
 
   it('Should send an event message when turned on', async () => {
     MqttProvider.instance.client = {
-      publish: (topic, message, callback) => ({} as any)
+      publish: (topic, message, opts, callback) => ({} as any)
     } as any
-    const spy = jest.spyOn(MqttProvider.instance.client, 'publish').mockImplementation((topic, message, callback) => {
-      callback()
-      return {} as any
+    const spy = jest.spyOn(MqttProvider.instance.client, 'publish').mockImplementation((topic, message, opts, callback) => {
+      callback(null)
+      return {} as MqttClient
     })
     MqttProvider.instance.turnedOn = true
     try {
       await MqttProvider.publishEvent('success', ['testMethod'], 'Test Message')
       expect(spy).toHaveBeenCalled()
     } catch (err) {
-
     }
   })
 
