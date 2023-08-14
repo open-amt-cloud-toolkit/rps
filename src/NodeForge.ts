@@ -41,6 +41,10 @@ export class NodeForge {
     return forge.md.sha256.create()
   }
 
+  sha1Create (): forge.md.MessageDigest {
+    return forge.md.sha1.create()
+  }
+
   privateKeyToPem (key: forge.pki.PrivateKey, maxline?: number): string {
     return forge.pki.privateKeyToPem(key, maxline)
   }

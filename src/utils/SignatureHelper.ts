@@ -19,9 +19,9 @@ export class SignatureHelper {
     * @param {any} key Private key of provisioning certificate
     * @returns {string} Returns the signed string
     */
-  public signString (message: any, key: any): string {
+  public signString (message: any, key: any, hashAlgorithm: string): string {
     try {
-      const signer = crypto.createSign('sha256')
+      const signer = crypto.createSign(hashAlgorithm)
       signer.update(message)
       const sign = signer.sign(this.nodeForge.privateKeyToPem(key), 'base64')
       return sign

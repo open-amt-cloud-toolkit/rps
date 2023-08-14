@@ -6,7 +6,7 @@
 import { type pkcs12, type pki } from 'node-forge'
 import { type ILogger } from './interfaces/ILogger'
 import type Logger from './Logger'
-import { type AMTKeyUsage, type CertAttributes, type CertCreationResult, type CertificateObject, type CertsAndKeys, type ProvisioningCertObj } from './models'
+import { type AMTKeyUsage, type CertAttributes, type CertCreationResult, type CertificateObject, type CertsAndKeys, type ProvisioningCertObj, type RootCertFingerprint } from './models'
 import { type NodeForge } from './NodeForge'
 
 export class CertManager {
@@ -32,33 +32,36 @@ export class CertManager {
    * @param {any} pfxobj Certificate object from convertPfxToObject function
    * @returns {any} Returns provisioning certificate object with certificate chain in proper order and fingerprint
    */
-  dumpPfx (pfxobj: CertsAndKeys): { provisioningCertificateObj: ProvisioningCertObj, fingerprint: string } {
+  dumpPfx (pfxobj: CertsAndKeys): { provisioningCertificateObj: ProvisioningCertObj, fingerprint: RootCertFingerprint, hashAlgorithm: string } {
     const provisioningCertificateObj: ProvisioningCertObj = {} as ProvisioningCertObj
     const interObj: CertificateObject[] = []
     const leaf: CertificateObject = {} as CertificateObject
     const root: CertificateObject = {} as CertificateObject
-    let fingerprint: string
+    const fingerprint: RootCertFingerprint = {} as RootCertFingerprint
+    let hashAlgorithm: string
+
     if (pfxobj.certs?.length > 0) {
       for (let i = 0; i < pfxobj.certs.length; i++) {
         const cert = pfxobj.certs[i]
         let pem = this.nodeForge.pkiCertificateToPem(cert)
         // Need to trim off the BEGIN and END so we just have the raw pem
-        pem = pem.replace('-----BEGIN CERTIFICATE-----', '').replace('-----END CERTIFICATE-----', '')
+        pem = pem.split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('').split('\r\n').join('')
         // pem = pem.replace(/(\r\n|\n|\r)/g, '');
         // Index 0 = Leaf, Root subject.hash will match issuer.hash, rest are Intermediate.
         if (i === 0) {
           leaf.pem = pem
           leaf.subject = cert.subject.hash
           leaf.issuer = cert.issuer.hash
+          hashAlgorithm = cert.md.algorithm
         } else if (cert.subject.hash === cert.issuer.hash) {
           root.pem = pem
           root.subject = cert.subject.hash
           root.issuer = cert.issuer.hash
           const der = this.nodeForge.asn1ToDer(this.nodeForge.pkiCertificateToAsn1(cert)).getBytes()
-          const md = this.nodeForge.sha256Create()
-
-          md.update(der)
-          fingerprint = md.digest().toHex()
+          // Generate SHA256 fingerprint of root certificate
+          fingerprint.sha256 = this.nodeForge.sha256Create().update(der).digest().toHex()
+          // Generate SHA1 fingerprint of root certificate
+          fingerprint.sha1 = this.nodeForge.sha1Create().update(der).digest().toHex()
         } else {
           const inter: CertificateObject = {
             pem,
@@ -97,7 +100,7 @@ export class CertManager {
       }
     }
 
-    return { provisioningCertificateObj, fingerprint }
+    return { provisioningCertificateObj, fingerprint, hashAlgorithm }
   }
 
   /**

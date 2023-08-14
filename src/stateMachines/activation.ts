@@ -792,12 +792,12 @@ export class Activation {
     devices[clientId].ClientSocket.send(JSON.stringify(responseMessage))
   }
 
-  createSignedString (clientId: string): boolean {
+  createSignedString (clientId: string, hashAlgorithm: string): boolean {
     const clientObj = devices[clientId]
     clientObj.nonce = PasswordHelper.generateNonce()
     const arr: Buffer[] = [clientObj.ClientData.payload.fwNonce, clientObj.nonce]
     try {
-      clientObj.signature = this.signatureHelper.signString(Buffer.concat(arr), clientObj.certObj.privateKey)
+      clientObj.signature = this.signatureHelper.signString(Buffer.concat(arr), clientObj.certObj.privateKey, hashAlgorithm)
       return true
     } catch (err) {
       MqttProvider.publishEvent('fail', ['Activator'], 'Failed to activate', clientObj.uuid)
@@ -836,9 +836,9 @@ export class Activation {
 
   async sendAdminSetup (context): Promise<any> {
     const ips: IPS.Messages = context.ips
-    const { clientId } = context
+    const { clientId, certChainPfx } = context
     const password = await this.getPassword(context)
-    this.createSignedString(clientId)
+    this.createSignedString(clientId, certChainPfx.hashAlgorithm)
     const clientObj = devices[clientId]
     context.xmlMessage = ips.HostBasedSetupService.AdminSetup(2, password, clientObj.nonce.toString('base64'), 2, clientObj.signature)
     return await invokeWsmanCall(context)
@@ -846,8 +846,8 @@ export class Activation {
 
   async sendUpgradeClientToAdmin (context): Promise<any> {
     const ips: IPS.Messages = context.ips
-    const { clientId } = context
-    this.createSignedString(clientId)
+    const { clientId, certChainPfx } = context
+    this.createSignedString(clientId, certChainPfx.hashAlgorithm)
     const clientObj = devices[clientId]
     context.xmlMessage = ips.HostBasedSetupService.UpgradeClientToAdmin(clientObj.nonce.toString('base64'), 2, clientObj.signature)
     return await invokeWsmanCall(context)
@@ -921,7 +921,9 @@ export class Activation {
     const { clientId, certChainPfx } = context
     // check that provisioning certificate root matches one of the trusted roots from AMT
     for (const hash in devices[clientId].ClientData.payload.certHashes) {
-      if (devices[clientId].ClientData.payload.certHashes[hash]?.toLowerCase() === certChainPfx.fingerprint?.toLowerCase()) {
+      if (devices[clientId].ClientData.payload.certHashes[hash]?.toLowerCase() === certChainPfx.fingerprint?.sha256?.toLowerCase()) {
+        devices[clientId].certObj = certChainPfx.provisioningCertificateObj
+      } else if (devices[clientId].ClientData.payload.certHashes[hash]?.toLowerCase() === certChainPfx.fingerprint?.sha1?.toLowerCase()) {
         devices[clientId].certObj = certChainPfx.provisioningCertificateObj
       }
     }
