@@ -54,6 +54,11 @@ export interface CertAttributes {
   C?: string
 }
 
+export interface RootCertFingerprint {
+  sha1: string
+  sha256: string
+}
+
 export interface CertCreationResult {
   h: any
   cert: pki.Certificate

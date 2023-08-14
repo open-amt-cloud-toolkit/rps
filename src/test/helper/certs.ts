@@ -3,1294 +3,145 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-const TEST_PFXCERT: any = {
-  certs: [
-    {
-      version: 2,
-      serialNumber: '30321b4fa9a940af47a4fec8c37b7cc2',
-      signatureOid: '1.2.840.113549.1.1.11',
-      signature: '[ÚuiaºÏÑb£_U²°O\u0004ñåÃ[hD\u001c§Coe)úe\u0000èY\u0004åë¥\u001b\u0007\ft4²¶o4h@þüiS+cÌ¾jÙxor\u0012¥/¢FðäVE\f\u00163"lafj\u000f\u000f¨yþ\u0013¦Tãº\u0004\u0011Ú©ÎZD\u0003ëÞ-ãì÷ê+füø½îPó_Ô=Ù=Ü\u000eõ\rì$\u000f}H\u0010;GGòÚ\u000e\u001cKmÞ\u0007©ís\nm#,"/h1nÀ+ÔÑ ßÑX^\n\rº¯\u0011(Õ\u0002´sÚ¾SÂ/»\n±²\u000etÚÆ\u0000×\u0003¥\u000f\u0014©·ý¤´óò[\u001d\u0016nÒÈ¹P%\u0006J=oM\u001c\u0013w3×~a<N{\rËÊuý\u001c(\b,Ç',
-      siginfo: {
-        algorithmOid: '1.2.840.113549.1.1.11',
-        parameters: {
-        }
-      },
-      validity: {
-        notBefore: '2019-08-13T16:17:32.000Z',
-        notAfter: '2020-08-13T00:00:00.000Z'
-      },
-      issuer: {
-        attributes: [
-          {
-            type: '2.5.4.3',
-            value: 'bjosburn-desk1.amr.corp.intel.com',
-            valueTagClass: 19,
-            name: 'commonName',
-            shortName: 'CN'
-          }
-        ],
-        hash: 'cd4b813d3464f08aaac246fb109fb6ca9bf92d3d'
-      },
-      subject: {
-        attributes: [
-          {
-            type: '2.5.4.3',
-            value: 'bjosburn-desk1.amr.corp.intel.com',
-            valueTagClass: 19,
-            name: 'commonName',
-            shortName: 'CN'
-          }
-        ],
-        hash: 'cd4b813d3464f08aaac246fb109fb6ca9bf92d3d'
-      },
-      extensions: [
-        {
-          id: '2.5.29.15',
-          critical: false,
-          value: '\u0003\u0002\u00040',
-          name: 'keyUsage',
-          digitalSignature: false,
-          nonRepudiation: false,
-          keyEncipherment: true,
-          dataEncipherment: true,
-          keyAgreement: false,
-          keyCertSign: false,
-          cRLSign: false,
-          encipherOnly: false,
-          decipherOnly: false
-        },
-        {
-          id: '2.5.29.37',
-          critical: false,
-          value: '0\n\u0006\b+\u0006\u0001\u0005\u0005\u0007\u0003\u0001',
-          name: 'extKeyUsage',
-          serverAuth: true
-        },
-        {
-          id: '2.5.29.17',
-          critical: false,
-          value: '0#!bjosburn-desk1.amr.corp.intel.com',
-          name: 'subjectAltName',
-          altNames: [
-            {
-              type: 2,
-              value: 'bjosburn-desk1.amr.corp.intel.com'
-            }
-          ]
-        }
-      ],
-      publicKey: {
-        n: {
-          data: [
-            22738545,
-            197587975,
-            40389632,
-            128574718,
-            240506609,
-            63808004,
-            67187052,
-            35919572,
-            169737366,
-            33936565,
-            185635620,
-            147492990,
-            212866555,
-            84395707,
-            185416446,
-            9358767,
-            202445054,
-            236703450,
-            48966368,
-            138161318,
-            118148456,
-            243066976,
-            170810889,
-            59061508,
-            38721111,
-            5822199,
-            138709036,
-            102102931,
-            116226639,
-            265713316,
-            7160787,
-            134308469,
-            226427970,
-            198468271,
-            28738538,
-            118095746,
-            201338751,
-            81970455,
-            67778028,
-            46833239,
-            20200318,
-            190690637,
-            193099148,
-            1878279,
-            252144637,
-            253118855,
-            76984714,
-            82447264,
-            240122701,
-            213796277,
-            94184548,
-            127617332,
-            70985315,
-            30370735,
-            266550620,
-            85421547,
-            159188368,
-            202400332,
-            218925813,
-            129215156,
-            232346940,
-            117618248,
-            268416298,
-            7805939,
-            227983989,
-            56093111,
-            236212882,
-            230626031,
-            120593771,
-            85381909,
-            93121282,
-            260312881,
-            86521760,
-            12
-          ],
-          t: 74,
-          s: 0
-        },
-        e: {
-          data: [
-            65537
-          ],
-          t: 1,
-          s: 0
-        }
-      },
-      md: {
-        algorithm: 'sha256',
-        blockLength: 64,
-        digestLength: 32,
-        messageLength: 544,
-        fullMessageLength: [
-          0,
-          544
-        ],
-        messageLengthSize: 8,
-        messageLength64: [
-          0,
-          544
-        ]
-      },
-      signatureParameters: {
-      },
-      tbsCertificate: {
-        tagClass: 0,
-        type: 16,
-        constructed: true,
-        composed: true,
-        value: [
-          {
-            tagClass: 128,
-            type: 0,
-            constructed: true,
-            composed: true,
-            value: [
-              {
-                tagClass: 0,
-                type: 2,
-                constructed: false,
-                composed: false,
-                value: '\u0002'
-              }
-            ]
-          },
-          {
-            tagClass: 0,
-            type: 2,
-            constructed: false,
-            composed: false,
-            value: '02\u001bO©©@¯G¤þÈÃ{|Â'
-          },
-          {
-            tagClass: 0,
-            type: 16,
-            constructed: true,
-            composed: true,
-            value: [
-              {
-                tagClass: 0,
-                type: 6,
-                constructed: false,
-                composed: false,
-                value: '*H÷\r\u0001\u0001\u000b'
-              },
-              {
-                tagClass: 0,
-                type: 5,
-                constructed: false,
-                composed: false,
-                value: ''
-              }
-            ]
-          },
-          {
-            tagClass: 0,
-            type: 16,
-            constructed: true,
-            composed: true,
-            value: [
-              {
-                tagClass: 0,
-                type: 17,
-                constructed: true,
-                composed: true,
-                value: [
-                  {
-                    tagClass: 0,
-                    type: 16,
-                    constructed: true,
-                    composed: true,
-                    value: [
-                      {
-                        tagClass: 0,
-                        type: 6,
-                        constructed: false,
-                        composed: false,
-                        value: 'U\u0004\u0003'
-                      },
-                      {
-                        tagClass: 0,
-                        type: 19,
-                        constructed: false,
-                        composed: false,
-                        value: 'bjosburn-desk1.amr.corp.intel.com'
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            tagClass: 0,
-            type: 16,
-            constructed: true,
-            composed: true,
-            value: [
-              {
-                tagClass: 0,
-                type: 23,
-                constructed: false,
-                composed: false,
-                value: '190813161732Z'
-              },
-              {
-                tagClass: 0,
-                type: 23,
-                constructed: false,
-                composed: false,
-                value: '200813000000Z'
-              }
-            ]
-          },
-          {
-            tagClass: 0,
-            type: 16,
-            constructed: true,
-            composed: true,
-            value: [
-              {
-                tagClass: 0,
-                type: 17,
-                constructed: true,
-                composed: true,
-                value: [
-                  {
-                    tagClass: 0,
-                    type: 16,
-                    constructed: true,
-                    composed: true,
-                    value: [
-                      {
-                        tagClass: 0,
-                        type: 6,
-                        constructed: false,
-                        composed: false,
-                        value: 'U\u0004\u0003'
-                      },
-                      {
-                        tagClass: 0,
-                        type: 19,
-                        constructed: false,
-                        composed: false,
-                        value: 'bjosburn-desk1.amr.corp.intel.com'
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            tagClass: 0,
-            type: 16,
-            constructed: true,
-            composed: true,
-            value: [
-              {
-                tagClass: 0,
-                type: 16,
-                constructed: true,
-                composed: true,
-                value: [
-                  {
-                    tagClass: 0,
-                    type: 6,
-                    constructed: false,
-                    composed: false,
-                    value: '*H÷\r\u0001\u0001\u0001'
-                  },
-                  {
-                    tagClass: 0,
-                    type: 5,
-                    constructed: false,
-                    composed: false,
-                    value: ''
-                  }
-                ]
-              },
-              {
-                tagClass: 0,
-                type: 3,
-                constructed: false,
-                composed: true,
-                value: [
-                  {
-                    tagClass: 0,
-                    type: 16,
-                    constructed: true,
-                    composed: true,
-                    value: [
-                      {
-                        tagClass: 0,
-                        type: 2,
-                        constructed: false,
-                        composed: false,
-                        value: "\u0000Å(7 ø@ó\u0015ë\u0002Qm1W0\u001dkÛñ.þ\u0014R5~}Âu\u0007q¿?ÿµ*p+dÙU<{:«M\fõÁ\u0006$É}\u0005QvÞ¿ã=\\\u001cöºô;&cy´E$dËä[^OûMN º\u0004±ñd\u0007ký\u0001Ê{uµÛTÑ4;~,©åt\n5ìN,Q|\u0000/pø!¶ê½F*ý\u0004B\u0016'PmCÓýgjFízOa_y8D,\u0005orNÖW8SPJ.^\tçÎ\u0007\nÍhÂÊbë*àá¼í¬\u0011\u0010þ\bìÚû\r:þP|k¼°\u0015û©\u0007ë\u0010$ ]KZ\u001dü\"AmD\u00011l<Ú NUÖñzOâhL\u0000¼o@qZöq"
-                      },
-                      {
-                        tagClass: 0,
-                        type: 2,
-                        constructed: false,
-                        composed: false,
-                        value: '\u0001\u0000\u0001'
-                      }
-                    ]
-                  }
-                ],
-                bitStringContents: "\u00000\u0001\n\u0002\u0001\u0001\u0000Å(7 ø@ó\u0015ë\u0002Qm1W0\u001dkÛñ.þ\u0014R5~}Âu\u0007q¿?ÿµ*p+dÙU<{:«M\fõÁ\u0006$É}\u0005QvÞ¿ã=\\\u001cöºô;&cy´E$dËä[^OûMN º\u0004±ñd\u0007ký\u0001Ê{uµÛTÑ4;~,©åt\n5ìN,Q|\u0000/pø!¶ê½F*ý\u0004B\u0016'PmCÓýgjFízOa_y8D,\u0005orNÖW8SPJ.^\tçÎ\u0007\nÍhÂÊbë*àá¼í¬\u0011\u0010þ\bìÚû\r:þP|k¼°\u0015û©\u0007ë\u0010$ ]KZ\u001dü\"AmD\u00011l<Ú NUÖñzOâhL\u0000¼o@qZöq\u0002\u0003\u0001\u0000\u0001",
-                original: {
-                  tagClass: 0,
-                  type: 3,
-                  constructed: false,
-                  composed: true,
-                  value: [
-                    {
-                      tagClass: 0,
-                      type: 16,
-                      constructed: true,
-                      composed: true,
-                      value: [
-                        {
-                          tagClass: 0,
-                          type: 2,
-                          constructed: false,
-                          composed: false,
-                          value: "\u0000Å(7 ø@ó\u0015ë\u0002Qm1W0\u001dkÛñ.þ\u0014R5~}Âu\u0007q¿?ÿµ*p+dÙU<{:«M\fõÁ\u0006$É}\u0005QvÞ¿ã=\\\u001cöºô;&cy´E$dËä[^OûMN º\u0004±ñd\u0007ký\u0001Ê{uµÛTÑ4;~,©åt\n5ìN,Q|\u0000/pø!¶ê½F*ý\u0004B\u0016'PmCÓýgjFízOa_y8D,\u0005orNÖW8SPJ.^\tçÎ\u0007\nÍhÂÊbë*àá¼í¬\u0011\u0010þ\bìÚû\r:þP|k¼°\u0015û©\u0007ë\u0010$ ]KZ\u001dü\"AmD\u00011l<Ú NUÖñzOâhL\u0000¼o@qZöq"
-                        },
-                        {
-                          tagClass: 0,
-                          type: 2,
-                          constructed: false,
-                          composed: false,
-                          value: '\u0001\u0000\u0001'
-                        }
-                      ]
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          {
-            tagClass: 128,
-            type: 3,
-            constructed: true,
-            composed: true,
-            value: [
-              {
-                tagClass: 0,
-                type: 16,
-                constructed: true,
-                composed: true,
-                value: [
-                  {
-                    tagClass: 0,
-                    type: 16,
-                    constructed: true,
-                    composed: true,
-                    value: [
-                      {
-                        tagClass: 0,
-                        type: 6,
-                        constructed: false,
-                        composed: false,
-                        value: 'U\u001d\u000f'
-                      },
-                      {
-                        tagClass: 0,
-                        type: 4,
-                        constructed: false,
-                        composed: false,
-                        value: '\u0003\u0002\u00040'
-                      }
-                    ]
-                  },
-                  {
-                    tagClass: 0,
-                    type: 16,
-                    constructed: true,
-                    composed: true,
-                    value: [
-                      {
-                        tagClass: 0,
-                        type: 6,
-                        constructed: false,
-                        composed: false,
-                        value: 'U\u001d%'
-                      },
-                      {
-                        tagClass: 0,
-                        type: 4,
-                        constructed: false,
-                        composed: false,
-                        value: '0\n\u0006\b+\u0006\u0001\u0005\u0005\u0007\u0003\u0001'
-                      }
-                    ]
-                  },
-                  {
-                    tagClass: 0,
-                    type: 16,
-                    constructed: true,
-                    composed: true,
-                    value: [
-                      {
-                        tagClass: 0,
-                        type: 6,
-                        constructed: false,
-                        composed: false,
-                        value: 'U\u001d\u0011'
-                      },
-                      {
-                        tagClass: 0,
-                        type: 4,
-                        constructed: false,
-                        composed: false,
-                        value: '0#!bjosburn-desk1.amr.corp.intel.com'
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      }
-    }
-  ],
-  keys: [
-    {
+const TEST_PFXCERT: any = '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'
+
+const EXPECTED_CERT: any = {
+  provisioningCertificateObj: {
+    certChain: [
+      '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'
+    ],
+    privateKey: {
       n: {
         data: [
-          22738545,
-          197587975,
-          40389632,
-          128574718,
-          240506609,
-          63808004,
-          67187052,
-          35919572,
-          169737366,
-          33936565,
-          185635620,
-          147492990,
-          212866555,
-          84395707,
-          185416446,
-          9358767,
-          202445054,
-          236703450,
-          48966368,
-          138161318,
-          118148456,
-          243066976,
-          170810889,
-          59061508,
-          38721111,
-          5822199,
-          138709036,
-          102102931,
-          116226639,
-          265713316,
-          7160787,
-          134308469,
-          226427970,
-          198468271,
-          28738538,
-          118095746,
-          201338751,
-          81970455,
-          67778028,
-          46833239,
-          20200318,
-          190690637,
-          193099148,
-          1878279,
-          252144637,
-          253118855,
-          76984714,
-          82447264,
-          240122701,
-          213796277,
-          94184548,
-          127617332,
-          70985315,
-          30370735,
-          266550620,
-          85421547,
-          159188368,
-          202400332,
-          218925813,
-          129215156,
-          232346940,
-          117618248,
-          268416298,
-          7805939,
-          227983989,
-          56093111,
-          236212882,
-          230626031,
-          120593771,
-          85381909,
-          93121282,
-          260312881,
-          86521760,
-          12
+          52404579, 245845139, 149472949, 216332350, 1668170,
+          189463619, 219068029, 8743887, 121424215, 9867028,
+          141288896, 111421852, 264742019, 87882009, 240898956,
+          21547400, 37680611, 159339819, 262376238, 93354180,
+          54919053, 78014915, 171827845, 145155646, 255321767,
+          83326014, 192687516, 68911639, 221772528, 77573605,
+          232349923, 89791484, 113113561, 259227946, 18294519,
+          135745959, 95824408, 92839082, 68911292, 62027866,
+          218151663, 156726423, 210778566, 237249218, 24970232,
+          15718959, 127956041, 67837923, 209128837, 42845380,
+          79615951, 171006261, 251897303, 55438217, 58658636,
+          257385853, 120919412, 224899610, 174045671, 259324988,
+          53749363, 42614191, 5277389, 207736907, 247679004,
+          167145161, 16431414, 125203708, 55473489, 3059885,
+          121729323, 129761427, 235121980, 13
         ],
         t: 74,
         s: 0
       },
-      e: {
-        data: [
-          65537
-        ],
-        t: 1,
-        s: 0
-      },
+      e: { data: [65537], t: 1, s: 0 },
       d: {
         data: [
-          103758629,
-          3518031,
-          207707674,
-          207878625,
-          32330180,
-          19058444,
-          58882766,
-          18764541,
-          82339376,
-          107234765,
-          58907316,
-          21520218,
-          87565935,
-          255479564,
-          45880227,
-          21871026,
-          243849737,
-          221309371,
-          122737625,
-          97366032,
-          174000406,
-          197884566,
-          55284564,
-          38695658,
-          126128031,
-          89659275,
-          114271106,
-          189480146,
-          36695461,
-          117402121,
-          82147113,
-          143507915,
-          150268292,
-          111371930,
-          119392047,
-          43446728,
-          261403084,
-          201519105,
-          159063941,
-          91424094,
-          121152201,
-          214305901,
-          205926896,
-          58578439,
-          90727152,
-          21264988,
-          101676567,
-          183830128,
-          182377713,
-          137723307,
-          217108263,
-          93398571,
-          18225046,
-          264129626,
-          263889928,
-          218895248,
-          155393904,
-          214576048,
-          148834406,
-          197559651,
-          60727650,
-          196736217,
-          258218157,
-          253452337,
-          264795944,
-          199329817,
-          49238628,
-          233279161,
-          61688992,
-          35929616,
-          206858143,
-          153904243,
-          82088744,
-          1
+          200054985, 6608182, 41102012, 69925884, 77784753,
+          15227472, 179274208, 188247942, 70514544, 203315126,
+          134392815, 110716765, 243847557, 228821576, 261118828,
+          3115964, 109078876, 224331872, 61519638, 209996209,
+          119591805, 78189725, 243698916, 66724016, 223005745,
+          63158356, 246079824, 107862182, 61025292, 225537763,
+          10919287, 239285406, 195086428, 54670420, 241718551,
+          59976271, 18521695, 165427642, 60170945, 64906407,
+          51741737, 77991993, 92308802, 54704775, 170508700,
+          111420636, 107203149, 18093605, 176563747, 252098218,
+          218860183, 13276201, 99835632, 205788168, 219589436,
+          249227590, 43419655, 193455860, 148728661, 232417764,
+          251056423, 261865901, 91270940, 170661538, 11299116,
+          67478024, 137954864, 196841604, 234319275, 24886822,
+          118721956, 25533500, 18168194, 0
         ],
-        t: 74,
+        t: 73,
         s: 0
       },
       p: {
         data: [
-          225867687,
-          137277970,
-          186754183,
-          171438098,
-          147791477,
-          26424801,
-          225059354,
-          251418309,
-          140132494,
-          27224352,
-          82379046,
-          262830181,
-          228283350,
-          218001791,
-          198425954,
-          214212148,
-          204411688,
-          11812393,
-          75977972,
-          5515649,
-          139294987,
-          2692225,
-          42136299,
-          76316069,
-          251175283,
-          235434208,
-          168986095,
-          50749915,
-          59509473,
-          159196747,
-          14541826,
-          78681690,
-          33902516,
-          193739012,
-          185325609,
-          16148028,
-          55215
+          236253133, 151429920, 254984681, 93724589,
+          151746294, 96788183, 221995099, 139056113,
+          140290681, 83481862, 132011647, 229876617,
+          23694640, 172756980, 38950333, 107861635,
+          236243785, 140576218, 215921959, 189205115,
+          31668818, 253217454, 104809282, 92523602,
+          155986544, 36493438, 207018714, 46230158,
+          69164619, 188665035, 185819509, 246344444,
+          81014782, 140891625, 4968137, 209421855,
+          61266
         ],
         t: 37,
         s: 0
       },
       q: {
         data: [
-          135455783,
-          141675226,
-          72455563,
-          192316535,
-          227561683,
-          9244385,
-          150417039,
-          179047010,
-          240770483,
-          237278282,
-          255200376,
-          9892502,
-          232737064,
-          181138169,
-          43213188,
-          120141465,
-          61710521,
-          103624216,
-          131780901,
-          167688507,
-          146554465,
-          26036133,
-          95920667,
-          99035531,
-          51519101,
-          92092885,
-          243235478,
-          149972327,
-          15553597,
-          136391770,
-          201772364,
-          195172757,
-          194220147,
-          154704182,
-          185908979,
-          164514116,
-          59906
+          204981743, 262907745, 178746562, 85931285,
+          265556212, 139391605, 204108282, 55824958,
+          26427998, 207775441, 27264366, 204110508,
+          123201575, 126602434, 231602355, 248954167,
+          98990406, 134905261, 115307900, 22505813,
+          12056233, 75111661, 98049378, 90175144,
+          2547767, 92943019, 143260170, 107822907,
+          113996563, 61246930, 227732098, 265123039,
+          92630190, 224864317, 10623578, 33921150,
+          60796
         ],
         t: 37,
         s: 0
       },
       dP: {
         data: [
-          212650249,
-          5932719,
-          31306711,
-          194529123,
-          4900112,
-          25509180,
-          183003473,
-          30930318,
-          108688262,
-          54659678,
-          208495870,
-          52810471,
-          192084720,
-          230086152,
-          193789884,
-          79269328,
-          261512227,
-          125556783,
-          155084623,
-          194928727,
-          227724568,
-          186048469,
-          152039066,
-          39013099,
-          233756238,
-          185692559,
-          238163732,
-          40613942,
-          235095284,
-          206043579,
-          96195515,
-          152423105,
-          9509195,
-          198623274,
-          181274275,
-          199903832,
-          29962
+          233359445, 86322607, 192901590, 131818330,
+          49942852, 57682597, 171724039, 31101079,
+          222600809, 251399193, 147697359, 15500931,
+          167033917, 35566569, 94131417, 217756586,
+          100324436, 204358851, 110853227, 59355676,
+          150389324, 42813904, 218583638, 192121567,
+          49512535, 237702759, 44110596, 6427705,
+          227896726, 253819035, 11243479, 124373628,
+          156566894, 134072185, 24227004, 89730446,
+          46868
         ],
         t: 37,
         s: 0
       },
       dQ: {
         data: [
-          214884847,
-          204485932,
-          254733344,
-          207861161,
-          84016115,
-          205337866,
-          191412097,
-          222074260,
-          144692651,
-          224957339,
-          75021662,
-          227162117,
-          74526327,
-          15205209,
-          162066070,
-          33185162,
-          241728682,
-          159293736,
-          167596481,
-          3555115,
-          255519441,
-          65731280,
-          112538338,
-          60344183,
-          244993422,
-          20885648,
-          151474791,
-          257844641,
-          173919319,
-          221531859,
-          122761889,
-          140903176,
-          111851252,
-          243518094,
-          138588488,
-          240631220,
-          479
+          102397539, 144581650, 36213585, 59916958,
+          106820697, 244553472, 127656418, 24175184,
+          34873060, 52403297, 53671320, 5639841,
+          172611485, 211160255, 154955181, 69504550,
+          194199143, 138189246, 262625103, 28915295,
+          243950621, 239650016, 43028052, 47768294,
+          33604736, 258996696, 150536620, 148869045,
+          53869680, 37806311, 156095585, 253801173,
+          161865392, 215979955, 1421581, 219215447,
+          38255
         ],
         t: 37,
         s: 0
       },
       qInv: {
         data: [
-          114626170,
-          225689970,
-          63516024,
-          148276517,
-          218683474,
-          192447296,
-          130572219,
-          223145921,
-          237087526,
-          197014424,
-          232895021,
-          193031985,
-          62528318,
-          12597036,
-          85708359,
-          95804681,
-          59208000,
-          19105345,
-          112919565,
-          130642026,
-          184287084,
-          208966846,
-          99200337,
-          138341036,
-          160695188,
-          51985957,
-          62749164,
-          210620303,
-          161605007,
-          84932520,
-          219882383,
-          201348087,
-          196213838,
-          39969513,
-          264003514,
-          68957628,
-          14218
+          55318312, 263802899, 4249368, 211139730,
+          235982172, 220773358, 122782914, 174654450,
+          109713566, 135664804, 204061769, 165279517,
+          153914, 220391144, 135117054, 246996742,
+          209799883, 216574171, 105790924, 16368240,
+          53196637, 131821907, 27444624, 119834960,
+          4206952, 244257410, 50659799, 9179494,
+          82866263, 53797877, 129692242, 10302956,
+          146248230, 263689367, 225806717, 264678717,
+          22296
         ],
         t: 37,
         s: 0
       }
     }
-  ]
+  },
+  fingerprint: {
+    sha256: '82f2ed575db4abe462499cf550dbff9584980d70a0272894639c3653b9ad932c',
+    sha1: '47d7b7db23f3e300189f54802482b1bd18b945ef'
+  },
+  hashAlgorithm: 'sha256'
 }
-
-const EXPECTED_CERT =
-    {
-      provisioningCertificateObj: {
-        certChain: [
-          '\r\nMIIDNDCCAhygAwIBAgIQMDIbT6mpQK9HpP7Iw3t8wjANBgkqhkiG9w0BAQsFADAs\r\nMSowKAYDVQQDEyFiam9zYnVybi1kZXNrMS5hbXIuY29ycC5pbnRlbC5jb20wHhcN\r\nMTkwODEzMTYxNzMyWhcNMjAwODEzMDAwMDAwWjAsMSowKAYDVQQDEyFiam9zYnVy\r\nbi1kZXNrMS5hbXIuY29ycC5pbnRlbC5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IB\r\nDwAwggEKAoIBAQDFKDeg+EDzFYzrAlFtMVcwHWvb8S7+FFKSNX6bfZbCdQdxvz//\r\ntSpwK2SN2VU8ezqrTQyK9cEGJMl9BZBRdt6/4z1cHPa69DsmY3m0k0WdJGTL5Fte\r\nT/tNTqC6BJaxivFkmH8Ha/0BypB7gnWMtdtU0TQ7fiyp5XQKNexOLFF8AC9/cJ/4\r\nIbaD6r1GKv1/BEKAFidQbUPT/WdqRu16T2FfeThEiCwFjW9yTtZXOFNQSi5eCefO\r\nhgcKzWiDwspi6yrg4bztrBEQ/gjs2vsNOv5QfGu8sBX7jKkH6xCTJCBdS1od/JYi\r\nQW1EATFsPNogTlXW8XqeT+JoTAC8b0BxWvZxAgMBAAGjUjBQMAsGA1UdDwQEAwIE\r\nMDATBgNVHSUEDDAKBggrBgEFBQcDATAsBgNVHREEJTAjgiFiam9zYnVybi1kZXNr\r\nMS5hbXIuY29ycC5pbnRlbC5jb20wDQYJKoZIhvcNAQELBQADggEBAIxb2nWSaWG6\r\nz9Fio56DX1WysE8E8eXDW2hEHKeVQ29lKfplAOhZBI2C5eulGweUDH90NLK2b480\r\naED+/GlTK2OFzL5q2XiBb3ISpS+iRvDkVkUMFjMibGFmag8PqHn+E6ZU47oEEdqp\r\nzlp/RAPr3i3j7PfqK2b8+L2A7lDzmF/UPdmFPdyCDvUN7IIkD31IEDuCR0fy2g6a\r\nHEtt3gep7XMKbSMsIi9oMZNuwCvU0Zag39FYXgoNuq8RKNUCtHPavlPCL7t/Coyx\r\nsg6PdNrGANcDpQ8Uqbf9hqS08/JbHRaAbtLIuVAlBko9b00cE3cz135hPE57DcvK\r\ndf0cKAgsx4g=\r\n\r\n',
-          undefined
-        ],
-        privateKey: {
-          n: {
-            data: [
-              22738545,
-              197587975,
-              40389632,
-              128574718,
-              240506609,
-              63808004,
-              67187052,
-              35919572,
-              169737366,
-              33936565,
-              185635620,
-              147492990,
-              212866555,
-              84395707,
-              185416446,
-              9358767,
-              202445054,
-              236703450,
-              48966368,
-              138161318,
-              118148456,
-              243066976,
-              170810889,
-              59061508,
-              38721111,
-              5822199,
-              138709036,
-              102102931,
-              116226639,
-              265713316,
-              7160787,
-              134308469,
-              226427970,
-              198468271,
-              28738538,
-              118095746,
-              201338751,
-              81970455,
-              67778028,
-              46833239,
-              20200318,
-              190690637,
-              193099148,
-              1878279,
-              252144637,
-              253118855,
-              76984714,
-              82447264,
-              240122701,
-              213796277,
-              94184548,
-              127617332,
-              70985315,
-              30370735,
-              266550620,
-              85421547,
-              159188368,
-              202400332,
-              218925813,
-              129215156,
-              232346940,
-              117618248,
-              268416298,
-              7805939,
-              227983989,
-              56093111,
-              236212882,
-              230626031,
-              120593771,
-              85381909,
-              93121282,
-              260312881,
-              86521760,
-              12
-            ],
-            t: 74,
-            s: 0
-          },
-          e: {
-            data: [
-              65537
-            ],
-            t: 1,
-            s: 0
-          },
-          d: {
-            data: [
-              103758629,
-              3518031,
-              207707674,
-              207878625,
-              32330180,
-              19058444,
-              58882766,
-              18764541,
-              82339376,
-              107234765,
-              58907316,
-              21520218,
-              87565935,
-              255479564,
-              45880227,
-              21871026,
-              243849737,
-              221309371,
-              122737625,
-              97366032,
-              174000406,
-              197884566,
-              55284564,
-              38695658,
-              126128031,
-              89659275,
-              114271106,
-              189480146,
-              36695461,
-              117402121,
-              82147113,
-              143507915,
-              150268292,
-              111371930,
-              119392047,
-              43446728,
-              261403084,
-              201519105,
-              159063941,
-              91424094,
-              121152201,
-              214305901,
-              205926896,
-              58578439,
-              90727152,
-              21264988,
-              101676567,
-              183830128,
-              182377713,
-              137723307,
-              217108263,
-              93398571,
-              18225046,
-              264129626,
-              263889928,
-              218895248,
-              155393904,
-              214576048,
-              148834406,
-              197559651,
-              60727650,
-              196736217,
-              258218157,
-              253452337,
-              264795944,
-              199329817,
-              49238628,
-              233279161,
-              61688992,
-              35929616,
-              206858143,
-              153904243,
-              82088744,
-              1
-            ],
-            t: 74,
-            s: 0
-          },
-          p: {
-            data: [
-              225867687,
-              137277970,
-              186754183,
-              171438098,
-              147791477,
-              26424801,
-              225059354,
-              251418309,
-              140132494,
-              27224352,
-              82379046,
-              262830181,
-              228283350,
-              218001791,
-              198425954,
-              214212148,
-              204411688,
-              11812393,
-              75977972,
-              5515649,
-              139294987,
-              2692225,
-              42136299,
-              76316069,
-              251175283,
-              235434208,
-              168986095,
-              50749915,
-              59509473,
-              159196747,
-              14541826,
-              78681690,
-              33902516,
-              193739012,
-              185325609,
-              16148028,
-              55215
-            ],
-            t: 37,
-            s: 0
-          },
-          q: {
-            data: [
-              135455783,
-              141675226,
-              72455563,
-              192316535,
-              227561683,
-              9244385,
-              150417039,
-              179047010,
-              240770483,
-              237278282,
-              255200376,
-              9892502,
-              232737064,
-              181138169,
-              43213188,
-              120141465,
-              61710521,
-              103624216,
-              131780901,
-              167688507,
-              146554465,
-              26036133,
-              95920667,
-              99035531,
-              51519101,
-              92092885,
-              243235478,
-              149972327,
-              15553597,
-              136391770,
-              201772364,
-              195172757,
-              194220147,
-              154704182,
-              185908979,
-              164514116,
-              59906
-            ],
-            t: 37,
-            s: 0
-          },
-          dP: {
-            data: [
-              212650249,
-              5932719,
-              31306711,
-              194529123,
-              4900112,
-              25509180,
-              183003473,
-              30930318,
-              108688262,
-              54659678,
-              208495870,
-              52810471,
-              192084720,
-              230086152,
-              193789884,
-              79269328,
-              261512227,
-              125556783,
-              155084623,
-              194928727,
-              227724568,
-              186048469,
-              152039066,
-              39013099,
-              233756238,
-              185692559,
-              238163732,
-              40613942,
-              235095284,
-              206043579,
-              96195515,
-              152423105,
-              9509195,
-              198623274,
-              181274275,
-              199903832,
-              29962
-            ],
-            t: 37,
-            s: 0
-          },
-          dQ: {
-            data: [
-              214884847,
-              204485932,
-              254733344,
-              207861161,
-              84016115,
-              205337866,
-              191412097,
-              222074260,
-              144692651,
-              224957339,
-              75021662,
-              227162117,
-              74526327,
-              15205209,
-              162066070,
-              33185162,
-              241728682,
-              159293736,
-              167596481,
-              3555115,
-              255519441,
-              65731280,
-              112538338,
-              60344183,
-              244993422,
-              20885648,
-              151474791,
-              257844641,
-              173919319,
-              221531859,
-              122761889,
-              140903176,
-              111851252,
-              243518094,
-              138588488,
-              240631220,
-              479
-            ],
-            t: 37,
-            s: 0
-          },
-          qInv: {
-            data: [
-              114626170,
-              225689970,
-              63516024,
-              148276517,
-              218683474,
-              192447296,
-              130572219,
-              223145921,
-              237087526,
-              197014424,
-              232895021,
-              193031985,
-              62528318,
-              12597036,
-              85708359,
-              95804681,
-              59208000,
-              19105345,
-              112919565,
-              130642026,
-              184287084,
-              208966846,
-              99200337,
-              138341036,
-              160695188,
-              51985957,
-              62749164,
-              210620303,
-              161605007,
-              84932520,
-              219882383,
-              201348087,
-              196213838,
-              39969513,
-              264003514,
-              68957628,
-              14218
-            ],
-            t: 37,
-            s: 0
-          }
-        }
-      },
-      fingerprint: undefined
-    }
 
 export { TEST_PFXCERT, EXPECTED_CERT }
