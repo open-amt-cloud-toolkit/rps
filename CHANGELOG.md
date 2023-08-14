@@ -1,3 +1,42 @@
+<a name="2.16.0"></a>
+## [2.16.0] - 2023-08-14
+### Build
+- update version in package.json and changelog (#1ae85df) 
+- update docker image dependencies (#926337f) 
+- **deps:** bump pg from 8.11.1 to 8.11.2 (#748325d) 
+- **deps:** bump aquasecurity/trivy-action (#be48d20) 
+- **deps:** bump danhellem/github-actions-issue-to-work-item (#2c787ec) 
+- **deps:** bump actions/add-to-project from 0.3.0 to 0.5.0 (#194953a) 
+- **deps:** bump github/codeql-action from 2.1.27 to 2.21.2 (#bdb9111) 
+- **deps:** bump github/codeql-action from 2.21.2 to 2.21.3 ([#1153](https://github.com/open-amt-cloud-toolkit/rps/issues/1153)) (#c34be15) 
+- **deps:** bump alpine from `82d1e9d` to `7144f7b` ([#1146](https://github.com/open-amt-cloud-toolkit/rps/issues/1146)) (#93562db) 
+- **deps:** bump mqtt from 4.3.7 to 5.0.2 ([#1139](https://github.com/open-amt-cloud-toolkit/rps/issues/1139)) (#761ee6d) 
+- **deps:** bump actions/checkout from 3.1.0 to 3.5.3 (#7f0740f) 
+- **deps:** bump codecov/codecov-action from 3.1.3 to 3.1.4 (#5879ddb) 
+- **deps:** bump actions/setup-node from 3.7.0 to 3.8.0 ([#1156](https://github.com/open-amt-cloud-toolkit/rps/issues/1156)) (#a40ecb9) 
+- **deps:** bump ossf/scorecard-action from 2.0.6 to 2.2.0 (#8bbc3d2) 
+- **deps:** bump actions/setup-node from 1.4.6 to 3.7.0 (#a46352c) 
+- **deps:** bump docker/login-action from 1.6.0 to 2.2.0 (#9295220) 
+- **deps:** bump wagoid/commitlint-github-action from 4.1.15 to 5.4.3 (#aaf7325) 
+- **deps:** bump step-security/harden-runner from 2.5.0 to 2.5.1 ([#1154](https://github.com/open-amt-cloud-toolkit/rps/issues/1154)) (#509771a) 
+- **deps:** bump actions/upload-artifact from 2.3.1 to 3.1.2 (#ef5bba1) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 20.4.7 to 20.4.8 ([#1143](https://github.com/open-amt-cloud-toolkit/rps/issues/1143)) (#f7c7b3f) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 20.4.8 to 20.4.9 ([#1152](https://github.com/open-amt-cloud-toolkit/rps/issues/1152)) (#0935860) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 20.4.5 to 20.4.6 (#5a3d25e) 
+- **deps-dev:** bump eslint from 8.46.0 to 8.47.0 ([#1158](https://github.com/open-amt-cloud-toolkit/rps/issues/1158)) (#7f7cab3) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 20.4.9 to 20.5.0 ([#1157](https://github.com/open-amt-cloud-toolkit/rps/issues/1157)) (#79af92b) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 20.4.6 to 20.4.7 (#ec8a006) 
+
+### Ci
+- add trivy upload scan always (#a4682ad) 
+- [StepSecurity] Apply security best practices (#d7a8b3f) 
+- continue on error of codeql analysis report steps (#1b9f6e4) 
+- publish trivy results to github (#6f15906) 
+- add codeql report (#e27d302) 
+
+### Feat
+- support for sha1 hash added via mebx ([#1155](https://github.com/open-amt-cloud-toolkit/rps/issues/1155)) (#b630e11) 
+
 <a name="2.15.0"></a>
 ## [2.15.0] - 2023-08-02
 ### Build

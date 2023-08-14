@@ -1,6 +1,6 @@
 {
   "name": "@open-amt-cloud-toolkit/rps",
-  "version": "2.15.0",
+  "version": "2.16.0",
   "description": "Containerized RPS service for activating and configuring Intel&reg; AMT devices",
   "homepage": "https://github.com/open-amt-cloud-toolkit/rps",
   "contributors": [
