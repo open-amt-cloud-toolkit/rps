@@ -30,6 +30,7 @@ import ClientResponseMsg from '../utils/ClientResponseMsg'
 import { Unconfiguration } from './unconfiguration'
 import { type DeviceCredentials } from '../interfaces/ISecretManagerService'
 import { NetworkConfiguration } from './networkConfiguration'
+import statsD from '../utils/stats'
 
 export interface ActivationContext {
   profile: AMTConfiguration
@@ -752,7 +753,7 @@ export class Activation {
   async getAMTProfile (context: ActivationContext, event: ActivationEvent): Promise<AMTConfiguration> {
     this.db = await this.dbFactory.getDb()
     const profile = await this.configurator.profileManager.getAmtProfile(devices[context.clientId].ClientData.payload.profile.profileName, context.tenantId)
-    return await Promise.resolve(profile)
+    return profile
   }
 
   async getDeviceFromMPS (context: ActivationContext, event: ActivationEvent): Promise<any> {
@@ -774,7 +775,7 @@ export class Activation {
 
   async getAMTDomainCert (context: ActivationContext, event: ActivationEvent): Promise<AMTDomain> {
     const domain = await this.configurator.domainCredentialManager.getProvisioningCert(devices[context.clientId].ClientData.payload.fqdn, context.tenantId)
-    return await Promise.resolve(domain)
+    return domain
   }
 
   sendMessageToDevice (context: ActivationContext, event: ActivationEvent): void {
@@ -783,9 +784,11 @@ export class Activation {
     let method = null
     if (status === 'success') {
       method = 'success'
+      statsD.increment('activation.success')
     } else if (status === 'error') {
       clientObj.status.Status = context.errorMessage !== '' ? context.errorMessage : 'Failed'
       method = 'failed'
+      statsD.increment('activation.failure')
     }
     const responseMessage = ClientResponseMsg.get(clientId, null, status, method, JSON.stringify(clientObj.status))
     this.logger.info(JSON.stringify(responseMessage, null, '\t'))

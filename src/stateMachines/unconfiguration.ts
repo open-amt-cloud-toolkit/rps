@@ -19,6 +19,7 @@ import { type AMTConfiguration } from '../models'
 import { Error } from './error'
 import { invokeWsmanCall } from './common'
 import { Environment } from '../utils/Environment'
+import statsD from '../utils/stats'
 
 export interface UnconfigContext {
   clientId: string
@@ -611,6 +612,7 @@ export class Unconfiguration {
           type: 'final'
         },
         SUCCESS: {
+          entry: ['Metric Capture'],
           type: 'final'
         }
       }
@@ -638,6 +640,9 @@ export class Unconfiguration {
 
       },
       actions: {
+        'Metric Capture': (context, event) => {
+          statsD.increment('unconfiguration.success', 1)
+        },
         'Update CIRA Status': (context, event) => {
           devices[context.clientId].status.CIRAConnection = context.statusMessage
         },
@@ -648,6 +653,7 @@ export class Unconfiguration {
           devices[context.clientId].status.TLSConfiguration = ''
           devices[context.clientId].status.CIRAConnection = ''
           devices[context.clientId].status.Status = context.statusMessage
+          statsD.increment('unconfiguration.failure', 1)
         },
         'Reset Unauth Count': (context, event) => { devices[context.clientId].unauthCount = 0 },
         'Read WiFi Endpoint Settings Pull Response': this.readWiFiEndpointSettingsPullResponse.bind(this),
