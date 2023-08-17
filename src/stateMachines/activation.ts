@@ -752,7 +752,7 @@ export class Activation {
   async getAMTProfile (context: ActivationContext, event: ActivationEvent): Promise<AMTConfiguration> {
     this.db = await this.dbFactory.getDb()
     const profile = await this.configurator.profileManager.getAmtProfile(devices[context.clientId].ClientData.payload.profile.profileName, context.tenantId)
-    return await Promise.resolve(profile)
+    return profile
   }
 
   async getDeviceFromMPS (context: ActivationContext, event: ActivationEvent): Promise<any> {
@@ -774,7 +774,7 @@ export class Activation {
 
   async getAMTDomainCert (context: ActivationContext, event: ActivationEvent): Promise<AMTDomain> {
     const domain = await this.configurator.domainCredentialManager.getProvisioningCert(devices[context.clientId].ClientData.payload.fqdn, context.tenantId)
-    return await Promise.resolve(domain)
+    return domain
   }
 
   sendMessageToDevice (context: ActivationContext, event: ActivationEvent): void {
