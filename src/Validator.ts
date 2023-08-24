@@ -333,11 +333,12 @@ export class Validator implements IValidator {
   }
 
   verifyAMTVersion (payload: Payload, action: string): void {
-    if (parseInt(payload.ver) >= 7 && parseInt(payload.ver) < 12) {
+    const verifiedVersions = [7.0, 7.1, 8.0, 8.1, 9.0, 9.1, 9.5, 10.0, 11.0, 11.5, 11.6]
+    if (verifiedVersions.includes(parseFloat(payload.ver))) {
       if (parseInt(payload.build) < 3000) {
-        throw new RPSError(`Device ${payload.uuid} ${action} failed. Only version ${payload.ver} with build greater than 3000 can be remotely configured `)
+        throw new RPSError(`Device ${payload.uuid} ${action} failed. Please check with your OEM for a firmware update.`)
       }
-    } else if (parseInt(payload.ver) < 7) {
+    } else if (parseFloat(payload.ver) < 7) {
       throw new RPSError(`Device ${payload.uuid} ${action} failed. AMT version: ${payload.ver}. Version less than 7 cannot be remotely configured `)
     }
   }
