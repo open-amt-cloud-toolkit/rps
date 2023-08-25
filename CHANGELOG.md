@@ -1,3 +1,22 @@
+<a name="2.16.1"></a>
+## [2.16.1] - 2023-08-25
+### Build
+- update version in package.json and changelog (#0557133) 
+- **deps:** bump fsevents from 2.3.2 to 2.3.3 ([#1172](https://github.com/open-amt-cloud-toolkit/rps/issues/1172)) (#9675983) 
+- **deps:** bump github/codeql-action from 2.21.3 to 2.21.4 ([#1160](https://github.com/open-amt-cloud-toolkit/rps/issues/1160)) (#77121a4) 
+- **deps:** bump actions/setup-node from 3.8.0 to 3.8.1 ([#1167](https://github.com/open-amt-cloud-toolkit/rps/issues/1167)) (#cd63d07) 
+- **deps:** bump mqtt from 5.0.2 to 5.0.3 ([#1162](https://github.com/open-amt-cloud-toolkit/rps/issues/1162)) (#9aae95f) 
+- **deps:** bump pg from 8.11.2 to 8.11.3 ([#1163](https://github.com/open-amt-cloud-toolkit/rps/issues/1163)) (#d66b4dd) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 20.5.0 to 20.5.1 ([#1169](https://github.com/open-amt-cloud-toolkit/rps/issues/1169)) (#dad95e6) 
+- **deps-dev:** bump eslint-plugin-import from 2.28.0 to 2.28.1 ([#1170](https://github.com/open-amt-cloud-toolkit/rps/issues/1170)) (#c42b0b1) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 20.5.1 to 20.5.2 ([#1173](https://github.com/open-amt-cloud-toolkit/rps/issues/1173)) (#e3116c5) 
+
+### Fix
+- blocks AMT 11.12 system activation if build number < 3000 ([#1176](https://github.com/open-amt-cloud-toolkit/rps/issues/1176)) (#a3e527b) 
+
+### Refactor
+- remove double promises (#5470787) 
+
 <a name="2.16.0"></a>
 ## [2.16.0] - 2023-08-14
 ### Build
