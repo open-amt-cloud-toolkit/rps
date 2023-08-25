@@ -108,30 +108,43 @@ describe('validator', () => {
   })
 
   describe('verifyAMTVersion', () => {
-    test('should throw an exception if version is less than 7', async () => {
-      let rpsError = null
-      try {
-        msg.payload.ver = '6.8.50'
-        validator.verifyAMTVersion(msg.payload, 'activation')
-      } catch (error) {
-        rpsError = error
+    const testCases = [
+      {
+        description: 'should throw an exception if version is less than 7',
+        input: { ver: '6.8.50' },
+        shouldThrow: true,
+        expectedError: 'Device 4c4c4544-005a-3510-804b-b4c04f564433 activation failed. AMT version: 6.8.50. Version less than 7 cannot be remotely configured '
+      },
+      {
+        description: 'should throw an exception if version is 11.6 and build is less than 3000',
+        input: { ver: '11.6.50', build: '2425' },
+        shouldThrow: true,
+        expectedError: 'Device 4c4c4544-005a-3510-804b-b4c04f564433 activation failed. Please check with your OEM for a firmware update.'
+      },
+      {
+        description: 'should not throw an exception if version is less than 11.6 and build is great than 3000',
+        input: { ver: '8.0.0', build: '3425' },
+        shouldThrow: false
+      },
+      {
+        description: 'should not throw an exception if version is greater than 11.6 and build is less than 3000',
+        input: { ver: '12.0.0', build: '2425' },
+        shouldThrow: false
       }
-      expect(rpsError).toBeInstanceOf(RPSError)
-      expect(rpsError.message).toEqual(`Device ${msg.payload.uuid} activation failed. AMT version: ${msg.payload.ver}. Version less than 7 cannot be remotely configured `)
-    })
+    ]
 
-    test('should throw an exception if version is greater than 7 and build is less than 3000', async () => {
-      let rpsError = null
-      try {
-        const clientId = uuid()
-        devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
-        msg.payload.build = '2425'
-        validator.verifyAMTVersion(msg.payload, 'activation')
-      } catch (error) {
-        rpsError = error
-      }
-      expect(rpsError).toBeInstanceOf(RPSError)
-      expect(rpsError.message).toEqual(`Device ${msg.payload.uuid} activation failed. Only version ${msg.payload.ver} with build greater than 3000 can be remotely configured `)
+    testCases.forEach(testCase => {
+      test(testCase.description, async () => {
+        msg.payload.ver = testCase.input.ver
+        if (testCase.input.build) {
+          msg.payload.build = testCase.input.build
+        }
+        if (testCase.shouldThrow) {
+          expect(() => { validator.verifyAMTVersion(msg.payload, 'activation') }).toThrow(testCase.expectedError)
+        } else {
+          expect(() => { validator.verifyAMTVersion(msg.payload, 'activation') }).not.toThrow()
+        }
+      })
     })
   })
 
