@@ -641,7 +641,7 @@ export class Unconfiguration {
       },
       actions: {
         'Metric Capture': (context, event) => {
-          statsD.increment('unconfiguration.success', 1)
+          statsD.increment('unconfiguration.success')
         },
         'Update CIRA Status': (context, event) => {
           devices[context.clientId].status.CIRAConnection = context.statusMessage
@@ -653,7 +653,7 @@ export class Unconfiguration {
           devices[context.clientId].status.TLSConfiguration = ''
           devices[context.clientId].status.CIRAConnection = ''
           devices[context.clientId].status.Status = context.statusMessage
-          statsD.increment('unconfiguration.failure', 1)
+          statsD.increment('unconfiguration.failure')
         },
         'Reset Unauth Count': (context, event) => { devices[context.clientId].unauthCount = 0 },
         'Read WiFi Endpoint Settings Pull Response': this.readWiFiEndpointSettingsPullResponse.bind(this),

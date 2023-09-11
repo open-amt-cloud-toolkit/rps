@@ -16,10 +16,8 @@ export default function expressStatsdInit (): Handler {
     function sendStats (): void {
       // Status Code
       const statusCode: string = res.statusCode.toString() || 'unknown_status'
-      client.increment('status_code.' + statusCode)
-
-      // Response Time
       const duration = new Date().getTime() - startTime
+      client.increment('request', { statusCode, method: req.method, url: req.baseUrl, duration: duration.toString() })
       client.timing('response_time', duration)
 
       cleanup()

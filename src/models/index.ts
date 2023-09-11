@@ -104,6 +104,8 @@ export interface RPSConfig {
   disable_cira_domain_name?: string
   jwt_token_header: string
   jwt_tenant_property: string
+  telegraf_host: string
+  telegraf_port: number
 }
 export enum AMTRedirectionServiceEnabledStates {
   DISABLED = 32768,

@@ -4,18 +4,14 @@
  **********************************************************************/
 
 import { StatsD } from 'hot-shots'
+import { Environment } from './Environment'
 
 class StatsDClient {
   private static instance: StatsDClient
-  private readonly client: StatsD
+  private client: StatsD
 
   private constructor () {
-    this.client = new StatsD({
-      host: 'telegraf',
-      port: 8020,
-      globalTags: { service: 'rps' },
-      errorHandler: this.errorHandler
-    })
+
   }
 
   public static getInstance (): StatsDClient {
@@ -26,12 +22,21 @@ class StatsDClient {
     return StatsDClient.instance
   }
 
+  public Initialize (): void {
+    this.client = new StatsD({
+      host: Environment.Config.telegraf_host,
+      port: Environment.Config.telegraf_port,
+      globalTags: { service: 'rps' },
+      errorHandler: this.errorHandler
+    })
+  }
+
   private errorHandler (error: Error): void {
     console.error('Error encountered in StatsD client:', error)
   }
 
-  public increment (stat: string, value?: number, sampleRate?: number, tags?: string[] | Record<string, string>): void {
-    this.client.increment('rps.' + stat, value, sampleRate, tags)
+  public increment (stat: string, tags?: string[] | Record<string, string>): void {
+    this.client.increment('rps.' + stat, tags)
   }
 
   public decrement (stat: string, tags?: string[], sampleRate?: number): void {
@@ -40,6 +45,10 @@ class StatsDClient {
 
   public timing (stat: string, value: number): void {
     this.client.timing('rps.' + stat, value)
+  }
+
+  public event (title: string, text?: string, options?: any, tags?: string[]): void {
+    this.client.event(title, text, options, tags)
   }
 
   public close (callback?: (error?: Error) => void): void {

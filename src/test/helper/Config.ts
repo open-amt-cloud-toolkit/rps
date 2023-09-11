@@ -39,5 +39,7 @@ export const config: RPSConfig = {
   db_provider: 'postgres',
   connection_string: 'postgresql://postgresadmin:admin123@localhost:5432/rpsdb',
   jwt_tenant_property: '',
-  jwt_token_header: ''
+  jwt_token_header: '',
+  telegraf_host: 'localhost',
+  telegraf_port: 8020
 }
