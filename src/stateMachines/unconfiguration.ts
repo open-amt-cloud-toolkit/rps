@@ -14,6 +14,7 @@ import { NodeForge } from '../NodeForge'
 import { DbCreatorFactory } from '../factories/DbCreatorFactory'
 import { SignatureHelper } from '../utils/SignatureHelper'
 import { Validator } from '../Validator'
+import { UNEXPECTED_PARSE_ERROR } from '../utils/constants'
 import { devices } from '../WebSocketListener'
 import { type AMTConfiguration } from '../models'
 import { Error } from './error'
@@ -634,8 +635,8 @@ export class Unconfiguration {
         isWifiProfileDeleted: (context, event) => context.message.Envelope.Body == null,
         isWifiOnlyDevice: (context, event) => context.wifiSettings != null && context.wiredSettings?.MACAddress == null,
         isWifiSupportedOnDevice: (context, event) => context.wifiSettings?.MACAddress != null,
-        isWiredSupportedOnDevice: (context, event) => context.wiredSettings?.MACAddress != null
-
+        isWiredSupportedOnDevice: (context, event) => context.wiredSettings?.MACAddress != null,
+        shouldRetry: (context, event) => context.retryCount < 3 && event.data instanceof UNEXPECTED_PARSE_ERROR
       },
       actions: {
         'Update CIRA Status': (context, event) => {
