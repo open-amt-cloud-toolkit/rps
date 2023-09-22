@@ -388,44 +388,6 @@ describe('Unconfiguration State Machine', () => {
     service.start()
     service.send({ type: 'REMOVECONFIG', clientId })
   })
-
-  it('should eventually reach "FAILURE" after "DISABLE_TLS_SETTING_DATA"', (done) => {
-    devices[clientId].ciraconfig = { TLSSettingData: [{ Enabled: false }, { Enabled: true }] }
-    configuration.guards = {
-      isExpectedBadRequest: () => false,
-      tlsSettingDataEnabled: () => true,
-      hasMPSEntries: () => false,
-      hasPublicKeyCertificate: () => false,
-      hasEnvSettings: () => false,
-      is8021xProfileEnabled: () => false
-    }
-    configuration.services['disable-tls-setting-data'] = Promise.reject(new Error())
-    const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
-    const flowStates = ['UNCONFIGURED',
-      'ENUMERATE_ETHERNET_PORT_SETTINGS',
-      'PULL_ETHERNET_PORT_SETTINGS',
-      'GET_8021X_PROFILE',
-      'ENUMERATE_WIFI_ENDPOINT_SETTINGS',
-      'PULL_WIFI_ENDPOINT_SETTINGS',
-      'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED',
-      'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT',
-      'REMOVE_REMOTE_ACCESS_POLICY_RULE_PERIODIC',
-      'ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP',
-      'PULL_MANAGEMENT_PRESENCE_REMOTE_SAP',
-      'ENUMERATE_TLS_SETTING_DATA',
-      'PULL_TLS_SETTING_DATA',
-      'DISABLE_TLS_SETTING_DATA',
-      'FAILURE']
-    const service = interpret(mockUnconfigurationMachine).onTransition((state) => {
-      expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
-      if (state.matches('FAILURE') && currentStateIndex === flowStates.length) {
-        done()
-      }
-    })
-    service.start()
-    service.send({ type: 'REMOVECONFIG', clientId })
-  })
-
   it('should eventually reach "FAILURE" after "SETUP_AND_CONFIGURATION_SERVICE_COMMIT_CHANGES"', (done) => {
     unconfigContext.tlsSettingData = [{ Enabled: false }, { Enabled: true }]
     configuration.guards = {
@@ -792,7 +754,7 @@ describe('Unconfiguration State Machine', () => {
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
 
-    it('should send wsman message to disable TLS Setting Data on AMT < 16.1', async () => {
+    it('should send wsman message to disableRemoteTLSSettingData', async () => {
       unconfigContext.message = {
         Envelope: {
           Body: {
@@ -812,37 +774,9 @@ describe('Unconfiguration State Machine', () => {
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
 
-    it('should send wsman message to disable TLS Setting Data on AMT < 16.1', async () => {
+    it('should send wsman message to disableLocalTLSSettingData', async () => {
       unconfigContext.tlsSettingData = [
         { AcceptNonSecureConnections: true, NonSecureConnectionsSupported: true, ElementName: 'Intel(r) AMT 802.3 TLS Settings', Enabled: true, InstanceID: 'Intel(r) AMT 802.3 TLS Settings', MutualAuthentication: false },
-        { AcceptNonSecureConnections: true, NonSecureConnectionsSupported: true, ElementName: 'Intel(r) AMT LMS TLS Settings', Enabled: true, InstanceID: 'Intel(r) AMT LMS TLS Settings', MutualAuthentication: false }
-      ]
-      await unconfiguration.disableLocalTLSSettingData(unconfigContext, null)
-      expect(invokeWsmanCallSpy).toHaveBeenCalled()
-    })
-    it('should send wsman message to disable TLS Setting Data on AMT 16.1+', async () => {
-      unconfigContext.message = {
-        Envelope: {
-          Body: {
-            PullResponse: {
-              Items: {
-                AMT_TLSSettingData: [
-                  { AcceptNonSecureConnections: false, NonSecureConnectionsSupported: false, ElementName: 'Intel(r) AMT 802.3 TLS Settings', Enabled: true, InstanceID: 'Intel(r) AMT 802.3 TLS Settings', MutualAuthentication: false },
-                  { AcceptNonSecureConnections: true, NonSecureConnectionsSupported: true, ElementName: 'Intel(r) AMT LMS TLS Settings', Enabled: true, InstanceID: 'Intel(r) AMT LMS TLS Settings', MutualAuthentication: false }
-                ]
-              }
-            }
-          }
-        }
-      }
-      await unconfiguration.disableRemoteTLSSettingData(unconfigContext, null)
-      expect(unconfigContext.message.Envelope.Body.PullResponse.Items.AMT_TLSSettingData[0]['h:AcceptNonSecureConnections']).toBe(false)
-      expect(invokeWsmanCallSpy).toHaveBeenCalled()
-    })
-
-    it('should send wsman message to disable TLS Setting Data on AMT 16.1+', async () => {
-      unconfigContext.tlsSettingData = [
-        { AcceptNonSecureConnections: false, NonSecureConnectionsSupported: false, ElementName: 'Intel(r) AMT 802.3 TLS Settings', Enabled: true, InstanceID: 'Intel(r) AMT 802.3 TLS Settings', MutualAuthentication: false },
         { AcceptNonSecureConnections: true, NonSecureConnectionsSupported: true, ElementName: 'Intel(r) AMT LMS TLS Settings', Enabled: true, InstanceID: 'Intel(r) AMT LMS TLS Settings', MutualAuthentication: false }
       ]
       await unconfiguration.disableLocalTLSSettingData(unconfigContext, null)
