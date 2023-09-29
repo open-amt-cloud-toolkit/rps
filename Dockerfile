@@ -28,7 +28,7 @@ RUN npm prune --production
 # set the user to non-root
 USER node
 
-FROM alpine:latest@sha256:7144f7bab3d4c2648d7e59409f15ec52a18006a128c733fcff20d3a4a54ba44a
+FROM alpine:latest@sha256:eece025e432126ce23f223450a0326fbebde39cdf496a85d8c016293fc851978
 
 RUN addgroup -g 1000 node && adduser -u 1000 -G node -s /bin/sh -D node 
 RUN apk update && apk upgrade && apk add nodejs && rm -rf /var/cache/apk/*
