@@ -967,13 +967,22 @@ export class Activation {
     const clientObj = devices[clientId]
     /* Register device metadata with MPS */
     try {
+      const deviceInfo = {
+        fwVersion: clientObj.ClientData.payload.ver,
+        fwBuild: clientObj.ClientData.payload.build,
+        fwSku: clientObj.ClientData.payload.sku,
+        currentMode: clientObj.ClientData.payload.currentMode?.toString(),
+        features: clientObj.ClientData.payload.features,
+        ipAddress: clientObj.ClientData.payload.ipConfiguration?.ipAddress
+      }
       const url = `${Environment.Config.mps_server}/api/v1/devices`
       const jsonData: any = {
         guid: clientObj.uuid,
         hostname: clientObj.hostname,
         mpsusername: clientObj.mpsUsername,
         tags: profile?.tags ?? [],
-        tenantId: profile.tenantId
+        tenantId: profile.tenantId,
+        deviceInfo
       }
       // friendlyName with an empty string indicates clearing the value
       // otherwise, do not include the property so an update of the device
