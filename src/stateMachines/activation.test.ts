@@ -69,7 +69,9 @@ describe('Activation State Machine', () => {
           client: 'PPC',
           profile: 'profile1',
           digestRealm: 'Digest:A3829B3827DE4D33D4449B366831FD01',
-          action: ClientAction.ADMINCTLMODE
+          action: ClientAction.ADMINCTLMODE,
+          ipConfiguration: { ipAddress: '' },
+          hostnameInfo: { dnsSuffixOS: '' }
         }
       },
       ciraconfig: {},
