@@ -14,6 +14,7 @@ import { NodeForge } from '../NodeForge'
 import { DbCreatorFactory } from '../factories/DbCreatorFactory'
 import { SignatureHelper } from '../utils/SignatureHelper'
 import { Validator } from '../Validator'
+import { UNEXPECTED_PARSE_ERROR } from '../utils/constants'
 import { devices } from '../WebSocketListener'
 import { type AMTConfiguration } from '../models'
 import { Error } from './error'
@@ -392,19 +393,17 @@ export class Unconfiguration {
             id: 'disable-tls-setting-data',
             onDone: { actions: assign({ message: (context, event) => event.data }), target: 'DISABLE_TLS_SETTING_DATA_RESPONSE' },
             onError: {
-              actions: assign({ statusMessage: (context, event) => 'Failed to disable TLS Setting Data' }),
-              target: 'FAILURE'
+              target: 'SETUP_AND_CONFIGURATION_SERVICE_COMMIT_CHANGES'
             }
           }
         },
-        DISABLE_TLS_SETTING_DATA_2: { // TODO: REFACTOR TO USE EXISITING PUT
+        DISABLE_TLS_SETTING_DATA_2: {
           invoke: {
             src: this.disableLocalTLSSettingData.bind(this),
             id: 'disable-tls-setting-data-2',
             onDone: { actions: assign({ message: (context, event) => event.data }), target: 'DISABLE_TLS_SETTING_DATA_RESPONSE' },
             onError: {
-              actions: assign({ statusMessage: (context, event) => 'Failed to disable TLS Setting Data' }),
-              target: 'FAILURE'
+              target: 'SETUP_AND_CONFIGURATION_SERVICE_COMMIT_CHANGES'
             }
           }
         },
@@ -463,8 +462,7 @@ export class Unconfiguration {
             id: 'delete-tls-credential-context',
             onDone: 'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR',
             onError: {
-              actions: assign({ statusMessage: (context, event) => 'Failed to delete TLS Credential context' }),
-              target: 'FAILURE'
+              target: 'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR'
             }
           }
         },
@@ -514,8 +512,7 @@ export class Unconfiguration {
             id: 'delete-public-private-key-pair',
             onDone: { actions: assign({ message: (context, event) => event.data }), target: 'PULL_PUBLIC_PRIVATE_KEY_PAIR_RESPONSE' },
             onError: {
-              actions: assign({ statusMessage: (context, event) => 'Failed to delete public private key pair' }),
-              target: 'FAILURE'
+              target: 'PULL_PUBLIC_PRIVATE_KEY_PAIR_RESPONSE'
             }
           }
         },
@@ -568,8 +565,7 @@ export class Unconfiguration {
               target: 'PULL_PUBLIC_KEY_CERTIFICATE_RESPONSE'
             }, // check if there is any more certificates
             onError: {
-              actions: assign({ statusMessage: (context, event) => 'Failed to delete public key certificate' }),
-              target: 'FAILURE'
+              target: 'PULL_PUBLIC_KEY_CERTIFICATE_RESPONSE'
             }
           }
         },
@@ -636,8 +632,8 @@ export class Unconfiguration {
         isWifiProfileDeleted: (context, event) => context.message.Envelope.Body == null,
         isWifiOnlyDevice: (context, event) => context.wifiSettings != null && context.wiredSettings?.MACAddress == null,
         isWifiSupportedOnDevice: (context, event) => context.wifiSettings?.MACAddress != null,
-        isWiredSupportedOnDevice: (context, event) => context.wiredSettings?.MACAddress != null
-
+        isWiredSupportedOnDevice: (context, event) => context.wiredSettings?.MACAddress != null,
+        shouldRetry: (context, event) => context.retryCount < 3 && event.data instanceof UNEXPECTED_PARSE_ERROR
       },
       actions: {
         'Metric Capture': (context, event) => {
@@ -833,9 +829,7 @@ export class Unconfiguration {
   async disableRemoteTLSSettingData (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
     context.tlsSettingData = context.message.Envelope.Body.PullResponse.Items.AMT_TLSSettingData
     context.tlsSettingData[0].Enabled = false
-    if (!('NonSecureConnectionsSupported' in context.tlsSettingData[0]) || context.tlsSettingData[0].NonSecureConnectionsSupported === true) {
-      context.tlsSettingData[0].AcceptNonSecureConnections = true
-    }
+    context.tlsSettingData[0].AcceptNonSecureConnections = true
     context.tlsSettingData[0].MutualAuthentication = false
     delete context.tlsSettingData[0].TrustedCN
     context.xmlMessage = context.amt.TLSSettingData.Put(context.tlsSettingData[0])
