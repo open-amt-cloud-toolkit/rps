@@ -982,6 +982,7 @@ export class Activation {
         mpsusername: clientObj.mpsUsername,
         tags: profile?.tags ?? [],
         tenantId: profile.tenantId,
+        dnsSuffix: clientObj.ClientData?.payload.fqdn,
         deviceInfo
       }
       // friendlyName with an empty string indicates clearing the value
