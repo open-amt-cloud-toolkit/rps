@@ -24,6 +24,8 @@ import * as ServiceManager from './serviceManager'
 import { ConsulService } from './consul'
 import { type IServiceManager } from './interfaces/IServiceManager'
 import path = require('path')
+import expressStatsdInit from './middleware/stats'
+import statsD from './utils/stats'
 
 const log = new Logger('Index')
 
@@ -42,11 +44,12 @@ config.delay_tls_put_data_sync = 5000
 log.silly(`config: ${JSON.stringify(config, null, 2)}`)
 
 Environment.Config = config
-
+statsD.Initialize()
 const app = express()
 app.use(cors())
 app.use(express.urlencoded())
 app.use(express.json())
+app.use(expressStatsdInit())
 
 export const waitForDB = async function (db: IDB): Promise<void> {
   await backOff(async () => await db.query('SELECT 1'), {
@@ -67,6 +70,7 @@ export const waitForSecretsManager = async function (secretsManager: ISecretMana
 }
 
 export const startItUp = (): void => {
+  statsD.increment('startup')
   const configurator = new Configurator()
   log.silly(`WebSocket Cert Info ${JSON.stringify(Environment.Config)}`)
   const serverForEnterpriseAssistant: WSEnterpriseAssistantListener = new WSEnterpriseAssistantListener(new Logger('WSEnterpriseAssistantListener'))

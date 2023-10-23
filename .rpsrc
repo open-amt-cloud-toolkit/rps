@@ -17,5 +17,7 @@
   "consul_enabled": false,
   "consul_host": "localhost",
   "consul_port": "8500",
-  "consul_key_prefix": "RPS"
+  "consul_key_prefix": "RPS",
+  "telegraf_host":"localhost",
+  "telegraf_port": 8020
 }

@@ -30,6 +30,7 @@ import ClientResponseMsg from '../utils/ClientResponseMsg'
 import { Unconfiguration } from './unconfiguration'
 import { type DeviceCredentials } from '../interfaces/ISecretManagerService'
 import { NetworkConfiguration } from './networkConfiguration'
+import statsD from '../utils/stats'
 
 export interface ActivationContext {
   profile: AMTConfiguration
@@ -783,9 +784,11 @@ export class Activation {
     let method = null
     if (status === 'success') {
       method = 'success'
+      statsD.increment('activation.success')
     } else if (status === 'error') {
       clientObj.status.Status = context.errorMessage !== '' ? context.errorMessage : 'Failed'
       method = 'failed'
+      statsD.increment('activation.failure')
     }
     const responseMessage = ClientResponseMsg.get(clientId, null, status, method, JSON.stringify(clientObj.status))
     this.logger.info(JSON.stringify(responseMessage, null, '\t'))
