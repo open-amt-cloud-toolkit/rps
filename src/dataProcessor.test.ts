@@ -35,6 +35,7 @@ import { UNEXPECTED_PARSE_ERROR } from './utils/constants'
 import { SyncTimeEventType } from './stateMachines/maintenance/syncTime'
 import { type IPConfiguration, type SyncIPEvent, SyncIPEventType } from './stateMachines/maintenance/syncIP'
 import { type ChangePasswordEvent, ChangePasswordEventType } from './stateMachines/maintenance/changePassword'
+import { SyncDeviceInfoEventType, type DeviceInfo } from './stateMachines/maintenance/syncDeviceInfo'
 import {
   type HostNameInfo,
   type SyncHostNameEvent,
@@ -414,6 +415,21 @@ describe('build maintenance event', () => {
   it('should fail - synchostname requires hostname info', async () => {
     payload.task = 'synchostname'
     expect(() => dataProcessor.buildMaintenanceEvent(clientId, payload)).toThrow(RPSError)
+  })
+  it('should pass - syncdeviceinfo', async () => {
+    const deviceInfo: DeviceInfo = {
+      ver: '16.1.1',
+      build: '1111',
+      sku: '16xxx',
+      currentMode: '0',
+      features: 'AMT Pro Corprate',
+      ipConfiguration: { ipAddress: '1.1.1.1' }
+    }
+    payload.task = 'syncdeviceinfo'
+    payload.deviceInfo = deviceInfo
+    const mEvent: MaintenanceEvent = dataProcessor.buildMaintenanceEvent(clientId, payload)
+    expect(mEvent.type).toEqual(SyncDeviceInfoEventType)
+    expect(mEvent.clientId).toEqual(clientId)
   })
   it('should fail - unknown task', async () => {
     payload.task = 'somerandomtask'

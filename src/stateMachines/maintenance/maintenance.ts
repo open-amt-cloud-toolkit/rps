@@ -12,6 +12,7 @@ import { SyncIP, type SyncIPEvent } from './syncIP'
 import { ChangePassword, type ChangePasswordEvent } from './changePassword'
 import * as TaskDefs from './doneResponse'
 import { SyncHostName, type SyncHostNameEvent } from './syncHostName'
+import { SyncDeviceInfo, type SyncDeviceInfoEvent } from './syncDeviceInfo'
 import ClientResponseMsg from '../../utils/ClientResponseMsg'
 
 export type MaintenanceEvent =
@@ -19,6 +20,7 @@ export type MaintenanceEvent =
   | SyncTimeEvent
   | SyncIPEvent
   | SyncHostNameEvent
+  | SyncDeviceInfoEvent
 
 export interface MaintenanceContext {
   clientId: string
@@ -35,6 +37,7 @@ export class Maintenance {
   syncIPImpl: SyncIP = new SyncIP()
   syncTimeImpl: SyncTime = new SyncTime()
   syncHostNameImpl: SyncHostName = new SyncHostName()
+  syncDeviceInfoImpl: SyncDeviceInfo = new SyncDeviceInfo()
   machine = createMachine<MaintenanceContext, MaintenanceEvent>({
     id: 'maintenance-machine',
     predictableActionArguments: true,
@@ -49,7 +52,8 @@ export class Maintenance {
           CHANGE_PASSWORD: { target: 'CHANGE_PASSWORD' },
           SYNC_TIME: { target: 'SYNC_TIME' },
           SYNC_IP: { target: 'SYNC_IP' },
-          SYNC_HOST_NAME: { target: 'SYNCH_HOST_NAME' }
+          SYNC_HOST_NAME: { target: 'SYNC_HOST_NAME' },
+          SYNC_DEVICE_INFO: { target: 'SYNC_DEVICE_INFO' }
         }
       },
       CHANGE_PASSWORD: {
@@ -66,7 +70,7 @@ export class Maintenance {
           }
         }
       },
-      SYNCH_HOST_NAME: {
+      SYNC_HOST_NAME: {
         entry: [
           assign({ clientId: (_, event) => event.clientId }),
           send((context, event) => event, { to: 'sync-host-name' })
@@ -102,6 +106,20 @@ export class Maintenance {
         invoke: {
           id: 'sync-time',
           src: this.syncTimeImpl.machine,
+          onDone: {
+            actions: assign({ doneData: (_, event) => event.data }),
+            target: 'DONE'
+          }
+        }
+      },
+      SYNC_DEVICE_INFO: {
+        entry: [
+          assign({ clientId: (_, event) => event.clientId }),
+          send((context, event) => event, { to: 'sync-device-info' })
+        ],
+        invoke: {
+          id: 'sync-device-info',
+          src: this.syncDeviceInfoImpl.machine,
           onDone: {
             actions: assign({ doneData: (_, event) => event.data }),
             target: 'DONE'

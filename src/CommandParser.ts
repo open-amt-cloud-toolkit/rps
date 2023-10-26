@@ -59,6 +59,8 @@ const CommandParser = {
               msg.payload.taskArg = firstNonFlagArg
             } else if (args.synchostname) {
               msg.payload.task = 'synchostname'
+            } else if (args.syncdeviceinfo) {
+              msg.payload.task = 'syncdeviceinfo'
             }
             this.logger.silly(`parsed maintenance task: ${msg.payload.task}`)
           }
