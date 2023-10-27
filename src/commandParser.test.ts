@@ -159,6 +159,14 @@ test.each<TestInput>([
       method: clientMethod,
       payload: { task: 'synchostname' }
     }
+  },
+  {
+    desc: 'should parse syncdeviceinfo',
+    method: `${clientMethod} --syncdeviceinfo`,
+    expect: {
+      method: clientMethod,
+      payload: { task: 'syncdeviceinfo' }
+    }
   }
 ])('$desc', async (ti) => {
   const clientMsg = getBasicMessage()

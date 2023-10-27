@@ -17,6 +17,7 @@ import { doneFail, type DoneResponse, doneSuccess } from './doneResponse'
 import { type SyncTimeEvent, SyncTimeEventType } from './syncTime'
 import { ChangePasswordEventType } from './changePassword'
 import { SyncHostNameEventType } from './syncHostName'
+import { SyncDeviceInfoEventType } from './syncDeviceInfo'
 import { SyncIPEventType } from './syncIP'
 
 Environment.Config = config
@@ -84,6 +85,22 @@ describe('events and states', () => {
     {
       taskName: 'sync-time',
       event: { type: SyncTimeEventType, clientId },
+      shouldSucceed: true
+    },
+    {
+      taskName: 'sync-device-info',
+      event: {
+        type: SyncDeviceInfoEventType,
+        clientId,
+        deviceInfo: {
+          ver: '16.1.1',
+          build: '1111',
+          sku: '16xxx',
+          currentMode: '0',
+          features: 'AMT Pro Corprate',
+          ipConfiguration: { ipAddress: '1.1.1.1' }
+        }
+      },
       shouldSucceed: true
     }
   ])('$taskName should succeed $shouldSucceed', async (ti) => {

@@ -22,6 +22,7 @@ import { SyncTimeEventType } from './stateMachines/maintenance/syncTime'
 import { ChangePasswordEventType } from './stateMachines/maintenance/changePassword'
 import { SyncHostNameEventType } from './stateMachines/maintenance/syncHostName'
 import { SyncIPEventType } from './stateMachines/maintenance/syncIP'
+import { SyncDeviceInfoEventType } from './stateMachines/maintenance/syncDeviceInfo'
 export class DataProcessor {
   httpHandler: HttpHandler
   constructor (
@@ -148,6 +149,9 @@ export class DataProcessor {
     }
     let mEvent: MaintenanceEvent
     switch (payload.task) {
+      case 'syncdeviceinfo':
+        mEvent = { type: SyncDeviceInfoEventType, clientId, deviceInfo: payload }
+        break
       case 'synctime':
         mEvent = { type: SyncTimeEventType, clientId }
         break
