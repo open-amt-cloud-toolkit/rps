@@ -106,6 +106,7 @@ describe('Activation State Machine', () => {
         provisioningCert: cert,
         provisioningCertStorageFormat: 'raw',
         provisioningCertPassword: 'P@ssw0rd',
+        expirationDate: new Date(),
         tenantId: ''
       },
       tenantId: '',
@@ -246,6 +247,7 @@ describe('Activation State Machine', () => {
         provisioningCert: cert,
         provisioningCertStorageFormat: 'raw',
         provisioningCertPassword: 'P@ssw0rd',
+        expirationDate: new Date(),
         tenantId: ''
       }
       const getProvisioningCertSpy = jest.spyOn(activation.configurator.domainCredentialManager, 'getProvisioningCert').mockImplementation(async () => expectedProfile)
