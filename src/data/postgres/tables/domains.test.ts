@@ -21,6 +21,7 @@ describe('domains tests', () => {
       provisioningCert: 'cert',
       provisioningCertStorageFormat: 'format',
       provisioningCertPassword: 'password',
+      expirationDate: new Date(),
       tenantId: '1',
       version: '2'
     }
@@ -74,6 +75,7 @@ describe('domains tests', () => {
       provisioning_cert as "provisioningCert", 
       provisioning_cert_storage_format as "provisioningCertStorageFormat",
       provisioning_cert_key as "provisioningCertPassword", 
+      expiration_date as "expirationDate", 
       tenant_id as "tenantId",
       xmin as "version"
     FROM domains 
@@ -96,6 +98,7 @@ describe('domains tests', () => {
       provisioning_cert as "provisioningCert", 
       provisioning_cert_storage_format as "provisioningCertStorageFormat", 
       provisioning_cert_key as "provisioningCertPassword", 
+      expiration_date as "expirationDate", 
       tenant_id as "tenantId",
       xmin as "version"
     FROM domains 
@@ -147,14 +150,15 @@ describe('domains tests', () => {
       const result = await domainsTable.insert(amtDomain)
       expect(querySpy).toBeCalledTimes(1)
       expect(querySpy).toBeCalledWith(`
-      INSERT INTO domains(name, domain_suffix, provisioning_cert, provisioning_cert_storage_format, provisioning_cert_key, tenant_id)
-      values($1, $2, $3, $4, $5, $6)`,
+      INSERT INTO domains(name, domain_suffix, provisioning_cert, provisioning_cert_storage_format, provisioning_cert_key, expiration_date, tenant_id)
+      values($1, $2, $3, $4, $5, $6, $7)`,
       [
         amtDomain.profileName,
         amtDomain.domainSuffix,
         amtDomain.provisioningCert,
         amtDomain.provisioningCertStorageFormat,
         amtDomain.provisioningCertPassword,
+        amtDomain.expirationDate,
         amtDomain.tenantId
       ])
       expect(getByName).toBeCalledTimes(1)
@@ -168,14 +172,15 @@ describe('domains tests', () => {
       const result = await domainsTable.insert(amtDomain)
       expect(querySpy).toBeCalledTimes(1)
       expect(querySpy).toBeCalledWith(`
-      INSERT INTO domains(name, domain_suffix, provisioning_cert, provisioning_cert_storage_format, provisioning_cert_key, tenant_id)
-      values($1, $2, $3, $4, $5, $6)`,
+      INSERT INTO domains(name, domain_suffix, provisioning_cert, provisioning_cert_storage_format, provisioning_cert_key, expiration_date, tenant_id)
+      values($1, $2, $3, $4, $5, $6, $7)`,
       [
         amtDomain.profileName,
         amtDomain.domainSuffix,
         amtDomain.provisioningCert,
         amtDomain.provisioningCertStorageFormat,
         amtDomain.provisioningCertPassword,
+        amtDomain.expirationDate,
         amtDomain.tenantId
       ])
       expect(getByName).toBeCalledTimes(0)
@@ -202,14 +207,15 @@ describe('domains tests', () => {
       expect(querySpy).toBeCalledTimes(1)
       expect(querySpy).toBeCalledWith(`
       UPDATE domains 
-      SET domain_suffix=$2, provisioning_cert=$3, provisioning_cert_storage_format=$4, provisioning_cert_key=$5 
-      WHERE name=$1 and tenant_id = $6 and xmin = $7`,
+      SET domain_suffix=$2, provisioning_cert=$3, provisioning_cert_storage_format=$4, provisioning_cert_key=$5, expiration_date=$6 
+      WHERE name=$1 and tenant_id = $7 and xmin = $8`,
       [
         amtDomain.profileName,
         amtDomain.domainSuffix,
         amtDomain.provisioningCert,
         amtDomain.provisioningCertStorageFormat,
         amtDomain.provisioningCertPassword,
+        amtDomain.expirationDate,
         amtDomain.tenantId,
         amtDomain.version
       ])

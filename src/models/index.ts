@@ -179,6 +179,7 @@ export class AMTDomain {
   provisioningCert: string
   provisioningCertStorageFormat: string
   provisioningCertPassword: string
+  expirationDate: Date
   tenantId: string
   version?: string
 }

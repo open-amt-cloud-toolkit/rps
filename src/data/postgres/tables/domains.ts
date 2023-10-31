@@ -50,6 +50,7 @@ export class DomainsTable implements IDomainsTable {
       provisioning_cert as "provisioningCert", 
       provisioning_cert_storage_format as "provisioningCertStorageFormat",
       provisioning_cert_key as "provisioningCertPassword", 
+      expiration_date as "expirationDate", 
       tenant_id as "tenantId",
       xmin as "version"
     FROM domains 
@@ -73,6 +74,7 @@ export class DomainsTable implements IDomainsTable {
       provisioning_cert as "provisioningCert", 
       provisioning_cert_storage_format as "provisioningCertStorageFormat", 
       provisioning_cert_key as "provisioningCertPassword", 
+      expiration_date as "expirationDate", 
       tenant_id as "tenantId",
       xmin as "version"
     FROM domains 
@@ -94,6 +96,7 @@ export class DomainsTable implements IDomainsTable {
       provisioning_cert as "provisioningCert", 
       provisioning_cert_storage_format as "provisioningCertStorageFormat", 
       provisioning_cert_key as "provisioningCertPassword", 
+      expiration_date as "expirationDate", 
       tenant_id as "tenantId",
       xmin as "version"
     FROM domains 
@@ -124,14 +127,15 @@ export class DomainsTable implements IDomainsTable {
   async insert (amtDomain: AMTDomain): Promise<AMTDomain> {
     try {
       const results = await this.db.query(`
-      INSERT INTO domains(name, domain_suffix, provisioning_cert, provisioning_cert_storage_format, provisioning_cert_key, tenant_id)
-      values($1, $2, $3, $4, $5, $6)`,
+      INSERT INTO domains(name, domain_suffix, provisioning_cert, provisioning_cert_storage_format, provisioning_cert_key, expiration_date, tenant_id)
+      values($1, $2, $3, $4, $5, $6, $7)`,
       [
         amtDomain.profileName,
         amtDomain.domainSuffix,
         amtDomain.provisioningCert,
         amtDomain.provisioningCertStorageFormat,
         amtDomain.provisioningCertPassword,
+        amtDomain.expirationDate,
         amtDomain.tenantId
       ])
       if (results.rowCount > 0) {
@@ -158,14 +162,15 @@ export class DomainsTable implements IDomainsTable {
     try {
       const results = await this.db.query(`
       UPDATE domains 
-      SET domain_suffix=$2, provisioning_cert=$3, provisioning_cert_storage_format=$4, provisioning_cert_key=$5 
-      WHERE name=$1 and tenant_id = $6 and xmin = $7`,
+      SET domain_suffix=$2, provisioning_cert=$3, provisioning_cert_storage_format=$4, provisioning_cert_key=$5, expiration_date=$6 
+      WHERE name=$1 and tenant_id = $7 and xmin = $8`,
       [
         amtDomain.profileName,
         amtDomain.domainSuffix,
         amtDomain.provisioningCert,
         amtDomain.provisioningCertStorageFormat,
         amtDomain.provisioningCertPassword,
+        amtDomain.expirationDate,
         amtDomain.tenantId,
         amtDomain.version
       ])
