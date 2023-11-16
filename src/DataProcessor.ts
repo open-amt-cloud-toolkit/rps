@@ -144,7 +144,7 @@ export class DataProcessor {
   }
 
   buildMaintenanceEvent (clientId: string, payload: any): MaintenanceEvent {
-    if (payload == null || payload.task == null) {
+    if (payload?.task == null) {
       throw new RPSError(`${clientId} - missing payload data`)
     }
     let mEvent: MaintenanceEvent
