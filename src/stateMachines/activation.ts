@@ -973,7 +973,8 @@ export class Activation {
         fwSku: clientObj.ClientData.payload.sku,
         currentMode: clientObj.ClientData.payload.currentMode?.toString(),
         features: clientObj.ClientData.payload.features,
-        ipAddress: clientObj.ClientData.payload.ipConfiguration?.ipAddress
+        ipAddress: clientObj.ClientData.payload.ipConfiguration?.ipAddress,
+        lastUpdated: new Date()
       }
       const url = `${Environment.Config.mps_server}/api/v1/devices`
       const jsonData: any = {

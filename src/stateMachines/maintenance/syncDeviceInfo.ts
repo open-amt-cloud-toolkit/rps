@@ -93,7 +93,8 @@ export class SyncDeviceInfo {
       fwSku: context.deviceInfo.sku,
       currentMode: context.deviceInfo.currentMode?.toString(),
       features: context.deviceInfo.features,
-      ipAddress: context.deviceInfo.ipConfiguration.ipAddress
+      ipAddress: context.deviceInfo.ipConfiguration.ipAddress,
+      lastUpdated: new Date()
     }
     const jsonData = {
       guid: clientObj.uuid,
