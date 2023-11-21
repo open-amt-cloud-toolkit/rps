@@ -66,7 +66,7 @@ export class SyncTime {
       GET_LOW_ACCURACY_TIME_SYNCH: {
         invoke: {
           id: 'get-low-accuracy-time-synch',
-          src: this.getLowAccuracyTimeSync,
+          src: this.getLowAccuracyTimeSync.bind(this),
           onDone: {
             actions: assign({ lowAccuracyData: (context, event) => event.data }),
             target: 'SET_HIGH_ACCURACY_TIME_SYNCH'
@@ -82,7 +82,7 @@ export class SyncTime {
       SET_HIGH_ACCURACY_TIME_SYNCH: {
         invoke: {
           id: 'set-high-accuracy-time-synch',
-          src: this.setHighAccuracyTimeSynch,
+          src: this.setHighAccuracyTimeSynch.bind(this),
           onDone: {
             target: 'SUCCESS'
           },
