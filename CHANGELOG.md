@@ -1,3 +1,70 @@
+<a name="2.20.1"></a>
+## [2.20.1] - 2023-11-29
+### Build
+- **deps:** bump mqtt from 5.3.0 to 5.3.1 ([#1329](https://github.com/open-amt-cloud-toolkit/rps/issues/1329)) (#7c91641) 
+- **deps:** bump github/codeql-action from 2.22.7 to 2.22.8 ([#1324](https://github.com/open-amt-cloud-toolkit/rps/issues/1324)) (#42b67be) 
+- **deps-dev:** bump eslint-config-standard-with-typescript from 39.1.1 to 40.0.0 ([#1317](https://github.com/open-amt-cloud-toolkit/rps/issues/1317)) (#6564c34) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 6.12.0 to 6.13.1 ([#1327](https://github.com/open-amt-cloud-toolkit/rps/issues/1327)) (#ba1227e) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin ([#1328](https://github.com/open-amt-cloud-toolkit/rps/issues/1328)) (#0e50115) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 20.9.4 to 20.10.0 ([#1325](https://github.com/open-amt-cloud-toolkit/rps/issues/1325)) (#a8ee45d) 
+- **deps-dev:** bump [@types](https://github.com/types)/node-forge from 1.3.9 to 1.3.10 ([#1318](https://github.com/open-amt-cloud-toolkit/rps/issues/1318)) (#e6e8521) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin ([#1319](https://github.com/open-amt-cloud-toolkit/rps/issues/1319)) (#836e726) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 20.9.2 to 20.9.4 ([#1323](https://github.com/open-amt-cloud-toolkit/rps/issues/1323)) (#d97e97a) 
+- **deps-dev:** bump [@types](https://github.com/types)/ws from 8.5.9 to 8.5.10 ([#1320](https://github.com/open-amt-cloud-toolkit/rps/issues/1320)) (#e9d401a) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 6.11.0 to 6.12.0 ([#1321](https://github.com/open-amt-cloud-toolkit/rps/issues/1321)) (#ac2ef5a) 
+
+### Ci
+- adds persist-credentials:false to checkout (#8a87687) 
+
+### Fix
+- update build tasks, package.json and changelog (#9588430) 
+
+
+<a name="v2.21.0"></a>
+## [v2.21.0] - 2023-11-20
+### Build
+- bump eslint-config-standard-with-typescript to 39.1.1 ([#1310](https://github.com/open-amt-cloud-toolkit/rps/issues/1310)) (#9ec8a07) 
+- **deps:** bump [@open](https://github.com/open)-amt-cloud-toolkit/wsman-messages ([#1299](https://github.com/open-amt-cloud-toolkit/rps/issues/1299)) (#bb9ff88) 
+- **deps:** bump mqtt from 5.2.2 to 5.3.0 ([#1316](https://github.com/open-amt-cloud-toolkit/rps/issues/1316)) (#5f14e34) 
+- **deps:** bump step-security/harden-runner from 2.6.0 to 2.6.1 ([#1313](https://github.com/open-amt-cloud-toolkit/rps/issues/1313)) (#7af916c) 
+- **deps:** bump github/codeql-action from 2.22.6 to 2.22.7 ([#1312](https://github.com/open-amt-cloud-toolkit/rps/issues/1312)) (#8bb5a0a) 
+- **deps:** bump mqtt from 5.1.4 to 5.2.0 ([#1301](https://github.com/open-amt-cloud-toolkit/rps/issues/1301)) (#5487971) 
+- **deps:** bump mqtt from 5.2.1 to 5.2.2 ([#1305](https://github.com/open-amt-cloud-toolkit/rps/issues/1305)) (#6bd6b6a) 
+- **deps:** bump mqtt from 5.2.0 to 5.2.1 ([#1303](https://github.com/open-amt-cloud-toolkit/rps/issues/1303)) (#3dd3c47) 
+- **deps:** bump github/codeql-action from 2.22.5 to 2.22.6 ([#1307](https://github.com/open-amt-cloud-toolkit/rps/issues/1307)) (#34e7092) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 20.9.1 to 20.9.2 ([#1314](https://github.com/open-amt-cloud-toolkit/rps/issues/1314)) (#d8ac96f) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin from 5.61.0 to 6.11.0 ([#1308](https://github.com/open-amt-cloud-toolkit/rps/issues/1308)) (#0bc4481) 
+- **deps-dev:** removed remove ([#1309](https://github.com/open-amt-cloud-toolkit/rps/issues/1309)) (#6cf8efe) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 20.9.0 to 20.9.1 ([#1311](https://github.com/open-amt-cloud-toolkit/rps/issues/1311)) (#74155e7) 
+- **deps-dev:** bump [@types](https://github.com/types)/pg from 8.10.8 to 8.10.9 ([#1296](https://github.com/open-amt-cloud-toolkit/rps/issues/1296)) (#266dbd4) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 20.8.10 to 20.9.0 ([#1297](https://github.com/open-amt-cloud-toolkit/rps/issues/1297)) (#3202fed) 
+- **deps-dev:** bump [@types](https://github.com/types)/ws from 8.5.8 to 8.5.9 ([#1298](https://github.com/open-amt-cloud-toolkit/rps/issues/1298)) (#aeda40a) 
+- **deps-dev:** bump eslint from 8.53.0 to 8.54.0 ([#1315](https://github.com/open-amt-cloud-toolkit/rps/issues/1315)) (#8bad8e5) 
+- **deps-dev:** bump [@types](https://github.com/types)/node-forge from 1.3.8 to 1.3.9 ([#1300](https://github.com/open-amt-cloud-toolkit/rps/issues/1300)) (#ebcba54) 
+
+### Ci
+- release action updates version and changelog ([#1304](https://github.com/open-amt-cloud-toolkit/rps/issues/1304)) (#b6cb964) 
+
+### Feat
+- add timestamp to device info data ([#1302](https://github.com/open-amt-cloud-toolkit/rps/issues/1302)) (#5dd3e3a) 
+
+
+<a name="v2.20.0"></a>
+## [v2.20.0] - 2023-11-07
+### Build
+- **deps:** bump aquasecurity/trivy-action from 0.13.1 to 0.14.0 ([#1294](https://github.com/open-amt-cloud-toolkit/rps/issues/1294)) (#6bbdee0) 
+- **deps:** bump wagoid/commitlint-github-action from 5.4.3 to 5.4.4 ([#1286](https://github.com/open-amt-cloud-toolkit/rps/issues/1286)) (#0a64507) 
+- **deps-dev:** bump [@types](https://github.com/types)/express from 4.17.20 to 4.17.21 ([#1291](https://github.com/open-amt-cloud-toolkit/rps/issues/1291)) (#38895ea) 
+- **deps-dev:** bump [@types](https://github.com/types)/pg from 8.10.7 to 8.10.8 ([#1292](https://github.com/open-amt-cloud-toolkit/rps/issues/1292)) (#a58f493) 
+- **deps-dev:** bump eslint from 8.52.0 to 8.53.0 ([#1290](https://github.com/open-amt-cloud-toolkit/rps/issues/1290)) (#72e80fe) 
+- **deps-dev:** bump sinon from 17.0.0 to 17.0.1 ([#1285](https://github.com/open-amt-cloud-toolkit/rps/issues/1285)) (#928d341) 
+
+### Ci
+- updated repo for release automation ([#1289](https://github.com/open-amt-cloud-toolkit/rps/issues/1289)) (#5861081) 
+
+### Feat
+- adds release trigger to security report (#50fbc64) 
+
 <a name="2.19.1"></a>
 ## [2.19.1] - 2023-11-01
 ### Build
