@@ -33,6 +33,7 @@
         "@typescript-eslint/no-throw-literal": 0,
         "@typescript-eslint/consistent-type-assertions": 0,
         "@typescript-eslint/no-dynamic-delete": 0,
-        "@typescript-eslint/prefer-nullish-coalescing": 0
+        "@typescript-eslint/prefer-nullish-coalescing": 0,
+        "@typescript-eslint/unbound-method": 0
     }
 }
