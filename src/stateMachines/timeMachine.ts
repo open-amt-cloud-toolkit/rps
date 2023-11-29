@@ -49,7 +49,7 @@ export class TimeSync {
       GET_LOW_ACCURACY_TIME_SYNCH: {
         invoke: {
           id: 'get-low-accuracy-time-synch',
-          src: this.getLowAccuracyTimeSync.bind(this),
+          src: this.getLowAccuracyTimeSync,
           onDone: [{
             actions: assign({ message: (context, event) => event.data }),
             target: 'GET_LOW_ACCURACY_TIME_SYNCH_RESPONSE'
@@ -76,7 +76,7 @@ export class TimeSync {
       SET_HIGH_ACCURACY_TIME_SYNCH: {
         invoke: {
           id: 'set-high-accuracy-time-synch',
-          src: this.setHighAccuracyTimeSynch.bind(this),
+          src: this.setHighAccuracyTimeSynch,
           onDone: [{
             actions: assign({ message: (context, event) => event.data }),
             target: 'SET_HIGH_ACCURACY_TIME_SYNCH_RESPONSE'
