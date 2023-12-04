@@ -1,6 +1,11 @@
-<a name="2.20.1"></a>
-## [2.20.1] - 2023-11-29
+<a name="2.21.1"></a>
+## [2.21.1] - 2023-12-04
 ### Build
+- **deps:** bump alpine from `eece025` to `34871e7` ([#1335](https://github.com/open-amt-cloud-toolkit/rps/issues/1335)) (#4b9d9eb) 
+- **deps-dev:** bump eslint from 8.54.0 to 8.55.0 ([#1338](https://github.com/open-amt-cloud-toolkit/rps/issues/1338)) (#0caa013) 
+- **deps-dev:** bump nodemon from 3.0.1 to 3.0.2 ([#1337](https://github.com/open-amt-cloud-toolkit/rps/issues/1337)) (#db70cc9) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 20.10.1 to 20.10.3 ([#1336](https://github.com/open-amt-cloud-toolkit/rps/issues/1336)) (#5df714b) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 20.10.0 to 20.10.1 ([#1331](https://github.com/open-amt-cloud-toolkit/rps/issues/1331)) (#4f6f29a) 
 - **deps:** bump mqtt from 5.3.0 to 5.3.1 ([#1329](https://github.com/open-amt-cloud-toolkit/rps/issues/1329)) (#7c91641) 
 - **deps:** bump github/codeql-action from 2.22.7 to 2.22.8 ([#1324](https://github.com/open-amt-cloud-toolkit/rps/issues/1324)) (#42b67be) 
 - **deps-dev:** bump eslint-config-standard-with-typescript from 39.1.1 to 40.0.0 ([#1317](https://github.com/open-amt-cloud-toolkit/rps/issues/1317)) (#6564c34) 
@@ -14,10 +19,12 @@
 - **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 6.11.0 to 6.12.0 ([#1321](https://github.com/open-amt-cloud-toolkit/rps/issues/1321)) (#ac2ef5a) 
 
 ### Ci
+- automatically update package.json version during release process ([#1333](https://github.com/open-amt-cloud-toolkit/rps/issues/1333)) (#4655e15) 
 - adds persist-credentials:false to checkout (#8a87687) 
 
 ### Fix
-- update build tasks, package.json and changelog (#9588430) 
+- update build tasks, package.json and changelog ([#1330](https://github.com/open-amt-cloud-toolkit/rps/issues/1330)) (#a420040) 
+- update package.json and changelog (#4eda94f) 
 
 
 <a name="v2.21.0"></a>
