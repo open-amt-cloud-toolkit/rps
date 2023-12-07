@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "555f84f9-2909-4297-a0a0-c100683ffe3c",
+		"_postman_id": "1d15f718-d145-490f-a932-01f764e5baea",
 		"name": "RPS API Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "2243498"
+		"_exporter_id": "30575654"
 	},
 	"item": [
 		{
@@ -4670,6 +4670,7 @@
 									"    pm.expect(result.iderEnabled).to.eql(false)\r",
 									"    pm.expect(result.kvmEnabled).to.eql(true)\r",
 									"    pm.expect(result.solEnabled).to.eql(false)\r",
+									"    pm.expect(result.localWifiSyncEnabled).to.eql(true)\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -4693,7 +4694,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": true \r\n}"
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"tags\": [\"tag1\"],\r\n    \"dhcpEnabled\": false,\r\n    \"generateRandomPassword\": true,\r\n    \"generateRandomMEBxPassword\": true,\r\n    \"localWifiSyncEnabled\": true\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
@@ -6510,6 +6511,60 @@
 						"body": {
 							"mode": "raw",
 							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"mebxPassword\": \"P@ssw0rd\",\r\n    \"amtPassword\": \"P@ssw0rd\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"ipSyncEnabled\": false,\r\n    \"version\": {{profile6Version}}\r\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"profiles",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile \"profile6\" with localWifiSyncEnabled false",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();\r",
+									"versionVar = jsonData.version;\r",
+									"pm.globals.set(\"profile6Version\", versionVar);\r",
+									"\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"Update should succeed\", function () {\r",
+									"    pm.expect(jsonData.profileName).to.eql(\"profile6\")\r",
+									"    pm.expect(jsonData.dhcpEnabled).to.equal(false)\r",
+									"    pm.expect(jsonData.localWifiSyncEnabled).to.equal(false)\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"profileName\": \"profile6\",\r\n    \"activation\": \"ccmactivate\",\r\n    \"mebxPassword\": \"P@ssw0rd\",\r\n    \"amtPassword\": \"P@ssw0rd\",\r\n    \"generateRandomPassword\": false,\r\n    \"generateRandomMEBxPassword\": false,\r\n    \"ipSyncEnabled\": false,\r\n    \"localWifiSyncEnabled\": false,\r\n    \"version\": {{profile6Version}}\r\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{host}}/api/v1/admin/profiles/",

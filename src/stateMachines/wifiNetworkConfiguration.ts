@@ -42,6 +42,7 @@ export interface WiFiConfigContext {
   profilesAdded?: string
   profilesFailed?: string
   authProtocol: number
+  onlyLocalWifiSyncEnabled?: boolean
 }
 
 export interface WiFiConfigEvent {
@@ -131,13 +132,24 @@ export class WiFiConfiguration {
             id: 'request-state-change-for-wifi-port',
             onDone: {
               actions: assign({ message: (context, event) => event.data }),
-              target: 'GET_WIFI_PROFILE'
+              target: 'CHECK_FOR_WIFI_PROFILES'
             },
             onError: {
               actions: assign({ errorMessage: (context, event) => 'Failed to update state change for wifi port' }),
               target: 'FAILED'
             }
           }
+        },
+        CHECK_FOR_WIFI_PROFILES: {
+          always: [
+            {
+              cond: 'isWiFiProfilesExist',
+              target: 'GET_WIFI_PROFILE'
+            },
+            {
+              target: 'SUCCESS_SYNC_ONLY'
+            }
+          ]
         },
         GET_WIFI_PROFILE: {
           invoke: {
@@ -327,7 +339,7 @@ export class WiFiConfiguration {
         CHECK_ADD_WIFI_SETTINGS_RESPONSE: {
           always: [
             {
-              cond: 'isWiFiProfilesExists',
+              cond: 'isMoreWiFiProfiles',
               target: 'GET_WIFI_PROFILE'
             },
             {
@@ -357,12 +369,17 @@ export class WiFiConfiguration {
         SUCCESS: {
           entry: [assign({ statusMessage: (context, event) => 'Wireless Configured' }), 'Update Configuration Status'],
           type: 'final'
+        },
+        SUCCESS_SYNC_ONLY: {
+          entry: [assign({ statusMessage: (context, event) => 'Wireless Only Local Profile Sync Configured' }), 'Update Configuration Status'],
+          type: 'final'
         }
       }
     }, {
       guards: {
         is8021xProfileAssociated: (context, event) => context.wifiProfile.ieee8021xProfileName != null && context.eaResponse == null && context.addCertResponse == null,
-        isWiFiProfilesExists: (context, event) => context.wifiProfileCount < context.amtProfile.wifiConfigs.length,
+        isMoreWiFiProfiles: (context, event) => context.wifiProfileCount < context.amtProfile.wifiConfigs.length,
+        isWiFiProfilesExist: (context, event) => context.amtProfile.wifiConfigs.length > 0,
         isLocalProfileSynchronizationNotEnabled: (context, event) => context.message.Envelope.Body.AMT_WiFiPortConfigurationService.localProfileSynchronizationEnabled === 0,
         isTrustedRootCertifcateExists: (context, event) => {
           const res = devices[context.clientId].trustedRootCertificateResponse

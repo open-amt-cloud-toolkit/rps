@@ -1,3 +1,16 @@
+<a name="2.22.0"></a>
+## [2.22.0] - 2023-12-07
+### Build
+- **deps:** bump mqtt from 5.3.2 to 5.3.3 ([#1348](https://github.com/open-amt-cloud-toolkit/rps/issues/1348)) (#cd25cd1) 
+- **deps:** bump aquasecurity/trivy-action from 0.14.0 to 0.15.0 ([#1343](https://github.com/open-amt-cloud-toolkit/rps/issues/1343)) (#f9ba8a4) 
+- **deps:** bump mqtt from 5.3.1 to 5.3.2 ([#1347](https://github.com/open-amt-cloud-toolkit/rps/issues/1347)) (#581a787) 
+- **deps-dev:** bump [@types](https://github.com/types)/node from 20.10.3 to 20.10.4 ([#1350](https://github.com/open-amt-cloud-toolkit/rps/issues/1350)) (#a846fe9) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 6.13.1 to 6.13.2 ([#1345](https://github.com/open-amt-cloud-toolkit/rps/issues/1345)) (#81e029f) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin ([#1346](https://github.com/open-amt-cloud-toolkit/rps/issues/1346)) (#ccaff94) 
+
+### Feat
+- add wifi sync enable to profiles table (#55e2de9) 
+
 <a name="2.21.2"></a>
 ## [2.21.2] - 2023-12-04
 ### Build

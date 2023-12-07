@@ -217,7 +217,7 @@ export class NetworkConfiguration {
         isNotAMTNetworkEnabled: this.isNotAMTNetworkEnabled.bind(this),
         isWifiOnlyDevice: (context, event) => context.wifiSettings != null && context.wiredSettings?.MACAddress == null,
         isWiredSupportedOnDevice: (context, event) => context.wiredSettings?.MACAddress != null,
-        isWifiSupportedOnDevice: (context, event) => context.wifiSettings?.MACAddress != null && context.amtProfile.wifiConfigs.length > 0,
+        isWifiSupportedOnDevice: (context, event) => context.wifiSettings?.MACAddress != null && (context.amtProfile.wifiConfigs.length > 0 || context.amtProfile.localWifiSyncEnabled),
         isLocalProfileSynchronizationNotEnabled: (context, event) => context.message.Envelope.Body.AMT_WiFiPortConfigurationService.localProfileSynchronizationEnabled === 0,
         shouldRetry: (context, event) => context.retryCount < 3 && event.data instanceof UNEXPECTED_PARSE_ERROR
       },
