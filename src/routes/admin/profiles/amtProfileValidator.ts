@@ -105,6 +105,7 @@ export const amtProfileValidator = (): ValidationChain[] => [
     .isBoolean()
     .withMessage('DHCP enabled must be a boolean'),
   check('ipSyncEnabled').optional({ nullable: true }).isBoolean().withMessage('ipSyncEnabled must be a boolean'),
+  check('localWifiSyncEnabled').optional({ nullable: true }).isBoolean().withMessage('localWifiSyncEnabled must be a boolean'),
   check('wifiConfigs')
     .optional({ nullable: true })
     .isArray()
@@ -282,6 +283,7 @@ export const profileUpdateValidator = (): any => [
     .isBoolean()
     .withMessage('DHCP enabled must be a boolean'),
   check('ipSyncEnabled').optional({ nullable: true }).isBoolean().withMessage('ipSyncEnabled must be a boolean'),
+  check('localWifiSyncEnabled').optional({ nullable: true }).isBoolean().withMessage('localWifiSyncEnabled must be a boolean'),
   check('wifiConfigs')
     .optional({ nullable: true })
     .isArray()

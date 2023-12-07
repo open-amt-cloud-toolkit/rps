@@ -116,6 +116,7 @@ describe('WiFi Network Configuration', () => {
       tags: ['acm'],
       dhcpEnabled: true,
       ipSyncEnabled: true,
+      localWifiSyncEnabled: true,
       wifiConfigs: [
         {
           priority: 1,
@@ -513,7 +514,7 @@ describe('WiFi Network Configuration', () => {
       context.wifiProfileCount = 1
       config.guards = {
         is8021xProfileAssociated: () => true,
-        isWiFiProfilesExists: () => false,
+        isMoreWiFiProfiles: () => false,
         isTrustedRootCertifcateExists: () => true,
         isMSCHAPv2: () => false
       }
@@ -547,6 +548,39 @@ describe('WiFi Network Configuration', () => {
       service.start()
       service.send({ type: 'WIFICONFIG', clientId })
     })
+    it('should enable OS proifle sync.', (done) => {
+      context.wifiSettings = {
+        ElementName: 'Intel(r) AMT Ethernet Port Settings',
+        InstanceID: 'Intel(r) AMT Ethernet Port Settings 1',
+        MACAddress: '00-00-00-00-00-00'
+      }
+      context.amtProfile.wifiConfigs = []
+      context.wifiProfileCount = 0
+      config.guards = {
+        is8021xProfileAssociated: () => false,
+        isTrustedRootCertifcateExists: () => true,
+        isMSCHAPv2: () => false
+      }
+
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const flowStates = [
+        'ACTIVATION',
+        'GET_WIFI_PORT_CONFIGURATION_SERVICE',
+        'PUT_WIFI_PORT_CONFIGURATION_SERVICE',
+        'REQUEST_STATE_CHANGE_FOR_WIFI_PORT',
+        'SUCCESS_SYNC_ONLY'
+      ]
+      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+        if (state.matches('SUCCESS_SYNC_ONLY') && currentStateIndex === flowStates.length) {
+          const status = devices[clientId].status.Network
+          expect(status).toEqual('Wired Network Configured. Wireless Only Local Profile Sync Configured')
+          done()
+        }
+      })
+      service.start()
+      service.send({ type: 'WIFICONFIG', clientId })
+    })
 
     it('should fail to add wifi profile when not supported by AMT.', (done) => {
       context.wifiSettings = {
@@ -559,7 +593,7 @@ describe('WiFi Network Configuration', () => {
       context.wifiProfileCount = 1
       config.guards = {
         is8021xProfileAssociated: () => true,
-        isWiFiProfilesExists: () => false,
+        isMoreWiFiProfiles: () => false,
         isTrustedRootCertifcateExists: () => true,
         isMSCHAPv2: () => false
       }
@@ -607,7 +641,7 @@ describe('WiFi Network Configuration', () => {
       context.wifiProfileCount = 1
       config.guards = {
         is8021xProfileAssociated: () => true,
-        isWiFiProfilesExists: () => false,
+        isMoreWiFiProfiles: () => false,
         isTrustedRootCertifcateExists: () => true,
         isMSCHAPv2: () => false
       }
@@ -653,7 +687,7 @@ describe('WiFi Network Configuration', () => {
       context.wifiProfileCount = 1
       config.guards = {
         is8021xProfileAssociated: () => true,
-        isWiFiProfilesExists: () => false,
+        isMoreWiFiProfiles: () => false,
         isTrustedRootCertifcateExists: () => true,
         isMSCHAPv2: () => false
       }
@@ -699,7 +733,7 @@ describe('WiFi Network Configuration', () => {
       context.wifiProfileCount = 1
       config.guards = {
         is8021xProfileAssociated: () => true,
-        isWiFiProfilesExists: () => false,
+        isMoreWiFiProfiles: () => false,
         isTrustedRootCertifcateExists: () => true,
         isMSCHAPv2: () => false
       }

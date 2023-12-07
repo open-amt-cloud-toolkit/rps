@@ -148,6 +148,7 @@ export class AMTConfiguration {
   tags?: string[]
   dhcpEnabled?: boolean
   ipSyncEnabled?: boolean
+  localWifiSyncEnabled?: boolean
   wifiConfigs?: ProfileWifiConfigs[]
   tenantId: string
   tlsMode?: TlsMode
