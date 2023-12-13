@@ -7,9 +7,10 @@ import { assign, createMachine } from 'xstate'
 import {
   coalesceMessage,
   commonContext,
-  type CommonMaintenanceContext, HttpResponseError,
+  type CommonMaintenanceContext,
   invokeWsmanCall,
-  isDigestRealmValid
+  isDigestRealmValid,
+  HttpResponseError
 } from './common'
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 import { PasswordHelper } from '../../utils/PasswordHelper'
@@ -123,7 +124,7 @@ export class ChangePassword {
           },
           onError: {
             actions: assign({
-              statusMessage: (_, event) => coalesceMessage('at REFRESH_MPS', event.data)
+              statusMessage: (context, event) => coalesceMessage('at REFRESH_MPS', event.data)
             }),
             target: 'FAILED'
           }
@@ -196,8 +197,13 @@ export class ChangePassword {
   async refreshMPS (context: ChangePasswordContext): Promise<boolean> {
     const clientObj = devices[context.clientId]
     const url = `${Environment.Config.mps_server}/api/v1/devices/refresh/${clientObj.uuid}`
-    const rsp = await got.delete(url)
-    if (rsp.statusCode !== 200) {
+    let rsp, rsperr
+    try {
+      rsp = await got.delete(url)
+    } catch (error) {
+      rsperr = error
+    }
+    if (rsp === undefined && rsperr.response.statusCode !== 404) {
       throw new HttpResponseError(rsp.statusMessage, rsp.statusCode)
     }
     logger.debug(`refreshMPS ${url}`)
