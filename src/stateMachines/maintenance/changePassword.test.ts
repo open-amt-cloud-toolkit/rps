@@ -36,7 +36,7 @@ let setAdminACLEntryExResponse: SetAdminACLEntryExResponse
 let deviceCredentials: DeviceCredentials
 let secretWriterSpy: jest.SpyInstance
 let secretGetterSpy: jest.SpyInstance
-let mpsRsp: any
+let mpsRsp, mpsRspErr: any
 
 beforeEach(() => {
   resetAllMocks()
@@ -69,6 +69,12 @@ beforeEach(() => {
   mpsRsp = {
     statusCode: 200,
     statusMessage: 'OK'
+  }
+  mpsRspErr = {
+    response: {
+      statusCode: 404,
+      statusMessage: 'Bad Request'
+    }
   }
   const mockSecretsManager: ISecretManagerService = {
     deleteSecretAtPath: jest.fn(),
@@ -149,23 +155,29 @@ it('should fail settting AdminACLEntryEx on http response error', async () => {
     .mockRejectedValueOnce(HttpBadRequestError)
   await runTilDone(implementation.machine, event, doneResponse)
 })
-it('should fail refreshing MPS with rejected delete', async () => {
-  doneResponse.status = StatusFailed
-  mpsRsp.statusCode = 400
-  mpsRsp.statusMessage = 'Bad Request'
-  jest.spyOn(common, 'invokeWsmanCall')
-    .mockResolvedValueOnce(generalSettingsRsp)
-    .mockResolvedValueOnce(setAdminACLEntryExResponse)
-  jest.spyOn(got, 'delete').mockRejectedValue(mpsRsp)
-  await runTilDone(implementation.machine, event, doneResponse)
-})
-it('should fail refreshing MPS with status not 200', async () => {
-  doneResponse.status = StatusFailed
-  mpsRsp.statusCode = 400
-  mpsRsp.statusMessage = 'Bad Request'
+it('should succeed with when refreshing MPS succeeds with 200', async () => {
+  doneResponse.status = StatusSuccess
   jest.spyOn(common, 'invokeWsmanCall')
     .mockResolvedValueOnce(generalSettingsRsp)
     .mockResolvedValueOnce(setAdminACLEntryExResponse)
   jest.spyOn(got, 'delete').mockResolvedValue(mpsRsp)
+  await runTilDone(implementation.machine, event, doneResponse)
+})
+it('should succeed with when refreshing MPS fails with 404', async () => {
+  doneResponse.status = StatusSuccess
+  jest.spyOn(common, 'invokeWsmanCall')
+    .mockResolvedValueOnce(generalSettingsRsp)
+    .mockResolvedValueOnce(setAdminACLEntryExResponse)
+  jest.spyOn(got, 'delete').mockRejectedValue(mpsRspErr)
+  await runTilDone(implementation.machine, event, doneResponse)
+})
+it('should fail when refreshing MPS fails with 500', async () => {
+  doneResponse.status = StatusFailed
+  mpsRspErr.response.statusCode = 500
+  mpsRspErr.response.statusMessage = 'Bad Request'
+  jest.spyOn(common, 'invokeWsmanCall')
+    .mockResolvedValueOnce(generalSettingsRsp)
+    .mockResolvedValueOnce(setAdminACLEntryExResponse)
+  jest.spyOn(got, 'delete').mockRejectedValue(mpsRspErr)
   await runTilDone(implementation.machine, event, doneResponse)
 })
