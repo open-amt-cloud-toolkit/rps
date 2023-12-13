@@ -1,15 +1,27 @@
 <a name="2.22.0"></a>
-## [2.22.0] - 2023-12-07
+## [2.22.0] - 2023-12-13
 ### Build
+- **deps:** bump github/codeql-action from 2.22.9 to 2.22.10 ([#1362](https://github.com/open-amt-cloud-toolkit/rps/issues/1362)) (#18147f2) 
 - **deps:** bump mqtt from 5.3.2 to 5.3.3 ([#1348](https://github.com/open-amt-cloud-toolkit/rps/issues/1348)) (#cd25cd1) 
+- **deps:** bump ws from 8.14.2 to 8.15.1 ([#1364](https://github.com/open-amt-cloud-toolkit/rps/issues/1364)) (#772c5c9) 
+- **deps:** bump alpine from `34871e7` to `51b6726` ([#1355](https://github.com/open-amt-cloud-toolkit/rps/issues/1355)) (#0b39d3f) 
+- **deps:** bump github/codeql-action from 2.22.8 to 2.22.9 ([#1353](https://github.com/open-amt-cloud-toolkit/rps/issues/1353)) (#e51dfe9) 
 - **deps:** bump aquasecurity/trivy-action from 0.14.0 to 0.15.0 ([#1343](https://github.com/open-amt-cloud-toolkit/rps/issues/1343)) (#f9ba8a4) 
 - **deps:** bump mqtt from 5.3.1 to 5.3.2 ([#1347](https://github.com/open-amt-cloud-toolkit/rps/issues/1347)) (#581a787) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 6.13.2 to 6.14.0 ([#1360](https://github.com/open-amt-cloud-toolkit/rps/issues/1360)) (#b782ab8) 
 - **deps-dev:** bump [@types](https://github.com/types)/node from 20.10.3 to 20.10.4 ([#1350](https://github.com/open-amt-cloud-toolkit/rps/issues/1350)) (#a846fe9) 
+- **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin ([#1363](https://github.com/open-amt-cloud-toolkit/rps/issues/1363)) (#967b642) 
 - **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/parser from 6.13.1 to 6.13.2 ([#1345](https://github.com/open-amt-cloud-toolkit/rps/issues/1345)) (#81e029f) 
 - **deps-dev:** bump [@typescript](https://github.com/typescript)-eslint/eslint-plugin ([#1346](https://github.com/open-amt-cloud-toolkit/rps/issues/1346)) (#ccaff94) 
 
+### Ci
+- update package.json and changelog (#88351fb) 
+
 ### Feat
-- add wifi sync enable to profiles table (#55e2de9) 
+- add wifi sync enable to profiles table ([#1334](https://github.com/open-amt-cloud-toolkit/rps/issues/1334)) (#dcb3a4c) 
+
+### Fix
+- message when changing password on TLS device ([#1352](https://github.com/open-amt-cloud-toolkit/rps/issues/1352)) (#4c0be33) 
 
 <a name="2.21.2"></a>
 ## [2.21.2] - 2023-12-04
