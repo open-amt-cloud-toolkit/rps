@@ -3,13 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type IDomainsTable } from '../../../interfaces/database/IDomainsDb'
-import { DUPLICATE_DOMAIN_FAILED, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP, CONCURRENCY_EXCEPTION, CONCURRENCY_MESSAGE } from '../../../utils/constants'
-import { type AMTDomain } from '../../../models'
-import { RPSError } from '../../../utils/RPSError'
-import Logger from '../../../Logger'
-import type PostgresDb from '..'
-import { PostgresErr } from '../errors'
+import { type IDomainsTable } from '../../../interfaces/database/IDomainsDb.js'
+import { DUPLICATE_DOMAIN_FAILED, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP, CONCURRENCY_EXCEPTION, CONCURRENCY_MESSAGE } from '../../../utils/constants.js'
+import { type AMTDomain } from '../../../models/index.js'
+import { RPSError } from '../../../utils/RPSError.js'
+import Logger from '../../../Logger.js'
+import type PostgresDb from '../index.js'
+import { PostgresErr } from '../errors.js'
 
 export class DomainsTable implements IDomainsTable {
   db: PostgresDb

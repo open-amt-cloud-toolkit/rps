@@ -3,15 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { Unconfiguration, type UnconfigContext } from './unconfiguration'
+import { Unconfiguration, type UnconfigContext } from './unconfiguration.js'
 import { v4 as uuid } from 'uuid'
-import { devices } from '../WebSocketListener'
-import { Environment } from '../utils/Environment'
-import { config } from '../test/helper/Config'
-import { HttpHandler } from '../HttpHandler'
+import { devices } from '../WebSocketListener.js'
+import { Environment } from '../utils/Environment.js'
+import { config } from '../test/helper/Config.js'
+import { HttpHandler } from '../HttpHandler.js'
 import { interpret } from 'xstate'
-import { MPSType } from './ciraConfiguration'
-import * as common from './common'
+import { MPSType } from './ciraConfiguration.js'
+import * as common from './common.js'
 import { AMT, CIM, IPS } from '@open-amt-cloud-toolkit/wsman-messages'
 const clientId = uuid()
 Environment.Config = config

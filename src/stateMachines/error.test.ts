@@ -4,9 +4,9 @@
  **********************************************************************/
 
 import { interpret } from 'xstate'
-import { Error, type ErrorContext } from './error'
+import { Error, type ErrorContext } from './error.js'
 import { v4 as uuid } from 'uuid'
-import { devices } from '../WebSocketListener'
+import { devices } from '../WebSocketListener.js'
 const clientId = uuid()
 const unauthorizedResponse = {
   statusCode: 401,

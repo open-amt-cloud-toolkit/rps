@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type EnterpriseAssistantMessage } from '../WSEnterpriseAssistantListener'
-import { invokeEnterpriseAssistantCall } from './common'
-import { devices } from '../WebSocketListener'
+import { type EnterpriseAssistantMessage } from '../WSEnterpriseAssistantListener.js'
+import { invokeEnterpriseAssistantCall } from './common.js'
+import { devices } from '../WebSocketListener.js'
 
 const initiateCertRequest = async (context: any, event: any): Promise<EnterpriseAssistantMessage> => {
   context.message = {

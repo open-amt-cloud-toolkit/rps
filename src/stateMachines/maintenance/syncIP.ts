@@ -12,11 +12,11 @@ import {
   type CommonMaintenanceContext,
   type EnumerationContext,
   invokeWsmanCall
-} from './common'
+} from './common.js'
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
-import { type Enumerate, type Pull } from '@open-amt-cloud-toolkit/wsman-messages/models/common'
-import * as Task from './doneResponse'
-import Logger from '../../Logger'
+import { type Enumerate, type Pull } from '@open-amt-cloud-toolkit/wsman-messages/models/common.js'
+import * as Task from './doneResponse.js'
+import Logger from '../../Logger.js'
 
 export type EthernetPortSettingsPullResponse = Pull<{
   AMT_EthernetPortSettings: AMT.Models.EthernetPortSettings | AMT.Models.EthernetPortSettings[]

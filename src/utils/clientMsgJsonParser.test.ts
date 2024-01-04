@@ -4,10 +4,10 @@
  **********************************************************************/
 
 import { v4 as uuid } from 'uuid'
-import { type ClientMsg } from '../models/RCS.Config'
-import { devices } from '../WebSocketListener'
-import { ClientMsgJsonParser } from './ClientMsgJsonParser'
-import { RPSError } from './RPSError'
+import { type ClientMsg } from '../models/RCS.Config.js'
+import { devices } from '../WebSocketListener.js'
+import { ClientMsgJsonParser } from './ClientMsgJsonParser.js'
+import { RPSError } from './RPSError.js'
 
 const jsonParser = new ClientMsgJsonParser()
 

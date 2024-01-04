@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { createSpyObj } from '../../../test/helper/jest'
-import { getAllDomains } from './all'
+import { createSpyObj } from '../../../test/helper/jest.js'
+import { getAllDomains } from './all.js'
 
 describe('Domains - All', () => {
   let resSpy

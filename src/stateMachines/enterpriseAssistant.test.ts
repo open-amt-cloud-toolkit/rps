@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { initiateCertRequest, sendEnterpriseAssistantKeyPairResponse, getCertFromEnterpriseAssistant } from './enterpriseAssistant'
+import { initiateCertRequest, sendEnterpriseAssistantKeyPairResponse, getCertFromEnterpriseAssistant } from './enterpriseAssistant.js'
 import { v4 as uuid } from 'uuid'
-import * as common from './common'
-import { HttpHandler } from '../HttpHandler'
+import * as common from './common.js'
+import { HttpHandler } from '../HttpHandler.js'
 import { AMT, IPS } from '@open-amt-cloud-toolkit/wsman-messages'
-import { devices } from '../WebSocketListener'
+import { devices } from '../WebSocketListener.js'
 const clientId = uuid()
 
 describe('Enterprise Assistant', () => {

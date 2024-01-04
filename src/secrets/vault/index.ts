@@ -9,17 +9,17 @@ import {
   type ISecretManagerService,
   type TLSCredentials,
   type WifiCredentials
-} from '../../interfaces/ISecretManagerService'
-import { type ILogger } from '../../interfaces/ILogger'
-import { Environment } from '../../utils/Environment'
-import got, { type Got } from 'got'
+} from '../../interfaces/ISecretManagerService.js'
+import { type ILogger } from '../../interfaces/ILogger.js'
+import { Environment } from '../../utils/Environment.js'
+import { type Got } from 'got'
 
 export class VaultService implements ISecretManagerService {
   gotClient: Got
   logger: ILogger
   constructor (logger: ILogger) {
     this.logger = logger
-    this.gotClient = got.extend({
+    this.gotClient.extend({
       prefixUrl: `${Environment.Config.vault_address}/v1/${Environment.Config.secrets_path}`,
       headers: {
         'X-Vault-Token': Environment.Config.vault_token

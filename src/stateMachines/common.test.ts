@@ -3,16 +3,16 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { Environment } from '../utils/Environment'
-import { HttpHandler } from '../HttpHandler'
-import Logger from '../Logger'
-import ClientResponseMsg from '../utils/ClientResponseMsg'
-import { devices } from '../WebSocketListener'
-import { GATEWAY_TIMEOUT_ERROR, UNEXPECTED_PARSE_ERROR, EA_TIMEOUT_ERROR } from '../utils/constants'
+import { Environment } from '../utils/Environment.js'
+import { HttpHandler } from '../HttpHandler.js'
+import Logger from '../Logger.js'
+import ClientResponseMsg from '../utils/ClientResponseMsg.js'
+import { devices } from '../WebSocketListener.js'
+import { GATEWAY_TIMEOUT_ERROR, UNEXPECTED_PARSE_ERROR, EA_TIMEOUT_ERROR } from '../utils/constants.js'
 import { v4 as uuid } from 'uuid'
-import * as enterpriseAssistantListener from '../WSEnterpriseAssistantListener'
-import * as common from './common'
-import { config } from '../test/helper/Config'
+import * as enterpriseAssistantListener from '../WSEnterpriseAssistantListener.js'
+import * as common from './common.js'
+import { config } from '../test/helper/Config.js'
 Environment.Config = config
 describe('Common', () => {
   const clientId = uuid()

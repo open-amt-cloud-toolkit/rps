@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import * as indexFile from './Index'
-import * as svcMngr from './serviceManager'
+import * as indexFile from './Index.js'
+import * as svcMngr from './serviceManager.js'
 import * as exponentialBackoff from 'exponential-backoff'
-import { type ISecretManagerService } from './interfaces/ISecretManagerService'
-import { type IDB } from './interfaces/database/IDb'
-import { config } from './test/helper/Config'
+import { type ISecretManagerService } from './interfaces/ISecretManagerService.js'
+import { type IDB } from './interfaces/database/IDb.js'
+import { config } from './test/helper/Config.js'
 
 describe('Index', () => {
   // const env = process.env

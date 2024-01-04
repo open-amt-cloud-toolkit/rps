@@ -4,16 +4,16 @@
  **********************************************************************/
 
 import { interpret } from 'xstate'
-import { HttpHandler } from '../HttpHandler'
-import { devices } from '../WebSocketListener'
-import { TLS, type TLSContext } from './tls'
-import * as common from './common'
+import { HttpHandler } from '../HttpHandler.js'
+import { devices } from '../WebSocketListener.js'
+import { TLS, type TLSContext } from './tls.js'
+import * as common from './common.js'
 import * as forge from 'node-forge'
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
-import { UNEXPECTED_PARSE_ERROR } from '../utils/constants'
-import { wsmanAlreadyExistsAllChunks } from '../test/helper/AMTMessages'
-import { config } from '../test/helper/Config'
-import { Environment } from '../utils/Environment'
+import { UNEXPECTED_PARSE_ERROR } from '../utils/constants.js'
+import { wsmanAlreadyExistsAllChunks } from '../test/helper/AMTMessages.js'
+import { config } from '../test/helper/Config.js'
+import { Environment } from '../utils/Environment.js'
 
 Environment.Config = config
 

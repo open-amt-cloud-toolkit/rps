@@ -3,19 +3,20 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import * as WebSocket from 'ws'
+import { WebSocketServer, type Data } from 'ws'
 import { v4 as uuid } from 'uuid'
 
-import { type ClientMsg, type ClientObject } from './models/RCS.Config'
-import { type ILogger } from './interfaces/ILogger'
-import { type DataProcessor } from './DataProcessor'
-import { Environment } from './utils/Environment'
+import { type ClientMsg, type ClientObject } from './models/RCS.Config.js'
+import { type ILogger } from './interfaces/ILogger.js'
+import { type DataProcessor } from './DataProcessor.js'
+import { Environment } from './utils/Environment.js'
+import type Server from 'ws'
 const devices: Record<string, ClientObject> = {}
 const maxMessageSize = 1024 * 10 * 10
 export { devices }
 export class WebSocketListener {
   dataProcessor: DataProcessor
-  wsServer: WebSocket.Server
+  wsServer: WebSocketServer
   logger: ILogger
 
   constructor (logger: ILogger, dataProcessor: DataProcessor) {
@@ -28,7 +29,7 @@ export class WebSocketListener {
    */
   connect (): boolean {
     try {
-      this.wsServer = new WebSocket.Server({ port: Environment.Config.websocketport })
+      this.wsServer = new WebSocketServer({ port: Environment.Config.websocketport })
       this.wsServer.on('connection', this.onClientConnected)
       this.logger.info(`RPS Microservice socket listening on port: ${Environment.Config.websocketport} ...!`)
       return true
@@ -42,11 +43,11 @@ export class WebSocketListener {
    * @description Called on connection event of WebSocket Server
    * @param {WebSocket} ws  websocket object
    */
-  onClientConnected = (ws: WebSocket): void => {
+  onClientConnected = (ws: Server): void => {
     const clientId = uuid()
     devices[clientId] = { ClientId: clientId, ClientSocket: ws, ciraconfig: {}, network: { count: 0 }, status: {}, tls: {}, activationStatus: false, unauthCount: 0, messageId: 0 }
 
-    ws.on('message', async (data: WebSocket.Data, isBinary: boolean) => {
+    ws.on('message', async (data: Data, isBinary: boolean) => {
       // eslint-disable-next-line @typescript-eslint/no-base-to-string
       const message = isBinary ? data : data.toString()
       await this.onMessageReceived(message, clientId)
@@ -81,7 +82,7 @@ export class WebSocketListener {
    * @param {Number} index Index of the connected client
    * @param {WSMessage} message Received from the client
    */
-  async onMessageReceived (message: WebSocket.Data, clientId: string): Promise<void> {
+  async onMessageReceived (message: Data, clientId: string): Promise<void> {
     let messageLength
     if (typeof message === 'string') {
       messageLength = Buffer.from(message).length

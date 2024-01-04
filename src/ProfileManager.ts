@@ -3,14 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type AMTConfiguration } from './models'
-import { type ILogger } from './interfaces/ILogger'
-import { type IProfileManager } from './interfaces/IProfileManager'
-import { PasswordHelper } from './utils/PasswordHelper'
-import { type CIRAConfig } from './models/RCS.Config'
-import { type IProfilesTable } from './interfaces/database/IProfilesDb'
-import { type Configurator } from './Configurator'
-import { type TLSCredentials } from './interfaces/ISecretManagerService'
+import { type AMTConfiguration } from './models/index.js'
+import { type ILogger } from './interfaces/ILogger.js'
+import { type IProfileManager } from './interfaces/IProfileManager.js'
+import { PasswordHelper } from './utils/PasswordHelper.js'
+import { type CIRAConfig } from './models/RCS.Config.js'
+import { type IProfilesTable } from './interfaces/database/IProfilesDb.js'
+import { type Configurator } from './Configurator.js'
+import { type TLSCredentials } from './interfaces/ISecretManagerService.js'
 
 export class ProfileManager implements IProfileManager {
   private readonly amtConfigurations: IProfilesTable

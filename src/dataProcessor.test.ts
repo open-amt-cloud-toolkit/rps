@@ -5,24 +5,24 @@
 
 import { v4 as uuid } from 'uuid'
 
-import Logger from './Logger'
-import { config } from './test/helper/Config'
-import { Validator } from './Validator'
-import { Configurator } from './Configurator'
-import { DataProcessor } from './DataProcessor'
-import { Environment } from './utils/Environment'
-import { VersionChecker } from './VersionChecker'
-import { devices } from './WebSocketListener'
+import Logger from './Logger.js'
+import { config } from './test/helper/Config.js'
+import { Validator } from './Validator.js'
+import { Configurator } from './Configurator.js'
+import { DataProcessor } from './DataProcessor.js'
+import { Environment } from './utils/Environment.js'
+import { VersionChecker } from './VersionChecker.js'
+import { devices } from './WebSocketListener.js'
 import { type HttpZResponseModel, parse } from 'http-z'
-import { HttpHandler } from './HttpHandler'
-import { Deactivation } from './stateMachines/deactivation'
-import { Activation } from './stateMachines/activation'
-import { ClientMethods, type ClientMsg } from './models/RCS.Config'
-import { Maintenance, type MaintenanceEvent } from './stateMachines/maintenance/maintenance'
+import { HttpHandler } from './HttpHandler.js'
+import { Deactivation } from './stateMachines/deactivation.js'
+import { Activation } from './stateMachines/activation.js'
+import { ClientMethods, type ClientMsg } from './models/RCS.Config.js'
+import { Maintenance, type MaintenanceEvent } from './stateMachines/maintenance/maintenance.js'
 // import { type IPConfiguration } from './stateMachines/syncIP'
-import { RPSError } from './utils/RPSError'
+import { RPSError } from './utils/RPSError.js'
 // import { type HostnameConfiguration } from './stateMachines/syncHostName'
-import { parseChunkedMessage } from './utils/parseChunkedMessage'
+import { parseChunkedMessage } from './utils/parseChunkedMessage.js'
 import {
   response200BadWsmanXML,
   response200Good,
@@ -30,17 +30,17 @@ import {
   response200OutOfOrder,
   response400,
   response401
-} from './test/helper/AMTMessages'
-import { UNEXPECTED_PARSE_ERROR } from './utils/constants'
-import { SyncTimeEventType } from './stateMachines/maintenance/syncTime'
-import { type IPConfiguration, type SyncIPEvent, SyncIPEventType } from './stateMachines/maintenance/syncIP'
-import { type ChangePasswordEvent, ChangePasswordEventType } from './stateMachines/maintenance/changePassword'
-import { SyncDeviceInfoEventType, type DeviceInfo } from './stateMachines/maintenance/syncDeviceInfo'
+} from './test/helper/AMTMessages.js'
+import { UNEXPECTED_PARSE_ERROR } from './utils/constants.js'
+import { SyncTimeEventType } from './stateMachines/maintenance/syncTime.js'
+import { type IPConfiguration, type SyncIPEvent, SyncIPEventType } from './stateMachines/maintenance/syncIP.js'
+import { type ChangePasswordEvent, ChangePasswordEventType } from './stateMachines/maintenance/changePassword.js'
+import { SyncDeviceInfoEventType, type DeviceInfo } from './stateMachines/maintenance/syncDeviceInfo.js'
 import {
   type HostNameInfo,
   type SyncHostNameEvent,
   SyncHostNameEventType
-} from './stateMachines/maintenance/syncHostName'
+} from './stateMachines/maintenance/syncHostName.js'
 
 Environment.Config = config
 const configurator = new Configurator()

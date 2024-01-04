@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { createSpyObj } from '../../../test/helper/jest'
-import { createIEEE8021xProfile } from './create'
+import { createSpyObj } from '../../../test/helper/jest.js'
+import { createIEEE8021xProfile } from './create.js'
 
 describe('Checks createIEEE8021xProfile', () => {
   let resSpy

@@ -5,15 +5,15 @@
 
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 import { assign, createMachine, interpret, sendTo } from 'xstate'
-import { Configurator } from '../Configurator'
-import { HttpHandler } from '../HttpHandler'
-import Logger from '../Logger'
-import ClientResponseMsg from '../utils/ClientResponseMsg'
-import { Environment } from '../utils/Environment'
-import { devices } from '../WebSocketListener'
-import { Error } from './error'
+import { Configurator } from '../Configurator.js'
+import { HttpHandler } from '../HttpHandler.js'
+import Logger from '../Logger.js'
+import ClientResponseMsg from '../utils/ClientResponseMsg.js'
+import { Environment } from '../utils/Environment.js'
+import { devices } from '../WebSocketListener.js'
+import { Error } from './error.js'
 import got from 'got'
-import { invokeWsmanCall } from './common'
+import { invokeWsmanCall } from './common.js'
 
 export interface DeactivationContext {
   message: any

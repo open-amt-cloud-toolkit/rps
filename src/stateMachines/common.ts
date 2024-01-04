@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import ClientResponseMsg from '../utils/ClientResponseMsg'
-import { Environment } from '../utils/Environment'
-import { devices } from '../WebSocketListener'
-import { type EnterpriseAssistantMessage, enterpriseAssistantSocket, promises } from '../WSEnterpriseAssistantListener'
-import { GATEWAY_TIMEOUT_ERROR, UNEXPECTED_PARSE_ERROR, EA_TIMEOUT_ERROR } from '../utils/constants'
-import Logger from '../Logger'
+import ClientResponseMsg from '../utils/ClientResponseMsg.js'
+import { Environment } from '../utils/Environment.js'
+import { devices } from '../WebSocketListener.js'
+import { type EnterpriseAssistantMessage, enterpriseAssistantSocket, promises } from '../WSEnterpriseAssistantListener.js'
+import { GATEWAY_TIMEOUT_ERROR, UNEXPECTED_PARSE_ERROR, EA_TIMEOUT_ERROR } from '../utils/constants.js'
+import Logger from '../Logger.js'
 
 const invokeWsmanLogger = new Logger('invokeWsmanCall')
 

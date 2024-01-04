@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { createSpyObj } from '../../../test/helper/jest'
-import * as version from './get'
-import { ServiceVersion, ProtocolVersion } from '../../../utils/constants'
+import { createSpyObj } from '../../../test/helper/jest.js'
+import * as version from './get.js'
+import { ServiceVersion, ProtocolVersion } from '../../../utils/constants.js'
 
 describe('Checks getVersion', () => {
   let resSpy

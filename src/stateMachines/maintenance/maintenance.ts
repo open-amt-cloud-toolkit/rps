@@ -4,16 +4,16 @@
  **********************************************************************/
 
 import { assign, createMachine, interpret, send } from 'xstate'
-import Logger from '../../Logger'
-import { devices } from '../../WebSocketListener'
-import { type Status } from '../../models/RCS.Config'
-import { SyncTime, type SyncTimeEvent } from './syncTime'
-import { SyncIP, type SyncIPEvent } from './syncIP'
-import { ChangePassword, type ChangePasswordEvent } from './changePassword'
-import * as TaskDefs from './doneResponse'
-import { SyncHostName, type SyncHostNameEvent } from './syncHostName'
-import { SyncDeviceInfo, type SyncDeviceInfoEvent } from './syncDeviceInfo'
-import ClientResponseMsg from '../../utils/ClientResponseMsg'
+import Logger from '../../Logger.js'
+import { devices } from '../../WebSocketListener.js'
+import { type Status } from '../../models/RCS.Config.js'
+import { SyncTime, type SyncTimeEvent } from './syncTime.js'
+import { SyncIP, type SyncIPEvent } from './syncIP.js'
+import { ChangePassword, type ChangePasswordEvent } from './changePassword.js'
+import * as TaskDefs from './doneResponse.js'
+import { SyncHostName, type SyncHostNameEvent } from './syncHostName.js'
+import { SyncDeviceInfo, type SyncDeviceInfoEvent } from './syncDeviceInfo.js'
+import ClientResponseMsg from '../../utils/ClientResponseMsg.js'
 
 export type MaintenanceEvent =
   | ChangePasswordEvent

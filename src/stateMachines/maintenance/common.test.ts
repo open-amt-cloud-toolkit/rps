@@ -3,16 +3,16 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { Environment } from '../../utils/Environment'
-import { HttpHandler } from '../../HttpHandler'
-import ClientResponseMsg from '../../utils/ClientResponseMsg'
-import { devices } from '../../WebSocketListener'
-import { GatewayTimeoutError, UnexpectedParseError } from '../../utils/constants'
+import { Environment } from '../../utils/Environment.js'
+import { HttpHandler } from '../../HttpHandler.js'
+import ClientResponseMsg from '../../utils/ClientResponseMsg.js'
+import { devices } from '../../WebSocketListener.js'
+import { GatewayTimeoutError, UnexpectedParseError } from '../../utils/constants.js'
 import { v4 as uuid } from 'uuid'
-import { coalesceMessage, HttpResponseError, invokeWsmanCall, isDigestRealmValid } from './common'
-import { config } from '../../test/helper/Config'
+import { coalesceMessage, HttpResponseError, invokeWsmanCall, isDigestRealmValid } from './common.js'
+import { config } from '../../test/helper/Config.js'
 import { type HttpZResponseModel, parse } from 'http-z'
-import { response401 } from '../../test/helper/AMTMessages'
+import { response401 } from '../../test/helper/AMTMessages.js'
 
 Environment.Config = config
 

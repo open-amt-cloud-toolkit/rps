@@ -3,13 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { DomainCredentialManager } from './DomainCredentialManager'
-import { type ILogger } from './interfaces/ILogger'
-import Logger from './Logger'
-import { type AMTDomain } from './models'
-import { DomainsTable } from './data/postgres/tables/domains'
-import type Db from './data/postgres'
-import { type Configurator } from './Configurator'
+import { DomainCredentialManager } from './DomainCredentialManager.js'
+import { type ILogger } from './interfaces/ILogger.js'
+import Logger from './Logger.js'
+import { type AMTDomain } from './models/index.js'
+import { DomainsTable } from './data/postgres/tables/domains.js'
+import type Db from './data/postgres/index.js'
+import { type Configurator } from './Configurator.js'
 
 const logger: ILogger = new Logger('DomainCredentialManagerTests')
 describe('Domain Credential Manager Tests', () => {

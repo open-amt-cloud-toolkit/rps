@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import PostgresDb from '..'
-import { type AMTConfiguration, AMTUserConsent } from '../../../models'
-import { PROFILE_INSERTION_FAILED_DUPLICATE, PROFILE_INSERTION_CIRA_CONSTRAINT, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP, PROFILE_INSERTION_GENERIC_CONSTRAINT, CONCURRENCY_MESSAGE } from '../../../utils/constants'
-import { RPSError } from '../../../utils/RPSError'
-import { ProfilesTable } from './profiles'
+import PostgresDb from '../index.js'
+import { type AMTConfiguration, AMTUserConsent } from '../../../models/index.js'
+import { PROFILE_INSERTION_FAILED_DUPLICATE, PROFILE_INSERTION_CIRA_CONSTRAINT, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP, PROFILE_INSERTION_GENERIC_CONSTRAINT, CONCURRENCY_MESSAGE } from '../../../utils/constants.js'
+import { RPSError } from '../../../utils/RPSError.js'
+import { ProfilesTable } from './profiles.js'
 
 describe('profiles tests', () => {
   let db: PostgresDb

@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import Logger from './Logger'
-import { Environment } from './utils/Environment'
+import Logger from './Logger.js'
+import { Environment } from './utils/Environment.js'
 import { backOff } from 'exponential-backoff'
-import { type RPSConfig } from './models'
-import { type IServiceManager } from './interfaces/IServiceManager'
+import { type RPSConfig } from './models/index.js'
+import { type IServiceManager } from './interfaces/IServiceManager.js'
 
 const log = new Logger('Index')
 

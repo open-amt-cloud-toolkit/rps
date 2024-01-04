@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { createSpyObj } from '../../../test/helper/jest'
-import { getCiraConfig } from './get'
+import { createSpyObj } from '../../../test/helper/jest.js'
+import { getCiraConfig } from './get.js'
 
 describe('CIRA Config - Get', () => {
   let resSpy

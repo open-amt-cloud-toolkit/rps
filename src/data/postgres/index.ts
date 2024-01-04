@@ -3,15 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type IDB } from '../../interfaces/database/IDb'
+import { type IDB } from '../../interfaces/database/IDb.js'
 import { Pool, type QueryResult } from 'pg'
-import Logger from '../../Logger'
-import { CiraConfigTable } from './tables/ciraConfigs'
-import { ProfilesTable } from './tables/profiles'
-import { DomainsTable } from './tables/domains'
-import { ProfilesWifiConfigsTable } from './tables/profileWifiConfigs'
-import { WirelessProfilesTable } from './tables/wirelessProfiles'
-import { IEEE8021xProfilesTable } from './tables/ieee8021xProfiles'
+import Logger from '../../Logger.js'
+import { CiraConfigTable } from './tables/ciraConfigs.js'
+import { ProfilesTable } from './tables/profiles.js'
+import { DomainsTable } from './tables/domains.js'
+import { ProfilesWifiConfigsTable } from './tables/profileWifiConfigs.js'
+import { WirelessProfilesTable } from './tables/wirelessProfiles.js'
+import { IEEE8021xProfilesTable } from './tables/ieee8021xProfiles.js'
 
 export default class Db implements IDB {
   pool: Pool

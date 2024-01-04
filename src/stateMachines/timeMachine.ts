@@ -5,8 +5,8 @@
 
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 import { assign, createMachine } from 'xstate'
-import { HttpHandler } from '../HttpHandler'
-import { invokeWsmanCall } from './common'
+import { HttpHandler } from '../HttpHandler.js'
+import { invokeWsmanCall } from './common.js'
 
 interface TimeContext {
   message: any

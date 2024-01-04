@@ -4,8 +4,8 @@
  **********************************************************************/
 
 import { type AnyStateMachine, type DefaultContext, type EventObject, interpret } from 'xstate'
-import { type DoneResponse } from '../../stateMachines/maintenance/doneResponse'
-import { waitFor } from 'xstate/lib/waitFor'
+import { type DoneResponse } from '../../stateMachines/maintenance/doneResponse.js'
+import { waitFor } from 'xstate/lib/waitFor.js'
 
 export const runTilDone =
   async function <M extends AnyStateMachine, E extends EventObject, C extends DefaultContext>

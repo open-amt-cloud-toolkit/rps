@@ -4,10 +4,10 @@
  **********************************************************************/
 
 import Consul from 'consul'
-import Logger from './Logger'
-import { type RPSConfig } from './models'
-import type { IServiceManager } from './interfaces/IServiceManager'
-import { Environment } from './utils/Environment'
+import Logger from './Logger.js'
+import { type RPSConfig } from './models/index.js'
+import type { IServiceManager } from './interfaces/IServiceManager.js'
+import { Environment } from './utils/Environment.js'
 
 export class ConsulService implements IServiceManager {
   consul: Consul.Consul

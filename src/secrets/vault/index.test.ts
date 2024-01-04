@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { VaultService } from '.'
-import Logger from '../../Logger'
-import { type ILogger } from '../../interfaces/ILogger'
-import { config } from '../../test/helper/Config'
-import { Environment } from '../../utils/Environment'
-import { type DeviceCredentials } from '../../interfaces/ISecretManagerService'
+import { VaultService } from './index.js'
+import Logger from '../../Logger.js'
+import { type ILogger } from '../../interfaces/ILogger.js'
+import { config } from '../../test/helper/Config.js'
+import { Environment } from '../../utils/Environment.js'
+import { type DeviceCredentials } from '../../interfaces/ISecretManagerService.js'
 
 let secretManagerService: VaultService = null
 Environment.Config = config

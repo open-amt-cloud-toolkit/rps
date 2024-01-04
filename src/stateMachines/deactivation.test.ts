@@ -4,14 +4,14 @@
  **********************************************************************/
 
 import { interpret } from 'xstate'
-import { Deactivation, type DeactivationContext } from './deactivation'
+import { Deactivation, type DeactivationContext } from './deactivation.js'
 import { v4 as uuid } from 'uuid'
-import { devices } from '../WebSocketListener'
-import { config } from '../test/helper/Config'
-import { Environment } from '../utils/Environment'
-import ClientResponseMsg from '../utils/ClientResponseMsg'
-import { HttpHandler } from '../HttpHandler'
-import * as common from './common'
+import { devices } from '../WebSocketListener.js'
+import { config } from '../test/helper/Config.js'
+import { Environment } from '../utils/Environment.js'
+import ClientResponseMsg from '../utils/ClientResponseMsg.js'
+import { HttpHandler } from '../HttpHandler.js'
+import * as common from './common.js'
 
 const clientId = uuid()
 const tenantId = ''

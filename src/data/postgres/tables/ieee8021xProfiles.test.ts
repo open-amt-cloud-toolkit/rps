@@ -3,17 +3,17 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import PostgresDb from '..'
-import { type Ieee8021xConfig } from '../../../models/RCS.Config'
+import PostgresDb from '../index.js'
+import { type Ieee8021xConfig } from '../../../models/RCS.Config.js'
 import {
   API_UNEXPECTED_EXCEPTION,
   CONCURRENCY_MESSAGE, IEEE8021X_DELETION_FAILED_CONSTRAINT_AMT_PROFILE, IEEE8021X_DELETION_FAILED_CONSTRAINT_WIRELESS,
   IEEE8021X_INSERTION_FAILED,
   IEEE8021X_INSERTION_FAILED_DUPLICATE
-} from '../../../utils/constants'
-import { IEEE8021xProfilesTable } from './ieee8021xProfiles'
-import { PostgresErr } from '../errors'
-import { RPSError } from '../../../utils/RPSError'
+} from '../../../utils/constants.js'
+import { IEEE8021xProfilesTable } from './ieee8021xProfiles.js'
+import { PostgresErr } from '../errors.js'
+import { RPSError } from '../../../utils/RPSError.js'
 
 describe('8021x profiles tests', () => {
   let db: PostgresDb

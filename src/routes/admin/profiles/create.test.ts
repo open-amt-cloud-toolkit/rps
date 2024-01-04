@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { createSpyObj } from '../../../test/helper/jest'
-import { Environment } from '../../../utils/Environment'
-import { createProfile } from './create'
-import { ClientAction, TlsMode, TlsSigningAuthority } from '../../../models/RCS.Config'
-import { AMTUserConsent } from '../../../models'
-import { adjustRedirectionConfiguration } from './common'
+import { createSpyObj } from '../../../test/helper/jest.js'
+import { Environment } from '../../../utils/Environment.js'
+import { createProfile } from './create.js'
+import { ClientAction, TlsMode, TlsSigningAuthority } from '../../../models/RCS.Config.js'
+import { AMTUserConsent } from '../../../models/index.js'
+import { adjustRedirectionConfiguration } from './common.js'
 
 describe('Profiles - Create', () => {
   let resSpy

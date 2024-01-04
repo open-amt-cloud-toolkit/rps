@@ -4,22 +4,22 @@
  **********************************************************************/
 
 import { AMT, CIM, IPS } from '@open-amt-cloud-toolkit/wsman-messages'
-import { Activation, type ActivationContext } from './activation'
+import { Activation, type ActivationContext } from './activation.js'
 import { v4 as uuid } from 'uuid'
-import { devices } from '../WebSocketListener'
-import { Environment } from '../utils/Environment'
-import { config } from '../test/helper/Config'
-import { NodeForge } from '../NodeForge'
-import { CertManager } from '../certManager'
-import Logger from '../Logger'
-import { PasswordHelper } from '../utils/PasswordHelper'
-import { ClientAction } from '../models/RCS.Config'
-import { HttpHandler } from '../HttpHandler'
-import ClientResponseMsg from '../utils/ClientResponseMsg'
+import { devices } from '../WebSocketListener.js'
+import { Environment } from '../utils/Environment.js'
+import { config } from '../test/helper/Config.js'
+import { NodeForge } from '../NodeForge.js'
+import { CertManager } from '../certManager.js'
+import Logger from '../Logger.js'
+import { PasswordHelper } from '../utils/PasswordHelper.js'
+import { ClientAction } from '../models/RCS.Config.js'
+import { HttpHandler } from '../HttpHandler.js'
+import ClientResponseMsg from '../utils/ClientResponseMsg.js'
 import { interpret } from 'xstate'
-import { AMTUserName, GATEWAY_TIMEOUT_ERROR } from '../utils/constants'
-import * as common from './common'
-import { Configurator } from '../Configurator'
+import { AMTUserName, GATEWAY_TIMEOUT_ERROR } from '../utils/constants.js'
+import * as common from './common.js'
+import { Configurator } from '../Configurator.js'
 import got from 'got'
 
 jest.mock('got')
@@ -403,7 +403,7 @@ describe('Activation State Machine', () => {
 
   describe('save Device Information to MPS database', () => {
     it('should return true on successful post to MPS', async () => {
-      jest.spyOn(got, 'post').mockResolvedValue({ })
+      jest.spyOn(got, 'post').mockResolvedValue({ } as any)
       const response = await activation.saveDeviceInfoToMPS(context, null)
       expect(response).toBe(true)
     })

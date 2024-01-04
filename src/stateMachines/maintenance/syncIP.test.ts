@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type Enumerate } from '@open-amt-cloud-toolkit/wsman-messages/models/common'
+import { type Enumerate } from '@open-amt-cloud-toolkit/wsman-messages/models/common.js'
 import { type AMT } from '@open-amt-cloud-toolkit/wsman-messages'
-import * as common from './common'
-import { HttpResponseError } from './common'
-import { type DoneResponse, StatusFailed, StatusSuccess } from './doneResponse'
-import { UnexpectedParseError } from '../../utils/constants'
+import * as common from './common.js'
+import { HttpResponseError } from './common.js'
+import { type DoneResponse, StatusFailed, StatusSuccess } from './doneResponse.js'
+import { UnexpectedParseError } from '../../utils/constants.js'
 import {
   type EthernetPortSettingsPullResponse,
   type IPConfiguration,
@@ -17,9 +17,9 @@ import {
   MessageWirelessOnly,
   SyncIP,
   type SyncIPEvent, SyncIPEventType
-} from './syncIP'
-import { runTilDone } from '../../test/helper/xstate'
-import { setupTestClient } from '../../test/helper/Config'
+} from './syncIP.js'
+import { runTilDone } from '../../test/helper/xstate.js'
+import { setupTestClient } from '../../test/helper/Config.js'
 import resetAllMocks = jest.resetAllMocks
 
 const HttpBadRequestError = new HttpResponseError('Bad Request', 400)

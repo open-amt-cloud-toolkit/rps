@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import { check, type Meta, type CustomValidator } from 'express-validator'
-import { type AuthenticationProtocol, AuthenticationProtocols } from './constants'
+import { type AuthenticationProtocol, AuthenticationProtocols } from './constants.js'
 
 export const ieee8021xValidator = (): any => [
   check('profileName')

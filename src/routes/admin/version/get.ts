@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { ServiceVersion, ProtocolVersion } from '../../../utils/constants'
+import { ServiceVersion, ProtocolVersion } from '../../../utils/constants.js'
 import { type Request, type Response } from 'express'
 
 export function getVersion (req: Request, res: Response): void {

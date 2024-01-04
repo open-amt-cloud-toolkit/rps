@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import PostgresDb from '..'
-import { API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
-import { type ProfileWifiConfigs } from '../../../models/RCS.Config'
-import { ProfilesWifiConfigsTable } from './profileWifiConfigs'
+import PostgresDb from '../index.js'
+import { API_UNEXPECTED_EXCEPTION } from '../../../utils/constants.js'
+import { type ProfileWifiConfigs } from '../../../models/RCS.Config.js'
+import { ProfilesWifiConfigsTable } from './profileWifiConfigs.js'
 
 describe('profilewificonfig tests', () => {
   let db: PostgresDb

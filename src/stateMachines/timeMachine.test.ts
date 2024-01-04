@@ -4,10 +4,10 @@
  **********************************************************************/
 
 import { interpret } from 'xstate'
-import { HttpHandler } from '../HttpHandler'
-import { devices } from '../WebSocketListener'
-import * as common from './common'
-import { TimeSync } from './timeMachine'
+import { HttpHandler } from '../HttpHandler.js'
+import { devices } from '../WebSocketListener.js'
+import * as common from './common.js'
+import { TimeSync } from './timeMachine.js'
 
 describe('TLS State Machine', () => {
   let timeMachine: TimeSync

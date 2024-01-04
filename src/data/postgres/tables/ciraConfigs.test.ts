@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { CiraConfigTable } from './ciraConfigs'
-import { type CIRAConfig } from '../../../models/RCS.Config'
-import PostgresDb from '..'
-import { API_UNEXPECTED_EXCEPTION, CONCURRENCY_MESSAGE, DEFAULT_SKIP, DEFAULT_TOP } from '../../../utils/constants'
+import { CiraConfigTable } from './ciraConfigs.js'
+import { type CIRAConfig } from '../../../models/RCS.Config.js'
+import PostgresDb from '../index.js'
+import { API_UNEXPECTED_EXCEPTION, CONCURRENCY_MESSAGE, DEFAULT_SKIP, DEFAULT_TOP } from '../../../utils/constants.js'
 
 describe('ciraconfig tests', () => {
   let db: PostgresDb

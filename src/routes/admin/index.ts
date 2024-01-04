@@ -4,13 +4,13 @@
  **********************************************************************/
 
 import { Router, type Request, type Response } from 'express'
-import domains from './domains/index'
-import profiles from './profiles/index'
-import ciraConfigs from './ciraconfig/index'
-import version from './version/index'
-import wirelessconfigs from './wireless/index'
-import health from './health/index'
-import ieee8021x from './ieee8021x/index'
+import domains from './domains/index.js'
+import profiles from './profiles/index.js'
+import ciraConfigs from './ciraconfig/index.js'
+import version from './version/index.js'
+import wirelessconfigs from './wireless/index.js'
+import health from './health/index.js'
+import ieee8021x from './ieee8021x/index.js'
 
 const adminRouter: Router = Router()
 

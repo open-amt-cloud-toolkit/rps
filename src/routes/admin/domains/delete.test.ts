@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { createSpyObj } from '../../../test/helper/jest'
-import { deleteDomain } from './delete'
+import { createSpyObj } from '../../../test/helper/jest.js'
+import { deleteDomain } from './delete.js'
 
 describe('CIRA Config - Delete', () => {
   let resSpy

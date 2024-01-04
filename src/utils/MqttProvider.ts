@@ -4,9 +4,9 @@
  **********************************************************************/
 
 import * as url from 'url'
-import { type RPSConfig, type eventType, type OpenAMTEvent } from '../models'
+import { type RPSConfig, type eventType, type OpenAMTEvent } from '../models/index.js'
 import { type MqttClient, connect, type IClientOptions } from 'mqtt'
-import Logger from '../Logger'
+import Logger from '../Logger.js'
 const log: Logger = new Logger('MqttProvider')
 
 export class MqttProvider {

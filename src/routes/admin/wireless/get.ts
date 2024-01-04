@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import Logger from '../../../Logger'
+import Logger from '../../../Logger.js'
 import { type Request, type Response } from 'express'
-import { API_RESPONSE, NOT_FOUND_EXCEPTION, NOT_FOUND_MESSAGE } from '../../../utils/constants'
-import { MqttProvider } from '../../../utils/MqttProvider'
-import handleError from '../../../utils/handleError'
-import { RPSError } from '../../../utils/RPSError'
+import { API_RESPONSE, NOT_FOUND_EXCEPTION, NOT_FOUND_MESSAGE } from '../../../utils/constants.js'
+import { MqttProvider } from '../../../utils/MqttProvider.js'
+import handleError from '../../../utils/handleError.js'
+import { RPSError } from '../../../utils/RPSError.js'
 
 export async function getWirelessProfile (req: Request, res: Response): Promise<void> {
   const log = new Logger('getWirelessProfile')

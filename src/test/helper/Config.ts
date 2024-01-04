@@ -4,8 +4,8 @@
  **********************************************************************/
 
 import { v4 as uuid } from 'uuid'
-import { type RPSConfig } from '../../models'
-import { devices } from '../../WebSocketListener'
+import { type RPSConfig } from '../../models/index.js'
+import { devices } from '../../WebSocketListener.js'
 
 export function setupTestClient (): string {
   const clientId = uuid()

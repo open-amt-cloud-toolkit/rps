@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { PasswordHelper } from './PasswordHelper'
+import { PasswordHelper } from './PasswordHelper.js'
 
 test('check password length 7', () => {
   const input: string = 'aB$1abc'

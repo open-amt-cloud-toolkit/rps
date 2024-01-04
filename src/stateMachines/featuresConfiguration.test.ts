@@ -3,15 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type FeatureContext, FeaturesConfiguration } from './featuresConfiguration'
-import { ClientAction } from '../models/RCS.Config'
-import { type AMTConfiguration, AMTRedirectionServiceEnabledStates, AMTUserConsent, AMTUserConsentValues } from '../models'
+import { type FeatureContext, FeaturesConfiguration } from './featuresConfiguration.js'
+import { ClientAction } from '../models/RCS.Config.js'
+import { type AMTConfiguration, AMTRedirectionServiceEnabledStates, AMTUserConsent, AMTUserConsentValues } from '../models/index.js'
 import { v4 as uuid } from 'uuid'
-import { devices } from '../WebSocketListener'
-import { HttpHandler } from '../HttpHandler'
+import { devices } from '../WebSocketListener.js'
+import { HttpHandler } from '../HttpHandler.js'
 import { interpret } from 'xstate'
 import { AMT, CIM, IPS } from '@open-amt-cloud-toolkit/wsman-messages'
-import * as common from './common'
+import * as common from './common.js'
 describe('Features State Machine', () => {
   let clientId: string
   let amtConfiguration: AMTConfiguration

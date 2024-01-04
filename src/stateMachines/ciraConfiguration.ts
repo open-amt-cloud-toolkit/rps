@@ -5,24 +5,24 @@
 
 import { type AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 import { createMachine, assign } from 'xstate'
-import { CertManager } from '../certManager'
-import { Configurator } from '../Configurator'
-import { type HttpHandler } from '../HttpHandler'
-import Logger from '../Logger'
+import { CertManager } from '../certManager.js'
+import { Configurator } from '../Configurator.js'
+import { type HttpHandler } from '../HttpHandler.js'
+import Logger from '../Logger.js'
 import got from 'got'
-import { UNEXPECTED_PARSE_ERROR } from '../utils/constants'
-import { type CIRAConfig, ClientAction } from '../models/RCS.Config'
-import { NodeForge } from '../NodeForge'
-import { DbCreatorFactory } from '../factories/DbCreatorFactory'
-import { Environment } from '../utils/Environment'
-import { PasswordHelper } from '../utils/PasswordHelper'
-import { SignatureHelper } from '../utils/SignatureHelper'
-import { Validator } from '../Validator'
-import { devices } from '../WebSocketListener'
-import { type AMTConfiguration } from '../models'
+import { UNEXPECTED_PARSE_ERROR } from '../utils/constants.js'
+import { type CIRAConfig, ClientAction } from '../models/RCS.Config.js'
+import { NodeForge } from '../NodeForge.js'
+import { DbCreatorFactory } from '../factories/DbCreatorFactory.js'
+import { Environment } from '../utils/Environment.js'
+import { PasswordHelper } from '../utils/PasswordHelper.js'
+import { SignatureHelper } from '../utils/SignatureHelper.js'
+import { Validator } from '../Validator.js'
+import { devices } from '../WebSocketListener.js'
+import { type AMTConfiguration } from '../models/index.js'
 import { randomUUID } from 'crypto'
-import { Error } from './error'
-import { invokeWsmanCall } from './common'
+import { Error } from './error.js'
+import { invokeWsmanCall } from './common.js'
 import { type Models } from '@open-amt-cloud-toolkit/wsman-messages/amt'
 
 export interface CIRAConfigContext {
@@ -162,8 +162,7 @@ export class CIRAConfiguration {
         },
         SAVE_DEVICE_TO_MPS: {
           invoke: {
-            src: async (context, event) => await got(`${Environment.Config.mps_server}/api/v1/devices`, {
-              method: 'POST',
+            src: async (context, event) => await got.post(`${Environment.Config.mps_server}/api/v1/devices`, {
               json: {
                 guid: devices[context.clientId].uuid,
                 hostname: devices[context.clientId].hostname,

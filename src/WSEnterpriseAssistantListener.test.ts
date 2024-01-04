@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import Logger from './Logger'
-import { type ILogger } from './interfaces/ILogger'
+import Logger from './Logger.js'
+import { type ILogger } from './interfaces/ILogger.js'
 // import { Data } from 'ws'
-import { promises, enterpriseAssistantSocket, WSEnterpriseAssistantListener } from './WSEnterpriseAssistantListener'
+import { promises, enterpriseAssistantSocket, WSEnterpriseAssistantListener } from './WSEnterpriseAssistantListener.js'
 
 describe('Websocket Listener', () => {
   const log: ILogger = new Logger('WebSocketListener')

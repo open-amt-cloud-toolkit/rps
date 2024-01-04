@@ -5,24 +5,24 @@
 
 import type WebSocket from 'ws'
 
-import type { ILogger } from './interfaces/ILogger'
-import { ClientMethods, type ClientMsg } from './models/RCS.Config'
-import { RPSError } from './utils/RPSError'
-import type { IValidator } from './interfaces/IValidator'
-import { HttpHandler } from './HttpHandler'
-import { parse, type HttpZResponseModel } from 'http-z'
-import { devices } from './WebSocketListener'
-import { Deactivation } from './stateMachines/deactivation'
-import { Maintenance, type MaintenanceEvent } from './stateMachines/maintenance/maintenance'
-import { Activation, type ActivationEvent } from './stateMachines/activation'
-import ClientResponseMsg from './utils/ClientResponseMsg'
-import { parseChunkedMessage } from './utils/parseChunkedMessage'
-import { UNEXPECTED_PARSE_ERROR } from './utils/constants'
-import { SyncTimeEventType } from './stateMachines/maintenance/syncTime'
-import { ChangePasswordEventType } from './stateMachines/maintenance/changePassword'
-import { SyncHostNameEventType } from './stateMachines/maintenance/syncHostName'
-import { SyncIPEventType } from './stateMachines/maintenance/syncIP'
-import { SyncDeviceInfoEventType } from './stateMachines/maintenance/syncDeviceInfo'
+import type { ILogger } from './interfaces/ILogger.js'
+import { ClientMethods, type ClientMsg } from './models/RCS.Config.js'
+import { RPSError } from './utils/RPSError.js'
+import type { IValidator } from './interfaces/IValidator.js'
+import { HttpHandler } from './HttpHandler.js'
+import pkg, { type HttpZResponseModel } from 'http-z'
+import { devices } from './WebSocketListener.js'
+import { Deactivation } from './stateMachines/deactivation.js'
+import { Maintenance, type MaintenanceEvent } from './stateMachines/maintenance/maintenance.js'
+import { Activation, type ActivationEvent } from './stateMachines/activation.js'
+import ClientResponseMsg from './utils/ClientResponseMsg.js'
+import { parseChunkedMessage } from './utils/parseChunkedMessage.js'
+import { UNEXPECTED_PARSE_ERROR } from './utils/constants.js'
+import { SyncTimeEventType } from './stateMachines/maintenance/syncTime.js'
+import { ChangePasswordEventType } from './stateMachines/maintenance/changePassword.js'
+import { SyncHostNameEventType } from './stateMachines/maintenance/syncHostName.js'
+import { SyncIPEventType } from './stateMachines/maintenance/syncIP.js'
+import { SyncDeviceInfoEventType } from './stateMachines/maintenance/syncDeviceInfo.js'
 export class DataProcessor {
   httpHandler: HttpHandler
   constructor (
@@ -102,6 +102,7 @@ export class DataProcessor {
   }
 
   async handleResponse (clientMsg: ClientMsg, clientId: string): Promise<void> {
+    const { parse } = pkg
     const clientObj = devices[clientId]
     let resolveValue = null
     let rejectValue = null

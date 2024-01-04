@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { CertManager } from './certManager'
-import { NodeForge } from './NodeForge'
-import { type AMTKeyUsage, type CertAttributes, type CertificateObject } from './models'
-import Logger from './Logger'
-import { TEST_PFXCERT, EXPECTED_CERT } from './test/helper/certs'
+import { CertManager } from './certManager.js'
+import { NodeForge } from './NodeForge.js'
+import { type AMTKeyUsage, type CertAttributes, type CertificateObject } from './models/index.js'
+import Logger from './Logger.js'
+import { TEST_PFXCERT, EXPECTED_CERT } from './test/helper/certs.js'
 
 describe('certManager tests', () => {
   describe('sortCertificate tests', () => {

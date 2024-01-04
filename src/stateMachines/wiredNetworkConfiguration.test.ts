@@ -4,14 +4,14 @@
  **********************************************************************/
 
 import { v4 as uuid } from 'uuid'
-import { devices } from '../WebSocketListener'
-import { Environment } from '../utils/Environment'
-import { config } from '../test/helper/Config'
-import { ClientAction } from '../models/RCS.Config'
-import { WiredConfiguration } from './wiredNetworkConfiguration'
+import { devices } from '../WebSocketListener.js'
+import { Environment } from '../utils/Environment.js'
+import { config } from '../test/helper/Config.js'
+import { ClientAction } from '../models/RCS.Config.js'
+import { WiredConfiguration } from './wiredNetworkConfiguration.js'
 import { interpret } from 'xstate'
-import { HttpHandler } from '../HttpHandler'
-import * as common from './common'
+import { HttpHandler } from '../HttpHandler.js'
+import * as common from './common.js'
 import { AMT, CIM, IPS } from '@open-amt-cloud-toolkit/wsman-messages'
 
 const clientId = uuid()

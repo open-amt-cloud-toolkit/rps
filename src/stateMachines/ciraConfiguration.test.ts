@@ -4,16 +4,16 @@
  **********************************************************************/
 
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
-import { CIRAConfiguration, type CIRAConfigEvent, MPSType } from './ciraConfiguration'
+import { CIRAConfiguration, type CIRAConfigEvent, MPSType } from './ciraConfiguration.js'
 import { v4 as uuid } from 'uuid'
-import { devices } from '../WebSocketListener'
-import { Environment } from '../utils/Environment'
-import { config } from '../test/helper/Config'
-import { type CIRAConfig } from '../models/RCS.Config'
-import { HttpHandler } from '../HttpHandler'
+import { devices } from '../WebSocketListener.js'
+import { Environment } from '../utils/Environment.js'
+import { config } from '../test/helper/Config.js'
+import { type CIRAConfig } from '../models/RCS.Config.js'
+import { HttpHandler } from '../HttpHandler.js'
 import { interpret } from 'xstate'
-import * as common from './common'
-import { UNEXPECTED_PARSE_ERROR } from '../utils/constants'
+import * as common from './common.js'
+import { UNEXPECTED_PARSE_ERROR } from '../utils/constants.js'
 
 Environment.Config = config
 

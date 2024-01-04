@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import PostgresDb from '..'
-import { type WirelessConfig } from '../../../models/RCS.Config'
-import { API_UNEXPECTED_EXCEPTION, CONCURRENCY_MESSAGE, DEFAULT_SKIP, DEFAULT_TOP, NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT, NETWORK_CONFIG_ERROR, NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE } from '../../../utils/constants'
-import { WirelessProfilesTable } from './wirelessProfiles'
-import { RPSError } from '../../../utils/RPSError'
+import PostgresDb from '../index.js'
+import { type WirelessConfig } from '../../../models/RCS.Config.js'
+import { API_UNEXPECTED_EXCEPTION, CONCURRENCY_MESSAGE, DEFAULT_SKIP, DEFAULT_TOP, NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT, NETWORK_CONFIG_ERROR, NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE } from '../../../utils/constants.js'
+import { WirelessProfilesTable } from './wirelessProfiles.js'
+import { RPSError } from '../../../utils/RPSError.js'
 
 describe('wireless profiles tests', () => {
   let db: PostgresDb

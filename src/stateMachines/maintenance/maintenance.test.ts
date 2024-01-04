@@ -4,21 +4,21 @@
  **********************************************************************/
 
 import resetAllMocks = jest.resetAllMocks
-import * as common from './common'
-import { HttpResponseError } from './common'
+import * as common from './common.js'
+import { HttpResponseError } from './common.js'
 import { interpret } from 'xstate'
-import { Maintenance, type MaintenanceEvent } from './maintenance'
-import { devices } from '../../WebSocketListener'
-import { waitFor } from 'xstate/lib/waitFor'
-import { Environment } from '../../utils/Environment'
-import { config, setupTestClient } from '../../test/helper/Config'
-import Logger from '../../Logger'
-import { doneFail, type DoneResponse, doneSuccess } from './doneResponse'
-import { type SyncTimeEvent, SyncTimeEventType } from './syncTime'
-import { ChangePasswordEventType } from './changePassword'
-import { SyncHostNameEventType } from './syncHostName'
-import { SyncDeviceInfoEventType } from './syncDeviceInfo'
-import { SyncIPEventType } from './syncIP'
+import { Maintenance, type MaintenanceEvent } from './maintenance.js'
+import { devices } from '../../WebSocketListener.js'
+import { waitFor } from 'xstate/lib/waitFor.js'
+import { Environment } from '../../utils/Environment.js'
+import { config, setupTestClient } from '../../test/helper/Config.js'
+import Logger from '../../Logger.js'
+import { doneFail, type DoneResponse, doneSuccess } from './doneResponse.js'
+import { type SyncTimeEvent, SyncTimeEventType } from './syncTime.js'
+import { ChangePasswordEventType } from './changePassword.js'
+import { SyncHostNameEventType } from './syncHostName.js'
+import { SyncDeviceInfoEventType } from './syncDeviceInfo.js'
+import { SyncIPEventType } from './syncIP.js'
 
 Environment.Config = config
 

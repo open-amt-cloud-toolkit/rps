@@ -9,12 +9,12 @@ import {
   AMTUserConsent,
   type CertAttributes,
   type TLSCerts
-} from '../../../models'
-import { NodeForge } from '../../../NodeForge'
-import { type ISecretManagerService } from '../../../interfaces/ISecretManagerService'
-import { CertManager } from '../../../certManager'
-import Logger from '../../../Logger'
-import { ClientAction, TlsSigningAuthority } from '../../../models/RCS.Config'
+} from '../../../models/index.js'
+import { NodeForge } from '../../../NodeForge.js'
+import { type ISecretManagerService } from '../../../interfaces/ISecretManagerService.js'
+import { CertManager } from '../../../certManager.js'
+import Logger from '../../../Logger.js'
+import { ClientAction, TlsSigningAuthority } from '../../../models/RCS.Config.js'
 
 export function adjustTlsConfiguration (amtConfig: AMTConfiguration): AMTConfiguration {
   // default to self-signed if tls is indicated

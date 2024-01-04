@@ -10,10 +10,10 @@ import {
   commonContext,
   type CommonMaintenanceContext,
   invokeWsmanCall
-} from './common'
-import Logger from '../../Logger'
-import * as Task from './doneResponse'
-import { getPTStatusName, PTStatus } from '../../utils/PTStatus'
+} from './common.js'
+import Logger from '../../Logger.js'
+import * as Task from './doneResponse.js'
+import { getPTStatusName, PTStatus } from '../../utils/PTStatus.js'
 
 export interface GetLowAccuracyTimeSynchResponse {
   GetLowAccuracyTimeSynch_OUTPUT: {

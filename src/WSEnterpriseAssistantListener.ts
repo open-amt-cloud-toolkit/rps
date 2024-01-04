@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { Server, type WebSocket, type Data } from 'ws'
-import { type ILogger } from './interfaces/ILogger'
-import { type DataProcessor } from './DataProcessor'
+import Server, { type WebSocket, type Data } from 'ws'
+import { type ILogger } from './interfaces/ILogger.js'
+import { type DataProcessor } from './DataProcessor.js'
 
 const promises: Record<string, { resolve: any, reject: any, pendingPromise: Promise<EnterpriseAssistantMessage> }> = {}
 
@@ -23,7 +23,7 @@ export class WSEnterpriseAssistantListener {
   /**
    * @description Creates a WebSocket server based on config info
    */
-  connect (wsServer: Server = new Server({ port: 8082 })): boolean {
+  connect (wsServer: Server = new Server(null, { port: 8082 })): boolean {
     // TODO: tech debt - wsConfig is not being used
     try {
       this.wsServer = wsServer

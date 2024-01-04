@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type apiResponse } from '../models/RCS.Config'
+import { type apiResponse } from '../models/RCS.Config.js'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const packageObj = require('../../package.json')
+// import * as packageObj from '../../package.json' assert {type: 'json'}
 
-export const ServiceVersion = packageObj.version
+export const ServiceVersion = '2.22.0' // Craig
 export const ProtocolVersion = '4.0.0'
 export const AMTUserName = 'admin'
 export const mpsserver = (name: string): string => `<Address xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing">http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</Address><ReferenceParameters xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing"><ResourceURI xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd">http://intel.com/wbem/wscim/1/amt-schema/1/AMT_ManagementPresenceRemoteSAP</ResourceURI><SelectorSet xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"><Selector Name="Name">${name}</Selector></SelectorSet></ReferenceParameters>`

@@ -5,16 +5,16 @@
 
 import { v4 as uuid } from 'uuid'
 
-import Logger from './Logger'
-import { config } from './test/helper/Config'
-import { Validator } from './Validator'
-import { Configurator } from './Configurator'
-import { RPSError } from './utils/RPSError'
-import { Environment } from './utils/Environment'
-import { VersionChecker } from './VersionChecker'
-import { devices } from './WebSocketListener'
-import { ClientAction, type ClientObject } from './models/RCS.Config'
-import { type DeviceCredentials } from './interfaces/ISecretManagerService'
+import Logger from './Logger.js'
+import { config } from './test/helper/Config.js'
+import { Validator } from './Validator.js'
+import { Configurator } from './Configurator.js'
+import { RPSError } from './utils/RPSError.js'
+import { Environment } from './utils/Environment.js'
+import { VersionChecker } from './VersionChecker.js'
+import { devices } from './WebSocketListener.js'
+import { ClientAction, type ClientObject } from './models/RCS.Config.js'
+import { type DeviceCredentials } from './interfaces/ISecretManagerService.js'
 
 Environment.Config = config
 const configurator: Configurator = new Configurator()

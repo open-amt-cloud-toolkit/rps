@@ -11,12 +11,12 @@ import {
   type CommonMaintenanceContext,
   HttpResponseError,
   invokeWsmanCall
-} from './common'
-import Logger from '../../Logger'
-import * as Task from './doneResponse'
-import { devices } from '../../WebSocketListener'
+} from './common.js'
+import Logger from '../../Logger.js'
+import * as Task from './doneResponse.js'
+import { devices } from '../../WebSocketListener.js'
 import got from 'got'
-import { Environment } from '../../utils/Environment'
+import { Environment } from '../../utils/Environment.js'
 
 export interface HostNameInfo {
   dnsSuffixOS: string

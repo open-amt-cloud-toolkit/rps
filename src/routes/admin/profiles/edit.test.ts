@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type AMTConfiguration, AMTUserConsent } from '../../../models'
-import { createSpyObj } from '../../../test/helper/jest'
+import { type AMTConfiguration, AMTUserConsent } from '../../../models/index.js'
+import { createSpyObj } from '../../../test/helper/jest.js'
 import {
   editProfile,
   getUpdatedData,
@@ -13,8 +13,8 @@ import {
   handleGenerateRandomPassword,
   handleMEBxPassword,
   handleWifiConfigs
-} from './edit'
-import { ClientAction, TlsMode, TlsSigningAuthority } from '../../../models/RCS.Config'
+} from './edit.js'
+import { ClientAction, TlsMode, TlsSigningAuthority } from '../../../models/RCS.Config.js'
 
 describe('AMT Profile - Edit', () => {
   let resSpy

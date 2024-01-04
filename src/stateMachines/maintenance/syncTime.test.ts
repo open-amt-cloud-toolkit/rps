@@ -3,19 +3,19 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import * as common from './common'
-import { HttpResponseError } from './common'
-import { type DoneResponse, StatusFailed } from './doneResponse'
-import { PTStatus } from '../../utils/PTStatus'
+import * as common from './common.js'
+import { HttpResponseError } from './common.js'
+import { type DoneResponse, StatusFailed } from './doneResponse.js'
+import { PTStatus } from '../../utils/PTStatus.js'
 import {
   type GetLowAccuracyTimeSynchResponse,
   type SetHighAccuracyTimeSynchResponse,
   SyncTime,
   SyncTimeEventType,
   type SyncTimeEvent
-} from './syncTime'
-import { setupTestClient } from '../../test/helper/Config'
-import { runTilDone } from '../../test/helper/xstate'
+} from './syncTime.js'
+import { setupTestClient } from '../../test/helper/Config.js'
+import { runTilDone } from '../../test/helper/xstate.js'
 import resetAllMocks = jest.resetAllMocks
 
 const HttpBadRequestError = new HttpResponseError('Bad Request', 400)

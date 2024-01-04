@@ -4,23 +4,23 @@
  **********************************************************************/
 
 import resetAllMocks = jest.resetAllMocks
-import * as common from './common'
-import { HttpResponseError } from './common'
+import * as common from './common.js'
+import { HttpResponseError } from './common.js'
 import { type AMT } from '@open-amt-cloud-toolkit/wsman-messages'
-import { SecretManagerCreatorFactory } from '../../factories/SecretManagerCreatorFactory'
-import { type DeviceCredentials, type ISecretManagerService } from '../../interfaces/ISecretManagerService'
-import { PTStatus } from '../../utils/PTStatus'
-import { type DoneResponse, StatusFailed, StatusSuccess } from './doneResponse'
-import { runTilDone } from '../../test/helper/xstate'
-import { config, setupTestClient } from '../../test/helper/Config'
+import { SecretManagerCreatorFactory } from '../../factories/SecretManagerCreatorFactory.js'
+import { type DeviceCredentials, type ISecretManagerService } from '../../interfaces/ISecretManagerService.js'
+import { PTStatus } from '../../utils/PTStatus.js'
+import { type DoneResponse, StatusFailed, StatusSuccess } from './doneResponse.js'
+import { runTilDone } from '../../test/helper/xstate.js'
+import { config, setupTestClient } from '../../test/helper/Config.js'
 import {
   ChangePassword,
   type ChangePasswordEvent,
   ChangePasswordEventType,
   type SetAdminACLEntryExResponse
-} from './changePassword'
+} from './changePassword.js'
 import got from 'got'
-import { Environment } from '../../utils/Environment'
+import { Environment } from '../../utils/Environment.js'
 
 jest.mock('got')
 Environment.Config = config

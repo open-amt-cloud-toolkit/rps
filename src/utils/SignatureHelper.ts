@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import * as crypto from 'crypto'
-import { type NodeForge } from '../NodeForge'
+import { type NodeForge } from '../NodeForge.js'
 
 export class SignatureHelper {
   private readonly nodeForge: NodeForge

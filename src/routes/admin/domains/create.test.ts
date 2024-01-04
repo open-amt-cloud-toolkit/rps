@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { createSpyObj } from '../../../test/helper/jest'
-import { DomainCreate } from './create'
+import { createSpyObj } from '../../../test/helper/jest.js'
+import { DomainCreate } from './create.js'
 
 describe('Domain - Create', () => {
   let resSpy

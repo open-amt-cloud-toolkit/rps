@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { createSpyObj } from '../../../test/helper/jest'
-import { editWirelessProfile } from './edit'
+import { createSpyObj } from '../../../test/helper/jest.js'
+import { editWirelessProfile } from './edit.js'
 
 describe('Wireless - Edit', () => {
   let resSpy
