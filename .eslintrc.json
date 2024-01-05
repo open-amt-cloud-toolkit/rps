@@ -8,7 +8,7 @@
         "eslint:recommended",
         "standard-with-typescript"
     ],
-    "ignorePatterns": "**/*.js",
+    "ignorePatterns": ["**/*.js", "**/jest.config.ts"],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
         "ecmaVersion": 12,
