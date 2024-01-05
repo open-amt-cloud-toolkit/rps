@@ -162,7 +162,8 @@ export class CIRAConfiguration {
         },
         SAVE_DEVICE_TO_MPS: {
           invoke: {
-            src: async (context, event) => await got.post(`${Environment.Config.mps_server}/api/v1/devices`, {
+            src: async (context, event) => await got(`${Environment.Config.mps_server}/api/v1/devices`, {
+              method: 'POST',
               json: {
                 guid: devices[context.clientId].uuid,
                 hostname: devices[context.clientId].hostname,

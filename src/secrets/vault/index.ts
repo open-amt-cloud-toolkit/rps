@@ -12,14 +12,14 @@ import {
 } from '../../interfaces/ISecretManagerService.js'
 import { type ILogger } from '../../interfaces/ILogger.js'
 import { Environment } from '../../utils/Environment.js'
-import { type Got } from 'got'
+import got, { type Got } from 'got'
 
 export class VaultService implements ISecretManagerService {
   gotClient: Got
   logger: ILogger
   constructor (logger: ILogger) {
     this.logger = logger
-    this.gotClient.extend({
+    this.gotClient = got.extend({
       prefixUrl: `${Environment.Config.vault_address}/v1/${Environment.Config.secrets_path}`,
       headers: {
         'X-Vault-Token': Environment.Config.vault_token

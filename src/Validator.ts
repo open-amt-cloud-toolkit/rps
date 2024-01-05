@@ -169,7 +169,8 @@ export class Validator implements IValidator {
     let tags = []
     if (profile?.tags.length > 0) {
       tags = profile.tags
-      await got.patch(`${Environment.Config.mps_server}/api/v1/devices`, {
+      await got(`${Environment.Config.mps_server}/api/v1/devices`, {
+        method: 'PATCH',
         json: {
           guid: uuid,
           tags
