@@ -15,12 +15,12 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.x, 18.x, 20.x]
+        node-version: [18.x, 20.x]
 
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65 # v4.0.0
+        uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v4.0.1
         with:
           node-version: ${{ matrix.node-version }}
       - run: npm ci
@@ -29,7 +29,7 @@ jobs:
       - run: npm run compile --if-present
       - run: npm test
       - name: Test Report
-        uses: dorny/test-reporter@d9ef69ec3d6605cb603a1e7d58506dd1cbd8c166 # v1
+        uses: dorny/test-reporter@08c81a1fd6ada0ce6328c58b3430b3a8f7f0112a # v1
         if: success() || failure() # run this step even if previous step failed
         continue-on-error: true
         with:
