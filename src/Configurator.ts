@@ -35,7 +35,7 @@ export class Configurator {
     smcf.getSecretManager(new Logger('SecretManagerService')).then((secretManager) => {
       this.secretsManager = secretManager
     }).catch((err) => {
-      log.error(err)
+      log.error(err as string)
       throw new Error('Unable to get secret manager configuration')
     })
 
@@ -43,7 +43,7 @@ export class Configurator {
       this.domainCredentialManager = new DomainCredentialManager(new Logger('DomainCredentialManager'), db.domains, this)
       this.profileManager = new ProfileManager(new Logger('ProfileManager'), this, db.profiles, Environment.Config)
     }).catch((err) => {
-      log.error(err)
+      log.error(err as string)
       throw new Error('Unable to get db configuration')
     })
   }

@@ -212,7 +212,7 @@ export interface ClientMsg {
   protocolVersion?: string
   status: string
   message: string
-  payload: any
+  payload: Payload
   tenantId?: string
 }
 
@@ -228,7 +228,7 @@ export interface Payload {
   hostname?: string
   certHashes?: string[]
   sku?: string
-  uuid?: any
+  uuid?: string
   username?: string
   client: string
   profile?: any

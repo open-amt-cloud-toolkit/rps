@@ -27,7 +27,7 @@ export class ClientMsgJsonParser {
    */
   convertClientMsg (message: ClientMsg): ClientMsg {
     if (message.payload) {
-      const decodedPayload = Buffer.from(message.payload, 'base64').toString('utf8')
+      const decodedPayload: string = Buffer.from(message.payload, 'base64').toString('utf8')
       if (message.method !== ClientMethods.RESPONSE) {
         message.payload = this.parsePayload(decodedPayload)
       } else {
@@ -71,14 +71,15 @@ export class ClientMsgJsonParser {
     return zlp + str
   }
 
-  getUUID (uuid: any): any {
-    uuid = Buffer.from(uuid)
+  getUUID (uuid: string): string {
+    const bufferUuid: Buffer = Buffer.from(uuid)
+
     const guid = [
-      this.zeroLeftPad(uuid.readUInt32LE(0).toString(16), 8),
-      this.zeroLeftPad(uuid.readUInt16LE(4).toString(16), 4),
-      this.zeroLeftPad(uuid.readUInt16LE(6).toString(16), 4),
-      this.zeroLeftPad(uuid.readUInt16BE(8).toString(16), 4),
-      this.zeroLeftPad(uuid.slice(10).toString('hex').toLowerCase(), 12)].join('-')
+      this.zeroLeftPad(bufferUuid.readUInt32LE(0).toString(16), 8),
+      this.zeroLeftPad(bufferUuid.readUInt16LE(4).toString(16), 4),
+      this.zeroLeftPad(bufferUuid.readUInt16LE(6).toString(16), 4),
+      this.zeroLeftPad(bufferUuid.readUInt16BE(8).toString(16), 4),
+      this.zeroLeftPad(bufferUuid.slice(10).toString('hex').toLowerCase(), 12)].join('-')
 
     return guid
   }

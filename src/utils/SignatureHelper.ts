@@ -5,6 +5,7 @@
 
 import * as crypto from 'crypto'
 import { type NodeForge } from '../NodeForge'
+import type * as forge from 'node-forge'
 
 export class SignatureHelper {
   private readonly nodeForge: NodeForge
@@ -19,7 +20,7 @@ export class SignatureHelper {
     * @param {any} key Private key of provisioning certificate
     * @returns {string} Returns the signed string
     */
-  public signString (message: any, key: any, hashAlgorithm: string): string {
+  public signString (message: string, key: forge.pki.PrivateKey, hashAlgorithm: string): string {
     try {
       const signer = crypto.createSign(hashAlgorithm)
       signer.update(message)
@@ -37,7 +38,7 @@ export class SignatureHelper {
     * @param {string} sign Signature used to sign
     * @returns {boolean} True = pass, False = fail
     */
-  public verifyString (message: string, cert: any, sign: string): boolean {
+  public verifyString (message: string, cert: forge.pki.Certificate, sign: string): boolean {
     const verify = crypto.createVerify('sha256')
     verify.update(message)
     const ver = verify.verify(this.nodeForge.pkiCertificateToPem(cert), sign, 'base64')

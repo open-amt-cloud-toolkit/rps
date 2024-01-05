@@ -30,7 +30,7 @@ export class HttpResponseError extends Error {
 export function isDigestRealmValid (realm: string): boolean {
   const regex: RegExp = /[0-9A-Fa-f]{32}/g
   let isValidRealm: boolean = false
-  let realmElements: any = {}
+  let realmElements: string[]
   if (realm?.startsWith('Digest:')) {
     realmElements = realm.split('Digest:')
     if (realmElements[1].length === 32 && regex.test(realmElements[1])) {
@@ -62,7 +62,7 @@ export const invokeWsmanCall = async <T> (clientId: string, wsmanXml: string, re
   const wrapped = httpHandler.wrapIt(wsmanXml, clientObj.connectionParams)
   const clientMsg = ClientResponseMsg.get(clientId, wrapped, 'wsman', 'ok')
   const clientMsgStr = JSON.stringify(clientMsg)
-  let timeoutId
+  let timeoutId: NodeJS.Timeout
   clientObj.pendingPromise = new Promise<any>((resolve, reject) => {
     clientObj.resolve = resolve
     clientObj.reject = reject

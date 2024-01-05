@@ -32,7 +32,7 @@ export interface UnconfigContext {
   statusMessage: string
   privateCerts: any[]
   httpHandler: HttpHandler
-  tlsSettingData: any[]
+  tlsSettingData: AMT.Models.TLSSettingData[]
   publicKeyCertificates: any[]
   is8021xProfileUpdated?: boolean
   wifiEndPointSettings?: any[]
@@ -696,7 +696,7 @@ export class Unconfiguration {
   }
 
   async disableWired8021xConfiguration (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    const ieee8021xProfile = context.message.Envelope.Body.IPS_IEEE8021xSettings
+    const ieee8021xProfile: IPS.Models.IEEE8021xSettings = context.message.Envelope.Body.IPS_IEEE8021xSettings
     delete ieee8021xProfile.Username
     delete ieee8021xProfile.Password
     delete ieee8021xProfile.AuthenticationProtocol
@@ -804,7 +804,7 @@ export class Unconfiguration {
   }
 
   async clearEnvironmentDetectionSettings (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    const envSettings = context.message.Envelope.Body.AMT_EnvironmentDetectionSettingData
+    const envSettings: AMT.Models.EnvironmentDetectionSettingData = context.message.Envelope.Body.AMT_EnvironmentDetectionSettingData
     envSettings.DetectionStrings = []
     context.xmlMessage = context.amt.EnvironmentDetectionSettingData.Put(envSettings)
     return await invokeWsmanCall(context)
