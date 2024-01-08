@@ -68,9 +68,12 @@ export class CIRAConfiguration {
   error: Error = new Error()
 
   machine =
-    createMachine<CIRAConfigContext, CIRAConfigEvent>({
-      preserveActionOrder: true,
-      predictableActionArguments: true,
+    createMachine({
+      types: {} as {
+        context: CIRAConfigContext
+        events: CIRAConfigEvent
+        actions: any
+      },
       // todo: the actual context comes in from the parent and clobbers this one
       // xstate version 5 should fix this.
       context: {
@@ -101,10 +104,10 @@ export class CIRAConfiguration {
         GET_CIRA_CONFIG: {
           invoke: {
             // TODO: [tech debt] coupling, would expect a direct call to the persistence with the name of the cira config to retrieve it rather than use (amt) profile manager
-            src: async (context, event) => await this.configurator.profileManager.getCiraConfiguration(context.profile.profileName, context.tenantId),
+            src: async ({context, event}) => await this.configurator.profileManager.getCiraConfiguration(context.profile.profileName, context.tenantId),
             id: 'get-cira-config',
             onDone: {
-              actions: assign({ ciraConfig: (context, event) => event.data }),
+              actions: assign({ ciraConfig: ({context, event}) => event.data }),
               target: 'SET_MPS_PASSWORD'
             },
             onError: 'FAILURE'
@@ -115,7 +118,7 @@ export class CIRAConfiguration {
             src: async (context, _) => await this.configurator.secretsManager.getSecretAtPath(`CIRAConfigs/${context.ciraConfig.configName}`),
             id: 'set-mps-password',
             onDone: {
-              actions: assign((context, event) => {
+              actions: assign(({context, event}) => {
                 if (event.data?.MPS_PASSWORD) {
                   context.ciraConfig.password = event.data?.MPS_PASSWORD
                 } else {
@@ -126,7 +129,7 @@ export class CIRAConfiguration {
               target: 'ADD_TRUSTED_ROOT_CERTIFICATE'
             },
             onError: {
-              actions: assign({ statusMessage: (context, event) => 'Failed getSecretAtPath' }),
+              actions: assign({ statusMessage: ({context, event}) => 'Failed getSecretAtPath' }),
               target: 'FAILURE'
             }
           }
@@ -136,18 +139,18 @@ export class CIRAConfiguration {
             src: this.addTrustedRootCertificate.bind(this),
             id: 'add-trusted-root-certificate',
             onDone: {
-              actions: assign({ message: (context, event) => event.data }),
+              actions: assign({ message: ({context, event}) => event.data }),
               target: 'SAVE_MPS_PASSWORD_TO_SECRET_PROVIDER'
             },
             onError: {
-              actions: assign({ statusMessage: (context, event) => 'Failed to add trusted root certificate' }),
+              actions: assign({ statusMessage: ({context, event}) => 'Failed to add trusted root certificate' }),
               target: 'FAILURE'
             }
           }
         },
         SAVE_MPS_PASSWORD_TO_SECRET_PROVIDER: {
           invoke: {
-            src: async (context, event) => await this.configurator.secretsManager.writeSecretWithObject(`devices/${devices[context.clientId].uuid}`, {
+            src: async ({context, event}) => await this.configurator.secretsManager.writeSecretWithObject(`devices/${devices[context.clientId].uuid}`, {
               MPS_PASSWORD: context.ciraConfig.password,
               AMT_PASSWORD: devices[context.clientId].amtPassword,
               MEBX_PASSWORD: devices[context.clientId].action === ClientAction.ADMINCTLMODE ? devices[context.clientId].mebxPassword : null
@@ -155,14 +158,14 @@ export class CIRAConfiguration {
             id: 'save-mps-password-to-secret-provider',
             onDone: 'SAVE_DEVICE_TO_MPS',
             onError: {
-              actions: assign({ statusMessage: (context, event) => 'Failed to save mps password to secret provider' }),
+              actions: assign({ statusMessage: ({context, event}) => 'Failed to save mps password to secret provider' }),
               target: 'FAILURE'
             }
           }
         },
         SAVE_DEVICE_TO_MPS: {
           invoke: {
-            src: async (context, event) => await got(`${Environment.Config.mps_server}/api/v1/devices`, {
+            src: async ({context, event}) => await got(`${Environment.Config.mps_server}/api/v1/devices`, {
               method: 'POST',
               json: {
                 guid: devices[context.clientId].uuid,
@@ -175,7 +178,7 @@ export class CIRAConfiguration {
             id: 'save-device-to-mps',
             onDone: 'ADD_MPS',
             onError: {
-              actions: assign({ statusMessage: (context, event) => 'Failed to save device to mps' }),
+              actions: assign({ statusMessage: ({context, event}) => 'Failed to save device to mps' }),
               target: 'FAILURE'
             }
           }
@@ -185,11 +188,11 @@ export class CIRAConfiguration {
             src: this.addMPS.bind(this),
             id: 'add-mps',
             onDone: {
-              actions: assign({ message: (context, event) => event.data }),
+              actions: assign({ message: ({context, event}) => event.data }),
               target: 'ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP'
             },
             onError: {
-              actions: assign({ statusMessage: (context, event) => 'Failed to add mps' }),
+              actions: assign({ statusMessage: ({context, event}) => 'Failed to add mps' }),
               target: 'FAILURE'
             }
           }
@@ -199,11 +202,11 @@ export class CIRAConfiguration {
             src: this.enumerateManagementPresenceRemoteSAP.bind(this),
             id: 'enumerate-management-presence-remote-sap',
             onDone: {
-              actions: assign({ message: (context, event) => event.data }),
+              actions: assign({ message: ({context, event}) => event.data }),
               target: 'PULL_MANAGEMENT_PRESENCE_REMOTE_SAP'
             },
             onError: {
-              actions: assign({ statusMessage: (context, event) => 'Failed to enumerate Management Presence Remote SAP' }),
+              actions: assign({ statusMessage: ({context, event}) => 'Failed to enumerate Management Presence Remote SAP' }),
               target: 'FAILURE'
             }
           }
@@ -213,17 +216,17 @@ export class CIRAConfiguration {
             src: this.pullManagementPresenceRemoteSAP.bind(this),
             id: 'pull-management-presence-remote-sap',
             onDone: {
-              actions: [assign({ message: (context, event) => event.data }), 'Reset Retry Count'],
+              actions: [assign({ message: ({context, event}) => event.data }), 'Reset Retry Count'],
               target: 'ADD_REMOTE_ACCESS_POLICY_RULE'
             },
             onError: [
               {
-                cond: 'shouldRetry',
+                guard: 'shouldRetry',
                 actions: 'Increment Retry Count',
                 target: 'ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP'
               },
               {
-                actions: assign({ statusMessage: (context, event) => 'Failed to Pull Management Presence Remote SAP' }),
+                actions: assign({ statusMessage: ({context, event}) => 'Failed to Pull Management Presence Remote SAP' }),
                 target: 'FAILURE'
               }
             ]
@@ -235,7 +238,7 @@ export class CIRAConfiguration {
             id: 'add-remote-policy-access-rule',
             onDone: 'ENUMERATE_REMOTE_ACCESS_POLICY_RULE',
             onError: {
-              actions: assign({ statusMessage: (context, event) => 'Failed to add remote policy access rule' }),
+              actions: assign({ statusMessage: ({context, event}) => 'Failed to add remote policy access rule' }),
               target: 'FAILURE'
             }
           }
@@ -245,11 +248,11 @@ export class CIRAConfiguration {
             src: this.enumerateRemoteAccessPolicyAppliesToMPS.bind(this),
             id: 'enumerate-remote-access-policy-rule',
             onDone: {
-              actions: assign({ message: (context, event) => event.data }),
+              actions: assign({ message: ({context, event}) => event.data }),
               target: 'PULL_REMOTE_ACCESS_POLICY_RULE'
             },
             onError: {
-              actions: assign({ statusMessage: (context, event) => 'Failed to enumerate remote access policy rule' }),
+              actions: assign({ statusMessage: ({context, event}) => 'Failed to enumerate remote access policy rule' }),
               target: 'FAILURE'
             }
           }
@@ -259,17 +262,17 @@ export class CIRAConfiguration {
             src: this.pullRemoteAccessPolicyAppliesToMPS.bind(this),
             id: 'pull-remote-access-policy-rule',
             onDone: {
-              actions: [assign({ message: (context, event) => event.data }), 'Reset Retry Count'],
+              actions: [assign({ message: ({context, event}) => event.data }), 'Reset Retry Count'],
               target: 'PUT_REMOTE_ACCESS_POLICY_RULE'
             },
             onError: [
               {
-                cond: 'shouldRetry',
+                guard: 'shouldRetry',
                 actions: 'Increment Retry Count',
                 target: 'ENUMERATE_REMOTE_ACCESS_POLICY_RULE'
               },
               {
-                actions: assign({ statusMessage: (context, event) => 'Failed to pull remote access policy rule' }),
+                actions: assign({ statusMessage: ({context, event}) => 'Failed to pull remote access policy rule' }),
                 target: 'FAILURE'
               }
             ]
@@ -280,11 +283,11 @@ export class CIRAConfiguration {
             src: this.putRemoteAccessPolicyAppliesToMPS.bind(this),
             id: 'put-remote-access-policy-rule',
             onDone: {
-              actions: assign({ message: (context, event) => event.data }),
+              actions: assign({ message: ({context, event}) => event.data }),
               target: 'USER_INITIATED_CONNECTION_SERVICE'
             },
             onError: {
-              actions: assign({ statusMessage: (context, event) => 'Failed to put remote access policy rule' }),
+              actions: assign({ statusMessage: ({context, event}) => 'Failed to put remote access policy rule' }),
               target: 'FAILURE'
             }
           }
@@ -295,16 +298,16 @@ export class CIRAConfiguration {
             id: 'user-initiated-connection-service',
             onDone: [
               {
-                cond: 'userInitiatedConnectionServiceSuccessful',
+                guard: 'userInitiatedConnectionServiceSuccessful',
                 target: 'GET_ENVIRONMENT_DETECTION_SETTINGS'
               },
               {
-                actions: assign({ statusMessage: (context, event) => 'Failed to set user initiated connection service' }),
+                actions: assign({ statusMessage: ({context, event}) => 'Failed to set user initiated connection service' }),
                 target: 'FAILURE'
               }
             ],
             onError: {
-              actions: assign({ statusMessage: (context, event) => 'Failed to set user initiated connection service' }),
+              actions: assign({ statusMessage: ({context, event}) => 'Failed to set user initiated connection service' }),
               target: 'FAILURE'
             }
           }
@@ -314,11 +317,11 @@ export class CIRAConfiguration {
             src: this.getEnvironmentDetectionSettings.bind(this),
             id: 'get-environment-detection-settings',
             onDone: {
-              actions: assign({ message: (context, event) => event.data }),
+              actions: assign({ message: ({context, event}) => event.data }),
               target: 'PUT_ENVIRONMENT_DETECTION_SETTINGS'
             },
             onError: {
-              actions: assign({ statusMessage: (context, event) => 'Failed to get user initiated connection service' }),
+              actions: assign({ statusMessage: ({context, event}) => 'Failed to get user initiated connection service' }),
               target: 'FAILURE'
             }
           }
@@ -331,7 +334,7 @@ export class CIRAConfiguration {
               target: 'SUCCESS'
             },
             onError: {
-              actions: assign({ statusMessage: (context, event) => 'Failed to set user initiated connection service' }),
+              actions: assign({ statusMessage: ({context, event}) => 'Failed to set user initiated connection service' }),
               target: 'FAILURE'
             }
           }
@@ -341,23 +344,23 @@ export class CIRAConfiguration {
           type: 'final'
         },
         SUCCESS: {
-          entry: [assign({ statusMessage: (context, event) => 'Configured' }), 'Update Configuration Status'],
+          entry: [assign({ statusMessage: ({context, event}) => 'Configured' }), 'Update Configuration Status'],
           type: 'final'
         }
       }
     }, {
       guards: {
         userInitiatedConnectionServiceSuccessful: (_, event) => event.data.Envelope.Body?.RequestStateChange_OUTPUT?.ReturnValue === 0,
-        shouldRetry: (context, event) => context.retryCount < 3 && event.data instanceof UNEXPECTED_PARSE_ERROR
+        shouldRetry: ({context, event}) => context.retryCount < 3 && event.data instanceof UNEXPECTED_PARSE_ERROR
       },
       actions: {
-        'Update Configuration Status': (context, event) => {
+        'Update Configuration Status': ({context, event}) => {
         // TODO: [tech debt] uncouple reference dependency, state machine should return status
           devices[context.clientId].status.CIRAConnection = context.statusMessage
         },
-        'Reset Unauth Count': (context, event) => { devices[context.clientId].unauthCount = 0 },
-        'Reset Retry Count': assign({ retryCount: (context, event) => 0 }),
-        'Increment Retry Count': assign({ retryCount: (context, event) => context.retryCount + 1 })
+        'Reset Unauth Count': ({context, event}) => { devices[context.clientId].unauthCount = 0 },
+        'Reset Retry Count': assign({ retryCount: ({context, event}) => 0 }),
+        'Increment Retry Count': assign({ retryCount: ({context, event}) => context.retryCount + 1 })
       }
     })
 

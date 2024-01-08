@@ -520,7 +520,7 @@ describe('Activation State Machine', () => {
     })
     it('should eventually reach "PROVISIONED" for ccm activation TLS', (done) => {
       jest.useFakeTimers()
-      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const mockActivationMachine = activation.machine.provide(config).input(context)
       const flowStates = [
         'UNPROVISIONED',
         'GET_AMT_PROFILE',
@@ -535,7 +535,7 @@ describe('Activation State Machine', () => {
         'TLS',
         'PROVISIONED'
       ]
-      const ccmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+      const ccmActivationService = createActor(mockActivationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('DELAYED_TRANSITION')) {
           jest.advanceTimersByTime(10000)
@@ -545,7 +545,7 @@ describe('Activation State Machine', () => {
       })
 
       ccmActivationService.start()
-      ccmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      ccmActivationService.raise({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
       jest.runAllTicks()
     })
 
@@ -558,7 +558,7 @@ describe('Activation State Machine', () => {
         isAdminMode: () => true,
         maxCertLength: () => false
       }
-      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const mockActivationMachine = activation.machine.provide(config).withContext(context)
       const flowStates = [
         'UNPROVISIONED',
         'GET_AMT_PROFILE',
@@ -577,7 +577,7 @@ describe('Activation State Machine', () => {
         'TLS',
         'PROVISIONED'
       ]
-      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+      const acmActivationService = createActor(mockActivationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('DELAYED_TRANSITION')) {
           jest.advanceTimersByTime(10000)
@@ -587,7 +587,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      acmActivationService.raise({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
       jest.runAllTicks()
     })
 
@@ -607,7 +607,7 @@ describe('Activation State Machine', () => {
         hasToUpgrade: () => true
       }
 
-      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const mockActivationMachine = activation.machine.provide(config).withContext(context)
       const flowStates = [
         'UNPROVISIONED',
         'GET_AMT_PROFILE',
@@ -626,7 +626,7 @@ describe('Activation State Machine', () => {
         'CIRA',
         'PROVISIONED'
       ]
-      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+      const acmActivationService = createActor(mockActivationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('DELAYED_TRANSITION')) {
           jest.advanceTimersByTime(10000)
@@ -636,7 +636,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      acmActivationService.raise({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
       jest.runAllTicks()
     })
 
@@ -654,7 +654,7 @@ describe('Activation State Machine', () => {
       }
 
       config.services['get-amt-domain'] = Promise.reject(new Error())
-      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const mockActivationMachine = activation.machine.provide(config).withContext(context)
       const flowStates = [
         'UNPROVISIONED',
         'GET_AMT_PROFILE',
@@ -662,7 +662,7 @@ describe('Activation State Machine', () => {
         'GET_AMT_DOMAIN_CERT',
         'FAILED'
       ]
-      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+      const acmActivationService = createActor(mockActivationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('DELAYED_TRANSITION')) {
           jest.advanceTimersByTime(10000)
@@ -672,7 +672,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      acmActivationService.raise({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
       jest.runAllTicks()
     })
 
@@ -691,7 +691,7 @@ describe('Activation State Machine', () => {
       }
 
       config.services['send-generalsettings'] = Promise.reject(new Error())
-      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const mockActivationMachine = activation.machine.provide(config).withContext(context)
       const flowStates = [
         'UNPROVISIONED',
         'GET_AMT_PROFILE',
@@ -699,7 +699,7 @@ describe('Activation State Machine', () => {
         'GET_GENERAL_SETTINGS',
         'ERROR'
       ]
-      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+      const acmActivationService = createActor(mockActivationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('DELAYED_TRANSITION')) {
           jest.advanceTimersByTime(10000)
@@ -709,7 +709,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      acmActivationService.raise({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
       jest.runAllTicks()
     })
 
@@ -730,7 +730,7 @@ describe('Activation State Machine', () => {
       }
 
       config.services['send-upgrade-to-admin'] = Promise.reject(new Error())
-      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const mockActivationMachine = activation.machine.provide(config).withContext(context)
       const flowStates = [
         'UNPROVISIONED',
         'GET_AMT_PROFILE',
@@ -741,7 +741,7 @@ describe('Activation State Machine', () => {
         'UPGRADE_TO_ADMIN_SETUP',
         'ERROR'
       ]
-      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+      const acmActivationService = createActor(mockActivationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('DELAYED_TRANSITION')) {
           jest.advanceTimersByTime(10000)
@@ -751,7 +751,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      acmActivationService.raise({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
       jest.runAllTicks()
     })
 
@@ -771,7 +771,7 @@ describe('Activation State Machine', () => {
         hasToUpgrade: () => true
       }
 
-      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const mockActivationMachine = activation.machine.provide(config).withContext(context)
       const flowStates = [
         'UNPROVISIONED',
         'GET_AMT_PROFILE',
@@ -790,7 +790,7 @@ describe('Activation State Machine', () => {
         'CIRA',
         'PROVISIONED'
       ]
-      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+      const acmActivationService = createActor(mockActivationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('DELAYED_TRANSITION')) {
           jest.advanceTimersByTime(10000)
@@ -800,7 +800,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      acmActivationService.raise({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
       jest.runAllTicks()
     })
 
@@ -815,7 +815,7 @@ describe('Activation State Machine', () => {
       }
 
       config.services['send-generalsettings'] = Promise.reject(new Error())
-      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const mockActivationMachine = activation.machine.provide(config).withContext(context)
       const flowStates = [
         'UNPROVISIONED',
         'GET_AMT_PROFILE',
@@ -823,7 +823,7 @@ describe('Activation State Machine', () => {
         'GET_GENERAL_SETTINGS',
         'ERROR'
       ]
-      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+      const acmActivationService = createActor(mockActivationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('DELAYED_TRANSITION')) {
           jest.advanceTimersByTime(10000)
@@ -833,7 +833,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      acmActivationService.raise({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
       jest.runAllTicks()
     })
 
@@ -856,7 +856,7 @@ describe('Activation State Machine', () => {
       }
 
       config.services['send-adminsetup'] = Promise.reject(new Error())
-      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const mockActivationMachine = activation.machine.provide(config).withContext(context)
       const flowStates = [
         'UNPROVISIONED',
         'GET_AMT_PROFILE',
@@ -867,7 +867,7 @@ describe('Activation State Machine', () => {
         'ADMIN_SETUP',
         'ERROR'
       ]
-      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+      const acmActivationService = createActor(mockActivationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('DELAYED_TRANSITION')) {
           jest.advanceTimersByTime(10000)
@@ -877,7 +877,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      acmActivationService.raise({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
       jest.runAllTicks()
     })
 
@@ -899,7 +899,7 @@ describe('Activation State Machine', () => {
         hasToUpgrade: () => true
       }
 
-      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const mockActivationMachine = activation.machine.provide(config).withContext(context)
       const flowStates = [
         'UNPROVISIONED',
         'GET_AMT_PROFILE',
@@ -910,7 +910,7 @@ describe('Activation State Machine', () => {
         'ADMIN_SETUP',
         'FAILED'
       ]
-      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+      const acmActivationService = createActor(mockActivationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('DELAYED_TRANSITION')) {
           jest.advanceTimersByTime(10000)
@@ -920,7 +920,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      acmActivationService.raise({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
       jest.runAllTicks()
     })
 
@@ -936,7 +936,7 @@ describe('Activation State Machine', () => {
         hasToUpgrade: () => true
       }
       config.services['send-adminsetup'] = Promise.reject(new GATEWAY_TIMEOUT_ERROR())
-      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const mockActivationMachine = activation.machine.provide(config).withContext(context)
       const flowStates = [
         'UNPROVISIONED',
         'GET_AMT_PROFILE',
@@ -956,7 +956,7 @@ describe('Activation State Machine', () => {
         'CIRA',
         'PROVISIONED'
       ]
-      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+      const acmActivationService = createActor(mockActivationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('DELAYED_TRANSITION')) {
           jest.advanceTimersByTime(10000)
@@ -966,7 +966,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      acmActivationService.raise({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
       jest.runAllTicks()
     })
     it('should eventually reach "ERROR" if Check Activation fails', (done) => {
@@ -982,7 +982,7 @@ describe('Activation State Machine', () => {
       }
       config.services['get-activationstatus'] = Promise.reject(new Error())
       config.services['send-adminsetup'] = Promise.reject(new GATEWAY_TIMEOUT_ERROR())
-      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const mockActivationMachine = activation.machine.provide(config).withContext(context)
       const flowStates = [
         'UNPROVISIONED',
         'GET_AMT_PROFILE',
@@ -994,7 +994,7 @@ describe('Activation State Machine', () => {
         'CHECK_ACTIVATION_ON_AMT',
         'ERROR'
       ]
-      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+      const acmActivationService = createActor(mockActivationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('DELAYED_TRANSITION')) {
           jest.advanceTimersByTime(10000)
@@ -1004,7 +1004,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      acmActivationService.raise({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
       jest.runAllTicks()
     })
 
@@ -1020,7 +1020,7 @@ describe('Activation State Machine', () => {
         hasToUpgrade: () => false
       }
       config.services['send-adminsetup'] = Promise.reject(new GATEWAY_TIMEOUT_ERROR())
-      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const mockActivationMachine = activation.machine.provide(config).withContext(context)
       const flowStates = [
         'UNPROVISIONED',
         'GET_AMT_PROFILE',
@@ -1039,7 +1039,7 @@ describe('Activation State Machine', () => {
         'CIRA',
         'PROVISIONED'
       ]
-      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+      const acmActivationService = createActor(mockActivationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('DELAYED_TRANSITION')) {
           jest.advanceTimersByTime(10000)
@@ -1049,7 +1049,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      acmActivationService.raise({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
       jest.runAllTicks()
     })
 
@@ -1066,7 +1066,7 @@ describe('Activation State Machine', () => {
       }
       config.services['send-adminsetup'] = Promise.reject(new GATEWAY_TIMEOUT_ERROR())
       config.services['send-mebx-password'] = Promise.reject(new Error())
-      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const mockActivationMachine = activation.machine.provide(config).withContext(context)
       const flowStates = [
         'UNPROVISIONED',
         'GET_AMT_PROFILE',
@@ -1079,7 +1079,7 @@ describe('Activation State Machine', () => {
         'SET_MEBX_PASSWORD',
         'ERROR'
       ]
-      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+      const acmActivationService = createActor(mockActivationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('DELAYED_TRANSITION')) {
           jest.advanceTimersByTime(10000)
@@ -1089,7 +1089,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      acmActivationService.raise({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
       jest.runAllTicks()
     })
 
@@ -1103,7 +1103,7 @@ describe('Activation State Machine', () => {
         hasCIRAProfile: () => true,
         isDeviceActivatedInACM: () => true
       }
-      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const mockActivationMachine = activation.machine.provide(config).withContext(context)
       const flowStates = [
         'UNPROVISIONED',
         'GET_AMT_PROFILE',
@@ -1121,7 +1121,7 @@ describe('Activation State Machine', () => {
         'CIRA',
         'PROVISIONED'
       ]
-      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+      const acmActivationService = createActor(mockActivationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('DELAYED_TRANSITION')) {
           jest.advanceTimersByTime(10000)
@@ -1131,7 +1131,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      acmActivationService.raise({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
       jest.runAllTicks()
     })
 
@@ -1144,7 +1144,7 @@ describe('Activation State Machine', () => {
         maxCertLength: () => false,
         hasCIRAProfile: () => true
       }
-      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const mockActivationMachine = activation.machine.provide(config).withContext(context)
       const flowStates = [
         'UNPROVISIONED',
         'GET_AMT_PROFILE',
@@ -1163,7 +1163,7 @@ describe('Activation State Machine', () => {
         'CIRA',
         'PROVISIONED'
       ]
-      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+      const acmActivationService = createActor(mockActivationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('DELAYED_TRANSITION')) {
           jest.advanceTimersByTime(10000)
@@ -1173,7 +1173,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      acmActivationService.raise({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
       jest.runAllTicks()
     })
 
@@ -1183,13 +1183,13 @@ describe('Activation State Machine', () => {
         maxCertLength: () => false
       }
       config.services['get-amt-profile'] = Promise.reject(new Error())
-      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const mockActivationMachine = activation.machine.provide(config).withContext(context)
       const flowStates = [
         'UNPROVISIONED',
         'GET_AMT_PROFILE',
         'FAILED'
       ]
-      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+      const acmActivationService = createActor(mockActivationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           done()
@@ -1197,7 +1197,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      acmActivationService.raise({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
     })
 
     it('should eventually reach "FAILED" at "GET_AMT_PROFILE" if ACTIVATED', (done) => {
@@ -1206,13 +1206,13 @@ describe('Activation State Machine', () => {
         maxCertLength: () => false
       }
       config.services['get-amt-profile'] = Promise.reject(new Error())
-      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const mockActivationMachine = activation.machine.provide(config).withContext(context)
       const flowStates = [
         'UNPROVISIONED',
         'GET_AMT_PROFILE',
         'FAILED'
       ]
-      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+      const acmActivationService = createActor(mockActivationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           done()
@@ -1220,7 +1220,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATED', clientId, tenantId: '', friendlyName: null })
+      acmActivationService.raise({ type: 'ACTIVATED', clientId, tenantId: '', friendlyName: null })
     })
 
     it('should eventually reach "FAILED" at "GET_AMT_DOMAIN_CERT"', (done) => {
@@ -1229,14 +1229,14 @@ describe('Activation State Machine', () => {
         maxCertLength: () => false
       }
       config.services['get-amt-domain'] = Promise.reject(new Error())
-      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const mockActivationMachine = activation.machine.provide(config).withContext(context)
       const flowStates = [
         'UNPROVISIONED',
         'GET_AMT_PROFILE',
         'GET_AMT_DOMAIN_CERT',
         'FAILED'
       ]
-      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+      const acmActivationService = createActor(mockActivationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           done()
@@ -1244,7 +1244,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      acmActivationService.raise({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
     })
 
     it('should eventually reach "FAILED" at "CHECKCERTCHAINRESPONSE"', (done) => {
@@ -1255,7 +1255,7 @@ describe('Activation State Machine', () => {
         maxCertLength: () => false,
         isCertNotAdded: () => true
       }
-      const mockActivationMachine = activation.machine.withConfig(config).withContext(context)
+      const mockActivationMachine = activation.machine.provide(config).withContext(context)
       const flowStates = [
         'UNPROVISIONED',
         'GET_AMT_PROFILE',
@@ -1265,7 +1265,7 @@ describe('Activation State Machine', () => {
         'ADD_NEXT_CERT_IN_CHAIN',
         'FAILED'
       ]
-      const acmActivationService = interpret(mockActivationMachine).onTransition((state) => {
+      const acmActivationService = createActor(mockActivationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           done()
@@ -1273,7 +1273,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      acmActivationService.raise({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
     })
 
     it('should send success message to device', () => {

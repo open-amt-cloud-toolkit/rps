@@ -27,14 +27,13 @@ export interface SetHighAccuracyTimeSynchResponse {
     ReturnValue: number
   }
 }
+export interface SyncTimeContext extends CommonMaintenanceContext {
+  lowAccuracyData: LowAccuracyData
+}
 
 export const SyncTimeEventType = 'SYNC_TIME'
 export type SyncTimeEvent =
   | { type: typeof SyncTimeEventType, clientId: string }
-
-export interface SyncTimeContext extends CommonMaintenanceContext {
-  lowAccuracyData: LowAccuracyData
-}
 
 class LowAccuracyData {
   Ta0: number
@@ -45,9 +44,13 @@ const amt = new AMT.Messages()
 const logger = new Logger('syncTime')
 
 export class SyncTime {
-  machine = createMachine<SyncTimeContext, SyncTimeEvent>({
+  machine = createMachine({
     id: 'sync-time',
-    predictableActionArguments: true,
+    types: {} as {
+      context: SyncTimeContext
+      events: SyncTimeEvent
+      actions: any
+    },
     context: {
       ...commonContext,
       taskName: 'synctime',
@@ -58,7 +61,7 @@ export class SyncTime {
       INITIAL: {
         on: {
           SYNC_TIME: {
-            actions: assign({ clientId: (context, event) => event.clientId }),
+            actions: assign({ clientId: ({ context, event }) => event.clientId }),
             target: 'GET_LOW_ACCURACY_TIME_SYNCH'
           }
         }
@@ -68,7 +71,7 @@ export class SyncTime {
           id: 'get-low-accuracy-time-synch',
           src: this.getLowAccuracyTimeSync,
           onDone: {
-            actions: assign({ lowAccuracyData: (context, event) => event.data }),
+            actions: assign({ lowAccuracyData: ({ context, event }) => event.data }),
             target: 'SET_HIGH_ACCURACY_TIME_SYNCH'
           },
           onError: {

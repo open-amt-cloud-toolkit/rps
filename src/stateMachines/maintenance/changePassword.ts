@@ -31,23 +31,27 @@ export interface SetAdminACLEntryExResponse {
   }
 }
 
-export const ChangePasswordEventType = 'CHANGE_PASSWORD'
-export type ChangePasswordEvent =
-  | { type: typeof ChangePasswordEventType, clientId: string, newStaticPassword: string }
-
 export interface ChangePasswordContext extends CommonMaintenanceContext {
   newStaticPassword: string
   generalSettings: AMT.Models.GeneralSettings
   updatedPassword: string
 }
 
+export const ChangePasswordEventType = 'CHANGE_PASSWORD'
+export type ChangePasswordEvent =
+  | { type: typeof ChangePasswordEventType, clientId: string, newStaticPassword: string }
+
 const amt = new AMT.Messages()
 const logger = new Logger('changePassword')
 
 export class ChangePassword {
-  machine = createMachine<ChangePasswordContext, ChangePasswordEvent>({
+  machine = createMachine({
     id: 'change-password',
-    predictableActionArguments: true,
+    types: {} as {
+      context: ChangePasswordContext
+      events: ChangePasswordEvent
+      actions: any
+    },
     context: {
       ...commonContext,
       taskName: 'changepassword',
@@ -61,8 +65,8 @@ export class ChangePassword {
         on: {
           CHANGE_PASSWORD: {
             actions: assign({
-              clientId: (context, event) => event.clientId,
-              newStaticPassword: (context, event) => event.newStaticPassword
+              clientId: ({ context, event }) => event.clientId,
+              newStaticPassword: ({ context, event }) => event.newStaticPassword
             }),
             target: 'GET_GENERAL_SETTINGS'
           }
@@ -73,7 +77,7 @@ export class ChangePassword {
           src: this.getGeneralSettings.bind(this),
           id: 'get-general-settings',
           onDone: {
-            actions: assign({ generalSettings: (context, event) => event.data }),
+            actions: assign({ generalSettings: ({ context, event }) => event.data }),
             target: 'SET_ADMIN_ACL_ENTRY'
           },
           onError: {
@@ -89,7 +93,7 @@ export class ChangePassword {
           src: this.setAdminACLEntry.bind(this),
           id: 'set-on-device',
           onDone: {
-            actions: assign({ updatedPassword: (context, event) => event.data }),
+            actions: assign({ updatedPassword: ({ context, event }) => event.data }),
             target: 'SAVE_TO_SECRET_PROVIDER'
           },
           onError: {
@@ -124,7 +128,7 @@ export class ChangePassword {
           },
           onError: {
             actions: assign({
-              statusMessage: (context, event) => coalesceMessage('at REFRESH_MPS', event.data)
+              statusMessage: ({ context, event }) => coalesceMessage('at REFRESH_MPS', event.data)
             }),
             target: 'FAILED'
           }

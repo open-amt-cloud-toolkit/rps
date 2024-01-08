@@ -97,7 +97,7 @@ describe('Features State Machine', () => {
   })
 
   it('Should configure AMT features when default', (done) => {
-    const mockFeaturesMachine = featuresConfiguration.machine.withConfig(machineConfig).withContext(context)
+    const mockFeaturesMachine = featuresConfiguration.machine.provide(machineConfig).withContext(context)
     const flowStates = [
       'DEFAULT_FEATURES',
       'GET_AMT_REDIRECTION_SERVICE',
@@ -109,7 +109,7 @@ describe('Features State Machine', () => {
       'PUT_IPS_OPT_IN_SERVICE',
       'SUCCESS'
     ]
-    const featuresService = interpret(mockFeaturesMachine).onTransition((state) => {
+    const featuresService = createActor(mockFeaturesMachine).onTransition((state) => {
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('SUCCESS') && currentStateIndex === flowStates.length) {
         done()
@@ -117,13 +117,13 @@ describe('Features State Machine', () => {
     })
 
     featuresService.start()
-    featuresService.send({ type: 'CONFIGURE_FEATURES', clientId })
+    featuresService.raise({ type: 'CONFIGURE_FEATURES', clientId })
   })
   it('Should configure AMT features when ONLY_IDER', (done) => {
     amtRedirectionSvcJson.EnabledState = AMTRedirectionServiceEnabledStates.ONLY_IDER
     context.amtConfiguration.solEnabled = false
 
-    const mockFeaturesMachine = featuresConfiguration.machine.withConfig(machineConfig).withContext(context)
+    const mockFeaturesMachine = featuresConfiguration.machine.provide(machineConfig).withContext(context)
     const flowStates = [
       'DEFAULT_FEATURES',
       'GET_AMT_REDIRECTION_SERVICE',
@@ -135,7 +135,7 @@ describe('Features State Machine', () => {
       'PUT_IPS_OPT_IN_SERVICE',
       'SUCCESS'
     ]
-    const featuresService = interpret(mockFeaturesMachine).onTransition((state) => {
+    const featuresService = createActor(mockFeaturesMachine).onTransition((state) => {
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('SUCCESS') && currentStateIndex === flowStates.length) {
         done()
@@ -143,12 +143,12 @@ describe('Features State Machine', () => {
     })
 
     featuresService.start()
-    featuresService.send({ type: 'CONFIGURE_FEATURES', clientId })
+    featuresService.raise({ type: 'CONFIGURE_FEATURES', clientId })
   })
   it('Should configure AMT features when ONLY_SOL', (done) => {
     amtRedirectionSvcJson.EnabledState = AMTRedirectionServiceEnabledStates.ONLY_SOL
     context.amtConfiguration.iderEnabled = false
-    const mockFeaturesMachine = featuresConfiguration.machine.withConfig(machineConfig).withContext(context)
+    const mockFeaturesMachine = featuresConfiguration.machine.provide(machineConfig).withContext(context)
     const flowStates = [
       'DEFAULT_FEATURES',
       'GET_AMT_REDIRECTION_SERVICE',
@@ -160,7 +160,7 @@ describe('Features State Machine', () => {
       'PUT_IPS_OPT_IN_SERVICE',
       'SUCCESS'
     ]
-    const featuresService = interpret(mockFeaturesMachine).onTransition((state) => {
+    const featuresService = createActor(mockFeaturesMachine).onTransition((state) => {
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('SUCCESS') && currentStateIndex === flowStates.length) {
         done()
@@ -168,18 +168,18 @@ describe('Features State Machine', () => {
     })
 
     featuresService.start()
-    featuresService.send({ type: 'CONFIGURE_FEATURES', clientId })
+    featuresService.raise({ type: 'CONFIGURE_FEATURES', clientId })
   })
 
   it('Should NOT configure AMT features when failure', (done) => {
     machineConfig.services['get-amt-redirection-service'] = Promise.reject(new Error('FAILURE'))
-    const mockFeaturesMachine = featuresConfiguration.machine.withConfig(machineConfig).withContext(context)
+    const mockFeaturesMachine = featuresConfiguration.machine.provide(machineConfig).withContext(context)
     const flowStates = [
       'DEFAULT_FEATURES',
       'GET_AMT_REDIRECTION_SERVICE',
       'FAILED'
     ]
-    const featuresService = interpret(mockFeaturesMachine).onTransition((state) => {
+    const featuresService = createActor(mockFeaturesMachine).onTransition((state) => {
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
         done()
@@ -187,7 +187,7 @@ describe('Features State Machine', () => {
     })
 
     featuresService.start()
-    featuresService.send({ type: 'CONFIGURE_FEATURES', clientId })
+    featuresService.raise({ type: 'CONFIGURE_FEATURES', clientId })
   })
   it('getAmtRedirectionService', async () => {
     await featuresConfiguration.getAmtRedirectionService(context)

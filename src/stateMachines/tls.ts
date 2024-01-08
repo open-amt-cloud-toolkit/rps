@@ -51,11 +51,14 @@ export class TLS {
   error: Error = new Error()
   timeSync: TimeSync = new TimeSync()
   machine =
-    createMachine<TLSContext, TLSEvent>({
-      predictableActionArguments: true,
-      preserveActionOrder: true,
+    createMachine({
       id: 'tls-configuration-machine',
       initial: 'PROVISIONED',
+      types: {} as {
+        context: TLSContext
+        events: TLSEvent
+        actions: any
+      },
       context: {
         clientId: '',
         unauthCount: 0,
@@ -85,7 +88,7 @@ export class TLS {
             id: 'enumerate-public-key-certificate',
             onDone: {
               actions: [
-                assign({ message: (context, event) => event.data })
+                assign({ message: ({context, event}) => event.data })
               ],
               target: 'PULL_PUBLIC_KEY_CERTIFICATE'
             },
@@ -103,14 +106,14 @@ export class TLS {
             id: 'pull-public-key-certificate',
             onDone: {
               actions: [
-                assign({ message: (context, event) => event.data }),
+                assign({ message: ({context, event}) => event.data }),
                 'Reset Retry Count'
               ],
               target: 'CHECK_CERT_MODE'
             },
             onError: [
               {
-                cond: 'shouldRetry',
+                guard: 'shouldRetry',
                 actions: 'Increment Retry Count',
                 target: 'ENUMERATE_PUBLIC_KEY_CERTIFICATE'
               },
@@ -123,23 +126,23 @@ export class TLS {
         },
         CHECK_CERT_MODE: {
           always: [{
-            cond: 'useTLSEnterpriseAssistantCert',
+            guard: 'useTLSEnterpriseAssistantCert',
             target: 'ENTERPRISE_ASSISTANT_REQUEST'
           }, 'ADD_TRUSTED_ROOT_CERTIFICATE']
         },
         CHECK_CERT_MODE_AFTER_REQUEST: {
           always: [{
-            cond: 'useTLSEnterpriseAssistantCert',
+            guard: 'useTLSEnterpriseAssistantCert',
             target: 'ENTERPRISE_ASSISTANT_RESPONSE'
           }, 'ADD_CERTIFICATE']
         },
         ENTERPRISE_ASSISTANT_REQUEST: {
           invoke: {
-            src: async (context, event) => await initiateCertRequest(context, event),
+            src: async ({context, event}) => await initiateCertRequest({context, event}),
             id: 'enterprise-assistant-request',
             onDone: {
               actions: [
-                assign({ message: (context, event) => event.data })
+                assign({ message: ({context, event}) => event.data })
               ],
               target: 'GENERATE_KEY_PAIR'
             },
@@ -153,11 +156,11 @@ export class TLS {
         },
         ENTERPRISE_ASSISTANT_RESPONSE: {
           invoke: {
-            src: async (context, event) => await sendEnterpriseAssistantKeyPairResponse(context, event),
+            src: async ({context, event}) => await sendEnterpriseAssistantKeyPairResponse({context, event}),
             id: 'enterprise-assistant-response',
             onDone: {
               actions: [
-                assign({ message: (context, event) => event.data })
+                assign({ message: ({context, event}) => event.data })
               ],
               target: 'SIGN_CSR'
             },
@@ -175,7 +178,7 @@ export class TLS {
             id: 'sign-csr',
             onDone: {
               actions: [
-                assign({ message: (context, event) => event.data })
+                assign({ message: ({context, event}) => event.data })
               ],
               target: 'GET_CERT_FROM_ENTERPRISE_ASSISTANT'
             },
@@ -189,11 +192,11 @@ export class TLS {
         },
         GET_CERT_FROM_ENTERPRISE_ASSISTANT: {
           invoke: {
-            src: async (context, event) => await getCertFromEnterpriseAssistant(context, event),
+            src: async ({context, event}) => await getCertFromEnterpriseAssistant({context, event}),
             id: 'get-cert-from-enterprise-assistant',
             onDone: {
               actions: [
-                assign({ message: (context, event) => event.data })
+                assign({ message: ({context, event}) => event.data })
               ],
               target: 'ADD_CERTIFICATE'
             },
@@ -211,7 +214,7 @@ export class TLS {
             id: 'add-trusted-root-certificate',
             onDone: {
               actions: [
-                assign({ message: (context, event) => event.data })
+                assign({ message: ({context, event}) => event.data })
               ],
               target: 'GENERATE_KEY_PAIR'
             },
@@ -229,7 +232,7 @@ export class TLS {
             id: 'generate-key-pair',
             onDone: {
               actions: [
-                assign({ message: (context, event) => event.data })
+                assign({ message: ({context, event}) => event.data })
               ],
               target: 'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR'
             },
@@ -247,7 +250,7 @@ export class TLS {
             id: 'enumerate-public-private-key-pair',
             onDone: {
               actions: [
-                assign({ message: (context, event) => event.data })
+                assign({ message: ({context, event}) => event.data })
               ],
               target: 'PULL_PUBLIC_PRIVATE_KEY_PAIR'
             },
@@ -265,14 +268,14 @@ export class TLS {
             id: 'pull-public-private-key-pair',
             onDone: {
               actions: [
-                assign({ message: (context, event) => event.data }),
+                assign({ message: ({context, event}) => event.data }),
                 'Reset Retry Count'
               ],
               target: 'PULL_PUBLIC_PRIVATE_KEY_PAIR_RESPONSE'
             },
             onError: [
               {
-                cond: 'shouldRetry',
+                guard: 'shouldRetry',
                 actions: 'Increment Retry Count',
                 target: 'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR'
               },
@@ -285,7 +288,7 @@ export class TLS {
         },
         PULL_PUBLIC_PRIVATE_KEY_PAIR_RESPONSE: {
           always: [{
-            cond: 'hasPublicPrivateKeyPairs',
+            guard: 'hasPublicPrivateKeyPairs',
             target: 'CHECK_CERT_MODE_AFTER_REQUEST'
           }, 'CREATE_TLS_CREDENTIAL_CONTEXT']
         },
@@ -295,7 +298,7 @@ export class TLS {
             id: 'add-certificate',
             onDone: {
               actions: [
-                assign({ message: (context, event) => event.data })
+                assign({ message: ({context, event}) => event.data })
               ],
               target: 'CREATE_TLS_CREDENTIAL_CONTEXT'
             },
@@ -313,13 +316,13 @@ export class TLS {
             id: 'create-tls-credential-context',
             onDone: {
               actions: [
-                assign({ message: (context, event) => event.data })
+                assign({ message: ({context, event}) => event.data })
               ],
               target: 'SYNC_TIME'
             },
             onError: [
               {
-                cond: 'alreadyExists',
+                guard: 'alreadyExists',
                 target: 'SYNC_TIME'
               },
               {
@@ -334,10 +337,10 @@ export class TLS {
           invoke: {
             src: this.timeSync.machine,
             id: 'time-machine',
-            data: {
+            input: {
               // tech-debt: unused parameters
-              clientId: (context, event) => context.clientId,
-              httpHandler: (context, event) => context.httpHandler
+              clientId: ({context, event}) => context.clientId,
+              httpHandler: ({context, event}) => context.httpHandler
             },
             onDone: 'ENUMERATE_TLS_DATA'
           },
@@ -351,7 +354,7 @@ export class TLS {
             id: 'enumerate-tls-data',
             onDone: {
               actions: [
-                assign({ message: (context, event) => event.data })
+                assign({ message: ({context, event}) => event.data })
               ],
               target: 'PULL_TLS_DATA'
             },
@@ -369,14 +372,14 @@ export class TLS {
             id: 'pull-tls-data',
             onDone: {
               actions: [
-                assign({ message: (context, event) => event.data, tlsSettingData: (context, event) => event.data.Envelope.Body.PullResponse.Items.AMT_TLSSettingData }),
+                assign({ message: ({context, event}) => event.data, tlsSettingData: ({context, event}) => event.data.Envelope.Body.PullResponse.Items.AMT_TLSSettingData }),
                 'Reset Retry Count'
               ],
               target: 'PUT_REMOTE_TLS_DATA'
             },
             onError: [
               {
-                cond: 'shouldRetry',
+                guard: 'shouldRetry',
                 actions: 'Increment Retry Count',
                 target: 'ENUMERATE_TLS_DATA'
               },
@@ -393,7 +396,7 @@ export class TLS {
             id: 'put-remote-tls-data',
             onDone: {
               actions: [
-                assign({ message: (context, event) => event.data })
+                assign({ message: ({context, event}) => event.data })
               ],
               target: 'WAIT_A_BIT' // should this be commit_changes? and then circle back to setting local tls data
             },
@@ -416,7 +419,7 @@ export class TLS {
             id: 'put-local-tls-data',
             onDone: {
               actions: [
-                assign({ message: (context, event) => event.data })
+                assign({ message: ({context, event}) => event.data })
               ],
               target: 'COMMIT_CHANGES'
             },
@@ -434,7 +437,7 @@ export class TLS {
             id: 'commit-changes',
             onDone: {
               actions: [
-                assign({ message: (context, event) => event.data })
+                assign({ message: ({context, event}) => event.data })
               ],
               target: 'SUCCESS'
             },
@@ -451,10 +454,10 @@ export class TLS {
           invoke: {
             src: 'this.error.machine',
             id: 'error-machine',
-            data: {
-              unauthCount: (context, event) => 0,
-              message: (context, event) => event.data,
-              clientId: (context, event) => context.clientId
+            input: {
+              unauthCount: ({context, event}) => 0,
+              message: ({context, event}) => event.data,
+              clientId: ({context, event}) => context.clientId
             },
             onDone: 'ENUMERATE_PUBLIC_KEY_CERTIFICATE' // To do: Need to test as it might not require anymore.
           },
@@ -463,11 +466,11 @@ export class TLS {
           }
         },
         FAILED: {
-          entry: [assign({ status: (context, event) => 'error' }), 'Update Configuration Status'],
+          entry: [assign({ status: ({context, event}) => 'error' }), 'Update Configuration Status'],
           type: 'final'
         },
         SUCCESS: {
-          entry: [assign({ statusMessage: (context, event) => 'Configured', status: 'success' }), 'Update Configuration Status'],
+          entry: [assign({ statusMessage: ({context, event}) => 'Configured', status: 'success' }), 'Update Configuration Status'],
           type: 'final'
         }
       }
@@ -476,10 +479,10 @@ export class TLS {
         DELAY_TIME_TLS_PUT_DATA_SYNC: () => Environment.Config.delay_tls_put_data_sync
       },
       guards: {
-        hasPublicPrivateKeyPairs: (context, event) => context.message.Envelope.Body.PullResponse.Items !== '',
-        useTLSEnterpriseAssistantCert: (context, event) => context.amtProfile.tlsSigningAuthority === TlsSigningAuthority.MICROSOFT_CA,
-        shouldRetry: (context, event) => context.retryCount < 3 && event.data instanceof UNEXPECTED_PARSE_ERROR,
-        alreadyExists: (context, event) => {
+        hasPublicPrivateKeyPairs: ({context, event}) => context.message.Envelope.Body.PullResponse.Items !== '',
+        useTLSEnterpriseAssistantCert: ({context, event}) => context.amtProfile.tlsSigningAuthority === TlsSigningAuthority.MICROSOFT_CA,
+        shouldRetry: ({context, event}) => context.retryCount < 3 && event.data instanceof UNEXPECTED_PARSE_ERROR,
+        alreadyExists: ({context, event}) => {
           let exists = false
           try {
             const xmlBody = parseChunkedMessage(event.data.body.text)
@@ -496,8 +499,8 @@ export class TLS {
       },
       actions: {
         'Update Configuration Status': this.updateConfigurationStatus.bind(this),
-        'Reset Retry Count': assign({ retryCount: (context, event) => 0 }),
-        'Increment Retry Count': assign({ retryCount: (context, event) => context.retryCount + 1 })
+        'Reset Retry Count': assign({ retryCount: ({context, event}) => 0 }),
+        'Increment Retry Count': assign({ retryCount: ({context, event}) => context.retryCount + 1 })
 
       }
     })

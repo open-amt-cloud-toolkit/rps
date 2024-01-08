@@ -24,21 +24,24 @@ export interface DeviceInfo {
   features: string
   ipConfiguration: { ipAddress: string }
 }
+export interface SyncDeviceInfoContext extends CommonMaintenanceContext {
+  deviceInfo: DeviceInfo
+}
 
 export const SyncDeviceInfoEventType = 'SYNC_DEVICE_INFO'
 export type SyncDeviceInfoEvent =
   | { type: typeof SyncDeviceInfoEventType, clientId: string, deviceInfo: DeviceInfo }
 
-export interface SyncDeviceInfoContext extends CommonMaintenanceContext {
-  deviceInfo: DeviceInfo
-}
-
 const logger = new Logger('syncDeviceInfo')
 
 export class SyncDeviceInfo {
-  machine = createMachine<SyncDeviceInfoContext, SyncDeviceInfoEvent>({
+  machine = createMachine({
     id: 'sync-device-info',
-    predictableActionArguments: true,
+    types: {} as {
+      context: SyncDeviceInfoContext
+      events: SyncDeviceInfoEvent
+      actions: any
+    },
     context: {
       ...commonContext,
       taskName: 'syncdeviceinfo',
@@ -50,8 +53,8 @@ export class SyncDeviceInfo {
         on: {
           SYNC_DEVICE_INFO: {
             actions: assign({
-              clientId: (context, event) => event.clientId,
-              deviceInfo: (context, event) => event.deviceInfo
+              clientId: ({ context, event }) => event.clientId,
+              deviceInfo: ({ context, event }) => event.deviceInfo
             }),
             target: 'SAVE_TO_MPS'
           }
@@ -62,7 +65,7 @@ export class SyncDeviceInfo {
           src: this.saveToMPS.bind(this),
           id: 'save-to-mps',
           onDone: {
-            actions: assign({ statusMessage: (context, event) => event.data }),
+            actions: assign({ statusMessage: ({ context, event }) => event.data }),
             target: 'SUCCESS'
           },
           onError: {

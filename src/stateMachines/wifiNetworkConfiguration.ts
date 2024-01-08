@@ -58,9 +58,12 @@ export class WiFiConfiguration {
   error: Error = new Error()
 
   machine =
-    createMachine<WiFiConfigContext, WiFiConfigEvent>({
-      preserveActionOrder: true,
-      predictableActionArguments: true,
+    createMachine({
+      types: {} as {
+        context: WiFiConfigContext
+        events: WiFiConfigEvent
+        actions: any
+      },
       context: {
         httpHandler: null,
         amtProfile: null,
@@ -92,11 +95,11 @@ export class WiFiConfiguration {
             src: this.getWiFiPortConfigurationService.bind(this),
             id: 'get-wifi-port-configuration-service',
             onDone: {
-              actions: assign({ message: (context, event) => event.data }),
+              actions: assign({ message: ({context, event}) => event.data }),
               target: 'CHECK_WIFI_PORT_CONFIGURATION_SERVICE'
             },
             onError: {
-              actions: assign({ errorMessage: (context, event) => 'Failed to get WiFi Port Configuration Service' }),
+              actions: assign({ errorMessage: ({context, event}) => 'Failed to get WiFi Port Configuration Service' }),
               target: 'FAILED'
             }
           }
@@ -104,7 +107,7 @@ export class WiFiConfiguration {
         CHECK_WIFI_PORT_CONFIGURATION_SERVICE: {
           always: [
             {
-              cond: 'isLocalProfileSynchronizationNotEnabled',
+              guard: 'isLocalProfileSynchronizationNotEnabled',
               target: 'PUT_WIFI_PORT_CONFIGURATION_SERVICE'
             },
             {
@@ -117,11 +120,11 @@ export class WiFiConfiguration {
             src: this.putWiFiPortConfigurationService.bind(this),
             id: 'put-wifi-port-configuration-service',
             onDone: {
-              actions: assign({ message: (context, event) => event.data }),
+              actions: assign({ message: ({context, event}) => event.data }),
               target: 'REQUEST_STATE_CHANGE_FOR_WIFI_PORT'
             },
             onError: {
-              actions: assign({ errorMessage: (context, event) => 'Failed to put WiFi Port Configuration Service' }),
+              actions: assign({ errorMessage: ({context, event}) => 'Failed to put WiFi Port Configuration Service' }),
               target: 'FAILED'
             }
           }
@@ -131,11 +134,11 @@ export class WiFiConfiguration {
             src: this.updateWifiPort.bind(this),
             id: 'request-state-change-for-wifi-port',
             onDone: {
-              actions: assign({ message: (context, event) => event.data }),
+              actions: assign({ message: ({context, event}) => event.data }),
               target: 'CHECK_FOR_WIFI_PROFILES'
             },
             onError: {
-              actions: assign({ errorMessage: (context, event) => 'Failed to update state change for wifi port' }),
+              actions: assign({ errorMessage: ({context, event}) => 'Failed to update state change for wifi port' }),
               target: 'FAILED'
             }
           }
@@ -143,7 +146,7 @@ export class WiFiConfiguration {
         CHECK_FOR_WIFI_PROFILES: {
           always: [
             {
-              cond: 'isWiFiProfilesExist',
+              guard: 'isWiFiProfilesExist',
               target: 'GET_WIFI_PROFILE'
             },
             {
@@ -167,7 +170,7 @@ export class WiFiConfiguration {
         CHECK_TO_ADD_WIFI_SETTINGS: {
           always: [
             {
-              cond: 'is8021xProfileAssociated',
+              guard: 'is8021xProfileAssociated',
               target: 'ENTERPRISE_ASSISTANT_REQUEST'
             },
             {
@@ -177,14 +180,14 @@ export class WiFiConfiguration {
         },
         ENTERPRISE_ASSISTANT_REQUEST: {
           invoke: {
-            src: async (context, event) => await initiateCertRequest(context, event),
+            src: async ({context, event}) => await initiateCertRequest({context, event}),
             id: 'enterprise-assistant-request',
             onDone: [{
-              cond: 'isMSCHAPv2',
-              actions: assign({ eaResponse: (context, event) => event.data.response }),
+              guard: 'isMSCHAPv2',
+              actions: assign({ eaResponse: ({context, event}) => event.data.response }),
               target: 'CHECK_RADIUS_SERVER_ROOT_CERTIFICATE'
             }, {
-              actions: assign({ message: (context, event) => event.data }),
+              actions: assign({ message: ({context, event}) => event.data }),
               target: 'GENERATE_KEY_PAIR'
             }],
             onError: {
@@ -198,7 +201,7 @@ export class WiFiConfiguration {
             src: this.generateKeyPair.bind(this),
             id: 'generate-key-pair',
             onDone: {
-              actions: assign({ message: (context, event) => event.data }),
+              actions: assign({ message: ({context, event}) => event.data }),
               target: 'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR'
             },
             onError: {
@@ -212,7 +215,7 @@ export class WiFiConfiguration {
             src: this.enumeratePublicPrivateKeyPair.bind(this),
             id: 'enumerate-public-private-key-pair',
             onDone: {
-              actions: assign({ message: (context, event) => event.data }),
+              actions: assign({ message: ({context, event}) => event.data }),
               target: 'PULL_PUBLIC_PRIVATE_KEY_PAIR'
             },
             onError: {
@@ -226,11 +229,11 @@ export class WiFiConfiguration {
             src: this.pullPublicPrivateKeyPair.bind(this),
             id: 'pull-public-private-key-pair',
             onDone: {
-              actions: [assign({ message: (context, event) => event.data }), 'Reset Retry Count'],
+              actions: [assign({ message: ({context, event}) => event.data }), 'Reset Retry Count'],
               target: 'ENTERPRISE_ASSISTANT_RESPONSE'
             },
             onError: [{
-              cond: 'shouldRetry',
+              guard: 'shouldRetry',
               actions: 'Increment Retry Count',
               target: 'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR'
             }, {
@@ -241,10 +244,10 @@ export class WiFiConfiguration {
         },
         ENTERPRISE_ASSISTANT_RESPONSE: {
           invoke: {
-            src: async (context, event) => await sendEnterpriseAssistantKeyPairResponse(context, event),
+            src: async ({context, event}) => await sendEnterpriseAssistantKeyPairResponse({context, event}),
             id: 'enterprise-assistant-response',
             onDone: {
-              actions: assign({ message: (context, event) => event.data }),
+              actions: assign({ message: ({context, event}) => event.data }),
               target: 'SIGN_CSR'
             },
             onError: {
@@ -258,7 +261,7 @@ export class WiFiConfiguration {
             src: this.signCSR.bind(this),
             id: 'sign-csr',
             onDone: {
-              actions: assign({ message: (context, event) => event.data }),
+              actions: assign({ message: ({context, event}) => event.data }),
               target: 'GET_CERT_FROM_ENTERPRISE_ASSISTANT'
             },
             onError: {
@@ -269,10 +272,10 @@ export class WiFiConfiguration {
         },
         GET_CERT_FROM_ENTERPRISE_ASSISTANT: {
           invoke: {
-            src: async (context, event) => await getCertFromEnterpriseAssistant(context, event),
+            src: async ({context, event}) => await getCertFromEnterpriseAssistant({context, event}),
             id: 'get-cert-from-enterprise-assistant',
             onDone: {
-              actions: assign({ message: (context, event) => event.data }),
+              actions: assign({ message: ({context, event}) => event.data }),
               target: 'ADD_CERTIFICATE'
             },
             onError: {
@@ -286,7 +289,7 @@ export class WiFiConfiguration {
             src: this.addCertificate.bind(this),
             id: 'add-certificate',
             onDone: {
-              actions: assign({ addCertResponse: (context, event) => event.data.Envelope?.Body }),
+              actions: assign({ addCertResponse: ({context, event}) => event.data.Envelope?.Body }),
               target: 'CHECK_RADIUS_SERVER_ROOT_CERTIFICATE'
             },
             onError: {
@@ -298,7 +301,7 @@ export class WiFiConfiguration {
         CHECK_RADIUS_SERVER_ROOT_CERTIFICATE: {
           always: [
             {
-              cond: 'isTrustedRootCertifcateExists',
+              guard: 'isTrustedRootCertifcateExists',
               target: 'ADD_WIFI_SETTINGS'
             },
             {
@@ -311,7 +314,7 @@ export class WiFiConfiguration {
             src: this.addRadiusServerRootCertificate.bind(this),
             id: 'add-radius-server-root-certificate',
             onDone: {
-              actions: assign({ addTrustedRootCertResponse: (context, event) => event.data.Envelope.Body }),
+              actions: assign({ addTrustedRootCertResponse: ({context, event}) => event.data.Envelope.Body }),
               target: 'ADD_WIFI_SETTINGS'
             },
             onError: {
@@ -330,7 +333,7 @@ export class WiFiConfiguration {
             },
             onError: {
               actions: assign({
-                profilesFailed: (context, event) => context.profilesFailed == null ? `${context.wifiProfileName}` : `${context.profilesFailed}, ${context.wifiProfileName}`
+                profilesFailed: ({context, event}) => context.profilesFailed == null ? `${context.wifiProfileName}` : `${context.profilesFailed}, ${context.wifiProfileName}`
               }),
               target: 'CHECK_ADD_WIFI_SETTINGS_RESPONSE'
             }
@@ -339,7 +342,7 @@ export class WiFiConfiguration {
         CHECK_ADD_WIFI_SETTINGS_RESPONSE: {
           always: [
             {
-              cond: 'isMoreWiFiProfiles',
+              guard: 'isMoreWiFiProfiles',
               target: 'GET_WIFI_PROFILE'
             },
             {
@@ -352,10 +355,10 @@ export class WiFiConfiguration {
           invoke: {
             src: this.error.machine,
             id: 'error-machine',
-            data: {
+            input: {
               unauthCount: 0,
-              message: (context, event) => event.data,
-              clientId: (context, event) => context.clientId
+              message: ({context, event}) => event.data,
+              clientId: ({context, event}) => context.clientId
             }
           },
           on: {
@@ -367,21 +370,21 @@ export class WiFiConfiguration {
           type: 'final'
         },
         SUCCESS: {
-          entry: [assign({ statusMessage: (context, event) => 'Wireless Configured' }), 'Update Configuration Status'],
+          entry: [assign({ statusMessage: ({context, event}) => 'Wireless Configured' }), 'Update Configuration Status'],
           type: 'final'
         },
         SUCCESS_SYNC_ONLY: {
-          entry: [assign({ statusMessage: (context, event) => 'Wireless Only Local Profile Sync Configured' }), 'Update Configuration Status'],
+          entry: [assign({ statusMessage: ({context, event}) => 'Wireless Only Local Profile Sync Configured' }), 'Update Configuration Status'],
           type: 'final'
         }
       }
     }, {
       guards: {
-        is8021xProfileAssociated: (context, event) => context.wifiProfile.ieee8021xProfileName != null && context.eaResponse == null && context.addCertResponse == null,
-        isMoreWiFiProfiles: (context, event) => context.wifiProfileCount < context.amtProfile.wifiConfigs.length,
-        isWiFiProfilesExist: (context, event) => context.amtProfile.wifiConfigs.length > 0,
-        isLocalProfileSynchronizationNotEnabled: (context, event) => context.message.Envelope.Body.AMT_WiFiPortConfigurationService.localProfileSynchronizationEnabled === 0,
-        isTrustedRootCertifcateExists: (context, event) => {
+        is8021xProfileAssociated: ({context, event}) => context.wifiProfile.ieee8021xProfileName != null && context.eaResponse == null && context.addCertResponse == null,
+        isMoreWiFiProfiles: ({context, event}) => context.wifiProfileCount < context.amtProfile.wifiConfigs.length,
+        isWiFiProfilesExist: ({context, event}) => context.amtProfile.wifiConfigs.length > 0,
+        isLocalProfileSynchronizationNotEnabled: ({context, event}) => context.message.Envelope.Body.AMT_WiFiPortConfigurationService.localProfileSynchronizationEnabled === 0,
+        isTrustedRootCertifcateExists: ({context, event}) => {
           const res = devices[context.clientId].trustedRootCertificateResponse
           const cert = devices[context.clientId].trustedRootCertificate
           if (res != null && cert === context.eaResponse.rootcert) {
@@ -389,12 +392,12 @@ export class WiFiConfiguration {
           }
           return false
         },
-        isMSCHAPv2: (context, event) => context.wifiProfile.ieee8021xProfileObject.authenticationProtocol === 2,
-        shouldRetry: (context, event) => context.retryCount < 3 && event.data instanceof UNEXPECTED_PARSE_ERROR
+        isMSCHAPv2: ({context, event}) => context.wifiProfile.ieee8021xProfileObject.authenticationProtocol === 2,
+        shouldRetry: ({context, event}) => context.retryCount < 3 && event.data instanceof UNEXPECTED_PARSE_ERROR
       },
       actions: {
-        'Reset Unauth Count': (context, event) => { devices[context.clientId].unauthCount = 0 },
-        'Update Configuration Status': (context, event) => {
+        'Reset Unauth Count': ({context, event}) => { devices[context.clientId].unauthCount = 0 },
+        'Update Configuration Status': ({context, event}) => {
           const { clientId, profilesAdded, profilesFailed, statusMessage, errorMessage } = context
           const status = devices[clientId].status.Network
           let message
@@ -407,10 +410,10 @@ export class WiFiConfiguration {
           }
           devices[context.clientId].status.Network = status ? `${status}. ${message}` : message
         },
-        'Reset Retry Count': assign({ retryCount: (context, event) => 0 }),
-        'Increment Retry Count': assign({ retryCount: (context, event) => context.retryCount + 1 }),
+        'Reset Retry Count': assign({ retryCount: ({context, event}) => 0 }),
+        'Increment Retry Count': assign({ retryCount: ({context, event}) => context.retryCount + 1 }),
         'Check Return Value': assign({
-          profilesAdded: (context, event) => {
+          profilesAdded: ({context, event}) => {
             if (event.data.Envelope?.Body?.AddWiFiSettings_OUTPUT?.ReturnValue === 0) {
               if (context.profilesAdded == null) {
                 return `${context.wifiProfileName}`
@@ -421,7 +424,7 @@ export class WiFiConfiguration {
               return context.profilesAdded
             }
           },
-          profilesFailed: (context, event) => {
+          profilesFailed: ({context, event}) => {
             if (event.data.Envelope?.Body?.AddWiFiSettings_OUTPUT?.ReturnValue !== 0) {
               if (context.profilesFailed == null) {
                 return `${context.wifiProfileName}`

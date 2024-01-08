@@ -47,7 +47,7 @@ describe('TLS State Machine', () => {
     }
   })
   it('should sync the time', (done) => {
-    const timeMachineStateMachine = timeMachine.machine.withConfig(config).withContext(context)
+    const timeMachineStateMachine = timeMachine.machine.provide(config).withContext(context)
     const flowStates = [
       'THE_PAST',
       'GET_LOW_ACCURACY_TIME_SYNCH',
@@ -55,7 +55,7 @@ describe('TLS State Machine', () => {
       'SUCCESS'
     ]
 
-    const timeMachineService = interpret(timeMachineStateMachine).onTransition((state) => {
+    const timeMachineService = createActor(timeMachineStateMachine).onTransition((state) => {
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('SUCCESS') && currentStateIndex === flowStates.length) {
         done()
@@ -63,7 +63,7 @@ describe('TLS State Machine', () => {
     })
 
     timeMachineService.start()
-    timeMachineService.send({ type: 'TIMETRAVEL', clientId, data: null })
+    timeMachineService.raise({ type: 'TIMETRAVEL', clientId, data: null })
   })
 
   it('should setHighAccuracyTimeSynch', async () => {

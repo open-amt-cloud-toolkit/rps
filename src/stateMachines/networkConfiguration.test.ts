@@ -9,7 +9,7 @@ import { Environment } from '../utils/Environment'
 import { config } from '../test/helper/Config'
 import { ClientAction } from '../models/RCS.Config'
 import { NetworkConfiguration } from './networkConfiguration'
-import { interpret } from 'xstate'
+import { createActor, interpret } from 'xstate'
 import { HttpHandler } from '../HttpHandler'
 import * as common from './common'
 import { AMT, CIM } from '@open-amt-cloud-toolkit/wsman-messages'
@@ -154,7 +154,7 @@ describe('Network Configuration', () => {
 
   describe('State machines', () => {
     it('should eventually reach "SUCCESS" state', (done) => {
-      const mockNetworkConfigurationMachine = networkConfig.machine.withConfig(config).withContext(context)
+      const mockNetworkConfigurationMachine = networkConfig.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'PUT_GENERAL_SETTINGS',
@@ -163,24 +163,24 @@ describe('Network Configuration', () => {
         'WIRED_CONFIGURATION',
         'SUCCESS'
       ]
-      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('SUCCESS') && currentStateIndex === flowStates.length) {
           done()
         }
       })
       service.start()
-      service.send({ type: 'NETWORKCONFIGURATION', clientId })
+      service.raise({ type: 'NETWORKCONFIGURATION', clientId })
     })
     it('should eventually reach "FAILED" state for a device', (done) => {
       config.services['put-general-settings'] = Promise.reject(new Error())
-      const mockNetworkConfigurationMachine = networkConfig.machine.withConfig(config).withContext(context)
+      const mockNetworkConfigurationMachine = networkConfig.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'PUT_GENERAL_SETTINGS',
         'FAILED'
       ]
-      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           const status = devices[clientId].status.Network
@@ -189,18 +189,18 @@ describe('Network Configuration', () => {
         }
       })
       service.start()
-      service.send({ type: 'NETWORKCONFIGURATION', clientId })
+      service.raise({ type: 'NETWORKCONFIGURATION', clientId })
     })
     it('should eventually reach "FAILED" state for a device', (done) => {
       config.services['enumerate-ethernet-port-settings'] = Promise.reject(new Error())
-      const mockNetworkConfigurationMachine = networkConfig.machine.withConfig(config).withContext(context)
+      const mockNetworkConfigurationMachine = networkConfig.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'PUT_GENERAL_SETTINGS',
         'ENUMERATE_ETHERNET_PORT_SETTINGS',
         'FAILED'
       ]
-      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           const status = devices[clientId].status.Network
@@ -209,11 +209,11 @@ describe('Network Configuration', () => {
         }
       })
       service.start()
-      service.send({ type: 'NETWORKCONFIGURATION', clientId })
+      service.raise({ type: 'NETWORKCONFIGURATION', clientId })
     })
     it('should eventually reach "FAILED" state for a device', (done) => {
       config.services['pull-ethernet-port-settings'] = Promise.reject(new Error())
-      const mockNetworkConfigurationMachine = networkConfig.machine.withConfig(config).withContext(context)
+      const mockNetworkConfigurationMachine = networkConfig.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'PUT_GENERAL_SETTINGS',
@@ -221,7 +221,7 @@ describe('Network Configuration', () => {
         'PULL_ETHERNET_PORT_SETTINGS',
         'FAILED'
       ]
-      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           const status = devices[clientId].status.Network
@@ -230,7 +230,7 @@ describe('Network Configuration', () => {
         }
       })
       service.start()
-      service.send({ type: 'NETWORKCONFIGURATION', clientId })
+      service.raise({ type: 'NETWORKCONFIGURATION', clientId })
     })
   })
 

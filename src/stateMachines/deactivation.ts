@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
-import { assign, createMachine, interpret, sendTo } from 'xstate'
+import { assign, createActor, createMachine, interpret, sendTo } from 'xstate'
 import { Configurator } from '../Configurator'
 import { HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
@@ -39,9 +39,12 @@ export class Deactivation {
   logger: Logger
   error: Error = new Error()
   machine =
-    createMachine<DeactivationContext, DeactivationEvent>({
-      predictableActionArguments: true,
-      preserveActionOrder: true,
+    createMachine({
+      types: {} as {
+        context: DeactivationContext
+        events: DeactivationEvent
+        actions: any
+      },
       context: {
         message: '',
         clientId: '',
@@ -52,7 +55,7 @@ export class Deactivation {
         statusMessage: '',
         tenantId: '',
         httpHandler: new HttpHandler()
-      },
+      } as DeactivationContext,
       id: 'Deactivation Machine',
       initial: 'PROVISIONED',
       states: {
@@ -78,7 +81,7 @@ export class Deactivation {
             id: 'remove-device-from-secret-provider',
             onDone: 'REMOVE_DEVICE_FROM_MPS',
             onError: {
-              actions: assign({ message: (context, event) => event.data }),
+              actions: assign({ message: ({context, event}) => event.data }),
               target: 'REMOVE_DEVICE_FROM_SECRET_PROVIDER_FAILURE'
             }
           }
@@ -86,10 +89,10 @@ export class Deactivation {
         REMOVE_DEVICE_FROM_SECRET_PROVIDER_FAILURE: {
           always: [
             {
-              cond: 'isNotFound',
+              guard: 'isNotFound',
               target: 'REMOVE_DEVICE_FROM_MPS'
             }, {
-              actions: assign({ errorMessage: (context, event) => 'Failed to remove device from secret provider' }),
+              actions: assign({ errorMessage: ({context, event}) => 'Failed to remove device from secret provider' }),
               target: 'FAILED'
             }
           ]
@@ -100,7 +103,7 @@ export class Deactivation {
             id: 'remove-device-from-mps',
             onDone: 'UNPROVISIONED',
             onError: {
-              actions: assign({ message: (context, event) => event.data }),
+              actions: assign({ message: ({context, event}) => event.data }),
               target: 'REMOVE_DEVICE_FROM_MPS_FAILURE'
             }
           }
@@ -108,10 +111,10 @@ export class Deactivation {
         REMOVE_DEVICE_FROM_MPS_FAILURE: {
           always: [
             {
-              cond: 'isNotFound',
+              guard: 'isNotFound',
               target: 'UNPROVISIONED'
             }, {
-              actions: assign({ statusMessage: (context, event) => 'Deactivated. MPS Unavailable.' }),
+              actions: assign({ statusMessage: ({context, event}) => 'Deactivated. MPS Unavailable.' }),
               target: 'UNPROVISIONED'
             }
           ]
@@ -124,7 +127,7 @@ export class Deactivation {
           invoke: {
             id: 'error-machine',
             src: this.error.machine,
-            data: {
+            input: {
               unauthCount: (context: DeactivationContext, event) => context.unauthCount,
               message: (context: DeactivationContext, event) => event.data,
               clientId: (context: DeactivationContext, event) => context.clientId
@@ -137,7 +140,7 @@ export class Deactivation {
           entry: sendTo('error-machine', { type: 'PARSE' }),
           on: {
             ONFAILED: {
-              actions: assign({ errorMessage: (context, event) => event.data }),
+              actions: assign({ errorMessage: ({context, event}) => event.data }),
               target: 'FAILED'
             }
           }
@@ -153,7 +156,7 @@ export class Deactivation {
         'Send Message to Device': this.sendMessageToDevice.bind(this)
       },
       guards: {
-        isNotFound: (context, event) => {
+        isNotFound: ({context, event}) => {
           const { message } = context
           if (message.toString().includes('HTTPError: Response code 404')) {
             return true
@@ -163,11 +166,8 @@ export class Deactivation {
       }
     })
 
-  service = interpret(this.machine).onTransition((state) => {
+  service = createActor(this.machine).subscribe((state) => {
     console.log(`Current state of Deactivation State Machine: ${JSON.stringify(state.value)}`)
-  }).onDone((data) => {
-    console.log('ONDONE:')
-    console.log(data)
   })
 
   constructor () {

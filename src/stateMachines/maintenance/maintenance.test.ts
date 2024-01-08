@@ -6,7 +6,7 @@
 import resetAllMocks = jest.resetAllMocks
 import * as common from './common'
 import { HttpResponseError } from './common'
-import { interpret } from 'xstate'
+import { createActor, interpret } from 'xstate'
 import { Maintenance, type MaintenanceEvent } from './maintenance'
 import { devices } from '../../WebSocketListener'
 import { waitFor } from 'xstate/lib/waitFor'
@@ -124,7 +124,7 @@ describe('events and states', () => {
         // eslint-disable-next-line @typescript-eslint/no-base-to-string
         clientRspMsg = JSON.parse(arg.toString())
       })
-    const actor = interpret(mockMachine)
+    const actor = createActor(mockMachine)
     actor.start()
     actor.send(ti.event)
     await waitFor(actor, (state) => state.matches('DONE'))

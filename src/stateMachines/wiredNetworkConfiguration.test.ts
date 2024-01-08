@@ -349,7 +349,7 @@ describe('Wired Network Configuration', () => {
   })
   describe('Wired Network State Machine Tests', () => {
     it('should eventually reach "SUCCESS" state', (done) => {
-      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.withConfig(config).withContext(context)
+      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'PUT_ETHERNET_PORT_SETTINGS',
@@ -367,7 +367,7 @@ describe('Wired Network Configuration', () => {
         'SET_CERTIFICATES',
         'SUCCESS'
       ]
-      const service = interpret(mockWiredNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockWiredNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('SUCCESS') && currentStateIndex === flowStates.length) {
           const status = devices[clientId].status.Network
@@ -376,46 +376,46 @@ describe('Wired Network Configuration', () => {
         }
       })
       service.start()
-      service.send({ type: 'WIREDCONFIG', clientId })
+      service.raise({ type: 'WIREDCONFIG', clientId })
     })
     it('should eventually reach "FAILED" state', (done) => {
       config.services['put-ethernet-port-settings'] = Promise.reject(new Error())
-      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.withConfig(config).withContext(context)
+      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'PUT_ETHERNET_PORT_SETTINGS',
         'FAILED'
       ]
-      const service = interpret(mockWiredNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockWiredNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           done()
         }
       })
       service.start()
-      service.send({ type: 'WIREDCONFIG', clientId })
+      service.raise({ type: 'WIREDCONFIG', clientId })
     })
     it('should eventually reach "FAILED" state', (done) => {
       config.services['get-8021x-profile'] = Promise.reject(new Error())
-      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.withConfig(config).withContext(context)
+      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'PUT_ETHERNET_PORT_SETTINGS',
         'GET_8021X_PROFILE',
         'FAILED'
       ]
-      const service = interpret(mockWiredNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockWiredNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           done()
         }
       })
       service.start()
-      service.send({ type: 'WIREDCONFIG', clientId })
+      service.raise({ type: 'WIREDCONFIG', clientId })
     })
     it('should eventually reach "FAILED" state', (done) => {
       config.services['enterprise-assistant-request'] = Promise.reject(new Error())
-      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.withConfig(config).withContext(context)
+      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'PUT_ETHERNET_PORT_SETTINGS',
@@ -423,18 +423,18 @@ describe('Wired Network Configuration', () => {
         'ENTERPRISE_ASSISTANT_REQUEST',
         'FAILED'
       ]
-      const service = interpret(mockWiredNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockWiredNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           done()
         }
       })
       service.start()
-      service.send({ type: 'WIREDCONFIG', clientId })
+      service.raise({ type: 'WIREDCONFIG', clientId })
     })
     it('should eventually reach "FAILED" state', (done) => {
       config.services['generate-key-pair'] = Promise.reject(new Error())
-      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.withConfig(config).withContext(context)
+      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'PUT_ETHERNET_PORT_SETTINGS',
@@ -443,18 +443,18 @@ describe('Wired Network Configuration', () => {
         'GENERATE_KEY_PAIR',
         'FAILED'
       ]
-      const service = interpret(mockWiredNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockWiredNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           done()
         }
       })
       service.start()
-      service.send({ type: 'WIREDCONFIG', clientId })
+      service.raise({ type: 'WIREDCONFIG', clientId })
     })
     it('should eventually reach "FAILED" state', (done) => {
       config.services['enumerate-public-private-key-pair'] = Promise.reject(new Error())
-      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.withConfig(config).withContext(context)
+      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'PUT_ETHERNET_PORT_SETTINGS',
@@ -464,18 +464,18 @@ describe('Wired Network Configuration', () => {
         'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR',
         'FAILED'
       ]
-      const service = interpret(mockWiredNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockWiredNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           done()
         }
       })
       service.start()
-      service.send({ type: 'WIREDCONFIG', clientId })
+      service.raise({ type: 'WIREDCONFIG', clientId })
     })
     it('should eventually reach "FAILED" state', (done) => {
       config.services['pull-public-private-key-pair'] = Promise.reject(new Error())
-      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.withConfig(config).withContext(context)
+      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'PUT_ETHERNET_PORT_SETTINGS',
@@ -486,18 +486,18 @@ describe('Wired Network Configuration', () => {
         'PULL_PUBLIC_PRIVATE_KEY_PAIR',
         'FAILED'
       ]
-      const service = interpret(mockWiredNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockWiredNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           done()
         }
       })
       service.start()
-      service.send({ type: 'WIREDCONFIG', clientId })
+      service.raise({ type: 'WIREDCONFIG', clientId })
     })
     it('should eventually reach "FAILED" state', (done) => {
       config.services['enterprise-assistant-response'] = Promise.reject(new Error())
-      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.withConfig(config).withContext(context)
+      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'PUT_ETHERNET_PORT_SETTINGS',
@@ -509,18 +509,18 @@ describe('Wired Network Configuration', () => {
         'ENTERPRISE_ASSISTANT_RESPONSE',
         'FAILED'
       ]
-      const service = interpret(mockWiredNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockWiredNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           done()
         }
       })
       service.start()
-      service.send({ type: 'WIREDCONFIG', clientId })
+      service.raise({ type: 'WIREDCONFIG', clientId })
     })
     it('should eventually reach "FAILED" state', (done) => {
       config.services['sign-csr'] = Promise.reject(new Error())
-      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.withConfig(config).withContext(context)
+      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'PUT_ETHERNET_PORT_SETTINGS',
@@ -533,18 +533,18 @@ describe('Wired Network Configuration', () => {
         'SIGN_CSR',
         'FAILED'
       ]
-      const service = interpret(mockWiredNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockWiredNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           done()
         }
       })
       service.start()
-      service.send({ type: 'WIREDCONFIG', clientId })
+      service.raise({ type: 'WIREDCONFIG', clientId })
     })
     it('should eventually reach "FAILED" state', (done) => {
       config.services['get-cert-from-enterprise-assistant'] = Promise.reject(new Error())
-      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.withConfig(config).withContext(context)
+      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'PUT_ETHERNET_PORT_SETTINGS',
@@ -558,18 +558,18 @@ describe('Wired Network Configuration', () => {
         'GET_CERT_FROM_ENTERPRISE_ASSISTANT',
         'FAILED'
       ]
-      const service = interpret(mockWiredNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockWiredNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           done()
         }
       })
       service.start()
-      service.send({ type: 'WIREDCONFIG', clientId })
+      service.raise({ type: 'WIREDCONFIG', clientId })
     })
     it('should eventually reach "FAILED" state', (done) => {
       config.services['add-certificate'] = Promise.reject(new Error())
-      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.withConfig(config).withContext(context)
+      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'PUT_ETHERNET_PORT_SETTINGS',
@@ -584,18 +584,18 @@ describe('Wired Network Configuration', () => {
         'ADD_CERTIFICATE',
         'FAILED'
       ]
-      const service = interpret(mockWiredNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockWiredNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           done()
         }
       })
       service.start()
-      service.send({ type: 'WIREDCONFIG', clientId })
+      service.raise({ type: 'WIREDCONFIG', clientId })
     })
     it('should eventually reach "FAILED" state', (done) => {
       config.services['add-radius-server-root-certificate'] = Promise.reject(new Error())
-      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.withConfig(config).withContext(context)
+      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'PUT_ETHERNET_PORT_SETTINGS',
@@ -611,18 +611,18 @@ describe('Wired Network Configuration', () => {
         'ADD_RADIUS_SERVER_ROOT_CERTIFICATE',
         'FAILED'
       ]
-      const service = interpret(mockWiredNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockWiredNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           done()
         }
       })
       service.start()
-      service.send({ type: 'WIREDCONFIG', clientId })
+      service.raise({ type: 'WIREDCONFIG', clientId })
     })
     it('should eventually reach "FAILED" state', (done) => {
       config.services['put-8021x-profile'] = Promise.reject(new Error())
-      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.withConfig(config).withContext(context)
+      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'PUT_ETHERNET_PORT_SETTINGS',
@@ -639,18 +639,18 @@ describe('Wired Network Configuration', () => {
         'PUT_8021X_PROFILE',
         'FAILED'
       ]
-      const service = interpret(mockWiredNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockWiredNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           done()
         }
       })
       service.start()
-      service.send({ type: 'WIREDCONFIG', clientId })
+      service.raise({ type: 'WIREDCONFIG', clientId })
     })
     it('should eventually reach "FAILED" state', (done) => {
       config.services['set-certificates'] = Promise.reject(new Error())
-      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.withConfig(config).withContext(context)
+      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'PUT_ETHERNET_PORT_SETTINGS',
@@ -668,14 +668,14 @@ describe('Wired Network Configuration', () => {
         'SET_CERTIFICATES',
         'FAILED'
       ]
-      const service = interpret(mockWiredNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockWiredNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           done()
         }
       })
       service.start()
-      service.send({ type: 'WIREDCONFIG', clientId })
+      service.raise({ type: 'WIREDCONFIG', clientId })
     })
     it('should fail on isNotEthernetSettingsUpdated conditions', (done) => {
       const amtPutResponse = {
@@ -690,14 +690,14 @@ describe('Wired Network Configuration', () => {
         }
       }
       config.services['put-ethernet-port-settings'] = Promise.resolve(amtPutResponse)
-      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.withConfig(config).withContext(context)
-      const service = interpret(mockWiredNetworkConfigurationMachine).onTransition((state) => {
+      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.provide(config).withContext(context)
+      const service = createActor(mockWiredNetworkConfigurationMachine).onTransition((state) => {
         if (state.matches('FAILED')) {
           done()
         }
       })
       service.start()
-      service.send({ type: 'WIREDCONFIG', clientId })
+      service.raise({ type: 'WIREDCONFIG', clientId })
     })
     it('should fail on isNotEthernetSettingsUpdated conditions', (done) => {
       const amtPutResponse = {
@@ -712,14 +712,14 @@ describe('Wired Network Configuration', () => {
         }
       }
       config.services['put-ethernet-port-settings'] = Promise.resolve(amtPutResponse)
-      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.withConfig(config).withContext(context)
-      const service = interpret(mockWiredNetworkConfigurationMachine).onTransition((state) => {
+      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.provide(config).withContext(context)
+      const service = createActor(mockWiredNetworkConfigurationMachine).onTransition((state) => {
         if (state.matches('FAILED')) {
           done()
         }
       })
       service.start()
-      service.send({ type: 'WIREDCONFIG', clientId })
+      service.raise({ type: 'WIREDCONFIG', clientId })
     })
     it('should fail on isNotEthernetSettingsUpdated conditions', (done) => {
       const amtPutResponse = {
@@ -734,14 +734,14 @@ describe('Wired Network Configuration', () => {
         }
       }
       config.services['put-ethernet-port-settings'] = Promise.resolve(amtPutResponse)
-      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.withConfig(config).withContext(context)
-      const service = interpret(mockWiredNetworkConfigurationMachine).onTransition((state) => {
+      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.provide(config).withContext(context)
+      const service = createActor(mockWiredNetworkConfigurationMachine).onTransition((state) => {
         if (state.matches('FAILED')) {
           done()
         }
       })
       service.start()
-      service.send({ type: 'WIREDCONFIG', clientId })
+      service.raise({ type: 'WIREDCONFIG', clientId })
     })
     it('should fail on isNotEthernetSettingsUpdated conditions', (done) => {
       context.amtProfile.dhcpEnabled = false
@@ -757,9 +757,9 @@ describe('Wired Network Configuration', () => {
         }
       }
       config.services['put-ethernet-port-settings'] = Promise.resolve(amtPutResponse)
-      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.withConfig(config).withContext(context)
+      const mockWiredNetworkConfigurationMachine = wiredConfig.machine.provide(config).withContext(context)
       let prevState = null
-      const service = interpret(mockWiredNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockWiredNetworkConfigurationMachine).onTransition((state) => {
         if (state.matches('FAILED')) {
           done()
           expect(prevState.matches('PUT_ETHERNET_PORT_SETTINGS')).toBeTruthy()
@@ -768,7 +768,7 @@ describe('Wired Network Configuration', () => {
         }
       })
       service.start()
-      service.send({ type: 'WIREDCONFIG', clientId })
+      service.raise({ type: 'WIREDCONFIG', clientId })
     })
   })
 })

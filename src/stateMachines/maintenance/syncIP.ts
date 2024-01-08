@@ -34,10 +34,6 @@ export interface IPConfiguration {
   secondaryDns: string
 }
 
-export const SyncIPEventType = 'SYNC_IP'
-export type SyncIPEvent =
-  | { type: typeof SyncIPEventType, clientId: string, targetIPConfig: IPConfiguration }
-
 export interface SyncIPContext extends CommonMaintenanceContext {
   targetIPConfig: IPConfiguration
   enumerationContext: EnumerationContext
@@ -45,6 +41,10 @@ export interface SyncIPContext extends CommonMaintenanceContext {
   wiredSettings: AMT.Models.EthernetPortSettings
   wirelessSettings: AMT.Models.EthernetPortSettings
 }
+
+export const SyncIPEventType = 'SYNC_IP'
+export type SyncIPEvent =
+  | { type: typeof SyncIPEventType, clientId: string, targetIPConfig: IPConfiguration }
 
 class PullData {
   wiredSettings: AMT.Models.EthernetPortSettings
@@ -55,9 +55,13 @@ export const amt = new AMT.Messages()
 const logger = new Logger('syncIP')
 
 export class SyncIP {
-  machine = createMachine<SyncIPContext, SyncIPEvent>({
+  machine = createMachine({
     id: 'sync-ip',
-    predictableActionArguments: true,
+    types: {} as {
+      context: SyncIPContext
+      events: SyncIPEvent
+      actions: any
+    },
     context: {
       ...commonContext,
       taskName: 'syncip',
@@ -73,7 +77,7 @@ export class SyncIP {
         on: {
           SYNC_IP: [
             {
-              cond: (context, event) => !event.targetIPConfig?.ipAddress,
+              guard: ({ context, event }) => !event.targetIPConfig?.ipAddress,
               actions: assign({
                 statusMessage: 'at INITIAL invalid ip configuration'
               }),
@@ -81,8 +85,8 @@ export class SyncIP {
             },
             {
               actions: assign({
-                clientId: (context, event) => event.clientId,
-                targetIPConfig: (context, event) => event.targetIPConfig
+                clientId: ({ context, event }) => event.clientId,
+                targetIPConfig: ({ context, event }) => event.targetIPConfig
               }),
               target: 'ENUMERATE_ETHERNET_PORT_SETTINGS'
             }
@@ -94,7 +98,7 @@ export class SyncIP {
           id: 'enumerate-ethernet-port-settings',
           src: this.enumerateEthernetPortSettings.bind(this),
           onDone: {
-            actions: assign({ enumerationContext: (context, event) => event.data }),
+            actions: assign({ enumerationContext: ({ context, event }) => event.data }),
             target: 'PULL_ETHERNET_PORT_SETTINGS'
           },
           onError: {
@@ -110,7 +114,7 @@ export class SyncIP {
           id: 'pull-ethernet-port-settings',
           src: this.pullEthernetPortSettings.bind(this),
           onDone: {
-            actions: assign((context, event) => ({
+            actions: assign(({ context, event }) => ({
               wiredSettings: event.data.wiredSettings,
               wirelessSettings: event.data.wirelessSettings
             })),
@@ -118,7 +122,7 @@ export class SyncIP {
           },
           onError: [
             {
-              cond: 'shoudRetryOnParseError',
+              guard: 'shoudRetryOnParseError',
               actions: 'incrementParseErrorCount',
               target: 'ENUMERATE_ETHERNET_PORT_SETTINGS'
             },
@@ -140,7 +144,7 @@ export class SyncIP {
           src: this.putEthernetPortSettings.bind(this),
           id: 'put-ethernet-port-settings',
           onDone: {
-            actions: assign({ statusMessage: (context, event) => event.data }),
+            actions: assign({ statusMessage: ({ context, event }) => event.data }),
             target: 'SUCCESS'
           },
           onError: {

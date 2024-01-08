@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import { type AMT, type CIM, type IPS } from '@open-amt-cloud-toolkit/wsman-messages'
-import { assign, createMachine, sendTo } from 'xstate'
+import { DoneActorEvent, assign, createMachine, sendTo } from 'xstate'
 import { type HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
 import { type AMTConfiguration } from '../models'
@@ -54,9 +54,12 @@ export class WiredConfiguration {
   error: Error = new Error()
 
   machine =
-    createMachine<WiredConfigContext, WiredConfigEvent>({
-      preserveActionOrder: true,
-      predictableActionArguments: true,
+    createMachine({
+      types: {} as {
+        context: WiredConfigContext
+        events: WiredConfigEvent
+        actions: any
+      },
       context: {
         httpHandler: null,
         amtProfile: null,
@@ -82,7 +85,7 @@ export class WiredConfiguration {
           on: {
             WIREDCONFIG: {
               actions: [
-                assign({ statusMessage: () => '', authProtocol: (context, event) => context.amtProfile?.ieee8021xProfileObject?.authenticationProtocol }),
+                assign({ statusMessage: () => '', authProtocol: ({ context, event }) => context.amtProfile?.ieee8021xProfileObject?.authenticationProtocol }),
                 'Reset Unauth Count',
                 'Reset Retry Count'],
               target: 'PUT_ETHERNET_PORT_SETTINGS'
@@ -94,11 +97,11 @@ export class WiredConfiguration {
             src: this.putEthernetPortSettings.bind(this),
             id: 'put-ethernet-port-settings',
             onDone: {
-              actions: assign({ message: (context, event) => event.data }),
+              actions: assign({ message: ({ context, event }) => event.data }),
               target: 'CHECK_ETHERNET_PORT_SETTINGS_PUT_RESPONSE'
             },
             onError: {
-              actions: assign({ errorMessage: (context, event) => event.data.message }),
+              actions: assign({ errorMessage: ({ context, event }) => event.data.message }),
               target: 'FAILED'
             }
           }
@@ -106,11 +109,11 @@ export class WiredConfiguration {
         CHECK_ETHERNET_PORT_SETTINGS_PUT_RESPONSE: {
           always: [
             {
-              cond: 'isNotEthernetSettingsUpdated',
-              actions: assign({ errorMessage: (context, event) => 'Failed to put to ethernet port settings' }),
+              guard: 'isNotEthernetSettingsUpdated',
+              actions: assign({ errorMessage: ({ context, event }) => 'Failed to put to ethernet port settings' }),
               target: 'FAILED'
             }, {
-              cond: 'is8021xProfilesExists',
+              guard: 'is8021xProfilesExists',
               target: 'GET_8021X_PROFILE'
             }, {
               target: 'SUCCESS'
@@ -122,7 +125,7 @@ export class WiredConfiguration {
             src: this.get8021xProfile.bind(this),
             id: 'get-8021x-profile',
             onDone: {
-              actions: assign({ ieee8021xProfile: (context, event) => event.data.Envelope.Body.IPS_IEEE8021xSettings }),
+              actions: assign({ ieee8021xProfile: ({ context, event }) => event.data.Envelope.Body.IPS_IEEE8021xSettings }),
               target: 'ENTERPRISE_ASSISTANT_REQUEST'
             },
             onError: {
@@ -133,14 +136,14 @@ export class WiredConfiguration {
         },
         ENTERPRISE_ASSISTANT_REQUEST: {
           invoke: {
-            src: async (context, event) => await initiateCertRequest(context, event),
+            src: async ({ context, event }) => await initiateCertRequest({ context, event }),
             id: 'enterprise-assistant-request',
             onDone: [{
-              cond: 'isMSCHAPv2',
-              actions: assign({ eaResponse: (context, event) => event.data.response }),
+              guard: 'isMSCHAPv2',
+              actions: assign({ eaResponse: ({ context, event }) => event.data.response }),
               target: 'ADD_RADIUS_SERVER_ROOT_CERTIFICATE'
             }, {
-              actions: assign({ message: (context, event) => event.data }),
+              actions: assign({ message: ({ context, event }) => event.data }),
               target: 'GENERATE_KEY_PAIR'
             }],
             onError: {
@@ -154,7 +157,7 @@ export class WiredConfiguration {
             src: this.generateKeyPair.bind(this),
             id: 'generate-key-pair',
             onDone: {
-              actions: assign({ message: (context, event) => event.data }),
+              actions: assign({ message: ({ context, event }) => event.data }),
               target: 'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR'
             },
             onError: {
@@ -168,7 +171,7 @@ export class WiredConfiguration {
             src: this.enumeratePublicPrivateKeyPair.bind(this),
             id: 'enumerate-public-private-key-pair',
             onDone: {
-              actions: assign({ message: (context, event) => event.data }),
+              actions: assign({ message: ({ context, event }) => event.data }),
               target: 'PULL_PUBLIC_PRIVATE_KEY_PAIR'
             },
             onError: {
@@ -182,11 +185,11 @@ export class WiredConfiguration {
             src: this.pullPublicPrivateKeyPair.bind(this),
             id: 'pull-public-private-key-pair',
             onDone: {
-              actions: [assign({ message: (context, event) => event.data }), 'Reset Retry Count'],
+              actions: [assign({ message: ({ context, event }) => event.data }), 'Reset Retry Count'],
               target: 'ENTERPRISE_ASSISTANT_RESPONSE'
             },
             onError: [{
-              cond: 'shouldRetry',
+              guard: 'shouldRetry',
               actions: 'Increment Retry Count',
               target: 'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR'
             }, {
@@ -197,10 +200,10 @@ export class WiredConfiguration {
         },
         ENTERPRISE_ASSISTANT_RESPONSE: {
           invoke: {
-            src: async (context, event) => await sendEnterpriseAssistantKeyPairResponse(context, event),
+            src: async ({ context, event }) => await sendEnterpriseAssistantKeyPairResponse({ context, event }),
             id: 'enterprise-assistant-response',
             onDone: {
-              actions: assign({ message: (context, event) => event.data }),
+              actions: assign({ message: ({ context, event }) => event.data }),
               target: 'SIGN_CSR'
             },
             onError: {
@@ -214,7 +217,7 @@ export class WiredConfiguration {
             src: this.signCSR.bind(this),
             id: 'sign-csr',
             onDone: {
-              actions: assign({ message: (context, event) => event.data }),
+              actions: assign({ message: ({ context, event }) => event.data }),
               target: 'GET_CERT_FROM_ENTERPRISE_ASSISTANT'
             },
             onError: {
@@ -225,10 +228,10 @@ export class WiredConfiguration {
         },
         GET_CERT_FROM_ENTERPRISE_ASSISTANT: {
           invoke: {
-            src: async (context, event) => await getCertFromEnterpriseAssistant(context, event),
+            src: async ({ context, event }) => await getCertFromEnterpriseAssistant({ context, event }),
             id: 'get-cert-from-enterprise-assistant',
             onDone: {
-              actions: assign({ message: (context, event) => event.data }),
+              actions: assign({ message: ({ context, event }) => event.data }),
               target: 'ADD_CERTIFICATE'
             },
             onError: {
@@ -242,7 +245,7 @@ export class WiredConfiguration {
             src: this.addCertificate.bind(this),
             id: 'add-certificate',
             onDone: {
-              actions: assign({ addCertResponse: (context, event) => event.data?.Envelope?.Body }),
+              actions: assign({ addCertResponse: ({ context, event }) => event.data?.Envelope?.Body }),
               target: 'ADD_RADIUS_SERVER_ROOT_CERTIFICATE'
             },
             onError: {
@@ -256,7 +259,7 @@ export class WiredConfiguration {
             src: this.addRadiusServerRootCertificate.bind(this),
             id: 'add-radius-server-root-certificate',
             onDone: {
-              actions: assign({ message: (context, event) => event.data }),
+              actions: assign({ message: ({ context, event }) => event.data }),
               target: 'PUT_8021X_PROFILE'
             },
             onError: {
@@ -270,11 +273,11 @@ export class WiredConfiguration {
             src: this.put8021xProfile.bind(this),
             id: 'put-8021x-profile',
             onDone: [{
-              cond: 'isMSCHAPv2',
-              actions: assign({ message: (context, event) => event.data }),
+              guard: 'isMSCHAPv2',
+              actions: assign({ message: ({ context, event }) => event.data }),
               target: 'SUCCESS'
             }, {
-              actions: [assign({ message: (context, event) => event.data }), 'Reset Unauth Count'],
+              actions: [assign({ message: ({ context, event }) => event.data }), 'Reset Unauth Count'],
               target: 'SET_CERTIFICATES'
             }],
             onError: {
@@ -288,7 +291,7 @@ export class WiredConfiguration {
             src: this.setCertificates.bind(this),
             id: 'set-certificates',
             onDone: {
-              actions: [assign({ message: (context, event) => event.data })],
+              actions: [assign({ message: ({ context, event }) => event.data })],
               target: 'SUCCESS'
             },
             onError: {
@@ -302,10 +305,10 @@ export class WiredConfiguration {
           invoke: {
             src: this.error.machine,
             id: 'error-machine',
-            data: {
+            input: {
               unauthCount: 0,
-              message: (context, event) => event.data,
-              clientId: (context, event) => context.clientId
+              message: ({ context, event }) => event.data,
+              clientId: ({ context, event }) => context.clientId
             }
           },
           on: {
@@ -323,7 +326,7 @@ export class WiredConfiguration {
       }
     }, {
       guards: {
-        isNotEthernetSettingsUpdated: (context, event) => {
+        isNotEthernetSettingsUpdated: ({ context, event }) => {
           const settings: AMT.Models.EthernetPortSettings = context.message.Envelope.Body.AMT_EthernetPortSettings
           if (context.amtProfile.dhcpEnabled) {
             return !settings.DHCPEnabled || !settings.IpSyncEnabled || settings.SharedStaticIp
@@ -333,15 +336,15 @@ export class WiredConfiguration {
               settings.SharedStaticIp !== settings.IpSyncEnabled
           }
         },
-        is8021xProfilesExists: (context, event) => context.amtProfile.ieee8021xProfileName != null,
-        shouldRetry: (context, event) => context.retryCount < 3 && event.data instanceof UNEXPECTED_PARSE_ERROR,
-        isMSCHAPv2: (context, event) => context.amtProfile.ieee8021xProfileObject.authenticationProtocol === 2
+        is8021xProfilesExists: ({ context, event }) => context.amtProfile.ieee8021xProfileName != null,
+        shouldRetry: ({ context, event }) => context.retryCount < 3 && event.data instanceof UNEXPECTED_PARSE_ERROR,
+        isMSCHAPv2: ({ context, event }) => context.amtProfile.ieee8021xProfileObject.authenticationProtocol === 2
       },
       actions: {
-        'Reset Unauth Count': (context, event) => { devices[context.clientId].unauthCount = 0 },
-        'Reset Retry Count': assign({ retryCount: (context, event) => 0 }),
-        'Increment Retry Count': assign({ retryCount: (context, event) => context.retryCount + 1 }),
-        'Update Configuration Status': (context, event) => {
+        'Reset Unauth Count': ({ context, event }) => { devices[context.clientId].unauthCount = 0 },
+        'Reset Retry Count': assign({ retryCount: ({ context, event }) => 0 }),
+        'Increment Retry Count': assign({ retryCount: ({ context, event }) => context.retryCount + 1 }),
+        'Update Configuration Status': ({ context, event }) => {
           devices[context.clientId].status.Network = context.errorMessage ?? context.statusMessage
         }
       }

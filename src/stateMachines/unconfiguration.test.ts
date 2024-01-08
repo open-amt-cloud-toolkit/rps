@@ -134,26 +134,26 @@ describe('Unconfiguration State Machine', () => {
   it('should eventually reach "FAILURE" after "ENUMERATE_WIFI_ENDPOINT_SETTINGS"', (done) => {
     configuration.services['pull-ethernet-port-settings'] = Promise.resolve({ Envelope: { Body: { PullResponse: { Items: { AMT_EthernetPortSettings: [{ ElementName: 'Ethernet Settings', InstanceID: 'Settings 0' }, { ElementName: 'Ethernet Settings', InstanceID: 'Settings 1', MACAddress: '00-00-00-02-00-05' }] } } } } })
     configuration.services['enumerate-wifi-endpoint-settings'] = Promise.reject(new Error())
-    const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
+    const mockUnconfigurationMachine = unconfiguration.machine.provide(configuration).withContext(unconfigContext)
     const flowStates = [
       'UNCONFIGURED',
       'ENUMERATE_ETHERNET_PORT_SETTINGS',
       'PULL_ETHERNET_PORT_SETTINGS',
       'ENUMERATE_WIFI_ENDPOINT_SETTINGS',
       'FAILURE']
-    const service = interpret(mockUnconfigurationMachine).onTransition((state) => {
+    const service = createActor(mockUnconfigurationMachine).onTransition((state) => {
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('FAILURE') && currentStateIndex === flowStates.length) {
         done()
       }
     })
     service.start()
-    service.send({ type: 'REMOVECONFIG', clientId })
+    service.raise({ type: 'REMOVECONFIG', clientId })
   })
 
   it('should eventually reach "FAILURE" after "ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP"', (done) => {
     configuration.services['enumerate-management-presence-remote-sap'] = Promise.reject(new Error())
-    const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
+    const mockUnconfigurationMachine = unconfiguration.machine.provide(configuration).withContext(unconfigContext)
     const flowStates = [
       'UNCONFIGURED',
       'ENUMERATE_ETHERNET_PORT_SETTINGS',
@@ -166,20 +166,20 @@ describe('Unconfiguration State Machine', () => {
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_PERIODIC',
       'ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP',
       'FAILURE']
-    const service = interpret(mockUnconfigurationMachine).onTransition((state) => {
+    const service = createActor(mockUnconfigurationMachine).onTransition((state) => {
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('FAILURE') && currentStateIndex === flowStates.length) {
         done()
       }
     })
     service.start()
-    service.send({ type: 'REMOVECONFIG', clientId })
+    service.raise({ type: 'REMOVECONFIG', clientId })
   })
 
   it('should eventually reach "FAILURE" after "PULL_MANAGEMENT_PRESENCE_REMOTE_SAP"', (done) => {
     configuration.guards.is8021xProfileEnabled = () => true
     configuration.services['pull-management-presence-remote-sap'] = Promise.reject(new Error())
-    const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
+    const mockUnconfigurationMachine = unconfiguration.machine.provide(configuration).withContext(unconfigContext)
     const flowStates = [
       'UNCONFIGURED',
       'ENUMERATE_ETHERNET_PORT_SETTINGS',
@@ -194,19 +194,19 @@ describe('Unconfiguration State Machine', () => {
       'ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP',
       'PULL_MANAGEMENT_PRESENCE_REMOTE_SAP',
       'FAILURE']
-    const service = interpret(mockUnconfigurationMachine).onTransition((state) => {
+    const service = createActor(mockUnconfigurationMachine).onTransition((state) => {
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('FAILURE') && currentStateIndex === flowStates.length) {
         done()
       }
     })
     service.start()
-    service.send({ type: 'REMOVECONFIG', clientId })
+    service.raise({ type: 'REMOVECONFIG', clientId })
   })
 
   it('should eventually reach "FAILURE" after "ENUMERATE_TLS_SETTING_DATA"', (done) => {
     configuration.services['enumerate-tls-setting-data'] = Promise.reject(new Error())
-    const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
+    const mockUnconfigurationMachine = unconfiguration.machine.provide(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
       'ENUMERATE_ETHERNET_PORT_SETTINGS',
       'PULL_ETHERNET_PORT_SETTINGS',
@@ -220,19 +220,19 @@ describe('Unconfiguration State Machine', () => {
       'PULL_MANAGEMENT_PRESENCE_REMOTE_SAP',
       'ENUMERATE_TLS_SETTING_DATA',
       'FAILURE']
-    const service = interpret(mockUnconfigurationMachine).onTransition((state) => {
+    const service = createActor(mockUnconfigurationMachine).onTransition((state) => {
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('FAILURE') && currentStateIndex === flowStates.length) {
         done()
       }
     })
     service.start()
-    service.send({ type: 'REMOVECONFIG', clientId })
+    service.raise({ type: 'REMOVECONFIG', clientId })
   })
 
   it('should eventually reach "FAILURE" after "PULL_TLS_SETTING_DATA"', (done) => {
     configuration.services['pull-tls-setting-data'] = Promise.reject(new Error())
-    const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
+    const mockUnconfigurationMachine = unconfiguration.machine.provide(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
       'ENUMERATE_ETHERNET_PORT_SETTINGS',
       'PULL_ETHERNET_PORT_SETTINGS',
@@ -247,19 +247,19 @@ describe('Unconfiguration State Machine', () => {
       'ENUMERATE_TLS_SETTING_DATA',
       'PULL_TLS_SETTING_DATA',
       'FAILURE']
-    const service = interpret(mockUnconfigurationMachine).onTransition((state) => {
+    const service = createActor(mockUnconfigurationMachine).onTransition((state) => {
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('FAILURE') && currentStateIndex === flowStates.length) {
         done()
       }
     })
     service.start()
-    service.send({ type: 'REMOVECONFIG', clientId })
+    service.raise({ type: 'REMOVECONFIG', clientId })
   })
 
   it('should eventually reach "FAILURE" after "ENUMERATE_PUBLIC_KEY_CERTIFICATE"', (done) => {
     configuration.services['enumerate-public-key-certificate'] = Promise.reject(new Error())
-    const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
+    const mockUnconfigurationMachine = unconfiguration.machine.provide(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
       'ENUMERATE_ETHERNET_PORT_SETTINGS',
       'PULL_ETHERNET_PORT_SETTINGS',
@@ -275,19 +275,19 @@ describe('Unconfiguration State Machine', () => {
       'PULL_TLS_SETTING_DATA',
       'ENUMERATE_PUBLIC_KEY_CERTIFICATE',
       'FAILURE']
-    const service = interpret(mockUnconfigurationMachine).onTransition((state) => {
+    const service = createActor(mockUnconfigurationMachine).onTransition((state) => {
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('FAILURE') && currentStateIndex === flowStates.length) {
         done()
       }
     })
     service.start()
-    service.send({ type: 'REMOVECONFIG', clientId })
+    service.raise({ type: 'REMOVECONFIG', clientId })
   })
 
   it('should eventually reach "FAILURE" after "PULL_PUBLIC_KEY_CERTIFICATE"', (done) => {
     configuration.services['pull-public-key-certificate'] = Promise.reject(new Error())
-    const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
+    const mockUnconfigurationMachine = unconfiguration.machine.provide(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
       'ENUMERATE_ETHERNET_PORT_SETTINGS',
       'PULL_ETHERNET_PORT_SETTINGS',
@@ -304,19 +304,19 @@ describe('Unconfiguration State Machine', () => {
       'ENUMERATE_PUBLIC_KEY_CERTIFICATE',
       'PULL_PUBLIC_KEY_CERTIFICATE',
       'FAILURE']
-    const service = interpret(mockUnconfigurationMachine).onTransition((state) => {
+    const service = createActor(mockUnconfigurationMachine).onTransition((state) => {
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('FAILURE') && currentStateIndex === flowStates.length) {
         done()
       }
     })
     service.start()
-    service.send({ type: 'REMOVECONFIG', clientId })
+    service.raise({ type: 'REMOVECONFIG', clientId })
   })
 
   it('should eventually reach "FAILURE" after "GET_ENVIRONMENT_DETECTION_SETTINGS"', (done) => {
     configuration.services['get-environment-detection-settings'] = Promise.reject(new Error())
-    const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
+    const mockUnconfigurationMachine = unconfiguration.machine.provide(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
       'ENUMERATE_ETHERNET_PORT_SETTINGS',
       'PULL_ETHERNET_PORT_SETTINGS',
@@ -334,14 +334,14 @@ describe('Unconfiguration State Machine', () => {
       'PULL_PUBLIC_KEY_CERTIFICATE',
       'GET_ENVIRONMENT_DETECTION_SETTINGS',
       'FAILURE']
-    const service = interpret(mockUnconfigurationMachine).onTransition((state) => {
+    const service = createActor(mockUnconfigurationMachine).onTransition((state) => {
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('FAILURE') && currentStateIndex === flowStates.length) {
         done()
       }
     })
     service.start()
-    service.send({ type: 'REMOVECONFIG', clientId })
+    service.raise({ type: 'REMOVECONFIG', clientId })
   })
 
   it('should eventually reach "SUCCESS"', (done) => {
@@ -356,7 +356,7 @@ describe('Unconfiguration State Machine', () => {
     configuration.services['pull-tls-setting-data'] = Promise.resolve({ Envelope: { Body: { PullResponse: { Items: { AMT_TLSSettingData: [{ Enabled: false }, { Enabled: false }] } } } } })
     configuration.services['pull-public-key-certificate'] = Promise.resolve({ Envelope: { Body: { PullResponse: { Items: { AMT_PublicKeyCertificate: { InstanceID: 'abcd' } } } } } })
     configuration.services['get-environment-detection-settings'] = Promise.resolve({ Envelope: { Body: { AMT_EnvironmentDetectionSettingData: { DetectionStrings: 'abcde' } } } })
-    const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
+    const mockUnconfigurationMachine = unconfiguration.machine.provide(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
       'ENUMERATE_ETHERNET_PORT_SETTINGS',
       'PULL_ETHERNET_PORT_SETTINGS',
@@ -377,7 +377,7 @@ describe('Unconfiguration State Machine', () => {
       'GET_ENVIRONMENT_DETECTION_SETTINGS',
       'CLEAR_ENVIRONMENT_DETECTION_SETTINGS',
       'SUCCESS']
-    const service = interpret(mockUnconfigurationMachine).onTransition((state) => {
+    const service = createActor(mockUnconfigurationMachine).onTransition((state) => {
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('SUCCESS') && currentStateIndex === flowStates.length) {
         const status = devices[clientId].status.CIRAConnection
@@ -386,7 +386,7 @@ describe('Unconfiguration State Machine', () => {
       }
     })
     service.start()
-    service.send({ type: 'REMOVECONFIG', clientId })
+    service.raise({ type: 'REMOVECONFIG', clientId })
   })
   it('should eventually reach "FAILURE" after "SETUP_AND_CONFIGURATION_SERVICE_COMMIT_CHANGES"', (done) => {
     unconfigContext.tlsSettingData = [{ Enabled: false }, { Enabled: true }]
@@ -402,7 +402,7 @@ describe('Unconfiguration State Machine', () => {
     configuration.services['disable-tls-setting-data'] = Promise.resolve({ Envelope: { Body: { AMT_TLSSettingData: { ElementName: 'Intel(r) AMT 802.3 TLS Settings' } } } })
     configuration.services['pull-tls-credential-context'] = Promise.resolve({ Envelope: { Body: { PullResponse: { Items: { AMT_TLSCredentialContext: null } } } } })
     configuration.services['setup-and-configuration-service-commit-changes'] = Promise.reject(new Error())
-    const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
+    const mockUnconfigurationMachine = unconfiguration.machine.provide(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
       'ENUMERATE_ETHERNET_PORT_SETTINGS',
       'PULL_ETHERNET_PORT_SETTINGS',
@@ -420,14 +420,14 @@ describe('Unconfiguration State Machine', () => {
       'DISABLE_TLS_SETTING_DATA_2',
       'SETUP_AND_CONFIGURATION_SERVICE_COMMIT_CHANGES',
       'FAILURE']
-    const service = interpret(mockUnconfigurationMachine).onTransition((state) => {
+    const service = createActor(mockUnconfigurationMachine).onTransition((state) => {
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('FAILURE') && currentStateIndex === flowStates.length) {
         done()
       }
     })
     service.start()
-    service.send({ type: 'REMOVECONFIG', clientId })
+    service.raise({ type: 'REMOVECONFIG', clientId })
   })
 
   it('should eventually reach "FAILURE" after "DELETE_MANAGEMENT_PRESENCE_REMOTE_SAP"', (done) => {
@@ -440,7 +440,7 @@ describe('Unconfiguration State Machine', () => {
     configuration.services['remove-remote-access-policy-rule-periodic'] = Promise.reject(fault)
     configuration.services['pull-management-presence-remote-sap'] = Promise.resolve({ Envelope: { Body: { PullResponse: { Items: { AMT_ManagementPresenceRemoteSAP: { Name: 'abcd' } } } } } })
     configuration.services['delete-management-presence-remote-sap'] = Promise.reject(new Error())
-    const mockUnconfigurationMachine = unconfiguration.machine.withConfig(configuration).withContext(unconfigContext)
+    const mockUnconfigurationMachine = unconfiguration.machine.provide(configuration).withContext(unconfigContext)
     const flowStates = ['UNCONFIGURED',
       'ENUMERATE_ETHERNET_PORT_SETTINGS',
       'PULL_ETHERNET_PORT_SETTINGS',
@@ -454,14 +454,14 @@ describe('Unconfiguration State Machine', () => {
       'PULL_MANAGEMENT_PRESENCE_REMOTE_SAP',
       'DELETE_MANAGEMENT_PRESENCE_REMOTE_SAP',
       'FAILURE']
-    const service = interpret(mockUnconfigurationMachine).onTransition((state) => {
+    const service = createActor(mockUnconfigurationMachine).onTransition((state) => {
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('FAILURE') && currentStateIndex === flowStates.length) {
         done()
       }
     })
     service.start()
-    service.send({ type: 'REMOVECONFIG', clientId })
+    service.raise({ type: 'REMOVECONFIG', clientId })
   })
 
   describe('Ethernet Port Settings', () => {

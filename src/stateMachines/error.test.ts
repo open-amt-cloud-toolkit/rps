@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { interpret } from 'xstate'
+import { createActor, interpret } from 'xstate'
 import { Error, type ErrorContext } from './error'
 import { v4 as uuid } from 'uuid'
 import { devices } from '../WebSocketListener'
@@ -67,32 +67,32 @@ describe('Error State Machine', () => {
   })
 
   it('should eventually reach "UNKNOWN"', (done) => {
-    const mockerrorMachine = error.machine.withConfig(config)
+    const mockerrorMachine = error.machine.provide(config)
     const flowStates = ['ERRORED', 'UNKNOWN']
-    const errorService = interpret(mockerrorMachine).onTransition((state) => {
+    const errorService = createActor(mockerrorMachine).onTransition((state) => {
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('UNKNOWN') && currentStateIndex === flowStates.length) {
         done()
       }
     })
     errorService.start()
-    errorService.send({ type: 'PARSE', clientId })
+    errorService.raise({ type: 'PARSE', clientId })
   })
 
   it('should eventually reach "BADREQUEST"', (done) => {
     config.guards = {
       isBadRequest: () => true
     }
-    const mockerrorMachine = error.machine.withConfig(config)
+    const mockerrorMachine = error.machine.provide(config)
     const flowStates = ['ERRORED', 'BADREQUEST']
-    const errorService = interpret(mockerrorMachine).onTransition((state) => {
+    const errorService = createActor(mockerrorMachine).onTransition((state) => {
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('BADREQUEST') && currentStateIndex === flowStates.length) {
         done()
       }
     })
     errorService.start()
-    errorService.send({ type: 'PARSE', clientId })
+    errorService.raise({ type: 'PARSE', clientId })
   })
 
   it('should eventually reach "AUTHORIZED"', (done) => {
@@ -101,16 +101,16 @@ describe('Error State Machine', () => {
       message: unauthorizedResponse as any,
       clientId
     }
-    const mockerrorMachine = error.machine.withConfig(config).withContext(context)
+    const mockerrorMachine = error.machine.provide(config).withContext(context)
     const flowStates = ['ERRORED', 'AUTHORIZED']
-    const errorService = interpret(mockerrorMachine).onTransition((state) => {
+    const errorService = createActor(mockerrorMachine).onTransition((state) => {
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('AUTHORIZED') && currentStateIndex === flowStates.length) {
         done()
       }
     })
     errorService.start()
-    errorService.send({ type: 'PARSE', clientId })
+    errorService.raise({ type: 'PARSE', clientId })
   })
 
   it('should add authorization header', () => {

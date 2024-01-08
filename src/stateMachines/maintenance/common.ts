@@ -126,7 +126,7 @@ export const commonContext: CommonContext = {
 }
 
 export const commonGuards = {
-  shoudRetryOnParseError: (context, event) =>
+  shoudRetryOnParseError: ({context, event}) =>
     context.parseErrorCount < 3 &&
     event.data instanceof UNEXPECTED_PARSE_ERROR
 }

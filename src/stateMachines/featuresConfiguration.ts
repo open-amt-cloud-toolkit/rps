@@ -6,7 +6,7 @@
 import { type AMT, type CIM, Common, type IPS } from '@open-amt-cloud-toolkit/wsman-messages'
 import { type HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
-import { assign, createMachine, interpret } from 'xstate'
+import { assign, createActor, createMachine } from 'xstate'
 import { type AMTConfiguration, AMTRedirectionServiceEnabledStates, mapAMTUserConsent } from '../models'
 import { invokeWsmanCall } from './common'
 
@@ -36,10 +36,13 @@ export class FeaturesConfiguration {
     this.logger = new Logger('FeaturesConfiguration')
   }
 
-  machine = createMachine<FeatureContext, FeatureEvent>({
+  machine = createMachine({
     id: 'features-configuration-machine',
-    predictableActionArguments: true,
-    preserveActionOrder: true,
+    types: {} as {
+      context: FeatureContext
+      events: FeatureEvent
+      actions: any
+    },
     context: {
       clientId: '',
       httpHandler: null,
@@ -70,7 +73,7 @@ export class FeaturesConfiguration {
             target: 'GET_IPS_OPT_IN_SERVICE'
           },
           onError: {
-            actions: assign({ statusMessage: (context, event) => 'Failed to get AMT redirection service' }),
+            actions: assign({ statusMessage: ({context, event}) => 'Failed to get AMT redirection service' }),
             target: 'FAILED'
           }
         }
@@ -84,7 +87,7 @@ export class FeaturesConfiguration {
             target: 'GET_CIM_KVM_REDIRECTION_SAP'
           },
           onError: {
-            actions: assign({ statusMessage: (context, event) => 'Failed to get ips opt in service' }),
+            actions: assign({ statusMessage: ({context, event}) => 'Failed to get ips opt in service' }),
             target: 'FAILED'
           }
         }
@@ -98,7 +101,7 @@ export class FeaturesConfiguration {
             target: 'COMPUTE_UPDATES'
           },
           onError: {
-            actions: assign({ statusMessage: (context, event) => 'Failed to get cim kvm redirection sap' }),
+            actions: assign({ statusMessage: ({context, event}) => 'Failed to get cim kvm redirection sap' }),
             target: 'FAILED'
           }
         }
@@ -108,8 +111,8 @@ export class FeaturesConfiguration {
         id: 'compute-updates',
         entry: ['computeUpdates'],
         always: [
-          { target: 'SET_REDIRECTION_SERVICE', cond: (context, _) => context.isRedirectionChanged },
-          { target: 'PUT_IPS_OPT_IN_SERVICE', cond: (context, _) => context.isOptInServiceChanged },
+          { target: 'SET_REDIRECTION_SERVICE', guard: (context, _) => context.isRedirectionChanged },
+          { target: 'PUT_IPS_OPT_IN_SERVICE', guard: (context, _) => context.isOptInServiceChanged },
           { target: 'SUCCESS' }
         ]
       },
@@ -119,7 +122,7 @@ export class FeaturesConfiguration {
           src: this.setRedirectionService.bind(this),
           onDone: 'SET_KVM_REDIRECTION_SAP',
           onError: {
-            actions: assign({ statusMessage: (context, event) => 'Failed to set redirection service' }),
+            actions: assign({ statusMessage: ({context, event}) => 'Failed to set redirection service' }),
             target: 'FAILED'
           }
         }
@@ -130,7 +133,7 @@ export class FeaturesConfiguration {
           src: this.setKvmRedirectionSap.bind(this),
           onDone: 'PUT_REDIRECTION_SERVICE',
           onError: {
-            actions: assign({ statusMessage: (context, event) => 'Failed to set kvm redirection sap' }),
+            actions: assign({ statusMessage: ({context, event}) => 'Failed to set kvm redirection sap' }),
             target: 'FAILED'
           }
         }
@@ -140,11 +143,11 @@ export class FeaturesConfiguration {
           id: 'put-redirection-service',
           src: this.putRedirectionService.bind(this),
           onDone: [
-            { target: 'PUT_IPS_OPT_IN_SERVICE', cond: (context, _) => context.isOptInServiceChanged },
+            { target: 'PUT_IPS_OPT_IN_SERVICE', guard: (context, _) => context.isOptInServiceChanged },
             { target: 'SUCCESS' }
           ],
           onError: {
-            actions: assign({ statusMessage: (context, event) => 'Failed to put redirection service' }),
+            actions: assign({ statusMessage: ({context, event}) => 'Failed to put redirection service' }),
             target: 'FAILED'
           }
         }
@@ -155,7 +158,7 @@ export class FeaturesConfiguration {
           src: this.putIpsOptInService.bind(this),
           onDone: 'SUCCESS',
           onError: {
-            actions: assign({ statusMessage: (context, event) => 'Failed to put ips opt in service' }),
+            actions: assign({ statusMessage: ({context, event}) => 'Failed to put ips opt in service' }),
             target: 'FAILED'
           }
         }
@@ -252,7 +255,7 @@ export class FeaturesConfiguration {
     }
   })
 
-  service = interpret(this.machine)
+  service = createActor(this.machine)
 
   async getAmtRedirectionService (context: FeatureContext): Promise<any> {
     context.xmlMessage = context.amt.RedirectionService.Get()

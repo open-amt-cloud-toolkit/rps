@@ -87,7 +87,7 @@ describe('CIRA Configuration State Machine', () => {
   })
 
   it('should succeed for happy path', (done) => {
-    const mockCiraConfigurationMachine = ciraStateMachineImpl.machine.withConfig(machineConfig).withContext(machineContext)
+    const mockCiraConfigurationMachine = ciraStateMachineImpl.machine.provide(machineConfig).withContext(machineContext)
     // TODO: [tech debt] most references to XState suggest unit testing internal implementation states is not BKM
     const flowStates = [
       'CIRACONFIGURED',
@@ -110,7 +110,7 @@ describe('CIRA Configuration State Machine', () => {
     ]
     let currentStateIndex = 0
 
-    const ciraConfigurationService = interpret(mockCiraConfigurationMachine).onTransition((state) => {
+    const ciraConfigurationService = createActor(mockCiraConfigurationMachine).onTransition((state) => {
       const expected = flowStates[currentStateIndex++]
       const actual = state.value as string
       expect(actual).toEqual(expected)
@@ -128,9 +128,9 @@ describe('CIRA Configuration State Machine', () => {
   it('should fail on error response for user-initiated-connection-service', (done) => {
     const failedResponse = { Envelope: { Body: { RequestStateChange_OUTPUT: { ReturnValue: 1 } } } }
     machineConfig.services['user-initiated-connection-service'] = Promise.resolve(failedResponse)
-    const mockCiraConfigurationMachine = ciraStateMachineImpl.machine.withConfig(machineConfig).withContext(machineContext)
+    const mockCiraConfigurationMachine = ciraStateMachineImpl.machine.provide(machineConfig).withContext(machineContext)
 
-    const ciraConfigurationService = interpret(mockCiraConfigurationMachine).onTransition((state) => {
+    const ciraConfigurationService = createActor(mockCiraConfigurationMachine).onTransition((state) => {
       if (state.matches('SUCCESS') || state.matches('FAILURE')) {
         expect(state.matches('FAILURE')).toBeTruthy()
         done()
@@ -169,8 +169,8 @@ describe('CIRA Configuration State Machine', () => {
       rejectionValue = new UNEXPECTED_PARSE_ERROR()
     }
     machineConfig.services[ti.service] = Promise.reject(rejectionValue)
-    const machine = ciraStateMachineImpl.machine.withConfig(machineConfig).withContext(machineContext)
-    const service = interpret(machine).onTransition((state) => {
+    const machine = ciraStateMachineImpl.machine.provide(machineConfig).withContext(machineContext)
+    const service = createActor(machine).onTransition((state) => {
       if (state.matches('SUCCESS') || state.matches('FAILURE')) {
         expect(state.matches('FAILURE')).toBe(true)
         expect(previousState.matches(ti.stateValue)).toBe(true)

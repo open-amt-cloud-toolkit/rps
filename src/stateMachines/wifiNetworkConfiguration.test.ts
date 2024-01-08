@@ -159,13 +159,13 @@ describe('WiFi Network Configuration', () => {
     it('should eventually reach "FAILED" state', (done) => {
       devices[clientId].status.Network = undefined
       config.services['get-wifi-port-configuration-service'] = Promise.reject(new Error())
-      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'GET_WIFI_PORT_CONFIGURATION_SERVICE',
         'FAILED'
       ]
-      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           const status = devices[clientId].status.Network
@@ -174,19 +174,19 @@ describe('WiFi Network Configuration', () => {
         }
       })
       service.start()
-      service.send({ type: 'WIFICONFIG', clientId })
+      service.raise({ type: 'WIFICONFIG', clientId })
     })
 
     it('should eventually reach "FAILED" state', (done) => {
       config.services['put-wifi-port-configuration-service'] = Promise.reject(new Error())
-      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'GET_WIFI_PORT_CONFIGURATION_SERVICE',
         'PUT_WIFI_PORT_CONFIGURATION_SERVICE',
         'FAILED'
       ]
-      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           const status = devices[clientId].status.Network
@@ -195,12 +195,12 @@ describe('WiFi Network Configuration', () => {
         }
       })
       service.start()
-      service.send({ type: 'WIFICONFIG', clientId })
+      service.raise({ type: 'WIFICONFIG', clientId })
     })
 
     it('should eventually reach "FAILED" state', (done) => {
       config.services['request-state-change-for-wifi-port'] = Promise.reject(new Error())
-      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'GET_WIFI_PORT_CONFIGURATION_SERVICE',
@@ -208,7 +208,7 @@ describe('WiFi Network Configuration', () => {
         'REQUEST_STATE_CHANGE_FOR_WIFI_PORT',
         'FAILED'
       ]
-      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           const status = devices[clientId].status.Network
@@ -217,12 +217,12 @@ describe('WiFi Network Configuration', () => {
         }
       })
       service.start()
-      service.send({ type: 'WIFICONFIG', clientId })
+      service.raise({ type: 'WIFICONFIG', clientId })
     })
 
     it('should eventually reach "FAILED" state', (done) => {
       config.services['get-wifi-profile'] = Promise.reject(new Error())
-      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'GET_WIFI_PORT_CONFIGURATION_SERVICE',
@@ -231,7 +231,7 @@ describe('WiFi Network Configuration', () => {
         'GET_WIFI_PROFILE',
         'FAILED'
       ]
-      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           const status = devices[clientId].status.Network
@@ -240,13 +240,13 @@ describe('WiFi Network Configuration', () => {
         }
       })
       service.start()
-      service.send({ type: 'WIFICONFIG', clientId })
+      service.raise({ type: 'WIFICONFIG', clientId })
     })
 
     it('should eventually reach "FAILED" state', (done) => {
       context.wifiProfile = wifiProfile
       config.services['enterprise-assistant-request'] = Promise.reject(new Error())
-      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'GET_WIFI_PORT_CONFIGURATION_SERVICE',
@@ -256,7 +256,7 @@ describe('WiFi Network Configuration', () => {
         'ENTERPRISE_ASSISTANT_REQUEST',
         'FAILED'
       ]
-      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           const status = devices[clientId].status.Network
@@ -265,13 +265,13 @@ describe('WiFi Network Configuration', () => {
         }
       })
       service.start()
-      service.send({ type: 'WIFICONFIG', clientId })
+      service.raise({ type: 'WIFICONFIG', clientId })
     })
 
     it('should eventually reach "FAILED" state', (done) => {
       context.wifiProfile = wifiProfile
       config.services['generate-key-pair'] = Promise.reject(new Error())
-      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'GET_WIFI_PORT_CONFIGURATION_SERVICE',
@@ -282,7 +282,7 @@ describe('WiFi Network Configuration', () => {
         'GENERATE_KEY_PAIR',
         'FAILED'
       ]
-      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           const status = devices[clientId].status.Network
@@ -291,12 +291,12 @@ describe('WiFi Network Configuration', () => {
         }
       })
       service.start()
-      service.send({ type: 'WIFICONFIG', clientId })
+      service.raise({ type: 'WIFICONFIG', clientId })
     })
     it('should eventually reach "FAILED" state', (done) => {
       context.wifiProfile = wifiProfile
       config.services['enumerate-public-private-key-pair'] = Promise.reject(new Error())
-      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'GET_WIFI_PORT_CONFIGURATION_SERVICE',
@@ -308,7 +308,7 @@ describe('WiFi Network Configuration', () => {
         'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR',
         'FAILED'
       ]
-      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           const status = devices[clientId].status.Network
@@ -317,13 +317,13 @@ describe('WiFi Network Configuration', () => {
         }
       })
       service.start()
-      service.send({ type: 'WIFICONFIG', clientId })
+      service.raise({ type: 'WIFICONFIG', clientId })
     })
 
     it('should eventually reach "FAILED" state', (done) => {
       context.wifiProfile = wifiProfile
       config.services['pull-public-private-key-pair'] = Promise.reject(new Error())
-      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'GET_WIFI_PORT_CONFIGURATION_SERVICE',
@@ -336,7 +336,7 @@ describe('WiFi Network Configuration', () => {
         'PULL_PUBLIC_PRIVATE_KEY_PAIR',
         'FAILED'
       ]
-      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           const status = devices[clientId].status.Network
@@ -345,13 +345,13 @@ describe('WiFi Network Configuration', () => {
         }
       })
       service.start()
-      service.send({ type: 'WIFICONFIG', clientId })
+      service.raise({ type: 'WIFICONFIG', clientId })
     })
 
     it('should eventually reach "FAILED" state', (done) => {
       context.wifiProfile = wifiProfile
       config.services['enterprise-assistant-response'] = Promise.reject(new Error())
-      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'GET_WIFI_PORT_CONFIGURATION_SERVICE',
@@ -365,7 +365,7 @@ describe('WiFi Network Configuration', () => {
         'ENTERPRISE_ASSISTANT_RESPONSE',
         'FAILED'
       ]
-      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           const status = devices[clientId].status.Network
@@ -374,13 +374,13 @@ describe('WiFi Network Configuration', () => {
         }
       })
       service.start()
-      service.send({ type: 'WIFICONFIG', clientId })
+      service.raise({ type: 'WIFICONFIG', clientId })
     })
 
     it('should eventually reach "FAILED" state', (done) => {
       context.wifiProfile = wifiProfile
       config.services['sign-csr'] = Promise.reject(new Error())
-      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'GET_WIFI_PORT_CONFIGURATION_SERVICE',
@@ -395,7 +395,7 @@ describe('WiFi Network Configuration', () => {
         'SIGN_CSR',
         'FAILED'
       ]
-      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           const status = devices[clientId].status.Network
@@ -404,13 +404,13 @@ describe('WiFi Network Configuration', () => {
         }
       })
       service.start()
-      service.send({ type: 'WIFICONFIG', clientId })
+      service.raise({ type: 'WIFICONFIG', clientId })
     })
 
     it('should eventually reach "FAILED" state', (done) => {
       context.wifiProfile = wifiProfile
       config.services['get-cert-from-enterprise-assistant'] = Promise.reject(new Error())
-      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'GET_WIFI_PORT_CONFIGURATION_SERVICE',
@@ -426,7 +426,7 @@ describe('WiFi Network Configuration', () => {
         'GET_CERT_FROM_ENTERPRISE_ASSISTANT',
         'FAILED'
       ]
-      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           const status = devices[clientId].status.Network
@@ -435,12 +435,12 @@ describe('WiFi Network Configuration', () => {
         }
       })
       service.start()
-      service.send({ type: 'WIFICONFIG', clientId })
+      service.raise({ type: 'WIFICONFIG', clientId })
     })
     it('should eventually reach "FAILED" state', (done) => {
       context.wifiProfile = wifiProfile
       config.services['add-certificate'] = Promise.reject(new Error())
-      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'GET_WIFI_PORT_CONFIGURATION_SERVICE',
@@ -457,7 +457,7 @@ describe('WiFi Network Configuration', () => {
         'ADD_CERTIFICATE',
         'FAILED'
       ]
-      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           const status = devices[clientId].status.Network
@@ -466,7 +466,7 @@ describe('WiFi Network Configuration', () => {
         }
       })
       service.start()
-      service.send({ type: 'WIFICONFIG', clientId })
+      service.raise({ type: 'WIFICONFIG', clientId })
     })
 
     it('should eventually reach "FAILED" state', (done) => {
@@ -474,7 +474,7 @@ describe('WiFi Network Configuration', () => {
       devices[context.clientId].trustedRootCertificate = null
       context.wifiProfile = wifiProfile
       config.services['add-radius-server-root-certificate'] = Promise.reject(new Error())
-      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'GET_WIFI_PORT_CONFIGURATION_SERVICE',
@@ -492,7 +492,7 @@ describe('WiFi Network Configuration', () => {
         'ADD_RADIUS_SERVER_ROOT_CERTIFICATE',
         'FAILED'
       ]
-      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           const status = devices[clientId].status.Network
@@ -501,7 +501,7 @@ describe('WiFi Network Configuration', () => {
         }
       })
       service.start()
-      service.send({ type: 'WIFICONFIG', clientId })
+      service.raise({ type: 'WIFICONFIG', clientId })
     })
 
     it('should add a WiFi profile to AMT.', (done) => {
@@ -519,7 +519,7 @@ describe('WiFi Network Configuration', () => {
         isMSCHAPv2: () => false
       }
 
-      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'GET_WIFI_PORT_CONFIGURATION_SERVICE',
@@ -537,7 +537,7 @@ describe('WiFi Network Configuration', () => {
         'ADD_WIFI_SETTINGS',
         'SUCCESS'
       ]
-      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('SUCCESS') && currentStateIndex === flowStates.length) {
           const status = devices[clientId].status.Network
@@ -546,7 +546,7 @@ describe('WiFi Network Configuration', () => {
         }
       })
       service.start()
-      service.send({ type: 'WIFICONFIG', clientId })
+      service.raise({ type: 'WIFICONFIG', clientId })
     })
     it('should enable OS proifle sync.', (done) => {
       context.wifiSettings = {
@@ -562,7 +562,7 @@ describe('WiFi Network Configuration', () => {
         isMSCHAPv2: () => false
       }
 
-      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'GET_WIFI_PORT_CONFIGURATION_SERVICE',
@@ -570,7 +570,7 @@ describe('WiFi Network Configuration', () => {
         'REQUEST_STATE_CHANGE_FOR_WIFI_PORT',
         'SUCCESS_SYNC_ONLY'
       ]
-      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('SUCCESS_SYNC_ONLY') && currentStateIndex === flowStates.length) {
           const status = devices[clientId].status.Network
@@ -579,7 +579,7 @@ describe('WiFi Network Configuration', () => {
         }
       })
       service.start()
-      service.send({ type: 'WIFICONFIG', clientId })
+      service.raise({ type: 'WIFICONFIG', clientId })
     })
 
     it('should fail to add wifi profile when not supported by AMT.', (done) => {
@@ -598,7 +598,7 @@ describe('WiFi Network Configuration', () => {
         isMSCHAPv2: () => false
       }
 
-      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'GET_WIFI_PORT_CONFIGURATION_SERVICE',
@@ -616,7 +616,7 @@ describe('WiFi Network Configuration', () => {
         'ADD_WIFI_SETTINGS',
         'SUCCESS'
       ]
-      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('SUCCESS') && currentStateIndex === flowStates.length) {
           const status = devices[clientId].status.Network
@@ -625,7 +625,7 @@ describe('WiFi Network Configuration', () => {
         }
       })
       service.start()
-      service.send({ type: 'WIFICONFIG', clientId })
+      service.raise({ type: 'WIFICONFIG', clientId })
     })
 
     it('should fail and report the detail message with added and failed profiles.', (done) => {
@@ -646,7 +646,7 @@ describe('WiFi Network Configuration', () => {
         isMSCHAPv2: () => false
       }
 
-      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'GET_WIFI_PORT_CONFIGURATION_SERVICE',
@@ -664,7 +664,7 @@ describe('WiFi Network Configuration', () => {
         'ADD_WIFI_SETTINGS',
         'SUCCESS'
       ]
-      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('SUCCESS') && currentStateIndex === flowStates.length) {
           const status = devices[clientId].status.Network
@@ -673,7 +673,7 @@ describe('WiFi Network Configuration', () => {
         }
       })
       service.start()
-      service.send({ type: 'WIFICONFIG', clientId })
+      service.raise({ type: 'WIFICONFIG', clientId })
     })
     it('should fail and report the detail message with added and return value 1.', (done) => {
       context.wifiSettings = {
@@ -692,7 +692,7 @@ describe('WiFi Network Configuration', () => {
         isMSCHAPv2: () => false
       }
 
-      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'GET_WIFI_PORT_CONFIGURATION_SERVICE',
@@ -710,7 +710,7 @@ describe('WiFi Network Configuration', () => {
         'ADD_WIFI_SETTINGS',
         'SUCCESS'
       ]
-      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('SUCCESS') && currentStateIndex === flowStates.length) {
           const status = devices[clientId].status.Network
@@ -719,7 +719,7 @@ describe('WiFi Network Configuration', () => {
         }
       })
       service.start()
-      service.send({ type: 'WIFICONFIG', clientId })
+      service.raise({ type: 'WIFICONFIG', clientId })
     })
     it('should fail and report the detail message with added', (done) => {
       context.wifiSettings = {
@@ -738,7 +738,7 @@ describe('WiFi Network Configuration', () => {
         isMSCHAPv2: () => false
       }
 
-      const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
+      const mockNetworkConfigurationMachine = wifiConfiguration.machine.provide(config).withContext(context)
       const flowStates = [
         'ACTIVATION',
         'GET_WIFI_PORT_CONFIGURATION_SERVICE',
@@ -756,7 +756,7 @@ describe('WiFi Network Configuration', () => {
         'ADD_WIFI_SETTINGS',
         'SUCCESS'
       ]
-      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
+      const service = createActor(mockNetworkConfigurationMachine).onTransition((state) => {
         expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
         if (state.matches('SUCCESS') && currentStateIndex === flowStates.length) {
           const status = devices[clientId].status.Network
@@ -765,7 +765,7 @@ describe('WiFi Network Configuration', () => {
         }
       })
       service.start()
-      service.send({ type: 'WIFICONFIG', clientId })
+      service.raise({ type: 'WIFICONFIG', clientId })
     })
   })
 

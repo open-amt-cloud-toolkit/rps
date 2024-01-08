@@ -89,7 +89,7 @@ describe('TLS State Machine', () => {
         text: wsmanAlreadyExistsAllChunks
       }
     })
-    const tlsStateMachine = tls.machine.withConfig(config).withContext(context)
+    const tlsStateMachine = tls.machine.provide(config).withContext(context)
     const flowStates = [
       'PROVISIONED',
       'ENUMERATE_PUBLIC_KEY_CERTIFICATE',
@@ -110,7 +110,7 @@ describe('TLS State Machine', () => {
       'SUCCESS'
     ]
 
-    const tlsService = interpret(tlsStateMachine).onTransition((state) => {
+    const tlsService = createActor(tlsStateMachine).onTransition((state) => {
       expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
       if (state.matches('WAIT_A_BIT')) {
         jest.advanceTimersByTime(5000)
@@ -120,14 +120,14 @@ describe('TLS State Machine', () => {
     })
 
     tlsService.start()
-    tlsService.send({ type: 'CONFIGURE_TLS', clientId })
+    tlsService.raise({ type: 'CONFIGURE_TLS', clientId })
     jest.runAllTicks()
   })
 
   it('should retry', (done) => {
     context.amtProfile = { tlsMode: 3, tlsSigningAuthoritys: 'SelfSigned' } as any
     config.services['pull-public-key-certificate'] = Promise.reject(new UNEXPECTED_PARSE_ERROR())
-    const tlsStateMachine = tls.machine.withConfig(config).withContext(context)
+    const tlsStateMachine = tls.machine.provide(config).withContext(context)
     const flowStates = [
       'PROVISIONED',
       'ENUMERATE_PUBLIC_KEY_CERTIFICATE',
@@ -141,7 +141,7 @@ describe('TLS State Machine', () => {
       'FAILED'
     ]
 
-    const tlsService = interpret(tlsStateMachine).onTransition((state) => {
+    const tlsService = createActor(tlsStateMachine).onTransition((state) => {
       const expected = flowStates[currentStateIndex++]
       expect(state.matches(expected)).toBe(true)
       if (state.matches('FAILED') || currentStateIndex === flowStates.length) {
@@ -150,7 +150,7 @@ describe('TLS State Machine', () => {
     })
 
     tlsService.start()
-    tlsService.send({ type: 'CONFIGURE_TLS', clientId })
+    tlsService.raise({ type: 'CONFIGURE_TLS', clientId })
   })
 
   it('should signCSR', async () => {
@@ -197,7 +197,7 @@ describe('TLS State Machine', () => {
   })
   it('should createTLSCredentialContext', async () => {
     const event: any = { data: { Envelope: { Body: { AddCertificate_OUTPUT: { CreatedCertificate: { ReferenceParameters: { SelectorSet: { Selector: { _: '' } } } } } } } } }
-    await tls.createTLSCredentialContext(context, event)
+    await tls.createTLSCredentialContext({context, event})
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
   it('should enumeratePublicKeyCertificate', async () => {

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { assign, createMachine, interpret, send } from 'xstate'
+import { assign, createActor, createMachine, interpret, send } from 'xstate'
 import Logger from '../../Logger'
 import { devices } from '../../WebSocketListener'
 import { type Status } from '../../models/RCS.Config'
@@ -15,17 +15,17 @@ import { SyncHostName, type SyncHostNameEvent } from './syncHostName'
 import { SyncDeviceInfo, type SyncDeviceInfoEvent } from './syncDeviceInfo'
 import ClientResponseMsg from '../../utils/ClientResponseMsg'
 
+export interface MaintenanceContext {
+  clientId: string
+  doneData: TaskDefs.DoneResponse
+}
+
 export type MaintenanceEvent =
   | ChangePasswordEvent
   | SyncTimeEvent
   | SyncIPEvent
   | SyncHostNameEvent
   | SyncDeviceInfoEvent
-
-export interface MaintenanceContext {
-  clientId: string
-  doneData: TaskDefs.DoneResponse
-}
 
 // TODO: tech-debt - these should be in ClientResponseMsg, but the default export there makes it really weird
 type ClientRspMessageType = 'error' | 'wsman' | 'success' | 'heartbeat_request'
@@ -38,9 +38,13 @@ export class Maintenance {
   syncTimeImpl: SyncTime = new SyncTime()
   syncHostNameImpl: SyncHostName = new SyncHostName()
   syncDeviceInfoImpl: SyncDeviceInfo = new SyncDeviceInfo()
-  machine = createMachine<MaintenanceContext, MaintenanceEvent>({
+  machine = createMachine({
     id: 'maintenance-machine',
-    predictableActionArguments: true,
+    types: {} as {
+      context: MaintenanceContext
+      events: MaintenanceEvent
+      actions: any
+    },
     context: {
       clientId: '',
       doneData: null
@@ -59,7 +63,7 @@ export class Maintenance {
       CHANGE_PASSWORD: {
         entry: [
           assign({ clientId: (_, event) => event.clientId }),
-          send((context, event) => event, { to: 'change-password' })
+          send(({ context, event }) => event, { to: 'change-password' })
         ],
         invoke: {
           id: 'change-password',
@@ -73,7 +77,7 @@ export class Maintenance {
       SYNC_HOST_NAME: {
         entry: [
           assign({ clientId: (_, event) => event.clientId }),
-          send((context, event) => event, { to: 'sync-host-name' })
+          send(({ context, event }) => event, { to: 'sync-host-name' })
         ],
         invoke: {
           id: 'sync-host-name',
@@ -87,7 +91,7 @@ export class Maintenance {
       SYNC_IP: {
         entry: [
           assign({ clientId: (_, event) => event.clientId }),
-          send((context, event) => event, { to: 'sync-ip' })
+          send(({ context, event }) => event, { to: 'sync-ip' })
         ],
         invoke: {
           id: 'sync-ip',
@@ -101,7 +105,7 @@ export class Maintenance {
       SYNC_TIME: {
         entry: [
           assign({ clientId: (_, event) => event.clientId }),
-          send((context, event) => event, { to: 'sync-time' })
+          send(({ context, event }) => event, { to: 'sync-time' })
         ],
         invoke: {
           id: 'sync-time',
@@ -115,7 +119,7 @@ export class Maintenance {
       SYNC_DEVICE_INFO: {
         entry: [
           assign({ clientId: (_, event) => event.clientId }),
-          send((context, event) => event, { to: 'sync-device-info' })
+          send(({ context, event }) => event, { to: 'sync-device-info' })
         ],
         invoke: {
           id: 'sync-device-info',
@@ -133,15 +137,15 @@ export class Maintenance {
     }
   })
 
-  service = interpret(this.machine)
-    .onTransition((state) => {
-      logger.info(`maintenance: ${JSON.stringify(state.value)}`)
-      for (const k in state.children) {
-        state.children[k].subscribe((childState) => {
-          logger.info(`${k}: ${JSON.stringify(childState.value)}`)
-        })
-      }
-    })
+  service = createActor(this.machine)
+  // .onTransition((state) => {
+  //   logger.info(`maintenance: ${JSON.stringify(state.value)}`)
+  //   for (const k in state.children) {
+  //     state.children[k].subscribe((childState) => {
+  //       logger.info(`${k}: ${JSON.stringify(childState.value)}`)
+  //     })
+  //   }
+  // })
 
   respondAfterDone (clientId: string, doneData: TaskDefs.DoneResponse): any {
     const clientObj = devices[clientId]

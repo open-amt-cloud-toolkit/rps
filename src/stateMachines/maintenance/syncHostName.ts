@@ -26,22 +26,27 @@ export interface HostNameInfo {
 export const MessageMissingHostName = 'host name was not provided'
 export const MessageAlreadySynchronized = 'host name already synchronized'
 
-export const SyncHostNameEventType = 'SYNC_HOST_NAME'
-export type SyncHostNameEvent =
-  | { type: typeof SyncHostNameEventType, clientId: string, hostNameInfo: HostNameInfo }
-
 export interface SyncHostNameContext extends CommonMaintenanceContext {
   hostNameInfo: HostNameInfo
   generalSettings: AMT.Models.GeneralSettings
 }
 
+export const SyncHostNameEventType = 'SYNC_HOST_NAME'
+export type SyncHostNameEvent = | { type: typeof SyncHostNameEventType, clientId: string, hostNameInfo: HostNameInfo }
+
+
+
 const amt = new AMT.Messages()
 const logger = new Logger('syncHostName')
 
 export class SyncHostName {
-  machine = createMachine<SyncHostNameContext, SyncHostNameEvent>({
+  machine = createMachine({
     id: 'sync-host-name',
-    predictableActionArguments: true,
+    types: {} as {
+      context: SyncHostNameContext
+      events: SyncHostNameEvent
+      actions: any
+    },
     context: {
       ...commonContext,
       taskName: 'synchostname',
@@ -54,8 +59,8 @@ export class SyncHostName {
         on: {
           SYNC_HOST_NAME: {
             actions: assign({
-              clientId: (context, event) => event.clientId,
-              hostNameInfo: (context, event) => event.hostNameInfo
+              clientId: ({context, event}) => event.clientId,
+              hostNameInfo: ({context, event}) => event.hostNameInfo
             }),
             target: 'GET_GENERAL_SETTINGS'
           }
@@ -66,7 +71,7 @@ export class SyncHostName {
           src: this.getGeneralSettings.bind(this),
           id: 'get-general-settings',
           onDone: {
-            actions: assign({ generalSettings: (context, event) => event.data }),
+            actions: assign({ generalSettings: ({context, event}) => event.data }),
             target: 'PUT_GENERAL_SETTINGS'
           },
           onError: {
@@ -82,7 +87,7 @@ export class SyncHostName {
           src: this.putGeneralSettings.bind(this),
           id: 'put-host-name-info',
           onDone: {
-            actions: assign({ statusMessage: (context, event) => event.data }),
+            actions: assign({ statusMessage: ({context, event}) => event.data }),
             target: 'SAVE_TO_MPS'
           },
           onError: {
@@ -98,7 +103,7 @@ export class SyncHostName {
           src: this.saveToMPS.bind(this),
           id: 'save-to-mps',
           onDone: {
-            actions: assign({ statusMessage: (context, event) => event.data }),
+            actions: assign({ statusMessage: ({context, event}) => event.data }),
             target: 'SUCCESS'
           },
           onError: {
