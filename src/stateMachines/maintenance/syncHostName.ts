@@ -76,7 +76,7 @@ export class SyncHostName {
           },
           onError: {
             actions: assign({
-              statusMessage: (_, event) => coalesceMessage('at GET_GENERAL_SETTINGS', event.data)
+              statusMessage: ({ event }) => coalesceMessage('at GET_GENERAL_SETTINGS', event.data)
             }),
             target: 'FAILED'
           }
@@ -87,12 +87,12 @@ export class SyncHostName {
           src: this.putGeneralSettings.bind(this),
           id: 'put-host-name-info',
           onDone: {
-            actions: assign({ statusMessage: ({context, event}) => event.data }),
+            actions: assign({ statusMessage: ({event}) => event.data }),
             target: 'SAVE_TO_MPS'
           },
           onError: {
             actions: assign({
-              statusMessage: (_, event) => coalesceMessage('at PUT_GENERAL_SETTINGS', event.data)
+              statusMessage: ({event}) => coalesceMessage('at PUT_GENERAL_SETTINGS', event.data)
             }),
             target: 'FAILED'
           }
@@ -103,12 +103,12 @@ export class SyncHostName {
           src: this.saveToMPS.bind(this),
           id: 'save-to-mps',
           onDone: {
-            actions: assign({ statusMessage: ({context, event}) => event.data }),
+            actions: assign({ statusMessage: ({event}) => event.data }),
             target: 'SUCCESS'
           },
           onError: {
             actions: assign({
-              statusMessage: (_, event) => coalesceMessage('at SAVE_TO_MPS', event.data)
+              statusMessage: ({event}) => coalesceMessage('at SAVE_TO_MPS', event.data)
             }),
             target: 'FAILED'
           }
@@ -116,11 +116,11 @@ export class SyncHostName {
       },
       FAILED: {
         type: 'final',
-        data: (context) => (Task.doneFail(context.taskName, context.statusMessage))
+        output: ({context}) => (Task.doneFail(context.taskName, context.statusMessage))
       },
       SUCCESS: {
         type: 'final',
-        data: (context) => (Task.doneSuccess(context.taskName, context.statusMessage))
+        output: ({context}) => (Task.doneSuccess(context.taskName, context.statusMessage))
       }
     }
   })

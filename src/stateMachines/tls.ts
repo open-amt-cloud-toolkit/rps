@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import { type AMT } from '@open-amt-cloud-toolkit/wsman-messages'
-import { assign, createMachine, sendTo } from 'xstate'
+import { assign, createMachine, sendTo, fromPromise } from 'xstate'
 import { CertManager } from '../certManager'
 import { HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
@@ -138,7 +138,15 @@ export class TLS {
         },
         ENTERPRISE_ASSISTANT_REQUEST: {
           invoke: {
-            src: async ({context, event}) => await initiateCertRequest({context, event}),
+            // src: async ({context, event}) => await initiateCertRequest(context, event),
+            src: fromPromise(async ({ input }) => {
+              const data = await initiateCertRequest(input.context, input.event)
+              return data
+            }),
+            input: ({ context, event }) => ({
+              context: context,
+              event: event
+            }),
             id: 'enterprise-assistant-request',
             onDone: {
               actions: [
@@ -156,7 +164,15 @@ export class TLS {
         },
         ENTERPRISE_ASSISTANT_RESPONSE: {
           invoke: {
-            src: async ({context, event}) => await sendEnterpriseAssistantKeyPairResponse({context, event}),
+            // src: async ({context, event}) => await sendEnterpriseAssistantKeyPairResponse(context, event),
+            src: fromPromise(async ({ input }) => {
+              const data = await sendEnterpriseAssistantKeyPairResponse(input.context, input.event)
+              return data
+            }),
+            input: ({ context, event }) => ({
+              context: context,
+              event: event
+            }),
             id: 'enterprise-assistant-response',
             onDone: {
               actions: [
@@ -192,7 +208,15 @@ export class TLS {
         },
         GET_CERT_FROM_ENTERPRISE_ASSISTANT: {
           invoke: {
-            src: async ({context, event}) => await getCertFromEnterpriseAssistant({context, event}),
+            // src: async ({context, event}) => await getCertFromEnterpriseAssistant(context, event),
+            src: fromPromise(async ({ input }) => {
+              const data = await getCertFromEnterpriseAssistant(input.context, input.event)
+              return data
+            }),
+            input: ({ context, event }) => ({
+              context: context,
+              event: event
+            }),
             id: 'get-cert-from-enterprise-assistant',
             onDone: {
               actions: [

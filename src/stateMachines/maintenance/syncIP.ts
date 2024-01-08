@@ -103,7 +103,7 @@ export class SyncIP {
           },
           onError: {
             actions: assign({
-              statusMessage: (_, event) => coalesceMessage('at ENUMERATE_ETHERNET_PORT_SETTINGS', event.data)
+              statusMessage: ({event}) => coalesceMessage('at ENUMERATE_ETHERNET_PORT_SETTINGS', event.data)
             }),
             target: 'FAILED'
           }
@@ -130,7 +130,7 @@ export class SyncIP {
               actions: [
                 'resetParseErrorCount',
                 assign({
-                  statusMessage: (_, event) =>
+                  statusMessage: ({event}) =>
                     coalesceMessage('at PULL_ETHERNET_PORT_SETTINGS', event.data)
                 })
               ],
@@ -144,12 +144,12 @@ export class SyncIP {
           src: this.putEthernetPortSettings.bind(this),
           id: 'put-ethernet-port-settings',
           onDone: {
-            actions: assign({ statusMessage: ({ context, event }) => event.data }),
+            actions: assign({ statusMessage: ({ event }) => event.data }),
             target: 'SUCCESS'
           },
           onError: {
             actions: assign({
-              statusMessage: (_, event) => coalesceMessage('at PUT_ETHERNET_PORT_SETTINGS', event.data)
+              statusMessage: ({ event }) => coalesceMessage('at PUT_ETHERNET_PORT_SETTINGS', event.data)
             }),
             target: 'FAILED'
           }
@@ -157,11 +157,11 @@ export class SyncIP {
       },
       FAILED: {
         type: 'final',
-        data: (context) => (Task.doneFail(context.taskName, context.statusMessage))
+        output: ({context}) => (Task.doneFail(context.taskName, context.statusMessage))
       },
       SUCCESS: {
         type: 'final',
-        data: (context) => (Task.doneSuccess(context.taskName, context.statusMessage))
+        output: ({context}) => (Task.doneSuccess(context.taskName, context.statusMessage))
       }
     }
   }, {

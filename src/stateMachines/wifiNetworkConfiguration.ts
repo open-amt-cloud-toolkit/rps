@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import { type AMT, type CIM } from '@open-amt-cloud-toolkit/wsman-messages'
-import { assign, createMachine, sendTo } from 'xstate'
+import { assign, createMachine, sendTo, fromPromise } from 'xstate'
 import { type WirelessConfig } from '../models/RCS.Config'
 import { type HttpHandler } from '../HttpHandler'
 import Logger from '../Logger'
@@ -180,8 +180,16 @@ export class WiFiConfiguration {
         },
         ENTERPRISE_ASSISTANT_REQUEST: {
           invoke: {
-            src: async ({context, event}) => await initiateCertRequest({context, event}),
-            id: 'enterprise-assistant-request',
+            // src: async ({context, event}) => await initiateCertRequest(context, event),
+            src: fromPromise(async ({ input }) => {
+              const data = await initiateCertRequest(input.context, input.event)
+              return data
+            }),
+            input: ({ context, event }) => ({
+              context: context,
+              event: event
+            }),
+             id: 'enterprise-assistant-request',
             onDone: [{
               guard: 'isMSCHAPv2',
               actions: assign({ eaResponse: ({context, event}) => event.data.response }),
@@ -244,7 +252,15 @@ export class WiFiConfiguration {
         },
         ENTERPRISE_ASSISTANT_RESPONSE: {
           invoke: {
-            src: async ({context, event}) => await sendEnterpriseAssistantKeyPairResponse({context, event}),
+            // src: async ({context, event}) => await sendEnterpriseAssistantKeyPairResponse(context, event),
+            src: fromPromise(async ({ input }) => {
+              const data = await sendEnterpriseAssistantKeyPairResponse(input.context, input.event)
+              return data
+            }),
+            input: ({ context, event }) => ({
+              context: context,
+              event: event
+            }),
             id: 'enterprise-assistant-response',
             onDone: {
               actions: assign({ message: ({context, event}) => event.data }),
@@ -272,7 +288,15 @@ export class WiFiConfiguration {
         },
         GET_CERT_FROM_ENTERPRISE_ASSISTANT: {
           invoke: {
-            src: async ({context, event}) => await getCertFromEnterpriseAssistant({context, event}),
+            // src: async ({context, event}) => await getCertFromEnterpriseAssistant(context, event),
+            src: fromPromise(async ({ input }) => {
+              const data = await getCertFromEnterpriseAssistant(input.context, input.event)
+              return data
+            }),
+            input: ({ context, event }) => ({
+              context: context,
+              event: event
+            }),
             id: 'get-cert-from-enterprise-assistant',
             onDone: {
               actions: assign({ message: ({context, event}) => event.data }),

@@ -318,7 +318,7 @@ export class Activation {
             src: this.sendAdminSetup.bind(this),
             id: 'send-adminsetup',
             onDone: {
-              actions: assign({ message: ({context, event}) => event.data }),
+              actions: assign({ message: ({event}) => event.data }),
               target: 'CHECK_ADMIN_SETUP'
             },
             onError: [
@@ -697,8 +697,9 @@ export class Activation {
       }
     })
 
-  service = createActor(this.machine).onTransition((state) => {
-    console.log(`Current state of Activation Machine: ${JSON.stringify(state.value)}`)
+    // service = createActor(this.machine).onTransition((state) => {
+    service = createActor(this.machine).subscribe((state) => {
+        console.log(`Current state of Activation Machine: ${JSON.stringify(state.value)}`)
     if (state.children['unconfiguration-machine'] != null) {
       state.children['unconfiguration-machine'].subscribe((childState) => {
         console.log(`Unconfiguration State: ${childState.value}`)
@@ -729,13 +730,14 @@ export class Activation {
         console.log(`CIRA State: ${childState.value}`)
       })
     }
-  }).onDone((data) => {
-    console.log('ONDONE:')
-    console.log(data)
-  }).onEvent((data) => {
-    console.log('ONEVENT:')
-    console.log(data)
   })
+  // .onDone((data) => {
+  //   console.log('ONDONE:')
+  //   console.log(data)
+  // }).onEvent((data) => {
+  //   console.log('ONEVENT:')
+  //   console.log(data)
+  // })
 
   constructor () {
     this.nodeForge = new NodeForge()

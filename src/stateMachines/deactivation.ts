@@ -62,7 +62,7 @@ export class Deactivation {
         PROVISIONED: {
           on: {
             UNPROVISION: {
-              actions: [assign({ clientId: (context: DeactivationContext, event) => event.clientId, tenantId: (context: DeactivationContext, event) => event.tenantId }), 'Reset Unauth Count'],
+              actions: [assign({ clientId: ({event}) => event.clientId, tenantId: ({event}) => event.tenantId }), 'Reset Unauth Count'],
               target: 'UNPROVISIONING'
             }
           }
@@ -152,7 +152,8 @@ export class Deactivation {
       }
     }, {
       actions: {
-        'Reset Unauth Count': (context: DeactivationContext, event) => { devices[context.clientId].unauthCount = 0 },
+        // 'Reset Unauth Count': (context: DeactivationContext, event) => { devices[context.clientId].unauthCount = 0 },
+        'Reset Unauth Count': ({context}) => { devices[context.clientId].unauthCount = 0 },
         'Send Message to Device': this.sendMessageToDevice.bind(this)
       },
       guards: {

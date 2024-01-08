@@ -70,7 +70,7 @@ export class SyncDeviceInfo {
           },
           onError: {
             actions: assign({
-              statusMessage: (_, event) => coalesceMessage('at SAVE_TO_MPS', event.data)
+              statusMessage: ({event}) => coalesceMessage('at SAVE_TO_MPS', event.data)
             }),
             target: 'FAILED'
           }
@@ -78,11 +78,11 @@ export class SyncDeviceInfo {
       },
       FAILED: {
         type: 'final',
-        data: (context) => (Task.doneFail(context.taskName, context.statusMessage))
+        output: ({context}) => (Task.doneFail(context.taskName, context.statusMessage))
       },
       SUCCESS: {
         type: 'final',
-        data: (context) => (Task.doneSuccess(context.taskName, context.statusMessage))
+        output: ({context}) => (Task.doneSuccess(context.taskName, context.statusMessage))
       }
     }
   })

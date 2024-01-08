@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { assign, createActor, createMachine, interpret, send } from 'xstate'
+import { assign, createActor, createMachine, raise, sendTo } from 'xstate'
 import Logger from '../../Logger'
 import { devices } from '../../WebSocketListener'
 import { type Status } from '../../models/RCS.Config'
@@ -62,77 +62,82 @@ export class Maintenance {
       },
       CHANGE_PASSWORD: {
         entry: [
-          assign({ clientId: (_, event) => event.clientId }),
-          send(({ context, event }) => event, { to: 'change-password' })
+          assign({ clientId: ({event}) => event.clientId }),
+          sendTo('change-password', {type: 'ChangePasswordEvent'} )
+          // send(({ context, event }) => event, { to: 'change-password' })
         ],
         invoke: {
           id: 'change-password',
           src: this.changePasswordImpl.machine,
           onDone: {
-            actions: assign({ doneData: (_, event) => event.data }),
+            actions: assign({ doneData: ({event}) => event.data }),
             target: 'DONE'
           }
         }
       },
       SYNC_HOST_NAME: {
         entry: [
-          assign({ clientId: (_, event) => event.clientId }),
-          send(({ context, event }) => event, { to: 'sync-host-name' })
+          assign({ clientId: ({event}) => event.clientId }),
+          sendTo('sync-host-name', {type: 'SyncHostNameEvent'})
+          // send(({ context, event }) => event, { to: 'sync-host-name' })
         ],
         invoke: {
           id: 'sync-host-name',
           src: this.syncHostNameImpl.machine,
           onDone: {
-            actions: assign({ doneData: (_, event) => event.data }),
+            actions: assign({ doneData: ({event}) => event.data }),
             target: 'DONE'
           }
         }
       },
       SYNC_IP: {
         entry: [
-          assign({ clientId: (_, event) => event.clientId }),
-          send(({ context, event }) => event, { to: 'sync-ip' })
+          assign({ clientId: ({event}) => event.clientId }),
+          sendTo('sync-ip', { type: 'SyncIPEvent' })
+          // send(({ context, event }) => event, { to: 'sync-ip' })
         ],
         invoke: {
           id: 'sync-ip',
           src: this.syncIPImpl.machine,
           onDone: {
-            actions: assign({ doneData: (_, event) => event.data }),
+            actions: assign({ doneData: ({event}) => event.data }),
             target: 'DONE'
           }
         }
       },
       SYNC_TIME: {
         entry: [
-          assign({ clientId: (_, event) => event.clientId }),
-          send(({ context, event }) => event, { to: 'sync-time' })
+          assign({ clientId: ({event}) => event.clientId }),
+          sendTo('sync-time', { type: 'SyncTimeEvent' })
+          // send(({ context, event }) => event, { to: 'sync-time' })
         ],
         invoke: {
           id: 'sync-time',
           src: this.syncTimeImpl.machine,
           onDone: {
-            actions: assign({ doneData: (_, event) => event.data }),
+            actions: assign({ doneData: ({event}) => event.data }),
             target: 'DONE'
           }
         }
       },
       SYNC_DEVICE_INFO: {
         entry: [
-          assign({ clientId: (_, event) => event.clientId }),
-          send(({ context, event }) => event, { to: 'sync-device-info' })
+          assign({ clientId: ({event}) => event.clientId }),
+          sendTo('sync-device-info', { type: 'SyncDeviceInfoEvent'})
+          // send(({ context, event }) => event, { to: 'sync-device-info' })
         ],
         invoke: {
           id: 'sync-device-info',
           src: this.syncDeviceInfoImpl.machine,
           onDone: {
-            actions: assign({ doneData: (_, event) => event.data }),
+            actions: assign({ doneData: ({event}) => event.data }),
             target: 'DONE'
           }
         }
       },
       DONE: {
         type: 'final',
-        entry: (context) => this.respondAfterDone(context.clientId, context.doneData)
+        entry: ({context}) => this.respondAfterDone(context.clientId, context.doneData)
       }
     }
   })

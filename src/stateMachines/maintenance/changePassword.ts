@@ -82,7 +82,7 @@ export class ChangePassword {
           },
           onError: {
             actions: assign({
-              statusMessage: (_, event) => coalesceMessage('at GET_GENERAL_SETTINGS', event.data)
+              statusMessage: ({event}) => coalesceMessage('at GET_GENERAL_SETTINGS', event.data)
             }),
             target: 'FAILED'
           }
@@ -93,12 +93,12 @@ export class ChangePassword {
           src: this.setAdminACLEntry.bind(this),
           id: 'set-on-device',
           onDone: {
-            actions: assign({ updatedPassword: ({ context, event }) => event.data }),
+            actions: assign({ updatedPassword: ({ event }) => event.data }),
             target: 'SAVE_TO_SECRET_PROVIDER'
           },
           onError: {
             actions: assign({
-              statusMessage: (_, event) => coalesceMessage('at SET_ADMIN_ACL_ENTRY', event.data)
+              statusMessage: ({ event }) => coalesceMessage('at SET_ADMIN_ACL_ENTRY', event.data)
             }),
             target: 'FAILED'
           }
@@ -113,7 +113,7 @@ export class ChangePassword {
           },
           onError: {
             actions: assign({
-              statusMessage: (_, event) => coalesceMessage('at SAVE_TO_SECRET_PROVIDER', event.data)
+              statusMessage: ({ event }) => coalesceMessage('at SAVE_TO_SECRET_PROVIDER', event.data)
             }),
             target: 'FAILED'
           }
@@ -128,7 +128,7 @@ export class ChangePassword {
           },
           onError: {
             actions: assign({
-              statusMessage: ({ context, event }) => coalesceMessage('at REFRESH_MPS', event.data)
+              statusMessage: ({ event }) => coalesceMessage('at REFRESH_MPS', event.data)
             }),
             target: 'FAILED'
           }
@@ -136,11 +136,13 @@ export class ChangePassword {
       },
       FAILED: {
         type: 'final',
-        data: (context) => (Task.doneFail(context.taskName, context.statusMessage))
+        output: ({context}) => (Task.doneFail(context.taskName, context.statusMessage))
+        // data: (context) => (Task.doneFail(context.taskName, context.statusMessage))
       },
       SUCCESS: {
         type: 'final',
-        data: (context) => (Task.doneSuccess(context.taskName, context.statusMessage))
+        output: ({context}) => (Task.doneSuccess(context.taskName, context.statusMessage))
+        // data: (context) => (Task.doneSuccess(context.taskName, context.statusMessage))
       }
     }
   })

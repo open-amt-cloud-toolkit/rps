@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
-import { assign, createMachine } from 'xstate'
+import { assign, createMachine, fromPromise } from 'xstate'
 import {
   coalesceMessage,
   commonContext,
@@ -69,14 +69,18 @@ export class SyncTime {
       GET_LOW_ACCURACY_TIME_SYNCH: {
         invoke: {
           id: 'get-low-accuracy-time-synch',
-          src: this.getLowAccuracyTimeSync,
-          onDone: {
+          // src: this.getLowAccuracyTimeSync,
+          src: fromPromise(async () => {
+            const data = this.getLowAccuracyTimeSync
+            return data
+          }),
+         onDone: {
             actions: assign({ lowAccuracyData: ({ context, event }) => event.data }),
             target: 'SET_HIGH_ACCURACY_TIME_SYNCH'
           },
           onError: {
             actions: assign({
-              statusMessage: (_, event) => coalesceMessage('at GET_LOW_ACCURACY_TIME_SYNCH', event.data)
+              statusMessage: ({event}) => coalesceMessage('at GET_LOW_ACCURACY_TIME_SYNCH', event.data)
             }),
             target: 'FAILED'
           }
@@ -85,13 +89,17 @@ export class SyncTime {
       SET_HIGH_ACCURACY_TIME_SYNCH: {
         invoke: {
           id: 'set-high-accuracy-time-synch',
-          src: this.setHighAccuracyTimeSynch,
+          // src: this.setHighAccuracyTimeSynch,
+          src: fromPromise(async () => {
+            const data = this.setHighAccuracyTimeSynch
+            return data
+          }),
           onDone: {
             target: 'SUCCESS'
           },
           onError: {
             actions: assign({
-              statusMessage: (_, event) => coalesceMessage('at SET_HIGH_ACCURACY_TIME_SYNCH', event.data)
+              statusMessage: ({event}) => coalesceMessage('at SET_HIGH_ACCURACY_TIME_SYNCH', event.data)
             }),
             target: 'FAILED'
           }
@@ -99,11 +107,13 @@ export class SyncTime {
       },
       FAILED: {
         type: 'final',
-        data: (context) => (Task.doneFail(context.taskName, context.statusMessage))
+        output: ({context}) => (Task.doneFail(context.taskName, context.statusMessage))
+        // data: (context) => (Task.doneFail(context.taskName, context.statusMessage))
       },
       SUCCESS: {
         type: 'final',
-        data: (context) => (Task.doneSuccess(context.taskName, context.statusMessage))
+        output: ({context}) => (Task.doneSuccess(context.taskName, context.statusMessage))
+        // data: (context) => (Task.doneSuccess(context.taskName, context.statusMessage))
       }
     }
   })

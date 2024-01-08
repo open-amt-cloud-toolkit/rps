@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
-import { assign, createMachine } from 'xstate'
+import { assign, createMachine, fromPromise } from 'xstate'
 import { HttpHandler } from '../HttpHandler'
 import { invokeWsmanCall } from './common'
 
@@ -53,14 +53,18 @@ export class TimeSync {
       GET_LOW_ACCURACY_TIME_SYNCH: {
         invoke: {
           id: 'get-low-accuracy-time-synch',
-          src: this.getLowAccuracyTimeSync,
+          // src: this.getLowAccuracyTimeSync,
+          src: fromPromise(async () => {
+            const data = this.getLowAccuracyTimeSync
+            return data
+          }),
           onDone: [{
-            actions: assign({ message: ({context, event}) => event.data }),
+            actions: assign({ message: ({ context, event }) => event.data }),
             target: 'GET_LOW_ACCURACY_TIME_SYNCH_RESPONSE'
           }],
           onError: {
             actions: assign({
-              message: ({context, event}) => event.data
+              message: ({ context, event }) => event.data
             }),
             target: 'FAILED'
           }
@@ -80,9 +84,13 @@ export class TimeSync {
       SET_HIGH_ACCURACY_TIME_SYNCH: {
         invoke: {
           id: 'set-high-accuracy-time-synch',
-          src: this.setHighAccuracyTimeSynch,
+          // src: this.setHighAccuracyTimeSynch,
+          src: fromPromise(async () => {
+            const data = this.setHighAccuracyTimeSynch
+            return data
+          }),
           onDone: [{
-            actions: assign({ message: ({context, event}) => event.data }),
+            actions: assign({ message: ({ context, event }) => event.data }),
             target: 'SET_HIGH_ACCURACY_TIME_SYNCH_RESPONSE'
           }],
           onError: {
@@ -113,12 +121,12 @@ export class TimeSync {
     }
   }, {
     guards: {
-      isGetLowAccuracyTimeSynchSuccessful: ({context, event}) => context.message.Envelope.Body?.GetLowAccuracyTimeSynch_OUTPUT?.ReturnValue === 0,
-      isSetHighAccuracyTimeSynchSuccessful: ({context, event}) => context.message.Envelope.Body?.SetHighAccuracyTimeSynch_OUTPUT?.ReturnValue === 0
+      isGetLowAccuracyTimeSynchSuccessful: ({ context, event }) => context.message.Envelope.Body?.GetLowAccuracyTimeSynch_OUTPUT?.ReturnValue === 0,
+      isSetHighAccuracyTimeSynchSuccessful: ({ context, event }) => context.message.Envelope.Body?.SetHighAccuracyTimeSynch_OUTPUT?.ReturnValue === 0
     }
   })
 
-  async setHighAccuracyTimeSynch (context: TimeContext): Promise<void> {
+  async setHighAccuracyTimeSynch(context: TimeContext): Promise<void> {
     const Tm1 = Math.round(new Date().getTime() / 1000)
     const Ta0: number = context.message.Envelope.Body.GetLowAccuracyTimeSynch_OUTPUT.Ta0
     const amt = new AMT.Messages()
@@ -126,7 +134,7 @@ export class TimeSync {
     return await invokeWsmanCall(context)
   }
 
-  async getLowAccuracyTimeSync (context: TimeContext): Promise<void> {
+  async getLowAccuracyTimeSync(context: TimeContext): Promise<void> {
     const amt = new AMT.Messages()
     context.xmlMessage = amt.TimeSynchronizationService.GetLowAccuracyTimeSynch()
     return await invokeWsmanCall(context)

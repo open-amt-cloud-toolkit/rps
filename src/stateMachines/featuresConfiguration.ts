@@ -111,8 +111,8 @@ export class FeaturesConfiguration {
         id: 'compute-updates',
         entry: ['computeUpdates'],
         always: [
-          { target: 'SET_REDIRECTION_SERVICE', guard: (context, _) => context.isRedirectionChanged },
-          { target: 'PUT_IPS_OPT_IN_SERVICE', guard: (context, _) => context.isOptInServiceChanged },
+          { target: 'SET_REDIRECTION_SERVICE', guard: ({context}) => context.isRedirectionChanged },
+          { target: 'PUT_IPS_OPT_IN_SERVICE', guard: ({context}) => context.isOptInServiceChanged },
           { target: 'SUCCESS' }
         ]
       },
@@ -143,7 +143,7 @@ export class FeaturesConfiguration {
           id: 'put-redirection-service',
           src: this.putRedirectionService.bind(this),
           onDone: [
-            { target: 'PUT_IPS_OPT_IN_SERVICE', guard: (context, _) => context.isOptInServiceChanged },
+            { target: 'PUT_IPS_OPT_IN_SERVICE', guard: ({context}) => context.isOptInServiceChanged },
             { target: 'SUCCESS' }
           ],
           onError: {
@@ -164,11 +164,11 @@ export class FeaturesConfiguration {
         }
       },
       SUCCESS: {
-        entry: (context, _) => { this.logger.info('AMT Features Configuration success') },
+        entry: ({context}) => { this.logger.info('AMT Features Configuration success') },
         type: 'final'
       },
       FAILED: {
-        entry: (context, _) => { this.logger.error(`AMT Features Configuration failed: ${context.statusMessage}`) },
+        entry: ({context}) => { this.logger.error(`AMT Features Configuration failed: ${context.statusMessage}`) },
         type: 'final'
       }
     }
@@ -180,7 +180,7 @@ export class FeaturesConfiguration {
       cacheCimKvmRedirectionSAP: assign({
         CIM_KVMRedirectionSAP: (_, event) => event.data.Envelope.Body.CIM_KVMRedirectionSAP
       }),
-      computeUpdates: assign((context, _) => {
+      computeUpdates: assign(({context}) => {
         const amtRedirectionService = context.AMT_RedirectionService
         const cimKVMRedirectionSAP = context.CIM_KVMRedirectionSAP
         const ipsOptInService = context.IPS_OptInService
