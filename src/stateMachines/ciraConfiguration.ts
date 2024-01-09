@@ -76,7 +76,7 @@ export class CIRAConfiguration {
       },
       // todo: the actual context comes in from the parent and clobbers this one
       // xstate version 5 should fix this.
-      context: {
+      context: ({input}) => ({
         clientId: '',
         httpHandler: null,
         status: 'success',
@@ -88,7 +88,7 @@ export class CIRAConfiguration {
         profile: null,
         privateCerts: [],
         tenantId: ''
-      },
+      }),
       id: 'cira-machine',
       initial: 'CIRACONFIGURED',
       states: {

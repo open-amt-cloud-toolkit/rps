@@ -166,16 +166,19 @@ export class Deactivation {
         }
       }
     })
-    
 
-  service = createActor(this.machine).subscribe((state) => {
-    console.log(`Current state of Deactivation State Machine: ${JSON.stringify(state.value)}`)
-  })
+
+  service = createActor(this.machine)
+
 
   constructor () {
     this.configurator = new Configurator()
     this.amt = new AMT.Messages()
     this.logger = new Logger('Deactivation State Machine')
+    this.service.subscribe((state) => {
+      console.log(`Current state of Deactivation State Machine: ${JSON.stringify(state.value)}`)
+    })
+  
   }
 
   async removeDeviceFromSecretProvider (context: DeactivationContext): Promise<boolean> {

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { interpret } from 'xstate'
+import { createActor } from 'xstate'
 import { Deactivation, type DeactivationContext } from './deactivation'
 import { v4 as uuid } from 'uuid'
 import { devices } from '../WebSocketListener'

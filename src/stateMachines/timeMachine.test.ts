@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { interpret } from 'xstate'
+import { createActor } from 'xstate'
 import { HttpHandler } from '../HttpHandler'
 import { devices } from '../WebSocketListener'
 import * as common from './common'

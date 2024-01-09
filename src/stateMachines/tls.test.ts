@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { interpret } from 'xstate'
+import { createActor } from 'xstate'
 import { HttpHandler } from '../HttpHandler'
 import { devices } from '../WebSocketListener'
 import { TLS, type TLSContext } from './tls'
@@ -197,7 +197,7 @@ describe('TLS State Machine', () => {
   })
   it('should createTLSCredentialContext', async () => {
     const event: any = { data: { Envelope: { Body: { AddCertificate_OUTPUT: { CreatedCertificate: { ReferenceParameters: { SelectorSet: { Selector: { _: '' } } } } } } } } }
-    await tls.createTLSCredentialContext({context, event})
+    await tls.createTLSCredentialContext(context, event)
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
   it('should enumeratePublicKeyCertificate', async () => {

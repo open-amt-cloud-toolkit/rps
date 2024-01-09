@@ -11,7 +11,7 @@ import { Environment } from '../utils/Environment'
 import { config } from '../test/helper/Config'
 import { type CIRAConfig } from '../models/RCS.Config'
 import { HttpHandler } from '../HttpHandler'
-import { interpret } from 'xstate'
+import { createActor } from 'xstate'
 import * as common from './common'
 import { UNEXPECTED_PARSE_ERROR } from '../utils/constants'
 
@@ -169,8 +169,10 @@ describe('CIRA Configuration State Machine', () => {
       rejectionValue = new UNEXPECTED_PARSE_ERROR()
     }
     machineConfig.services[ti.service] = Promise.reject(rejectionValue)
-    const machine = ciraStateMachineImpl.machine.provide(machineConfig).withContext(machineContext)
-    const service = createActor(machine).onTransition((state) => {
+    const machine = ciraStateMachineImpl.machine.provide(machineConfig)
+
+    const service = createActor(machine, { input: machineContext })
+    service.subscribe((state) => {
       if (state.matches('SUCCESS') || state.matches('FAILURE')) {
         expect(state.matches('FAILURE')).toBe(true)
         expect(previousState.matches(ti.stateValue)).toBe(true)

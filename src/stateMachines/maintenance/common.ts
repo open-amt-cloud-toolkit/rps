@@ -9,7 +9,8 @@ import { devices } from '../../WebSocketListener'
 import { GatewayTimeoutError, UNEXPECTED_PARSE_ERROR, UnexpectedParseError } from '../../utils/constants'
 import Logger from '../../Logger'
 import { HttpHandler } from '../../HttpHandler'
-import { assign, type DefaultContext } from 'xstate'
+// import { assign, type DefaultContext } from 'xstate'
+import { assign } from 'xstate'
 
 export type EnumerationContext = string
 
@@ -109,8 +110,9 @@ export const invokeWsmanCall = async <T> (clientId: string, wsmanXml: string, re
   return await clientObj.pendingPromise
 }
 
-export interface CommonContext extends DefaultContext {
-  clientId: string
+// export interface CommonContext extends DefaultContext {
+export interface CommonContext {
+    clientId: string
   statusMessage: string
   parseErrorCount: number
 }

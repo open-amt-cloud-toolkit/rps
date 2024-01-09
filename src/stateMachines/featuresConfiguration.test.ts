@@ -9,7 +9,7 @@ import { type AMTConfiguration, AMTRedirectionServiceEnabledStates, AMTUserConse
 import { v4 as uuid } from 'uuid'
 import { devices } from '../WebSocketListener'
 import { HttpHandler } from '../HttpHandler'
-import { interpret } from 'xstate'
+import { createActor } from 'xstate'
 import { AMT, CIM, IPS } from '@open-amt-cloud-toolkit/wsman-messages'
 import * as common from './common'
 describe('Features State Machine', () => {
