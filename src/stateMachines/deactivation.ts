@@ -166,6 +166,7 @@ export class Deactivation {
         }
       }
     })
+    
 
   service = createActor(this.machine).subscribe((state) => {
     console.log(`Current state of Deactivation State Machine: ${JSON.stringify(state.value)}`)
