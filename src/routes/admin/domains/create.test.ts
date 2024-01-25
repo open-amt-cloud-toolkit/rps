@@ -3,14 +3,16 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { createSpyObj } from '../../../test/helper/jest'
-import { DomainCreate } from './create'
+import { createSpyObj } from '../../../test/helper/jest.js'
+import { DomainCreate } from './create.js'
+import { jest } from '@jest/globals'
+import { type SpyInstance, spyOn } from 'jest-mock'
 
 describe('Domain - Create', () => {
   let resSpy
   let req
-  let insertSpy: jest.SpyInstance
-  let secretManagerSpy: jest.SpyInstance
+  let insertSpy: SpyInstance<any>
+  let secretManagerSpy: SpyInstance<any>
   let dc: DomainCreate
   let dcReal: DomainCreate
 
@@ -24,14 +26,14 @@ describe('Domain - Create', () => {
       body: { },
       query: { }
     }
-    insertSpy = jest.spyOn(req.db.domains, 'insert').mockResolvedValue({ })
-    secretManagerSpy = jest.spyOn(req.secretsManager, 'writeSecretWithObject').mockResolvedValue({ })
+    insertSpy = spyOn(req.db.domains, 'insert').mockResolvedValue({ })
+    secretManagerSpy = spyOn(req.secretsManager, 'writeSecretWithObject').mockResolvedValue({ })
     resSpy.status.mockReturnThis()
     resSpy.json.mockReturnThis()
     resSpy.send.mockReturnThis()
     dc = new DomainCreate()
     dcReal = new DomainCreate()
-    jest.spyOn(dc, 'getExpirationDate').mockReturnValue(new Date())
+    spyOn(dc, 'getExpirationDate').mockReturnValue(new Date())
   })
   it('should create', async () => {
     await dc.createDomain(req, resSpy)
@@ -40,23 +42,23 @@ describe('Domain - Create', () => {
     expect(resSpy.status).toHaveBeenCalledWith(201)
   })
   it('should handle error with create with write in vault fails', async () => {
-    jest.spyOn(req.db.domains, 'delete').mockResolvedValue(true)
-    secretManagerSpy = jest.spyOn(req.secretsManager, 'writeSecretWithObject').mockResolvedValue(null)
+    spyOn(req.db.domains, 'delete').mockResolvedValue(true)
+    secretManagerSpy = spyOn(req.secretsManager, 'writeSecretWithObject').mockResolvedValue(null)
     await dc.createDomain(req, resSpy)
     expect(insertSpy).toHaveBeenCalledTimes(1)
     expect(secretManagerSpy).toHaveBeenCalledTimes(1)
     expect(resSpy.status).toHaveBeenCalledWith(500)
   })
   it('should handle error with create with write in vault fails and undo db.delete fail', async () => {
-    jest.spyOn(req.db.domains, 'delete').mockResolvedValue(null)
-    secretManagerSpy = jest.spyOn(req.secretsManager, 'writeSecretWithObject').mockResolvedValue(null)
+    spyOn(req.db.domains, 'delete').mockResolvedValue(null)
+    secretManagerSpy = spyOn(req.secretsManager, 'writeSecretWithObject').mockResolvedValue(null)
     await dc.createDomain(req, resSpy)
     expect(insertSpy).toHaveBeenCalledTimes(1)
     expect(secretManagerSpy).toHaveBeenCalledTimes(1)
     expect(resSpy.status).toHaveBeenCalledWith(500)
   })
   it('should handle error', async () => {
-    jest.spyOn(req.db.domains, 'insert').mockResolvedValue(null)
+    spyOn(req.db.domains, 'insert').mockResolvedValue(null)
     await dc.createDomain(req, resSpy)
     expect(insertSpy).toHaveBeenCalledTimes(1)
     expect(resSpy.status).toHaveBeenCalledWith(500)

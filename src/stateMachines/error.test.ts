@@ -4,10 +4,12 @@
  **********************************************************************/
 
 import { interpret } from 'xstate'
-import { Error, type ErrorContext } from './error'
-import { v4 as uuid } from 'uuid'
-import { devices } from '../WebSocketListener'
-const clientId = uuid()
+import { Error, type ErrorContext } from './error.js'
+import { randomUUID } from 'node:crypto'
+import { devices } from '../devices.js'
+import { jest } from '@jest/globals'
+
+const clientId = randomUUID()
 const unauthorizedResponse = {
   statusCode: 401,
   headers: [

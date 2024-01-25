@@ -4,10 +4,10 @@
  **********************************************************************/
 
 import { type Request, type Response } from 'express'
-import { MqttProvider } from './MqttProvider'
-import type Logger from '../Logger'
-import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, CONCURRENCY_EXCEPTION, NOT_FOUND_EXCEPTION } from './constants'
-import { RPSError } from './RPSError'
+import { MqttProvider } from './MqttProvider.js'
+import type Logger from '../Logger.js'
+import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, CONCURRENCY_EXCEPTION, NOT_FOUND_EXCEPTION } from './constants.js'
+import { RPSError } from './RPSError.js'
 
 const handleError = (log: Logger, configName: string, req: Request, res: Response, error: any): void => {
   MqttProvider.publishEvent('fail', [req.baseUrl], `Failed to ${req.method}: ${configName}`)

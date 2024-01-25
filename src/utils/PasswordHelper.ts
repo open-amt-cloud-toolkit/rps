@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import * as crypto from 'crypto'
+import crypto from 'node:crypto'
 import cryptoRandomString from 'crypto-random-string'
 
 const PasswordHelper = {

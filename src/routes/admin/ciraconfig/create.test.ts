@@ -3,13 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { createSpyObj } from '../../../test/helper/jest'
-import { createCiraConfig } from './create'
+import { createSpyObj } from '../../../test/helper/jest.js'
+import { createCiraConfig } from './create.js'
+import { jest } from '@jest/globals'
+import { type SpyInstance, spyOn } from 'jest-mock'
 
 describe('CIRA Config - Create', () => {
   let resSpy
   let req
-  let insertSpy: jest.SpyInstance
+  let insertSpy: SpyInstance<any>
 
   beforeEach(() => {
     resSpy = createSpyObj('Response', ['status', 'json', 'end', 'send'])
@@ -18,7 +20,7 @@ describe('CIRA Config - Create', () => {
       body: {},
       query: { }
     }
-    insertSpy = jest.spyOn(req.db.ciraConfigs, 'insert').mockResolvedValue({})
+    insertSpy = spyOn(req.db.ciraConfigs, 'insert').mockResolvedValue({})
     resSpy.status.mockReturnThis()
     resSpy.json.mockReturnThis()
     resSpy.send.mockReturnThis()
@@ -29,7 +31,7 @@ describe('CIRA Config - Create', () => {
     expect(resSpy.status).toHaveBeenCalledWith(201)
   })
   it('should handle error', async () => {
-    jest.spyOn(req.db.ciraConfigs, 'insert').mockRejectedValue(null)
+    spyOn(req.db.ciraConfigs, 'insert').mockRejectedValue(null)
     await createCiraConfig(req, resSpy)
     expect(insertSpy).toHaveBeenCalledTimes(1)
     expect(resSpy.status).toHaveBeenCalledWith(500)

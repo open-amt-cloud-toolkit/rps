@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import * as forge from 'node-forge'
+import forge from 'node-forge'
 
 export class NodeForge {
   public readonly pkiOidsCertBag: string = '1.2.840.113549.1.12.10.1.3'

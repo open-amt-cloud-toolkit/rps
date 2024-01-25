@@ -4,20 +4,20 @@
  **********************************************************************/
 
 import type * as WebSocket from 'ws'
-import { type IValidator } from './interfaces/IValidator'
-import { type ILogger } from './interfaces/ILogger'
-import { type ClientMsg, ClientAction, type Payload, ClientMethods } from './models/RCS.Config'
-import { ClientMsgJsonParser } from './utils/ClientMsgJsonParser'
-import { RPSError } from './utils/RPSError'
-import { CommandParser } from './CommandParser'
-import { VersionChecker } from './VersionChecker'
-import { AMTUserName } from './utils/constants'
-import { Environment } from './utils/Environment'
+import { type IValidator } from './interfaces/IValidator.js'
+import { type ILogger } from './interfaces/ILogger.js'
+import { type ClientMsg, ClientAction, type Payload, ClientMethods } from './models/RCS.Config.js'
+import { ClientMsgJsonParser } from './utils/ClientMsgJsonParser.js'
+import { RPSError } from './utils/RPSError.js'
+import { CommandParser } from './CommandParser.js'
+import { VersionChecker } from './VersionChecker.js'
+import { AMTUserName } from './utils/constants.js'
+import { Environment } from './utils/Environment.js'
 import got from 'got'
-import { devices } from './WebSocketListener'
-import { type AMTConfiguration } from './models'
-import { type Configurator } from './Configurator'
-import { type DeviceCredentials } from './interfaces/ISecretManagerService'
+import { devices } from './devices.js'
+import { type AMTConfiguration } from './models/index.js'
+import { type Configurator } from './Configurator.js'
+import { type DeviceCredentials } from './interfaces/ISecretManagerService.js'
 export class Validator implements IValidator {
   jsonParser: ClientMsgJsonParser
 

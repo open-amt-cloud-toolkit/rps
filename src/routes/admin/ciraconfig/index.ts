@@ -4,16 +4,16 @@
  **********************************************************************/
 
 import { Router } from 'express'
-import { allCiraConfigs } from './all'
-import { getCiraConfig } from './get'
-import { createCiraConfig } from './create'
-import { editCiraConfig } from './edit'
-import { deleteCiraConfig } from './delete'
-import { ciraInsertValidator, ciraUpdateValidator } from './ciraValidator'
-import { odataValidator } from '../odataValidator'
-import validateMiddleware from '../../../middleware/validate'
-// import etagMiddleware from '../../../middleware/etag'
-import ifMatchMiddleware from '../../../middleware/if-match'
+import { allCiraConfigs } from './all.js'
+import { getCiraConfig } from './get.js'
+import { createCiraConfig } from './create.js'
+import { editCiraConfig } from './edit.js'
+import { deleteCiraConfig } from './delete.js'
+import { ciraInsertValidator, ciraUpdateValidator } from './ciraValidator.js'
+import { odataValidator } from '../odataValidator.js'
+import validateMiddleware from '../../../middleware/validate.js'
+// import etagMiddleware from '../../../middleware/etag.js'
+import ifMatchMiddleware from '../../../middleware/if-match.js'
 const CiraConfigRouter: Router = Router()
 
 CiraConfigRouter.get('/', odataValidator(), validateMiddleware, allCiraConfigs)

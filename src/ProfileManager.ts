@@ -3,24 +3,23 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type AMTConfiguration } from './models'
-import { type ILogger } from './interfaces/ILogger'
-import { type IProfileManager } from './interfaces/IProfileManager'
-import { PasswordHelper } from './utils/PasswordHelper'
-import { type CIRAConfig } from './models/RCS.Config'
-import { type IProfilesTable } from './interfaces/database/IProfilesDb'
-import { type Configurator } from './Configurator'
-import { type TLSCredentials } from './interfaces/ISecretManagerService'
+import { type AMTConfiguration } from './models/index.js'
+import { type ILogger } from './interfaces/ILogger.js'
+import { type IProfileManager } from './interfaces/IProfileManager.js'
+import { PasswordHelper } from './utils/PasswordHelper.js'
+import { type CIRAConfig } from './models/RCS.Config.js'
+import { type IProfilesTable } from './interfaces/database/IProfilesDb.js'
+import { type ISecretManagerService, type TLSCredentials } from './interfaces/ISecretManagerService.js'
 
 export class ProfileManager implements IProfileManager {
   private readonly amtConfigurations: IProfilesTable
   private readonly logger: ILogger
-  private readonly configurator: Configurator
+  private readonly secretsManager: ISecretManagerService
   private readonly envConfig: any
 
-  constructor (logger: ILogger, configurator: Configurator, amtConfigurations: IProfilesTable, config?: any) {
+  constructor (logger: ILogger, secretsManager: ISecretManagerService, amtConfigurations: IProfilesTable, config?: any) {
     this.logger = logger
-    this.configurator = configurator
+    this.secretsManager = secretsManager
     this.amtConfigurations = amtConfigurations
     this.envConfig = config // This is all Env config stuff
   }
@@ -80,8 +79,8 @@ export class ProfileManager implements IProfileManager {
         } else {
           this.logger.error(`unable to create a random password for ${profile.profileName}`)
         }
-      } else if (this.configurator?.secretsManager) {
-        amtPassword = await this.configurator.secretsManager.getSecretFromKey(`profiles/${profileName}`, 'AMT_PASSWORD')
+      } else if (this.secretsManager) {
+        amtPassword = await this.secretsManager.getSecretFromKey(`profiles/${profileName}`, 'AMT_PASSWORD')
       } else {
         amtPassword = profile.amtPassword
       }
@@ -113,8 +112,8 @@ export class ProfileManager implements IProfileManager {
         } else {
           this.logger.error(`unable to create MEBx random password for ${profile.profileName}`)
         }
-      } else if (this.configurator?.secretsManager) {
-        mebxPassword = await this.configurator.secretsManager.getSecretFromKey(`profiles/${profileName}`, 'MEBX_PASSWORD')
+      } else if (this.secretsManager) {
+        mebxPassword = await this.secretsManager.getSecretFromKey(`profiles/${profileName}`, 'MEBX_PASSWORD')
       } else {
         mebxPassword = profile.mebxPassword
       }
@@ -177,8 +176,8 @@ export class ProfileManager implements IProfileManager {
       }
       // If the TLS Config associated with profile, retrieves from DB
       if (amtProfile.tlsMode != null && amtProfile.tlsSigningAuthority) {
-        if (this.configurator?.secretsManager) {
-          const results = await this.configurator.secretsManager.getSecretAtPath(`TLS/${amtProfile.profileName}`)
+        if (this.secretsManager) {
+          const results = await this.secretsManager.getSecretAtPath(`TLS/${amtProfile.profileName}`)
           amtProfile.tlsCerts = results as TLSCredentials
         }
       }

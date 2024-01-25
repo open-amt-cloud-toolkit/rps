@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import ClientResponseMsg from '../../utils/ClientResponseMsg'
-import { Environment } from '../../utils/Environment'
-import { devices } from '../../WebSocketListener'
-import { GatewayTimeoutError, UNEXPECTED_PARSE_ERROR, UnexpectedParseError } from '../../utils/constants'
-import Logger from '../../Logger'
-import { HttpHandler } from '../../HttpHandler'
+import ClientResponseMsg from '../../utils/ClientResponseMsg.js'
+import { Environment } from '../../utils/Environment.js'
+import { devices } from '../../devices.js'
+import { GatewayTimeoutError, UNEXPECTED_PARSE_ERROR, UnexpectedParseError } from '../../utils/constants.js'
+import Logger from '../../Logger.js'
+import { HttpHandler } from '../../HttpHandler.js'
 import { assign, type DefaultContext } from 'xstate'
 
 export type EnumerationContext = string

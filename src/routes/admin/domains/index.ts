@@ -4,14 +4,14 @@
  **********************************************************************/
 
 import { Router } from 'express'
-import { getAllDomains } from './all'
-import { getDomain } from './get'
-import { DomainCreate } from './create'
-import { deleteDomain } from './delete'
-import { editDomain } from './edit'
-import { domainInsertValidator, domainUpdateValidator } from './domain'
-import { odataValidator } from '../odataValidator'
-import validateMiddleware from '../../../middleware/validate'
+import { getAllDomains } from './all.js'
+import { getDomain } from './get.js'
+import { DomainCreate } from './create.js'
+import { deleteDomain } from './delete.js'
+import { editDomain } from './edit.js'
+import { domainInsertValidator, domainUpdateValidator } from './domain.js'
+import { odataValidator } from '../odataValidator.js'
+import validateMiddleware from '../../../middleware/validate.js'
 const domainRouter: Router = Router()
 const dc = new DomainCreate()
 domainRouter.get('/', odataValidator(), validateMiddleware, getAllDomains)

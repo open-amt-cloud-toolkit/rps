@@ -3,16 +3,19 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { VaultService } from '.'
-import Logger from '../../Logger'
-import { type ILogger } from '../../interfaces/ILogger'
-import { config } from '../../test/helper/Config'
-import { Environment } from '../../utils/Environment'
-import { type DeviceCredentials } from '../../interfaces/ISecretManagerService'
+import { VaultService } from './index.js'
+import Logger from '../../Logger.js'
+import { type ILogger } from '../../interfaces/ILogger.js'
+import { config } from '../../test/helper/Config.js'
+import { Environment } from '../../utils/Environment.js'
+import { type DeviceCredentials } from '../../interfaces/ISecretManagerService.js'
+import { jest } from '@jest/globals'
+import { type SpyInstance, spyOn } from 'jest-mock'
 
 let secretManagerService: VaultService = null
 Environment.Config = config
-let gotSpy: jest.SpyInstance
+let gotSpy: SpyInstance
+let gotFailSpy: SpyInstance<any>
 const logger: ILogger = new Logger('SecretManagerTests')
 const secretPath = '4c4c4544-004b-4210-8033-b6c04f504633'
 const secretCreds: DeviceCredentials = {
@@ -29,7 +32,7 @@ const secretCert: DeviceCredentials = {
 
 beforeEach(() => {
   secretManagerService = new VaultService(logger)
-  gotSpy = jest.spyOn(secretManagerService.gotClient, 'get').mockImplementation(() => ({
+  gotSpy = spyOn(secretManagerService.gotClient, 'get').mockImplementation(() => ({
     json: jest.fn(() => ({ data: { data: secretCreds, metadata: { version: 1 } } }))
   } as any))
 })
@@ -38,20 +41,21 @@ afterEach(() => {
   jest.clearAllMocks()
 })
 
-test('should get a secret for specific given key of a path', async () => {
+it('should get a secret for specific given key of a path', async () => {
   const result = await secretManagerService.getSecretFromKey(secretPath, 'AMT_PASSWORD')
   expect(gotSpy).toHaveBeenCalledWith(secretPath)
   expect(result).toBe('P@ssw0rd')
 })
 
-test('should get null, if the key does not exist in the path', async () => {
+it('should get null, if the key does not exist in the path', async () => {
   const result = await secretManagerService.getSecretFromKey(secretPath, 'AMT_PASSWORD1')
   expect(result).toBe(null)
   expect(gotSpy).toHaveBeenCalledWith(secretPath)
 })
 
-test('should get null, if path does not exist', async () => {
-  const gotFailSpy = jest.spyOn(secretManagerService.gotClient, 'get').mockResolvedValue({
+it('should get null, if path does not exist', async () => {
+  gotFailSpy = spyOn(secretManagerService.gotClient, 'get')
+  gotFailSpy.mockResolvedValue({
     json: jest.fn(async () => await Promise.reject(new Error('Not Found')))
   })
   const result = await secretManagerService.getSecretFromKey(secretPath, 'AMT_PASSWORD')
@@ -59,14 +63,15 @@ test('should get null, if path does not exist', async () => {
   expect(gotFailSpy).toHaveBeenCalledWith(secretPath)
 })
 
-test('should get a secret from a specific given path', async () => {
+it('should get a secret from a specific given path', async () => {
   const result = await secretManagerService.getSecretAtPath(secretPath)
   expect(result).toEqual(secretCreds)
   expect(gotSpy).toHaveBeenCalledWith(secretPath)
 })
 
-test('should throw an exception and return null if given path does not exist', async () => {
-  const gotFailSpy = jest.spyOn(secretManagerService.gotClient, 'get').mockResolvedValue({
+it('should throw an exception and return null if given path does not exist', async () => {
+  gotFailSpy = spyOn(secretManagerService.gotClient, 'get')
+  gotFailSpy.mockResolvedValue({
     json: jest.fn(async () => await Promise.reject(new Error('Not Found')))
   })
   const result = await secretManagerService.getSecretAtPath('does/not/exist')
@@ -74,22 +79,23 @@ test('should throw an exception and return null if given path does not exist', a
   expect(gotFailSpy).toHaveBeenCalledWith('does/not/exist')
 })
 
-test('should create a secret', async () => {
-  const gotPostSpy = jest.spyOn(secretManagerService.gotClient, 'post').mockImplementation(() => ({ json: jest.fn(async () => await Promise.resolve(secretCert)) } as any))
+it('should create a secret', async () => {
+  const gotPostSpy = spyOn(secretManagerService.gotClient, 'post').mockImplementation(() => ({ json: jest.fn(async () => await Promise.resolve(secretCert)) } as any))
   const result = await secretManagerService.writeSecretWithObject('test', secretCert)
   expect(result).toEqual(secretCert)
   expect(gotPostSpy).toHaveBeenCalledWith('test', { json: { data: secretCert } })
 })
 
-test('should return false if the path does not exist', async () => {
+it('should return false if the path does not exist', async () => {
   const badPath = 'does/not/exist'
-  const gotFailSpy = jest.spyOn(secretManagerService.gotClient, 'post').mockResolvedValue(null)
+  gotFailSpy = spyOn(secretManagerService.gotClient, 'post')
+  gotFailSpy.mockResolvedValue(null)
   const result = await secretManagerService.writeSecretWithObject(badPath, secretCert)
   expect(result).toBe(null)
   expect(gotFailSpy).toHaveBeenCalledWith(badPath, { json: { data: secretCert } })
 })
 
-test('should get health of vault', async () => {
+it('should get health of vault', async () => {
   const data = {
     initialized: true,
     sealed: false,
@@ -102,7 +108,7 @@ test('should get health of vault', async () => {
     cluster_name: 'vault-cluster-426a5cd4',
     cluster_id: '3f02d0f2-4048-cdcd-7e4d-7d2905c52995'
   }
-  const gotHealthSpy = jest.spyOn(secretManagerService.gotClient, 'get').mockImplementation(() => ({
+  const gotHealthSpy = spyOn(secretManagerService.gotClient, 'get').mockImplementation(() => ({
     json: jest.fn(() => data)
   } as any))
   const result = await secretManagerService.health()

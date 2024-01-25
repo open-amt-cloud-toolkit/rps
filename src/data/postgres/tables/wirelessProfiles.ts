@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type WirelessConfig } from '../../../models/RCS.Config'
-import { type IWirelessProfilesTable } from '../../../interfaces/database/IWirelessProfilesDB'
+import { type WirelessConfig } from '../../../models/RCS.Config.js'
+import { type IWirelessProfilesTable } from '../../../interfaces/database/IWirelessProfilesDB.js'
 import {
   API_UNEXPECTED_EXCEPTION,
   CONCURRENCY_EXCEPTION,
@@ -14,11 +14,11 @@ import {
   NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT,
   NETWORK_CONFIG_ERROR,
   NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE
-} from '../../../utils/constants'
-import { RPSError } from '../../../utils/RPSError'
-import Logger from '../../../Logger'
-import type PostgresDb from '..'
-import { PostgresErr } from '../errors'
+} from '../../../utils/constants.js'
+import { RPSError } from '../../../utils/RPSError.js'
+import Logger from '../../../Logger.js'
+import type PostgresDb from '../index.js'
+import { PostgresErr } from '../errors.js'
 
 export class WirelessProfilesTable implements IWirelessProfilesTable {
   db: PostgresDb

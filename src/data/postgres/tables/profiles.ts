@@ -3,14 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type IProfilesTable } from '../../../interfaces/database/IProfilesDb'
-import { type Ieee8021xConfig, type CIRAConfig } from '../../../models/RCS.Config'
-import { type AMTConfiguration } from '../../../models'
-import { PROFILE_INSERTION_FAILED_DUPLICATE, PROFILE_INSERTION_CIRA_CONSTRAINT, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP, PROFILE_INSERTION_GENERIC_CONSTRAINT, CONCURRENCY_EXCEPTION, CONCURRENCY_MESSAGE } from '../../../utils/constants'
-import Logger from '../../../Logger'
-import { RPSError } from '../../../utils/RPSError'
-import type PostgresDb from '..'
-import { PostgresErr } from '../errors'
+import { type IProfilesTable } from '../../../interfaces/database/IProfilesDb.js'
+import { type Ieee8021xConfig, type CIRAConfig } from '../../../models/RCS.Config.js'
+import { type AMTConfiguration } from '../../../models/index.js'
+import { PROFILE_INSERTION_FAILED_DUPLICATE, PROFILE_INSERTION_CIRA_CONSTRAINT, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP, PROFILE_INSERTION_GENERIC_CONSTRAINT, CONCURRENCY_EXCEPTION, CONCURRENCY_MESSAGE } from '../../../utils/constants.js'
+import Logger from '../../../Logger.js'
+import { RPSError } from '../../../utils/RPSError.js'
+import type PostgresDb from '../index.js'
+import { PostgresErr } from '../errors.js'
 
 export class ProfilesTable implements IProfilesTable {
   db: PostgresDb

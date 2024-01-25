@@ -4,14 +4,14 @@
  **********************************************************************/
 
 import { Router } from 'express'
-import validateMiddleware from '../../../middleware/validate'
-import { odataValidator } from '../odataValidator'
-import { allProfiles } from './all'
-import { createWirelessProfile } from './create'
-import { deleteWirelessProfile } from './delete'
-import { editWirelessProfile } from './edit'
-import { getWirelessProfile } from './get'
-import { wirelessValidator, wirelessEditValidator } from './wirelessValidator'
+import validateMiddleware from '../../../middleware/validate.js'
+import { odataValidator } from '../odataValidator.js'
+import { allProfiles } from './all.js'
+import { createWirelessProfile } from './create.js'
+import { deleteWirelessProfile } from './delete.js'
+import { editWirelessProfile } from './edit.js'
+import { getWirelessProfile } from './get.js'
+import { wirelessValidator, wirelessEditValidator } from './wirelessValidator.js'
 
 const profileRouter: Router = Router()
 

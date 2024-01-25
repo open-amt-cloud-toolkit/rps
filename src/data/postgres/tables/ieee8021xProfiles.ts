@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type Ieee8021xConfig } from '../../../models/RCS.Config'
+import { type Ieee8021xConfig } from '../../../models/RCS.Config.js'
 import {
   API_UNEXPECTED_EXCEPTION,
   DEFAULT_SKIP,
@@ -14,12 +14,12 @@ import {
   IEEE8021X_DELETION_FAILED_CONSTRAINT_WIRELESS,
   IEEE8021X_INSERTION_FAILED_DUPLICATE,
   IEEE8021X_INSERTION_FAILED
-} from '../../../utils/constants'
-import Logger from '../../../Logger'
-import { RPSError } from '../../../utils/RPSError'
-import type PostgresDb from '..'
-import { type IIEEE8021xProfileTable } from '../../../interfaces/database/IIEEE8021xProfilesDB'
-import { PostgresErr } from '../errors'
+} from '../../../utils/constants.js'
+import Logger from '../../../Logger.js'
+import { RPSError } from '../../../utils/RPSError.js'
+import type PostgresDb from '../index.js'
+import { type IIEEE8021xProfileTable } from '../../../interfaces/database/IIEEE8021xProfilesDB.js'
+import { PostgresErr } from '../errors.js'
 
 export class IEEE8021xProfilesTable implements IIEEE8021xProfileTable {
   db: PostgresDb

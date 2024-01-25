@@ -4,25 +4,34 @@
  **********************************************************************/
 
 import { interpret } from 'xstate'
-import { HttpHandler } from '../HttpHandler'
-import { devices } from '../WebSocketListener'
-import { TLS, type TLSContext } from './tls'
-import * as common from './common'
-import * as forge from 'node-forge'
+import { HttpHandler } from '../HttpHandler.js'
+import { devices } from '../devices.js'
+import { type TLS as TLSType, type TLSContext } from './tls.js'
+import forge from 'node-forge'
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
-import { UNEXPECTED_PARSE_ERROR } from '../utils/constants'
-import { wsmanAlreadyExistsAllChunks } from '../test/helper/AMTMessages'
-import { config } from '../test/helper/Config'
-import { Environment } from '../utils/Environment'
+import { UNEXPECTED_PARSE_ERROR } from '../utils/constants.js'
+import { wsmanAlreadyExistsAllChunks } from '../test/helper/AMTMessages.js'
+import { config } from '../test/helper/Config.js'
+import { Environment } from '../utils/Environment.js'
+import { jest } from '@jest/globals'
+import { spyOn } from 'jest-mock'
+
+const invokeWsmanCallSpy = jest.fn<any>()
+const invokeEnterpriseAssistantCallSpy = jest.fn<any>()
+jest.unstable_mockModule('./common.js', () => ({
+  invokeWsmanCall: invokeWsmanCallSpy,
+  invokeEnterpriseAssistantCall: invokeEnterpriseAssistantCallSpy
+}))
+
+const { TLS } = await import('./tls.js')
 
 Environment.Config = config
 
 describe('TLS State Machine', () => {
-  let tls: TLS
+  let tls: TLSType
   let config
   let context: TLSContext
   let currentStateIndex = 0
-  let invokeWsmanCallSpy: jest.SpyInstance
   const clientId = '4c4c4544-004b-4210-8033-b6c04f504633'
   beforeEach(() => {
     currentStateIndex = 0
@@ -48,7 +57,6 @@ describe('TLS State Machine', () => {
       amt: new AMT.Messages()
     }
     tls = new TLS()
-    invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue(null)
 
     config = {
       services: {
@@ -161,7 +169,7 @@ describe('TLS State Machine', () => {
       }
     }
 
-    const publicKeyManagementSpy = jest.spyOn(context.amt.PublicKeyManagementService, 'GeneratePKCS10RequestEx').mockReturnValue({} as any)
+    const publicKeyManagementSpy = spyOn(context.amt.PublicKeyManagementService, 'GeneratePKCS10RequestEx').mockReturnValue({} as any)
 
     await tls.signCSR(context, null)
 
@@ -244,8 +252,8 @@ describe('TLS State Machine', () => {
   it('should putRemoteTLSData on AMT 16.0 and older systems when tlsMode is not 1 or 3 and NonSecureConnectionsSupported does not exist', async () => {
     context.tlsSettingData = [{}]
     context.amtProfile.tlsMode = 4
-    jest.spyOn(forge.pki, 'certificateFromPem').mockReturnValue({ subject: { getField: () => ({}) } } as any)
-    const tlsSettingDataSpy = jest.spyOn(context.amt.TLSSettingData, 'Put').mockReturnValue('')
+    spyOn(forge.pki, 'certificateFromPem').mockReturnValue({ subject: { getField: () => ({}) } } as any)
+    const tlsSettingDataSpy = spyOn(context.amt.TLSSettingData, 'Put').mockReturnValue('')
     await tls.putRemoteTLSData(context, null)
     expect(context.tlsSettingData[0].AcceptNonSecureConnections).toBe(true)
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
@@ -256,8 +264,8 @@ describe('TLS State Machine', () => {
       NonSecureConnectionsSupported: true
     }]
     context.amtProfile.tlsMode = 4
-    jest.spyOn(forge.pki, 'certificateFromPem').mockReturnValue({ subject: { getField: () => ({}) } } as any)
-    const tlsSettingDataSpy = jest.spyOn(context.amt.TLSSettingData, 'Put').mockReturnValue('')
+    spyOn(forge.pki, 'certificateFromPem').mockReturnValue({ subject: { getField: () => ({}) } } as any)
+    const tlsSettingDataSpy = spyOn(context.amt.TLSSettingData, 'Put').mockReturnValue('')
     await tls.putRemoteTLSData(context, null)
     expect(context.tlsSettingData[0].AcceptNonSecureConnections).toBe(true)
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
@@ -267,8 +275,8 @@ describe('TLS State Machine', () => {
     context.tlsSettingData = [{
       NonSecureConnectionsSupported: true
     }]
-    jest.spyOn(forge.pki, 'certificateFromPem').mockReturnValue({ subject: { getField: () => ({}) } } as any)
-    const tlsSettingDataSpy = jest.spyOn(context.amt.TLSSettingData, 'Put').mockReturnValue('')
+    spyOn(forge.pki, 'certificateFromPem').mockReturnValue({ subject: { getField: () => ({}) } } as any)
+    const tlsSettingDataSpy = spyOn(context.amt.TLSSettingData, 'Put').mockReturnValue('')
     await tls.putRemoteTLSData(context, null)
     expect(context.tlsSettingData[0].AcceptNonSecureConnections).toBe(false)
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
@@ -278,8 +286,8 @@ describe('TLS State Machine', () => {
     context.tlsSettingData = [{
       NonSecureConnectionsSupported: false
     }]
-    jest.spyOn(forge.pki, 'certificateFromPem').mockReturnValue({ subject: { getField: () => ({}) } } as any)
-    const tlsSettingDataSpy = jest.spyOn(context.amt.TLSSettingData, 'Put').mockReturnValue('')
+    spyOn(forge.pki, 'certificateFromPem').mockReturnValue({ subject: { getField: () => ({}) } } as any)
+    const tlsSettingDataSpy = spyOn(context.amt.TLSSettingData, 'Put').mockReturnValue('')
     await tls.putRemoteTLSData(context, null)
     expect(context.tlsSettingData[0].AcceptNonSecureConnections).toBe(undefined)
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
@@ -287,8 +295,8 @@ describe('TLS State Machine', () => {
   })
   it('should putLocalTLSData', async () => {
     context.tlsSettingData = [{}, {}]
-    jest.spyOn(forge.pki, 'certificateFromPem').mockReturnValue({ subject: { getField: () => ({}) } } as any)
-    const tlsSettingDataSpy = jest.spyOn(context.amt.TLSSettingData, 'Put').mockReturnValue('')
+    spyOn(forge.pki, 'certificateFromPem').mockReturnValue({ subject: { getField: () => ({}) } } as any)
+    const tlsSettingDataSpy = spyOn(context.amt.TLSSettingData, 'Put').mockReturnValue('')
     await tls.putLocalTLSData(context, null)
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
     expect(tlsSettingDataSpy).toHaveBeenCalled()

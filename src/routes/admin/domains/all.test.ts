@@ -3,35 +3,38 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { createSpyObj } from '../../../test/helper/jest'
-import { getAllDomains } from './all'
+import { createSpyObj } from '../../../test/helper/jest.js'
+import { getAllDomains } from './all.js'
+import { jest } from '@jest/globals'
 
 describe('Domains - All', () => {
   let resSpy
   let req
-  let getSpy: jest.SpyInstance
   beforeEach(() => {
     resSpy = createSpyObj('Response', ['status', 'json', 'end', 'send'])
     req = {
-      db: { domains: { get: jest.fn() } },
+      db: {
+        domains: {
+          get: jest.fn<() => Promise<any>>().mockImplementation(async () => await Promise.resolve([])),
+          getCount: jest.fn<() => Promise<number>>().mockImplementation(async () => await Promise.resolve(123))
+        }
+      },
       query: { }
     }
-    getSpy = jest.spyOn(req.db.domains, 'get').mockResolvedValue([])
     resSpy.status.mockReturnThis()
     resSpy.json.mockReturnThis()
     resSpy.send.mockReturnThis()
   })
   it('should get all', async () => {
     await getAllDomains(req, resSpy)
-    expect(getSpy).toHaveBeenCalled()
+    expect(req.db.domains.get).toHaveBeenCalled()
     expect(resSpy.status).toHaveBeenCalledWith(200)
   })
 
   it('should get all with req.query.$count as true', async () => {
-    req.db.domains.getCount = jest.fn().mockImplementation().mockResolvedValue(123)
     req.query.$count = true
     await getAllDomains(req, resSpy)
-    expect(getSpy).toHaveBeenCalled()
+    expect(req.db.domains.get).toHaveBeenCalled()
     expect(req.db.domains.getCount).toHaveBeenCalled()
     expect(resSpy.status).toHaveBeenCalledWith(200)
   })
@@ -42,7 +45,7 @@ describe('Domains - All', () => {
     })
     req.query.$count = true
     await getAllDomains(req, resSpy)
-    expect(getSpy).toHaveBeenCalled()
+    expect(req.db.domains.get).toHaveBeenCalled()
     expect(req.db.domains.getCount).toHaveBeenCalled()
     expect(resSpy.status).toHaveBeenCalledWith(500)
   })

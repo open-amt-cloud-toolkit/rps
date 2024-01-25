@@ -4,21 +4,29 @@
  **********************************************************************/
 
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
-import { CIRAConfiguration, type CIRAConfigEvent, MPSType } from './ciraConfiguration'
-import { v4 as uuid } from 'uuid'
-import { devices } from '../WebSocketListener'
-import { Environment } from '../utils/Environment'
-import { config } from '../test/helper/Config'
-import { type CIRAConfig } from '../models/RCS.Config'
-import { HttpHandler } from '../HttpHandler'
+import { type CIRAConfigEvent, type CIRAConfigContext, type CIRAConfiguration as CIRAConfigurationType } from './ciraConfiguration.js'
+import { randomUUID } from 'node:crypto'
+import { devices } from '../devices.js'
+import { Environment } from '../utils/Environment.js'
+import { config } from '../test/helper/Config.js'
+import { type CIRAConfig } from '../models/RCS.Config.js'
+import { HttpHandler } from '../HttpHandler.js'
 import { interpret } from 'xstate'
-import * as common from './common'
-import { UNEXPECTED_PARSE_ERROR } from '../utils/constants'
+import { UNEXPECTED_PARSE_ERROR } from '../utils/constants.js'
+import { jest } from '@jest/globals'
+
+const invokeWsmanCallSpy = jest.fn<any>()
+jest.unstable_mockModule('./common.js', () => ({
+  invokeWsmanCall: invokeWsmanCallSpy,
+  invokeEnterpriseAssistantCall: jest.fn()
+}))
+
+const { CIRAConfiguration, MPSType } = await import ('./ciraConfiguration.js')
 
 Environment.Config = config
 
 describe('CIRA Configuration State Machine', () => {
-  const clientId = uuid()
+  const clientId = randomUUID()
   const httpHandler = new HttpHandler()
   const initialEvent: CIRAConfigEvent = {
     type: 'CONFIGURE_CIRA',
@@ -29,10 +37,9 @@ describe('CIRA Configuration State Machine', () => {
   const wsmanEnumerationResponse = {
     Envelope: { Body: { EnumerateResponse: { EnumerationContext: 'abcd' } } }
   }
-  let ciraStateMachineImpl: CIRAConfiguration
-  let invokeWsmanCallSpy: jest.SpyInstance
+  let ciraStateMachineImpl: CIRAConfigurationType
   let machineConfig
-  let machineContext
+  let machineContext: CIRAConfigContext
   let ciraConfig: CIRAConfig
   beforeEach(() => {
     jest.clearAllMocks()
@@ -57,7 +64,6 @@ describe('CIRA Configuration State Machine', () => {
       authMethod: 2,
       mpsRootCertificate: 'NotReallyACert'
     }
-    invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue(null)
     machineConfig = {
       services: {
         'get-cira-config': Promise.resolve(ciraConfig),
@@ -82,7 +88,14 @@ describe('CIRA Configuration State Machine', () => {
       profile: null,
       httpHandler,
       amt: new AMT.Messages(),
-      tenantId: ''
+      tenantId: '',
+      status: 'success',
+      errorMessage: '',
+      xmlMessage: '',
+      message: null,
+      ciraConfig: null,
+      statusMessage: '',
+      privateCerts: null
     }
   })
 
@@ -145,7 +158,7 @@ describe('CIRA Configuration State Machine', () => {
     service: string
   }
 
-  test.each<FailureTestInput | jest.DoneCallback>([
+  test.each<FailureTestInput | any>([
     { stateValue: 'GET_CIRA_CONFIG', service: 'get-cira-config' },
     { stateValue: 'SET_MPS_PASSWORD', service: 'set-mps-password' },
     { stateValue: 'ADD_TRUSTED_ROOT_CERTIFICATE', service: 'add-trusted-root-certificate' },
@@ -161,7 +174,7 @@ describe('CIRA Configuration State Machine', () => {
     { stateValue: 'USER_INITIATED_CONNECTION_SERVICE', service: 'user-initiated-connection-service' },
     { stateValue: 'GET_ENVIRONMENT_DETECTION_SETTINGS', service: 'get-environment-detection-settings' },
     { stateValue: 'PUT_ENVIRONMENT_DETECTION_SETTINGS', service: 'put-environment-detection-settings' }
-  ])('should fail at state $stateValue', (ti: FailureTestInput, done: jest.DoneCallback) => {
+  ])('should fail at state $stateValue', (ti: FailureTestInput, done: any) => {
     let previousState: any
     // exercise the UNEXPECTED_PARSE_ERROR retry in one of the pull calls
     let rejectionValue: any = new Error('expected test failure')

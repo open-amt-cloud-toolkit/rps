@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import { query } from 'express-validator'
-import { DEFAULT_SKIP, DEFAULT_TOP } from '../../utils/constants'
+import { DEFAULT_SKIP, DEFAULT_TOP } from '../../utils/constants.js'
 
 export const odataValidator = (): any => [
   query('$top')

@@ -9,12 +9,12 @@ import {
   commonContext,
   type CommonMaintenanceContext,
   HttpResponseError
-} from './common'
-import Logger from '../../Logger'
-import * as Task from './doneResponse'
-import { devices } from '../../WebSocketListener'
+} from './common.js'
+import Logger from '../../Logger.js'
+import { doneFail, doneSuccess } from './doneResponse.js'
+import { devices } from '../../devices.js'
 import got from 'got'
-import { Environment } from '../../utils/Environment'
+import { Environment } from '../../utils/Environment.js'
 
 export interface DeviceInfo {
   ver: string
@@ -75,11 +75,11 @@ export class SyncDeviceInfo {
       },
       FAILED: {
         type: 'final',
-        data: (context) => (Task.doneFail(context.taskName, context.statusMessage))
+        data: (context) => (doneFail(context.taskName, context.statusMessage))
       },
       SUCCESS: {
         type: 'final',
-        data: (context) => (Task.doneSuccess(context.taskName, context.statusMessage))
+        data: (context) => (doneSuccess(context.taskName, context.statusMessage))
       }
     }
   })

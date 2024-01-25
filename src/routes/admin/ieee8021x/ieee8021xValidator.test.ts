@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import { type Meta } from 'express-validator'
-import { validatePxeTimeout, validateAuthProtocol } from './ieee8021xValidator'
+import { validatePxeTimeout, validateAuthProtocol } from './ieee8021xValidator.js'
 
 describe('ieee802.1x validator', () => {
   describe('PXE Checks', () => {

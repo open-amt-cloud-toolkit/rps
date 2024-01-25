@@ -3,18 +3,20 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { createSpyObj } from '../../../test/helper/jest'
-import { Environment } from '../../../utils/Environment'
-import { createProfile } from './create'
-import { ClientAction, TlsMode, TlsSigningAuthority } from '../../../models/RCS.Config'
-import { AMTUserConsent } from '../../../models'
-import { adjustRedirectionConfiguration } from './common'
+import { createSpyObj } from '../../../test/helper/jest.js'
+import { Environment } from '../../../utils/Environment.js'
+import { createProfile } from './create.js'
+import { ClientAction, TlsMode, TlsSigningAuthority } from '../../../models/RCS.Config.js'
+import { AMTUserConsent } from '../../../models/index.js'
+import { adjustRedirectionConfiguration } from './common.js'
+import { jest } from '@jest/globals'
+import { type SpyInstance, spyOn } from 'jest-mock'
 
 describe('Profiles - Create', () => {
   let resSpy
   let req
-  let insertSpy: jest.SpyInstance
-  let writeSecretSpy: jest.SpyInstance
+  let insertSpy: SpyInstance<any>
+  let writeSecretSpy: SpyInstance<any>
   let defaultRedirectionCfgACM
   let sparseAcmCfg
 
@@ -43,8 +45,8 @@ describe('Profiles - Create', () => {
       generateRandomMEBxPassword: false,
       mebxPassword: 'P@ssw0rd'
     }
-    insertSpy = jest.spyOn(req.db.profiles, 'insert').mockResolvedValue({})
-    writeSecretSpy = jest.spyOn(req.secretsManager, 'writeSecretWithObject').mockResolvedValue({})
+    insertSpy = spyOn(req.db.profiles, 'insert').mockResolvedValue({})
+    writeSecretSpy = spyOn(req.secretsManager, 'writeSecretWithObject').mockResolvedValue({})
     resSpy.status.mockReturnThis()
     resSpy.json.mockReturnThis()
     resSpy.send.mockReturnThis()
@@ -63,8 +65,8 @@ describe('Profiles - Create', () => {
     expect(resSpy.status).toHaveBeenCalledWith(201)
   })
   it('should handle error with create with write in vault fails', async () => {
-    jest.spyOn(req.db.profiles, 'delete').mockResolvedValue(true)
-    writeSecretSpy = jest.spyOn(req.secretsManager, 'writeSecretWithObject').mockResolvedValue(null)
+    spyOn(req.db.profiles, 'delete').mockResolvedValue(true)
+    writeSecretSpy = spyOn(req.secretsManager, 'writeSecretWithObject').mockResolvedValue(null)
     await createProfile(req, resSpy)
     expect(insertSpy).toHaveBeenCalledWith({
       amtPassword: 'AMT_PASSWORD',
@@ -77,8 +79,8 @@ describe('Profiles - Create', () => {
     expect(resSpy.status).toHaveBeenCalledWith(500)
   })
   it('should handle error with create with write in vault fails and undo db.delete fail', async () => {
-    jest.spyOn(req.db.profiles, 'delete').mockResolvedValue(null)
-    writeSecretSpy = jest.spyOn(req.secretsManager, 'writeSecretWithObject').mockResolvedValue(null)
+    spyOn(req.db.profiles, 'delete').mockResolvedValue(null)
+    writeSecretSpy = spyOn(req.secretsManager, 'writeSecretWithObject').mockResolvedValue(null)
     await createProfile(req, resSpy)
     expect(insertSpy).toHaveBeenCalledWith({
       amtPassword: 'AMT_PASSWORD',
@@ -198,7 +200,7 @@ describe('Profiles - Create', () => {
     })
   })
   it('should handle error', async () => {
-    jest.spyOn(req.db.profiles, 'insert').mockResolvedValue(null)
+    spyOn(req.db.profiles, 'insert').mockResolvedValue(null)
     await createProfile(req, resSpy)
     expect(insertSpy).toHaveBeenCalledWith({
       amtPassword: 'AMT_PASSWORD',

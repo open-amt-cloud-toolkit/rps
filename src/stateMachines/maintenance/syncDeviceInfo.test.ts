@@ -3,15 +3,35 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import * as common from './common'
-import { HttpResponseError } from './common'
+import { type DoneResponse, StatusFailed } from './doneResponse.js'
+import { config, setupTestClient } from '../../test/helper/Config.js'
+import { runTilDone } from '../../test/helper/xstate.js'
+import { Environment } from '../../utils/Environment.js'
+import { jest } from '@jest/globals'
+import { type SpyInstance, spyOn } from 'jest-mock'
 import got from 'got'
-import { type DoneResponse, StatusFailed } from './doneResponse'
-import { config, setupTestClient } from '../../test/helper/Config'
-import { runTilDone } from '../../test/helper/xstate'
-import { type DeviceInfo, SyncDeviceInfo, type SyncDeviceInfoEvent, SyncDeviceInfoEventType } from './syncDeviceInfo'
-import { Environment } from '../../utils/Environment'
-import resetAllMocks = jest.resetAllMocks
+
+import {
+  coalesceMessage,
+  commonContext,
+  HttpResponseError
+} from './common.js'
+
+import {
+  type DeviceInfo,
+  type SyncDeviceInfoEvent,
+  type SyncDeviceInfo as SyncDeviceInfoType
+} from './syncDeviceInfo.js'
+
+const invokeWsmanCallSpy = jest.fn<any>()
+jest.unstable_mockModule('./common.js', () => ({
+  invokeWsmanCall: invokeWsmanCallSpy,
+  coalesceMessage,
+  commonContext,
+  HttpResponseError
+}))
+
+const { SyncDeviceInfo, SyncDeviceInfoEventType } = await import ('./syncDeviceInfo.js')
 
 jest.mock('got')
 
@@ -22,12 +42,13 @@ const HttpBadRequestError = new HttpResponseError('Bad Request', 400)
 let clientId: string
 let doneResponse: DoneResponse
 let event: SyncDeviceInfoEvent
-let implementation: SyncDeviceInfo
+let implementation: SyncDeviceInfoType
 let deviceInfo: DeviceInfo
 let mpsRsp: any
+let gotSpy: SpyInstance<any>
 
 beforeEach(() => {
-  resetAllMocks()
+  jest.resetAllMocks()
   clientId = setupTestClient()
   implementation = new SyncDeviceInfo()
   doneResponse = {
@@ -48,10 +69,11 @@ beforeEach(() => {
     statusMessage: 'OK'
   }
   event = { type: SyncDeviceInfoEventType, clientId, deviceInfo }
+  gotSpy = spyOn(got, 'patch')
 })
 
 const runTheTest = async function (): Promise<void> {
-  jest.spyOn(got, 'patch').mockResolvedValue(mpsRsp)
+  gotSpy.mockResolvedValue(mpsRsp)
   await runTilDone(implementation.machine, event, doneResponse)
 }
 
@@ -67,7 +89,6 @@ it('should fail on bad response from MPS', async () => {
 })
 it('should fail put response on http response error', async () => {
   doneResponse.status = StatusFailed
-  jest.spyOn(common, 'invokeWsmanCall')
-    .mockRejectedValueOnce(HttpBadRequestError)
+  invokeWsmanCallSpy.mockRejectedValueOnce(HttpBadRequestError)
   await runTilDone(implementation.machine, event, doneResponse)
 })

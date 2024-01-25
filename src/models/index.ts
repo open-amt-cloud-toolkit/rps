@@ -10,7 +10,7 @@ import {
   type ProfileWifiConfigs,
   type TlsMode,
   type TlsSigningAuthority
-} from './RCS.Config'
+} from './RCS.Config.js'
 
 // guid: string, name: string, mpsuser: string, mpspass: string, amtuser: string, amtpassword: string, mebxpass: string) {
 export interface AMTDeviceDTO {

@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import { CIM, type Common } from '@open-amt-cloud-toolkit/wsman-messages'
-import { HttpHandler } from './HttpHandler'
+import { HttpHandler } from './HttpHandler.js'
 
 const httpHandler = new HttpHandler()
 

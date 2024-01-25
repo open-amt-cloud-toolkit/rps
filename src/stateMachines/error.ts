@@ -4,9 +4,9 @@
  **********************************************************************/
 
 import { createMachine, sendParent } from 'xstate'
-import { pure } from 'xstate/lib/actions'
-import { HttpHandler } from '../HttpHandler'
-import { devices } from '../WebSocketListener'
+import { pure } from 'xstate/lib/actions.js'
+import { HttpHandler } from '../HttpHandler.js'
+import { devices } from '../devices.js'
 import { type HttpZResponseModel } from 'http-z'
 
 const httpHandler = new HttpHandler()

@@ -3,12 +3,27 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import * as indexFile from './Index'
-import * as svcMngr from './serviceManager'
-import * as exponentialBackoff from 'exponential-backoff'
-import { type ISecretManagerService } from './interfaces/ISecretManagerService'
-import { type IDB } from './interfaces/database/IDb'
-import { config } from './test/helper/Config'
+import { type ISecretManagerService } from './interfaces/ISecretManagerService.js'
+import { type IDB } from './interfaces/database/IDb.js'
+import { config } from './test/helper/Config.js'
+import { jest } from '@jest/globals'
+
+const backOffSpy = jest.fn()
+const processServiceConfigsSpy = jest.fn().mockReturnValue(Promise.resolve())
+const waitForServiceManagerSpy = jest.fn().mockReturnValue(Promise.resolve(true))
+jest.unstable_mockModule('exponential-backoff', () => ({
+  backOff: backOffSpy
+}))
+jest.unstable_mockModule('./serviceManager.js', () => ({
+  processServiceConfigs: processServiceConfigsSpy,
+  waitForServiceManager: waitForServiceManagerSpy
+}))
+jest.unstable_mockModule('./Configurator.js', () => ({
+  Configurator: jest.fn().mockImplementation(() => ({
+    ready: Promise.resolve()
+  }))
+}))
+const indexFile = await import('./Index.js')
 
 describe('Index', () => {
   // const env = process.env
@@ -24,7 +39,6 @@ describe('Index', () => {
     jest.resetAllMocks()
     jest.resetModules()
     config.consul_enabled = false
-    jest.spyOn(indexFile, 'startItUp').mockImplementation(() => {})
     // process.env = { ...env }
     process.env.NODE_ENV = 'test'
     /*
@@ -45,16 +59,12 @@ describe('Index', () => {
   */
 
   it('Should pass setupServiceManager', async () => {
-    const waitSpy = jest.spyOn(svcMngr, 'waitForServiceManager').mockReturnValue(Promise.resolve())
-    const prcSpy = jest.spyOn(svcMngr, 'processServiceConfigs').mockReturnValue(Promise.resolve(true))
-
     await indexFile.setupServiceManager(config)
-    expect(waitSpy).toHaveBeenCalled()
-    expect(prcSpy).toHaveBeenCalled()
+    expect(processServiceConfigsSpy).toHaveBeenCalled()
+    expect(waitForServiceManagerSpy).toHaveBeenCalled()
   })
 
   it('should wait for db', async () => {
-    const backOffSpy = jest.spyOn(exponentialBackoff, 'backOff')
     let shouldBeOk = false
     const dbMock: IDB = {
       query: jest.fn(() => {
@@ -68,7 +78,6 @@ describe('Index', () => {
   })
 
   it('should wait for secret provider', async () => {
-    const backOffSpy = jest.spyOn(exponentialBackoff, 'backOff')
     let shouldBeOk = false
     const secretMock: ISecretManagerService = {
       health: jest.fn(() => {

@@ -4,10 +4,10 @@
  **********************************************************************/
 
 import { validationResult } from 'express-validator'
-import { ClientAction, TlsMode, TlsSigningAuthority } from '../../../models/RCS.Config'
-import { AMTUserConsent } from '../../../models'
-import { amtProfileValidator, profileUpdateValidator } from './amtProfileValidator'
-import { createSpyObj } from '../../../test/helper/jest'
+import { ClientAction, TlsMode, TlsSigningAuthority } from '../../../models/RCS.Config.js'
+import { AMTUserConsent } from '../../../models/index.js'
+import { amtProfileValidator, profileUpdateValidator } from './amtProfileValidator.js'
+import { createSpyObj } from '../../../test/helper/jest.js'
 
 describe('AMT Profile Validation', () => {
   const testExpressValidatorMiddleware = async (req: Request, res: Response, middlewares): Promise<void> => {

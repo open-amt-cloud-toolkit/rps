@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { RPSError } from './utils/RPSError'
-import { ProtocolVersion } from './utils/constants'
-import { Version } from './models'
+import { RPSError } from './utils/RPSError.js'
+import { ProtocolVersion } from './utils/constants.js'
+import { Version } from './models/index.js'
 const VersionChecker = {
   currentVersion: null as Version,
   setCurrentVersion (currentVersion: string): void {

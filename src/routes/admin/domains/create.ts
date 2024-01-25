@@ -3,14 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type AMTDomain } from '../../../models'
-import Logger from '../../../Logger'
-import { MqttProvider } from '../../../utils/MqttProvider'
+import { type AMTDomain } from '../../../models/index.js'
+import Logger from '../../../Logger.js'
+import { MqttProvider } from '../../../utils/MqttProvider.js'
 import { type Request, type Response } from 'express'
-import handleError from '../../../utils/handleError'
-import { type CertCredentials } from '../../../interfaces/ISecretManagerService'
-import { CertManager } from '../../../certManager'
-import { NodeForge } from '../../../NodeForge'
+import handleError from '../../../utils/handleError.js'
+import { type CertCredentials } from '../../../interfaces/ISecretManagerService.js'
+import { CertManager } from '../../../certManager.js'
+import { NodeForge } from '../../../NodeForge.js'
 
 export class DomainCreate {
   public createDomain = async (req: Request, res: Response): Promise<void> => {

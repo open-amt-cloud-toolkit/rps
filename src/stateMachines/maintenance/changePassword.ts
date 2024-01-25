@@ -11,19 +11,19 @@ import {
   invokeWsmanCall,
   isDigestRealmValid,
   HttpResponseError
-} from './common'
+} from './common.js'
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
-import { PasswordHelper } from '../../utils/PasswordHelper'
-import { SignatureHelper } from '../../utils/SignatureHelper'
-import { AMTUserName } from '../../utils/constants'
-import { devices } from '../../WebSocketListener'
-import { type DeviceCredentials } from '../../interfaces/ISecretManagerService'
-import Logger from '../../Logger'
-import * as Task from './doneResponse'
-import { SecretManagerCreatorFactory } from '../../factories/SecretManagerCreatorFactory'
-import { getPTStatusName, PTStatus } from '../../utils/PTStatus'
+import { PasswordHelper } from '../../utils/PasswordHelper.js'
+import { SignatureHelper } from '../../utils/SignatureHelper.js'
+import { AMTUserName } from '../../utils/constants.js'
+import { devices } from '../../devices.js'
+import { type DeviceCredentials } from '../../interfaces/ISecretManagerService.js'
+import Logger from '../../Logger.js'
+import { doneSuccess, doneFail } from './doneResponse.js'
+import { SecretManagerCreatorFactory } from '../../factories/SecretManagerCreatorFactory.js'
+import { getPTStatusName, PTStatus } from '../../utils/PTStatus.js'
 import got from 'got'
-import { Environment } from '../../utils/Environment'
+import { Environment } from '../../utils/Environment.js'
 
 export interface SetAdminACLEntryExResponse {
   SetAdminAclEntryEx_OUTPUT: {
@@ -132,11 +132,11 @@ export class ChangePassword {
       },
       FAILED: {
         type: 'final',
-        data: (context) => (Task.doneFail(context.taskName, context.statusMessage))
+        data: (context) => (doneFail(context.taskName, context.statusMessage))
       },
       SUCCESS: {
         type: 'final',
-        data: (context) => (Task.doneSuccess(context.taskName, context.statusMessage))
+        data: (context) => (doneSuccess(context.taskName, context.statusMessage))
       }
     }
   })

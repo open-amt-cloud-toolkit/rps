@@ -10,10 +10,10 @@ import {
   commonContext,
   type CommonMaintenanceContext,
   invokeWsmanCall
-} from './common'
-import Logger from '../../Logger'
-import * as Task from './doneResponse'
-import { getPTStatusName, PTStatus } from '../../utils/PTStatus'
+} from './common.js'
+import Logger from '../../Logger.js'
+import { doneFail, doneSuccess } from './doneResponse.js'
+import { getPTStatusName, PTStatus } from '../../utils/PTStatus.js'
 
 export interface GetLowAccuracyTimeSynchResponse {
   GetLowAccuracyTimeSynch_OUTPUT: {
@@ -96,11 +96,11 @@ export class SyncTime {
       },
       FAILED: {
         type: 'final',
-        data: (context) => (Task.doneFail(context.taskName, context.statusMessage))
+        data: (context) => (doneFail(context.taskName, context.statusMessage))
       },
       SUCCESS: {
         type: 'final',
-        data: (context) => (Task.doneSuccess(context.taskName, context.statusMessage))
+        data: (context) => (doneSuccess(context.taskName, context.statusMessage))
       }
     }
   })

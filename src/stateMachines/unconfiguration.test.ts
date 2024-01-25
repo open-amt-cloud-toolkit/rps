@@ -3,29 +3,38 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { Unconfiguration, type UnconfigContext } from './unconfiguration'
-import { v4 as uuid } from 'uuid'
-import { devices } from '../WebSocketListener'
-import { Environment } from '../utils/Environment'
-import { config } from '../test/helper/Config'
-import { HttpHandler } from '../HttpHandler'
+// import { type Unconfiguration as UnconfigurationType, type UnconfigContext as UnconfigContextType } from './unconfiguration.js'
+import { randomUUID } from 'node:crypto'
+import { devices } from '../devices.js'
+import { Environment } from '../utils/Environment.js'
+import { type Unconfiguration as UnconfigurationType, type UnconfigContext as UnconfigContextType } from './unconfiguration.js'
+import { config } from '../test/helper/Config.js'
+import { HttpHandler } from '../HttpHandler.js'
 import { interpret } from 'xstate'
-import { MPSType } from './ciraConfiguration'
-import * as common from './common'
 import { AMT, CIM, IPS } from '@open-amt-cloud-toolkit/wsman-messages'
-const clientId = uuid()
+import { jest } from '@jest/globals'
+import { type SpyInstance, spyOn } from 'jest-mock'
+
+const invokeWsmanCallSpy = jest.fn()
+const invokeEnterpriseAssistantCallSpy = jest.fn()
+jest.unstable_mockModule('./common.js', () => ({
+  invokeWsmanCall: invokeWsmanCallSpy,
+  invokeEnterpriseAssistantCall: invokeEnterpriseAssistantCallSpy
+}))
+const { Unconfiguration } = await import('./unconfiguration.js')
+const { MPSType } = await import('./ciraConfiguration.js')
+
+const clientId = randomUUID()
 Environment.Config = config
 
 describe('Unconfiguration State Machine', () => {
-  let unconfiguration: Unconfiguration
+  let unconfiguration: UnconfigurationType
   let currentStateIndex: number
-  let invokeWsmanCallSpy: jest.SpyInstance
-  let remoteAccessPolicyRuleSpy: jest.SpyInstance
-  let unconfigContext: UnconfigContext
+  let remoteAccessPolicyRuleSpy: SpyInstance<any>
+  let unconfigContext: UnconfigContextType
   let configuration
   beforeEach(() => {
     unconfiguration = new Unconfiguration()
-    invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue(null)
     unconfigContext = {
       clientId,
       httpHandler: new HttpHandler(),
@@ -45,7 +54,7 @@ describe('Unconfiguration State Machine', () => {
       wiredSettings: null,
       wifiSettings: null
     }
-    remoteAccessPolicyRuleSpy = jest.spyOn(unconfigContext.amt.RemoteAccessPolicyRule, 'Delete').mockReturnValue('abcdef')
+    remoteAccessPolicyRuleSpy = spyOn(unconfigContext.amt.RemoteAccessPolicyRule, 'Delete').mockReturnValue('abcdef')
     devices[clientId] = {
       unauthCount: 0,
       ClientId: clientId,
@@ -111,6 +120,8 @@ describe('Unconfiguration State Machine', () => {
         'delete-public-private-key-pair': Promise.resolve({ clientId }),
         'get-environment-detection-settings': Promise.resolve({ clientId }),
         'clear-environment-detection-settings': Promise.resolve({ clientId }),
+        'enumerate-public-key-certificate': Promise.resolve({ clientId }),
+        'put-environment-detection-settings': Promise.resolve({ clientId }),
         'pull-public-key-certificate': Promise.resolve({ Envelope: { Body: { PullResponse: { Items: { AMT_PublicKeyCertificate: [{}] } } } } })
       },
       actions: {
@@ -465,13 +476,13 @@ describe('Unconfiguration State Machine', () => {
   })
 
   describe('Ethernet Port Settings', () => {
-    test('should enumerate ethernet port settings', async () => {
-      const ethernetPortSettingsSpy = jest.spyOn(unconfigContext.amt.EthernetPortSettings, 'Enumerate').mockImplementation().mockReturnValue('abcdef')
+    it('should enumerate ethernet port settings', async () => {
+      const ethernetPortSettingsSpy = spyOn(unconfigContext.amt.EthernetPortSettings, 'Enumerate').mockImplementation(() => 'abcdef')
       await unconfiguration.enumerateEthernetPortSettings(unconfigContext)
       expect(ethernetPortSettingsSpy).toHaveBeenCalled()
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
-    test('should pull ethernet port settings', async () => {
+    it('should pull ethernet port settings', async () => {
       unconfigContext.message = {
         Envelope: {
           Header: {},
@@ -482,12 +493,12 @@ describe('Unconfiguration State Machine', () => {
           }
         }
       }
-      const ethernetPortSettingsSpy = jest.spyOn(unconfigContext.amt.EthernetPortSettings, 'Pull').mockImplementation().mockReturnValue('abcdef')
+      const ethernetPortSettingsSpy = spyOn(unconfigContext.amt.EthernetPortSettings, 'Pull').mockImplementation(() => 'abcdef')
       await unconfiguration.pullEthernetPortSettings(unconfigContext)
       expect(ethernetPortSettingsSpy).toHaveBeenCalled()
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
-    test('should read ethernet port settings pull response', () => {
+    it('should read ethernet port settings pull response', () => {
       unconfigContext.message = {
         Envelope: {
           Header: {},
@@ -517,7 +528,7 @@ describe('Unconfiguration State Machine', () => {
       expect(unconfigContext.wiredSettings).toBeDefined()
       expect(unconfigContext.wifiSettings).toBeDefined()
     })
-    test('should read ethernet port settings pull response', () => {
+    it('should read ethernet port settings pull response', () => {
       unconfigContext.message = {
         Envelope: {
           Header: {},
@@ -545,7 +556,7 @@ describe('Unconfiguration State Machine', () => {
       expect(unconfigContext.wiredSettings).toBeDefined()
       expect(unconfigContext.wifiSettings).toBeDefined()
     })
-    test('should read ethernet port settings pull response for wireless only device', () => {
+    it('should read ethernet port settings pull response for wireless only device', () => {
       unconfigContext.wiredSettings = null
       unconfigContext.message = {
         Envelope: {
@@ -566,7 +577,7 @@ describe('Unconfiguration State Machine', () => {
       expect(unconfigContext.wiredSettings).toBeNull()
       expect(unconfigContext.wifiSettings).toBeDefined()
     })
-    test('should read ethernet port settings pull response for wired only device', () => {
+    it('should read ethernet port settings pull response for wired only device', () => {
       unconfigContext.message = {
         Envelope: {
           Header: {},
@@ -734,7 +745,7 @@ describe('Unconfiguration State Machine', () => {
 
     it('should send wsman message to put Remote TLS Credential Context', async () => {
       unconfigContext.message = {
-        Envelope: { Body: { PullResponse: { Items: { AMT_TLSCredentialContext: MPSType } } } }
+        Envelope: { Body: { PullResponse: { Items: { AMT_TLSCredentialContext: MPSType.Both } } } }
       }
       await unconfiguration.deleteTLSCredentialContext(unconfigContext, null)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
@@ -789,13 +800,13 @@ describe('Unconfiguration State Machine', () => {
   })
 
   describe('WiFi Endpoint Settings', () => {
-    test('should get enumeration number for WiFi end point settings', async () => {
-      const WiFiEndpointSettingsSpy = jest.spyOn(unconfigContext.cim.WiFiEndpointSettings, 'Enumerate').mockReturnValue('done')
+    it('should get enumeration number for WiFi end point settings', async () => {
+      const WiFiEndpointSettingsSpy = spyOn(unconfigContext.cim.WiFiEndpointSettings, 'Enumerate').mockReturnValue('done')
       await unconfiguration.enumerateWiFiEndpointSettings(unconfigContext)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
       expect(WiFiEndpointSettingsSpy).toHaveBeenCalled()
     })
-    test('should pull WiFi end point settings', async () => {
+    it('should pull WiFi end point settings', async () => {
       unconfigContext.message = {
         Envelope: {
           Header: {
@@ -805,12 +816,12 @@ describe('Unconfiguration State Machine', () => {
           Body: { EnumerateResponse: { EnumerationContext: '92340000-0000-0000-0000-000000000000' } }
         }
       }
-      const WiFiEndpointSettingsSpy = jest.spyOn(unconfigContext.cim.WiFiEndpointSettings, 'Pull').mockReturnValue('done')
+      const WiFiEndpointSettingsSpy = spyOn(unconfigContext.cim.WiFiEndpointSettings, 'Pull').mockReturnValue('done')
       await unconfiguration.pullWiFiEndpointSettings(unconfigContext)
       expect(WiFiEndpointSettingsSpy).toHaveBeenCalled()
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
-    test('Should read WiFi end point settings, if CIM_WiFiEndpointSettings is an array', () => {
+    it('Should read WiFi end point settings, if CIM_WiFiEndpointSettings is an array', () => {
       unconfigContext.message = {
         Envelope: {
           Header: {},
@@ -820,7 +831,7 @@ describe('Unconfiguration State Machine', () => {
       unconfiguration.readWiFiEndpointSettingsPullResponse(unconfigContext, null)
       expect(unconfigContext.wifiEndPointSettings.length).toBe(2)
     })
-    test('Should read WiFi end point settings', () => {
+    it('Should read WiFi end point settings', () => {
       unconfigContext.message = {
         Envelope: {
           Header: {},
@@ -830,9 +841,9 @@ describe('Unconfiguration State Machine', () => {
       unconfiguration.readWiFiEndpointSettingsPullResponse(unconfigContext, null)
       expect(unconfigContext.wifiEndPointSettings.length).toBe(1)
     })
-    test('Should delete profile from WiFi end point settings', async () => {
+    it('Should delete profile from WiFi end point settings', async () => {
       unconfigContext.wifiEndPointSettings = [{ InstanceID: 'home', Priority: 1 }]
-      const WiFiEndpointSettingsSpy = jest.spyOn(unconfigContext.cim.WiFiEndpointSettings, 'Delete').mockReturnValue('done')
+      const WiFiEndpointSettingsSpy = spyOn(unconfigContext.cim.WiFiEndpointSettings, 'Delete').mockReturnValue('done')
       await unconfiguration.deleteWiFiProfileOnAMTDevice(unconfigContext, null)
       expect(unconfigContext.wifiEndPointSettings.length).toBe(0)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()

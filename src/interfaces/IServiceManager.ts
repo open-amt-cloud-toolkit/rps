@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type RPSConfig } from '../models'
+import { type RPSConfig } from '../models/index.js'
 
 export interface IServiceManager {
   health: (prefix: string) => Promise<boolean>

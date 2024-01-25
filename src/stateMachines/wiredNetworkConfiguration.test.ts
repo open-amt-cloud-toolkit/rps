@@ -3,27 +3,36 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { v4 as uuid } from 'uuid'
-import { devices } from '../WebSocketListener'
-import { Environment } from '../utils/Environment'
-import { config } from '../test/helper/Config'
-import { ClientAction } from '../models/RCS.Config'
-import { WiredConfiguration } from './wiredNetworkConfiguration'
+import { randomUUID } from 'node:crypto'
+import { devices } from '../devices.js'
+import { Environment } from '../utils/Environment.js'
+import { config } from '../test/helper/Config.js'
+import { ClientAction } from '../models/RCS.Config.js'
 import { interpret } from 'xstate'
-import { HttpHandler } from '../HttpHandler'
-import * as common from './common'
+import { type WiredConfiguration as WiredConfigurationType } from './wiredNetworkConfiguration.js'
+import { HttpHandler } from '../HttpHandler.js'
 import { AMT, CIM, IPS } from '@open-amt-cloud-toolkit/wsman-messages'
+import { jest } from '@jest/globals'
+import { spyOn } from 'jest-mock'
 
-const clientId = uuid()
+const invokeWsmanCallSpy = jest.fn<any>()
+const invokeEnterpriseAssistantCallSpy = jest.fn()
+
+jest.unstable_mockModule('./common.js', () => ({
+  invokeWsmanCall: invokeWsmanCallSpy,
+  invokeEnterpriseAssistantCall: invokeEnterpriseAssistantCallSpy
+}))
+const { WiredConfiguration } = await import ('./wiredNetworkConfiguration.js')
+
+const clientId = randomUUID()
 Environment.Config = config
 
 describe('Wired Network Configuration', () => {
   let config
   let currentStateIndex: number
-  let wiredConfig: WiredConfiguration
+  let wiredConfig: WiredConfigurationType
   let wiredNetworkConfigContext
   let context
-  let invokeWsmanCallSpy
   let event
 
   beforeEach(() => {
@@ -151,7 +160,6 @@ describe('Wired Network Configuration', () => {
       targetAfterError: '',
       wirelessSettings: null
     }
-    invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue(null)
     currentStateIndex = 0
     config = {
       services: {
@@ -198,7 +206,7 @@ describe('Wired Network Configuration', () => {
   })
 
   it('should send a message to pull public private key pairs', async () => {
-    wiredNetworkConfigContext.amt = { PublicPrivateKeyPair: { Pull: jest.fn().mockResolvedValue({}) } }
+    wiredNetworkConfigContext.amt = { PublicPrivateKeyPair: { Pull: jest.fn() } }
     wiredNetworkConfigContext.message = { Envelope: { Body: { EnumeratorResponse: { EnumeratorContext: 'abc' } } } }
     await wiredConfig.pullPublicPrivateKeyPair(wiredNetworkConfigContext, null)
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
@@ -206,7 +214,7 @@ describe('Wired Network Configuration', () => {
 
   it('should send a message to get enumerate public private key pairs', async () => {
     wiredNetworkConfigContext.message = { Envelope: { Body: { GenerateKeyPair_OUTPUT: { KeyPair: { ReferenceParameters: { SelectorSet: { Selector: { _: 'xyz' } } } } } } } }
-    wiredNetworkConfigContext.amt = { PublicPrivateKeyPair: { Enumerate: jest.fn().mockResolvedValue({}) } }
+    wiredNetworkConfigContext.amt = { PublicPrivateKeyPair: { Enumerate: jest.fn() } }
     await wiredConfig.enumeratePublicPrivateKeyPair(wiredNetworkConfigContext, null)
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
@@ -226,7 +234,7 @@ describe('Wired Network Configuration', () => {
   })
 
   it('should send a message to sign CSR', async () => {
-    wiredNetworkConfigContext.amt = { PublicKeyManagementService: { GeneratePKCS10RequestEx: jest.fn().mockResolvedValue({}) } }
+    wiredNetworkConfigContext.amt = { PublicKeyManagementService: { GeneratePKCS10RequestEx: jest.fn() } }
     wiredNetworkConfigContext.message = { response: { csr: 'abc' } }
     await wiredConfig.signCSR(wiredNetworkConfigContext, null)
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
@@ -271,7 +279,7 @@ describe('Wired Network Configuration', () => {
 
   it('should generate a key pair', async () => {
     wiredNetworkConfigContext = {
-      amt: { PublicKeyManagementService: { GenerateKeyPair: jest.fn().mockResolvedValue({}) } },
+      amt: { PublicKeyManagementService: { GenerateKeyPair: jest.fn() } },
       xmlMessage: ''
     }
     await wiredConfig.generateKeyPair(wiredNetworkConfigContext, null)
@@ -299,7 +307,7 @@ describe('Wired Network Configuration', () => {
       SharedStaticIp: false,
       SubnetMask: '255.255.255.0'
     }
-    const ethernetPortSettingsSpy = jest.spyOn(context.amt.EthernetPortSettings, 'Put').mockImplementation().mockReturnValue('abcdef')
+    const ethernetPortSettingsSpy = spyOn(context.amt.EthernetPortSettings, 'Put').mockImplementation(() => 'abcdef')
     await wiredConfig.putEthernetPortSettings(context)
     expect(ethernetPortSettingsSpy).toHaveBeenCalled()
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
@@ -326,7 +334,7 @@ describe('Wired Network Configuration', () => {
       SharedStaticIp: false,
       SubnetMask: '255.255.255.0'
     }
-    const ethernetPortSettingsSpy = jest.spyOn(context.amt.EthernetPortSettings, 'Put').mockImplementation().mockReturnValue('abcdef')
+    const ethernetPortSettingsSpy = spyOn(context.amt.EthernetPortSettings, 'Put').mockImplementation(() => 'abcdef')
     await wiredConfig.putEthernetPortSettings(context)
     expect(ethernetPortSettingsSpy).toHaveBeenCalled()
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
