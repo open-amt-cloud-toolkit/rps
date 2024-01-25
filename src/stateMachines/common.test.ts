@@ -3,23 +3,26 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { Environment } from '../utils/Environment'
-import { HttpHandler } from '../HttpHandler'
-import Logger from '../Logger'
-import ClientResponseMsg from '../utils/ClientResponseMsg'
-import { devices } from '../WebSocketListener'
-import { GATEWAY_TIMEOUT_ERROR, UNEXPECTED_PARSE_ERROR, EA_TIMEOUT_ERROR } from '../utils/constants'
-import { v4 as uuid } from 'uuid'
-import * as enterpriseAssistantListener from '../WSEnterpriseAssistantListener'
-import * as common from './common'
-import { config } from '../test/helper/Config'
+import { Environment } from '../utils/Environment.js'
+import { HttpHandler } from '../HttpHandler.js'
+import Logger from '../Logger.js'
+import ClientResponseMsg from '../utils/ClientResponseMsg.js'
+import { devices } from '../devices.js'
+import { GATEWAY_TIMEOUT_ERROR, UNEXPECTED_PARSE_ERROR, EA_TIMEOUT_ERROR } from '../utils/constants.js'
+import { randomUUID } from 'node:crypto'
+import { WSEnterpriseAssistantListener, enterpriseAssistantSocket, promises } from '../WSEnterpriseAssistantListener.js'
+import { config } from '../test/helper/Config.js'
+import { jest } from '@jest/globals'
+import { type SpyInstance, spyOn } from 'jest-mock'
+import { invokeEnterpriseAssistantCall, invokeEnterpriseAssistantCallInternal, invokeWsmanCall } from './common.js'
+
 Environment.Config = config
 describe('Common', () => {
-  const clientId = uuid()
+  const clientId = randomUUID()
   let sendSpy
-  let responseMessageSpy: jest.SpyInstance
-  let wrapItSpy: jest.SpyInstance
-  let enterpriseAssistantSocketSendSpy: jest.SpyInstance
+  let responseMessageSpy: SpyInstance<any>
+  let wrapItSpy: SpyInstance<any>
+  let enterpriseAssistantSocketSendSpy: SpyInstance<any>
   const context = {
     message: '',
     clientId,
@@ -39,15 +42,15 @@ describe('Common', () => {
       }
     } as any
 
-    wrapItSpy = jest.spyOn(context.httpHandler, 'wrapIt')
-    responseMessageSpy = jest.spyOn(ClientResponseMsg, 'get')
-    sendSpy = jest.spyOn(devices[clientId].ClientSocket, 'send').mockReturnValue()
-    const x = new enterpriseAssistantListener.WSEnterpriseAssistantListener(new Logger('test'))
+    wrapItSpy = spyOn(context.httpHandler, 'wrapIt')
+    responseMessageSpy = spyOn(ClientResponseMsg, 'get')
+    sendSpy = spyOn(devices[clientId].ClientSocket, 'send').mockReturnValue()
+    const x = new WSEnterpriseAssistantListener(new Logger('test'))
     x.onClientConnected({
       send: jest.fn(),
       on: jest.fn()
     } as any)
-    enterpriseAssistantSocketSendSpy = jest.spyOn(enterpriseAssistantListener.enterpriseAssistantSocket, 'send').mockImplementation(() => ({} as any))
+    enterpriseAssistantSocketSendSpy = spyOn(enterpriseAssistantSocket, 'send').mockImplementation(() => ({} as any))
   })
 
   afterEach(() => {
@@ -57,7 +60,7 @@ describe('Common', () => {
 
   it('should send a WSMan message once with successful reply', async () => {
     const expected = '123'
-    const wsmanPromise = common.invokeWsmanCall(context, 2)
+    const wsmanPromise = invokeWsmanCall(context, 2)
     expect(wrapItSpy).toHaveBeenCalled()
     expect(responseMessageSpy).toHaveBeenCalled()
     expect(sendSpy).toHaveBeenCalledTimes(1)
@@ -68,7 +71,7 @@ describe('Common', () => {
   it('should successfully resolve after one UNEXPECTED_PARSE_ERROR', async () => {
     const expected = '123'
     let invokeWsmanCallInternalCallCount = 0
-    sendSpy = jest.spyOn(devices[clientId].ClientSocket, 'send')
+    sendSpy = spyOn(devices[clientId].ClientSocket, 'send')
     sendSpy.mockImplementation(async (context) => {
       invokeWsmanCallInternalCallCount++
       if (invokeWsmanCallInternalCallCount === 1) {
@@ -77,7 +80,7 @@ describe('Common', () => {
         devices[clientId].resolve(expected)
       }
     })
-    const wsmanPromise = common.invokeWsmanCall(context, 2)
+    const wsmanPromise = invokeWsmanCall(context, 2)
     await expect(wsmanPromise).resolves.toEqual(expected)
     expect(sendSpy).toHaveBeenCalledTimes(2)
   })
@@ -85,7 +88,7 @@ describe('Common', () => {
     const expected = '123'
     let invokeWsmanCallInternalCallCount = 0
 
-    sendSpy = jest.spyOn(devices[clientId].ClientSocket, 'send')
+    sendSpy = spyOn(devices[clientId].ClientSocket, 'send')
     sendSpy.mockImplementation(async (context) => {
       invokeWsmanCallInternalCallCount++
       if (invokeWsmanCallInternalCallCount <= 2) {
@@ -94,7 +97,7 @@ describe('Common', () => {
         devices[clientId].resolve(expected)
       }
     })
-    const wsmanPromise = common.invokeWsmanCall(context, 2)
+    const wsmanPromise = invokeWsmanCall(context, 2)
     await expect(wsmanPromise).resolves.toEqual(expected)
     expect(sendSpy).toHaveBeenCalledTimes(3)
   })
@@ -102,7 +105,7 @@ describe('Common', () => {
   it('should try three times on UNEXPECTED_PARSE_ERROR', async () => {
     const expected = '123'
     let invokeWsmanCallInternalCallCount = 0
-    sendSpy = jest.spyOn(devices[clientId].ClientSocket, 'send')
+    sendSpy = spyOn(devices[clientId].ClientSocket, 'send')
     sendSpy.mockImplementation(async (context) => {
       invokeWsmanCallInternalCallCount++
       if (invokeWsmanCallInternalCallCount <= 3) {
@@ -111,13 +114,13 @@ describe('Common', () => {
         devices[clientId].resolve(expected)
       }
     })
-    const wsmanPromise = common.invokeWsmanCall(context, 2)
+    const wsmanPromise = invokeWsmanCall(context, 2)
     await expect(wsmanPromise).rejects.toBeInstanceOf(UNEXPECTED_PARSE_ERROR)
     expect(sendSpy).toHaveBeenCalledTimes(3)
   })
 
   it('should not retry by default on UNEXPECTED_PARSE_ERROR', async () => {
-    const wsmanPromise = common.invokeWsmanCall(context)
+    const wsmanPromise = invokeWsmanCall(context)
     expect(sendSpy).toHaveBeenCalledTimes(1)
     devices[clientId].reject(new UNEXPECTED_PARSE_ERROR())
     expect(sendSpy).toHaveBeenCalledTimes(1)
@@ -129,7 +132,7 @@ describe('Common', () => {
       statusMessage: 'Unauthorized'
     }
     let invokeWsmanCallInternalCallCount = 0
-    sendSpy = jest.spyOn(devices[clientId].ClientSocket, 'send')
+    sendSpy = spyOn(devices[clientId].ClientSocket, 'send')
     sendSpy.mockImplementation(async (context) => {
       invokeWsmanCallInternalCallCount++
       if (invokeWsmanCallInternalCallCount <= 1) {
@@ -138,22 +141,22 @@ describe('Common', () => {
         devices[clientId].reject(expected)
       }
     })
-    const wsmanPromise = common.invokeWsmanCall(context, 2)
+    const wsmanPromise = invokeWsmanCall(context, 2)
     await expect(wsmanPromise).rejects.toEqual(expected)
     expect(sendSpy).toHaveBeenCalledTimes(2)
   })
   it('should send an enterprise-assistant message', async () => {
-    void common.invokeEnterpriseAssistantCallInternal(context)
+    void invokeEnterpriseAssistantCallInternal(context)
 
     expect(enterpriseAssistantSocketSendSpy).toHaveBeenCalled()
-    expect(enterpriseAssistantListener.promises[clientId].pendingPromise).toBeDefined()
-    expect(enterpriseAssistantListener.promises[clientId].resolve).toBeDefined()
-    expect(enterpriseAssistantListener.promises[clientId].reject).toBeDefined()
+    expect(promises[clientId].pendingPromise).toBeDefined()
+    expect(promises[clientId].resolve).toBeDefined()
+    expect(promises[clientId].reject).toBeDefined()
   })
 
   it('should timeout on no response from AMT', async () => {
     try {
-      const x = common.invokeWsmanCall(context)
+      const x = invokeWsmanCall(context)
       jest.advanceTimersByTime(Environment.Config.delay_timer * 1000)
       await x
     } catch (err) {
@@ -163,7 +166,7 @@ describe('Common', () => {
 
   it('should timeout on no response from EA', async () => {
     try {
-      const x = common.invokeEnterpriseAssistantCall(context)
+      const x = invokeEnterpriseAssistantCall(context)
       jest.advanceTimersByTime(Environment.Config.delay_timer * 1000)
       await x
     } catch (err) {

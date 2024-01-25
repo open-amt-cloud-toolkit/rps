@@ -3,22 +3,24 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import PostgresDb from '..'
-import { type Ieee8021xConfig } from '../../../models/RCS.Config'
+import PostgresDb from '../index.js'
+import { type Ieee8021xConfig } from '../../../models/RCS.Config.js'
 import {
   API_UNEXPECTED_EXCEPTION,
   CONCURRENCY_MESSAGE, IEEE8021X_DELETION_FAILED_CONSTRAINT_AMT_PROFILE, IEEE8021X_DELETION_FAILED_CONSTRAINT_WIRELESS,
   IEEE8021X_INSERTION_FAILED,
   IEEE8021X_INSERTION_FAILED_DUPLICATE
-} from '../../../utils/constants'
-import { IEEE8021xProfilesTable } from './ieee8021xProfiles'
-import { PostgresErr } from '../errors'
-import { RPSError } from '../../../utils/RPSError'
+} from '../../../utils/constants.js'
+import { IEEE8021xProfilesTable } from './ieee8021xProfiles.js'
+import { PostgresErr } from '../errors.js'
+import { RPSError } from '../../../utils/RPSError.js'
+import { jest } from '@jest/globals'
+import { type SpyInstance, spyOn } from 'jest-mock'
 
 describe('8021x profiles tests', () => {
   let db: PostgresDb
   let ieee8021xprofilesTable: IEEE8021xProfilesTable
-  let querySpy: jest.SpyInstance
+  let querySpy: SpyInstance<any>
   let ieee8021xConfig: Ieee8021xConfig
   const profileName = 'profileName'
   beforeEach(() => {
@@ -38,7 +40,7 @@ describe('8021x profiles tests', () => {
     }
     db = new PostgresDb('')
     ieee8021xprofilesTable = new IEEE8021xProfilesTable(db)
-    querySpy = jest.spyOn(ieee8021xprofilesTable.db, 'query')
+    querySpy = spyOn(ieee8021xprofilesTable.db, 'query')
   })
   afterEach(() => {
     jest.clearAllMocks()
@@ -144,7 +146,7 @@ describe('8021x profiles tests', () => {
   describe('Insert', () => {
     test('should insert', async () => {
       querySpy.mockResolvedValueOnce({ rows: [], rowCount: 1 })
-      const getByNameSpy = jest.spyOn(ieee8021xprofilesTable, 'getByName')
+      const getByNameSpy = spyOn(ieee8021xprofilesTable, 'getByName')
       getByNameSpy.mockResolvedValue(ieee8021xConfig)
       const result = await ieee8021xprofilesTable.insert(ieee8021xConfig)
 
@@ -153,7 +155,7 @@ describe('8021x profiles tests', () => {
     })
     test('should get a null if insert returns no rows (should throw error actually)', async () => {
       querySpy.mockResolvedValueOnce({ rows: [], rowCount: 0 })
-      const getByNameSpy = jest.spyOn(ieee8021xprofilesTable, 'getByName')
+      const getByNameSpy = spyOn(ieee8021xprofilesTable, 'getByName')
       getByNameSpy.mockResolvedValue(ieee8021xConfig)
       const result = await ieee8021xprofilesTable.insert(ieee8021xConfig)
       expect(result).toBeNull()
@@ -172,7 +174,7 @@ describe('8021x profiles tests', () => {
   describe('Update', () => {
     test('should Update', async () => {
       querySpy.mockResolvedValueOnce({ rows: [{}], rowCount: 1 })
-      const getByNameSpy = jest.spyOn(ieee8021xprofilesTable, 'getByName')
+      const getByNameSpy = spyOn(ieee8021xprofilesTable, 'getByName')
       getByNameSpy.mockResolvedValue(ieee8021xConfig)
       const result = await ieee8021xprofilesTable.update(ieee8021xConfig)
       expect(result).toBe(ieee8021xConfig)
@@ -184,7 +186,7 @@ describe('8021x profiles tests', () => {
     })
     test('should NOT update when concurrency issue', async () => {
       querySpy.mockResolvedValueOnce({ rows: [], rowCount: 0 })
-      const getByNameSpy = jest.spyOn(ieee8021xprofilesTable, 'getByName')
+      const getByNameSpy = spyOn(ieee8021xprofilesTable, 'getByName')
       getByNameSpy.mockResolvedValue(ieee8021xConfig)
       await expect(ieee8021xprofilesTable.update(ieee8021xConfig)).rejects.toThrow(CONCURRENCY_MESSAGE)
       expect(querySpy).toBeCalledTimes(1)

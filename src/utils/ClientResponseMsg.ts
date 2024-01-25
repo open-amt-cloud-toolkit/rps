@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type ClientMsg } from '../models/RCS.Config'
-import { ServiceVersion, ProtocolVersion } from './constants'
+import { type ClientMsg } from '../models/RCS.Config.js'
+import { ProtocolVersion } from './constants.js'
+import { version } from './version.js'
 
 export default {
   /**
@@ -17,7 +18,7 @@ export default {
     const msg: ClientMsg = {
       method,
       apiKey: 'xxxxx',
-      appVersion: ServiceVersion,
+      appVersion: version,
       protocolVersion: ProtocolVersion,
       status,
       message,

@@ -3,13 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { createSpyObj } from '../../../test/helper/jest'
-import { deleteCiraConfig } from './delete'
+import { createSpyObj } from '../../../test/helper/jest.js'
+import { deleteCiraConfig } from './delete.js'
+import { jest } from '@jest/globals'
+import { type SpyInstance, spyOn } from 'jest-mock'
 
 describe('CIRA Config - delete', () => {
   let resSpy
   let req
-  let deleteSpy: jest.SpyInstance
+  let deleteSpy: SpyInstance<any>
   beforeEach(() => {
     resSpy = createSpyObj('Response', ['status', 'json', 'end', 'send'])
     req = {
@@ -18,7 +20,7 @@ describe('CIRA Config - delete', () => {
       query: { },
       params: { ciraConfigName: 'ciraConfig' }
     }
-    deleteSpy = jest.spyOn(req.db.ciraConfigs, 'delete').mockResolvedValue({})
+    deleteSpy = spyOn(req.db.ciraConfigs, 'delete').mockResolvedValue({})
     resSpy.status.mockReturnThis()
     resSpy.json.mockReturnThis()
     resSpy.send.mockReturnThis()
@@ -28,12 +30,12 @@ describe('CIRA Config - delete', () => {
     expect(resSpy.status).toHaveBeenCalledWith(204)
   })
   it('should handle not found', async () => {
-    deleteSpy = jest.spyOn(req.db.ciraConfigs, 'delete').mockResolvedValue(null)
+    deleteSpy = spyOn(req.db.ciraConfigs, 'delete').mockResolvedValue(null)
     await deleteCiraConfig(req, resSpy)
     expect(resSpy.status).toHaveBeenCalledWith(404)
   })
   it('should handle error', async () => {
-    jest.spyOn(req.db.ciraConfigs, 'delete').mockRejectedValue(null)
+    spyOn(req.db.ciraConfigs, 'delete').mockRejectedValue(null)
     await deleteCiraConfig(req, resSpy)
     expect(deleteSpy).toHaveBeenCalledWith('ciraConfig', req.tenantId)
     expect(resSpy.status).toHaveBeenCalledWith(500)

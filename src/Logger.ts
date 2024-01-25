@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import * as winston from 'winston'
-import { type ILogger } from './interfaces/ILogger'
+import winston from 'winston'
+import { type ILogger } from './interfaces/ILogger.js'
 
 const { combine, timestamp, printf } = winston.format
 const myFormat = printf(info => `${info.timestamp} ${info.level}: ${info.message}`)
@@ -12,6 +12,7 @@ const myFormat = printf(info => `${info.timestamp} ${info.level}: ${info.message
 // file logging removed to avoid disk space consumption and
 // adhere to non-root user requirements
 // const logFile = path.join(__dirname, '/logs/logs.txt')
+// Note: __dirname removed in ESM
 
 const logger = winston.createLogger({
   level: process.env.RPS_LOG_LEVEL ?? 'info',

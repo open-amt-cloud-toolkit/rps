@@ -4,7 +4,7 @@
  **********************************************************************/
 
 // ./routes/index.js
-import adminRouter from './admin/index'
+import adminRouter from './admin/index.js'
 import { Router } from 'express'
 
 const router: Router = Router()

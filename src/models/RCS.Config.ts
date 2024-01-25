@@ -5,9 +5,9 @@
 
 import { type AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 import { type Types } from '@open-amt-cloud-toolkit/wsman-messages/amt'
-import { type DigestChallenge } from '@open-amt-cloud-toolkit/wsman-messages/models/common'
-import type * as WebSocket from 'ws'
-import { type AMTConfiguration, type AMTDomain, type ProvisioningCertObj } from '.'
+import { type DigestChallenge } from '@open-amt-cloud-toolkit/wsman-messages/models/common.js'
+import type Server from 'ws'
+import { type AMTConfiguration, type AMTDomain, type ProvisioningCertObj } from './index.js'
 
 export interface WebSocketConfig {
   WebSocketPort: number
@@ -100,7 +100,7 @@ export interface ClientObject {
   action?: ClientAction
   uuid?: string
   hostname?: string
-  ClientSocket?: WebSocket
+  ClientSocket?: Server
   ClientData?: any
   count?: number
   payload?: any

@@ -4,10 +4,10 @@
  **********************************************************************/
 
 import { type pkcs12, type pki } from 'node-forge'
-import { type ILogger } from './interfaces/ILogger'
-import type Logger from './Logger'
-import { type AMTKeyUsage, type CertAttributes, type CertCreationResult, type CertificateObject, type CertsAndKeys, type ProvisioningCertObj, type RootCertFingerprint } from './models'
-import { type NodeForge } from './NodeForge'
+import { type ILogger } from './interfaces/ILogger.js'
+import type Logger from './Logger.js'
+import { type AMTKeyUsage, type CertAttributes, type CertCreationResult, type CertificateObject, type CertsAndKeys, type ProvisioningCertObj, type RootCertFingerprint } from './models/index.js'
+import { type NodeForge } from './NodeForge.js'
 
 export class CertManager {
   private readonly nodeForge: NodeForge

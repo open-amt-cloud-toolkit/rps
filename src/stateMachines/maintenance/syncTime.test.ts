@@ -3,32 +3,49 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import * as common from './common'
-import { HttpResponseError } from './common'
-import { type DoneResponse, StatusFailed } from './doneResponse'
-import { PTStatus } from '../../utils/PTStatus'
+import { type DoneResponse, StatusFailed } from './doneResponse.js'
+import { PTStatus } from '../../utils/PTStatus.js'
+import { setupTestClient } from '../../test/helper/Config.js'
+import { runTilDone } from '../../test/helper/xstate.js'
+import { jest } from '@jest/globals'
+
+import {
+  HttpResponseError,
+  coalesceMessage,
+  commonContext
+} from './common.js'
+
 import {
   type GetLowAccuracyTimeSynchResponse,
   type SetHighAccuracyTimeSynchResponse,
+  type SyncTimeEvent,
+  type SyncTime as SyncTimeType
+} from './syncTime.js'
+
+const invokeWsmanCallSpy = jest.fn<any>()
+jest.unstable_mockModule('./common.js', () => ({
+  invokeWsmanCall: invokeWsmanCallSpy,
+  HttpResponseError,
+  coalesceMessage,
+  commonContext
+}))
+
+const {
   SyncTime,
-  SyncTimeEventType,
-  type SyncTimeEvent
-} from './syncTime'
-import { setupTestClient } from '../../test/helper/Config'
-import { runTilDone } from '../../test/helper/xstate'
-import resetAllMocks = jest.resetAllMocks
+  SyncTimeEventType
+} = await import ('./syncTime.js')
 
 const HttpBadRequestError = new HttpResponseError('Bad Request', 400)
 
 let clientId: string
 let doneResponse: DoneResponse
 let event: SyncTimeEvent
-let implementation: SyncTime
+let implementation: SyncTimeType
 let lowAccuracyRsp: GetLowAccuracyTimeSynchResponse
 let highAccuracyRsp: SetHighAccuracyTimeSynchResponse
 
 beforeEach(() => {
-  resetAllMocks()
+  jest.resetAllMocks()
   clientId = setupTestClient()
   implementation = new SyncTime()
   doneResponse = {
@@ -51,7 +68,7 @@ beforeEach(() => {
 })
 
 const runTheTest = async function (): Promise<void> {
-  jest.spyOn(common, 'invokeWsmanCall')
+  invokeWsmanCallSpy
     .mockResolvedValueOnce(lowAccuracyRsp)
     .mockResolvedValueOnce(highAccuracyRsp)
   await runTilDone(implementation.machine, event, doneResponse)
@@ -82,13 +99,13 @@ it('should fail missing highAccuracyRsp.SetHighAccuracyTimeSynch_OUTPUT', async 
 })
 it('should fail getting low accuracy time sync on http response error', async () => {
   doneResponse.status = StatusFailed
-  jest.spyOn(common, 'invokeWsmanCall')
+  invokeWsmanCallSpy
     .mockRejectedValueOnce(HttpBadRequestError)
   await runTilDone(implementation.machine, event, doneResponse)
 })
 it('should fail setting high accuracy time sync on http response error', async () => {
   doneResponse.status = StatusFailed
-  jest.spyOn(common, 'invokeWsmanCall')
+  invokeWsmanCallSpy
     .mockResolvedValueOnce(lowAccuracyRsp)
     .mockRejectedValueOnce(HttpBadRequestError)
   await runTilDone(implementation.machine, event, doneResponse)

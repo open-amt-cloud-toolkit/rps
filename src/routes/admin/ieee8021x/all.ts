@@ -3,13 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { API_RESPONSE } from '../../../utils/constants'
-import Logger from '../../../Logger'
-import { type DataWithCount } from '../../../models'
-import { MqttProvider } from '../../../utils/MqttProvider'
+import { API_RESPONSE } from '../../../utils/constants.js'
+import Logger from '../../../Logger.js'
+import { type DataWithCount } from '../../../models/index.js'
+import { MqttProvider } from '../../../utils/MqttProvider.js'
 import { type Request, type Response } from 'express'
-import handleError from '../../../utils/handleError'
-import { type Ieee8021xConfig } from '../../../models/RCS.Config'
+import handleError from '../../../utils/handleError.js'
+import { type Ieee8021xConfig } from '../../../models/RCS.Config.js'
 
 export async function getAllIEEE8021xConfigs (req: Request, res: Response): Promise<void> {
   const log = new Logger('getAllIEEE8021xConfigs')

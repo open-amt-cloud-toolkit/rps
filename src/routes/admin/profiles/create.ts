@@ -3,14 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import Logger from '../../../Logger'
-import { type AMTConfiguration } from '../../../models'
-import { MqttProvider } from '../../../utils/MqttProvider'
+import Logger from '../../../Logger.js'
+import { type AMTConfiguration } from '../../../models/index.js'
+import { MqttProvider } from '../../../utils/MqttProvider.js'
 import { type Request, type Response } from 'express'
-import { ClientAction, TlsSigningAuthority } from '../../../models/RCS.Config'
-import handleError from '../../../utils/handleError'
-import { type DeviceCredentials } from '../../../interfaces/ISecretManagerService'
-import { adjustTlsConfiguration, generateSelfSignedCertificate, adjustRedirectionConfiguration } from './common'
+import { ClientAction, TlsSigningAuthority } from '../../../models/RCS.Config.js'
+import handleError from '../../../utils/handleError.js'
+import { type DeviceCredentials } from '../../../interfaces/ISecretManagerService.js'
+import { adjustTlsConfiguration, generateSelfSignedCertificate, adjustRedirectionConfiguration } from './common.js'
 
 export async function createProfile (req: Request, res: Response): Promise<void> {
   let vaultStatus: any

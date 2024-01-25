@@ -3,28 +3,35 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type FeatureContext, FeaturesConfiguration } from './featuresConfiguration'
-import { ClientAction } from '../models/RCS.Config'
-import { type AMTConfiguration, AMTRedirectionServiceEnabledStates, AMTUserConsent, AMTUserConsentValues } from '../models'
-import { v4 as uuid } from 'uuid'
-import { devices } from '../WebSocketListener'
-import { HttpHandler } from '../HttpHandler'
+import { type FeatureContext, type FeaturesConfiguration as FeaturesConfigurationType } from './featuresConfiguration.js'
+import { ClientAction } from '../models/RCS.Config.js'
+import { type AMTConfiguration, AMTRedirectionServiceEnabledStates, AMTUserConsent, AMTUserConsentValues } from '../models/index.js'
+import { randomUUID } from 'node:crypto'
+import { devices } from '../devices.js'
+import { HttpHandler } from '../HttpHandler.js'
 import { interpret } from 'xstate'
 import { AMT, CIM, IPS } from '@open-amt-cloud-toolkit/wsman-messages'
-import * as common from './common'
+import { jest } from '@jest/globals'
+
+const invokeWsmanCallSpy = jest.fn<any>()
+jest.unstable_mockModule('./common.js', () => ({
+  invokeWsmanCall: invokeWsmanCallSpy
+}))
+
+const { FeaturesConfiguration } = await import ('./featuresConfiguration.js')
+
 describe('Features State Machine', () => {
   let clientId: string
   let amtConfiguration: AMTConfiguration
-  let featuresConfiguration: FeaturesConfiguration
+  let featuresConfiguration: FeaturesConfigurationType
   let amtRedirectionSvcJson
   let ipsOptInsSvcJson
   let kvmRedirectionSvcJson
   let currentStateIndex: number = 0
   let machineConfig
   let context: FeatureContext
-  let invokeSpy: jest.SpyInstance
   beforeEach(() => {
-    clientId = uuid()
+    clientId = randomUUID()
     devices[clientId] = {
       unauthCount: 0,
       ClientId: clientId,
@@ -79,7 +86,6 @@ describe('Features State Machine', () => {
       ips: new IPS.Messages()
     }
     featuresConfiguration = new FeaturesConfiguration()
-    invokeSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue(null)
     currentStateIndex = 0
     machineConfig = {
       services: {
@@ -191,35 +197,35 @@ describe('Features State Machine', () => {
   })
   it('getAmtRedirectionService', async () => {
     await featuresConfiguration.getAmtRedirectionService(context)
-    expect(invokeSpy).toHaveBeenCalled()
+    expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
   it('getIpsOptInService', async () => {
     await featuresConfiguration.getIpsOptInService(context)
-    expect(invokeSpy).toHaveBeenCalled()
+    expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
   it('getCimKvmRedirectionSAP', async () => {
     await featuresConfiguration.getCimKvmRedirectionSAP(context)
-    expect(invokeSpy).toHaveBeenCalled()
+    expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
   it('setRedirectionService', async () => {
     context.AMT_RedirectionService = amtRedirectionSvcJson
     await featuresConfiguration.setRedirectionService(context)
-    expect(invokeSpy).toHaveBeenCalled()
+    expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
   it('setKvmRedirectionSap', async () => {
     context.CIM_KVMRedirectionSAP = kvmRedirectionSvcJson
     await featuresConfiguration.setKvmRedirectionSap(context)
-    expect(invokeSpy).toHaveBeenCalled()
+    expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
   it('putRedirectionService', async () => {
     context.AMT_RedirectionService = amtRedirectionSvcJson
     await featuresConfiguration.putRedirectionService(context)
-    expect(invokeSpy).toHaveBeenCalled()
+    expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
   it('putIpsOptInService', async () => {
     context.IPS_OptInService = ipsOptInsSvcJson
     await featuresConfiguration.putIpsOptInService(context)
-    expect(invokeSpy).toHaveBeenCalled()
+    expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
   function setDefaultResponses (): void {
     amtRedirectionSvcJson = {

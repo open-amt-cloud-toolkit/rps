@@ -3,17 +3,17 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import Logger from '../../../Logger'
-import { NOT_FOUND_EXCEPTION, NOT_FOUND_MESSAGE } from '../../../utils/constants'
-import { type AMTConfiguration } from '../../../models'
-import { ClientAction, type ProfileWifiConfigs, TlsSigningAuthority } from '../../../models/RCS.Config'
-import { MqttProvider } from '../../../utils/MqttProvider'
+import Logger from '../../../Logger.js'
+import { NOT_FOUND_EXCEPTION, NOT_FOUND_MESSAGE } from '../../../utils/constants.js'
+import { type AMTConfiguration } from '../../../models/index.js'
+import { ClientAction, type ProfileWifiConfigs, TlsSigningAuthority } from '../../../models/RCS.Config.js'
+import { MqttProvider } from '../../../utils/MqttProvider.js'
 import { type Request, type Response } from 'express'
-import { type IProfilesWifiConfigsTable } from '../../../interfaces/database/IProfileWifiConfigsDb'
-import handleError from '../../../utils/handleError'
-import { RPSError } from '../../../utils/RPSError'
-import { type DeviceCredentials } from '../../../interfaces/ISecretManagerService'
-import { adjustTlsConfiguration, generateSelfSignedCertificate } from './common'
+import { type IProfilesWifiConfigsTable } from '../../../interfaces/database/IProfileWifiConfigsDb.js'
+import handleError from '../../../utils/handleError.js'
+import { RPSError } from '../../../utils/RPSError.js'
+import { type DeviceCredentials } from '../../../interfaces/ISecretManagerService.js'
+import { adjustTlsConfiguration, generateSelfSignedCertificate } from './common.js'
 
 export async function editProfile (req: Request, res: Response): Promise<void> {
   const log = new Logger('editProfile')

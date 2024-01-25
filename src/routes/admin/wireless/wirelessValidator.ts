@@ -5,7 +5,7 @@
 
 import { check } from 'express-validator'
 import { type Request } from 'express'
-import { AuthenticationMethods, EncryptionMethods } from './constants'
+import { AuthenticationMethods, EncryptionMethods } from './constants.js'
 
 const isValidLinkPolicy = (n: number): boolean =>
   // ValueMap={1, 14, 16, 224}

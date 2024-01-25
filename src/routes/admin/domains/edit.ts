@@ -3,14 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type AMTDomain } from '../../../models'
-import Logger from '../../../Logger'
-import { NOT_FOUND_EXCEPTION, NOT_FOUND_MESSAGE } from '../../../utils/constants'
-import { MqttProvider } from '../../../utils/MqttProvider'
+import { type AMTDomain } from '../../../models/index.js'
+import Logger from '../../../Logger.js'
+import { NOT_FOUND_EXCEPTION, NOT_FOUND_MESSAGE } from '../../../utils/constants.js'
+import { MqttProvider } from '../../../utils/MqttProvider.js'
 import { type Request, type Response } from 'express'
-import handleError from '../../../utils/handleError'
-import { RPSError } from '../../../utils/RPSError'
-import { type CertCredentials } from '../../../interfaces/ISecretManagerService'
+import handleError from '../../../utils/handleError.js'
+import { RPSError } from '../../../utils/RPSError.js'
+import { type CertCredentials } from '../../../interfaces/ISecretManagerService.js'
 
 export async function editDomain (req: Request, res: Response): Promise<void> {
   let amtDomain: AMTDomain = {} as AMTDomain

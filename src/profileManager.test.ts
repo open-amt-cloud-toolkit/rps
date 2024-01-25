@@ -3,14 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type AMTConfiguration } from './models'
-import { ProfileManager } from './ProfileManager'
-import { type ILogger } from './interfaces/ILogger'
-import Logger from './Logger'
-import { type IProfilesTable } from './interfaces/database/IProfilesDb'
-import { type CIRAConfig, ClientAction, type Ieee8021xConfig } from './models/RCS.Config'
-import { config } from './test/helper/Config'
-import { Environment } from './utils/Environment'
+import { type AMTConfiguration } from './models/index.js'
+import { ProfileManager } from './ProfileManager.js'
+import { type ILogger } from './interfaces/ILogger.js'
+import Logger from './Logger.js'
+import { type IProfilesTable } from './interfaces/database/IProfilesDb.js'
+import { type CIRAConfig, ClientAction, type Ieee8021xConfig } from './models/RCS.Config.js'
+import { config } from './test/helper/Config.js'
+import { Environment } from './utils/Environment.js'
 
 Environment.Config = config
 const logger: ILogger = new Logger('ProfileManagerTests')

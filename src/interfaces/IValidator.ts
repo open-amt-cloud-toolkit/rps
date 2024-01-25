@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import type * as WebSocket from 'ws'
-import { type ClientMsg } from '../models/RCS.Config'
+import { type ClientMsg } from '../models/RCS.Config.js'
 
 export interface IValidator {
   validateMaintenanceMsg: (clientMsg: ClientMsg, clientId: string) => any

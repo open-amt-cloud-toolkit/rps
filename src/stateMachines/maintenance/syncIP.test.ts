@@ -3,31 +3,53 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type Enumerate } from '@open-amt-cloud-toolkit/wsman-messages/models/common'
+import { type Enumerate } from '@open-amt-cloud-toolkit/wsman-messages/models/common.js'
 import { type AMT } from '@open-amt-cloud-toolkit/wsman-messages'
-import * as common from './common'
-import { HttpResponseError } from './common'
-import { type DoneResponse, StatusFailed, StatusSuccess } from './doneResponse'
-import { UnexpectedParseError } from '../../utils/constants'
+import { type DoneResponse, StatusFailed, StatusSuccess } from './doneResponse.js'
+import { UnexpectedParseError } from '../../utils/constants.js'
+import { runTilDone } from '../../test/helper/xstate.js'
+import { setupTestClient } from '../../test/helper/Config.js'
+import { jest } from '@jest/globals'
+
+import {
+  HttpResponseError,
+  coalesceMessage,
+  commonActions,
+  commonContext,
+  commonGuards
+} from './common.js'
+
 import {
   type EthernetPortSettingsPullResponse,
   type IPConfiguration,
+  type SyncIPEvent,
+  type SyncIP as SyncIPType
+} from './syncIP.js'
+
+const invokeWsmanCallSpy = jest.fn<any>()
+jest.unstable_mockModule('./common.js', () => ({
+  invokeWsmanCall: invokeWsmanCallSpy,
+  HttpResponseError,
+  coalesceMessage,
+  commonActions,
+  commonContext,
+  commonGuards
+}))
+
+const {
   MessageAlreadySynchronized,
   MessageNoWiredSettingsOnDevice,
   MessageWirelessOnly,
   SyncIP,
-  type SyncIPEvent, SyncIPEventType
-} from './syncIP'
-import { runTilDone } from '../../test/helper/xstate'
-import { setupTestClient } from '../../test/helper/Config'
-import resetAllMocks = jest.resetAllMocks
+  SyncIPEventType
+} = await import ('./syncIP.js')
 
 const HttpBadRequestError = new HttpResponseError('Bad Request', 400)
 
 let clientId: string
 let doneResponse: DoneResponse
 let event: SyncIPEvent
-let implementation: SyncIP
+let implementation: SyncIPType
 let targetIPConfig: IPConfiguration
 let enumerateRsp: Enumerate
 let wiredPortSettings: AMT.Models.EthernetPortSettings
@@ -36,7 +58,7 @@ let pullRsp: EthernetPortSettingsPullResponse
 let putRsp: any
 
 beforeEach(() => {
-  resetAllMocks()
+  jest.resetAllMocks()
   clientId = setupTestClient()
   implementation = new SyncIP()
   doneResponse = {
@@ -99,7 +121,7 @@ beforeEach(() => {
 })
 
 const runTheTest = async function (): Promise<void> {
-  jest.spyOn(common, 'invokeWsmanCall')
+  invokeWsmanCallSpy
     .mockResolvedValueOnce(enumerateRsp)
     .mockResolvedValueOnce(pullRsp)
     .mockResolvedValueOnce(putRsp)
@@ -168,20 +190,20 @@ it('should fail on bad put response', async () => {
 })
 it('should fail enumerate response on http response error', async () => {
   doneResponse.status = StatusFailed
-  jest.spyOn(common, 'invokeWsmanCall')
+  invokeWsmanCallSpy
     .mockRejectedValueOnce(HttpBadRequestError)
   await runTilDone(implementation.machine, event, doneResponse)
 })
 it('should fail pull response on http response error', async () => {
   doneResponse.status = StatusFailed
-  jest.spyOn(common, 'invokeWsmanCall')
+  invokeWsmanCallSpy
     .mockResolvedValueOnce(enumerateRsp)
     .mockRejectedValueOnce(HttpBadRequestError)
   await runTilDone(implementation.machine, event, doneResponse)
 })
 it('should fail put response on http response error', async () => {
   doneResponse.status = StatusFailed
-  jest.spyOn(common, 'invokeWsmanCall')
+  invokeWsmanCallSpy
     .mockResolvedValueOnce(enumerateRsp)
     .mockResolvedValueOnce(pullRsp)
     .mockRejectedValueOnce(HttpBadRequestError)
@@ -189,7 +211,7 @@ it('should fail put response on http response error', async () => {
 })
 it('should succeed after UnexpectedParseError', async () => {
   doneResponse.status = StatusSuccess
-  jest.spyOn(common, 'invokeWsmanCall')
+  invokeWsmanCallSpy
     .mockResolvedValueOnce(enumerateRsp)
     .mockRejectedValueOnce(new UnexpectedParseError())
     .mockResolvedValueOnce(enumerateRsp)

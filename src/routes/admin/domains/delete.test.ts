@@ -3,13 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { createSpyObj } from '../../../test/helper/jest'
-import { deleteDomain } from './delete'
+import { createSpyObj } from '../../../test/helper/jest.js'
+import { deleteDomain } from './delete.js'
+import { jest } from '@jest/globals'
+import { type SpyInstance, spyOn } from 'jest-mock'
 
 describe('CIRA Config - Delete', () => {
   let resSpy
   let req
-  let deleteSpy: jest.SpyInstance
+  let deleteSpy: SpyInstance<any>
 
   beforeEach(() => {
     resSpy = createSpyObj('Response', ['status', 'json', 'end', 'send'])
@@ -19,8 +21,8 @@ describe('CIRA Config - Delete', () => {
       params: { domainName: 'domainName' },
       tenantId: ''
     }
-    deleteSpy = jest.spyOn(req.db.domains, 'delete').mockResolvedValue({})
-    jest.spyOn(req.db.domains, 'getByName').mockResolvedValue({})
+    deleteSpy = spyOn(req.db.domains, 'delete').mockResolvedValue({})
+    spyOn(req.db.domains, 'getByName').mockResolvedValue({})
 
     resSpy.status.mockReturnThis()
     resSpy.json.mockReturnThis()
@@ -31,12 +33,12 @@ describe('CIRA Config - Delete', () => {
     expect(resSpy.status).toHaveBeenCalledWith(204)
   })
   it('should handle not found', async () => {
-    deleteSpy = jest.spyOn(req.db.domains, 'getByName').mockResolvedValue(null)
+    deleteSpy = spyOn(req.db.domains, 'getByName').mockResolvedValue(null)
     await deleteDomain(req, resSpy)
     expect(resSpy.status).toHaveBeenCalledWith(404)
   })
   it('should handle error', async () => {
-    jest.spyOn(req.db.domains, 'delete').mockRejectedValue(null)
+    spyOn(req.db.domains, 'delete').mockRejectedValue(null)
     await deleteDomain(req, resSpy)
     expect(deleteSpy).toHaveBeenCalledWith('domainName', req.tenantId)
     expect(resSpy.status).toHaveBeenCalledWith(500)

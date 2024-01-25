@@ -11,12 +11,12 @@ import {
   type CommonMaintenanceContext,
   HttpResponseError,
   invokeWsmanCall
-} from './common'
-import Logger from '../../Logger'
-import * as Task from './doneResponse'
-import { devices } from '../../WebSocketListener'
+} from './common.js'
+import Logger from '../../Logger.js'
+import { doneFail, doneSuccess } from './doneResponse.js'
 import got from 'got'
-import { Environment } from '../../utils/Environment'
+import { Environment } from '../../utils/Environment.js'
+import { devices } from '../../devices.js'
 
 export interface HostNameInfo {
   dnsSuffixOS: string
@@ -111,11 +111,11 @@ export class SyncHostName {
       },
       FAILED: {
         type: 'final',
-        data: (context) => (Task.doneFail(context.taskName, context.statusMessage))
+        data: (context) => (doneFail(context.taskName, context.statusMessage))
       },
       SUCCESS: {
         type: 'final',
-        data: (context) => (Task.doneSuccess(context.taskName, context.statusMessage))
+        data: (context) => (doneSuccess(context.taskName, context.statusMessage))
       }
     }
   })

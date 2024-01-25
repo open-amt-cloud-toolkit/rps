@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { createHash } from 'crypto'
-import * as xml2js from 'xml2js'
-import { type DigestChallenge } from '@open-amt-cloud-toolkit/wsman-messages/models/common'
-import Logger from './Logger'
-import { type connectionParams } from './models/RCS.Config'
+import { createHash } from 'node:crypto'
+import xml2js from 'xml2js'
+import { type DigestChallenge } from '@open-amt-cloud-toolkit/wsman-messages/models/common.js'
+import Logger from './Logger.js'
+import { type connectionParams } from './models/RCS.Config.js'
 
 export class HttpHandler {
   authResolve: any

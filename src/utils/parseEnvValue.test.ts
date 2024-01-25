@@ -3,31 +3,31 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import * as parse from './parseEnvValue'
+import { parseValue } from './parseEnvValue.js'
 
 describe('Check parseEnvValue', () => {
   it('Should pass when converting string to number', async () => {
-    const result = parse.parseValue('1020')
+    const result = parseValue('1020')
     expect(result).toEqual(1020)
   })
   it('Should pass when converting string to true', async () => {
-    const result = parse.parseValue('true')
+    const result = parseValue('true')
     expect(result).toEqual(true)
   })
   it('Should pass when converting string to false', async () => {
-    const result = parse.parseValue('false')
+    const result = parseValue('false')
     expect(result).toEqual(false)
   })
   it('Should pass when converting FALSE to false', async () => {
-    const result = parse.parseValue('FALSE')
+    const result = parseValue('FALSE')
     expect(result).toEqual(false)
   })
   it('Should pass when converting TRUE to true', async () => {
-    const result = parse.parseValue('TRUE')
+    const result = parseValue('TRUE')
     expect(result).toEqual(true)
   })
   it('Should return val', async () => {
-    const result = parse.parseValue('fake')
+    const result = parseValue('fake')
     expect(result).toEqual('fake')
   })
 })

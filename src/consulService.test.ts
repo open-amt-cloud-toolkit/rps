@@ -3,16 +3,18 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import type Consul from 'consul'
-import { ConsulService } from './consul'
-import { config } from './test/helper/Config'
+import { ConsulService } from './consulService.js'
+import { config } from './test/helper/Config.js'
+import { jest } from '@jest/globals'
+import { spyOn } from 'jest-mock'
 
-const consul: Consul = new ConsulService('consul', '8500')
 let componentName: string
 let serviceName: string
-
+let consul: ConsulService
 describe('consul', () => {
   beforeEach(() => {
+    consul = new ConsulService('consul', '8500')
+
     jest.clearAllMocks()
     jest.restoreAllMocks()
     jest.resetAllMocks()
@@ -22,14 +24,14 @@ describe('consul', () => {
     serviceName = 'consul'
 
     consul.consul.kv = {
-      set: jest.fn(),
-      get: jest.fn()
-    }
+      set: jest.fn<any>(),
+      get: jest.fn<any>()
+    } as any
   })
 
   describe('ConsulService', () => {
     it('get Consul health', async () => {
-      const spyHealth = jest.spyOn(consul.consul.health, 'service')
+      const spyHealth = spyOn(consul.consul.health, 'service')
       await consul.health(serviceName)
       expect(spyHealth).toHaveBeenCalledWith({ passing: true, service: 'consul' })
     })
@@ -39,7 +41,7 @@ describe('consul', () => {
       expect(consul.consul.kv.set).toHaveBeenCalledWith(componentName + '/config', JSON.stringify(config, null, 2))
     })
     it('seed Consul failure', async () => {
-      consul.consul.kv.set = jest.spyOn(consul.consul.kv, 'set').mockResolvedValue(Promise.reject(new Error()))
+      consul.consul.kv.set = spyOn(consul.consul.kv, 'set').mockResolvedValue(Promise.reject(new Error())) as any
       const result = await consul.seed(componentName, config)
       expect(result).toBe(false)
     })
@@ -52,7 +54,7 @@ describe('consul', () => {
     it('process Consul', () => {
       const consulValues: Array<{ Key: string, Value: string }> = [
         {
-          Key: componentName + '/config',
+          Key: componentName + '/Config.js',
           Value: '{"web_port": 8081, "delay_timer": 12}'
         }
       ]

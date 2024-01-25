@@ -3,22 +3,23 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import Logger from './Logger'
-import { type ILogger } from './interfaces/ILogger'
-// import { Data } from 'ws'
-import { promises, enterpriseAssistantSocket, WSEnterpriseAssistantListener } from './WSEnterpriseAssistantListener'
+import Logger from './Logger.js'
+import { type ILogger } from './interfaces/ILogger.js'
+import { promises, enterpriseAssistantSocket, WSEnterpriseAssistantListener } from './WSEnterpriseAssistantListener.js'
+import { jest } from '@jest/globals'
+import { type SpyInstance, spyOn } from 'jest-mock'
 
 describe('Websocket Listener', () => {
   const log: ILogger = new Logger('WebSocketListener')
   let server: WSEnterpriseAssistantListener
   let isConnected: boolean
-  let onSpy: jest.SpyInstance
+  let onSpy: SpyInstance<any>
   let serverStub
   beforeEach(() => {
     serverStub = {
       on: jest.fn()
     } as any
-    onSpy = jest.spyOn(serverStub, 'on')
+    onSpy = spyOn(serverStub, 'on')
     server = new WSEnterpriseAssistantListener(log)
   })
   it('should start WebSocket server', () => {
@@ -37,7 +38,7 @@ describe('Websocket Listener', () => {
     const mockWebSocket = {
       on: jest.fn()
     }
-    const webSocketMock = jest.spyOn(mockWebSocket, 'on')
+    const webSocketMock = spyOn(mockWebSocket, 'on')
     server.onClientConnected(mockWebSocket as any)
     expect(webSocketMock).toHaveBeenCalledTimes(3)
     expect(enterpriseAssistantSocket).toBeDefined()
@@ -48,7 +49,7 @@ describe('Websocket Listener', () => {
       name: 'abc',
       message: 'abcd'
     }
-    const loggerSpy = jest.spyOn(server.logger, 'error')
+    const loggerSpy = spyOn(server.logger, 'error')
     server.onError(error)
     expect(loggerSpy).toHaveBeenCalled()
   })
@@ -59,7 +60,7 @@ describe('Websocket Listener', () => {
       promises['4c4c4544-004d-4d10-8050-b2c04f325133'].resolve = resolve
       promises['4c4c4544-004d-4d10-8050-b2c04f325133'].reject = reject
     })
-    const promiseSpy = jest.spyOn(promises['4c4c4544-004d-4d10-8050-b2c04f325133'], 'resolve')
+    const promiseSpy = spyOn(promises['4c4c4544-004d-4d10-8050-b2c04f325133'], 'resolve')
 
     const message: any = JSON.stringify({
       action: 'satellite',
@@ -82,13 +83,13 @@ describe('Websocket Listener', () => {
   })
 
   it('Should generate error when not parse-able', async () => {
-    const loggerSpy = jest.spyOn(server.logger, 'error')
+    const loggerSpy = spyOn(server.logger, 'error')
     const message: any = 'break the code'
     await server.onMessageReceived(message)
     expect(loggerSpy).toHaveBeenCalled()
   })
   // it('Should process client message and not respond when no response to send', async () => {
-  //   const processMessageSpy = jest.spyOn(server.dataProcessor, 'processData').mockResolvedValue(null)
+  //   const processMessageSpy = spyOn(server.dataProcessor, 'processData').mockResolvedValue(null)
   //   const message: WebSocket.Data = 'abcd'
   //   await server.onMessageReceived(message)
   //   expect(processMessageSpy).toHaveBeenCalled()

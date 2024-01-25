@@ -3,15 +3,17 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import PostgresDb from '..'
-import { API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
-import { type ProfileWifiConfigs } from '../../../models/RCS.Config'
-import { ProfilesWifiConfigsTable } from './profileWifiConfigs'
+import PostgresDb from '../index.js'
+import { API_UNEXPECTED_EXCEPTION } from '../../../utils/constants.js'
+import { type ProfileWifiConfigs } from '../../../models/RCS.Config.js'
+import { ProfilesWifiConfigsTable } from './profileWifiConfigs.js'
+import { jest } from '@jest/globals'
+import { type SpyInstance, spyOn } from 'jest-mock'
 
 describe('profilewificonfig tests', () => {
   let db: PostgresDb
   let profilesWifiConfigsTable: ProfilesWifiConfigsTable
-  let querySpy: jest.SpyInstance
+  let querySpy: SpyInstance<any>
   const wifiConfigs: ProfileWifiConfigs[] = [{ profileName: 'wirelessConfig', priority: 1 } as any]
   const profileName = 'profileName'
   const tenantId = 'tenantId'
@@ -19,7 +21,7 @@ describe('profilewificonfig tests', () => {
   beforeEach(() => {
     db = new PostgresDb('')
     profilesWifiConfigsTable = new ProfilesWifiConfigsTable(db)
-    querySpy = jest.spyOn(profilesWifiConfigsTable.db, 'query')
+    querySpy = spyOn(profilesWifiConfigsTable.db, 'query')
   })
   afterEach(() => {
     jest.clearAllMocks()

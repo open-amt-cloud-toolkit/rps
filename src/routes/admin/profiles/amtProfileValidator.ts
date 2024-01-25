@@ -5,8 +5,8 @@
 
 import { type Request } from 'express'
 import { check, type ValidationChain } from 'express-validator'
-import { ClientAction, TlsSigningAuthority } from '../../../models/RCS.Config'
-import { AMTUserConsent } from '../../../models'
+import { ClientAction, TlsSigningAuthority } from '../../../models/RCS.Config.js'
+import { AMTUserConsent } from '../../../models/index.js'
 
 export const amtProfileValidator = (): ValidationChain[] => [
   check('profileName')

@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type AMTConfiguration, AMTUserConsent } from '../../../models'
-import { createSpyObj } from '../../../test/helper/jest'
+import { type AMTConfiguration, AMTUserConsent } from '../../../models/index.js'
+import { createSpyObj } from '../../../test/helper/jest.js'
 import {
   editProfile,
   getUpdatedData,
@@ -13,14 +13,16 @@ import {
   handleGenerateRandomPassword,
   handleMEBxPassword,
   handleWifiConfigs
-} from './edit'
-import { ClientAction, TlsMode, TlsSigningAuthority } from '../../../models/RCS.Config'
+} from './edit.js'
+import { ClientAction, TlsMode, TlsSigningAuthority } from '../../../models/RCS.Config.js'
+import { jest } from '@jest/globals'
+import { type SpyInstance } from 'jest-mock'
 
 describe('AMT Profile - Edit', () => {
   let resSpy
   let req
-  let getByNameSpy: jest.SpyInstance
-  let writeSecretWithObjectSpy: jest.SpyInstance
+  let getByNameSpy: SpyInstance
+  let writeSecretWithObjectSpy: SpyInstance
 
   beforeEach(() => {
     resSpy = createSpyObj('Response', ['status', 'json', 'end', 'send'])
@@ -415,7 +417,7 @@ describe('handleWifiConfigs tests', () => {
   })
 
   it('should delete profile wifi configs if oldConfig has dhcp enabled and newConfig does not have dhcp enabled', async () => {
-    const result = await handleWifiConfigs(newConfig, oldConfig, profileWifiConfigsDb)
+    const result = await handleWifiConfigs(newConfig, oldConfig, profileWifiConfigsDb as any)
 
     expect(deleteProfileWifiConfigsSpy).toHaveBeenCalledWith('profileName1', 'tenantId')
     expect(result).toEqual([{ profileName: 'P1', priority: 1, tenantId: '123' }, { profileName: 'P1', priority: 1, tenantId: '123' }])
@@ -425,7 +427,7 @@ describe('handleWifiConfigs tests', () => {
     oldConfig.dhcpEnabled = true
     newConfig.dhcpEnabled = false
 
-    const result = await handleWifiConfigs(newConfig, oldConfig, profileWifiConfigsDb)
+    const result = await handleWifiConfigs(newConfig, oldConfig, profileWifiConfigsDb as any)
 
     expect(deleteProfileWifiConfigsSpy).toHaveBeenCalledWith('profileName1', 'tenantId')
     expect(result).toEqual(null)

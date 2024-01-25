@@ -3,14 +3,16 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { createSpyObj } from '../../../test/helper/jest'
-import { createWirelessProfile } from './create'
+import { createSpyObj } from '../../../test/helper/jest.js'
+import { createWirelessProfile } from './create.js'
+import { jest } from '@jest/globals'
+import { type SpyInstance, spyOn } from 'jest-mock'
 
 describe('Wireless - Create', () => {
   let resSpy
   let req
-  let insertSpy: jest.SpyInstance
-  let writeSpy: jest.SpyInstance
+  let insertSpy: SpyInstance<any>
+  let writeSpy: SpyInstance<any>
 
   beforeEach(() => {
     resSpy = createSpyObj('Response', ['status', 'json', 'end', 'send'])
@@ -20,8 +22,8 @@ describe('Wireless - Create', () => {
       body: {},
       query: { }
     }
-    insertSpy = jest.spyOn(req.db.wirelessProfiles, 'insert').mockResolvedValue({})
-    writeSpy = jest.spyOn(req.secretsManager, 'writeSecretWithObject').mockResolvedValue({})
+    insertSpy = spyOn(req.db.wirelessProfiles, 'insert').mockResolvedValue({})
+    writeSpy = spyOn(req.secretsManager, 'writeSecretWithObject').mockResolvedValue({})
     resSpy.status.mockReturnThis()
     resSpy.json.mockReturnThis()
     resSpy.send.mockReturnThis()
@@ -39,7 +41,7 @@ describe('Wireless - Create', () => {
     expect(resSpy.status).toHaveBeenCalledWith(201)
   })
   it('should handle error', async () => {
-    jest.spyOn(req.db.wirelessProfiles, 'insert').mockRejectedValue(null)
+    spyOn(req.db.wirelessProfiles, 'insert').mockRejectedValue(null)
     await createWirelessProfile(req, resSpy)
     expect(insertSpy).toHaveBeenCalledTimes(1)
     expect(resSpy.status).toHaveBeenCalledWith(500)

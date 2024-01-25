@@ -9,9 +9,9 @@ import {
   type ISecretManagerService,
   type TLSCredentials,
   type WifiCredentials
-} from '../../interfaces/ISecretManagerService'
-import { type ILogger } from '../../interfaces/ILogger'
-import { Environment } from '../../utils/Environment'
+} from '../../interfaces/ISecretManagerService.js'
+import { type ILogger } from '../../interfaces/ILogger.js'
+import { Environment } from '../../utils/Environment.js'
 import got, { type Got } from 'got'
 
 export class VaultService implements ISecretManagerService {

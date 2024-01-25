@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { parseChunkedMessage } from './parseChunkedMessage'
-import { wsmanGenSettingsGood } from '../test/helper/AMTMessages'
+import { parseChunkedMessage } from './parseChunkedMessage.js'
+import { wsmanGenSettingsGood } from '../test/helper/AMTMessages.js'
 
 describe('parsing chunked messages', () => {
   const msg1 = 'This is a basic message 01\n.'

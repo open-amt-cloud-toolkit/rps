@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { AuthenticationProtocols, type FormOption } from './constants'
+import { AuthenticationProtocols, type FormOption } from './constants.js'
 
 describe('Test AuthenticationProtocols Constants', () => {
   AuthenticationProtocols.all().forEach((m: FormOption<number>) => {

@@ -3,18 +3,18 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type IDB } from '../../interfaces/database/IDb'
-import { Pool, type QueryResult } from 'pg'
-import Logger from '../../Logger'
-import { CiraConfigTable } from './tables/ciraConfigs'
-import { ProfilesTable } from './tables/profiles'
-import { DomainsTable } from './tables/domains'
-import { ProfilesWifiConfigsTable } from './tables/profileWifiConfigs'
-import { WirelessProfilesTable } from './tables/wirelessProfiles'
-import { IEEE8021xProfilesTable } from './tables/ieee8021xProfiles'
+import { type IDB } from '../../interfaces/database/IDb.js'
+import pg from 'pg'
+import Logger from '../../Logger.js'
+import { CiraConfigTable } from './tables/ciraConfigs.js'
+import { ProfilesTable } from './tables/profiles.js'
+import { DomainsTable } from './tables/domains.js'
+import { ProfilesWifiConfigsTable } from './tables/profileWifiConfigs.js'
+import { WirelessProfilesTable } from './tables/wirelessProfiles.js'
+import { IEEE8021xProfilesTable } from './tables/ieee8021xProfiles.js'
 
 export default class Db implements IDB {
-  pool: Pool
+  pool: pg.Pool
   ciraConfigs: CiraConfigTable
   domains: DomainsTable
   profiles: ProfilesTable
@@ -25,7 +25,7 @@ export default class Db implements IDB {
   log: Logger = new Logger('PostgresDb')
 
   constructor (connectionString: string) {
-    this.pool = new Pool({
+    this.pool = new pg.Pool({
       connectionString
     })
     this.ciraConfigs = new CiraConfigTable(this)
@@ -36,7 +36,7 @@ export default class Db implements IDB {
     this.ieee8021xProfiles = new IEEE8021xProfilesTable(this)
   }
 
-  async query<T>(text: string, params?: any): Promise<QueryResult<T>> {
+  async query<T>(text: string, params?: any): Promise<pg.QueryResult<T>> {
     const start = Date.now()
     const res = await this.pool.query<T>(text, params)
     const duration = Date.now() - start

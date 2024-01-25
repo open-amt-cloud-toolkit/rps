@@ -4,10 +4,10 @@
  **********************************************************************/
 
 import { check, type CustomValidator } from 'express-validator'
-import { NodeForge } from '../../../NodeForge'
-import { CertManager } from '../../../certManager'
-import Logger from '../../../Logger'
-import { type CertsAndKeys } from '../../../models'
+import { NodeForge } from '../../../NodeForge.js'
+import { CertManager } from '../../../certManager.js'
+import Logger from '../../../Logger.js'
+import { type CertsAndKeys } from '../../../models/index.js'
 
 const nodeForge = new NodeForge()
 const certManager = new CertManager(new Logger('CertManager'), nodeForge)

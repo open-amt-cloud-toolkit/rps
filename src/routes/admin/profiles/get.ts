@@ -3,13 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import Logger from '../../../Logger'
-import { API_RESPONSE, NOT_FOUND_EXCEPTION, NOT_FOUND_MESSAGE } from '../../../utils/constants'
-import { type AMTConfiguration } from '../../../models'
-import { MqttProvider } from '../../../utils/MqttProvider'
+import Logger from '../../../Logger.js'
+import { API_RESPONSE, NOT_FOUND_EXCEPTION, NOT_FOUND_MESSAGE } from '../../../utils/constants.js'
+import { type AMTConfiguration } from '../../../models/index.js'
+import { MqttProvider } from '../../../utils/MqttProvider.js'
 import { type Request, type Response } from 'express'
-import handleError from '../../../utils/handleError'
-import { RPSError } from '../../../utils/RPSError'
+import handleError from '../../../utils/handleError.js'
+import { RPSError } from '../../../utils/RPSError.js'
 
 export async function getProfile (req: Request, res: Response): Promise<void> {
   const log = new Logger('getProfile')

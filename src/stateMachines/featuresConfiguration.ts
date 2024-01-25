@@ -4,11 +4,11 @@
  **********************************************************************/
 
 import { type AMT, type CIM, Common, type IPS } from '@open-amt-cloud-toolkit/wsman-messages'
-import { type HttpHandler } from '../HttpHandler'
-import Logger from '../Logger'
+import { type HttpHandler } from '../HttpHandler.js'
+import Logger from '../Logger.js'
 import { assign, createMachine, interpret } from 'xstate'
-import { type AMTConfiguration, AMTRedirectionServiceEnabledStates, mapAMTUserConsent } from '../models'
-import { invokeWsmanCall } from './common'
+import { type AMTConfiguration, AMTRedirectionServiceEnabledStates, mapAMTUserConsent } from '../models/index.js'
+import { invokeWsmanCall } from './common.js'
 
 export interface FeatureContext {
   clientId: string

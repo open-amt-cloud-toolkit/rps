@@ -5,17 +5,17 @@
 
 import { type AMT, type CIM, type IPS } from '@open-amt-cloud-toolkit/wsman-messages'
 import { assign, createMachine, sendTo } from 'xstate'
-import { type HttpHandler } from '../HttpHandler'
-import Logger from '../Logger'
-import { type AMTConfiguration } from '../models'
-import { devices } from '../WebSocketListener'
-import { Error } from './error'
-import { Configurator } from '../Configurator'
-import { DbCreatorFactory } from '../factories/DbCreatorFactory'
-import { invokeWsmanCall } from './common'
-import { UNEXPECTED_PARSE_ERROR } from '../utils/constants'
-import { getCertFromEnterpriseAssistant, initiateCertRequest, sendEnterpriseAssistantKeyPairResponse } from './enterpriseAssistant'
-import { RPSError } from '../utils/RPSError'
+import { type HttpHandler } from '../HttpHandler.js'
+import Logger from '../Logger.js'
+import { type AMTConfiguration } from '../models/index.js'
+import { devices } from '../devices.js'
+import { Error } from './error.js'
+import { Configurator } from '../Configurator.js'
+import { DbCreatorFactory } from '../factories/DbCreatorFactory.js'
+import { invokeWsmanCall } from './common.js'
+import { UNEXPECTED_PARSE_ERROR } from '../utils/constants.js'
+import { getCertFromEnterpriseAssistant, initiateCertRequest, sendEnterpriseAssistantKeyPairResponse } from './enterpriseAssistant.js'
+import { RPSError } from '../utils/RPSError.js'
 
 interface WiredConfigContext {
   amtProfile: AMTConfiguration

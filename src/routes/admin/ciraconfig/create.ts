@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type CIRAConfig } from '../../../models/RCS.Config'
-import Logger from '../../../Logger'
-import { MqttProvider } from '../../../utils/MqttProvider'
+import { type CIRAConfig } from '../../../models/RCS.Config.js'
+import Logger from '../../../Logger.js'
+import { MqttProvider } from '../../../utils/MqttProvider.js'
 import { type Request, type Response } from 'express'
-import handleError from '../../../utils/handleError'
-import { type CiraConfigSecrets } from '../../../interfaces/ISecretManagerService'
+import handleError from '../../../utils/handleError.js'
+import { type CiraConfigSecrets } from '../../../interfaces/ISecretManagerService.js'
 
 export async function createCiraConfig (req: Request, res: Response): Promise<void> {
   const log = new Logger('createCiraConfig')

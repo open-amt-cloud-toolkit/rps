@@ -3,13 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type IProfilesWifiConfigsTable } from '../../../interfaces/database/IProfileWifiConfigsDb'
-import { type ProfileWifiConfigs } from '../../../models/RCS.Config'
-import { API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
-import { RPSError } from '../../../utils/RPSError'
+import { type IProfilesWifiConfigsTable } from '../../../interfaces/database/IProfileWifiConfigsDb.js'
+import { type ProfileWifiConfigs } from '../../../models/RCS.Config.js'
+import { API_UNEXPECTED_EXCEPTION } from '../../../utils/constants.js'
+import { RPSError } from '../../../utils/RPSError.js'
 import format from 'pg-format'
-import type PostgresDb from '..'
-import { PostgresErr } from '../errors'
+import type PostgresDb from '../index.js'
+import { PostgresErr } from '../errors.js'
 
 export class ProfilesWifiConfigsTable implements IProfilesWifiConfigsTable {
   db: PostgresDb

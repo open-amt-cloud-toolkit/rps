@@ -4,15 +4,24 @@
  **********************************************************************/
 
 import { type AMT } from '@open-amt-cloud-toolkit/wsman-messages'
-import * as common from './common'
-import { HttpResponseError } from './common'
-import got from 'got'
-import { type DoneResponse, StatusFailed } from './doneResponse'
-import { config, setupTestClient } from '../../test/helper/Config'
-import { runTilDone } from '../../test/helper/xstate'
-import { type HostNameInfo, SyncHostName, type SyncHostNameEvent, SyncHostNameEventType } from './syncHostName'
-import { Environment } from '../../utils/Environment'
-import resetAllMocks = jest.resetAllMocks
+import { HttpResponseError, commonContext, coalesceMessage } from './common.js'
+import { type DoneResponse, StatusFailed } from './doneResponse.js'
+import { config, setupTestClient } from '../../test/helper/Config.js'
+import { runTilDone } from '../../test/helper/xstate.js'
+import { Environment } from '../../utils/Environment.js'
+import { jest } from '@jest/globals'
+
+import { type HostNameInfo, type SyncHostName as SyncHostNameType, type SyncHostNameEvent } from './syncHostName.js'
+
+const invokeWsmanCallSpy = jest.fn<any>()
+jest.unstable_mockModule('./common.js', () => ({
+  invokeWsmanCall: invokeWsmanCallSpy,
+  HttpResponseError,
+  commonContext,
+  coalesceMessage
+}))
+
+const { SyncHostName, SyncHostNameEventType } = await import ('./syncHostName.js')
 
 jest.mock('got')
 
@@ -23,14 +32,14 @@ const HttpBadRequestError = new HttpResponseError('Bad Request', 400)
 let clientId: string
 let doneResponse: DoneResponse
 let event: SyncHostNameEvent
-let implementation: SyncHostName
+let implementation: SyncHostNameType
 let hostNameInfo: HostNameInfo
 let generalSettingsRsp: AMT.Models.GeneralSettingsResponse
 let putRsp: any
 let mpsRsp: any
 
 beforeEach(() => {
-  resetAllMocks()
+  jest.resetAllMocks()
   clientId = setupTestClient()
   implementation = new SyncHostName()
   doneResponse = {
@@ -60,10 +69,10 @@ beforeEach(() => {
 })
 
 const runTheTest = async function (): Promise<void> {
-  jest.spyOn(common, 'invokeWsmanCall')
+  invokeWsmanCallSpy
     .mockResolvedValueOnce(generalSettingsRsp)
     .mockResolvedValueOnce(putRsp)
-  jest.spyOn(got, 'patch').mockResolvedValue(mpsRsp)
+  // spyOn(gotClient, 'patch').mockResolvedValue(mpsRsp)
   await runTilDone(implementation.machine, event, doneResponse)
 }
 
@@ -98,13 +107,12 @@ it('should fail on bad response from MPS', async () => {
 })
 it('should fail getting general settings on http response error', async () => {
   doneResponse.status = StatusFailed
-  jest.spyOn(common, 'invokeWsmanCall')
-    .mockRejectedValueOnce(HttpBadRequestError)
+  invokeWsmanCallSpy.mockRejectedValueOnce(HttpBadRequestError)
   await runTilDone(implementation.machine, event, doneResponse)
 })
 it('should fail put response on http response error', async () => {
   doneResponse.status = StatusFailed
-  jest.spyOn(common, 'invokeWsmanCall')
+  invokeWsmanCallSpy
     .mockResolvedValueOnce(generalSettingsRsp)
     .mockRejectedValueOnce(HttpBadRequestError)
   await runTilDone(implementation.machine, event, doneResponse)

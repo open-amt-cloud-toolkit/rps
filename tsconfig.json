@@ -1,21 +1,15 @@
 {
     "compilerOptions": {
         "outDir": "./dist",
-        "moduleResolution": "node",
-        "module": "commonjs",
+        "baseUrl": "./src",
+        "moduleResolution": "NodeNext",
+        "module": "NodeNext",
         "allowJs": true,
-        "target": "es2019",
+        "target": "ESNext",
         "sourceMap": true,
-        "resolveJsonModule": true,
         "esModuleInterop": true,
-        "typeRoots": [
-            "node_modules/@types"
-        ]
     },
     "include": [
         "./src/**/*"
-    ],
-    "type": [
-        "@types/node"
     ]
 }
