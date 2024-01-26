@@ -32,12 +32,12 @@ export interface CIRAConfigContext {
   xmlMessage: string // the message we send to the device
   message: any // the parsed json response
   ciraConfig: CIRAConfig
-  profile: AMTConfiguration
+  profile: AMTConfiguration | null
   statusMessage: string
   privateCerts: any[]
-  httpHandler: HttpHandler
+  httpHandler: HttpHandler | null
   amt?: AMT.Messages
-  retryCount?: number
+  retryCount: number
   tenantId: string
 }
 
@@ -81,10 +81,11 @@ export class CIRAConfiguration {
         xmlMessage: '',
         statusMessage: '',
         message: null,
-        ciraConfig: null,
+        ciraConfig: {} as any,
         profile: null,
         privateCerts: [],
-        tenantId: ''
+        tenantId: '',
+        retryCount: 0
       },
       id: 'cira-machine',
       initial: 'CIRACONFIGURED',
@@ -101,7 +102,10 @@ export class CIRAConfiguration {
         GET_CIRA_CONFIG: {
           invoke: {
             // TODO: [tech debt] coupling, would expect a direct call to the persistence with the name of the cira config to retrieve it rather than use (amt) profile manager
-            src: async (context, event) => await this.configurator.profileManager.getCiraConfiguration(context.profile.profileName, context.tenantId),
+            src: async (context, event) => {
+              const profileName = context.profile?.profileName != null ? context.profile.profileName : null
+              await this.configurator.profileManager.getCiraConfiguration(profileName, context.tenantId)
+            },
             id: 'get-cira-config',
             onDone: {
               actions: assign({ ciraConfig: (context, event) => event.data }),
@@ -112,7 +116,10 @@ export class CIRAConfiguration {
         },
         SET_MPS_PASSWORD: {
           invoke: {
-            src: async (context, _) => await this.configurator.secretsManager.getSecretAtPath(`CIRAConfigs/${context.ciraConfig.configName}`),
+            src: async (context, _) => {
+              const configName = context.ciraConfig?.configName != null ? context.ciraConfig.configName : ''
+              await this.configurator.secretsManager.getSecretAtPath(`CIRAConfigs/${configName}`)
+            },
             id: 'set-mps-password',
             onDone: {
               actions: assign((context, event) => {
@@ -150,7 +157,7 @@ export class CIRAConfiguration {
             src: async (context, event) => await this.configurator.secretsManager.writeSecretWithObject(`devices/${devices[context.clientId].uuid}`, {
               MPS_PASSWORD: context.ciraConfig.password,
               AMT_PASSWORD: devices[context.clientId].amtPassword,
-              MEBX_PASSWORD: devices[context.clientId].action === ClientAction.ADMINCTLMODE ? devices[context.clientId].mebxPassword : null
+              MEBX_PASSWORD: devices[context.clientId].action === ClientAction.ADMINCTLMODE ? devices[context.clientId].mebxPassword : ''
             }),
             id: 'save-mps-password-to-secret-provider',
             onDone: 'SAVE_DEVICE_TO_MPS',
@@ -168,7 +175,7 @@ export class CIRAConfiguration {
                 guid: devices[context.clientId].uuid,
                 hostname: devices[context.clientId].hostname,
                 mpsusername: context.ciraConfig.username,
-                tags: context.profile.tags ?? [],
+                tags: context.profile != null ? context.profile.tags ?? [] : null,
                 tenantId: context.ciraConfig.tenantId
               }
             }),
@@ -352,7 +359,7 @@ export class CIRAConfiguration {
       },
       actions: {
         'Update Configuration Status': (context, event) => {
-        // TODO: [tech debt] uncouple reference dependency, state machine should return status
+          // TODO: [tech debt] uncouple reference dependency, state machine should return status
           devices[context.clientId].status.CIRAConnection = context.statusMessage
         },
         'Reset Unauth Count': (context, event) => { devices[context.clientId].unauthCount = 0 },
@@ -372,86 +379,130 @@ export class CIRAConfiguration {
   }
 
   async enumerateManagementPresenceRemoteSAP (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.ManagementPresenceRemoteSAP.Enumerate()
-    return await invokeWsmanCall(context)
+    if (context.amt != null) {
+      context.xmlMessage = context.amt.ManagementPresenceRemoteSAP.Enumerate()
+      return await invokeWsmanCall(context)
+    } else {
+      this.logger.error('Null object in enumerateManagementPresenceRemoteSAP()')
+    }
   }
 
   async pullManagementPresenceRemoteSAP (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
-    // TODO: [tech debt] uncouple nested dependency for wrapped message
-    context.xmlMessage = context.amt.ManagementPresenceRemoteSAP.Pull(context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
-    return await invokeWsmanCall(context)
+    if (context.amt != null) {
+      // TODO: [tech debt] uncouple nested dependency for wrapped message
+      context.xmlMessage = context.amt.ManagementPresenceRemoteSAP.Pull(context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+      return await invokeWsmanCall(context)
+    } else {
+      this.logger.error('Null object in pullManagementPresenceRemoteSAP()')
+    }
   }
 
   async addRemoteAccessPolicyRule (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
-    const selector = {
-      name: 'Name',
-      value: context.message.Envelope.Body.PullResponse.Items.AMT_ManagementPresenceRemoteSAP.Name
+    if (context.amt != null) {
+      const selector = {
+        name: 'Name',
+        value: context.message.Envelope.Body.PullResponse.Items.AMT_ManagementPresenceRemoteSAP.Name
+      }
+      const policy: AMT.Models.RemoteAccessPolicyRule = {
+        Trigger: 2, // 2 – Periodic
+        TunnelLifeTime: 0, // 0 means that the tunnel should stay open until it is closed
+        ExtendedData: 'AAAAAAAAABk=' // Equals to 25 seconds in base 64 with network order.
+      }
+      context.xmlMessage = context.amt.RemoteAccessService.AddRemoteAccessPolicyRule(policy, selector)
+      return await invokeWsmanCall(context, 2)
+    } else {
+      this.logger.error('Null object in addRemoteAccessPolicyRule()')
     }
-    const policy: AMT.Models.RemoteAccessPolicyRule = {
-      Trigger: 2, // 2 – Periodic
-      TunnelLifeTime: 0, // 0 means that the tunnel should stay open until it is closed
-      ExtendedData: 'AAAAAAAAABk=' // Equals to 25 seconds in base 64 with network order.
-    }
-    context.xmlMessage = context.amt.RemoteAccessService.AddRemoteAccessPolicyRule(policy, selector)
-    return await invokeWsmanCall(context, 2)
   }
 
   async getEnvironmentDetectionSettings (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.EnvironmentDetectionSettingData.Get()
-    return await invokeWsmanCall(context, 2)
+    if (context.amt != null) {
+      context.xmlMessage = context.amt.EnvironmentDetectionSettingData.Get()
+      return await invokeWsmanCall(context, 2)
+    } else {
+      this.logger.error('Null object in getEnvironmentDetectionSettings()')
+    }
   }
 
   async putEnvironmentDetectionSettings (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
-    const envSettings: AMT.Models.EnvironmentDetectionSettingData = context.message.Envelope.Body.AMT_EnvironmentDetectionSettingData
-    if (Environment.Config.disable_cira_domain_name) {
-      envSettings.DetectionStrings = [Environment.Config.disable_cira_domain_name]
+    if (context.amt != null && Environment.Config != null) {
+      const envSettings: AMT.Models.EnvironmentDetectionSettingData = context.message.Envelope.Body.AMT_EnvironmentDetectionSettingData
+      if (Environment.Config.disable_cira_domain_name) {
+        envSettings.DetectionStrings = [Environment.Config.disable_cira_domain_name]
+      } else {
+        envSettings.DetectionStrings = [`${randomUUID()}.com`]
+      }
+      context.xmlMessage = context.amt.EnvironmentDetectionSettingData.Put(envSettings)
+      return await invokeWsmanCall(context, 2)
     } else {
-      envSettings.DetectionStrings = [`${randomUUID()}.com`]
+      this.logger.error('Null object in putEnvironmentDetectionSettings()')
     }
-    context.xmlMessage = context.amt.EnvironmentDetectionSettingData.Put(envSettings)
-    return await invokeWsmanCall(context, 2)
   }
 
   async addTrustedRootCertificate (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.PublicKeyManagementService.AddTrustedRootCertificate({ CertificateBlob: context.ciraConfig.mpsRootCertificate })
-    return await invokeWsmanCall(context, 2)
+    if (context.amt != null) {
+      context.xmlMessage = context.amt.PublicKeyManagementService.AddTrustedRootCertificate({ CertificateBlob: context.ciraConfig.mpsRootCertificate })
+      return await invokeWsmanCall(context, 2)
+    } else {
+      this.logger.error('Null object in addTrustedRootCertificate()')
+    }
   }
 
   async addMPS (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
-    const server: Models.MPServer = {
-      AccessInfo: context.ciraConfig.mpsServerAddress,
-      InfoFormat: context.ciraConfig.serverAddressFormat,
-      Port: context.ciraConfig.mpsPort,
-      AuthMethod: context.ciraConfig.authMethod,
-      Username: context.ciraConfig.username,
-      Password: context.ciraConfig.password
+    if (context.amt != null) {
+      const server: Models.MPServer = {
+        AccessInfo: context.ciraConfig.mpsServerAddress,
+        InfoFormat: context.ciraConfig.serverAddressFormat,
+        Port: context.ciraConfig.mpsPort,
+        AuthMethod: context.ciraConfig.authMethod,
+        Username: context.ciraConfig.username,
+        Password: context.ciraConfig.password
+      }
+      if (context.ciraConfig.serverAddressFormat === 3 && context.ciraConfig.commonName) {
+        server.CommonName = context.ciraConfig.commonName
+      }
+      context.xmlMessage = context.amt.RemoteAccessService.AddMPS(server)
+      return await invokeWsmanCall(context, 2)
+    } else {
+      this.logger.error('Null object in addMPS()')
     }
-    if (context.ciraConfig.serverAddressFormat === 3 && context.ciraConfig.commonName) {
-      server.CommonName = context.ciraConfig.commonName
-    }
-    context.xmlMessage = context.amt.RemoteAccessService.AddMPS(server)
-    return await invokeWsmanCall(context, 2)
   }
 
   async enumerateRemoteAccessPolicyAppliesToMPS (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.RemoteAccessPolicyAppliesToMPS.Enumerate()
-    return await invokeWsmanCall(context, 2)
+    if (context.amt != null) {
+      context.xmlMessage = context.amt.RemoteAccessPolicyAppliesToMPS.Enumerate()
+      return await invokeWsmanCall(context, 2)
+    } else {
+      this.logger.error('Null object in enumerateRemoteAccessPolicyAppliesToMPS()')
+    }
   }
 
   async pullRemoteAccessPolicyAppliesToMPS (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.RemoteAccessPolicyAppliesToMPS.Pull(context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
-    return await invokeWsmanCall(context)
+    if (context.amt != null) {
+      context.xmlMessage = context.amt.RemoteAccessPolicyAppliesToMPS.Pull(context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+      return await invokeWsmanCall(context)
+    } else {
+      this.logger.error('Null object in pullRemoteAccessPolicyAppliesToMPS()')
+    }
   }
 
   async putRemoteAccessPolicyAppliesToMPS (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
-    const data = context.message.Envelope.Body.PullResponse.Items.AMT_RemoteAccessPolicyAppliesToMPS
-    data.MpsType = MPSType.Both
-    context.xmlMessage = context.amt.RemoteAccessPolicyAppliesToMPS.Put(data)
-    return await invokeWsmanCall(context, 2)
+    if (context.amt != null) {
+      const data = context.message.Envelope.Body.PullResponse.Items.AMT_RemoteAccessPolicyAppliesToMPS
+      data.MpsType = MPSType.Both
+      context.xmlMessage = context.amt.RemoteAccessPolicyAppliesToMPS.Put(data)
+      return await invokeWsmanCall(context, 2)
+    } else {
+      this.logger.error('Null object in putRemoteAccessPolicyAppliesToMPS()')
+    }
   }
 
   async userInitiatedConnectionService (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.UserInitiatedConnectionService.RequestStateChange(32771)
-    return await invokeWsmanCall(context, 2)
+    if (context.amt != null) {
+      context.xmlMessage = context.amt.UserInitiatedConnectionService.RequestStateChange(32771)
+      return await invokeWsmanCall(context, 2)
+    } else {
+      this.logger.error('Null object in userInitiatedConnectionService()')
+    }
   }
 }

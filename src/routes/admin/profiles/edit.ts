@@ -20,7 +20,7 @@ export async function editProfile (req: Request, res: Response): Promise<void> {
   const newConfig: AMTConfiguration = req.body
   newConfig.tenantId = req.tenantId || ''
   try {
-    const oldConfig: AMTConfiguration = await req.db.profiles.getByName(newConfig.profileName, req.tenantId)
+    const oldConfig: AMTConfiguration | null = await req.db.profiles.getByName(newConfig.profileName, req.tenantId)
 
     if (oldConfig == null) {
       throw new RPSError(NOT_FOUND_MESSAGE('AMT', newConfig.profileName), NOT_FOUND_EXCEPTION)
@@ -28,8 +28,8 @@ export async function editProfile (req: Request, res: Response): Promise<void> {
       let amtConfig: AMTConfiguration = await getUpdatedData(newConfig, oldConfig)
       amtConfig.wifiConfigs = await handleWifiConfigs(newConfig, oldConfig, req.db.profileWirelessConfigs)
       // Assigning value key value for AMT Random Password and MEBx Random Password to store in database
-      const amtPwdBefore = amtConfig.amtPassword
-      const mebxPwdBefore = amtConfig.mebxPassword
+      const amtPwdBefore = amtConfig.amtPassword ?? ''
+      const mebxPwdBefore = amtConfig.mebxPassword ?? ''
       if (req.secretsManager) {
         // store the AMT password key into db
         if (!amtConfig.generateRandomPassword) {
@@ -64,16 +64,16 @@ export async function editProfile (req: Request, res: Response): Promise<void> {
         }
         // store the password sent into Vault
         if (req.secretsManager && (!amtConfig.generateRandomPassword || !amtConfig.generateRandomMEBxPassword)) {
-          const data: DeviceCredentials = { AMT_PASSWORD: null, MEBX_PASSWORD: null }
+          const data: DeviceCredentials = {
+            AMT_PASSWORD: amtConfig.generateRandomPassword ? '' : amtPwdBefore,
+            MEBX_PASSWORD: amtConfig.generateRandomMEBxPassword ? '' : mebxPwdBefore
+          }
           if (!amtConfig.generateRandomPassword) {
-            data.AMT_PASSWORD = amtPwdBefore
             log.debug('AMT Password written to vault')
           }
           if (!amtConfig.generateRandomMEBxPassword) {
-            data.MEBX_PASSWORD = mebxPwdBefore
             log.debug('MEBX Password written to vault')
           }
-
           if (data.AMT_PASSWORD != null || data.MEBX_PASSWORD != null) {
             await req.secretsManager.writeSecretWithObject(`profiles/${amtConfig.profileName}`, data)
           }
@@ -130,13 +130,13 @@ export const handleGenerateRandomMEBxPassword = (amtConfig: AMTConfiguration, ne
   return amtConfig
 }
 
-export const handleWifiConfigs = async (newConfig: AMTConfiguration, oldConfig: AMTConfiguration, profileWifiConfigsDb: IProfilesWifiConfigsTable): Promise<ProfileWifiConfigs[]> => {
-  let wifiConfigs: ProfileWifiConfigs[] = null
+export const handleWifiConfigs = async (newConfig: AMTConfiguration, oldConfig: AMTConfiguration, profileWifiConfigsDb: IProfilesWifiConfigsTable): Promise<ProfileWifiConfigs[] | null> => {
+  let wifiConfigs: ProfileWifiConfigs[] | null = null
   if (oldConfig.dhcpEnabled && !newConfig.dhcpEnabled) {
     await profileWifiConfigsDb.deleteProfileWifiConfigs(newConfig.profileName, newConfig.tenantId)
   } else if ((oldConfig.dhcpEnabled && newConfig.dhcpEnabled) || (!oldConfig.dhcpEnabled && newConfig.dhcpEnabled)) {
     await profileWifiConfigsDb.deleteProfileWifiConfigs(newConfig.profileName, newConfig.tenantId)
-    wifiConfigs = newConfig.wifiConfigs
+    wifiConfigs = newConfig.wifiConfigs ?? null
   }
   return wifiConfigs
 }

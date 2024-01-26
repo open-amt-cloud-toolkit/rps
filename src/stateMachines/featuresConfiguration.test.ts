@@ -53,7 +53,7 @@ describe('Features State Machine', () => {
         password: 'P@ssw0rd'
       },
       messageId: 1
-    }
+    } as any
     const promise = new Promise((resolve, reject) => {
       devices[clientId].resolve = resolve
       devices[clientId].reject = reject

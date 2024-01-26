@@ -76,7 +76,7 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
     * @param {string} profileName
     * @returns {WirelessConfig } WirelessConfig object
     */
-  async getByName (configName: string, tenantId: string = ''): Promise<WirelessConfig> {
+  async getByName (configName: string, tenantId: string = ''): Promise<WirelessConfig | null> {
     const results = await this.db.query<WirelessConfig>(`
     SELECT 
       wireless_profile_name as "profileName", 
@@ -92,7 +92,12 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
     FROM wirelessconfigs 
     WHERE wireless_profile_name = $1 and tenant_id = $2`, [configName, tenantId])
 
-    return results.rowCount > 0 ? results.rows[0] : null
+    if (results?.rowCount) {
+      if (results.rowCount > 0) {
+        return results.rows[0]
+      }
+    }
+    return null
   }
 
   /**
@@ -106,7 +111,12 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
     FROM wirelessconfigs 
     WHERE wireless_profile_name = $1 and tenant_id = $2`, [configName, tenantId])
 
-    return results.rowCount > 0
+    if (results?.rowCount) {
+      if (results.rowCount > 0) {
+        return true
+      }
+    }
+    return false
   }
 
   /**
@@ -119,15 +129,19 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
     SELECT 1
     FROM profiles_wirelessconfigs
     WHERE wireless_profile_name = $1 and tenant_id = $2`, [configName, tenantId])
-    if (profiles.rowCount > 0) {
-      throw new RPSError(NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT('Wireless', configName), 'Foreign key violation')
+    if (profiles?.rowCount) {
+      if (profiles.rowCount > 0) {
+        throw new RPSError(NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT('Wireless', configName), 'Foreign key violation')
+      }
     }
     try {
       const results = await this.db.query(`
       DELETE
       FROM wirelessconfigs
       WHERE wireless_profile_name = $1 and tenant_id = $2`, [configName, tenantId])
-      return results.rowCount > 0
+      if (results?.rowCount) {
+        return results.rowCount > 0
+      }
     } catch (error) {
       this.log.error(`Failed to delete wireless configuration : ${configName}`, error)
       if (error.code === PostgresErr.C23_FOREIGN_KEY_VIOLATION) {
@@ -135,6 +149,7 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
       }
       throw new RPSError(API_UNEXPECTED_EXCEPTION(`Delete wireless configuration : ${configName}`))
     }
+    return false
   }
 
   /**
@@ -142,7 +157,7 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
     * @param {WirelessConfig } wirelessConfig
     * @returns {WirelessConfig } Returns WirelessConfig object
     */
-  async insert (wirelessConfig: WirelessConfig): Promise<WirelessConfig> {
+  async insert (wirelessConfig: WirelessConfig): Promise<WirelessConfig | null> {
     try {
       const date = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
       const results = await this.db.query(`
@@ -161,11 +176,12 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
         wirelessConfig.tenantId,
         wirelessConfig.ieee8021xProfileName
       ])
-      if (results?.rowCount > 0) {
-        const config = await this.getByName(wirelessConfig.profileName, wirelessConfig.tenantId)
-        return config
+      if (results?.rowCount) {
+        if (results.rowCount > 0) {
+          const config = await this.getByName(wirelessConfig.profileName, wirelessConfig.tenantId)
+          return config
+        }
       }
-      return null
     } catch (error) {
       if (error.code === PostgresErr.C23_UNIQUE_VIOLATION) {
         throw new RPSError(NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE('Wireless', wirelessConfig.profileName), 'Unique key violation')
@@ -173,6 +189,7 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
       throw new RPSError(NETWORK_CONFIG_ERROR('Wireless', wirelessConfig.profileName)
       )
     }
+    return null
   }
 
   /**
@@ -180,8 +197,8 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
     * @param {WirelessConfig } wirelessConfig
     * @returns {boolean} Returns wirelessConfig object
     */
-  async update (wirelessConfig: WirelessConfig): Promise<WirelessConfig> {
-    let latestItem: WirelessConfig
+  async update (wirelessConfig: WirelessConfig): Promise<WirelessConfig | null> {
+    let latestItem: WirelessConfig | null
 
     try {
       const results = await this.db.query(`
@@ -200,9 +217,12 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
         wirelessConfig.ieee8021xProfileName,
         wirelessConfig.version
       ])
+
       latestItem = await this.getByName(wirelessConfig.profileName, wirelessConfig.tenantId)
-      if (results?.rowCount > 0) {
-        return latestItem
+      if (results?.rowCount) {
+        if (results.rowCount > 0) {
+          return latestItem
+        }
       }
     } catch (error) {
       throw new RPSError(NETWORK_CONFIG_ERROR('Wireless', wirelessConfig.profileName)

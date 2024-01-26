@@ -53,8 +53,8 @@ describe('Unconfiguration State Machine', () => {
       cim: new CIM.Messages(),
       wiredSettings: null,
       wifiSettings: null
-    }
-    remoteAccessPolicyRuleSpy = spyOn(unconfigContext.amt.RemoteAccessPolicyRule, 'Delete').mockReturnValue('abcdef')
+    } as any
+    remoteAccessPolicyRuleSpy = spyOn(unconfigContext.amt!.RemoteAccessPolicyRule, 'Delete').mockReturnValue('abcdef')
     devices[clientId] = {
       unauthCount: 0,
       ClientId: clientId,
@@ -72,7 +72,7 @@ describe('Unconfiguration State Machine', () => {
       },
       uuid: '4c4c4544-004b-4210-8033-b6c04f504633',
       messageId: 1
-    }
+    } as any
     currentStateIndex = 0
     configuration = {
       services: {
@@ -477,7 +477,7 @@ describe('Unconfiguration State Machine', () => {
 
   describe('Ethernet Port Settings', () => {
     it('should enumerate ethernet port settings', async () => {
-      const ethernetPortSettingsSpy = spyOn(unconfigContext.amt.EthernetPortSettings, 'Enumerate').mockImplementation(() => 'abcdef')
+      const ethernetPortSettingsSpy = spyOn(unconfigContext.amt!.EthernetPortSettings, 'Enumerate').mockImplementation(() => 'abcdef')
       await unconfiguration.enumerateEthernetPortSettings(unconfigContext)
       expect(ethernetPortSettingsSpy).toHaveBeenCalled()
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
@@ -493,7 +493,7 @@ describe('Unconfiguration State Machine', () => {
           }
         }
       }
-      const ethernetPortSettingsSpy = spyOn(unconfigContext.amt.EthernetPortSettings, 'Pull').mockImplementation(() => 'abcdef')
+      const ethernetPortSettingsSpy = spyOn(unconfigContext.amt!.EthernetPortSettings, 'Pull').mockImplementation(() => 'abcdef')
       await unconfiguration.pullEthernetPortSettings(unconfigContext)
       expect(ethernetPortSettingsSpy).toHaveBeenCalled()
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
@@ -524,7 +524,7 @@ describe('Unconfiguration State Machine', () => {
           }
         }
       }
-      unconfiguration.readEthernetPortSettings(unconfigContext, null)
+      unconfiguration.readEthernetPortSettings(unconfigContext, null as any)
       expect(unconfigContext.wiredSettings).toBeDefined()
       expect(unconfigContext.wifiSettings).toBeDefined()
     })
@@ -552,7 +552,7 @@ describe('Unconfiguration State Machine', () => {
           }
         }
       }
-      unconfiguration.readEthernetPortSettings(unconfigContext, null)
+      unconfiguration.readEthernetPortSettings(unconfigContext, null as any)
       expect(unconfigContext.wiredSettings).toBeDefined()
       expect(unconfigContext.wifiSettings).toBeDefined()
     })
@@ -573,7 +573,7 @@ describe('Unconfiguration State Machine', () => {
           }
         }
       }
-      unconfiguration.readEthernetPortSettings(unconfigContext, null)
+      unconfiguration.readEthernetPortSettings(unconfigContext, null as any)
       expect(unconfigContext.wiredSettings).toBeNull()
       expect(unconfigContext.wifiSettings).toBeDefined()
     })
@@ -593,7 +593,7 @@ describe('Unconfiguration State Machine', () => {
           }
         }
       }
-      unconfiguration.readEthernetPortSettings(unconfigContext, null)
+      unconfiguration.readEthernetPortSettings(unconfigContext, null as any)
       expect(unconfigContext.wifiSettings).toBeNull()
       expect(unconfigContext.wiredSettings).toBeDefined()
     })
@@ -601,9 +601,17 @@ describe('Unconfiguration State Machine', () => {
 
   describe('unconfiguration of Wired 802.1x configuration ', () => {
     it('should send a WSMan call to get 802.1x Profile', async () => {
-      await unconfiguration.get8021xProfile(unconfigContext, null)
+      await unconfiguration.get8021xProfile(unconfigContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
+
+    it('should log error on call to get 802.1x Profile', async () => {
+      unconfigContext.ips = null as any
+      const loggerSpy = jest.spyOn(unconfiguration.logger, 'error')
+      await unconfiguration.get8021xProfile(unconfigContext, null as any)
+      expect(loggerSpy).toHaveBeenCalled()
+    })
+
     it('should disable wired 802.1x configuration', async () => {
       unconfigContext.message = {
         Envelope: {
@@ -616,33 +624,58 @@ describe('Unconfiguration State Machine', () => {
           }
         }
       }
-      await unconfiguration.disableWired8021xConfiguration(unconfigContext, null)
+      await unconfiguration.disableWired8021xConfiguration(unconfigContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    })
+
+    it('should log error on call to disableWired8021xConfiguration', async () => {
+      unconfigContext.ips = null as any
+      const loggerSpy = jest.spyOn(unconfiguration.logger, 'error')
+      await unconfiguration.disableWired8021xConfiguration(unconfigContext, null as any)
+      expect(loggerSpy).toHaveBeenCalled()
     })
   })
 
   describe('send wsman message with Remote Access Policy Rule', () => {
     it('should send to wsman message remove Remote Access Policy Rule User Initiated call', async () => {
-      await unconfiguration.removeRemoteAccessPolicyRuleUserInitiated(unconfigContext, null)
+      await unconfiguration.removeRemoteAccessPolicyRuleUserInitiated(unconfigContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
       expect(remoteAccessPolicyRuleSpy).toHaveBeenCalled()
     })
 
     it('should send to wsman message remove Remote Access Policy Rule Alert', async () => {
-      await unconfiguration.removeRemoteAccessPolicyRuleAlert(unconfigContext, null)
+      await unconfiguration.removeRemoteAccessPolicyRuleAlert(unconfigContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
 
     it('should send to wsman message remove Remote Access Policy Rule Periodic', async () => {
-      await unconfiguration.removeRemoteAccessPolicyRulePeriodic(unconfigContext, null)
+      await unconfiguration.removeRemoteAccessPolicyRulePeriodic(unconfigContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
       expect(remoteAccessPolicyRuleSpy).toHaveBeenCalled()
+    })
+    it('should log error on call to removeRemoteAccessPolicyRuleUserInitiated', async () => {
+      unconfigContext.amt = null as any
+      const loggerSpy = jest.spyOn(unconfiguration.logger, 'error')
+      await unconfiguration.removeRemoteAccessPolicyRuleUserInitiated(unconfigContext, null as any)
+      expect(loggerSpy).toHaveBeenCalled()
+    })
+    it('should log error on call to removeRemoteAccessPolicyRuleAlert', async () => {
+      unconfigContext.amt = null as any
+      const loggerSpy = jest.spyOn(unconfiguration.logger, 'error')
+      await unconfiguration.removeRemoteAccessPolicyRuleAlert(unconfigContext, null as any)
+      expect(loggerSpy).toHaveBeenCalled()
+    })
+    it('should log error on call to removeRemoteAccessPolicyRulePeriodic', async () => {
+      unconfigContext.amt = null as any
+      const loggerSpy = jest.spyOn(unconfiguration.logger, 'error')
+      await unconfiguration.removeRemoteAccessPolicyRulePeriodic(unconfigContext, null as any)
+      expect(loggerSpy).toHaveBeenCalled()
     })
   })
 
   describe('send wsman message with Management Presence Remote SAP', () => {
     it('should send wsman message to enumerate ManagementPresenceRemoteSAP', async () => {
-      await unconfiguration.enumerateManagementPresenceRemoteSAP(unconfigContext, null)
+      await unconfiguration.enumerateManagementPresenceRemoteSAP(unconfigContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
 
@@ -650,7 +683,7 @@ describe('Unconfiguration State Machine', () => {
       unconfigContext.message = {
         Envelope: { Body: { EnumerateResponse: { EnumerationContext: 'abcd' } } }
       }
-      await unconfiguration.pullManagementPresenceRemoteSAP(unconfigContext, null)
+      await unconfiguration.pullManagementPresenceRemoteSAP(unconfigContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
 
@@ -658,14 +691,32 @@ describe('Unconfiguration State Machine', () => {
       unconfigContext.message = {
         Envelope: { Body: { PullResponse: { Items: { AMT_ManagementPresenceRemoteSAP: { Name: 'abcd' } } } } }
       }
-      await unconfiguration.deleteRemoteAccessService(unconfigContext, null)
+      await unconfiguration.deleteRemoteAccessService(unconfigContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    })
+    it('should log error on call to enumerateManagementPresenceRemoteSAP', async () => {
+      unconfigContext.amt = null as any
+      const loggerSpy = jest.spyOn(unconfiguration.logger, 'error')
+      await unconfiguration.enumerateManagementPresenceRemoteSAP(unconfigContext, null as any)
+      expect(loggerSpy).toHaveBeenCalled()
+    })
+    it('should log error on call to pullManagementPresenceRemoteSAP', async () => {
+      unconfigContext.amt = null as any
+      const loggerSpy = jest.spyOn(unconfiguration.logger, 'error')
+      await unconfiguration.pullManagementPresenceRemoteSAP(unconfigContext, null as any)
+      expect(loggerSpy).toHaveBeenCalled()
+    })
+    it('should log error on call to deleteRemoteAccessService', async () => {
+      unconfigContext.amt = null as any
+      const loggerSpy = jest.spyOn(unconfiguration.logger, 'error')
+      await unconfiguration.deleteRemoteAccessService(unconfigContext, null as any)
+      expect(loggerSpy).toHaveBeenCalled()
     })
   })
 
   describe('send wsman message for Public Private Key Certificate', () => {
     it('should send wsman message to enumerate Public Private Key Pair', async () => {
-      await unconfiguration.enumeratePublicPrivateKeyPair(unconfigContext, null)
+      await unconfiguration.enumeratePublicPrivateKeyPair(unconfigContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
 
@@ -673,25 +724,43 @@ describe('Unconfiguration State Machine', () => {
       unconfigContext.message = {
         Envelope: { Body: { EnumerateResponse: { EnumerationContext: 'abcde' } } }
       }
-      await unconfiguration.pullPublicPrivateKeyPair(unconfigContext, null)
+      await unconfiguration.pullPublicPrivateKeyPair(unconfigContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
 
     it('should send wsman message to delete Public Private Key Pair', async () => {
       unconfigContext.privateCerts = [{ InstanceID: 1234 }]
-      await unconfiguration.deletePublicPrivateKeyPair(unconfigContext, null)
+      await unconfiguration.deletePublicPrivateKeyPair(unconfigContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
     it('should send wsman message to delete Public Private Key Pair when there is more than one certificate', async () => {
       unconfigContext.privateCerts = [{ InstanceID: 1234 }, { InstanceID: 5678 }]
-      await unconfiguration.deletePublicPrivateKeyPair(unconfigContext, null)
+      await unconfiguration.deletePublicPrivateKeyPair(unconfigContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    })
+    it('should log error on call to enumeratePublicPrivateKeyPair', async () => {
+      unconfigContext.amt = null as any
+      const loggerSpy = jest.spyOn(unconfiguration.logger, 'error')
+      await unconfiguration.enumeratePublicPrivateKeyPair(unconfigContext, null as any)
+      expect(loggerSpy).toHaveBeenCalled()
+    })
+    it('should log error on call to pullPublicPrivateKeyPair', async () => {
+      unconfigContext.amt = null as any
+      const loggerSpy = jest.spyOn(unconfiguration.logger, 'error')
+      await unconfiguration.pullPublicPrivateKeyPair(unconfigContext, null as any)
+      expect(loggerSpy).toHaveBeenCalled()
+    })
+    it('should log error on call to deletePublicPrivateKeyPair', async () => {
+      unconfigContext.amt = null as any
+      const loggerSpy = jest.spyOn(unconfiguration.logger, 'error')
+      await unconfiguration.deletePublicPrivateKeyPair(unconfigContext, null as any)
+      expect(loggerSpy).toHaveBeenCalled()
     })
   })
 
   describe('send wsman message for Public Key Certificate', () => {
     it('should send wsman message to enumerate Public Key Certificate', async () => {
-      await unconfiguration.enumeratePublicKeyCertificate(unconfigContext, null)
+      await unconfiguration.enumeratePublicKeyCertificate(unconfigContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
 
@@ -699,25 +768,43 @@ describe('Unconfiguration State Machine', () => {
       unconfigContext.message = {
         Envelope: { Body: { EnumerateResponse: { EnumerationContext: 'abcd' } } }
       }
-      await unconfiguration.pullPublicKeyCertificate(unconfigContext, null)
+      await unconfiguration.pullPublicKeyCertificate(unconfigContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
 
     it('should send to delete PublicKeyCertificate', async () => {
       unconfigContext.publicKeyCertificates = ['abcd']
-      await unconfiguration.deletePublicKeyCertificate(unconfigContext, null)
+      await unconfiguration.deletePublicKeyCertificate(unconfigContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
     it('should send to delete PublicKeyCertificate when more than one certificate', async () => {
       unconfigContext.publicKeyCertificates = ['abcd', 'cdefg']
-      await unconfiguration.deletePublicKeyCertificate(unconfigContext, null)
+      await unconfiguration.deletePublicKeyCertificate(unconfigContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    })
+    it('should log error on call to enumeratePublicKeyCertificate', async () => {
+      unconfigContext.amt = null as any
+      const loggerSpy = jest.spyOn(unconfiguration.logger, 'error')
+      await unconfiguration.enumeratePublicKeyCertificate(unconfigContext, null as any)
+      expect(loggerSpy).toHaveBeenCalled()
+    })
+    it('should log error on call to pullPublicKeyCertificate', async () => {
+      unconfigContext.amt = null as any
+      const loggerSpy = jest.spyOn(unconfiguration.logger, 'error')
+      await unconfiguration.pullPublicKeyCertificate(unconfigContext, null as any)
+      expect(loggerSpy).toHaveBeenCalled()
+    })
+    it('should log error on call to deletePublicKeyCertificate', async () => {
+      unconfigContext.amt = null as any
+      const loggerSpy = jest.spyOn(unconfiguration.logger, 'error')
+      await unconfiguration.deletePublicKeyCertificate(unconfigContext, null as any)
+      expect(loggerSpy).toHaveBeenCalled()
     })
   })
 
   describe('send wsman message for Environment Detection Settings', () => {
     it('should send wsman message to get Environment Detection Settings', async () => {
-      await unconfiguration.getEnvironmentDetectionSettings(unconfigContext, null)
+      await unconfiguration.getEnvironmentDetectionSettings(unconfigContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
 
@@ -725,21 +812,33 @@ describe('Unconfiguration State Machine', () => {
       unconfigContext.message = {
         Envelope: { Body: { AMT_EnvironmentDetectionSettingData: { DetectionStrings: 'abcde' } } }
       }
-      await unconfiguration.clearEnvironmentDetectionSettings(unconfigContext, null)
+      await unconfiguration.clearEnvironmentDetectionSettings(unconfigContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    })
+    it('should log error on call to getEnvironmentDetectionSettings', async () => {
+      unconfigContext.amt = null as any
+      const loggerSpy = jest.spyOn(unconfiguration.logger, 'error')
+      await unconfiguration.getEnvironmentDetectionSettings(unconfigContext, null as any)
+      expect(loggerSpy).toHaveBeenCalled()
+    })
+    it('should log error on call to clearEnvironmentDetectionSettings', async () => {
+      unconfigContext.amt = null as any
+      const loggerSpy = jest.spyOn(unconfiguration.logger, 'error')
+      await unconfiguration.clearEnvironmentDetectionSettings(unconfigContext, null as any)
+      expect(loggerSpy).toHaveBeenCalled()
     })
   })
 
   describe('send wsman message for TLS Credential Context', () => {
     it('should send wsman message to enumerate TLS Credential Context', async () => {
-      await unconfiguration.enumerateTLSCredentialContext(unconfigContext, null)
+      await unconfiguration.enumerateTLSCredentialContext(unconfigContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
     it('should send wsman message to pull TLS Credential Context', async () => {
       unconfigContext.message = {
         Envelope: { Body: { EnumerateResponse: { EnumerationContext: 'abcde' } } }
       }
-      await unconfiguration.pullTLSCredentialContext(unconfigContext, null)
+      await unconfiguration.pullTLSCredentialContext(unconfigContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
 
@@ -747,21 +846,39 @@ describe('Unconfiguration State Machine', () => {
       unconfigContext.message = {
         Envelope: { Body: { PullResponse: { Items: { AMT_TLSCredentialContext: MPSType.Both } } } }
       }
-      await unconfiguration.deleteTLSCredentialContext(unconfigContext, null)
+      await unconfiguration.deleteTLSCredentialContext(unconfigContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    })
+    it('should log error on call to enumerateTLSCredentialContext', async () => {
+      unconfigContext.amt = null as any
+      const loggerSpy = jest.spyOn(unconfiguration.logger, 'error')
+      await unconfiguration.enumerateTLSCredentialContext(unconfigContext, null as any)
+      expect(loggerSpy).toHaveBeenCalled()
+    })
+    it('should log error on call to pullTLSCredentialContext', async () => {
+      unconfigContext.amt = null as any
+      const loggerSpy = jest.spyOn(unconfiguration.logger, 'error')
+      await unconfiguration.pullTLSCredentialContext(unconfigContext, null as any)
+      expect(loggerSpy).toHaveBeenCalled()
+    })
+    it('should log error on call to deleteTLSCredentialContext', async () => {
+      unconfigContext.amt = null as any
+      const loggerSpy = jest.spyOn(unconfiguration.logger, 'error')
+      await unconfiguration.deleteTLSCredentialContext(unconfigContext, null as any)
+      expect(loggerSpy).toHaveBeenCalled()
     })
   })
 
   describe('send wsman message for  TLS Setting Data', () => {
     it('should send wsman message to enumerate TLS Setting Data', async () => {
-      await unconfiguration.enumerateTLSSettingData(unconfigContext, null)
+      await unconfiguration.enumerateTLSSettingData(unconfigContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
     it('should send wsman message to pull TLS Setting Data', async () => {
       unconfigContext.message = {
         Envelope: { Body: { EnumerateResponse: { EnumerationContext: 'abcde' } } }
       }
-      await unconfiguration.pullTLSSettingData(unconfigContext, null)
+      await unconfiguration.pullTLSSettingData(unconfigContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
 
@@ -780,7 +897,7 @@ describe('Unconfiguration State Machine', () => {
           }
         }
       }
-      await unconfiguration.disableRemoteTLSSettingData(unconfigContext, null)
+      await unconfiguration.disableRemoteTLSSettingData(unconfigContext, null as any)
       expect(unconfigContext.message.Envelope.Body.PullResponse.Items.AMT_TLSSettingData[0]['h:AcceptNonSecureConnections']).toBe(true)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
@@ -790,18 +907,36 @@ describe('Unconfiguration State Machine', () => {
         { AcceptNonSecureConnections: true, NonSecureConnectionsSupported: true, ElementName: 'Intel(r) AMT 802.3 TLS Settings', Enabled: true, InstanceID: 'Intel(r) AMT 802.3 TLS Settings', MutualAuthentication: false },
         { AcceptNonSecureConnections: true, NonSecureConnectionsSupported: true, ElementName: 'Intel(r) AMT LMS TLS Settings', Enabled: true, InstanceID: 'Intel(r) AMT LMS TLS Settings', MutualAuthentication: false }
       ]
-      await unconfiguration.disableLocalTLSSettingData(unconfigContext, null)
+      await unconfiguration.disableLocalTLSSettingData(unconfigContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
     it('should send wsman message to commit Setup And Configuration Service', async () => {
-      await unconfiguration.commitSetupAndConfigurationService(unconfigContext, null)
+      await unconfiguration.commitSetupAndConfigurationService(unconfigContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    })
+    it('should log error on call to disableLocalTLSSettingData', async () => {
+      unconfigContext.amt = null as any
+      const loggerSpy = jest.spyOn(unconfiguration.logger, 'error')
+      await unconfiguration.disableLocalTLSSettingData(unconfigContext, null as any)
+      expect(loggerSpy).toHaveBeenCalled()
+    })
+    it('should log error on call to disableRemoteTLSSettingData', async () => {
+      unconfigContext.amt = null as any
+      const loggerSpy = jest.spyOn(unconfiguration.logger, 'error')
+      await unconfiguration.disableRemoteTLSSettingData(unconfigContext, null as any)
+      expect(loggerSpy).toHaveBeenCalled()
+    })
+    it('should log error on call to commitSetupAndConfigurationService', async () => {
+      unconfigContext.amt = null as any
+      const loggerSpy = jest.spyOn(unconfiguration.logger, 'error')
+      await unconfiguration.commitSetupAndConfigurationService(unconfigContext, null as any)
+      expect(loggerSpy).toHaveBeenCalled()
     })
   })
 
   describe('WiFi Endpoint Settings', () => {
     it('should get enumeration number for WiFi end point settings', async () => {
-      const WiFiEndpointSettingsSpy = spyOn(unconfigContext.cim.WiFiEndpointSettings, 'Enumerate').mockReturnValue('done')
+      const WiFiEndpointSettingsSpy = spyOn(unconfigContext.cim!.WiFiEndpointSettings, 'Enumerate').mockReturnValue('done')
       await unconfiguration.enumerateWiFiEndpointSettings(unconfigContext)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
       expect(WiFiEndpointSettingsSpy).toHaveBeenCalled()
@@ -816,7 +951,7 @@ describe('Unconfiguration State Machine', () => {
           Body: { EnumerateResponse: { EnumerationContext: '92340000-0000-0000-0000-000000000000' } }
         }
       }
-      const WiFiEndpointSettingsSpy = spyOn(unconfigContext.cim.WiFiEndpointSettings, 'Pull').mockReturnValue('done')
+      const WiFiEndpointSettingsSpy = spyOn(unconfigContext.cim!.WiFiEndpointSettings, 'Pull').mockReturnValue('done')
       await unconfiguration.pullWiFiEndpointSettings(unconfigContext)
       expect(WiFiEndpointSettingsSpy).toHaveBeenCalled()
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
@@ -828,8 +963,8 @@ describe('Unconfiguration State Machine', () => {
           Body: { PullResponse: { Items: { CIM_WiFiEndpointSettings: [{ InstanceID: 'home', Priority: 1 }, { InstanceID: 'office', Priority: 2 }] } } }
         }
       }
-      unconfiguration.readWiFiEndpointSettingsPullResponse(unconfigContext, null)
-      expect(unconfigContext.wifiEndPointSettings.length).toBe(2)
+      unconfiguration.readWiFiEndpointSettingsPullResponse(unconfigContext, null as any)
+      expect(unconfigContext.wifiEndPointSettings?.length).toBe(2)
     })
     it('Should read WiFi end point settings', () => {
       unconfigContext.message = {
@@ -838,16 +973,22 @@ describe('Unconfiguration State Machine', () => {
           Body: { PullResponse: { Items: { CIM_WiFiEndpointSettings: { InstanceID: 'home', Priority: 1 } } } }
         }
       }
-      unconfiguration.readWiFiEndpointSettingsPullResponse(unconfigContext, null)
-      expect(unconfigContext.wifiEndPointSettings.length).toBe(1)
+      unconfiguration.readWiFiEndpointSettingsPullResponse(unconfigContext, null as any)
+      expect(unconfigContext.wifiEndPointSettings?.length).toBe(1)
     })
     it('Should delete profile from WiFi end point settings', async () => {
       unconfigContext.wifiEndPointSettings = [{ InstanceID: 'home', Priority: 1 }]
-      const WiFiEndpointSettingsSpy = spyOn(unconfigContext.cim.WiFiEndpointSettings, 'Delete').mockReturnValue('done')
-      await unconfiguration.deleteWiFiProfileOnAMTDevice(unconfigContext, null)
+      const WiFiEndpointSettingsSpy = spyOn(unconfigContext.cim!.WiFiEndpointSettings, 'Delete').mockReturnValue('done')
+      await unconfiguration.deleteWiFiProfileOnAMTDevice(unconfigContext, null as any)
       expect(unconfigContext.wifiEndPointSettings.length).toBe(0)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
       expect(WiFiEndpointSettingsSpy).toHaveBeenCalled()
+    })
+    it('should log error on call to deleteWiFiProfileOnAMTDevice', async () => {
+      unconfigContext.cim = null as any
+      const loggerSpy = jest.spyOn(unconfiguration.logger, 'error')
+      await unconfiguration.deleteWiFiProfileOnAMTDevice(unconfigContext, null as any)
+      expect(loggerSpy).toHaveBeenCalled()
     })
   })
 })

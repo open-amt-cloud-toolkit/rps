@@ -36,7 +36,7 @@ export default class Db implements IDB {
     this.ieee8021xProfiles = new IEEE8021xProfilesTable(this)
   }
 
-  async query<T>(text: string, params?: any): Promise<pg.QueryResult<T>> {
+  async query<T extends pg.QueryResultRow>(text: string, params?: any): Promise<pg.QueryResult<T>> {
     const start = Date.now()
     const res = await this.pool.query<T>(text, params)
     const duration = Date.now() - start

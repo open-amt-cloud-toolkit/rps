@@ -12,12 +12,12 @@ import { type ISecretManagerService, type CertCredentials } from './interfaces/I
 export class DomainCredentialManager implements IDomainCredentialManager {
   private readonly amtDomains: IDomainsTable
   private readonly logger: ILogger
-  private readonly secretsManager: ISecretManagerService = null
+  private readonly secretsManager: ISecretManagerService | null = null
 
   constructor (logger: ILogger, amtDomains: IDomainsTable, secretsManager?: ISecretManagerService) {
     this.amtDomains = amtDomains
     this.logger = logger
-    this.secretsManager = secretsManager
+    this.secretsManager = secretsManager ?? null
   }
 
   /**
@@ -26,7 +26,7 @@ export class DomainCredentialManager implements IDomainCredentialManager {
      * @param {string} tenantId
      * @returns {AMTDomain} returns domain object
      */
-  async getProvisioningCert (domainSuffix: string, tenantId: string): Promise<AMTDomain> {
+  async getProvisioningCert (domainSuffix: string, tenantId: string): Promise<AMTDomain | null> {
     const domain = await this.amtDomains.getDomainByDomainSuffix(domainSuffix, tenantId)
     this.logger.debug(`domain : ${JSON.stringify(domain)}`)
 

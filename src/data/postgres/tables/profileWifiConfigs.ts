@@ -51,13 +51,18 @@ export class ProfilesWifiConfigsTable implements IProfilesWifiConfigsTable {
       profiles_wirelessconfigs (wireless_profile_name, profile_name, priority, tenant_id)
       VALUES %L`, configs))
 
-      return wifiProfilesQueryResults.rowCount > 0
+      if (wifiProfilesQueryResults?.rowCount) {
+        if (wifiProfilesQueryResults.rowCount > 0) {
+          return true
+        }
+      }
     } catch (error) {
       if (error.code === PostgresErr.C23_FOREIGN_KEY_VIOLATION) {
         throw new RPSError(error.detail, 'Foreign key constraint violation')
       }
       throw new RPSError(API_UNEXPECTED_EXCEPTION(profileName))
     }
+    return false
   }
 
   /**
@@ -71,6 +76,12 @@ export class ProfilesWifiConfigsTable implements IProfilesWifiConfigsTable {
     FROM profiles_wirelessconfigs
     WHERE profile_name = $1 and tenant_id = $2`, [profileName, tenantId])
 
-    return deleteProfileWifiResults.rowCount > 0
+    if (deleteProfileWifiResults?.rowCount) {
+      if (deleteProfileWifiResults.rowCount > 0) {
+        return true
+      }
+    }
+
+    return false
   }
 }

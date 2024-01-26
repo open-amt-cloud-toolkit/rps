@@ -10,19 +10,19 @@ describe('ieee802.1x validator', () => {
   describe('PXE Checks', () => {
     it('should pass', () => {
       const pxeTimeout: number = 120
-      expect(validatePxeTimeout(pxeTimeout, null)).toBeTruthy()
+      expect(validatePxeTimeout(pxeTimeout, null as any)).toBeTruthy()
     })
     it('should fail if pxe timeout is not a number', () => {
       const pxeTimeout: string = '123'
-      expect(() => { validatePxeTimeout(pxeTimeout, null) }).toThrowError('PXE Timeout must be number')
+      expect(() => { validatePxeTimeout(pxeTimeout, null as any) }).toThrowError('PXE Timeout must be number')
     })
     it('should fail if pxe timeout is below range', () => {
       const pxeTimeout: number = -1
-      expect(() => { validatePxeTimeout(pxeTimeout, null) }).toThrowError('PXE Timeout value should be 0 - 86400')
+      expect(() => { validatePxeTimeout(pxeTimeout, null as any) }).toThrowError('PXE Timeout value should be 0 - 86400')
     })
     it('should fail if pxe timeout is above range', () => {
       const pxeTimeout: number = (60 * 60 * 24) + 1
-      expect(() => { validatePxeTimeout(pxeTimeout, null) }).toThrowError('PXE Timeout value should be 0 - 86400')
+      expect(() => { validatePxeTimeout(pxeTimeout, null as any) }).toThrowError('PXE Timeout value should be 0 - 86400')
     })
   })
 

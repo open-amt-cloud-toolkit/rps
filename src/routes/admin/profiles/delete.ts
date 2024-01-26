@@ -15,7 +15,7 @@ export async function deleteProfile (req: Request, res: Response): Promise<void>
   const log = new Logger('deleteProfile')
   const { profileName } = req.params
   try {
-    const profile: AMTConfiguration = await req.db.profiles.getByName(profileName, req.tenantId)
+    const profile: AMTConfiguration | null = await req.db.profiles.getByName(profileName, req.tenantId)
     if (profile == null) {
       throw new RPSError(NOT_FOUND_MESSAGE('AMT', profileName), NOT_FOUND_EXCEPTION)
     } else {

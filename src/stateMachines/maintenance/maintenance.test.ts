@@ -39,7 +39,7 @@ beforeEach(() => {
 describe('service logging', () => {
   it('should include child state machine', async () => {
     const event: SyncTimeEvent = { type: SyncTimeEventType, clientId }
-    const logInfoSpy = spyOn(Logger.prototype, 'info').mockReturnValue(null)
+    const logInfoSpy = spyOn(Logger.prototype, 'info').mockReturnValue(null as any)
     invokeWsmanCallSpy.mockRejectedValueOnce(HttpBadRequestError)
     const maintenance = new Maintenance()
     maintenance.service.start()

@@ -34,8 +34,8 @@ export class Validator implements IValidator {
    * @param {string} clientId Id to keep track of connections
    * @returns {ClientMsg} returns ClientMsg object if client message is valid. Otherwise returns null.
    */
-  parseClientMsg (message: WebSocket.Data, clientId: string): ClientMsg {
-    let msg: ClientMsg = null
+  parseClientMsg (message: WebSocket.Data, clientId: string): ClientMsg | null {
+    let msg: ClientMsg | null = null
     try {
       // Parse and convert the message
       if (typeof message === 'string') {
@@ -76,7 +76,7 @@ export class Validator implements IValidator {
       throw new RPSError(`Device ${payload.uuid} activation failed. Missing password.`)
     }
     // Check for client requested action and profile activation
-    const profile: AMTConfiguration = await this.configurator.profileManager.getAmtProfile(payload.profile, msg.tenantId)
+    const profile: AMTConfiguration | null = await this.configurator.profileManager.getAmtProfile(payload.profile, msg.tenantId)
     if (!profile) {
       throw new RPSError(`Device ${payload.uuid} activation failed. ${payload.profile} does not match list of available AMT profiles.`)
     }
@@ -112,7 +112,7 @@ export class Validator implements IValidator {
     const clientObj = devices[clientId]
     const payload: Payload = this.verifyPayload(msg, clientId)
     // Check for the current mode
-    if (payload.currentMode >= 0) {
+    if (payload.currentMode != null && payload.currentMode >= 0) {
       switch (payload.currentMode) {
         case 0: {
           throw new RPSError(`Device ${payload.uuid} is in pre-provisioning mode.`)
@@ -166,8 +166,8 @@ export class Validator implements IValidator {
   }
 
   async updateTags (uuid: string, profile: AMTConfiguration): Promise<void> {
-    let tags = []
-    if (profile?.tags.length > 0) {
+    let tags: any[] = []
+    if (profile.tags != null && profile?.tags.length > 0) {
       tags = profile.tags
       await got(`${Environment.Config.mps_server}/api/v1/devices`, {
         method: 'PATCH',
@@ -187,7 +187,7 @@ export class Validator implements IValidator {
       throw new RPSError(`${clientId} - missing maintenance task in message`)
     }
     // Check for the current mode
-    if (payload.currentMode > 0) {
+    if (payload.currentMode != null && payload.currentMode > 0) {
       const mode = payload.currentMode === 1 ? 'client control mode' : 'admin control mode'
       clientObj.action = ClientAction.MAINTENANCE
       this.logger.debug(`Device ${payload.uuid} is in ${mode}.`)
@@ -288,7 +288,7 @@ export class Validator implements IValidator {
     }
   }
 
-  async getDeviceCredentials (msg: ClientMsg): Promise<DeviceCredentials> {
+  async getDeviceCredentials (msg: ClientMsg): Promise<DeviceCredentials | null> {
     try {
       const secretData = await this.configurator.secretsManager.getSecretAtPath(`devices/${msg.payload.uuid}`)
 
@@ -305,7 +305,7 @@ export class Validator implements IValidator {
 
   async setNextStepsForConfiguration (msg: ClientMsg, clientId: string): Promise<void> {
     const clientObj = devices[clientId]
-    let amtDevice: DeviceCredentials = null
+    let amtDevice: DeviceCredentials | null = null
     try {
       amtDevice = await this.getDeviceCredentials(msg)
     } catch (error) {

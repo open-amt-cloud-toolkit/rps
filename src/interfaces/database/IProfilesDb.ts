@@ -8,6 +8,6 @@ import { type Ieee8021xConfig, type CIRAConfig } from '../../models/RCS.Config.j
 import { type ITable } from './ITable.js'
 
 export interface IProfilesTable extends ITable<AMTConfiguration> {
-  getCiraConfigForProfile: (ciraConfigName: string, tenantId?: string) => Promise<CIRAConfig>
-  get8021XConfigForProfile: (profileName: string, tenantId?: string) => Promise<Ieee8021xConfig>
+  getCiraConfigForProfile: (ciraConfigName: string, tenantId?: string) => Promise<CIRAConfig | null>
+  get8021XConfigForProfile: (profileName: string, tenantId?: string) => Promise<Ieee8021xConfig | null>
 }

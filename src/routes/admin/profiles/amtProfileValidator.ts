@@ -166,7 +166,7 @@ export const amtProfileValidator = (): ValidationChain[] => [
 ]
 
 const validatewifiConfigs = async (value: any, req: Request): Promise<string[]> => {
-  const wifiConfigNames = []
+  const wifiConfigNames: string[] = []
   for (const config of value) {
     const iswifiExist = await req.db.wirelessProfiles.checkProfileExits(config.profileName, req.tenantId)
     if (!iswifiExist) {
@@ -186,7 +186,7 @@ const validateIEEE8021xConfigs = async (value: any, req: Request): Promise<boole
 
 const getProfileInterface = async (value: any, req: Request): Promise<boolean | null> => {
   const prof = await req.db.ieee8021xProfiles.getByName(value, req.tenantId)
-  return prof?.wiredInterface
+  return prof?.wiredInterface ? prof.wiredInterface : null
 }
 
 export const profileUpdateValidator = (): any => [

@@ -31,8 +31,12 @@ const invokeWsmanCallInternal = async (context: any): Promise<any> => {
     clientObj.resolve = resolve
     clientObj.reject = reject
   })
-  clientObj.ClientSocket.send(clientMsgStr)
-  return await clientObj.pendingPromise
+  if (clientObj.ClientSocket) {
+    clientObj.ClientSocket.send(clientMsgStr)
+    return await clientObj.pendingPromise
+  }
+  invokeWsmanLogger.warn('No client socket')
+  return clientObj.reject
 }
 
 const timeout = (ms): any => new Promise((resolve, reject) => {

@@ -27,11 +27,11 @@ export interface UnconfigContext {
   errorMessage: string
   xmlMessage: string // the message we send to the device
   message: any // the parsed json response
-  ciraConfig: CIRAConfig
-  profile: AMTConfiguration
+  ciraConfig: CIRAConfig | null
+  profile: AMTConfiguration | null
   statusMessage: string
   privateCerts: any[]
-  httpHandler: HttpHandler
+  httpHandler: HttpHandler | null
   tlsSettingData: any[]
   publicKeyCertificates: any[]
   is8021xProfileUpdated?: boolean
@@ -39,7 +39,7 @@ export interface UnconfigContext {
   amt?: AMT.Messages
   ips?: IPS.Messages
   cim?: CIM.Messages
-  retryCount?: number
+  retryCount: number
   wiredSettings: any
   wifiSettings: any
 }
@@ -81,7 +81,8 @@ export class Unconfiguration {
         is8021xProfileUpdated: false,
         wifiEndPointSettings: [],
         wiredSettings: null,
-        wifiSettings: null
+        wifiSettings: null,
+        retryCount: 0
       },
       id: 'unconfiuration-machine',
       initial: 'UNCONFIGURED',
@@ -625,8 +626,8 @@ export class Unconfiguration {
         hasEnvSettings: (context, event) => context.message.Envelope.Body.AMT_EnvironmentDetectionSettingData.DetectionStrings != null,
         hasTLSCredentialContext: (context, event) => context.message.Envelope.Body.PullResponse.Items?.AMT_TLSCredentialContext != null,
         is8021xProfileEnabled: (context, event) => context.message.Envelope.Body.IPS_IEEE8021xSettings.Enabled === 2 || context.message.Envelope.Body.IPS_IEEE8021xSettings.Enabled === 6,
-        is8021xProfileDisabled: (context, event) => context.is8021xProfileUpdated,
-        isWifiProfilesExistsOnDevice: (context, event) => context.wifiEndPointSettings.length !== 0,
+        is8021xProfileDisabled: (context, event) => context.is8021xProfileUpdated != null ? context.is8021xProfileUpdated : false,
+        isWifiProfilesExistsOnDevice: (context, event) => context.wifiEndPointSettings != null ? context.wifiEndPointSettings.length !== 0 : false,
         isWifiProfileDeleted: (context, event) => context.message.Envelope.Body == null,
         isWifiOnlyDevice: (context, event) => context.wifiSettings != null && context.wiredSettings?.MACAddress == null,
         isWifiSupportedOnDevice: (context, event) => context.wifiSettings?.MACAddress != null,
@@ -635,15 +636,18 @@ export class Unconfiguration {
       },
       actions: {
         'Update CIRA Status': (context, event) => {
-          devices[context.clientId].status.CIRAConnection = context.statusMessage
+          const device = devices[context.clientId]
+          device.status.CIRAConnection = context.statusMessage
         },
         'Update TLS Status': (context, event) => {
-          devices[context.clientId].status.TLSConfiguration = context.statusMessage
+          const device = devices[context.clientId]
+          device.status.TLSConfiguration = context.statusMessage
         },
         'Update Status': (context, event) => {
-          devices[context.clientId].status.TLSConfiguration = ''
-          devices[context.clientId].status.CIRAConnection = ''
-          devices[context.clientId].status.Status = context.statusMessage
+          const device = devices[context.clientId]
+          device.status.TLSConfiguration = ''
+          device.status.CIRAConnection = ''
+          device.status.Status = context.statusMessage
         },
         'Reset Unauth Count': (context, event) => { devices[context.clientId].unauthCount = 0 },
         'Read WiFi Endpoint Settings Pull Response': this.readWiFiEndpointSettingsPullResponse.bind(this),
@@ -691,18 +695,24 @@ export class Unconfiguration {
   }
 
   async get8021xProfile (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = context.ips.IEEE8021xSettings.Get()
-    return await invokeWsmanCall(context, 2)
+    if (context.ips != null) {
+      context.xmlMessage = context.ips.IEEE8021xSettings.Get()
+      return await invokeWsmanCall(context, 2)
+    }
+    this.logger.error('Null object in get8021xProfile()')
   }
 
   async disableWired8021xConfiguration (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    const ieee8021xProfile = context.message.Envelope.Body.IPS_IEEE8021xSettings
-    delete ieee8021xProfile.Username
-    delete ieee8021xProfile.Password
-    delete ieee8021xProfile.AuthenticationProtocol
-    ieee8021xProfile.Enabled = 3
-    context.xmlMessage = context.ips.IEEE8021xSettings.Put(ieee8021xProfile)
-    return await invokeWsmanCall(context, 2)
+    if (context.ips != null) {
+      const ieee8021xProfile = context.message.Envelope.Body.IPS_IEEE8021xSettings
+      delete ieee8021xProfile.Username
+      delete ieee8021xProfile.Password
+      delete ieee8021xProfile.AuthenticationProtocol
+      ieee8021xProfile.Enabled = 3
+      context.xmlMessage = context.ips.IEEE8021xSettings.Put(ieee8021xProfile)
+      return await invokeWsmanCall(context, 2)
+    }
+    this.logger.error('Null object in disableWired8021xConfiguration()')
   }
 
   async enumerateWiFiEndpointSettings (context): Promise<any> {
@@ -716,7 +726,7 @@ export class Unconfiguration {
   }
 
   readWiFiEndpointSettingsPullResponse (context: UnconfigContext, event: UnconfigEvent): void {
-    let wifiEndPointSettings = []
+    let wifiEndPointSettings: any[] = []
     if (context.message.Envelope.Body.PullResponse.Items?.CIM_WiFiEndpointSettings != null) {
       // CIM_WiFiEndpointSettings is an array if there more than one profile exists, otherwise its just an object from AMT
       if (Array.isArray(context.message.Envelope.Body.PullResponse.Items.CIM_WiFiEndpointSettings)) {
@@ -731,7 +741,7 @@ export class Unconfiguration {
       //  ignore the profiles with Priority 0 and without InstanceID, which is required to delete a wifi profile on AMT device
       wifiEndPointSettings.forEach(wifi => {
         if (wifi.InstanceID != null && wifi.Priority !== 0) {
-          context.wifiEndPointSettings.push({ ...wifi })
+          context.wifiEndPointSettings?.push({ ...wifi })
         }
       })
     }
@@ -739,138 +749,230 @@ export class Unconfiguration {
 
   async deleteWiFiProfileOnAMTDevice (context: UnconfigContext, event: UnconfigEvent): Promise<any> {
     let wifiEndpoints = context.wifiEndPointSettings
-    // Deletes first profile in the array
-    const selector = { name: 'InstanceID', value: wifiEndpoints[0].InstanceID }
-    context.xmlMessage = context.cim.WiFiEndpointSettings.Delete(selector)
-    wifiEndpoints = wifiEndpoints.slice(1)
-    context.wifiEndPointSettings = wifiEndpoints
-    return await invokeWsmanCall(context)
+    if (wifiEndpoints != null && context.cim != null) {
+      // Deletes first profile in the array
+      const selector = { name: 'InstanceID', value: wifiEndpoints[0].InstanceID }
+      context.xmlMessage = context.cim.WiFiEndpointSettings.Delete(selector)
+      wifiEndpoints = wifiEndpoints.slice(1)
+      context.wifiEndPointSettings = wifiEndpoints
+      return await invokeWsmanCall(context)
+    }
+    this.logger.error('Null object in deleteWiFiProfileOnAMTDevice()')
+    return null
   }
 
   async removeRemoteAccessPolicyRuleUserInitiated (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    const selector = { name: 'PolicyRuleName', value: 'User Initiated' }
-    context.xmlMessage = context.amt.RemoteAccessPolicyRule.Delete(selector)
-    return await invokeWsmanCall(context)
+    if (context.amt != null) {
+      const selector = { name: 'PolicyRuleName', value: 'User Initiated' }
+      context.xmlMessage = context.amt.RemoteAccessPolicyRule.Delete(selector)
+      return await invokeWsmanCall(context)
+    } else {
+      this.logger.error('Null object in removeRemoteAccessPolicyRuleUserInitiated()')
+    }
   }
 
   async removeRemoteAccessPolicyRuleAlert (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    const selector = { name: 'PolicyRuleName', value: 'Alert' }
-    context.xmlMessage = context.amt.RemoteAccessPolicyRule.Delete(selector)
-    return await invokeWsmanCall(context)
+    if (context.amt != null) {
+      const selector = { name: 'PolicyRuleName', value: 'Alert' }
+      context.xmlMessage = context.amt.RemoteAccessPolicyRule.Delete(selector)
+      return await invokeWsmanCall(context)
+    } else {
+      this.logger.error('Null object in removeRemoteAccessPolicyRuleAlert()')
+    }
   }
 
   async removeRemoteAccessPolicyRulePeriodic (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    const selector = { name: 'PolicyRuleName', value: 'Periodic' }
-    context.xmlMessage = context.amt.RemoteAccessPolicyRule.Delete(selector)
-    return await invokeWsmanCall(context)
+    if (context.amt != null) {
+      const selector = { name: 'PolicyRuleName', value: 'Periodic' }
+      context.xmlMessage = context.amt.RemoteAccessPolicyRule.Delete(selector)
+      return await invokeWsmanCall(context)
+    } else {
+      this.logger.error('Null object in removeRemoteAccessPolicyRulePeriodic()')
+    }
   }
 
   async enumerateManagementPresenceRemoteSAP (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.ManagementPresenceRemoteSAP.Enumerate()
-    return await invokeWsmanCall(context)
+    if (context.amt != null) {
+      context.xmlMessage = context.amt.ManagementPresenceRemoteSAP.Enumerate()
+      return await invokeWsmanCall(context)
+    } else {
+      this.logger.error('Null object in enumerateManagementPresenceRemoteSAP()')
+    }
   }
 
   async pullManagementPresenceRemoteSAP (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.ManagementPresenceRemoteSAP.Pull(context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
-    return await invokeWsmanCall(context)
+    if (context.amt != null) {
+      context.xmlMessage = context.amt.ManagementPresenceRemoteSAP.Pull(context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+      return await invokeWsmanCall(context)
+    } else {
+      this.logger.error('Null object in pullManagementPresenceRemoteSAP()')
+    }
   }
 
   async deleteRemoteAccessService (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    const selector = { name: 'Name', value: context.message.Envelope.Body.PullResponse.Items.AMT_ManagementPresenceRemoteSAP.Name }
-    context.xmlMessage = context.amt.ManagementPresenceRemoteSAP.Delete(selector)
-    return await invokeWsmanCall(context)
+    if (context.amt != null) {
+      const selector = { name: 'Name', value: context.message.Envelope.Body.PullResponse.Items.AMT_ManagementPresenceRemoteSAP.Name }
+      context.xmlMessage = context.amt.ManagementPresenceRemoteSAP.Delete(selector)
+      return await invokeWsmanCall(context)
+    } else {
+      this.logger.error('Null object in deleteRemoteAccessService()')
+    }
   }
 
   async enumeratePublicKeyCertificate (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.PublicKeyCertificate.Enumerate()
-    return await invokeWsmanCall(context)
+    if (context.amt != null) {
+      context.xmlMessage = context.amt.PublicKeyCertificate.Enumerate()
+      return await invokeWsmanCall(context)
+    } else {
+      this.logger.error('Null object in enumeratePublicKeyCertificate()')
+    }
   }
 
   async pullPublicKeyCertificate (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.PublicKeyCertificate.Pull(context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
-    return await invokeWsmanCall(context)
+    if (context.amt != null) {
+      context.xmlMessage = context.amt.PublicKeyCertificate.Pull(context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+      return await invokeWsmanCall(context)
+    } else {
+      this.logger.error('Null object in pullPublicKeyCertificate()')
+    }
   }
 
   async deletePublicKeyCertificate (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    const selector = { name: 'InstanceID', value: context.publicKeyCertificates[0].InstanceID }
-    context.publicKeyCertificates = context.publicKeyCertificates.slice(1)
-    context.xmlMessage = context.amt.PublicKeyCertificate.Delete(selector)
-    return await invokeWsmanCall(context)
+    if (context.amt != null) {
+      const selector = { name: 'InstanceID', value: context.publicKeyCertificates[0].InstanceID }
+      context.publicKeyCertificates = context.publicKeyCertificates.slice(1)
+      context.xmlMessage = context.amt.PublicKeyCertificate.Delete(selector)
+      return await invokeWsmanCall(context)
+    } else {
+      this.logger.error('Null object in deletePublicKeyCertificate()')
+    }
   }
 
   async getEnvironmentDetectionSettings (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.EnvironmentDetectionSettingData.Get()
-    return await invokeWsmanCall(context)
+    if (context.amt != null) {
+      context.xmlMessage = context.amt.EnvironmentDetectionSettingData.Get()
+      return await invokeWsmanCall(context)
+    } else {
+      this.logger.error('Null object in getEnvironmentDetectionSettings()')
+    }
   }
 
   async clearEnvironmentDetectionSettings (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    const envSettings = context.message.Envelope.Body.AMT_EnvironmentDetectionSettingData
-    envSettings.DetectionStrings = []
-    context.xmlMessage = context.amt.EnvironmentDetectionSettingData.Put(envSettings)
-    return await invokeWsmanCall(context)
+    if (context.amt != null) {
+      const envSettings = context.message.Envelope.Body.AMT_EnvironmentDetectionSettingData
+      envSettings.DetectionStrings = []
+      context.xmlMessage = context.amt.EnvironmentDetectionSettingData.Put(envSettings)
+      return await invokeWsmanCall(context)
+    } else {
+      this.logger.error('Null object in clearEnvironmentDetectionSettings()')
+    }
   }
 
   async enumerateTLSSettingData (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.TLSSettingData.Enumerate()
-    return await invokeWsmanCall(context)
+    if (context.amt != null) {
+      context.xmlMessage = context.amt.TLSSettingData.Enumerate()
+      return await invokeWsmanCall(context)
+    } else {
+      this.logger.error('Null object in enumerateTLSSettingData()')
+    }
   }
 
   async pullTLSSettingData (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.TLSSettingData.Pull(context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
-    return await invokeWsmanCall(context)
+    if (context.amt != null) {
+      context.xmlMessage = context.amt.TLSSettingData.Pull(context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+      return await invokeWsmanCall(context)
+    } else {
+      this.logger.error('Null object in pullTLSSettingData()')
+    }
   }
 
   async disableRemoteTLSSettingData (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.tlsSettingData = context.message.Envelope.Body.PullResponse.Items.AMT_TLSSettingData
-    context.tlsSettingData[0].Enabled = false
-    context.tlsSettingData[0].AcceptNonSecureConnections = true
-    context.tlsSettingData[0].MutualAuthentication = false
-    delete context.tlsSettingData[0].TrustedCN
-    context.xmlMessage = context.amt.TLSSettingData.Put(context.tlsSettingData[0])
-    return await invokeWsmanCall(context)
+    if (context.amt != null) {
+      context.tlsSettingData = context.message.Envelope.Body.PullResponse.Items.AMT_TLSSettingData
+      context.tlsSettingData[0].Enabled = false
+      context.tlsSettingData[0].AcceptNonSecureConnections = true
+      context.tlsSettingData[0].MutualAuthentication = false
+      delete context.tlsSettingData[0].TrustedCN
+      context.xmlMessage = context.amt.TLSSettingData.Put(context.tlsSettingData[0])
+      return await invokeWsmanCall(context)
+    } else {
+      this.logger.error('Null object in disableRemoteTLSSettingData()')
+    }
   }
 
   async commitSetupAndConfigurationService (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.SetupAndConfigurationService.CommitChanges()
-    return await invokeWsmanCall(context)
+    if (context.amt != null) {
+      context.xmlMessage = context.amt.SetupAndConfigurationService.CommitChanges()
+      return await invokeWsmanCall(context)
+    } else {
+      this.logger.error('Null object in commitSetupAndConfigurationService()')
+    }
   }
 
   async disableLocalTLSSettingData (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.tlsSettingData[1].Enabled = false
-    delete context.tlsSettingData[1].TrustedCN
-    context.xmlMessage = context.amt.TLSSettingData.Put(context.tlsSettingData[1])
-    return await invokeWsmanCall(context)
+    if (context.amt != null) {
+      context.tlsSettingData[1].Enabled = false
+      delete context.tlsSettingData[1].TrustedCN
+      context.xmlMessage = context.amt.TLSSettingData.Put(context.tlsSettingData[1])
+      return await invokeWsmanCall(context)
+    } else {
+      this.logger.error('Null object in disableLocalTLSSettingData()')
+    }
   }
 
   async enumerateTLSCredentialContext (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.TLSCredentialContext.Enumerate()
-    return await invokeWsmanCall(context)
+    if (context.amt != null) {
+      context.xmlMessage = context.amt.TLSCredentialContext.Enumerate()
+      return await invokeWsmanCall(context)
+    } else {
+      this.logger.error('Null object in enumerateTLSCredentialContext()')
+    }
   }
 
   async pullTLSCredentialContext (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.TLSCredentialContext.Pull(context.message.Envelope.Body.EnumerateResponse.EnumerationContext)
-    return await invokeWsmanCall(context)
+    if (context.amt != null) {
+      context.xmlMessage = context.amt.TLSCredentialContext.Pull(context.message.Envelope.Body.EnumerateResponse.EnumerationContext)
+      return await invokeWsmanCall(context)
+    } else {
+      this.logger.error('Null object in pullTLSCredentialContext()')
+    }
   }
 
   async deleteTLSCredentialContext (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.TLSCredentialContext.Delete(context.message.Envelope.Body.PullResponse.Items?.AMT_TLSCredentialContext)
-    return await invokeWsmanCall(context)
+    if (context.amt != null) {
+      context.xmlMessage = context.amt.TLSCredentialContext.Delete(context.message.Envelope.Body.PullResponse.Items?.AMT_TLSCredentialContext)
+      return await invokeWsmanCall(context)
+    } else {
+      this.logger.error('Null object in deleteTLSCredentialContext()')
+    }
   }
 
   async enumeratePublicPrivateKeyPair (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.PublicPrivateKeyPair.Enumerate()
-    return await invokeWsmanCall(context)
+    if (context.amt != null) {
+      context.xmlMessage = context.amt.PublicPrivateKeyPair.Enumerate()
+      return await invokeWsmanCall(context)
+    } else {
+      this.logger.error('Null object in enumeratePublicPrivateKeyPair()')
+    }
   }
 
   async pullPublicPrivateKeyPair (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.PublicPrivateKeyPair.Pull(context.message.Envelope.Body.EnumerateResponse.EnumerationContext)
-    return await invokeWsmanCall(context)
+    if (context.amt != null) {
+      context.xmlMessage = context.amt.PublicPrivateKeyPair.Pull(context.message.Envelope.Body.EnumerateResponse.EnumerationContext)
+      return await invokeWsmanCall(context)
+    } else {
+      this.logger.error('Null object in pullPublicPrivateKeyPair()')
+    }
   }
 
   async deletePublicPrivateKeyPair (context: UnconfigContext, event: UnconfigEvent): Promise<void> {
-    const selector = { name: 'InstanceID', value: context.privateCerts[0].InstanceID }
-    context.privateCerts = context.privateCerts.slice(1)
-    context.xmlMessage = context.amt.PublicPrivateKeyPair.Delete(selector)
-    return await invokeWsmanCall(context)
+    if (context.amt != null) {
+      const selector = { name: 'InstanceID', value: context.privateCerts[0].InstanceID }
+      context.privateCerts = context.privateCerts.slice(1)
+      context.xmlMessage = context.amt.PublicPrivateKeyPair.Delete(selector)
+      return await invokeWsmanCall(context)
+    } else {
+      this.logger.error('Null object in deletePublicPrivateKeyPair()')
+    }
   }
 }

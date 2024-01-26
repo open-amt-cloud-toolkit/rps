@@ -17,11 +17,10 @@ export async function getWirelessProfile (req: Request, res: Response): Promise<
     const result = await req.db.wirelessProfiles.getByName(profileName, req.tenantId)
     if (result == null) {
       throw new RPSError(NOT_FOUND_MESSAGE('Wireless', profileName), NOT_FOUND_EXCEPTION)
-    } else {
-      delete result.pskPassphrase
-      MqttProvider.publishEvent('success', ['getWirelessProfiles'], `Sent Wireless Profile : ${profileName}`)
-      res.status(200).json(API_RESPONSE(result)).end()
     }
+    const { pskPassphrase, ...response } = result || {}
+    MqttProvider.publishEvent('success', ['getWirelessProfiles'], `Sent Wireless Profile : ${profileName}`)
+    res.status(200).json(API_RESPONSE(response)).end()
   } catch (error) {
     handleError(log, profileName, req, res, error)
   }

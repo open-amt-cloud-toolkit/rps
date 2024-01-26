@@ -15,7 +15,7 @@ export async function getCiraConfig (req: Request, res: Response): Promise<void>
   const log = new Logger('getCiraConfig')
   const ciraConfigName: string = req.params.ciraConfigName
   try {
-    const results: CIRAConfig = await req.db.ciraConfigs.getByName(ciraConfigName, req.tenantId)
+    const results: CIRAConfig | null = await req.db.ciraConfigs.getByName(ciraConfigName, req.tenantId)
     if (results != null) {
       // secrets rules: never return sensitive data (passwords) in a response
       delete results.password

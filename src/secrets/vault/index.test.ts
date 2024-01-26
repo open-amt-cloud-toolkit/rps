@@ -12,7 +12,7 @@ import { type DeviceCredentials } from '../../interfaces/ISecretManagerService.j
 import { jest } from '@jest/globals'
 import { type SpyInstance, spyOn } from 'jest-mock'
 
-let secretManagerService: VaultService = null
+let secretManagerService: VaultService = null as any
 Environment.Config = config
 let gotSpy: SpyInstance
 let gotFailSpy: SpyInstance<any>

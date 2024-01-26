@@ -8,6 +8,7 @@
         "target": "ESNext",
         "sourceMap": true,
         "esModuleInterop": true,
+        "strictNullChecks": true,
     },
     "include": [
         "./src/**/*"

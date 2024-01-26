@@ -27,7 +27,7 @@ export async function createCiraConfig (req: Request, res: Response): Promise<vo
       }
       delete ciraConfig.password
     }
-    const results: CIRAConfig = await req.db.ciraConfigs.insert(ciraConfig)
+    const results: CIRAConfig | null = await req.db.ciraConfigs.insert(ciraConfig)
     if (results != null) {
       // secrets rules: never return sensitive data (passwords) in a response
       delete results.password

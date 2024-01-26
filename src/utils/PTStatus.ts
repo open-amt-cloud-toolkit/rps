@@ -8,7 +8,7 @@ export interface PTStatusType {
   value: number
 }
 
-export function getPTStatus (value: number): PTStatusType {
+export function getPTStatus (value: number): PTStatusType | undefined {
   return Object.values(PTStatus).find(v => v.value === value)
 }
 

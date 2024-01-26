@@ -6,5 +6,5 @@
 import { type AMTDomain } from '../../models/index.js'
 import { type ITable } from './ITable.js'
 export interface IDomainsTable extends ITable<AMTDomain> {
-  getDomainByDomainSuffix: (domainSuffix: string, tenantId?: string) => Promise<AMTDomain>
+  getDomainByDomainSuffix: (domainSuffix: string, tenantId?: string) => Promise<AMTDomain | null>
 }

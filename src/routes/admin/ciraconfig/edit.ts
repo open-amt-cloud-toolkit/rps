@@ -16,7 +16,7 @@ export async function editCiraConfig (req: Request, res: Response): Promise<void
   const newConfig: CIRAConfig = req.body
   newConfig.tenantId = req.tenantId || ''
   try {
-    const oldConfig: CIRAConfig = await req.db.ciraConfigs.getByName(newConfig.configName, req.tenantId)
+    const oldConfig: CIRAConfig | null = await req.db.ciraConfigs.getByName(newConfig.configName, req.tenantId)
     if (oldConfig == null) {
       throw new RPSError(NOT_FOUND_MESSAGE('CIRA', newConfig.configName), NOT_FOUND_EXCEPTION)
     } else {

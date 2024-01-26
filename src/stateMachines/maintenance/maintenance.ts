@@ -10,7 +10,7 @@ import { type Status } from '../../models/RCS.Config.js'
 import { SyncTime, type SyncTimeEvent } from './syncTime.js'
 import { SyncIP, type SyncIPEvent } from './syncIP.js'
 import { ChangePassword, type ChangePasswordEvent } from './changePassword.js'
-import { type DoneResponse, StatusFailed, StatusSuccess } from './doneResponse.js'
+import { type DoneResponse, StatusSuccess } from './doneResponse.js'
 import { SyncHostName, type SyncHostNameEvent } from './syncHostName.js'
 import { SyncDeviceInfo, type SyncDeviceInfoEvent } from './syncDeviceInfo.js'
 import ClientResponseMsg from '../../utils/ClientResponseMsg.js'
@@ -43,7 +43,7 @@ export class Maintenance {
     predictableActionArguments: true,
     context: {
       clientId: '',
-      doneData: null
+      doneData: { taskName: '', status: 'FAILED', message: 'Initialization' }
     },
     initial: 'INITIAL',
     states: {
@@ -133,15 +133,14 @@ export class Maintenance {
     }
   })
 
-  service = interpret(this.machine)
-    .onTransition((state) => {
-      logger.info(`maintenance: ${JSON.stringify(state.value)}`)
-      for (const k in state.children) {
-        state.children[k].subscribe((childState) => {
-          logger.info(`${k}: ${JSON.stringify(childState.value)}`)
-        })
-      }
-    })
+  service = interpret(this.machine).onTransition((state) => {
+    logger.info(`maintenance: ${JSON.stringify(state.value)}`)
+    for (const k in state.children) {
+      state.children[k].subscribe((childState) => {
+        logger.info(`${k}: ${JSON.stringify(childState.value)}`)
+      })
+    }
+  })
 
   respondAfterDone (clientId: string, doneData: DoneResponse): any {
     const clientObj = devices[clientId]
@@ -155,7 +154,7 @@ export class Maintenance {
       method = 'success'
       status = 'success'
       actualStatusMsg = `${doneData.taskName} completed succesfully`
-    } else if (doneData.status === StatusFailed) {
+    } else {
       method = 'error'
       status = 'failed'
       actualStatusMsg = `${doneData.taskName} failed`
@@ -169,6 +168,8 @@ export class Maintenance {
     logger.info(`${clientId} ${actualStatusMsg}`)
     const rspMsg = ClientResponseMsg.get(clientId, null, method, status, JSON.stringify(taskStatus))
     const toSend = JSON.stringify(rspMsg)
-    clientObj.ClientSocket.send(toSend)
+    if (clientObj.ClientSocket != null) {
+      clientObj.ClientSocket.send(toSend)
+    }
   }
 }

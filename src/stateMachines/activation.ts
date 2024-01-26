@@ -30,17 +30,18 @@ import ClientResponseMsg from '../utils/ClientResponseMsg.js'
 import { Unconfiguration } from './unconfiguration.js'
 import { type DeviceCredentials } from '../interfaces/ISecretManagerService.js'
 import { NetworkConfiguration } from './networkConfiguration.js'
+import { error } from 'console'
 
 export interface ActivationContext {
-  profile: AMTConfiguration
-  amtDomain: AMTDomain
+  profile: AMTConfiguration | null
+  amtDomain: AMTDomain | null
   message: any
   clientId: string
   xmlMessage: string
   status: 'success' | 'error'
   errorMessage: string
-  generalSettings?: AMT.Models.GeneralSettings
-  targetAfterError: string
+  generalSettings?: AMT.Models.GeneralSettings | null
+  targetAfterError: string | null
   httpHandler: HttpHandler
   isActivated?: boolean
   hasToUpgrade?: boolean
@@ -50,7 +51,7 @@ export interface ActivationContext {
   certChainPfx: any
   tenantId: string
   canActivate: boolean
-  friendlyName?: string
+  friendlyName?: string | null
 }
 
 export interface ActivationEvent {
@@ -662,11 +663,17 @@ export class Activation {
         DELAY_TIME_ACTIVATION_SYNC: () => Environment.Config.delay_activation_sync
       },
       guards: {
-        isAdminMode: (context, event) => context.profile.activation === ClientAction.ADMINCTLMODE,
+        isAdminMode: (context, event) => context.profile != null ? context.profile.activation === ClientAction.ADMINCTLMODE : false,
         isCertExtracted: (context, event) => context.certChainPfx != null,
         isValidCert: (context, event) => devices[context.clientId].certObj != null,
         isDigestRealmInvalid: (context, event) => !this.validator.isDigestRealmValid(devices[context.clientId].ClientData.payload.digestRealm),
-        maxCertLength: (context, event) => devices[context.clientId].count <= devices[context.clientId].certObj.certChain.length,
+        maxCertLength: (context, event) => {
+          const device = devices[context.clientId]
+          if (device.count != null && device.certObj != null) {
+            return device.count <= device.certObj.certChain.length
+          }
+          return false
+        },
         isDeviceAdminModeActivated: (context, event) => context.message.Envelope.Body?.AdminSetup_OUTPUT?.ReturnValue === 0,
         isDeviceClientModeActivated: (context, event) => context.message.Envelope.Body?.Setup_OUTPUT?.ReturnValue === 0,
         isDeviceActivatedInACM: (context, event) => context.message.Envelope.Body?.IPS_HostBasedSetupService?.CurrentControlMode === 2,
@@ -676,11 +683,11 @@ export class Activation {
         isMebxPassword: (context, event) => context.targetAfterError === 'SET_MEBX_PASSWORD',
         isCheckActivationOnAMT: (context, event) => context.targetAfterError === 'CHECK_ACTIVATION_ON_AMT',
         isUpgraded: (context, event) => context.message.Envelope.Body.UpgradeClientToAdmin_OUTPUT.ReturnValue === 0,
-        hasCIRAProfile: (context, event) => context.profile.ciraConfigName != null,
-        isActivated: (context, event) => context.isActivated,
+        hasCIRAProfile: (context, event) => context.profile != null ? context.profile.ciraConfigName != null : false,
+        isActivated: (context, event) => context.isActivated != null ? context.isActivated : false,
         canActivate: (context, event) => context.canActivate,
-        hasToUpgrade: (context, event) => context.hasToUpgrade,
-        canUpgrade: (context, event) => context.isActivated && devices[context.clientId].ClientData.payload.currentMode === 1 && context.profile.activation === ClientAction.ADMINCTLMODE
+        hasToUpgrade: (context, event) => context.hasToUpgrade != null ? context.hasToUpgrade : false,
+        canUpgrade: (context, event) => context.profile != null && context.isActivated != null ? context.isActivated && devices[context.clientId].ClientData.payload.currentMode === 1 && context.profile.activation === ClientAction.ADMINCTLMODE : false
       },
       actions: {
         'Reset Unauth Count': (context, event) => { devices[context.clientId].unauthCount = 0 },
@@ -745,11 +752,14 @@ export class Activation {
   }
 
   updateCredentials (context: ActivationContext, event: ActivationEvent): void {
-    devices[context.clientId].connectionParams.username = AMTUserName
-    devices[context.clientId].connectionParams.password = devices[context.clientId].amtPassword
+    const device = devices[context.clientId]
+    if (device.connectionParams != null && device.amtPassword != null) {
+      device.connectionParams.username = AMTUserName
+      device.connectionParams.password = device.amtPassword
+    }
   }
 
-  async getAMTProfile (context: ActivationContext, event: ActivationEvent): Promise<AMTConfiguration> {
+  async getAMTProfile (context: ActivationContext, event: ActivationEvent): Promise<AMTConfiguration | null> {
     this.db = await this.dbFactory.getDb()
     const profile = await this.configurator.profileManager.getAmtProfile(devices[context.clientId].ClientData.payload.profile.profileName, context.tenantId)
     return profile
@@ -758,12 +768,16 @@ export class Activation {
   async getDeviceFromMPS (context: ActivationContext, event: ActivationEvent): Promise<any> {
     const clientObj = devices[context.clientId]
     try {
-      const result = await got(`${Environment.Config.mps_server}/api/v1/devices/${clientObj.uuid}?tenantId=${context.profile.tenantId}`, {
-        method: 'GET'
-      })
+      if (context.profile != null) {
+        const result = await got(`${Environment.Config.mps_server}/api/v1/devices/${clientObj.uuid}?tenantId=${context.profile.tenantId}`, {
+          method: 'GET'
+        })
 
-      if (result?.body != null && result?.body !== '') {
-        return true // if we have a result the device is already in their tenant and can activated
+        if (result?.body != null && result?.body !== '') {
+          return true // if we have a result the device is already in their tenant and can activated
+        }
+      } else {
+        this.logger.error('Null object in getDeviceFromMPS()')
       }
       return false // if we have a success repsonse, but no result -- it means the device belongs to another tenant --
       // prevent activation without unprovision first.
@@ -772,7 +786,7 @@ export class Activation {
     }
   }
 
-  async getAMTDomainCert (context: ActivationContext, event: ActivationEvent): Promise<AMTDomain> {
+  async getAMTDomainCert (context: ActivationContext, event: ActivationEvent): Promise<AMTDomain | null> {
     const domain = await this.configurator.domainCredentialManager.getProvisioningCert(devices[context.clientId].ClientData.payload.fqdn, context.tenantId)
     return domain
   }
@@ -780,16 +794,16 @@ export class Activation {
   sendMessageToDevice (context: ActivationContext, event: ActivationEvent): void {
     const { clientId, status } = context
     const clientObj = devices[clientId]
-    let method = null
+    let method: 'failed' | 'success' | 'ok' | 'heartbeat' | null = null
     if (status === 'success') {
       method = 'success'
-    } else if (status === 'error') {
+    } else {
       clientObj.status.Status = context.errorMessage !== '' ? context.errorMessage : 'Failed'
       method = 'failed'
     }
     const responseMessage = ClientResponseMsg.get(clientId, null, status, method, JSON.stringify(clientObj.status))
     this.logger.info(JSON.stringify(responseMessage, null, '\t'))
-    devices[clientId].ClientSocket.send(JSON.stringify(responseMessage))
+    devices[clientId].ClientSocket?.send(JSON.stringify(responseMessage))
   }
 
   createSignedString (clientId: string, hashAlgorithm: string): boolean {
@@ -797,8 +811,12 @@ export class Activation {
     clientObj.nonce = PasswordHelper.generateNonce()
     const arr: Buffer[] = [clientObj.ClientData.payload.fwNonce, clientObj.nonce]
     try {
-      clientObj.signature = this.signatureHelper.signString(Buffer.concat(arr), clientObj.certObj.privateKey, hashAlgorithm)
-      return true
+      if (clientObj.certObj != null) {
+        clientObj.signature = this.signatureHelper.signString(Buffer.concat(arr), clientObj.certObj.privateKey, hashAlgorithm)
+        return true
+      } else {
+        return false
+      }
     } catch (err) {
       MqttProvider.publishEvent('fail', ['Activator'], 'Failed to activate', clientObj.uuid)
       return false
@@ -823,10 +841,10 @@ export class Activation {
   }
 
   async getPassword (context): Promise<string> {
-    const amtPassword: string = await this.configurator.profileManager.getAmtPassword(context.profile.profileName, context.tenantId)
+    const amtPassword: string | null = await this.configurator.profileManager.getAmtPassword(context.profile.profileName, context.tenantId)
     devices[context.clientId].amtPassword = amtPassword
     if (context.profile.activation === ClientAction.ADMINCTLMODE) {
-      const mebxPassword: string = await this.configurator.profileManager.getMEBxPassword(context.profile.profileName, context.tenantId)
+      const mebxPassword: string | null = await this.configurator.profileManager.getMEBxPassword(context.profile.profileName, context.tenantId)
       devices[context.clientId].mebxPassword = mebxPassword
     }
     const data: string = `admin:${devices[context.clientId].ClientData.payload.digestRealm}:${amtPassword}`
@@ -840,8 +858,11 @@ export class Activation {
     const password = await this.getPassword(context)
     this.createSignedString(clientId, certChainPfx.hashAlgorithm)
     const clientObj = devices[clientId]
-    context.xmlMessage = ips.HostBasedSetupService.AdminSetup(2, password, clientObj.nonce.toString('base64'), 2, clientObj.signature)
-    return await invokeWsmanCall(context)
+    if (clientObj.nonce != null && clientObj.signature != null) {
+      context.xmlMessage = ips.HostBasedSetupService.AdminSetup(2, password, clientObj.nonce.toString('base64'), 2, clientObj.signature)
+      return await invokeWsmanCall(context)
+    }
+    return null
   }
 
   async sendUpgradeClientToAdmin (context): Promise<any> {
@@ -849,8 +870,11 @@ export class Activation {
     const { clientId, certChainPfx } = context
     this.createSignedString(clientId, certChainPfx.hashAlgorithm)
     const clientObj = devices[clientId]
-    context.xmlMessage = ips.HostBasedSetupService.UpgradeClientToAdmin(clientObj.nonce.toString('base64'), 2, clientObj.signature)
-    return await invokeWsmanCall(context)
+    if (clientObj.nonce != null && clientObj.signature != null) {
+      context.xmlMessage = ips.HostBasedSetupService.UpgradeClientToAdmin(clientObj.nonce.toString('base64'), 2, clientObj.signature)
+      return await invokeWsmanCall(context)
+    }
+    return null
   }
 
   async getActivationStatus (context): Promise<any> {
@@ -870,7 +894,8 @@ export class Activation {
     const amt: AMT.Messages = context.amt
     const password = await this.getPassword(context)
     // Convert MD5 hash to raw string which utf16
-    const result = password.match(/../g).map((v) => String.fromCharCode(parseInt(v, 16))).join('')
+    const passwordMatch = password.match(/../g) ?? []
+    const result = passwordMatch.map((v) => String.fromCharCode(parseInt(v, 16))).join('')
     // Encode to base64
     const encodedPassword = Buffer.from(result, 'binary').toString('base64')
     context.xmlMessage = amt.AuthorizationService.SetAdminACLEntryEx(AMTUserName, encodedPassword)
@@ -879,38 +904,49 @@ export class Activation {
 
   async setMEBxPassword (context): Promise<any> {
     const amt = new AMT.Messages()
-    context.xmlMessage = amt.SetupAndConfigurationService.SetMEBXPassword(devices[context.clientId].mebxPassword)
-    return await invokeWsmanCall(context)
+    const mebxPassword = devices[context.clientId].mebxPassword
+    if (mebxPassword != null) {
+      context.xmlMessage = amt.SetupAndConfigurationService.SetMEBXPassword(mebxPassword)
+      return await invokeWsmanCall(context)
+    }
+    return null
   }
 
-  injectCertificate (clientId: string, ips: IPS.Messages): string {
+  injectCertificate (clientId: string, ips: IPS.Messages): string | null {
     const clientObj = devices[clientId]
     // inject certificates in proper order with proper flags
-    if (clientObj.count <= clientObj.certObj.certChain.length) {
-      let xmlRequestBody = ''
-      let isLeaf = false
-      let isRoot = false
-      if (clientObj.count === 1) {
-        isLeaf = true
-      } else if (clientObj.count === clientObj.certObj.certChain.length) {
-        isRoot = true
+    if (clientObj.count != null && clientObj.certObj != null) {
+      if (clientObj.count <= clientObj.certObj.certChain.length) {
+        let xmlRequestBody = ''
+        let isLeaf = false
+        let isRoot = false
+        if (clientObj.count === 1) {
+          isLeaf = true
+        } else if (clientObj.count === clientObj.certObj.certChain.length) {
+          isRoot = true
+        }
+        xmlRequestBody = ips.HostBasedSetupService.AddNextCertInChain(clientObj.certObj.certChain[clientObj.count - 1], isLeaf, isRoot)
+        ++clientObj.count
+        this.logger.debug(`xmlRequestBody ${clientObj.uuid} : ${xmlRequestBody}`)
+        return xmlRequestBody
       }
-      xmlRequestBody = ips.HostBasedSetupService.AddNextCertInChain(clientObj.certObj.certChain[clientObj.count - 1], isLeaf, isRoot)
-      ++devices[clientId].count
-      this.logger.debug(`xmlRequestBody ${clientObj.uuid} : ${xmlRequestBody}`)
-      return xmlRequestBody
     }
+    return null
   }
 
   GetProvisioningCertObj (context: ActivationContext, event: ActivationEvent): void {
     const { amtDomain, clientId } = context
     try {
-      // read in cert
-      const pfxb64: string = Buffer.from(amtDomain.provisioningCert, 'base64').toString('base64')
-      // convert the certificate pfx to an object
-      const pfxobj = this.certManager.convertPfxToObject(pfxb64, amtDomain.provisioningCertPassword)
-      // return the certificate chain pems and private key
-      context.certChainPfx = this.certManager.dumpPfx(pfxobj)
+      if (amtDomain?.provisioningCert != null && amtDomain.provisioningCertPassword != null) {
+        // read in cert
+        const pfxb64: string = Buffer.from(amtDomain.provisioningCert, 'base64').toString('base64')
+        // convert the certificate pfx to an object
+        const pfxobj = this.certManager.convertPfxToObject(pfxb64, amtDomain.provisioningCertPassword)
+        // return the certificate chain pems and private key
+        context.certChainPfx = this.certManager.dumpPfx(pfxobj)
+      } else {
+        throw error
+      }
     } catch (error) {
       this.logger.error(`Device ${devices[clientId].uuid} Failed to get provisioning certificate.`)
       devices[clientId].certObj = null
@@ -932,7 +968,7 @@ export class Activation {
   readGeneralSettings (context: ActivationContext, event: ActivationEvent): void {
     const clientObj = devices[context.clientId]
     context.generalSettings = context.message.Envelope.Body.AMT_GeneralSettings
-    clientObj.ClientData.payload.digestRealm = context.generalSettings.DigestRealm
+    clientObj.ClientData.payload.digestRealm = context.generalSettings != null ? context.generalSettings.DigestRealm : null
     clientObj.hostname = clientObj.ClientData.payload.hostname
   }
 
@@ -952,14 +988,17 @@ export class Activation {
 
   async saveDeviceInfoToSecretProvider (context: ActivationContext, event: ActivationEvent): Promise<boolean> {
     const clientObj = devices[context.clientId]
+    if (clientObj.amtPassword != null && clientObj.mebxPassword != null) {
+      const data: DeviceCredentials = {
+        AMT_PASSWORD: clientObj.amtPassword,
+        MEBX_PASSWORD: clientObj.action === ClientAction.ADMINCTLMODE ? clientObj.mebxPassword : null
+      }
 
-    const data: DeviceCredentials = {
-      AMT_PASSWORD: clientObj.amtPassword,
-      MEBX_PASSWORD: clientObj.action === ClientAction.ADMINCTLMODE ? clientObj.mebxPassword : null
+      await this.configurator.secretsManager.writeSecretWithObject(`devices/${clientObj.uuid}`, data)
+      return true
     }
-
-    await this.configurator.secretsManager.writeSecretWithObject(`devices/${clientObj.uuid}`, data)
-    return true
+    this.logger.error('Null object in saveDeviceInfoToSecretProvider()')
+    return false
   }
 
   async saveDeviceInfoToMPS (context: ActivationContext, event: ActivationEvent): Promise<boolean> {
@@ -982,7 +1021,7 @@ export class Activation {
         hostname: clientObj.hostname,
         mpsusername: clientObj.mpsUsername,
         tags: profile?.tags ?? [],
-        tenantId: profile.tenantId,
+        tenantId: profile?.tenantId,
         dnsSuffix: clientObj.ClientData?.payload.fqdn,
         deviceInfo
       }

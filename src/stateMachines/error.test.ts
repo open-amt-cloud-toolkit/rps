@@ -48,7 +48,7 @@ describe('Error State Machine', () => {
       }
     }
     devices[clientId] = {
-      unauthCount: null,
+      unauthCount: 0,
       ClientId: clientId,
       ClientSocket: { send: jest.fn() } as any,
       ClientData: '',
@@ -65,7 +65,7 @@ describe('Error State Machine', () => {
       },
       uuid: '4c4c4544-004b-4210-8033-b6c04f504633',
       messageId: 1
-    }
+    } as any
   })
 
   it('should eventually reach "UNKNOWN"', (done) => {

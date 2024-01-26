@@ -22,7 +22,7 @@ Environment.Config = config
 const configurator: Configurator = new Configurator()
 const validator = new Validator(new Logger('Validator'), configurator)
 const clientId = randomUUID()
-devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
+devices[clientId] = { ClientId: clientId, ClientSocket: null as any, unauthCount: 0 } as any
 
 let msg
 
@@ -90,7 +90,7 @@ describe('validator', () => {
     })
     test('should get device credentials from secret provider', async () => {
       const clientId = randomUUID()
-      devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
+      devices[clientId] = { ClientId: clientId, ClientSocket: null as any, unauthCount: 0 } as any
       msg.payload.password = 'Intel123!'
       await validator.verifyDevicePassword(msg.payload, clientId)
       expect(getSpy).toHaveBeenCalled()
@@ -164,13 +164,13 @@ describe('validator', () => {
       }
       VersionChecker.setCurrentVersion('4.0.0')
       const clientMsg = validator.parseClientMsg(JSON.stringify(msg), clientId)
-      expect(clientMsg.message).toEqual(msg.message)
+      expect(clientMsg?.message).toEqual(msg.message)
     })
 
     test('check protocol version of message', () => {
       const msg = '{"apiKey":"key","appVersion":"1.2.0","message":"all\'s good!","method":"activation","payload":"eyJidWlsZCI6IjM0MjUiLCJjZXJ0SGFzaGVzIjpbImU3Njg1NjM0ZWZhY2Y2OWFjZTkzOWE2YjI1NWI3YjRmYWJlZjQyOTM1YjUwYTI2NWFjYjVjYjYwMjdlNDRlNzAiLCJlYjA0Y2Y1ZWIxZjM5YWZhNzYyZjJiYjEyMGYyOTZjYmE1MjBjMWI5N2RiMTU4OTU2NWI4MWNiOWExN2I3MjQ0IiwiYzM4NDZiZjI0YjllOTNjYTY0Mjc0YzBlYzY3YzFlY2M1ZTAyNGZmY2FjZDJkNzQwMTkzNTBlODFmZTU0NmFlNCIsImQ3YTdhMGZiNWQ3ZTI3MzFkNzcxZTk0ODRlYmNkZWY3MWQ1ZjBjM2UwYTI5NDg3ODJiYzgzZWUwZWE2OTllZjQiLCIxNDY1ZmEyMDUzOTdiODc2ZmFhNmYwYTk5NThlNTU5MGU0MGZjYzdmYWE0ZmI3YzJjODY3NzUyMWZiNWZiNjU4IiwiODNjZTNjMTIyOTY4OGE1OTNkNDg1ZjgxOTczYzBmOTE5NTQzMWVkYTM3Y2M1ZTM2NDMwZTc5YzdhODg4NjM4YiIsImE0YjZiMzk5NmZjMmYzMDZiM2ZkODY4MWJkNjM0MTNkOGM1MDA5Y2M0ZmEzMjljMmNjZjBlMmZhMWIxNDAzMDUiLCI5YWNmYWI3ZTQzYzhkODgwZDA2YjI2MmE5NGRlZWVlNGI0NjU5OTg5YzNkMGNhZjE5YmFmNjQwNWU0MWFiN2RmIiwiYTUzMTI1MTg4ZDIxMTBhYTk2NGIwMmM3YjdjNmRhMzIwMzE3MDg5NGU1ZmI3MWZmZmI2NjY3ZDVlNjgxMGEzNiIsIjE2YWY1N2E5ZjY3NmIwYWIxMjYwOTVhYTVlYmFkZWYyMmFiMzExMTlkNjQ0YWM5NWNkNGI5M2RiZjNmMjZhZWIiLCI5NjBhZGYwMDYzZTk2MzU2NzUwYzI5NjVkZDBhMDg2N2RhMGI5Y2JkNmU3NzcxNGFlYWZiMjM0OWFiMzkzZGEzIiwiNjhhZDUwOTA5YjA0MzYzYzYwNWVmMTM1ODFhOTM5ZmYyYzk2MzcyZTNmMTIzMjViMGE2ODYxZTFkNTlmNjYwMyIsIjZkYzQ3MTcyZTAxY2JjYjBiZjYyNTgwZDg5NWZlMmI4YWM5YWQ0Zjg3MzgwMWUwYzEwYjljODM3ZDIxZWIxNzciLCI3M2MxNzY0MzRmMWJjNmQ1YWRmNDViMGU3NmU3MjcyODdjOGRlNTc2MTZjMWU2ZTYxNDFhMmIyY2JjN2Q4ZTRjIiwiMjM5OTU2MTEyN2E1NzEyNWRlOGNlZmVhNjEwZGRmMmZhMDc4YjVjODA2N2Y0ZTgyODI5MGJmYjg2MGU4NGIzYyIsIjQ1MTQwYjMyNDdlYjljYzhjNWI0ZjBkN2I1MzA5MWY3MzI5MjA4OWU2ZTVhNjNlMjc0OWRkM2FjYTkxOThlZGEiLCI0M2RmNTc3NGIwM2U3ZmVmNWZlNDBkOTMxYTdiZWRmMWJiMmU2YjQyNzM4YzRlNmQzODQxMTAzZDNhYTdmMzM5IiwiMmNlMWNiMGJmOWQyZjllMTAyOTkzZmJlMjE1MTUyYzNiMmRkMGNhYmRlMWM2OGU1MzE5YjgzOTE1NGRiYjdmNSIsIjcwYTczZjdmMzc2YjYwMDc0MjQ4OTA0NTM0YjExNDgyZDViZjBlNjk4ZWNjNDk4ZGY1MjU3N2ViZjJlOTNiOWEiXSwiY2xpZW50IjoiUFBDIiwiY3VycmVudE1vZGUiOjAsImZxZG4iOiJ2cHJvZGVtby5jb20iLCJwYXNzd29yZCI6IktRR25IK041cUo4WUxxakVGSk1uR1NnY25GTE12MFRrIiwicHJvZmlsZSI6InByb2ZpbGUxIiwic2t1IjoiMTYzOTIiLCJ1c2VybmFtZSI6IiQkT3NBZG1pbiIsInV1aWQiOlsxNiwxNDksMTcyLDc1LDE2Niw0LDMzLDY3LDE4NiwyMjYsMjEyLDkzLDIyMyw3LDE4MiwxMzJdLCJ2ZXIiOiIxMS44LjUwIn0=","protocolVersion":"3.0.0","status":"ok"}'
       VersionChecker.setCurrentVersion('4.0.0')
-      let rpsError = null
+      let rpsError: any = null
       try {
         validator.parseClientMsg(msg, clientId)
       } catch (error) {
@@ -191,9 +191,9 @@ describe('validator', () => {
     })
 
     test('Should throw an exception if message is null', async () => {
-      let rpsError = null
+      let rpsError: any = null
       try {
-        validator.verifyPayload(null, clientId)
+        validator.verifyPayload(null as any, clientId)
       } catch (error) {
         rpsError = error
       }
@@ -202,7 +202,7 @@ describe('validator', () => {
     })
 
     test('Should throw an exception if uuid does not exist', async () => {
-      let rpsError = null
+      let rpsError: any = null
       try {
         msg.payload.uuid = ''
         validator.verifyPayload(msg, clientId)
@@ -246,6 +246,7 @@ describe('validator', () => {
       expect(verifyDevicePasswordSpy).not.toHaveBeenCalled()
     })
     test('Should throw an exception if task is not specified', async () => {
+      let rpsError: any = null
       msg.payload.task = ''
       try {
         await validator.validateMaintenanceMsg(msg, clientId)
@@ -256,6 +257,7 @@ describe('validator', () => {
       expect(rpsError.message).toEqual(`${clientId} - missing maintenance task in message`)
     })
     test('Should throw an exception if device is in preprovisioning state', async () => {
+      let rpsError: any = null
       msg.payload.currentMode = 0
       try {
         await validator.validateMaintenanceMsg(msg, clientId)
@@ -275,7 +277,7 @@ describe('validator', () => {
     })
 
     test('should return false when realm is null or undefined', async () => {
-      const isDigestRealmValid: boolean = validator.isDigestRealmValid(null)
+      const isDigestRealmValid: boolean = validator.isDigestRealmValid(null as any)
       expect(isDigestRealmValid).toBe(false)
     })
 
@@ -300,7 +302,7 @@ describe('validator', () => {
 
   describe('validate activation message', () => {
     test('should throw an exception if AMT password is undefined', async () => {
-      let rpsError = null
+      let rpsError: any = null
       try {
         msg.payload.password = undefined
         await validator.validateActivationMsg(msg, clientId)
@@ -311,8 +313,8 @@ describe('validator', () => {
       expect(rpsError.message).toEqual(`Device ${msg.payload.uuid} activation failed. Missing password.`)
     })
     test('should throw an exception if profile does not match', async () => {
-      const getAMTProfileSpy = spyOn(configurator.profileManager, 'getAmtProfile').mockReturnValue(null)
-      let rpsError = null
+      const getAMTProfileSpy = spyOn(configurator.profileManager, 'getAmtProfile').mockReturnValue(null as any)
+      let rpsError: any = null
       try {
         msg.payload.profile = 'profile5'
         await validator.validateActivationMsg(msg, clientId)
@@ -324,7 +326,7 @@ describe('validator', () => {
       expect(rpsError.message).toEqual(`Device ${msg.payload.uuid} activation failed. ${msg.payload.profile} does not match list of available AMT profiles.`)
     })
     test('Should throw an exception if uuid length is not 36', async () => {
-      let rpsError = null
+      let rpsError: any = null
       try {
         msg.payload.uuid = '4bac9510-04a6-4321-bae2-d45ddf07b68'
         await validator.validateActivationMsg(msg, clientId)
@@ -335,7 +337,7 @@ describe('validator', () => {
       expect(rpsError.message).toEqual(`${clientId} - uuid not valid length`)
     })
     test('Should throw an exception if uuid is empty', async () => {
-      let rpsError = null
+      let rpsError: any = null
       try {
         msg.payload.uuid = ''
         await validator.validateActivationMsg(msg, clientId)
@@ -355,7 +357,7 @@ describe('validator', () => {
       jest.resetAllMocks()
       msg.method = 'deactivation'
       rpsError = null
-      devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
+      devices[clientId] = { ClientId: clientId, ClientSocket: null as any, unauthCount: 0 } as any
       verifyAMTVersionSpy = spyOn(validator, 'verifyAMTVersion')
       verifyDevicePasswordSpy = spyOn(validator, 'verifyDevicePassword').mockResolvedValue()
     })
@@ -398,7 +400,7 @@ describe('validator', () => {
 
   describe('verify Activation message for ACM', () => {
     test('should throw an exception if no certHashes', async () => {
-      let rpsError = null
+      let rpsError: any = null
       try {
         msg.payload.certHashes = undefined
         await validator.verifyActivationMsgForACM(msg)
@@ -409,7 +411,7 @@ describe('validator', () => {
       expect(rpsError.message).toEqual(`Device ${msg.payload.uuid} activation failed. Missing certificate hashes from the device.`)
     })
     test('should throw an exception if no fqdn', async () => {
-      let rpsError = null
+      let rpsError: any = null
       try {
         msg.payload.fqdn = undefined
         await validator.verifyActivationMsgForACM(msg)
@@ -421,7 +423,7 @@ describe('validator', () => {
     })
     test('should throw an exception if no fqdn (with doesDomainExist mock)', async () => {
       spyOn(validator.configurator.domainCredentialManager, 'doesDomainExist').mockImplementation(async () => false)
-      let rpsError = null
+      let rpsError: any = null
       try {
         msg.payload.fqdn = 'abcd'
         await validator.verifyActivationMsgForACM(msg)
@@ -465,7 +467,7 @@ describe('validator', () => {
         activationStatus: false,
         amtPassword: null,
         unauthCount: 0
-      }
+      } as any
       devices[clientId] = clientObj
       const getDevcieCredentialsSpy = spyOn(validator, 'getDeviceCredentials').mockResolvedValue({ AMT_PASSWORD: msg.payload.password, MEBX_PASSWORD: 'TestP{assw0rd' } as DeviceCredentials)
       const updateTagsSpy = spyOn(validator, 'updateTags').mockResolvedValue()
@@ -483,7 +485,7 @@ describe('validator', () => {
         activationStatus: false,
         amtPassword: null,
         unauthCount: 0
-      }
+      } as any
       devices[clientId] = clientObj
       const getDeviceCredentialsSpy = spyOn(validator, 'getDeviceCredentials').mockResolvedValue({ AMT_PASSWORD: msg.payload.password } as DeviceCredentials)
       const updateTagsSpy = spyOn(validator, 'updateTags').mockResolvedValue()
@@ -504,7 +506,7 @@ describe('validator', () => {
     })
     test('should set nothing when current mode is 0', async () => {
       msg.payload.currentMode = 0
-      devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0, status: {} }
+      devices[clientId] = { ClientId: clientId, ClientSocket: null as any, unauthCount: 0, status: {} } as any
       await validator.verifyCurrentModeForActivation(msg, profile, clientId)
       expect(devices[clientId].status.Status).toBeUndefined()
     })
@@ -523,7 +525,7 @@ describe('validator', () => {
     })
     test('should throw an exception, when current mode is not 0/1/2', async () => {
       msg.payload.currentMode = 3
-      let rpsError = null
+      let rpsError: any = null
       try {
         await validator.verifyCurrentModeForActivation(msg, profile, clientId)
       } catch (error) {
@@ -541,7 +543,7 @@ describe('validator', () => {
     })
     test('should throw an exception, when current mode is 2 and profile activation in ccm', async () => {
       msg.payload.currentMode = 2
-      let rpsError = null
+      let rpsError: any = null
       try {
         await validator.verifyCurrentModeForActivation(msg, profile, clientId)
       } catch (error) {

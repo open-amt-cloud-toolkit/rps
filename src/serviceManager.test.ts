@@ -51,7 +51,7 @@ describe('Index', () => {
     expect(secretMock.health).toHaveBeenCalled()
   })
   it('should pass processServiceConfigs empty Consul', async () => {
-    consul.get = jest.fn(() => null)
+    consul.get = jest.fn(() => null as any)
     consul.seed = jest.fn(async () => await Promise.resolve(true))
     await processServiceConfigs(consul, config)
     expect(consul.get).toHaveBeenCalledWith(config.consul_key_prefix)

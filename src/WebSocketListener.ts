@@ -44,7 +44,7 @@ export class WebSocketListener {
    */
   onClientConnected = (ws: Server): void => {
     const clientId = randomUUID()
-    devices[clientId] = { ClientId: clientId, ClientSocket: ws, ciraconfig: {}, network: { count: 0 }, status: {}, tls: {}, activationStatus: false, unauthCount: 0, messageId: 0 }
+    devices[clientId] = { ClientId: clientId, ClientSocket: ws, ciraconfig: {}, network: { count: 0 }, status: {}, tls: {}, activationStatus: false, unauthCount: 0, messageId: 0, amtPassword: '', connectionParams: { port: 16992, guid: '', username: '', password: '' }, resolve: (value: unknown) => {}, reject: (value: unknown) => {} }
 
     ws.on('message', async (data: Data, isBinary: boolean) => {
       // eslint-disable-next-line @typescript-eslint/no-base-to-string
@@ -90,11 +90,14 @@ export class WebSocketListener {
     }
     if (messageLength > maxMessageSize) {
       this.logger.error('Incoming message exceeds allowed length')
-      devices[clientId].ClientSocket.close()
+      const clientDevice = devices[clientId]
+      if (clientDevice?.ClientSocket != null) {
+        clientDevice.ClientSocket.close()
+      }
     }
     try {
       // this.logger.debug(`Message from client ${clientId}: ${JSON.stringify(message, null, "\t")}`);
-      let responseMsg: ClientMsg
+      let responseMsg: ClientMsg | null
       if (this.dataProcessor) {
         responseMsg = await this.dataProcessor.processData(message, clientId)
         if (responseMsg) {
@@ -115,8 +118,9 @@ export class WebSocketListener {
   sendMessage (message: ClientMsg, clientId: string): void {
     try {
       this.logger.debug(`${clientId} : response message sent to device: ${JSON.stringify(message, null, '\t')}`)
-      if (devices[clientId] != null) {
-        devices[clientId].ClientSocket.send(JSON.stringify(message))
+      const clientDevice = devices[clientId]
+      if (clientDevice?.ClientSocket != null) {
+        clientDevice.ClientSocket.send(JSON.stringify(message))
       }
     } catch (error) {
       this.logger.error(`Failed to send message to AMT: ${error}`)
