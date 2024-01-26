@@ -51,13 +51,13 @@ describe('Deactivation State Machine', () => {
       connectionParams: {
         guid: clientId,
         port: 16992,
-        digestChallenge: null,
+        digestChallenge: null as any,
         username: 'admin',
         password: 'P@ssw0rd'
       },
       uuid: clientId,
       messageId: 1
-    }
+    } as any
     deactivationContext = {
       message: '',
       clientId,
@@ -195,14 +195,14 @@ describe('Deactivation State Machine', () => {
   })
 
   it('should send success message to device', () => {
-    deactivation.sendMessageToDevice(deactivationContext, null)
+    deactivation.sendMessageToDevice(deactivationContext, null as any)
     expect(responseMessageSpy).toHaveBeenCalledWith(deactivationContext.clientId, null, deactivationContext.status, 'success', JSON.stringify(devices[clientId].status))
     expect(sendSpy).toHaveBeenCalled()
   })
 
   it('should send error message to device', () => {
     deactivationContext.status = 'error'
-    deactivation.sendMessageToDevice(deactivationContext, null)
+    deactivation.sendMessageToDevice(deactivationContext, null as any)
     expect(responseMessageSpy).toHaveBeenCalledWith(deactivationContext.clientId, null, deactivationContext.status, 'failed', JSON.stringify(devices[clientId].status))
     expect(sendSpy).toHaveBeenCalled()
   })

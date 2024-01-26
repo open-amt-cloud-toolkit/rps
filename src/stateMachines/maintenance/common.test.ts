@@ -66,7 +66,7 @@ const delayedResolve = function (value): null {
 
 it('should send a WSMan message once with successful reply', async () => {
   sendSpy = spyOn(devices[clientId].ClientSocket, 'send')
-    .mockImplementationOnce(delayedResolve(wsmanRsp))
+    .mockImplementationOnce(delayedResolve(wsmanRsp) as any)
   await expect(invokeWsmanCall(clientId, xmlMessage, 2)).resolves.toEqual(wsmanRsp.Envelope.Body)
   expect(wrapItSpy).toHaveBeenCalled()
   expect(responseMessageSpy).toHaveBeenCalled()
@@ -75,24 +75,24 @@ it('should send a WSMan message once with successful reply', async () => {
 })
 it('should successfully resolve after one UnexpectedParseError', async () => {
   sendSpy = spyOn(devices[clientId].ClientSocket, 'send')
-    .mockImplementationOnce(delayedReject(new UnexpectedParseError()))
-    .mockImplementationOnce(delayedResolve(wsmanRsp))
+    .mockImplementationOnce(delayedReject(new UnexpectedParseError()) as any)
+    .mockImplementationOnce(delayedResolve(wsmanRsp) as any)
   await expect(invokeWsmanCall(clientId, xmlMessage, 2)).resolves.toEqual(wsmanRsp.Envelope.Body)
   expect(sendSpy).toHaveBeenCalledTimes(2)
 })
 it('should successfully resolve after two UnexpectedParseError', async () => {
   sendSpy = spyOn(devices[clientId].ClientSocket, 'send')
-    .mockImplementationOnce(delayedReject(new UnexpectedParseError()))
-    .mockImplementationOnce(delayedReject(new UnexpectedParseError()))
-    .mockImplementationOnce(delayedResolve(wsmanRsp))
+    .mockImplementationOnce(delayedReject(new UnexpectedParseError()) as any)
+    .mockImplementationOnce(delayedReject(new UnexpectedParseError()) as any)
+    .mockImplementationOnce(delayedResolve(wsmanRsp) as any)
   await expect(invokeWsmanCall(clientId, xmlMessage, 2)).resolves.toEqual(wsmanRsp.Envelope.Body)
   expect(sendSpy).toHaveBeenCalledTimes(3)
 })
 it('should try three times on UnexpectedParseError', async () => {
   sendSpy = spyOn(devices[clientId].ClientSocket, 'send')
-    .mockImplementationOnce(delayedReject(new UnexpectedParseError()))
-    .mockImplementationOnce(delayedReject(new UnexpectedParseError()))
-    .mockImplementationOnce(delayedReject(new UnexpectedParseError()))
+    .mockImplementationOnce(delayedReject(new UnexpectedParseError()) as any)
+    .mockImplementationOnce(delayedReject(new UnexpectedParseError()) as any)
+    .mockImplementationOnce(delayedReject(new UnexpectedParseError()) as any)
   await expect(invokeWsmanCall(clientId, xmlMessage, 2)).rejects.toBeInstanceOf(UnexpectedParseError)
   expect(sendSpy).toHaveBeenCalledTimes(3)
 })
@@ -101,15 +101,15 @@ it('should try authentication three times on 401 Unauthorized', async () => {
   const httpRsp401 = parse(response401) as HttpZResponseModel
   const expectedToThrow = new HttpResponseError('Unauthorized', 401)
   sendSpy = spyOn(devices[clientId].ClientSocket, 'send')
-    .mockImplementationOnce(delayedReject(httpRsp401))
-    .mockImplementationOnce(delayedReject(httpRsp401))
-    .mockImplementationOnce(delayedReject(httpRsp401))
+    .mockImplementationOnce(delayedReject(httpRsp401) as any)
+    .mockImplementationOnce(delayedReject(httpRsp401) as any)
+    .mockImplementationOnce(delayedReject(httpRsp401) as any)
   await expect(invokeWsmanCall(clientId, xmlMessage)).rejects.toEqual(expectedToThrow)
   expect(sendSpy).toHaveBeenCalledTimes(3)
 })
 it('should not retry by default on new UnexpectedParseError()', async () => {
   sendSpy = spyOn(devices[clientId].ClientSocket, 'send')
-    .mockImplementationOnce(delayedReject(new UnexpectedParseError()))
+    .mockImplementationOnce(delayedReject(new UnexpectedParseError()) as any)
   await expect(invokeWsmanCall(clientId, xmlMessage)).rejects.toBeInstanceOf(UnexpectedParseError)
   expect(sendSpy).toHaveBeenCalledTimes(1)
 })
@@ -119,8 +119,8 @@ it('should not retry when error is not new UnexpectedParseError()', async () => 
     statusMessage: 'Unauthorized'
   }
   sendSpy = spyOn(devices[clientId].ClientSocket, 'send')
-    .mockImplementationOnce(delayedReject(new UnexpectedParseError()))
-    .mockImplementationOnce(delayedReject(unauthorizedResponse))
+    .mockImplementationOnce(delayedReject(new UnexpectedParseError()) as any)
+    .mockImplementationOnce(delayedReject(unauthorizedResponse) as any)
   await expect(invokeWsmanCall(clientId, xmlMessage, 2)).rejects.toEqual(HttpUnauthorizedError)
   expect(sendSpy).toHaveBeenCalledTimes(2)
 })
@@ -130,7 +130,7 @@ it('should timeout on no reponse', async () => {
 it('should fail if parsed xml is malformed', async () => {
   delete wsmanRsp.Envelope
   sendSpy = spyOn(devices[clientId].ClientSocket, 'send')
-    .mockImplementationOnce(delayedResolve(wsmanRsp))
+    .mockImplementationOnce(delayedResolve(wsmanRsp) as any)
   await expect(invokeWsmanCall(clientId, xmlMessage)).rejects.toBeInstanceOf(UnexpectedParseError)
   expect(wrapItSpy).toHaveBeenCalled()
   expect(responseMessageSpy).toHaveBeenCalled()
@@ -138,13 +138,13 @@ it('should fail if parsed xml is malformed', async () => {
 it('should rethrow same error it catches if error object has no statusCode', async () => {
   const noStatusCodeErr = new Error('just a plain, regular, boring error')
   sendSpy = spyOn(devices[clientId].ClientSocket, 'send')
-    .mockImplementationOnce(delayedReject(noStatusCodeErr))
+    .mockImplementationOnce(delayedReject(noStatusCodeErr) as any)
   await expect(invokeWsmanCall(clientId, xmlMessage)).rejects.toEqual(noStatusCodeErr)
   expect(wrapItSpy).toHaveBeenCalled()
   expect(responseMessageSpy).toHaveBeenCalled()
 })
 it('should return false if digest realm is null', () => {
-  expect(isDigestRealmValid(null)).toBeFalsy()
+  expect(isDigestRealmValid(null as any)).toBeFalsy()
 })
 it('should return coalesced error message', () => {
   const prefix = 'test error'

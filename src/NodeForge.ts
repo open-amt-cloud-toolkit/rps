@@ -18,7 +18,7 @@ export class NodeForge {
   }
 
   getBags (pkcs12Pfx: forge.pkcs12.Pkcs12Pfx, filter: forge.pkcs12.BagsFilter): {
-    [key: string]: forge.pkcs12.Bag[]
+    [key: string]: forge.pkcs12.Bag[] | undefined
     localKeyId?: forge.pkcs12.Bag[]
     friendlyName?: forge.pkcs12.Bag[]
   } {

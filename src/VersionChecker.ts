@@ -7,7 +7,7 @@ import { RPSError } from './utils/RPSError.js'
 import { ProtocolVersion } from './utils/constants.js'
 import { Version } from './models/index.js'
 const VersionChecker = {
-  currentVersion: null as Version,
+  currentVersion: null as Version | null,
   setCurrentVersion (currentVersion: string): void {
     VersionChecker.currentVersion = VersionChecker.parseString(currentVersion)
   },

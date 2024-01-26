@@ -12,16 +12,18 @@ import { type Request, type Response } from 'express'
 import handleError from '../../../utils/handleError.js'
 
 export async function allProfiles (req: Request, res: Response): Promise<void> {
+  let wirelessConfigs: any[] = []
   const log = new Logger('allProfiles')
   const top = Number(req.query.$top)
   const skip = Number(req.query.$skip)
   const includeCount = req.query.$count
   try {
-    let wirelessConfigs: WirelessConfig[] = await req.db.wirelessProfiles.get(top, skip, req.tenantId)
-    if (wirelessConfigs.length >= 0) {
-      wirelessConfigs = wirelessConfigs.map((result: WirelessConfig) => {
-        delete result.pskPassphrase
-        return result
+    const configs: WirelessConfig[] = await req.db.wirelessProfiles.get(top, skip, req.tenantId)
+    if (configs.length > 0) {
+      wirelessConfigs = configs.map((result: WirelessConfig) => {
+        // delete result.pskPassphrase
+        const { pskPassphrase, ...response } = result
+        return response
       })
     }
     if (includeCount == null || includeCount === 'false') {

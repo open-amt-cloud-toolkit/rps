@@ -18,19 +18,21 @@ export class DomainCreate {
     const amtDomain: AMTDomain = req.body
     amtDomain.tenantId = req.tenantId || ''
     const log = new Logger('createDomain')
-    let cert: string
-    let domainPwd: string
+    let cert: string = ''
+    let domainPwd: string = ''
     try {
       // store the cert and password key in database
       if (req.secretsManager) {
-        cert = amtDomain.provisioningCert
-        domainPwd = amtDomain.provisioningCertPassword
+        if (typeof amtDomain.provisioningCert === 'string' && typeof amtDomain.provisioningCertPassword === 'string') {
+          cert = amtDomain.provisioningCert
+          domainPwd = amtDomain.provisioningCertPassword
+        }
         amtDomain.provisioningCert = 'CERT'
         amtDomain.provisioningCertPassword = 'CERT_PASSWORD'
         amtDomain.expirationDate = this.getExpirationDate(cert, domainPwd)
       }
       // SQL Query > Insert Data
-      const results: AMTDomain = await req.db.domains.insert(amtDomain)
+      const results: AMTDomain | null = await req.db.domains.insert(amtDomain)
       if (results == null) {
         throw new Error('AMT domain not inserted')
       }

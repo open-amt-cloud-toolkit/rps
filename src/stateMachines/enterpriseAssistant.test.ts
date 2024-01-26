@@ -66,7 +66,7 @@ describe('Enterprise Assistant', () => {
       },
       uuid: '4c4c4544-004b-4210-8033-b6c04f504633',
       messageId: 1
-    }
+    } as any
   })
 
   it('should initiateCertRequest', async () => {

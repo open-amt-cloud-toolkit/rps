@@ -29,13 +29,17 @@ const initiateCertRequest = async (context: any, event: any): Promise<Enterprise
 const sendEnterpriseAssistantKeyPairResponse = async (context: any, event: any): Promise<EnterpriseAssistantMessage> => {
   const clientObj = devices[context.clientId]
   const potentialArray = context.message.Envelope.Body.PullResponse.Items.AMT_PublicPrivateKeyPair
-  if (Array.isArray(potentialArray)) {
-    clientObj.tls.PublicPrivateKeyPair = potentialArray
-  } else {
-    clientObj.tls.PublicPrivateKeyPair = [potentialArray]
+  let PublicPrivateKeyPair: any
+  let DERKey: any
+  if (clientObj.tls) {
+    if (Array.isArray(potentialArray)) {
+      clientObj.tls.PublicPrivateKeyPair = potentialArray
+    } else {
+      clientObj.tls.PublicPrivateKeyPair = [potentialArray]
+    }
+    PublicPrivateKeyPair = clientObj.tls.PublicPrivateKeyPair.filter(x => x.InstanceID === context.keyPairHandle)[0]
+    DERKey = PublicPrivateKeyPair.DERKey
   }
-  const PublicPrivateKeyPair = clientObj.tls.PublicPrivateKeyPair.filter(x => x.InstanceID === context.keyPairHandle)[0]
-  const DERKey = PublicPrivateKeyPair?.DERKey
 
   context.message = {
     action: 'satellite',

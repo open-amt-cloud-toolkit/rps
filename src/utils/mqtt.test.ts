@@ -42,10 +42,10 @@ describe('MQTT Turned ON Tests', () => {
 
   it('Should send an event message when turned on', async () => {
     MqttProvider.instance.client = {
-      publish: (topic, message, opts, callback) => ({} as any)
+      publish: (topic, message, opts, callback) => ('unknown')
     } as any
-    const spy = spyOn(MqttProvider.instance.client, 'publish').mockImplementation((topic, message, opts, callback) => {
-      callback(null)
+    const spy = spyOn(MqttProvider.instance.client, 'publish').mockImplementation((topic, message, opts, callback: () => 'unknown') => {
+      callback()
       return {} as MqttClient
     })
     MqttProvider.instance.turnedOn = true

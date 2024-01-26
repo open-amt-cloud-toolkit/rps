@@ -13,7 +13,7 @@ export class ClientMsgJsonParser {
    * @returns {ClientMsg} returns ClientMsg object if client message is valid
    */
   parse (message: string): ClientMsg {
-    let msg: ClientMsg = null
+    let msg: ClientMsg | null = null
     // Parse and convert the message
     const clientMsg: ClientMsg = JSON.parse(message)
     msg = this.convertClientMsg(clientMsg)
@@ -43,7 +43,7 @@ export class ClientMsgJsonParser {
    * @returns {Payload}
    */
   parsePayload (payloadstring: string): Payload {
-    let payload: Payload = null
+    let payload: Payload
     try {
       payload = JSON.parse(payloadstring)
     } catch (error) {
@@ -59,7 +59,7 @@ export class ClientMsgJsonParser {
     return payload
   }
 
-  zeroLeftPad (str: string, len: number): string {
+  zeroLeftPad (str: string, len: number): string | null {
     if (len == null && typeof len !== 'number') {
       return null
     }

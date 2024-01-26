@@ -41,7 +41,7 @@ export const CONCURRENCY_MESSAGE = 'No records were updated'
 export const NOT_FOUND_EXCEPTION = 'Not Found'
 export const NOT_FOUND_MESSAGE = (type: 'Domain' | 'Wireless' | '802.1x' | 'CIRA' | 'AMT', name: string): string => `${type} profile ${name} Not Found`
 // JSON response
-export const API_RESPONSE = (data?: any, error?: string, message?: string): apiResponse => {
+export const API_RESPONSE = (data?: any, error?: string | null, message?: string): apiResponse => {
   const response: apiResponse = {}
   if (error != null) {
     response.error = error

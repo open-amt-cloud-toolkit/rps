@@ -65,9 +65,9 @@ export interface CertCreationResult {
   pem: string
   certbin: string
   privateKey: string
-  privateKeyBin?: string
+  privateKeyBin?: string | null
   checked: boolean
-  key?: pki.PrivateKey
+  key: pki.PrivateKey | null
 }
 export interface CertsAndKeys {
   certs: pki.Certificate[]
@@ -137,29 +137,29 @@ export enum AMTUserConsentWsmanValues {
   KVM = 'KVM'
 }
 export class AMTConfiguration {
-  profileName?: string
-  amtPassword?: string
+  profileName: string
+  amtPassword?: string | null
   generateRandomPassword?: boolean
-  ciraConfigName?: string
+  ciraConfigName: string
   activation: string
-  mebxPassword?: string
+  mebxPassword?: string | null
   generateRandomMEBxPassword?: boolean
-  ciraConfigObject?: CIRAConfig
+  ciraConfigObject?: CIRAConfig | null
   tags?: string[]
   dhcpEnabled?: boolean
   ipSyncEnabled?: boolean
   localWifiSyncEnabled?: boolean
-  wifiConfigs?: ProfileWifiConfigs[]
+  wifiConfigs?: ProfileWifiConfigs[] | null
   tenantId: string
   tlsMode?: TlsMode
   tlsCerts?: TLSCerts
-  tlsSigningAuthority?: TlsSigningAuthority
-  userConsent?: AMTUserConsent
+  tlsSigningAuthority?: TlsSigningAuthority | null
+  userConsent?: AMTUserConsent | null
   iderEnabled?: boolean
   kvmEnabled?: boolean
   solEnabled?: boolean
   ieee8021xProfileName?: string
-  ieee8021xProfileObject?: Ieee8021xConfig
+  ieee8021xProfileObject?: Ieee8021xConfig | null
   version?: string
 }
 
@@ -177,9 +177,9 @@ export class DataWithCount {
 export class AMTDomain {
   profileName: string
   domainSuffix: string
-  provisioningCert: string
+  provisioningCert?: string
   provisioningCertStorageFormat: string
-  provisioningCertPassword: string
+  provisioningCertPassword?: string
   expirationDate: Date
   tenantId: string
   version?: string
@@ -215,83 +215,31 @@ export class RCSMessage extends WSMessage {
     this.password = password
   }
 }
-
-export class AMTActivate extends WSMessage {
-  client: string
-  action: string
-  name: string
-  profile: string
-  uuid: string
-  ver: string
-  tag: string
-  fqdn: string
-  realm: string
-  nonce: string
-  hashes: string[]
-  modes: number[]
-  currentMode: number
-  constructor (version: number, status: string, client?: string, action?: string, name?: string, profile?: string, uuid?: string, ver?: string, data?: any, errorText?: string, tag?: string, fqdn?: string, realm?: string, nonce?: string, hashes?: string[], modes?: number[], currentMode?: number) {
-    super(version, status, data, errorText)
-    this.client = client
-    this.action = action
-    this.name = name
-    this.profile = profile
-    this.uuid = uuid
-    this.ver = ver
-    this.tag = tag
-    this.fqdn = fqdn
-    this.realm = realm
-    this.nonce = nonce
-    this.hashes = hashes
-    this.modes = modes
-    this.currentMode = currentMode
-  }
+export class RcsObj {
+  constructor (
+    public action?: string,
+    public certs?: string[],
+    public nonce?: string,
+    public signature?: string,
+    public password?: string,
+    public profileScript?: string,
+    public errorText?: string
+  ) {}
 }
-
-export class rcsObj {
-  action: string
-  certs: string[]
-  nonce: string
-  signature: string
-  password: string
-  profileScript: string
-  errorText?: string
-  constructor (action?: string, certs?: string[], nonce?: string, signature?: string, password?: string, profileScript?: string, errorText?: string) {
-    this.action = action
-    this.certs = certs
-    this.nonce = nonce
-    this.signature = signature
-    this.password = password
-    this.profileScript = profileScript
-    this.errorText = errorText
-  }
-}
-
 export class Client {
-  client: string
-  dnsSuffix: string
-  digestRealm: string
-  fwNonce: Buffer
-  amtGuid: string
-  profile: string
-  certHashes: string[]
-  amtVersion: string
-  availableModes: number[]
-  currentMode: number
-  tag: string
-  constructor (client?: string, dnsSuffix?: string, digestRealm?: string, fwNonce?: Buffer, amtGuid?: string, profile?: string, certHashes?: string[], amtVersion?: string, availableModes?: number[], currentMode?: number, tag?: string) {
-    this.client = client
-    this.dnsSuffix = dnsSuffix
-    this.digestRealm = digestRealm
-    this.fwNonce = fwNonce
-    this.amtGuid = amtGuid
-    this.profile = profile
-    this.certHashes = certHashes
-    this.amtVersion = amtVersion
-    this.availableModes = availableModes
-    this.currentMode = currentMode
-    this.tag = tag
-  }
+  constructor (
+    public client?: string,
+    public dnsSuffix?: string,
+    public digestRealm?: string,
+    public fwNonce?: Buffer,
+    public amtGuid?: string,
+    public profile?: string,
+    public certHashes?: string[],
+    public amtVersion?: string,
+    public availableModes?: number[],
+    public currentMode?: number,
+    public tag?: string
+  ) {}
 }
 
 export class Version {
@@ -312,6 +260,6 @@ export interface OpenAMTEvent {
   type: eventType
   message: string
   methods: string[]
-  guid: string
+  guid?: string
   timestamp: number
 }

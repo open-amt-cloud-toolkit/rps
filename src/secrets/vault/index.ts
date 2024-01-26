@@ -27,7 +27,7 @@ export class VaultService implements ISecretManagerService {
     })
   }
 
-  async getSecretFromKey (path: string, key: string): Promise<string> {
+  async getSecretFromKey (path: string, key: string): Promise<string | null> {
     try {
       this.logger.verbose(`getting secret from vault: ${path}, ${key}`)
       const rspJson: any = await this.gotClient.get(path).json()
@@ -42,7 +42,7 @@ export class VaultService implements ISecretManagerService {
     return null
   }
 
-  async getSecretAtPath (path: string): Promise<DeviceCredentials | TLSCredentials | WifiCredentials | CiraConfigSecrets> {
+  async getSecretAtPath (path: string): Promise<DeviceCredentials | TLSCredentials | WifiCredentials | CiraConfigSecrets | null> {
     try {
       this.logger.verbose(`getting secrets from ${path}`)
       const rspJson: any = await this.gotClient.get(path).json()

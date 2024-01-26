@@ -57,7 +57,7 @@ describe('Parse the message received from client', () => {
     }
 
     const clientId = randomUUID()
-    devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
+    devices[clientId] = { ClientId: clientId, ClientSocket: null as any, unauthCount: 0 } as any
     const clientMsg = jsonParser.parse(msg)
     expect(clientMsg).toEqual(activationmsg)
   })
@@ -76,7 +76,7 @@ describe('Parse the message received from client', () => {
     let rpsError
     try {
       const clientId = randomUUID()
-      devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
+      devices[clientId] = { ClientId: clientId, ClientSocket: null as any, unauthCount: 0 } as any
       jsonParser.convertClientMsg(msg)
     } catch (error) {
       rpsError = error
@@ -98,7 +98,7 @@ describe('Parse the message received from client', () => {
     }
 
     const clientId = randomUUID()
-    devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
+    devices[clientId] = { ClientId: clientId, ClientSocket: null as any, unauthCount: 0 } as any
     const clientMsg = jsonParser.parse(msg)
     expect(clientMsg).toEqual(activationmsg)
   })
@@ -116,7 +116,7 @@ describe('Parse the message received from client', () => {
     }
 
     const clientId = randomUUID()
-    devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
+    devices[clientId] = { ClientId: clientId, ClientSocket: null as any, unauthCount: 0 } as any
     const clientMsg = jsonParser.parse(msg)
     expect(clientMsg).toEqual(heartbeatResponse)
   })

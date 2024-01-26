@@ -39,7 +39,7 @@ export class ConsulService implements IServiceManager {
   }
 
   process (consulValues: object): string {
-    let value: string
+    let value: string = ''
     for (const consulKey in consulValues) {
       value = consulValues[consulKey].Value
       Environment.Config = JSON.parse(value)

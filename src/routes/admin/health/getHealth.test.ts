@@ -29,7 +29,7 @@ describe('Checks health of dependent services', () => {
       mqttSpy = spyOn(MqttProvider, 'publishEvent')
     })
     it('should handle health check failed', async () => {
-      await getHealthCheck(null, resSpy)
+      await getHealthCheck(null as any, resSpy)
       expect(resSpy.status).toHaveBeenCalledWith(500)
       expect(mqttSpy).toHaveBeenCalled()
     })

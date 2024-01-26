@@ -18,8 +18,8 @@ export async function createProfile (req: Request, res: Response): Promise<void>
   let amtConfig: AMTConfiguration = req.body
   amtConfig.tenantId = req.tenantId || ''
   try {
-    const pwdBefore = amtConfig.amtPassword
-    const mebxPwdBefore = amtConfig.mebxPassword
+    const pwdBefore = amtConfig.amtPassword ?? ''
+    const mebxPwdBefore = amtConfig.mebxPassword ?? ''
     if (req.secretsManager) {
       if (!amtConfig.generateRandomPassword) {
         amtConfig.amtPassword = 'AMT_PASSWORD'
@@ -33,7 +33,7 @@ export async function createProfile (req: Request, res: Response): Promise<void>
     amtConfig = adjustRedirectionConfiguration(amtConfig)
     amtConfig = adjustTlsConfiguration(amtConfig)
 
-    const results: AMTConfiguration = await req.db.profiles.insert(amtConfig)
+    const results: AMTConfiguration | null = await req.db.profiles.insert(amtConfig)
     if (results == null) {
       throw new Error('AMT Profile not inserted')
     }
@@ -44,14 +44,15 @@ export async function createProfile (req: Request, res: Response): Promise<void>
     // profile inserted  into db successfully.
     if (req.secretsManager) {
       if (!amtConfig.generateRandomPassword || !amtConfig.generateRandomMEBxPassword) {
-      // store the passwords in Vault if not randomly generated per device
-        const data: DeviceCredentials = { AMT_PASSWORD: '', MEBX_PASSWORD: '' }
+        // store the passwords in Vault if not randomly generated per device
+        const data: DeviceCredentials = {
+          AMT_PASSWORD: amtConfig.generateRandomPassword ? '' : pwdBefore,
+          MEBX_PASSWORD: amtConfig.generateRandomMEBxPassword ? '' : mebxPwdBefore
+        }
         if (!amtConfig.generateRandomPassword) {
-          data.AMT_PASSWORD = pwdBefore
           log.debug('AMT Password written to vault')
         }
         if (!amtConfig.generateRandomMEBxPassword) {
-          data.MEBX_PASSWORD = mebxPwdBefore
           log.debug('MEBX Password written to vault')
         }
         vaultStatus = await req.secretsManager.writeSecretWithObject(`profiles/${amtConfig.profileName}`, data)

@@ -29,7 +29,7 @@ describe('ciraconfig tests', () => {
       authMethod: 2,
       mpsRootCertificate: 'enabled',
       proxyDetails: 'details',
-      tenantId: null
+      tenantId: null as any
     }
     db = new PostgresDb('')
     ciraConfigTable = new CiraConfigTable(db)
@@ -65,7 +65,7 @@ describe('ciraconfig tests', () => {
 
     test('should get null for non existant getByName', async () => {
       querySpy.mockResolvedValueOnce({ rows: [], command: '', fields: null, rowCount: 0, oid: 0 })
-      const config: CIRAConfig = await ciraConfigTable.getByName(configName)
+      const config: CIRAConfig = await ciraConfigTable.getByName(configName) as any
       expect(config).toBeNull()
     })
 
@@ -100,7 +100,7 @@ describe('ciraconfig tests', () => {
 
     test('should get a ciraconfig by hostname when exist', async () => {
       querySpy.mockResolvedValueOnce({ rows: [ciraConfig], command: '', fields: null, rowCount: 1, oid: 0 })
-      const result: CIRAConfig = await ciraConfigTable.getByName(configName)
+      const result: CIRAConfig = await ciraConfigTable.getByName(configName) as any
       expect(result).toBe(ciraConfig)
       expect(querySpy).toBeCalledTimes(1)
       expect(querySpy).toBeCalledWith(`

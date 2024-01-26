@@ -19,7 +19,7 @@ export async function createWirelessProfile (req: Request, res: Response): Promi
     if (req.secretsManager) {
       wirelessConfig.pskPassphrase = 'PSK_PASSPHRASE'
     }
-    const results: WirelessConfig = await req.db.wirelessProfiles.insert(wirelessConfig)
+    const results: WirelessConfig | null = await req.db.wirelessProfiles.insert(wirelessConfig)
     // store the password into Vault
     if (req.secretsManager) {
       if (req.body.ieee8021xProfileName == null) {
@@ -28,9 +28,9 @@ export async function createWirelessProfile (req: Request, res: Response): Promi
       }
     }
     log.verbose(`Created wireless profile : ${wirelessConfig.profileName}`)
-    delete results.pskPassphrase
+    const { pskPassphrase, ...response } = results || {}
     MqttProvider.publishEvent('success', ['createWirelessProfiles'], `Created wireless profile : ${wirelessConfig.profileName}`)
-    res.status(201).json(results).end()
+    res.status(201).json(response).end()
   } catch (error) {
     handleError(log, 'wirelessConfig.profileName', req, res, error)
   }

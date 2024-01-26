@@ -10,9 +10,7 @@ import { WebSocketListener } from './WebSocketListener.js'
 import { Configurator } from './Configurator.js'
 import { Environment } from './utils/Environment.js'
 import { type RPSConfig } from './models/index.js'
-import { parseValue } from './utils/parseEnvValue.js'
 import routes from './routes/index.js'
-import rc from 'rc'
 import { MqttProvider } from './utils/MqttProvider.js'
 import { DbCreatorFactory } from './factories/DbCreatorFactory.js'
 import { backOff } from 'exponential-backoff'
@@ -29,22 +27,6 @@ import { URL, fileURLToPath, pathToFileURL } from 'node:url'
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
 const log = new Logger('Index')
-
-// To merge ENV variables. consider after lowercasing ENV since our config keys are lowercase
-process.env = Object.keys(process.env)
-  .reduce((destination, key) => {
-    destination[key.toLowerCase()] = parseValue(process.env[key])
-    return destination
-  }, {})
-
-// build config object
-const config: RPSConfig = rc('rps')
-config.delay_activation_sync = config.delay_timer * 1000
-config.delay_setup_and_config_sync = 5000
-config.delay_tls_put_data_sync = 5000
-log.silly(`config: ${JSON.stringify(config, null, 2)}`)
-
-Environment.Config = config
 
 const app = express()
 app.use(cors())
@@ -75,7 +57,7 @@ export const startItUp = (): void => {
   const serverForEnterpriseAssistant: WSEnterpriseAssistantListener = new WSEnterpriseAssistantListener(new Logger('WSEnterpriseAssistantListener'))
   const server: WebSocketListener = new WebSocketListener(new Logger('WebSocketListener'), configurator.dataProcessor)
 
-  const mqtt: MqttProvider = new MqttProvider(config)
+  const mqtt: MqttProvider = new MqttProvider(Environment.Config)
   mqtt.connectBroker()
 
   const dbFactory = new DbCreatorFactory()
@@ -125,8 +107,8 @@ export const startItUp = (): void => {
         await waitForSecretsManager(configurator.secretsManager)
       })
       .then(() => {
-        app.listen(config.web_port, () => {
-          log.info(`RPS Microservice Rest APIs listening on http://:${config.web_port}.`)
+        app.listen(Environment.Config.web_port, () => {
+          log.info(`RPS Microservice Rest APIs listening on http://:${Environment.Config.web_port}.`)
         })
         server.connect()
         serverForEnterpriseAssistant.connect()
@@ -144,8 +126,8 @@ export async function setupServiceManager (config: RPSConfig): Promise<void> {
   await processServiceConfigs(consul, config)
 }
 
-if (config.consul_enabled) {
-  setupServiceManager(config).then(() => {
+if (Environment.Config.consul_enabled) {
+  setupServiceManager(Environment.Config).then(() => {
     startItUp()
   }).catch(err => {
     log.error(`Unable to reach consul: ${err}`)

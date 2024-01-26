@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
-import { type CIRAConfigEvent, type CIRAConfigContext, type CIRAConfiguration as CIRAConfigurationType } from './ciraConfiguration.js'
+import { type CIRAConfigEvent, type CIRAConfiguration as CIRAConfigurationType } from './ciraConfiguration.js'
 import { randomUUID } from 'node:crypto'
 import { devices } from '../devices.js'
 import { Environment } from '../utils/Environment.js'
@@ -39,7 +39,7 @@ describe('CIRA Configuration State Machine', () => {
   }
   let ciraStateMachineImpl: CIRAConfigurationType
   let machineConfig
-  let machineContext: CIRAConfigContext
+  let machineContext
   let ciraConfig: CIRAConfig
   beforeEach(() => {
     jest.clearAllMocks()
@@ -50,7 +50,7 @@ describe('CIRA Configuration State Machine', () => {
       status: {
         CIRAConnection: 'should not need this'
       }
-    }
+    } as any
     ciraConfig = {
       proxyDetails: '',
       tenantId: '',
@@ -58,7 +58,7 @@ describe('CIRA Configuration State Machine', () => {
       mpsServerAddress: '192.168.1.38',
       mpsPort: 4433,
       username: 'admin',
-      password: null,
+      password: null as any,
       commonName: '192.168.1.38',
       serverAddressFormat: 3,
       authMethod: 2,
@@ -95,7 +95,7 @@ describe('CIRA Configuration State Machine', () => {
       message: null,
       ciraConfig: null,
       statusMessage: '',
-      privateCerts: null
+      privateCerts: []
     }
   })
 
@@ -198,7 +198,7 @@ describe('CIRA Configuration State Machine', () => {
 
   describe('send wsman message with Management Presence Remote SAP', () => {
     it('should send wsman message to enumerate ManagementPresenceRemoteSAP', async () => {
-      await ciraStateMachineImpl.enumerateManagementPresenceRemoteSAP(machineContext, null)
+      await ciraStateMachineImpl.enumerateManagementPresenceRemoteSAP(machineContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
 
@@ -206,21 +206,39 @@ describe('CIRA Configuration State Machine', () => {
       machineContext.message = {
         Envelope: { Body: { EnumerateResponse: { EnumerationContext: 'abcd' } } }
       }
-      await ciraStateMachineImpl.pullManagementPresenceRemoteSAP(machineContext, null)
+      await ciraStateMachineImpl.pullManagementPresenceRemoteSAP(machineContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
     it('should send to add RemoteAccessService', async () => {
       machineContext.message = {
         Envelope: { Body: { PullResponse: { Items: { AMT_ManagementPresenceRemoteSAP: { Name: 'abcd' } } } } }
       }
-      await ciraStateMachineImpl.addRemoteAccessPolicyRule(machineContext, null)
+      await ciraStateMachineImpl.addRemoteAccessPolicyRule(machineContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    })
+    it('should log error on call to enumerateManagementPresenceRemoteSAP', async () => {
+      machineContext.amt = null as any
+      const loggerSpy = jest.spyOn(ciraStateMachineImpl.logger, 'error')
+      await ciraStateMachineImpl.enumerateManagementPresenceRemoteSAP(machineContext, null as any)
+      expect(loggerSpy).toHaveBeenCalled()
+    })
+    it('should log error on call to pullManagementPresenceRemoteSAP', async () => {
+      machineContext.amt = null as any
+      const loggerSpy = jest.spyOn(ciraStateMachineImpl.logger, 'error')
+      await ciraStateMachineImpl.pullManagementPresenceRemoteSAP(machineContext, null as any)
+      expect(loggerSpy).toHaveBeenCalled()
+    })
+    it('should log error on call to addRemoteAccessPolicyRule', async () => {
+      machineContext.amt = null as any
+      const loggerSpy = jest.spyOn(ciraStateMachineImpl.logger, 'error')
+      await ciraStateMachineImpl.addRemoteAccessPolicyRule(machineContext, null as any)
+      expect(loggerSpy).toHaveBeenCalled()
     })
   })
 
   describe('send wsman message for Environment Detection Settings', () => {
     it('should send wsman message to get Environment Detection Settings', async () => {
-      await ciraStateMachineImpl.getEnvironmentDetectionSettings(machineContext, null)
+      await ciraStateMachineImpl.getEnvironmentDetectionSettings(machineContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
 
@@ -229,16 +247,28 @@ describe('CIRA Configuration State Machine', () => {
       machineContext.message = {
         Envelope: { Body: { AMT_EnvironmentDetectionSettingData: { DetectionStrings: 'abcde' } } }
       }
-      await ciraStateMachineImpl.putEnvironmentDetectionSettings(machineContext, null)
+      await ciraStateMachineImpl.putEnvironmentDetectionSettings(machineContext, null as any)
       Environment.Config.disable_cira_domain_name = 'disablethis.com'
-      await ciraStateMachineImpl.putEnvironmentDetectionSettings(machineContext, null)
+      await ciraStateMachineImpl.putEnvironmentDetectionSettings(machineContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalledTimes(2)
+    })
+    it('should log error on call to getEnvironmentDetectionSettings', async () => {
+      machineContext.amt = null as any
+      const loggerSpy = jest.spyOn(ciraStateMachineImpl.logger, 'error')
+      await ciraStateMachineImpl.getEnvironmentDetectionSettings(machineContext, null as any)
+      expect(loggerSpy).toHaveBeenCalled()
+    })
+    it('should log error on call to putEnvironmentDetectionSettings', async () => {
+      machineContext.amt = null as any
+      const loggerSpy = jest.spyOn(ciraStateMachineImpl.logger, 'error')
+      await ciraStateMachineImpl.putEnvironmentDetectionSettings(machineContext, null as any)
+      expect(loggerSpy).toHaveBeenCalled()
     })
   })
 
   describe('send wsman message for Remote Access Policy Applies To MPS', () => {
     it('should send wsman message to enumerate Remote Access Policy Applies To MPS', async () => {
-      await ciraStateMachineImpl.enumerateRemoteAccessPolicyAppliesToMPS(machineContext, null)
+      await ciraStateMachineImpl.enumerateRemoteAccessPolicyAppliesToMPS(machineContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
 
@@ -246,7 +276,7 @@ describe('CIRA Configuration State Machine', () => {
       machineContext.message = {
         Envelope: { Body: { EnumerateResponse: { EnumerationContext: 'abcde' } } }
       }
-      await ciraStateMachineImpl.pullRemoteAccessPolicyAppliesToMPS(machineContext, null)
+      await ciraStateMachineImpl.pullRemoteAccessPolicyAppliesToMPS(machineContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
 
@@ -254,13 +284,37 @@ describe('CIRA Configuration State Machine', () => {
       machineContext.message = {
         Envelope: { Body: { PullResponse: { Items: { AMT_RemoteAccessPolicyAppliesToMPS: MPSType } } } }
       }
-      await ciraStateMachineImpl.putRemoteAccessPolicyAppliesToMPS(machineContext, null)
+      await ciraStateMachineImpl.putRemoteAccessPolicyAppliesToMPS(machineContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
 
     it('should send wsman message to User Initiated Connection Service', async () => {
-      await ciraStateMachineImpl.userInitiatedConnectionService(machineContext, null)
+      await ciraStateMachineImpl.userInitiatedConnectionService(machineContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    })
+    it('should log error on call to enumerateRemoteAccessPolicyAppliesToMPS', async () => {
+      machineContext.amt = null as any
+      const loggerSpy = jest.spyOn(ciraStateMachineImpl.logger, 'error')
+      await ciraStateMachineImpl.enumerateRemoteAccessPolicyAppliesToMPS(machineContext, null as any)
+      expect(loggerSpy).toHaveBeenCalled()
+    })
+    it('should log error on call to pullRemoteAccessPolicyAppliesToMPS', async () => {
+      machineContext.amt = null as any
+      const loggerSpy = jest.spyOn(ciraStateMachineImpl.logger, 'error')
+      await ciraStateMachineImpl.pullRemoteAccessPolicyAppliesToMPS(machineContext, null as any)
+      expect(loggerSpy).toHaveBeenCalled()
+    })
+    it('should log error on call to putRemoteAccessPolicyAppliesToMPS', async () => {
+      machineContext.amt = null as any
+      const loggerSpy = jest.spyOn(ciraStateMachineImpl.logger, 'error')
+      await ciraStateMachineImpl.putRemoteAccessPolicyAppliesToMPS(machineContext, null as any)
+      expect(loggerSpy).toHaveBeenCalled()
+    })
+    it('should log error on call to userInitiatedConnectionService', async () => {
+      machineContext.amt = null as any
+      const loggerSpy = jest.spyOn(ciraStateMachineImpl.logger, 'error')
+      await ciraStateMachineImpl.userInitiatedConnectionService(machineContext, null as any)
+      expect(loggerSpy).toHaveBeenCalled()
     })
   })
 
@@ -270,12 +324,24 @@ describe('CIRA Configuration State Machine', () => {
       machineContext.ciraConfig = ciraConfig
     })
     it('should send wsman message to add Trusted Root Certificate', async () => {
-      await ciraStateMachineImpl.addTrustedRootCertificate(machineContext, null)
+      await ciraStateMachineImpl.addTrustedRootCertificate(machineContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
     it('should send wsman message to add MPS server', async () => {
-      await ciraStateMachineImpl.addMPS(machineContext, null)
+      await ciraStateMachineImpl.addMPS(machineContext, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
+    })
+    it('should log error on call to addTrustedRootCertificate', async () => {
+      machineContext.amt = null as any
+      const loggerSpy = jest.spyOn(ciraStateMachineImpl.logger, 'error')
+      await ciraStateMachineImpl.addTrustedRootCertificate(machineContext, null as any)
+      expect(loggerSpy).toHaveBeenCalled()
+    })
+    it('should log error on call to addMPS', async () => {
+      machineContext.amt = null as any
+      const loggerSpy = jest.spyOn(ciraStateMachineImpl.logger, 'error')
+      await ciraStateMachineImpl.addMPS(machineContext, null as any)
+      expect(loggerSpy).toHaveBeenCalled()
     })
   })
 })

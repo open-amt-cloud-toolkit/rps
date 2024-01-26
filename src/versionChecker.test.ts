@@ -53,11 +53,11 @@ test('test version string parsing empty exception', () => {
 })
 
 test('test version string parsing undefined exception', () => {
-  let versionString: string
+  const versionString: string | null = null
   let rpsError
 
   try {
-    VersionChecker.parseString(versionString)
+    VersionChecker.parseString(versionString as any)
   } catch (error) {
     rpsError = error
   }

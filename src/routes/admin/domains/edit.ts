@@ -16,24 +16,26 @@ export async function editDomain (req: Request, res: Response): Promise<void> {
   let amtDomain: AMTDomain = {} as AMTDomain
   const log = new Logger('editDomain')
   let cert: any
-  let domainPwd: string
+  let domainPwd: string = ''
   const newDomain = req.body
   newDomain.tenantId = req.tenantId
   try {
-    const oldDomain: AMTDomain = await req.db.domains.getByName(newDomain.profileName, req.tenantId)
+    const oldDomain: AMTDomain | null = await req.db.domains.getByName(newDomain.profileName, req.tenantId)
     if (oldDomain == null) {
       throw new RPSError(NOT_FOUND_MESSAGE('Domain', newDomain.profileName), NOT_FOUND_EXCEPTION)
     } else {
       amtDomain = getUpdatedData(newDomain, oldDomain)
       // store the cert and password key in database
       if (req.secretsManager) {
-        cert = amtDomain.provisioningCert
-        domainPwd = amtDomain.provisioningCertPassword
+        if (typeof amtDomain.provisioningCert === 'string' && typeof amtDomain.provisioningCertPassword === 'string') {
+          cert = amtDomain.provisioningCert
+          domainPwd = amtDomain.provisioningCertPassword
+        }
         amtDomain.provisioningCert = 'CERT'
         amtDomain.provisioningCertPassword = 'CERT_PASSWORD'
       }
       // SQL Query > Insert Data
-      const results: AMTDomain = await req.db.domains.update(amtDomain)
+      const results: AMTDomain | null = await req.db.domains.update(amtDomain)
       if (results) {
         // Delete the previous values of cert and password in vault and store the updated values
         if (req.secretsManager && (newDomain.provisioningCert != null || newDomain.provisioningCertPassword != null)) {

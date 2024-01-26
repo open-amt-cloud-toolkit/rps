@@ -29,7 +29,7 @@ describe('Websocket Listener', () => {
   })
 
   it('should NOT start WebSocket server when exception ', () => {
-    const ret = server.connect(null)
+    const ret = server.connect(null as any)
     expect(onSpy).toHaveBeenCalledTimes(0)
     expect(ret).toEqual(false)
   })

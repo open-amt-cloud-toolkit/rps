@@ -121,11 +121,11 @@ it('should succeed changing password to the newStaticPassword', async () => {
   await runTheTest()
 })
 it('should succeed changing password to something random on empty newStaticPassword', async () => {
-  event.newStaticPassword = null
+  event.newStaticPassword = null as any
   await runTheTest()
 })
 it('should fail on bad general settings response', async () => {
-  delete generalSettingsRsp.AMT_GeneralSettings
+  generalSettingsRsp = {} as any
   doneResponse.status = StatusFailed
   await runTheTest()
 })
@@ -140,7 +140,7 @@ it('should fail on non-zero SetAdminAclEntryEx_OUTPUT.ReturnValue', async () => 
   await runTheTest()
 })
 it('should fail on bad SetAdminAclEntryEx_OUTPUT', async () => {
-  delete setAdminACLEntryExResponse.SetAdminAclEntryEx_OUTPUT
+  delete (setAdminACLEntryExResponse as any).SetAdminAclEntryEx_OUTPUT
   doneResponse.status = StatusFailed
   await runTheTest()
 })

@@ -70,13 +70,13 @@ describe('Network Configuration', () => {
       connectionParams: {
         guid: '4c4c4544-004b-4210-8033-b6c04f504633',
         port: 16992,
-        digestChallenge: null,
+        digestChallenge: {},
         username: 'admin',
         password: 'P@ssw0rd'
       },
       uuid: '4c4c4544-004b-4210-8033-b6c04f504633',
       messageId: 1
-    }
+    } as any
     networkConfig = new NetworkConfiguration()
     context = {
       amtProfile: null,
@@ -291,7 +291,7 @@ describe('Network Configuration', () => {
           }
         }
       }
-      networkConfig.readEthernetPortSettings(context, null)
+      networkConfig.readEthernetPortSettings(context, null as any)
       expect(context.wiredSettings).toBeDefined()
       expect(context.wifiSettings).toBeDefined()
     })
@@ -319,7 +319,7 @@ describe('Network Configuration', () => {
           }
         }
       }
-      networkConfig.readEthernetPortSettings(context, null)
+      networkConfig.readEthernetPortSettings(context, null as any)
       expect(context.wiredSettings).toBeDefined()
       expect(context.wifiSettings).toBeDefined()
     })
@@ -340,7 +340,7 @@ describe('Network Configuration', () => {
           }
         }
       }
-      networkConfig.readEthernetPortSettings(context, null)
+      networkConfig.readEthernetPortSettings(context, null as any)
       expect(context.wiredSettings).toBeNull()
       expect(context.wifiSettings).toBeDefined()
     })
@@ -361,7 +361,7 @@ describe('Network Configuration', () => {
           }
         }
       }
-      networkConfig.readEthernetPortSettings(context, null)
+      networkConfig.readEthernetPortSettings(context, null as any)
       expect(context.wifiSettings).toBeUndefined()
       expect(context.wiredSettings).toBeDefined()
     })
@@ -393,13 +393,13 @@ describe('Network Configuration', () => {
     })
     test('Should return false if AMT network is Enabled', async () => {
       context.generalSettings = generalSettingsResponse
-      const result = networkConfig.isNotAMTNetworkEnabled(context, null)
+      const result = networkConfig.isNotAMTNetworkEnabled(context, null as any)
       expect(result).toBeFalsy()
     })
     test('Should return true if AMT network is Enabled', async () => {
       context.generalSettings = generalSettingsResponse
       context.generalSettings.SharedFQDN = false
-      const result = networkConfig.isNotAMTNetworkEnabled(context, null)
+      const result = networkConfig.isNotAMTNetworkEnabled(context, null as any)
       expect(result).toBeTruthy()
     })
   })

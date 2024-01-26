@@ -73,13 +73,13 @@ describe('Wired Network Configuration', () => {
       connectionParams: {
         guid: '4c4c4544-004b-4210-8033-b6c04f504633',
         port: 16992,
-        digestChallenge: null,
+        digestChallenge: {},
         username: 'admin',
         password: 'P@ssw0rd'
       },
       uuid: '4c4c4544-004b-4210-8033-b6c04f504633',
       messageId: 1
-    }
+    } as any
     event = {
       type: 'WIREDNETWORKCONFIGURATION',
       clientId,
@@ -208,14 +208,14 @@ describe('Wired Network Configuration', () => {
   it('should send a message to pull public private key pairs', async () => {
     wiredNetworkConfigContext.amt = { PublicPrivateKeyPair: { Pull: jest.fn() } }
     wiredNetworkConfigContext.message = { Envelope: { Body: { EnumeratorResponse: { EnumeratorContext: 'abc' } } } }
-    await wiredConfig.pullPublicPrivateKeyPair(wiredNetworkConfigContext, null)
+    await wiredConfig.pullPublicPrivateKeyPair(wiredNetworkConfigContext, null as any)
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
 
   it('should send a message to get enumerate public private key pairs', async () => {
     wiredNetworkConfigContext.message = { Envelope: { Body: { GenerateKeyPair_OUTPUT: { KeyPair: { ReferenceParameters: { SelectorSet: { Selector: { _: 'xyz' } } } } } } } }
     wiredNetworkConfigContext.amt = { PublicPrivateKeyPair: { Enumerate: jest.fn() } }
-    await wiredConfig.enumeratePublicPrivateKeyPair(wiredNetworkConfigContext, null)
+    await wiredConfig.enumeratePublicPrivateKeyPair(wiredNetworkConfigContext, null as any)
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
 
@@ -229,21 +229,21 @@ describe('Wired Network Configuration', () => {
   it('should send a WSMan call to add radius server root cert', async () => {
     wiredNetworkConfigContext.message = { Envelope: { Body: 'abcd' } }
     wiredNetworkConfigContext.eaResponse = { rootcert: '1234' }
-    await wiredConfig.addRadiusServerRootCertificate(wiredNetworkConfigContext, null)
+    await wiredConfig.addRadiusServerRootCertificate(wiredNetworkConfigContext, null as any)
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
 
   it('should send a message to sign CSR', async () => {
     wiredNetworkConfigContext.amt = { PublicKeyManagementService: { GeneratePKCS10RequestEx: jest.fn() } }
     wiredNetworkConfigContext.message = { response: { csr: 'abc' } }
-    await wiredConfig.signCSR(wiredNetworkConfigContext, null)
+    await wiredConfig.signCSR(wiredNetworkConfigContext, null as any)
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
 
   it('should send a WSMan call to setCertificate', async () => {
     wiredNetworkConfigContext.addCertResponse = { AddCertificate_OUTPUT: { CreatedCertificate: { ReferenceParameters: { SelectorSet: { Selector: { _: '' } } } } } }
     wiredNetworkConfigContext.addTrustedRootCertificate = { AddCertificate_OUTPUT: { CreatedCertificate: { ReferenceParameters: { SelectorSet: { Selector: { _: '' } } } } } }
-    await wiredConfig.setCertificates(wiredNetworkConfigContext, null)
+    await wiredConfig.setCertificates(wiredNetworkConfigContext, null as any)
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
 
@@ -268,12 +268,12 @@ describe('Wired Network Configuration', () => {
     }
     wiredNetworkConfigContext.message = { Envelope: { Body: 'abcd' } }
     wiredNetworkConfigContext.amtProfile.ieee8021xProfileObject = { profileName: 'p1', authenticationProtocol: 0, pxeTimeout: 120, tenantId: '', wiredInterface: true }
-    await wiredConfig.put8021xProfile(wiredNetworkConfigContext, null)
+    await wiredConfig.put8021xProfile(wiredNetworkConfigContext, null as any)
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
 
   it('should send a WSMan call to get 802.1x Profile', async () => {
-    await wiredConfig.get8021xProfile(wiredNetworkConfigContext, null)
+    await wiredConfig.get8021xProfile(wiredNetworkConfigContext, null as any)
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
 
@@ -282,7 +282,7 @@ describe('Wired Network Configuration', () => {
       amt: { PublicKeyManagementService: { GenerateKeyPair: jest.fn() } },
       xmlMessage: ''
     }
-    await wiredConfig.generateKeyPair(wiredNetworkConfigContext, null)
+    await wiredConfig.generateKeyPair(wiredNetworkConfigContext, null as any)
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
 
@@ -766,7 +766,7 @@ describe('Wired Network Configuration', () => {
       }
       config.services['put-ethernet-port-settings'] = Promise.resolve(amtPutResponse)
       const mockWiredNetworkConfigurationMachine = wiredConfig.machine.withConfig(config).withContext(context)
-      let prevState = null
+      let prevState = null as any
       const service = interpret(mockWiredNetworkConfigurationMachine).onTransition((state) => {
         if (state.matches('FAILED')) {
           done()

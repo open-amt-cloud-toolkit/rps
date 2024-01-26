@@ -80,7 +80,7 @@ it('should succeed synchronizing host name', async () => {
   await runTheTest()
 })
 it('should fail on bad general settings response', async () => {
-  delete generalSettingsRsp.AMT_GeneralSettings
+  generalSettingsRsp = {} as any
   doneResponse.status = StatusFailed
   await runTheTest()
 })
@@ -90,7 +90,7 @@ it('should fail on invalid hostname', async () => {
   await runTheTest()
 })
 it('should "fail" if already synchronized invalid hostname', async () => {
-  hostNameInfo.hostname = generalSettingsRsp.AMT_GeneralSettings.HostName
+  hostNameInfo.hostname = generalSettingsRsp.AMT_GeneralSettings?.HostName as any
   doneResponse.status = StatusFailed
   await runTheTest()
 })

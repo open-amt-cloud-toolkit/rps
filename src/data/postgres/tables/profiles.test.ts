@@ -39,7 +39,7 @@ describe('profiles tests', () => {
       solEnabled: true,
       tlsSigningAuthority: null,
       ieee8021xProfileName: null
-    }
+    } as any
     db = new PostgresDb('')
     profilesTable = new ProfilesTable(db)
     querySpy = spyOn(profilesTable.db, 'query')

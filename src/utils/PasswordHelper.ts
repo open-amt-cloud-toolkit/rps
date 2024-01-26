@@ -61,7 +61,7 @@ const PasswordHelper = {
       }
     }
 
-    return null
+    throw new Error('Failed to generate a valid random password')
   }
 }
 

@@ -41,10 +41,10 @@ describe('TLS State Machine', () => {
     config = {
       services: {
         'get-low-accuracy-time-synch': Promise.resolve({
-          Envelope: { Body: { GetLowAccuracyTimeSynch_OUTPUT: { ReturnValue: 0 } } }
+          Envelope: { Body: { GetLowAccuracyTimeSynchOutput: { ReturnValue: 0 } } }
         }),
         'set-high-accuracy-time-synch': Promise.resolve({
-          Envelope: { Body: { SetHighAccuracyTimeSynch_OUTPUT: { ReturnValue: 0 } } }
+          Envelope: { Body: { SetHighAccuracyTimeSynchOutput: { ReturnValue: 0 } } }
         })
       }
     }
@@ -71,7 +71,7 @@ describe('TLS State Machine', () => {
 
   it('should setHighAccuracyTimeSynch', async () => {
     context.message = {
-      Envelope: { Body: { GetLowAccuracyTimeSynch_OUTPUT: { Ta0: 123456 } } }
+      Envelope: { Body: { GetLowAccuracyTimeSynchOutput: { Ta0: 123456 } } }
     }
     await timeMachine.setHighAccuracyTimeSynch(context)
     expect(invokeWsmanCallSpy).toHaveBeenCalled()

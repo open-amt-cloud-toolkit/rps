@@ -138,7 +138,8 @@ it('should succeed synchronizing DHCP', async () => {
   await runTheTest()
 })
 it('should fail missing event.targetIPConfig.ipAddress', async () => {
-  delete event.targetIPConfig.ipAddress
+  const { ipAddress, ...newTargetIPConfig } = targetIPConfig
+  event.targetIPConfig = newTargetIPConfig as any
   doneResponse.status = StatusFailed
   await runTheTest()
 })
@@ -149,22 +150,25 @@ it('should fail missing event.targetIPConfig', async () => {
   await runTheTest()
 })
 it('should fail missing enumerateRsp.EnumerateResponse', async () => {
-  delete enumerateRsp.EnumerateResponse
+  const { EnumerateResponse, ...newEnumRsp } = enumerateRsp
+  enumerateRsp = newEnumRsp as any
   doneResponse.status = StatusFailed
   await runTheTest()
 })
 it('should fail missing pullRsp.PullResponse.Items.AMT_EthernetPortSettings', async () => {
-  delete pullRsp.PullResponse.Items.AMT_EthernetPortSettings
+  pullRsp.PullResponse = { EndOfSequence: 'EOS' } as any
   doneResponse.status = StatusFailed
   await runTheTest()
 })
 it('should fail missing pullRsp.PullResponse.Items', async () => {
-  delete pullRsp.PullResponse.Items
+  const { Items, ...newPullResponse } = pullRsp.PullResponse
+  pullRsp.PullResponse = newPullResponse as any
   doneResponse.status = StatusFailed
   await runTheTest()
 })
 it('should fail missing pullRsp.PullResponse', async () => {
-  delete pullRsp.PullResponse
+  const { PullResponse, ...newPullRsp } = pullRsp
+  pullRsp = newPullRsp as any
   doneResponse.status = StatusFailed
   await runTheTest()
 })
@@ -174,12 +178,12 @@ it(`should fail on ${MessageNoWiredSettingsOnDevice}`, async () => {
   await runTheTest()
 })
 it(`should fail on ${MessageWirelessOnly}`, async () => {
-  wiredPortSettings.MACAddress = null
+  wiredPortSettings.MACAddress = null as any
   doneResponse.status = StatusFailed
   await runTheTest()
 })
 it(`should fail on ${MessageAlreadySynchronized}`, async () => {
-  targetIPConfig.ipAddress = wiredPortSettings.IPAddress
+  targetIPConfig.ipAddress = wiredPortSettings.IPAddress as any
   doneResponse.status = StatusFailed
   await runTheTest()
 })

@@ -32,8 +32,8 @@ export interface TLSContext {
   tlsCredentialContext: any
   amtProfile: AMTConfiguration
   unauthCount: number
-  amt?: AMT.Messages
-  retryCount?: number
+  amt: AMT.Messages
+  retryCount: number
   keyPairHandle?: string
   authProtocol: number
 }
@@ -57,18 +57,20 @@ export class TLS {
       id: 'tls-configuration-machine',
       initial: 'PROVISIONED',
       context: {
-        clientId: '',
+        clientId: '', // provided by parent machine
         unauthCount: 0,
         status: 'success',
         message: null,
-        httpHandler: new HttpHandler(),
+        httpHandler: new HttpHandler(), // provided by parent machine
         xmlMessage: '',
         errorMessage: '',
         statusMessage: '',
-        tlsSettingData: null,
+        tlsSettingData: [],
         tlsCredentialContext: null,
-        amtProfile: null,
-        authProtocol: 0
+        authProtocol: 0,
+        retryCount: 0,
+        amtProfile: {} as any, // provided by parent machine
+        amt: {} as any // provided by parent machine
       },
       states: {
         PROVISIONED: {

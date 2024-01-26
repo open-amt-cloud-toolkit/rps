@@ -203,7 +203,12 @@ export class Deactivation {
       clientObj.status.Status = context.errorMessage !== '' ? context.errorMessage : 'Failed'
       method = 'failed'
     }
+
     const responseMessage = ClientResponseMsg.get(clientId, null, status, method, JSON.stringify(clientObj.status))
-    devices[clientId].ClientSocket.send(JSON.stringify(responseMessage))
+    if (clientObj.ClientSocket) {
+      clientObj.ClientSocket.send(JSON.stringify(responseMessage))
+    } else {
+      this.logger.error('No client socket')
+    }
   }
 }

@@ -30,7 +30,7 @@ export type SyncDeviceInfoEvent =
   | { type: typeof SyncDeviceInfoEventType, clientId: string, deviceInfo: DeviceInfo }
 
 export interface SyncDeviceInfoContext extends CommonMaintenanceContext {
-  deviceInfo: DeviceInfo
+  deviceInfo: DeviceInfo | null
 }
 
 const logger = new Logger('syncDeviceInfo')
@@ -88,12 +88,12 @@ export class SyncDeviceInfo {
     const clientObj = devices[context.clientId]
     const url = `${Environment.Config.mps_server}/api/v1/devices`
     const deviceinfo = {
-      fwVersion: context.deviceInfo.ver,
-      fwBuild: context.deviceInfo.build,
-      fwSku: context.deviceInfo.sku,
-      currentMode: context.deviceInfo.currentMode?.toString(),
-      features: context.deviceInfo.features,
-      ipAddress: context.deviceInfo.ipConfiguration.ipAddress,
+      fwVersion: context.deviceInfo?.ver,
+      fwBuild: context.deviceInfo?.build,
+      fwSku: context.deviceInfo?.sku,
+      currentMode: context.deviceInfo?.currentMode?.toString(),
+      features: context.deviceInfo?.features,
+      ipAddress: context.deviceInfo?.ipConfiguration.ipAddress,
       lastUpdated: new Date()
     }
     const jsonData = {
@@ -102,7 +102,7 @@ export class SyncDeviceInfo {
     }
     const rsp = await got.patch(url, { json: jsonData })
     if (rsp.statusCode !== 200) {
-      throw new HttpResponseError(rsp.statusMessage, rsp.statusCode)
+      throw new HttpResponseError((rsp.statusMessage ? rsp.statusMessage : ''), rsp.statusCode)
     }
     logger.debug(`savedToMPS ${JSON.stringify(jsonData)}`)
   }

@@ -92,14 +92,15 @@ describe('Activation State Machine', () => {
       connectionParams: {
         guid: '4c4c4544-004b-4210-8033-b6c04f504633',
         port: 16992,
-        digestChallenge: null,
+        digestChallenge: {},
         username: 'admin',
         password: 'P@ssw0rd'
       },
+      amtPassword: 'testAMTpw',
       uuid: '4c4c4544-004b-4210-8033-b6c04f504633',
       messageId: 1,
       certObj: {} as any
-    }
+    } as any
     context = {
       httpHandler: new HttpHandler(),
       profile: {
@@ -110,7 +111,7 @@ describe('Activation State Machine', () => {
         tags: ['acm'],
         dhcpEnabled: true,
         tenantId: ''
-      },
+      } as any,
       amtDomain: {
         profileName: 'vpro',
         domainSuffix: 'vprodemo.com',
@@ -210,8 +211,8 @@ describe('Activation State Machine', () => {
         'cira-machine': Promise.resolve({ clientId }),
         'send-mebx-password': Promise.resolve({ clientId }),
         'get-activationstatus': Promise.resolve({ clientId }),
-        PROVISIONED: () => {},
-        DELAYED_TRANSITION: () => {}
+        PROVISIONED: () => { },
+        DELAYED_TRANSITION: () => { }
       },
       actions: {
         'Convert WSMan XML response to JSON': () => { },
@@ -238,11 +239,10 @@ describe('Activation State Machine', () => {
         activation: ClientAction.ADMINCTLMODE,
         tenantId: '',
         tags: ['acm']
-      }
+      } as any
       await activation.configurator.ready
       const getAMTProfileSpy = spyOn(activation.configurator.profileManager, 'getAmtProfile').mockImplementation(async () => expectedProfile)
-
-      const profile = await activation.getAMTProfile(context, null)
+      const profile = await activation.getAMTProfile(context, null as any)
       expect(profile).toBe(expectedProfile)
       expect(getAMTProfileSpy).toHaveBeenCalled()
     })
@@ -268,7 +268,7 @@ describe('Activation State Machine', () => {
         tenantId: ''
       }
       const getProvisioningCertSpy = spyOn(activation.configurator.domainCredentialManager, 'getProvisioningCert').mockImplementation(async () => expectedProfile)
-      const profile = await activation.getAMTDomainCert(context, null)
+      const profile = await activation.getAMTDomainCert(context, null as any)
       expect(profile).toBe(expectedProfile)
       expect(getProvisioningCertSpy).toHaveBeenCalled()
     })
@@ -276,7 +276,7 @@ describe('Activation State Machine', () => {
 
   describe('createSignedString', () => {
     it('should return valid signed string when certificate is valid', async () => {
-      const clientObj = devices[clientId]
+      const clientObj: any = devices[clientId]
       clientObj.ClientData.payload.fwNonce = PasswordHelper.generateNonce()
       clientObj.nonce = PasswordHelper.generateNonce()
       const nodeForge = new NodeForge()
@@ -292,7 +292,15 @@ describe('Activation State Machine', () => {
       expect(clientObj.signature).toBeDefined()
       expect(clientObj.signature).not.toBe('')
     })
+    it('should return false when cert object is null', async () => {
+      const clientObj: any = devices[clientId]
+      clientObj.ClientData.payload.fwNonce = PasswordHelper.generateNonce()
+      clientObj.nonce = PasswordHelper.generateNonce()
+      clientObj.certObj = null as any
 
+      const result = activation.createSignedString(clientId, null as any)
+      expect(result).toBeFalsy()
+    })
     it('should throw error message when certificate is invalid', async () => {
       signStringSpy = spyOn(activation.signatureHelper, 'signString').mockImplementation(() => {
         throw new Error('Unable to create Digital Signature')
@@ -360,6 +368,12 @@ describe('Activation State Machine', () => {
       expect(createSignedStringSpy).toHaveBeenCalled()
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
+    it('should return null when signature in null', async () => {
+      context.certChainPfx = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprint: { sha256: '82f2ed575db4abe462499cf550dbff9584980d70a0272894639c3653b9ad932c', sha1: '47d7b7db23f3e300189f54802482b1bd18b945ef' }, hashAlgorithm: 'sha256' }
+      devices[clientId].nonce = PasswordHelper.generateNonce()
+      const result = await activation.sendAdminSetup(context)
+      expect(result).toBe(null)
+    })
 
     it('should send WSMan to upgrade from client to admin mode', async () => {
       const createSignedStringSpy = spyOn(activation, 'createSignedString').mockImplementation(
@@ -389,6 +403,11 @@ describe('Activation State Machine', () => {
       await activation.setMEBxPassword(context)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
+    it('should return null if MEBx password is null', async () => {
+      devices[context.clientId].mebxPassword = null
+      const result = await activation.setMEBxPassword(context)
+      expect(result).toBe(null)
+    })
    })
 
   describe('Get Provisioning Certificate Object', () => {
@@ -396,51 +415,56 @@ describe('Activation State Machine', () => {
       const convertPfxToObjectSpy = spyOn(activation.certManager, 'convertPfxToObject').mockImplementation(() => {
         throw new Error('Decrypting provisioning certificate failed.')
       })
-      activation.GetProvisioningCertObj(context, null)
+      activation.GetProvisioningCertObj(context, null as any)
       expect(devices[clientId].certObj).toBeNull()
       expect(convertPfxToObjectSpy).toHaveBeenCalled()
     })
     it('should assign return valid certificate object', () => {
-      const certObject = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprint: { sha256: '82f2ed575db4abe462499cf550dbff9584980d70a0272894639c3653b9ad932c', sha1: '47d7b7db23f3e300189f54802482b1bd18b945ef' }, hashAlgorithm: 'sha256' }
-      const convertPfxToObjectSpy = spyOn(activation.certManager, 'convertPfxToObject').mockImplementation(() => ({ certs: null, keys: null }))
+      const certObject = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null as any }, fingerprint: { sha256: '82f2ed575db4abe462499cf550dbff9584980d70a0272894639c3653b9ad932c', sha1: '47d7b7db23f3e300189f54802482b1bd18b945ef' }, hashAlgorithm: 'sha256' }
+      const convertPfxToObjectSpy = spyOn(activation.certManager, 'convertPfxToObject').mockImplementation(() => ({ certs: null as any, keys: null as any }))
       const dumpPfxSpy = spyOn(activation.certManager, 'dumpPfx').mockImplementation(() => certObject)
-      activation.GetProvisioningCertObj(context, null)
+      activation.GetProvisioningCertObj(context, null as any)
       expect(convertPfxToObjectSpy).toHaveBeenCalled()
       expect(dumpPfxSpy).toHaveBeenCalled()
       expect(context.certChainPfx).toBe(certObject)
     })
     it('should return valid provisioning certificate', async () => {
       context.certChainPfx = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprint: { sha256: '82f2ed575db4abe462499cf550dbff9584980d70a0272894639c3653b9ad932c', sha1: '47d7b7db23f3e300189f54802482b1bd18b945ef' }, hashAlgorithm: 'sha256' }
-      activation.compareCertHashes(context, null)
+      activation.compareCertHashes(context, null as any)
       expect(devices[clientId].certObj).toBe(context.certChainPfx.provisioningCertificateObj)
     })
     it('should return valid provisioning certificate if a sha1 hash matches', async () => {
       context.certChainPfx = { provisioningCertificateObj: { certChain: ['leaf', 'inter1', 'root'], privateKey: null }, fingerprint: { sha256: '82f2ed575db4abe462499cf550dbff9584980d70a0272894639c3653b9ad932c', sha1: '47d7b7db23f3e300189f54802482b1bd18b945ef' }, hashAlgorithm: 'sha256' }
       devices[clientId].ClientData.payload.certHashes = ['e7685634efacf69ace939a6b255b7b4fabef42935b50a265acb5cb6027e44e70', '47d7b7db23f3e300189f54802482b1bd18b945ef']
-      activation.compareCertHashes(context, null)
+      activation.compareCertHashes(context, null as any)
       expect(devices[clientId].certObj).toBe(context.certChainPfx.provisioningCertificateObj)
     })
   })
 
   describe('save Device Information to MPS database', () => {
     it('should return true on successful post to MPS', async () => {
+      context.friendlyName = 'friendlyName'
       gotSpy = spyOn(got, 'post')
-      gotSpy.mockResolvedValue({ })
-      const response = await activation.saveDeviceInfoToMPS(context, null)
+      gotSpy.mockResolvedValue({})
+      const response = await activation.saveDeviceInfoToMPS(context, null as any)
       expect(response).toBe(true)
     })
     it('should handle got exception on non 2XX,3XX response from post to MPS', async () => {
       gotSpy = spyOn(got, 'post')
       gotSpy.mockRejectedValue(new Error('SomeError'))
-      const response = await activation.saveDeviceInfoToMPS(context, null)
+      const response = await activation.saveDeviceInfoToMPS(context, null as any)
       expect(response).toBe(false)
     })
   })
 
   describe('save Device Information to vault', () => {
     it(`should return true if saved for ${ClientAction.ADMINCTLMODE}`, async () => {
+      const clientObj: any = devices[clientId]
+      clientObj.amtPassword = 'testPw'
+      clientObj.mebxPassword = 'testPw'
+
       const insertSpy = spyOn(activation.configurator.secretsManager, 'writeSecretWithObject').mockImplementation(async () => true)
-      const response = await activation.saveDeviceInfoToSecretProvider(context, null)
+      const response = await activation.saveDeviceInfoToSecretProvider(context, null as any)
       expect(insertSpy).toHaveBeenCalled()
       expect(response).toBe(true)
     })
@@ -448,14 +472,26 @@ describe('Activation State Machine', () => {
       const insertSpy = spyOn(activation.configurator.secretsManager, 'writeSecretWithObject').mockImplementation(async () => true)
       const clientObj = devices[clientId]
       clientObj.action = ClientAction.ADMINCTLMODE
-      const response = await activation.saveDeviceInfoToSecretProvider(context, null)
+      clientObj.amtPassword = 'testPw'
+      clientObj.mebxPassword = 'testPw'
+      const response = await activation.saveDeviceInfoToSecretProvider(context, null as any)
       expect(insertSpy).toHaveBeenCalled()
       expect(response).toBe(true)
     })
     it('should return false if not able to save data', async () => {
       const err = new Error('Unable to save')
+      const clientObj: any = devices[clientId]
+      clientObj.amtPassword = 'testPw'
+      clientObj.mebxPassword = 'testPw'
       spyOn(activation.configurator.secretsManager, 'writeSecretWithObject').mockRejectedValueOnce(err)
-      await expect(activation.saveDeviceInfoToSecretProvider(context, null)).rejects.toBe(err)
+      await expect(activation.saveDeviceInfoToSecretProvider(context, null as any)).rejects.toBe(err)
+    })
+    it('should return false if amtPassword is nul', async () => {
+      const clientObj: any = devices[clientId]
+      clientObj.amtPassword = null
+      clientObj.mebxPassword = 'testPw'
+      const response = await activation.saveDeviceInfoToSecretProvider(context, null as any)
+      expect(response).toBe(false)
     })
   })
 
@@ -463,7 +499,7 @@ describe('Activation State Machine', () => {
     it('should return wsman message when certchain is not null', async () => {
       const clientObj = devices[clientId]
       clientObj.count = 1
-      clientObj.certObj = {} as any
+      clientObj.certObj = { certChain: [], privateKey: null as any }
       clientObj.certObj.certChain = ['leaf', 'inter1', 'root']
       const hostBasedSetupServiceSpy = spyOn(context.ips.HostBasedSetupService, 'AddNextCertInChain').mockReturnValue('abcdef')
       const response = activation.injectCertificate(clientId, context.ips)
@@ -474,7 +510,7 @@ describe('Activation State Machine', () => {
     it('should return wsman message when certchain is not null and cert chain length is less than count', async () => {
       const clientObj = devices[clientId]
       clientObj.count = 2
-      clientObj.certObj = {} as any
+      clientObj.certObj = { certChain: [], privateKey: null as any }
       clientObj.certObj.certChain = ['leaf', 'inter1', 'root']
       const hostBasedSetupServiceSpy = spyOn(context.ips.HostBasedSetupService, 'AddNextCertInChain').mockReturnValue('abcdef')
       const response = activation.injectCertificate(clientId, context.ips)
@@ -485,7 +521,7 @@ describe('Activation State Machine', () => {
     it('should return wsman message when certchain is not null and cert chain length is equal to count', async () => {
       const clientObj = devices[clientId]
       clientObj.count = 3
-      clientObj.certObj = {} as any
+      clientObj.certObj = { certChain: [], privateKey: null as any }
       clientObj.certObj.certChain = ['leaf', 'inter1', 'root']
       const hostBasedSetupServiceSpy = spyOn(context.ips.HostBasedSetupService, 'AddNextCertInChain').mockReturnValue('abcdef')
       const response = activation.injectCertificate(clientId, context.ips)
@@ -509,7 +545,7 @@ describe('Activation State Machine', () => {
         },
         statusCode: 200
       }
-      activation.readGeneralSettings(context, null)
+      activation.readGeneralSettings(context, null as any)
       expect(devices[clientId].ClientData.payload.digestRealm).toBe('Digest:A3829B3827DE4D33D4449B366831FD01')
       expect(devices[clientId].hostname).toBe('DESKTOP-9CC12U7')
     })
@@ -525,14 +561,14 @@ describe('Activation State Machine', () => {
           }
         }
       }
-      activation.readHostBasedSetupService(context, null)
+      activation.readHostBasedSetupService(context, null as any)
       expect(devices[clientId].ClientData.payload.fwNonce).toBeDefined()
       expect(devices[clientId].ClientData.payload.modes).toBeDefined()
     })
 
     it('should set activation status', () => {
       devices[context.clientId].status.Status = 'Admin control mode.'
-      activation.setActivationStatus(context, null)
+      activation.setActivationStatus(context, null as any)
       expect(devices[clientId].activationStatus).toBeTruthy()
     })
   })
@@ -568,7 +604,7 @@ describe('Activation State Machine', () => {
       })
 
       ccmActivationService.start()
-      ccmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      ccmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null as any })
       jest.runAllTicks()
     })
 
@@ -610,7 +646,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null as any })
       jest.runAllTicks()
     })
 
@@ -659,7 +695,7 @@ describe('Activation State Machine', () => {
     //   })
 
     //   acmActivationService.start()
-    //   acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+    //   acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null as any })
     //   jest.runAllTicks()
     // })
 
@@ -695,7 +731,7 @@ describe('Activation State Machine', () => {
     //   })
 
     //   acmActivationService.start()
-    //   acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+    //   acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null as any })
     //   jest.runAllTicks()
     // })
 
@@ -732,7 +768,7 @@ describe('Activation State Machine', () => {
     //   })
 
     //   acmActivationService.start()
-    //   acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+    //   acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null as any })
     //   jest.runAllTicks()
     // })
 
@@ -774,7 +810,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null as any })
       jest.runAllTicks()
     })
 
@@ -823,7 +859,7 @@ describe('Activation State Machine', () => {
     //   })
 
     //   acmActivationService.start()
-    //   acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+    //   acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null as any })
     //   jest.runAllTicks()
     // })
 
@@ -856,7 +892,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null as any })
       jest.runAllTicks()
     })
 
@@ -900,7 +936,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null as any })
       jest.runAllTicks()
     })
 
@@ -943,7 +979,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null as any })
       jest.runAllTicks()
     })
 
@@ -989,7 +1025,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null as any })
       jest.runAllTicks()
     })
     it('should eventually reach "ERROR" if Check Activation fails', (done) => {
@@ -1027,7 +1063,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null as any })
       jest.runAllTicks()
     })
 
@@ -1072,7 +1108,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null as any })
       jest.runAllTicks()
     })
 
@@ -1112,7 +1148,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null as any })
       jest.runAllTicks()
     })
 
@@ -1154,7 +1190,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null as any })
       jest.runAllTicks()
     })
 
@@ -1196,7 +1232,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null as any })
       jest.runAllTicks()
     })
 
@@ -1220,7 +1256,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null as any })
     })
 
     it('should eventually reach "FAILED" at "GET_AMT_PROFILE" if ACTIVATED', (done) => {
@@ -1243,7 +1279,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATED', clientId, tenantId: '', friendlyName: null })
+      acmActivationService.send({ type: 'ACTIVATED', clientId, tenantId: '', friendlyName: null as any })
     })
 
     it('should eventually reach "FAILED" at "GET_AMT_DOMAIN_CERT"', (done) => {
@@ -1267,7 +1303,7 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null as any })
     })
 
     it('should eventually reach "FAILED" at "CHECKCERTCHAINRESPONSE"', (done) => {
@@ -1296,22 +1332,22 @@ describe('Activation State Machine', () => {
       })
 
       acmActivationService.start()
-      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null })
+      acmActivationService.send({ type: 'ACTIVATION', clientId, tenantId: '', friendlyName: null as any })
     })
 
     it('should send success message to device', () => {
-      activation.sendMessageToDevice(context, null)
+      activation.sendMessageToDevice(context, null as any)
       expect(sendSpy).toHaveBeenCalled()
     })
     it('should update Credentials', () => {
-      activation.updateCredentials(context, null)
+      activation.updateCredentials(context, null as any)
       expect(devices[context.clientId].connectionParams.username).toBe(AMTUserName)
     })
 
     it('should send error message to device', () => {
       context.status = 'error'
       context.message = null
-      activation.sendMessageToDevice(context, null)
+      activation.sendMessageToDevice(context, null as any)
       expect(responseMessageSpy).toHaveBeenCalledWith(context.clientId, context.message, context.status, 'failed', JSON.stringify(devices[clientId].status))
       expect(sendSpy).toHaveBeenCalled()
     })

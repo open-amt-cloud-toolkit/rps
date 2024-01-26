@@ -14,7 +14,7 @@ export function setupTestClient (): string {
     ClientId: clientId,
     ClientSocket: { send: jest.fn() } as any,
     unauthCount: 0
-  }
+  } as any
   return clientId
 }
 

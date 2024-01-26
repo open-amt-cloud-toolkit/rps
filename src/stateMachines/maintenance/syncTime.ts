@@ -16,14 +16,14 @@ import { doneFail, doneSuccess } from './doneResponse.js'
 import { getPTStatusName, PTStatus } from '../../utils/PTStatus.js'
 
 export interface GetLowAccuracyTimeSynchResponse {
-  GetLowAccuracyTimeSynch_OUTPUT: {
+  GetLowAccuracyTimeSynchOutput: {
     ReturnValue: number
     Ta0: number
   }
 }
 
 export interface SetHighAccuracyTimeSynchResponse {
-  SetHighAccuracyTimeSynch_OUTPUT: {
+  SetHighAccuracyTimeSynchOutput: {
     ReturnValue: number
   }
 }
@@ -51,7 +51,7 @@ export class SyncTime {
     context: {
       ...commonContext,
       taskName: 'synctime',
-      lowAccuracyData: null
+      lowAccuracyData: { Ta0: 0, Tm1: 0 }
     },
     initial: 'INITIAL',
     states: {
@@ -108,7 +108,7 @@ export class SyncTime {
   async getLowAccuracyTimeSync (context: SyncTimeContext): Promise<LowAccuracyData> {
     const wsmanXml = amt.TimeSynchronizationService.GetLowAccuracyTimeSynch()
     const rsp = await invokeWsmanCall<GetLowAccuracyTimeSynchResponse>(context.clientId, wsmanXml)
-    const output = rsp.GetLowAccuracyTimeSynch_OUTPUT
+    const output = rsp.GetLowAccuracyTimeSynchOutput
     if (output?.ReturnValue !== PTStatus.SUCCESS.value) {
       const msg = `ReturnValue ${getPTStatusName(output?.ReturnValue)}`
       throw new Error(msg)
@@ -128,11 +128,10 @@ export class SyncTime {
     const wsmanXml = amt.TimeSynchronizationService.SetHighAccuracyTimeSynch(Ta0, Tm1, Tm2)
     logger.debug(`sending SetHighAccuracyTimeSynch: Ta0: ${Ta0} Tm1: ${Tm1} Tm2: ${Tm2}`)
     const wsmanRsp = await invokeWsmanCall<SetHighAccuracyTimeSynchResponse>(context.clientId, wsmanXml)
-    const output = wsmanRsp.SetHighAccuracyTimeSynch_OUTPUT
+    const output = wsmanRsp.SetHighAccuracyTimeSynchOutput
     if (output?.ReturnValue !== PTStatus.SUCCESS.value) {
       const msg = `ReturnValue ${getPTStatusName(output?.ReturnValue)}`
       throw new Error(msg)
     }
-    return null
   }
 }
