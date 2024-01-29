@@ -4,7 +4,7 @@
  **********************************************************************/
 
 import { CIM, type Common } from '@open-amt-cloud-toolkit/wsman-messages'
-import { HttpHandler } from './HttpHandler'
+import { HttpHandler } from './HttpHandler.js'
 
 const httpHandler = new HttpHandler()
 
@@ -122,6 +122,6 @@ it('should return a null when no xml is passed to wrap a WSMan request', async (
     username: 'admin',
     password: 'P@ssw0rd'
   }
-  const result = httpHandler.wrapIt(null, connectionParams)
+  const result = httpHandler.wrapIt(null as any, connectionParams)
   expect(result).toBe(null)
 })

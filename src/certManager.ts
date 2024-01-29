@@ -4,10 +4,16 @@
  **********************************************************************/
 
 import { type pkcs12, type pki } from 'node-forge'
-import { type ILogger } from './interfaces/ILogger'
-import type Logger from './Logger'
-import { type AMTKeyUsage, type CertAttributes, type CertCreationResult, type CertificateObject, type CertsAndKeys, type ProvisioningCertObj, type RootCertFingerprint } from './models'
-import { type NodeForge } from './NodeForge'
+import { type ILogger } from './interfaces/ILogger.js'
+import type Logger from './Logger.js'
+import { type AMTKeyUsage, type CertAttributes, type CertCreationResult, type CertificateObject, type CertsAndKeys, type ProvisioningCertObj, type RootCertFingerprint } from './models/index.js'
+import { type NodeForge } from './NodeForge.js'
+
+interface Attribute {
+  name?: string
+  shortName?: string
+  value: string
+}
 
 export class CertManager {
   private readonly nodeForge: NodeForge
@@ -32,13 +38,13 @@ export class CertManager {
    * @param {any} pfxobj Certificate object from convertPfxToObject function
    * @returns {any} Returns provisioning certificate object with certificate chain in proper order and fingerprint
    */
-  dumpPfx (pfxobj: CertsAndKeys): { provisioningCertificateObj: ProvisioningCertObj, fingerprint: RootCertFingerprint, hashAlgorithm: string } {
+  dumpPfx (pfxobj: CertsAndKeys): { provisioningCertificateObj: ProvisioningCertObj, fingerprint: RootCertFingerprint, hashAlgorithm: string | null } {
     const provisioningCertificateObj: ProvisioningCertObj = {} as ProvisioningCertObj
     const interObj: CertificateObject[] = []
     const leaf: CertificateObject = {} as CertificateObject
     const root: CertificateObject = {} as CertificateObject
     const fingerprint: RootCertFingerprint = {} as RootCertFingerprint
-    let hashAlgorithm: string
+    let hashAlgorithm: string | null = null
 
     if (pfxobj.certs?.length > 0) {
       for (let i = 0; i < pfxobj.certs.length; i++) {
@@ -112,37 +118,60 @@ export class CertManager {
   convertPfxToObject (pfxb64: string, passphrase: string): CertsAndKeys {
     const pfxOut: CertsAndKeys = { certs: [], keys: [] }
     const pfxder = Buffer.from(pfxb64, 'base64').toString('binary')
-    const asn = this.nodeForge.asn1FromDer(pfxder)
+
+    // Convert DER to ASN.1
+    let asn
+    try {
+      asn = this.nodeForge.asn1FromDer(pfxder)
+    } catch (e) {
+      throw new Error('ASN.1 parsing failed')
+    }
+    // const asn = this.nodeForge.asn1FromDer(pfxder)
     let pfx: pkcs12.Pkcs12Pfx
     try {
       pfx = this.nodeForge.pkcs12FromAsn1(asn, true, passphrase)
     } catch (e) {
       throw new Error('Decrypting provisioning certificate failed')
     }
-    // Get the certs from certbags
-    let bags = pfx.getBags({ bagType: this.nodeForge.pkiOidsCertBag })
-    for (let i = 0; i < bags[this.nodeForge.pkiOidsCertBag].length; i++) {
-      // dump cert into DER
-      const cert = bags[this.nodeForge.pkiOidsCertBag][i]
-      pfxOut.certs.push(cert.cert)
+
+    // Process certificate bags
+    const certBags = pfx.getBags({ bagType: this.nodeForge.pkiOidsCertBag })
+    const certBagArray = certBags[this.nodeForge.pkiOidsCertBag]
+    if (certBagArray) {
+      for (const certBag of certBagArray) {
+        if (certBag.cert) {
+          pfxOut.certs.push(certBag.cert)
+        }
+      }
+    } else {
+      throw new Error('No certificate bags found')
     }
-    // get shrouded key from key bags
-    bags = pfx.getBags({ bagType: this.nodeForge.pkcs8ShroudedKeyBag })
-    for (let i = 0; i < bags[this.nodeForge.pkcs8ShroudedKeyBag].length; i++) {
-      // dump cert into DER
-      const cert = bags[this.nodeForge.pkcs8ShroudedKeyBag][i]
-      pfxOut.keys.push(cert.key)
+
+    // Process key bags
+    const keyBags = pfx.getBags({ bagType: this.nodeForge.pkcs8ShroudedKeyBag })
+    const keyBagArray = keyBags[this.nodeForge.pkcs8ShroudedKeyBag]
+    if (keyBagArray) {
+      for (const keyBag of keyBagArray) {
+        if (keyBag.key) {
+          pfxOut.keys.push(keyBag.key)
+        }
+      }
+    } else {
+      throw new Error('No key bags found')
     }
+
     return pfxOut
   }
 
-  generateLeafCertificate (cert: pki.Certificate, keyUsage: AMTKeyUsage): pki.Certificate {
-    // Figure out the extended key usages
-    if (keyUsage['2.16.840.1.113741.1.2.1'] || keyUsage['2.16.840.1.113741.1.2.2'] || keyUsage['2.16.840.1.113741.1.2.3']) {
-      keyUsage.clientAuth = true
+  generateLeafCertificate (cert: pki.Certificate, keyUsage: AMTKeyUsage | null): pki.Certificate {
+    if (keyUsage) {
+      // Figure out the extended key usages
+      if (keyUsage['2.16.840.1.113741.1.2.1'] || keyUsage['2.16.840.1.113741.1.2.2'] || keyUsage['2.16.840.1.113741.1.2.3']) {
+        keyUsage.clientAuth = true
+      }
     }
-    // Create a leaf certificate
 
+    // Create a leaf certificate
     cert.setExtensions([{
       name: 'basicConstraints'
     }, {
@@ -154,10 +183,10 @@ export class CertManager {
       dataEncipherment: true
     }, keyUsage, {
       name: 'nsCertType',
-      client: keyUsage.clientAuth,
-      server: keyUsage.serverAuth,
-      email: keyUsage.emailProtection,
-      objsign: keyUsage.codeSigning
+      client: keyUsage?.clientAuth,
+      server: keyUsage?.serverAuth,
+      email: keyUsage?.emailProtection,
+      objsign: keyUsage?.codeSigning
     }, {
       name: 'subjectKeyIdentifier'
     }])
@@ -190,7 +219,7 @@ export class CertManager {
     return str
   }
 
-  amtCertSignWithCAKey (DERKey: string, caPrivateKey: pki.PrivateKey, certAttributes: CertAttributes, issuerAttributes: CertAttributes, extKeyUsage: AMTKeyUsage): CertCreationResult {
+  amtCertSignWithCAKey (DERKey: string, caPrivateKey: pki.PrivateKey | null, certAttributes: CertAttributes, issuerAttributes: CertAttributes, extKeyUsage: AMTKeyUsage): CertCreationResult {
     if (!caPrivateKey || caPrivateKey == null) {
       const certAndKey = this.createCertificate(issuerAttributes)
       caPrivateKey = certAndKey.key
@@ -199,8 +228,8 @@ export class CertManager {
   }
 
   // Generate a certificate with a set of attributes signed by a rootCert. If the rootCert is omitted, the generated certificate is self-signed.
-  createCertificate (certAttributes: CertAttributes, caPrivateKey: pki.PrivateKey = null, DERKey: string = null, issuerAttributes: CertAttributes = null, extKeyUsage: AMTKeyUsage = null): CertCreationResult {
-  // Generate a keypair and create an X.509v3 certificate
+  createCertificate (certAttributes: CertAttributes, caPrivateKey: pki.PrivateKey | null = null, DERKey: string | null = null, issuerAttributes: CertAttributes | null = null, extKeyUsage: AMTKeyUsage | null = null): CertCreationResult {
+    // Generate a keypair and create an X.509v3 certificate
     let keys
     let cert = this.nodeForge.createCert()
     if (!DERKey) {
@@ -213,7 +242,7 @@ export class CertManager {
     cert.validity.notBefore = new Date(2018, 0, 1)
     cert.validity.notAfter = new Date(2049, 11, 31)
 
-    const attrs = []
+    const attrs: Attribute[] = []
     if (certAttributes.CN) attrs.push({ name: 'commonName', value: certAttributes.CN })
     if (certAttributes.C) attrs.push({ name: 'countryName', value: certAttributes.C })
     if (certAttributes.ST) attrs.push({ shortName: 'ST', value: certAttributes.ST })
@@ -222,11 +251,11 @@ export class CertManager {
 
     if (caPrivateKey) {
       // Use root attributes
-      const rootattrs = []
-      if (issuerAttributes.CN) rootattrs.push({ name: 'commonName', value: issuerAttributes.CN })
-      if (issuerAttributes.C) rootattrs.push({ name: 'countryName', value: issuerAttributes.C })
-      if (issuerAttributes.ST) rootattrs.push({ shortName: 'ST', value: issuerAttributes.ST })
-      if (issuerAttributes.O) rootattrs.push({ name: 'organizationName', value: issuerAttributes.O })
+      const rootattrs: Attribute[] = []
+      if (issuerAttributes?.CN) rootattrs.push({ name: 'commonName', value: issuerAttributes.CN })
+      if (issuerAttributes?.C) rootattrs.push({ name: 'countryName', value: issuerAttributes.C })
+      if (issuerAttributes?.ST) rootattrs.push({ shortName: 'ST', value: issuerAttributes.ST })
+      if (issuerAttributes?.O) rootattrs.push({ name: 'organizationName', value: issuerAttributes.O })
       cert.setIssuer(rootattrs)
       cert = this.generateLeafCertificate(cert, extKeyUsage)
       cert.sign(caPrivateKey, this.nodeForge.sha256Create())

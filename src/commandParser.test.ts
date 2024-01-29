@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { CommandParser } from './CommandParser'
-import { ClientMethods, type ClientMsg } from './models/RCS.Config'
+import { CommandParser } from './CommandParser.js'
+import { ClientMethods, type ClientMsg } from './models/RCS.Config.js'
 
 function getBasicMessage (): ClientMsg {
   const clientMsg: ClientMsg = {

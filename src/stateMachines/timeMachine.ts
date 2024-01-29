@@ -5,8 +5,8 @@
 
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 import { assign, createMachine } from 'xstate'
-import { HttpHandler } from '../HttpHandler'
-import { invokeWsmanCall } from './common'
+import { HttpHandler } from '../HttpHandler.js'
+import { invokeWsmanCall } from './common.js'
 
 interface TimeContext {
   message: any
@@ -109,14 +109,14 @@ export class TimeSync {
     }
   }, {
     guards: {
-      isGetLowAccuracyTimeSynchSuccessful: (context, event) => context.message.Envelope.Body?.GetLowAccuracyTimeSynch_OUTPUT?.ReturnValue === 0,
-      isSetHighAccuracyTimeSynchSuccessful: (context, event) => context.message.Envelope.Body?.SetHighAccuracyTimeSynch_OUTPUT?.ReturnValue === 0
+      isGetLowAccuracyTimeSynchSuccessful: (context, event) => context.message.Envelope.Body?.GetLowAccuracyTimeSynchOutput?.ReturnValue === 0,
+      isSetHighAccuracyTimeSynchSuccessful: (context, event) => context.message.Envelope.Body?.SetHighAccuracyTimeSynchOutput?.ReturnValue === 0
     }
   })
 
   async setHighAccuracyTimeSynch (context: TimeContext): Promise<void> {
     const Tm1 = Math.round(new Date().getTime() / 1000)
-    const Ta0: number = context.message.Envelope.Body.GetLowAccuracyTimeSynch_OUTPUT.Ta0
+    const Ta0: number = context.message.Envelope.Body.GetLowAccuracyTimeSynchOutput.Ta0
     const amt = new AMT.Messages()
     context.xmlMessage = amt.TimeSynchronizationService.SetHighAccuracyTimeSynch(Ta0, Tm1, Tm1)
     return await invokeWsmanCall(context)

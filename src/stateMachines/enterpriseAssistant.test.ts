@@ -3,21 +3,23 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { initiateCertRequest, sendEnterpriseAssistantKeyPairResponse, getCertFromEnterpriseAssistant } from './enterpriseAssistant'
-import { v4 as uuid } from 'uuid'
-import * as common from './common'
-import { HttpHandler } from '../HttpHandler'
+import { randomUUID } from 'node:crypto'
+import { HttpHandler } from '../HttpHandler.js'
 import { AMT, IPS } from '@open-amt-cloud-toolkit/wsman-messages'
-import { devices } from '../WebSocketListener'
-const clientId = uuid()
+import { devices } from '../devices.js'
+import { jest } from '@jest/globals'
+
+const invokeEnterpriseAssistantCallSpy = jest.fn<any>()
+jest.unstable_mockModule('./common.js', () => ({
+  invokeEnterpriseAssistantCall: invokeEnterpriseAssistantCallSpy
+}))
+
+const { initiateCertRequest, sendEnterpriseAssistantKeyPairResponse, getCertFromEnterpriseAssistant } = await import ('./enterpriseAssistant.js')
+const clientId = randomUUID()
 
 describe('Enterprise Assistant', () => {
   let eaConfigContext: any
-
-  let invokeEnterpriseAssistantCallSpy: jest.SpyInstance
-
   beforeEach(() => {
-    invokeEnterpriseAssistantCallSpy = jest.spyOn(common, 'invokeEnterpriseAssistantCall').mockResolvedValue({} as any)
     // eaConfiguration = new
     eaConfigContext = {
       clientId,
@@ -64,7 +66,7 @@ describe('Enterprise Assistant', () => {
       },
       uuid: '4c4c4544-004b-4210-8033-b6c04f504633',
       messageId: 1
-    }
+    } as any
   })
 
   it('should initiateCertRequest', async () => {

@@ -3,10 +3,18 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import validateMiddleware from './validate'
-import * as val from 'express-validator'
-import { createSpyObj } from '../test/helper/jest'
-jest.mock('express-validator')
+import { createSpyObj } from '../test/helper/jest.js'
+import { jest } from '@jest/globals'
+
+let mockReturnValue = true
+jest.unstable_mockModule('express-validator', () => ({
+  validationResult: () => ({
+    isEmpty: jest.fn().mockReturnValue(mockReturnValue),
+    array: jest.fn().mockReturnValue([{ test: 'error' }])
+  } as any)
+}))
+
+const v = await import ('./validate.js')
 
 describe('Check validate', () => {
   let req
@@ -24,27 +32,17 @@ describe('Check validate', () => {
     resSpy.status.mockReturnThis()
     resSpy.json.mockReturnThis()
     resSpy.send.mockReturnThis()
-    jest.spyOn(val, 'validationResult').mockImplementation(() => ({
-      isEmpty: jest.fn().mockReturnValue(true),
-      array: jest.fn().mockReturnValue([{ test: 'error' }])
-    } as any))
   })
 
   it('should fail with incorrect req', async () => {
-    jest.spyOn(val, 'validationResult').mockImplementation(() => ({
-      isEmpty: jest.fn().mockReturnValue(false),
-      array: jest.fn().mockReturnValue([{ test: 'error' }])
-    } as any))
-    await validateMiddleware(req, resSpy, next)
+    mockReturnValue = false
+    await v.default(req, resSpy, next)
     expect(resSpy.status).toHaveBeenCalledWith(400)
   })
   it('should pass with proper req', async () => {
-    jest.spyOn(val, 'validationResult').mockImplementation(() => ({
-      isEmpty: jest.fn().mockReturnValue(true),
-      array: jest.fn().mockReturnValue([{ test: 'fake' }])
-    } as any))
+    mockReturnValue = true
     next = jest.fn()
-    await validateMiddleware(req, resSpy, next)
+    await v.default(req, resSpy, next)
     expect(next).toHaveBeenCalled()
   })
 })

@@ -11,16 +11,16 @@ import {
   type CommonMaintenanceContext,
   HttpResponseError,
   invokeWsmanCall
-} from './common'
-import Logger from '../../Logger'
-import * as Task from './doneResponse'
-import { devices } from '../../WebSocketListener'
+} from './common.js'
+import Logger from '../../Logger.js'
+import { doneFail, doneSuccess } from './doneResponse.js'
 import got from 'got'
-import { Environment } from '../../utils/Environment'
+import { Environment } from '../../utils/Environment.js'
+import { devices } from '../../devices.js'
 
 export interface HostNameInfo {
   dnsSuffixOS: string
-  hostname: string
+  hostname?: string
 }
 
 export const MessageMissingHostName = 'host name was not provided'
@@ -32,7 +32,7 @@ export type SyncHostNameEvent =
 
 export interface SyncHostNameContext extends CommonMaintenanceContext {
   hostNameInfo: HostNameInfo
-  generalSettings: AMT.Models.GeneralSettings
+  generalSettings: AMT.Models.GeneralSettings | null
 }
 
 const amt = new AMT.Messages()
@@ -45,7 +45,7 @@ export class SyncHostName {
     context: {
       ...commonContext,
       taskName: 'synchostname',
-      hostNameInfo: null,
+      hostNameInfo: { dnsSuffixOS: '', hostname: '' },
       generalSettings: null
     },
     initial: 'INITIAL',
@@ -111,11 +111,11 @@ export class SyncHostName {
       },
       FAILED: {
         type: 'final',
-        data: (context) => (Task.doneFail(context.taskName, context.statusMessage))
+        data: (context) => (doneFail(context.taskName, context.statusMessage))
       },
       SUCCESS: {
         type: 'final',
-        data: (context) => (Task.doneSuccess(context.taskName, context.statusMessage))
+        data: (context) => (doneSuccess(context.taskName, context.statusMessage))
       }
     }
   })
@@ -132,13 +132,13 @@ export class SyncHostName {
   }
 
   async putGeneralSettings (context: SyncHostNameContext): Promise<AMT.Models.GeneralSettings> {
-    let errMsg: string
+    let errMsg: string | null = null
     if (!context.hostNameInfo.hostname) {
       errMsg = MessageMissingHostName
-    } else if (context.hostNameInfo.hostname === context.generalSettings.HostName) {
+    } else if (context.hostNameInfo.hostname === context.generalSettings?.HostName) {
       errMsg = MessageAlreadySynchronized
     }
-    if (errMsg) {
+    if (errMsg != null) {
       throw new Error(`at put AMT_GeneralSettings ${errMsg}`)
     }
     const settingsToPut = {
@@ -164,7 +164,10 @@ export class SyncHostName {
     }
     const rsp = await got.patch(url, { json: jsonData })
     if (rsp.statusCode !== 200) {
-      throw new HttpResponseError(rsp.statusMessage, rsp.statusCode)
+      throw new HttpResponseError(rsp.statusMessage != null ? rsp.statusMessage : '', rsp.statusCode)
+    }
+    if (context.hostNameInfo.hostname == null) {
+      throw new Error('Hostname can not be null/undefined')
     }
     logger.debug(`savedToMPS ${JSON.stringify(jsonData)}`)
     return context.hostNameInfo.hostname

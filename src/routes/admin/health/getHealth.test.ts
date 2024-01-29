@@ -3,17 +3,18 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { createSpyObj } from '../../../test/helper/jest'
-import { Environment } from '../../../utils/Environment'
-import { MqttProvider } from '../../../utils/MqttProvider'
-import { getHealthCheck, getDBHealth, getSecretStoreHealth } from './getHealth'
-import { config } from '../../../test/helper/Config'
+import { createSpyObj } from '../../../test/helper/jest.js'
+import { Environment } from '../../../utils/Environment.js'
+import { MqttProvider } from '../../../utils/MqttProvider.js'
+import { getHealthCheck, getDBHealth, getSecretStoreHealth } from './getHealth.js'
+import { config } from '../../../test/helper/Config.js'
+import { type SpyInstance, spyOn } from 'jest-mock'
 
 describe('Checks health of dependent services', () => {
   describe('getHealthCheck tests', () => {
     let resSpy
     let req
-    let mqttSpy: jest.SpyInstance
+    let mqttSpy: SpyInstance<any>
     beforeEach(() => {
       resSpy = createSpyObj('Response', ['status', 'json', 'end', 'send'])
       req = {
@@ -25,10 +26,10 @@ describe('Checks health of dependent services', () => {
       resSpy.status.mockReturnThis()
       resSpy.json.mockReturnThis()
       resSpy.send.mockReturnThis()
-      mqttSpy = jest.spyOn(MqttProvider, 'publishEvent')
+      mqttSpy = spyOn(MqttProvider, 'publishEvent')
     })
     it('should handle health check failed', async () => {
-      await getHealthCheck(null, resSpy)
+      await getHealthCheck(null as any, resSpy)
       expect(resSpy.status).toHaveBeenCalledWith(500)
       expect(mqttSpy).toHaveBeenCalled()
     })

@@ -11,19 +11,19 @@ import {
   invokeWsmanCall,
   isDigestRealmValid,
   HttpResponseError
-} from './common'
+} from './common.js'
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
-import { PasswordHelper } from '../../utils/PasswordHelper'
-import { SignatureHelper } from '../../utils/SignatureHelper'
-import { AMTUserName } from '../../utils/constants'
-import { devices } from '../../WebSocketListener'
-import { type DeviceCredentials } from '../../interfaces/ISecretManagerService'
-import Logger from '../../Logger'
-import * as Task from './doneResponse'
-import { SecretManagerCreatorFactory } from '../../factories/SecretManagerCreatorFactory'
-import { getPTStatusName, PTStatus } from '../../utils/PTStatus'
+import { PasswordHelper } from '../../utils/PasswordHelper.js'
+import { SignatureHelper } from '../../utils/SignatureHelper.js'
+import { AMTUserName } from '../../utils/constants.js'
+import { devices } from '../../devices.js'
+import { type DeviceCredentials } from '../../interfaces/ISecretManagerService.js'
+import Logger from '../../Logger.js'
+import { doneSuccess, doneFail } from './doneResponse.js'
+import { SecretManagerCreatorFactory } from '../../factories/SecretManagerCreatorFactory.js'
+import { getPTStatusName, PTStatus } from '../../utils/PTStatus.js'
 import got from 'got'
-import { Environment } from '../../utils/Environment'
+import { Environment } from '../../utils/Environment.js'
 
 export interface SetAdminACLEntryExResponse {
   SetAdminAclEntryEx_OUTPUT: {
@@ -36,9 +36,9 @@ export type ChangePasswordEvent =
   | { type: typeof ChangePasswordEventType, clientId: string, newStaticPassword: string }
 
 export interface ChangePasswordContext extends CommonMaintenanceContext {
-  newStaticPassword: string
-  generalSettings: AMT.Models.GeneralSettings
-  updatedPassword: string
+  newStaticPassword?: string
+  generalSettings?: AMT.Models.GeneralSettings
+  updatedPassword?: string
 }
 
 const amt = new AMT.Messages()
@@ -50,10 +50,7 @@ export class ChangePassword {
     predictableActionArguments: true,
     context: {
       ...commonContext,
-      taskName: 'changepassword',
-      newStaticPassword: null,
-      generalSettings: null,
-      updatedPassword: null
+      taskName: 'changepassword'
     },
     initial: 'INITIAL',
     states: {
@@ -132,11 +129,11 @@ export class ChangePassword {
       },
       FAILED: {
         type: 'final',
-        data: (context) => (Task.doneFail(context.taskName, context.statusMessage))
+        data: (context) => (doneFail(context.taskName, context.statusMessage))
       },
       SUCCESS: {
         type: 'final',
-        data: (context) => (Task.doneSuccess(context.taskName, context.statusMessage))
+        data: (context) => (doneSuccess(context.taskName, context.statusMessage))
       }
     }
   })
@@ -148,8 +145,8 @@ export class ChangePassword {
     if (!settings) {
       throw new Error(`invalid response: ${JSON.stringify(rsp)}`)
     }
-    if (!isDigestRealmValid(settings.DigestRealm)) {
-      throw new Error(`invalid DigestRealm ${rsp.AMT_GeneralSettings.DigestRealm}`)
+    if (settings.DigestRealm == null || !isDigestRealmValid(settings.DigestRealm)) {
+      throw new Error(`invalid DigestRealm ${rsp.AMT_GeneralSettings?.DigestRealm}`)
     }
     logger.debug(`AMT_GeneralSettings: ${JSON.stringify(settings)}`)
     return settings
@@ -159,10 +156,11 @@ export class ChangePassword {
     const password = context.newStaticPassword
       ? context.newStaticPassword
       : PasswordHelper.generateRandomPassword()
-    const data: string = `${AMTUserName}:${context.generalSettings.DigestRealm}:${password}`
+    const data: string = `${AMTUserName}:${context.generalSettings?.DigestRealm}:${password}`
     const signPassword = SignatureHelper.createMd5Hash(data)
     // Convert MD5 hash to raw string which utf16
-    const result = signPassword.match(/../g).map((v) => String.fromCharCode(parseInt(v, 16))).join('')
+    const signPasswordMatch = signPassword.match(/../g) ?? []
+    const result = signPasswordMatch.map((v) => String.fromCharCode(parseInt(v, 16))).join('')
     // Encode to base64
     const encodedPassword = Buffer.from(result, 'binary').toString('base64')
     logger.debug('sending updated password to device')
@@ -185,13 +183,16 @@ export class ChangePassword {
       logger.debug(`creating new DeviceCredentials for ${clientObj.uuid}`)
       credentials = { AMT_PASSWORD: '', MEBX_PASSWORD: '' }
     }
-    credentials.AMT_PASSWORD = clientObj.amtPassword = context.updatedPassword
-    logger.debug(`saving DeviceCredentials for ${clientObj.uuid}`)
-    const writtenCredentials = await secretMgr.writeSecretWithObject(`devices/${clientObj.uuid}`, credentials)
-    if (!writtenCredentials) {
-      throw new Error('saved credentials were not returned as expected')
+    if (context.updatedPassword != null) {
+      credentials.AMT_PASSWORD = clientObj.amtPassword = context.updatedPassword
+      logger.debug(`saving DeviceCredentials for ${clientObj.uuid}`)
+      const writtenCredentials = await secretMgr.writeSecretWithObject(`devices/${clientObj.uuid}`, credentials)
+      if (!writtenCredentials) {
+        throw new Error('saved credentials were not returned as expected')
+      }
+      return true
     }
-    return true
+    return false
   }
 
   async refreshMPS (context: ChangePasswordContext): Promise<boolean> {

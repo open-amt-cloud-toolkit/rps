@@ -3,25 +3,34 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { v4 as uuid } from 'uuid'
-import { devices } from '../WebSocketListener'
-import { Environment } from '../utils/Environment'
-import { config } from '../test/helper/Config'
-import { ClientAction } from '../models/RCS.Config'
-import { NetworkConfiguration } from './networkConfiguration'
+import { randomUUID } from 'node:crypto'
+import { devices } from '../devices.js'
+import { Environment } from '../utils/Environment.js'
+import { config } from '../test/helper/Config.js'
+import { ClientAction } from '../models/RCS.Config.js'
+import { type NetworkConfiguration as NetworkConfigurationType } from './networkConfiguration.js'
 import { interpret } from 'xstate'
-import { HttpHandler } from '../HttpHandler'
-import * as common from './common'
+import { HttpHandler } from '../HttpHandler.js'
 import { AMT, CIM } from '@open-amt-cloud-toolkit/wsman-messages'
+import { jest } from '@jest/globals'
+import { spyOn } from 'jest-mock'
 
-const clientId = uuid()
+const invokeWsmanCallSpy = jest.fn<any>()
+const invokeEnterpriseAssistantCallSpy = jest.fn<any>()
+jest.unstable_mockModule('./common.js', () => ({
+  invokeWsmanCall: invokeWsmanCallSpy,
+  invokeEnterpriseAssistantCall: invokeEnterpriseAssistantCallSpy
+}))
+
+const { NetworkConfiguration } = await import ('./networkConfiguration.js')
+
+const clientId = randomUUID()
 Environment.Config = config
 describe('Network Configuration', () => {
   let config
   let currentStateIndex: number
-  let networkConfig: NetworkConfiguration
+  let networkConfig: NetworkConfigurationType
   let context
-  let invokeWsmanCallSpy
 
   beforeEach(() => {
     devices[clientId] = {
@@ -61,13 +70,13 @@ describe('Network Configuration', () => {
       connectionParams: {
         guid: '4c4c4544-004b-4210-8033-b6c04f504633',
         port: 16992,
-        digestChallenge: null,
+        digestChallenge: {},
         username: 'admin',
         password: 'P@ssw0rd'
       },
       uuid: '4c4c4544-004b-4210-8033-b6c04f504633',
       messageId: 1
-    }
+    } as any
     networkConfig = new NetworkConfiguration()
     context = {
       amtProfile: null,
@@ -111,7 +120,6 @@ describe('Network Configuration', () => {
         }
       ]
     }
-    invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue(null)
     currentStateIndex = 0
     config = {
       services: {
@@ -236,7 +244,7 @@ describe('Network Configuration', () => {
 
   describe('Ethernet Port Settings', () => {
     test('should enumerate ethernet port settings', async () => {
-      const ethernetPortSettingsSpy = jest.spyOn(context.amt.EthernetPortSettings, 'Enumerate').mockImplementation().mockReturnValue('abcdef')
+      const ethernetPortSettingsSpy = spyOn(context.amt.EthernetPortSettings, 'Enumerate').mockImplementation(() => 'abcdef')
       await networkConfig.enumerateEthernetPortSettings(context)
       expect(ethernetPortSettingsSpy).toHaveBeenCalled()
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
@@ -252,7 +260,7 @@ describe('Network Configuration', () => {
           }
         }
       }
-      const ethernetPortSettingsSpy = jest.spyOn(context.amt.EthernetPortSettings, 'Pull').mockImplementation().mockReturnValue('abcdef')
+      const ethernetPortSettingsSpy = spyOn(context.amt.EthernetPortSettings, 'Pull').mockImplementation(() => 'abcdef')
       await networkConfig.pullEthernetPortSettings(context)
       expect(ethernetPortSettingsSpy).toHaveBeenCalled()
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
@@ -283,7 +291,7 @@ describe('Network Configuration', () => {
           }
         }
       }
-      networkConfig.readEthernetPortSettings(context, null)
+      networkConfig.readEthernetPortSettings(context, null as any)
       expect(context.wiredSettings).toBeDefined()
       expect(context.wifiSettings).toBeDefined()
     })
@@ -311,7 +319,7 @@ describe('Network Configuration', () => {
           }
         }
       }
-      networkConfig.readEthernetPortSettings(context, null)
+      networkConfig.readEthernetPortSettings(context, null as any)
       expect(context.wiredSettings).toBeDefined()
       expect(context.wifiSettings).toBeDefined()
     })
@@ -332,7 +340,7 @@ describe('Network Configuration', () => {
           }
         }
       }
-      networkConfig.readEthernetPortSettings(context, null)
+      networkConfig.readEthernetPortSettings(context, null as any)
       expect(context.wiredSettings).toBeNull()
       expect(context.wifiSettings).toBeDefined()
     })
@@ -353,7 +361,7 @@ describe('Network Configuration', () => {
           }
         }
       }
-      networkConfig.readEthernetPortSettings(context, null)
+      networkConfig.readEthernetPortSettings(context, null as any)
       expect(context.wifiSettings).toBeUndefined()
       expect(context.wiredSettings).toBeDefined()
     })
@@ -378,20 +386,20 @@ describe('Network Configuration', () => {
         RmcpPingResponseEnabled: true,
         SharedFQDN: true
       }
-      const generalSettingsSpy = jest.spyOn(context.amt.GeneralSettings, 'Put').mockReturnValue('done')
+      const generalSettingsSpy = spyOn(context.amt.GeneralSettings, 'Put').mockReturnValue('done')
       await networkConfig.putGeneralSettings(context)
       expect(generalSettingsSpy).toHaveBeenCalled()
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
     test('Should return false if AMT network is Enabled', async () => {
       context.generalSettings = generalSettingsResponse
-      const result = networkConfig.isNotAMTNetworkEnabled(context, null)
+      const result = networkConfig.isNotAMTNetworkEnabled(context, null as any)
       expect(result).toBeFalsy()
     })
     test('Should return true if AMT network is Enabled', async () => {
       context.generalSettings = generalSettingsResponse
       context.generalSettings.SharedFQDN = false
-      const result = networkConfig.isNotAMTNetworkEnabled(context, null)
+      const result = networkConfig.isNotAMTNetworkEnabled(context, null as any)
       expect(result).toBeTruthy()
     })
   })

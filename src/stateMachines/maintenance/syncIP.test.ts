@@ -3,31 +3,53 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type Enumerate } from '@open-amt-cloud-toolkit/wsman-messages/models/common'
+import { type Enumerate } from '@open-amt-cloud-toolkit/wsman-messages/models/common.js'
 import { type AMT } from '@open-amt-cloud-toolkit/wsman-messages'
-import * as common from './common'
-import { HttpResponseError } from './common'
-import { type DoneResponse, StatusFailed, StatusSuccess } from './doneResponse'
-import { UnexpectedParseError } from '../../utils/constants'
+import { type DoneResponse, StatusFailed, StatusSuccess } from './doneResponse.js'
+import { UnexpectedParseError } from '../../utils/constants.js'
+import { runTilDone } from '../../test/helper/xstate.js'
+import { setupTestClient } from '../../test/helper/Config.js'
+import { jest } from '@jest/globals'
+
+import {
+  HttpResponseError,
+  coalesceMessage,
+  commonActions,
+  commonContext,
+  commonGuards
+} from './common.js'
+
 import {
   type EthernetPortSettingsPullResponse,
   type IPConfiguration,
+  type SyncIPEvent,
+  type SyncIP as SyncIPType
+} from './syncIP.js'
+
+const invokeWsmanCallSpy = jest.fn<any>()
+jest.unstable_mockModule('./common.js', () => ({
+  invokeWsmanCall: invokeWsmanCallSpy,
+  HttpResponseError,
+  coalesceMessage,
+  commonActions,
+  commonContext,
+  commonGuards
+}))
+
+const {
   MessageAlreadySynchronized,
   MessageNoWiredSettingsOnDevice,
   MessageWirelessOnly,
   SyncIP,
-  type SyncIPEvent, SyncIPEventType
-} from './syncIP'
-import { runTilDone } from '../../test/helper/xstate'
-import { setupTestClient } from '../../test/helper/Config'
-import resetAllMocks = jest.resetAllMocks
+  SyncIPEventType
+} = await import ('./syncIP.js')
 
 const HttpBadRequestError = new HttpResponseError('Bad Request', 400)
 
 let clientId: string
 let doneResponse: DoneResponse
 let event: SyncIPEvent
-let implementation: SyncIP
+let implementation: SyncIPType
 let targetIPConfig: IPConfiguration
 let enumerateRsp: Enumerate
 let wiredPortSettings: AMT.Models.EthernetPortSettings
@@ -36,7 +58,7 @@ let pullRsp: EthernetPortSettingsPullResponse
 let putRsp: any
 
 beforeEach(() => {
-  resetAllMocks()
+  jest.resetAllMocks()
   clientId = setupTestClient()
   implementation = new SyncIP()
   doneResponse = {
@@ -99,7 +121,7 @@ beforeEach(() => {
 })
 
 const runTheTest = async function (): Promise<void> {
-  jest.spyOn(common, 'invokeWsmanCall')
+  invokeWsmanCallSpy
     .mockResolvedValueOnce(enumerateRsp)
     .mockResolvedValueOnce(pullRsp)
     .mockResolvedValueOnce(putRsp)
@@ -116,7 +138,8 @@ it('should succeed synchronizing DHCP', async () => {
   await runTheTest()
 })
 it('should fail missing event.targetIPConfig.ipAddress', async () => {
-  delete event.targetIPConfig.ipAddress
+  const { ipAddress, ...newTargetIPConfig } = targetIPConfig
+  event.targetIPConfig = newTargetIPConfig as any
   doneResponse.status = StatusFailed
   await runTheTest()
 })
@@ -127,22 +150,25 @@ it('should fail missing event.targetIPConfig', async () => {
   await runTheTest()
 })
 it('should fail missing enumerateRsp.EnumerateResponse', async () => {
-  delete enumerateRsp.EnumerateResponse
+  const { EnumerateResponse, ...newEnumRsp } = enumerateRsp
+  enumerateRsp = newEnumRsp as any
   doneResponse.status = StatusFailed
   await runTheTest()
 })
 it('should fail missing pullRsp.PullResponse.Items.AMT_EthernetPortSettings', async () => {
-  delete pullRsp.PullResponse.Items.AMT_EthernetPortSettings
+  pullRsp.PullResponse = { EndOfSequence: 'EOS' } as any
   doneResponse.status = StatusFailed
   await runTheTest()
 })
 it('should fail missing pullRsp.PullResponse.Items', async () => {
-  delete pullRsp.PullResponse.Items
+  const { Items, ...newPullResponse } = pullRsp.PullResponse
+  pullRsp.PullResponse = newPullResponse as any
   doneResponse.status = StatusFailed
   await runTheTest()
 })
 it('should fail missing pullRsp.PullResponse', async () => {
-  delete pullRsp.PullResponse
+  const { PullResponse, ...newPullRsp } = pullRsp
+  pullRsp = newPullRsp as any
   doneResponse.status = StatusFailed
   await runTheTest()
 })
@@ -152,12 +178,12 @@ it(`should fail on ${MessageNoWiredSettingsOnDevice}`, async () => {
   await runTheTest()
 })
 it(`should fail on ${MessageWirelessOnly}`, async () => {
-  wiredPortSettings.MACAddress = null
+  wiredPortSettings.MACAddress = null as any
   doneResponse.status = StatusFailed
   await runTheTest()
 })
 it(`should fail on ${MessageAlreadySynchronized}`, async () => {
-  targetIPConfig.ipAddress = wiredPortSettings.IPAddress
+  targetIPConfig.ipAddress = wiredPortSettings.IPAddress as any
   doneResponse.status = StatusFailed
   await runTheTest()
 })
@@ -168,20 +194,20 @@ it('should fail on bad put response', async () => {
 })
 it('should fail enumerate response on http response error', async () => {
   doneResponse.status = StatusFailed
-  jest.spyOn(common, 'invokeWsmanCall')
+  invokeWsmanCallSpy
     .mockRejectedValueOnce(HttpBadRequestError)
   await runTilDone(implementation.machine, event, doneResponse)
 })
 it('should fail pull response on http response error', async () => {
   doneResponse.status = StatusFailed
-  jest.spyOn(common, 'invokeWsmanCall')
+  invokeWsmanCallSpy
     .mockResolvedValueOnce(enumerateRsp)
     .mockRejectedValueOnce(HttpBadRequestError)
   await runTilDone(implementation.machine, event, doneResponse)
 })
 it('should fail put response on http response error', async () => {
   doneResponse.status = StatusFailed
-  jest.spyOn(common, 'invokeWsmanCall')
+  invokeWsmanCallSpy
     .mockResolvedValueOnce(enumerateRsp)
     .mockResolvedValueOnce(pullRsp)
     .mockRejectedValueOnce(HttpBadRequestError)
@@ -189,7 +215,7 @@ it('should fail put response on http response error', async () => {
 })
 it('should succeed after UnexpectedParseError', async () => {
   doneResponse.status = StatusSuccess
-  jest.spyOn(common, 'invokeWsmanCall')
+  invokeWsmanCallSpy
     .mockResolvedValueOnce(enumerateRsp)
     .mockRejectedValueOnce(new UnexpectedParseError())
     .mockResolvedValueOnce(enumerateRsp)

@@ -5,7 +5,7 @@
 
 import { Router } from 'express'
 
-import { getHealthCheck } from './getHealth'
+import { getHealthCheck } from './getHealth.js'
 const healthRouter: Router = Router()
 
 healthRouter.get('/', getHealthCheck)

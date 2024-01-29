@@ -12,11 +12,11 @@ import {
   type CommonMaintenanceContext,
   type EnumerationContext,
   invokeWsmanCall
-} from './common'
+} from './common.js'
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
-import { type Enumerate, type Pull } from '@open-amt-cloud-toolkit/wsman-messages/models/common'
-import * as Task from './doneResponse'
-import Logger from '../../Logger'
+import { type Enumerate, type Pull } from '@open-amt-cloud-toolkit/wsman-messages/models/common.js'
+import { doneFail, doneSuccess } from './doneResponse.js'
+import Logger from '../../Logger.js'
 
 export type EthernetPortSettingsPullResponse = Pull<{
   AMT_EthernetPortSettings: AMT.Models.EthernetPortSettings | AMT.Models.EthernetPortSettings[]
@@ -36,19 +36,19 @@ export interface IPConfiguration {
 
 export const SyncIPEventType = 'SYNC_IP'
 export type SyncIPEvent =
-  | { type: typeof SyncIPEventType, clientId: string, targetIPConfig: IPConfiguration }
+  | { type: typeof SyncIPEventType, clientId: string, targetIPConfig?: IPConfiguration }
 
 export interface SyncIPContext extends CommonMaintenanceContext {
-  targetIPConfig: IPConfiguration
+  targetIPConfig?: IPConfiguration
   enumerationContext: EnumerationContext
   parseErrorCount: number
-  wiredSettings: AMT.Models.EthernetPortSettings
-  wirelessSettings: AMT.Models.EthernetPortSettings
+  wiredSettings?: AMT.Models.EthernetPortSettings
+  wirelessSettings?: AMT.Models.EthernetPortSettings
 }
 
 class PullData {
-  wiredSettings: AMT.Models.EthernetPortSettings
-  wirelessSettings: AMT.Models.EthernetPortSettings
+  wiredSettings?: AMT.Models.EthernetPortSettings
+  wirelessSettings?: AMT.Models.EthernetPortSettings
 }
 
 export const amt = new AMT.Messages()
@@ -61,11 +61,8 @@ export class SyncIP {
     context: {
       ...commonContext,
       taskName: 'syncip',
-      targetIPConfig: null,
       enumerationContext: '',
-      parseErrorCount: 0,
-      wiredSettings: null,
-      wirelessSettings: null
+      parseErrorCount: 0
     },
     initial: 'INITIAL',
     states: {
@@ -153,11 +150,11 @@ export class SyncIP {
       },
       FAILED: {
         type: 'final',
-        data: (context) => (Task.doneFail(context.taskName, context.statusMessage))
+        data: (context) => (doneFail(context.taskName, context.statusMessage))
       },
       SUCCESS: {
         type: 'final',
-        data: (context) => (Task.doneSuccess(context.taskName, context.statusMessage))
+        data: (context) => (doneSuccess(context.taskName, context.statusMessage))
       }
     }
   }, {
@@ -185,10 +182,7 @@ export class SyncIP {
     if (!settings) {
       throw new Error(`invalid response: ${JSON.stringify(rsp)}`)
     }
-    const pullData: PullData = {
-      wiredSettings: null,
-      wirelessSettings: null
-    }
+    const pullData: PullData = { }
     // settings might be a single entry or an array
     // set it up for processing as an array
     let settingsArray: any[]
@@ -213,15 +207,15 @@ export class SyncIP {
   }
 
   async putEthernetPortSettings (context: SyncIPContext): Promise<string> {
-    let statusMessage: string
+    let statusMessage: string = ''
     if (!context.wiredSettings) {
       statusMessage = MessageNoWiredSettingsOnDevice
     } else if (context.wirelessSettings != null && context.wiredSettings.MACAddress == null) {
       statusMessage = MessageWirelessOnly
-    } else if (context.wiredSettings.IPAddress === context.targetIPConfig.ipAddress) {
+    } else if (context.wiredSettings.IPAddress === context.targetIPConfig?.ipAddress) {
       statusMessage = MessageAlreadySynchronized
     }
-    if (statusMessage) {
+    if (statusMessage !== '') {
       const err = new Error(statusMessage)
       return await new Promise<string>((resolve, reject) => { reject(err) })
     }
@@ -230,22 +224,22 @@ export class SyncIP {
     const settingsToPut = {
       ...context.wiredSettings
     }
-    if (context.wiredSettings.DHCPEnabled) {
+    if (context.wiredSettings?.DHCPEnabled) {
       settingsToPut.IpSyncEnabled = true
       settingsToPut.SharedStaticIp = false
-      settingsToPut.IPAddress = null
-      settingsToPut.SubnetMask = null
-      settingsToPut.DefaultGateway = null
-      settingsToPut.PrimaryDNS = null
-      settingsToPut.SecondaryDNS = null
+      // settingsToPut.IPAddress = null
+      // settingsToPut.SubnetMask = null
+      // settingsToPut.DefaultGateway = null
+      // settingsToPut.PrimaryDNS = null
+      // settingsToPut.SecondaryDNS = null
     } else {
       settingsToPut.IpSyncEnabled = false
       settingsToPut.SharedStaticIp = false
-      settingsToPut.IPAddress = context.targetIPConfig.ipAddress
-      settingsToPut.SubnetMask = context.targetIPConfig.netmask || settingsToPut.SubnetMask
-      settingsToPut.DefaultGateway = context.targetIPConfig.gateway || settingsToPut.DefaultGateway
-      settingsToPut.PrimaryDNS = context.targetIPConfig.primaryDns || settingsToPut.PrimaryDNS
-      settingsToPut.SecondaryDNS = context.targetIPConfig.secondaryDns || settingsToPut.SecondaryDNS
+      settingsToPut.IPAddress = context.targetIPConfig?.ipAddress
+      settingsToPut.SubnetMask = context.targetIPConfig?.netmask ?? settingsToPut.SubnetMask
+      settingsToPut.DefaultGateway = context.targetIPConfig?.gateway ?? settingsToPut.DefaultGateway
+      settingsToPut.PrimaryDNS = context.targetIPConfig?.primaryDns ?? settingsToPut.PrimaryDNS
+      settingsToPut.SecondaryDNS = context.targetIPConfig?.secondaryDns ?? settingsToPut.SecondaryDNS
     }
 
     logger.debug(`putting wired settings: ${JSON.stringify(settingsToPut)}`)
@@ -255,6 +249,6 @@ export class SyncIP {
       throw new Error(`invalid response: ${JSON.stringify(rsp)}`)
     }
     // interestingly, the ipAddress that was put is not in the response
-    return context.targetIPConfig.ipAddress
+    return context.targetIPConfig!.ipAddress
   }
 }

@@ -3,15 +3,17 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { DomainsTable } from './domains'
-import { DUPLICATE_DOMAIN_FAILED, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP, CONCURRENCY_MESSAGE } from '../../../utils/constants'
-import { type AMTDomain } from '../../../models'
-import PostgresDb from '..'
+import { DomainsTable } from './domains.js'
+import { DUPLICATE_DOMAIN_FAILED, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP, CONCURRENCY_MESSAGE } from '../../../utils/constants.js'
+import { type AMTDomain } from '../../../models/index.js'
+import PostgresDb from '../index.js'
+import { jest } from '@jest/globals'
+import { type SpyInstance, spyOn } from 'jest-mock'
 
 describe('domains tests', () => {
   let db: PostgresDb
   let domainsTable: DomainsTable
-  let querySpy: jest.SpyInstance
+  let querySpy: SpyInstance<any>
   let amtDomain: AMTDomain
   const profileName = 'profileName'
   beforeEach(() => {
@@ -28,7 +30,7 @@ describe('domains tests', () => {
 
     db = new PostgresDb('')
     domainsTable = new DomainsTable(db)
-    querySpy = jest.spyOn(domainsTable.db, 'query')
+    querySpy = spyOn(domainsTable.db, 'query')
   })
   afterEach(() => {
     jest.clearAllMocks()
@@ -144,7 +146,7 @@ describe('domains tests', () => {
   })
   describe('Insert', () => {
     test('should return ciraconfig when successfully inserted', async () => {
-      const getByName = jest.spyOn(domainsTable, 'getByName')
+      const getByName = spyOn(domainsTable, 'getByName')
       querySpy.mockResolvedValueOnce({ rows: [{ amtDomain }], command: '', fields: null, rowCount: 1, oid: 0 })
       getByName.mockResolvedValueOnce(amtDomain)
       const result = await domainsTable.insert(amtDomain)
@@ -166,7 +168,7 @@ describe('domains tests', () => {
     })
 
     test('should return null when insert fails', async () => {
-      const getByName = jest.spyOn(domainsTable, 'getByName')
+      const getByName = spyOn(domainsTable, 'getByName')
       querySpy.mockResolvedValueOnce({ rows: [{ amtDomain }], command: '', fields: null, rowCount: 0, oid: 0 })
       getByName.mockResolvedValueOnce(amtDomain)
       const result = await domainsTable.insert(amtDomain)
@@ -200,7 +202,7 @@ describe('domains tests', () => {
 
   describe('Update', () => {
     test('should get a domain when device updates with change', async () => {
-      const getByName = jest.spyOn(domainsTable, 'getByName')
+      const getByName = spyOn(domainsTable, 'getByName')
       querySpy.mockResolvedValueOnce({ rows: [{ amtDomain }], command: '', fields: null, rowCount: 1, oid: 0 })
       getByName.mockResolvedValueOnce(amtDomain)
       const result = await domainsTable.update(amtDomain)
@@ -232,7 +234,7 @@ describe('domains tests', () => {
     })
     test('should NOT update when concurrency error', async () => {
       querySpy.mockResolvedValueOnce({ rows: [], rowCount: 0 })
-      const getByNameSpy = jest.spyOn(domainsTable, 'getByName')
+      const getByNameSpy = spyOn(domainsTable, 'getByName')
       getByNameSpy.mockResolvedValue(amtDomain)
       await expect(domainsTable.update(amtDomain)).rejects.toThrow(CONCURRENCY_MESSAGE)
     })

@@ -3,25 +3,33 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { v4 as uuid } from 'uuid'
-import { devices } from '../WebSocketListener'
-import { Environment } from '../utils/Environment'
-import { config } from '../test/helper/Config'
-import { ClientAction } from '../models/RCS.Config'
-import { type WiFiConfigEvent, WiFiConfiguration } from './wifiNetworkConfiguration'
+import { randomUUID } from 'node:crypto'
+import { devices } from '../devices.js'
+import { Environment } from '../utils/Environment.js'
+import { config } from '../test/helper/Config.js'
+import { ClientAction } from '../models/RCS.Config.js'
+import { type WiFiConfigEvent as WiFiConfigEventType, type WiFiConfiguration as WiFiConfigurationType } from './wifiNetworkConfiguration.js'
 import { interpret } from 'xstate'
-import { HttpHandler } from '../HttpHandler'
-import * as common from './common'
+import { HttpHandler } from '../HttpHandler.js'
 import { AMT, CIM } from '@open-amt-cloud-toolkit/wsman-messages'
+import { jest } from '@jest/globals'
+import { spyOn } from 'jest-mock'
 
-const clientId = uuid()
+const invokeWsmanCallSpy = jest.fn()
+const invokeEnterpriseAssistantCallSpy = jest.fn()
+jest.unstable_mockModule('./common.js', () => ({
+  invokeWsmanCall: invokeWsmanCallSpy,
+  invokeEnterpriseAssistantCall: invokeEnterpriseAssistantCallSpy
+}))
+const { WiFiConfiguration } = await import('./wifiNetworkConfiguration.js')
+
+const clientId = randomUUID()
 Environment.Config = config
 describe('WiFi Network Configuration', () => {
   let config
   let currentStateIndex: number
-  let wifiConfiguration: WiFiConfiguration
+  let wifiConfiguration: WiFiConfigurationType
   let context
-  let invokeWsmanCallSpy
   let wifiProfile
 
   beforeEach(() => {
@@ -73,13 +81,13 @@ describe('WiFi Network Configuration', () => {
       connectionParams: {
         guid: '4c4c4544-004b-4210-8033-b6c04f504633',
         port: 16992,
-        digestChallenge: null,
+        digestChallenge: {},
         username: 'admin',
         password: 'P@ssw0rd'
       },
       uuid: '4c4c4544-004b-4210-8033-b6c04f504633',
       messageId: 1
-    }
+    } as any
     wifiConfiguration = new WiFiConfiguration()
     context = {
       amtProfile: null,
@@ -124,7 +132,6 @@ describe('WiFi Network Configuration', () => {
         }
       ]
     }
-    invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue(null)
     currentStateIndex = 0
     config = {
       services: {
@@ -471,7 +478,7 @@ describe('WiFi Network Configuration', () => {
 
     it('should eventually reach "FAILED" state', (done) => {
       devices[context.clientId].trustedRootCertificateResponse = null
-      devices[context.clientId].trustedRootCertificate = null
+      devices[context.clientId].trustedRootCertificate = null as any
       context.wifiProfile = wifiProfile
       config.services['add-radius-server-root-certificate'] = Promise.reject(new Error())
       const mockNetworkConfigurationMachine = wifiConfiguration.machine.withConfig(config).withContext(context)
@@ -788,10 +795,10 @@ describe('WiFi Network Configuration', () => {
       wifiConfiguration.dbFactory = {
         getDb: async () => mockDb
       } as any
-      const getByNameSpy = jest.spyOn(mockDb.wirelessProfiles, 'getByName').mockReturnValue(expectedProfile)
-      const getPSKPassphraseSpy = jest.spyOn(wifiConfiguration.configurator.secretsManager, 'getSecretAtPath').mockImplementation(async () => ({ PSK_PASSPHRASE: 'Intel@123' }))
+      const getByNameSpy = spyOn(mockDb.wirelessProfiles, 'getByName').mockReturnValue(expectedProfile)
+      const getPSKPassphraseSpy = spyOn(wifiConfiguration.configurator.secretsManager, 'getSecretAtPath').mockImplementation(async () => ({ PSK_PASSPHRASE: 'Intel@123' }))
 
-      await wifiConfiguration.getWifiProfile(context, null)
+      await wifiConfiguration.getWifiProfile(context, null as any)
       expect(context.wifiProfile).toBe(expectedProfile)
       expect(getPSKPassphraseSpy).toHaveBeenCalled()
       expect(getByNameSpy).toHaveBeenCalled()
@@ -819,11 +826,11 @@ describe('WiFi Network Configuration', () => {
       wifiConfiguration.dbFactory = {
         getDb: async () => mockDb
       } as any
-      const getByNameSpy = jest.spyOn(mockDb.wirelessProfiles, 'getByName').mockReturnValue(expectedProfile)
-      const getIEEE8021xProfileByNameSpy = jest.spyOn(mockDb.ieee8021xProfiles, 'getByName').mockReturnValue(ieee8021xProfile)
-      const getPSKPassphraseSpy = jest.spyOn(wifiConfiguration.configurator.secretsManager, 'getSecretAtPath').mockImplementation(async () => ({ PSK_PASSPHRASE: 'Intel@123' }))
+      const getByNameSpy = spyOn(mockDb.wirelessProfiles, 'getByName').mockReturnValue(expectedProfile)
+      const getIEEE8021xProfileByNameSpy = spyOn(mockDb.ieee8021xProfiles, 'getByName').mockReturnValue(ieee8021xProfile)
+      const getPSKPassphraseSpy = spyOn(wifiConfiguration.configurator.secretsManager, 'getSecretAtPath').mockImplementation(async () => ({ PSK_PASSPHRASE: 'Intel@123' }))
 
-      await wifiConfiguration.getWifiProfile(context, null)
+      await wifiConfiguration.getWifiProfile(context, null as any)
       expect(context.wifiProfile).toBe(expectedProfile)
       expect(getPSKPassphraseSpy).toHaveBeenCalled()
       expect(getByNameSpy).toHaveBeenCalled()
@@ -833,8 +840,8 @@ describe('WiFi Network Configuration', () => {
 
   describe('WiFi Port Configuration Service', () => {
     test('should get WiFi Port Configuration Service', async () => {
-      const WiFiPortConfigurationServiceSpy = jest.spyOn(context.amt.WiFiPortConfigurationService, 'Get').mockReturnValue('done')
-      await wifiConfiguration.getWiFiPortConfigurationService(context, null)
+      const WiFiPortConfigurationServiceSpy = spyOn(context.amt.WiFiPortConfigurationService, 'Get').mockReturnValue('done')
+      await wifiConfiguration.getWiFiPortConfigurationService(context, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
       expect(WiFiPortConfigurationServiceSpy).toHaveBeenCalled()
     })
@@ -845,8 +852,8 @@ describe('WiFi Network Configuration', () => {
           Body: { AMT_WiFiPortConfigurationService: { localProfileSynchronizationEnabled: 1 } }
         }
       }
-      const WiFiPortConfigurationServiceSpy = jest.spyOn(context.amt.WiFiPortConfigurationService, 'Put').mockReturnValue('done')
-      await wifiConfiguration.putWiFiPortConfigurationService(context, null)
+      const WiFiPortConfigurationServiceSpy = spyOn(context.amt.WiFiPortConfigurationService, 'Put').mockReturnValue('done')
+      await wifiConfiguration.putWiFiPortConfigurationService(context, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
       expect(WiFiPortConfigurationServiceSpy).toHaveBeenCalled()
     })
@@ -868,8 +875,8 @@ describe('WiFi Network Configuration', () => {
           }
         }
       }
-      const addWiFiSettingsSpy = jest.spyOn(context.amt.WiFiPortConfigurationService, 'AddWiFiSettings').mockReturnValue('done')
-      await wifiConfiguration.addWifiConfigs(context, null)
+      const addWiFiSettingsSpy = spyOn(context.amt.WiFiPortConfigurationService, 'AddWiFiSettings').mockReturnValue('done')
+      await wifiConfiguration.addWifiConfigs(context, null as any)
       expect(addWiFiSettingsSpy).toHaveBeenCalledTimes(1)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
@@ -908,8 +915,8 @@ describe('WiFi Network Configuration', () => {
           }
         }
       }
-      const addWiFiSettingsSpy = jest.spyOn(context.amt.WiFiPortConfigurationService, 'AddWiFiSettings').mockReturnValue('done')
-      await wifiConfiguration.addWifiConfigs(context, null)
+      const addWiFiSettingsSpy = spyOn(context.amt.WiFiPortConfigurationService, 'AddWiFiSettings').mockReturnValue('done')
+      await wifiConfiguration.addWifiConfigs(context, null as any)
       expect(addWiFiSettingsSpy).toHaveBeenCalledTimes(1)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
@@ -917,8 +924,8 @@ describe('WiFi Network Configuration', () => {
 
   describe('CIM WiFi Port', () => {
     test('should update wifi port', async () => {
-      const wifiPortSpy = jest.spyOn(context.cim.WiFiPort, 'RequestStateChange').mockReturnValue('done')
-      await wifiConfiguration.updateWifiPort(context, null)
+      const wifiPortSpy = spyOn(context.cim.WiFiPort, 'RequestStateChange').mockReturnValue('done')
+      await wifiConfiguration.updateWifiPort(context, null as any)
       expect(wifiPortSpy).toHaveBeenCalled()
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
@@ -926,42 +933,42 @@ describe('WiFi Network Configuration', () => {
 
   describe('certificates', () => {
     it('should generate a key pair', async () => {
-      context.amt = { PublicKeyManagementService: { GenerateKeyPair: jest.fn().mockResolvedValue({}) } }
-      await wifiConfiguration.generateKeyPair(context, null)
+      context.amt = { PublicKeyManagementService: { GenerateKeyPair: jest.fn<any>().mockResolvedValue({}) } }
+      await wifiConfiguration.generateKeyPair(context, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
 
     it('should send a message to pull public private key pairs', async () => {
-      context.amt = { PublicPrivateKeyPair: { Pull: jest.fn().mockResolvedValue({}) } }
+      context.amt = { PublicPrivateKeyPair: { Pull: jest.fn<any>().mockResolvedValue({}) } }
       context.message = { Envelope: { Body: { EnumeratorResponse: { EnumeratorContext: 'abc' } } } }
-      await wifiConfiguration.pullPublicPrivateKeyPair(context, null)
+      await wifiConfiguration.pullPublicPrivateKeyPair(context, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
 
     it('should send a message to get enumerate public private key pairs', async () => {
       context.message = { Envelope: { Body: { GenerateKeyPair_OUTPUT: { KeyPair: { ReferenceParameters: { SelectorSet: { Selector: { _: 'xyz' } } } } } } } }
-      context.amt = { PublicPrivateKeyPair: { Enumerate: jest.fn().mockResolvedValue({}) } }
-      await wifiConfiguration.enumeratePublicPrivateKeyPair(context, null)
+      context.amt = { PublicPrivateKeyPair: { Enumerate: jest.fn<any>().mockResolvedValue({}) } }
+      await wifiConfiguration.enumeratePublicPrivateKeyPair(context, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
 
     it('should addCertificate', async () => {
       context.message = { Envelope: { Body: { PullResponse: { Items: { AMT_PublicPrivateKeyPair: {} } } } } }
-      await wifiConfiguration.addCertificate(context, { data: { response: { certificate: 'abcde' } } } as WiFiConfigEvent)
+      await wifiConfiguration.addCertificate(context, { data: { response: { certificate: 'abcde' } } } as WiFiConfigEventType)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
 
     it('should send a WSMan call to add radius server root cert', async () => {
       context.message = { Envelope: { Body: 'abcd' } }
       context.eaResponse = { rootcert: '1234' }
-      await wifiConfiguration.addRadiusServerRootCertificate(context, null)
+      await wifiConfiguration.addRadiusServerRootCertificate(context, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
 
     it('should send a message to sign CSR', async () => {
-      context.amt = { PublicKeyManagementService: { GeneratePKCS10RequestEx: jest.fn().mockResolvedValue({}) } }
+      context.amt = { PublicKeyManagementService: { GeneratePKCS10RequestEx: jest.fn<any>().mockResolvedValue({}) } }
       context.message = { response: { csr: 'abc' } }
-      await wifiConfiguration.signCSR(context, null)
+      await wifiConfiguration.signCSR(context, null as any)
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
   })

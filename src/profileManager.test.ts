@@ -3,14 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type AMTConfiguration } from './models'
-import { ProfileManager } from './ProfileManager'
-import { type ILogger } from './interfaces/ILogger'
-import Logger from './Logger'
-import { type IProfilesTable } from './interfaces/database/IProfilesDb'
-import { type CIRAConfig, ClientAction, type Ieee8021xConfig } from './models/RCS.Config'
-import { config } from './test/helper/Config'
-import { Environment } from './utils/Environment'
+import { type AMTConfiguration } from './models/index.js'
+import { ProfileManager } from './ProfileManager.js'
+import { type ILogger } from './interfaces/ILogger.js'
+import Logger from './Logger.js'
+import { type IProfilesTable } from './interfaces/database/IProfilesDb.js'
+import { type CIRAConfig, ClientAction, type Ieee8021xConfig } from './models/RCS.Config.js'
+import { config } from './test/helper/Config.js'
+import { Environment } from './utils/Environment.js'
 
 Environment.Config = config
 const logger: ILogger = new Logger('ProfileManagerTests')
@@ -85,10 +85,10 @@ const amtConfigurations: AMTConfiguration[] = [
 ]
 const profileStub: IProfilesTable = {
   getCount: async () => 2,
-  getByName: async (name) => amtConfigurations.find(c => c.profileName === name),
+  getByName: async (name) => amtConfigurations.find(c => c.profileName === name) as any,
   get: async (top, skip) => amtConfigurations,
-  getCiraConfigForProfile: async (ciraConfigName) => ciraConfigurations.find(c => c.configName === ciraConfigName),
-  get8021XConfigForProfile: async (profileName) => ieee8021xConfigurations.find(p => p.profileName === profileName),
+  getCiraConfigForProfile: async (ciraConfigName) => ciraConfigurations.find(c => c.configName === ciraConfigName) as any,
+  get8021XConfigForProfile: async (profileName) => ieee8021xConfigurations.find(p => p.profileName === profileName) as any,
   delete: async (profileName) => true,
   insert: async (amtConfig: AMTConfiguration) => {
     amtConfigurations.push(amtConfig)
@@ -105,21 +105,21 @@ const profileStub: IProfilesTable = {
   }
 }
 test('test if profile exists', () => {
-  const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub)
+  const profileManager: ProfileManager = new ProfileManager(logger, null as any, profileStub)
 
   const actual = profileManager.doesProfileExist('profile 1', '')
   expect(actual).toBeTruthy()
 })
 
 test('test if profile does not exists', async () => {
-  const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub)
+  const profileManager: ProfileManager = new ProfileManager(logger, null as any, profileStub)
 
   const actual = await profileManager.doesProfileExist('profile 5', '')
   expect(actual).toBeFalsy()
 })
 
 test('retrieve activation based on profile', async () => {
-  const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub)
+  const profileManager: ProfileManager = new ProfileManager(logger, null as any, profileStub)
 
   const expected = ClientAction.ADMINCTLMODE
   const actual = await profileManager.getActivationMode('profile 2', '')
@@ -127,7 +127,7 @@ test('retrieve activation based on profile', async () => {
 })
 
 test('retrieve activation based on profile', async () => {
-  const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub, Environment.Config)
+  const profileManager: ProfileManager = new ProfileManager(logger, null as any, profileStub, Environment.Config)
 
   const expected = ClientAction.CLIENTCTLMODE
   const actual = await profileManager.getActivationMode('profile 1', '')
@@ -135,15 +135,15 @@ test('retrieve activation based on profile', async () => {
 })
 
 test('retrieve configuration for cira', async () => {
-  const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub, Environment.Config)
+  const profileManager: ProfileManager = new ProfileManager(logger, null as any, profileStub, Environment.Config)
 
   const expected = 'ciraconfig1'
-  const actual = await profileManager.getCiraConfiguration('profile 2', '')
+  const actual: any = await profileManager.getCiraConfiguration('profile 2', '')
   expect(actual.configName).toEqual(expected)
 })
 
 test('retrieve amt password', async () => {
-  const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub)
+  const profileManager: ProfileManager = new ProfileManager(logger, null as any, profileStub)
 
   const expected = '<StrongPassword1!>'
   const profile = 'profile 1'
@@ -153,7 +153,7 @@ test('retrieve amt password', async () => {
 })
 
 test('retrieve amt password auto generated', async () => {
-  const profileManager: ProfileManager = new ProfileManager(logger, null, profileStub, Environment.Config)
+  const profileManager: ProfileManager = new ProfileManager(logger, null as any, profileStub, Environment.Config)
 
   const profile = 'profile 2'
   const expected = '<StrongPassword2!>'

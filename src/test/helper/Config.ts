@@ -3,17 +3,18 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { v4 as uuid } from 'uuid'
-import { type RPSConfig } from '../../models'
-import { devices } from '../../WebSocketListener'
+import { randomUUID } from 'node:crypto'
+import { type RPSConfig } from '../../models/index.js'
+import { jest } from '@jest/globals'
+import { devices } from '../../devices.js'
 
 export function setupTestClient (): string {
-  const clientId = uuid()
+  const clientId = randomUUID()
   devices[clientId] = {
     ClientId: clientId,
     ClientSocket: { send: jest.fn() } as any,
     unauthCount: 0
-  }
+  } as any
   return clientId
 }
 

@@ -3,13 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type IProfilesWifiConfigsTable } from '../../../interfaces/database/IProfileWifiConfigsDb'
-import { type ProfileWifiConfigs } from '../../../models/RCS.Config'
-import { API_UNEXPECTED_EXCEPTION } from '../../../utils/constants'
-import { RPSError } from '../../../utils/RPSError'
+import { type IProfilesWifiConfigsTable } from '../../../interfaces/database/IProfileWifiConfigsDb.js'
+import { type ProfileWifiConfigs } from '../../../models/RCS.Config.js'
+import { API_UNEXPECTED_EXCEPTION } from '../../../utils/constants.js'
+import { RPSError } from '../../../utils/RPSError.js'
 import format from 'pg-format'
-import type PostgresDb from '..'
-import { PostgresErr } from '../errors'
+import type PostgresDb from '../index.js'
+import { PostgresErr } from '../errors.js'
 
 export class ProfilesWifiConfigsTable implements IProfilesWifiConfigsTable {
   db: PostgresDb
@@ -51,13 +51,18 @@ export class ProfilesWifiConfigsTable implements IProfilesWifiConfigsTable {
       profiles_wirelessconfigs (wireless_profile_name, profile_name, priority, tenant_id)
       VALUES %L`, configs))
 
-      return wifiProfilesQueryResults.rowCount > 0
+      if (wifiProfilesQueryResults?.rowCount) {
+        if (wifiProfilesQueryResults.rowCount > 0) {
+          return true
+        }
+      }
     } catch (error) {
       if (error.code === PostgresErr.C23_FOREIGN_KEY_VIOLATION) {
         throw new RPSError(error.detail, 'Foreign key constraint violation')
       }
       throw new RPSError(API_UNEXPECTED_EXCEPTION(profileName))
     }
+    return false
   }
 
   /**
@@ -71,6 +76,12 @@ export class ProfilesWifiConfigsTable implements IProfilesWifiConfigsTable {
     FROM profiles_wirelessconfigs
     WHERE profile_name = $1 and tenant_id = $2`, [profileName, tenantId])
 
-    return deleteProfileWifiResults.rowCount > 0
+    if (deleteProfileWifiResults?.rowCount) {
+      if (deleteProfileWifiResults.rowCount > 0) {
+        return true
+      }
+    }
+
+    return false
   }
 }

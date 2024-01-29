@@ -3,16 +3,18 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import PostgresDb from '..'
-import { type AMTConfiguration, AMTUserConsent } from '../../../models'
-import { PROFILE_INSERTION_FAILED_DUPLICATE, PROFILE_INSERTION_CIRA_CONSTRAINT, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP, PROFILE_INSERTION_GENERIC_CONSTRAINT, CONCURRENCY_MESSAGE } from '../../../utils/constants'
-import { RPSError } from '../../../utils/RPSError'
-import { ProfilesTable } from './profiles'
+import PostgresDb from '../index.js'
+import { type AMTConfiguration, AMTUserConsent } from '../../../models/index.js'
+import { PROFILE_INSERTION_FAILED_DUPLICATE, PROFILE_INSERTION_CIRA_CONSTRAINT, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP, PROFILE_INSERTION_GENERIC_CONSTRAINT, CONCURRENCY_MESSAGE } from '../../../utils/constants.js'
+import { RPSError } from '../../../utils/RPSError.js'
+import { ProfilesTable } from './profiles.js'
+import { jest } from '@jest/globals'
+import { type SpyInstance, spyOn } from 'jest-mock'
 
 describe('profiles tests', () => {
   let db: PostgresDb
   let profilesTable: ProfilesTable
-  let querySpy: jest.SpyInstance
+  let querySpy: SpyInstance<any>
   let amtConfig: AMTConfiguration
   const profileName = 'profileName'
   const tenantId = 'tenantId'
@@ -37,10 +39,10 @@ describe('profiles tests', () => {
       solEnabled: true,
       tlsSigningAuthority: null,
       ieee8021xProfileName: null
-    }
+    } as any
     db = new PostgresDb('')
     profilesTable = new ProfilesTable(db)
-    querySpy = jest.spyOn(profilesTable.db, 'query')
+    querySpy = spyOn(profilesTable.db, 'query')
   })
   afterEach(() => {
     jest.clearAllMocks()
@@ -182,14 +184,14 @@ describe('profiles tests', () => {
       expect(result).toBeNull()
     })
     test('should get ciraconfig for profile', async () => {
-      const ciraConfigSpy = jest.spyOn(db.ciraConfigs, 'getByName')
+      const ciraConfigSpy = spyOn(db.ciraConfigs, 'getByName')
       ciraConfigSpy.mockResolvedValue({} as any)
       const result = await profilesTable.getCiraConfigForProfile(profileName, '')
       expect(result).toStrictEqual({})
       expect(ciraConfigSpy).toHaveBeenCalledWith(profileName, '')
     })
     test('should get 8021X config for profile', async () => {
-      const ciraConfigSpy = jest.spyOn(db.ieee8021xProfiles, 'getByName')
+      const ciraConfigSpy = spyOn(db.ieee8021xProfiles, 'getByName')
       ciraConfigSpy.mockResolvedValue({} as any)
       const result = await profilesTable.get8021XConfigForProfile(profileName, '')
       expect(result).toStrictEqual({})
@@ -199,7 +201,7 @@ describe('profiles tests', () => {
   describe('Delete', () => {
     test('should delete', async () => {
       querySpy.mockResolvedValueOnce({ rows: [], rowCount: 1 })
-      const wirelessConfigSpy = jest.spyOn(db.profileWirelessConfigs, 'deleteProfileWifiConfigs')
+      const wirelessConfigSpy = spyOn(db.profileWirelessConfigs, 'deleteProfileWifiConfigs')
       wirelessConfigSpy.mockResolvedValue(true)
       const result = await profilesTable.delete(profileName, tenantId)
       expect(result).toBeTruthy()
@@ -212,7 +214,7 @@ describe('profiles tests', () => {
     })
     test('should NOT delete', async () => {
       querySpy.mockResolvedValueOnce({ rows: [], rowCount: 0 })
-      const wirelessConfigSpy = jest.spyOn(db.profileWirelessConfigs, 'deleteProfileWifiConfigs')
+      const wirelessConfigSpy = spyOn(db.profileWirelessConfigs, 'deleteProfileWifiConfigs')
       wirelessConfigSpy.mockResolvedValue(false)
       const result = await profilesTable.delete(profileName)
       expect(result).toBe(false)
@@ -226,9 +228,9 @@ describe('profiles tests', () => {
     })
     test('should insert with wifi configs', async () => {
       querySpy.mockResolvedValueOnce({ rows: [], rowCount: 1 })
-      const profileWirelessConfigsSpy = jest.spyOn(db.profileWirelessConfigs, 'createProfileWifiConfigs')
+      const profileWirelessConfigsSpy = spyOn(db.profileWirelessConfigs, 'createProfileWifiConfigs')
       profileWirelessConfigsSpy.mockResolvedValue(true)
-      const getByNameSpy = jest.spyOn(profilesTable, 'getByName')
+      const getByNameSpy = spyOn(profilesTable, 'getByName')
       amtConfig.wifiConfigs = [{} as any]
       getByNameSpy.mockResolvedValue(amtConfig)
       const result = await profilesTable.insert(amtConfig)
@@ -270,9 +272,9 @@ describe('profiles tests', () => {
     })
     test('should insert without wificonfigs', async () => {
       querySpy.mockResolvedValueOnce({ rows: [], rowCount: 1 })
-      const profileWirelessConfigsSpy = jest.spyOn(db.profileWirelessConfigs, 'createProfileWifiConfigs')
+      const profileWirelessConfigsSpy = spyOn(db.profileWirelessConfigs, 'createProfileWifiConfigs')
       profileWirelessConfigsSpy.mockResolvedValue(true)
-      const getByNameSpy = jest.spyOn(profilesTable, 'getByName')
+      const getByNameSpy = spyOn(profilesTable, 'getByName')
       getByNameSpy.mockResolvedValue(amtConfig)
       const result = await profilesTable.insert(amtConfig)
 
@@ -332,7 +334,7 @@ describe('profiles tests', () => {
   describe('Update', () => {
     test('should update', async () => {
       querySpy.mockResolvedValueOnce({ rows: [], rowCount: 1 })
-      const getByNameSpy = jest.spyOn(profilesTable, 'getByName')
+      const getByNameSpy = spyOn(profilesTable, 'getByName')
       getByNameSpy.mockResolvedValue(amtConfig)
 
       const result = await profilesTable.update(amtConfig)
@@ -372,9 +374,9 @@ describe('profiles tests', () => {
     })
     test('should update with wificonfigs', async () => {
       querySpy.mockResolvedValueOnce({ rows: [], rowCount: 1 })
-      const profileWirelessConfigsSpy = jest.spyOn(db.profileWirelessConfigs, 'createProfileWifiConfigs')
+      const profileWirelessConfigsSpy = spyOn(db.profileWirelessConfigs, 'createProfileWifiConfigs')
       profileWirelessConfigsSpy.mockResolvedValue(true)
-      const getByNameSpy = jest.spyOn(profilesTable, 'getByName')
+      const getByNameSpy = spyOn(profilesTable, 'getByName')
       amtConfig.wifiConfigs = [{} as any]
       getByNameSpy.mockResolvedValue(amtConfig)
 
@@ -424,7 +426,7 @@ describe('profiles tests', () => {
     })
     test('should NOT update when concurrency error', async () => {
       querySpy.mockResolvedValueOnce({ rows: [], rowCount: 0 })
-      const getByNameSpy = jest.spyOn(profilesTable, 'getByName')
+      const getByNameSpy = spyOn(profilesTable, 'getByName')
       getByNameSpy.mockResolvedValue(amtConfig)
       await expect(profilesTable.update(amtConfig)).rejects.toThrow(CONCURRENCY_MESSAGE)
     })

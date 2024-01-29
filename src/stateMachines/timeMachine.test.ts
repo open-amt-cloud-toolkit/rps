@@ -4,17 +4,21 @@
  **********************************************************************/
 
 import { interpret } from 'xstate'
-import { HttpHandler } from '../HttpHandler'
-import { devices } from '../WebSocketListener'
-import * as common from './common'
-import { TimeSync } from './timeMachine'
+import { HttpHandler } from '../HttpHandler.js'
+import { devices } from '../devices.js'
+import { jest } from '@jest/globals'
+import { type TimeSync as TimeSyncType } from './timeMachine.js'
+const invokeWsmanCallSpy = jest.fn<any>()
+jest.unstable_mockModule('./common.js', () => ({
+  invokeWsmanCall: invokeWsmanCallSpy
+}))
+const { TimeSync } = await import('./timeMachine.js')
 
 describe('TLS State Machine', () => {
-  let timeMachine: TimeSync
+  let timeMachine: TimeSyncType
   let config
   let context
   let currentStateIndex = 0
-  let invokeWsmanCallSpy: jest.SpyInstance
 
   const clientId = '4c4c4544-004b-4210-8033-b6c04f504633'
   beforeEach(() => {
@@ -34,14 +38,13 @@ describe('TLS State Machine', () => {
       status: 'success'
     }
     timeMachine = new TimeSync()
-    invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue(null)
     config = {
       services: {
         'get-low-accuracy-time-synch': Promise.resolve({
-          Envelope: { Body: { GetLowAccuracyTimeSynch_OUTPUT: { ReturnValue: 0 } } }
+          Envelope: { Body: { GetLowAccuracyTimeSynchOutput: { ReturnValue: 0 } } }
         }),
         'set-high-accuracy-time-synch': Promise.resolve({
-          Envelope: { Body: { SetHighAccuracyTimeSynch_OUTPUT: { ReturnValue: 0 } } }
+          Envelope: { Body: { SetHighAccuracyTimeSynchOutput: { ReturnValue: 0 } } }
         })
       }
     }
@@ -68,7 +71,7 @@ describe('TLS State Machine', () => {
 
   it('should setHighAccuracyTimeSynch', async () => {
     context.message = {
-      Envelope: { Body: { GetLowAccuracyTimeSynch_OUTPUT: { Ta0: 123456 } } }
+      Envelope: { Body: { GetLowAccuracyTimeSynchOutput: { Ta0: 123456 } } }
     }
     await timeMachine.setHighAccuracyTimeSynch(context)
     expect(invokeWsmanCallSpy).toHaveBeenCalled()

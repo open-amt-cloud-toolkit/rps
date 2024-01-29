@@ -3,13 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { createSpyObj } from '../../../test/helper/jest'
-import { deleteIEEE8021xProfile } from './delete'
+import { createSpyObj } from '../../../test/helper/jest.js'
+import { deleteIEEE8021xProfile } from './delete.js'
+import { jest } from '@jest/globals'
+import { type SpyInstance, spyOn } from 'jest-mock'
 
 describe('checks deleteIEEE8021xProfile', () => {
   let resSpy
   let req
-  let deleteSpy: jest.SpyInstance
+  let deleteSpy: SpyInstance<any>
   beforeEach(() => {
     resSpy = createSpyObj('Response', ['status', 'json', 'end', 'send'])
     req = {
@@ -20,8 +22,8 @@ describe('checks deleteIEEE8021xProfile', () => {
       profileName: 'abcd',
       params: { }
     }
-    jest.spyOn(req.secretsManager, 'deleteSecretAtPath').mockResolvedValue({})
-    deleteSpy = jest.spyOn(req.db.ieee8021xProfiles, 'delete').mockResolvedValue({})
+    spyOn(req.secretsManager, 'deleteSecretAtPath').mockResolvedValue({})
+    deleteSpy = spyOn(req.db.ieee8021xProfiles, 'delete').mockResolvedValue({})
     resSpy.status.mockReturnThis()
     resSpy.json.mockReturnThis()
     resSpy.send.mockReturnThis()
@@ -32,7 +34,7 @@ describe('checks deleteIEEE8021xProfile', () => {
     expect(resSpy.status).toHaveBeenCalledWith(204)
   })
   it('should handle not found', async () => {
-    deleteSpy = jest.spyOn(req.db.ieee8021xProfiles, 'delete').mockResolvedValue(null)
+    deleteSpy = spyOn(req.db.ieee8021xProfiles, 'delete').mockResolvedValue(null)
     await deleteIEEE8021xProfile(req, resSpy)
     expect(deleteSpy).toHaveBeenCalledTimes(1)
     expect(resSpy.status).toHaveBeenCalledWith(404)

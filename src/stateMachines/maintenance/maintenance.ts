@@ -4,16 +4,16 @@
  **********************************************************************/
 
 import { assign, createMachine, interpret, send } from 'xstate'
-import Logger from '../../Logger'
-import { devices } from '../../WebSocketListener'
-import { type Status } from '../../models/RCS.Config'
-import { SyncTime, type SyncTimeEvent } from './syncTime'
-import { SyncIP, type SyncIPEvent } from './syncIP'
-import { ChangePassword, type ChangePasswordEvent } from './changePassword'
-import * as TaskDefs from './doneResponse'
-import { SyncHostName, type SyncHostNameEvent } from './syncHostName'
-import { SyncDeviceInfo, type SyncDeviceInfoEvent } from './syncDeviceInfo'
-import ClientResponseMsg from '../../utils/ClientResponseMsg'
+import Logger from '../../Logger.js'
+import { devices } from '../../devices.js'
+import { type Status } from '../../models/RCS.Config.js'
+import { SyncTime, type SyncTimeEvent } from './syncTime.js'
+import { SyncIP, type SyncIPEvent } from './syncIP.js'
+import { ChangePassword, type ChangePasswordEvent } from './changePassword.js'
+import { type DoneResponse, StatusSuccess } from './doneResponse.js'
+import { SyncHostName, type SyncHostNameEvent } from './syncHostName.js'
+import { SyncDeviceInfo, type SyncDeviceInfoEvent } from './syncDeviceInfo.js'
+import ClientResponseMsg from '../../utils/ClientResponseMsg.js'
 
 export type MaintenanceEvent =
   | ChangePasswordEvent
@@ -24,7 +24,7 @@ export type MaintenanceEvent =
 
 export interface MaintenanceContext {
   clientId: string
-  doneData: TaskDefs.DoneResponse
+  doneData: DoneResponse
 }
 
 // TODO: tech-debt - these should be in ClientResponseMsg, but the default export there makes it really weird
@@ -43,7 +43,7 @@ export class Maintenance {
     predictableActionArguments: true,
     context: {
       clientId: '',
-      doneData: null
+      doneData: { taskName: '', status: 'FAILED', message: 'Initialization' }
     },
     initial: 'INITIAL',
     states: {
@@ -133,17 +133,16 @@ export class Maintenance {
     }
   })
 
-  service = interpret(this.machine)
-    .onTransition((state) => {
-      logger.info(`maintenance: ${JSON.stringify(state.value)}`)
-      for (const k in state.children) {
-        state.children[k].subscribe((childState) => {
-          logger.info(`${k}: ${JSON.stringify(childState.value)}`)
-        })
-      }
-    })
+  service = interpret(this.machine).onTransition((state) => {
+    logger.info(`maintenance: ${JSON.stringify(state.value)}`)
+    for (const k in state.children) {
+      state.children[k].subscribe((childState) => {
+        logger.info(`${k}: ${JSON.stringify(childState.value)}`)
+      })
+    }
+  })
 
-  respondAfterDone (clientId: string, doneData: TaskDefs.DoneResponse): any {
+  respondAfterDone (clientId: string, doneData: DoneResponse): any {
     const clientObj = devices[clientId]
     // TODO: this is silly, where is the type/interface definition for these?
     let method: ClientRspMessageType
@@ -151,11 +150,11 @@ export class Maintenance {
     // and then 'another' status thingy to hold status from several optional activation
     // activities that aren't used here, but nonetheless are baked into the client API flow
     let actualStatusMsg: string
-    if (doneData.status === TaskDefs.StatusSuccess) {
+    if (doneData.status === StatusSuccess) {
       method = 'success'
       status = 'success'
       actualStatusMsg = `${doneData.taskName} completed succesfully`
-    } else if (doneData.status === TaskDefs.StatusFailed) {
+    } else {
       method = 'error'
       status = 'failed'
       actualStatusMsg = `${doneData.taskName} failed`
@@ -169,6 +168,8 @@ export class Maintenance {
     logger.info(`${clientId} ${actualStatusMsg}`)
     const rspMsg = ClientResponseMsg.get(clientId, null, method, status, JSON.stringify(taskStatus))
     const toSend = JSON.stringify(rspMsg)
-    clientObj.ClientSocket.send(toSend)
+    if (clientObj.ClientSocket != null) {
+      clientObj.ClientSocket.send(toSend)
+    }
   }
 }

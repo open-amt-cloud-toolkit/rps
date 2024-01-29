@@ -4,11 +4,11 @@
  **********************************************************************/
 
 import { type AMT, type CIM, Common, type IPS } from '@open-amt-cloud-toolkit/wsman-messages'
-import { type HttpHandler } from '../HttpHandler'
-import Logger from '../Logger'
+import { type HttpHandler } from '../HttpHandler.js'
+import Logger from '../Logger.js'
 import { assign, createMachine, interpret } from 'xstate'
-import { type AMTConfiguration, AMTRedirectionServiceEnabledStates, mapAMTUserConsent } from '../models'
-import { invokeWsmanCall } from './common'
+import { type AMTConfiguration, AMTRedirectionServiceEnabledStates, mapAMTUserConsent, AMTUserConsent } from '../models/index.js'
+import { invokeWsmanCall } from './common.js'
 
 export interface FeatureContext {
   clientId: string
@@ -19,7 +19,7 @@ export interface FeatureContext {
   isOptInServiceChanged: boolean
   statusMessage: string
   amtConfiguration: AMTConfiguration
-  httpHandler: HttpHandler
+  httpHandler: HttpHandler | null
   xmlMessage: string
   amt?: AMT.Messages
   cim?: CIM.Messages
@@ -43,7 +43,7 @@ export class FeaturesConfiguration {
     context: {
       clientId: '',
       httpHandler: null,
-      amtConfiguration: null,
+      amtConfiguration: { profileName: '', ciraConfigName: '', activation: '', tenantId: '' },
       AMT_RedirectionService: null,
       IPS_OptInService: null,
       CIM_KVMRedirectionSAP: null,
@@ -201,13 +201,13 @@ export class FeaturesConfiguration {
             context.CIM_KVMRedirectionSAP.EnabledState === Common.Models.CIM_KVM_REDIRECTION_SAP_ENABLED_STATE.EnabledButOffline
         )
 
-        if (context.amtConfiguration.solEnabled !== solEnabled) {
-          solEnabled = context.amtConfiguration.solEnabled
+        if (context.amtConfiguration?.solEnabled !== solEnabled) {
+          solEnabled = context.amtConfiguration?.solEnabled != null ? context.amtConfiguration.solEnabled : false
           isRedirectionChanged = true
         }
 
-        if (context.amtConfiguration.iderEnabled !== iderEnabled) {
-          iderEnabled = context.amtConfiguration.iderEnabled
+        if (context.amtConfiguration?.iderEnabled !== iderEnabled) {
+          iderEnabled = context.amtConfiguration?.iderEnabled != null ? context.amtConfiguration.iderEnabled : false
           isRedirectionChanged = true
         }
 
@@ -215,8 +215,8 @@ export class FeaturesConfiguration {
           isRedirectionChanged = true
         }
 
-        if (context.amtConfiguration.kvmEnabled !== kvmEnabled) {
-          cimKVMRedirectionSAP.EnabledState = context.amtConfiguration.kvmEnabled
+        if (context.amtConfiguration?.kvmEnabled !== kvmEnabled) {
+          cimKVMRedirectionSAP.EnabledState = context.amtConfiguration?.kvmEnabled
             ? Common.Models.AMT_REDIRECTION_SERVICE_ENABLE_STATE.Enabled
             : Common.Models.AMT_REDIRECTION_SERVICE_ENABLE_STATE.Disabled
           isRedirectionChanged = true
@@ -235,7 +235,8 @@ export class FeaturesConfiguration {
           amtRedirectionService.ListenerEnabled = (solEnabled || iderEnabled || kvmEnabled)
         }
 
-        const cfgOptInValue = mapAMTUserConsent(context.amtConfiguration.userConsent)
+        const userConsent = context.amtConfiguration?.userConsent != null ? context.amtConfiguration.userConsent : AMTUserConsent.ALL
+        const cfgOptInValue = mapAMTUserConsent(userConsent)
         const isOptInServiceChanged = (ipsOptInService.OptInRequired !== cfgOptInValue)
         if (isOptInServiceChanged) {
           ipsOptInService.OptInRequired = cfgOptInValue
@@ -255,33 +256,33 @@ export class FeaturesConfiguration {
   service = interpret(this.machine)
 
   async getAmtRedirectionService (context: FeatureContext): Promise<any> {
-    context.xmlMessage = context.amt.RedirectionService.Get()
+    context.xmlMessage = context.amt != null ? context.amt.RedirectionService.Get() : ''
     return await invokeWsmanCall(context, 2)
   }
 
   async getIpsOptInService (context: FeatureContext): Promise<any> {
-    context.xmlMessage = context.ips.OptInService.Get()
+    context.xmlMessage = context.ips != null ? context.ips.OptInService.Get() : ''
     return await invokeWsmanCall(context, 2)
   }
 
   async getCimKvmRedirectionSAP (context: FeatureContext): Promise<any> {
-    context.xmlMessage = context.cim.KVMRedirectionSAP.Get()
+    context.xmlMessage = context.cim != null ? context.cim.KVMRedirectionSAP.Get() : ''
     return await invokeWsmanCall(context, 2)
   }
 
   async setRedirectionService (context: FeatureContext): Promise<any> {
-    context.xmlMessage = context.amt.RedirectionService.RequestStateChange(context.AMT_RedirectionService.EnabledState)
+    context.xmlMessage = context.amt != null ? context.amt.RedirectionService.RequestStateChange(context.AMT_RedirectionService.EnabledState) : ''
     return await invokeWsmanCall(context, 2)
   }
 
   async setKvmRedirectionSap (context: FeatureContext): Promise<any> {
-    context.xmlMessage = context.cim.KVMRedirectionSAP.RequestStateChange(context.CIM_KVMRedirectionSAP.EnabledState)
+    context.xmlMessage = context.cim != null ? context.cim.KVMRedirectionSAP.RequestStateChange(context.CIM_KVMRedirectionSAP.EnabledState) : ''
     return await invokeWsmanCall(context, 2)
   }
 
   async putRedirectionService (context: FeatureContext): Promise<any> {
     const redirectionService: AMT.Models.RedirectionService = context.AMT_RedirectionService
-    context.xmlMessage = context.amt.RedirectionService.Put(redirectionService)
+    context.xmlMessage = context.amt != null ? context.amt.RedirectionService.Put(redirectionService) : ''
     return await invokeWsmanCall(context, 2)
   }
 
@@ -290,7 +291,7 @@ export class FeaturesConfiguration {
     const ipsOptInSvcResponse: IPS.Models.OptInServiceResponse = {
       IPS_OptInService: JSON.parse(JSON.stringify(ipsOptInService))
     }
-    context.xmlMessage = context.ips.OptInService.Put(ipsOptInSvcResponse)
+    context.xmlMessage = context.ips != null ? context.ips.OptInService.Put(ipsOptInSvcResponse) : ''
     return await invokeWsmanCall(context, 2)
   }
 }

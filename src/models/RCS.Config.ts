@@ -5,9 +5,9 @@
 
 import { type AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 import { type Types } from '@open-amt-cloud-toolkit/wsman-messages/amt'
-import { type DigestChallenge } from '@open-amt-cloud-toolkit/wsman-messages/models/common'
-import type * as WebSocket from 'ws'
-import { type AMTConfiguration, type AMTDomain, type ProvisioningCertObj } from '.'
+import { type DigestChallenge } from '@open-amt-cloud-toolkit/wsman-messages/models/common.js'
+import type Server from 'ws'
+import { type AMTConfiguration, type AMTDomain, type ProvisioningCertObj } from './index.js'
 
 export interface WebSocketConfig {
   WebSocketPort: number
@@ -23,9 +23,8 @@ export interface WirelessConfig {
   tenantId: string
   ieee8021xProfileName: string
   ieee8021xProfileObject?: Ieee8021xConfig
-  version?: string
+  version?: string | null
 }
-
 export interface ProfileWifiConfigs {
   priority: number
   profileName: string
@@ -44,7 +43,7 @@ export interface Ieee8021xConfig {
   pxeTimeout: number
   wiredInterface: boolean
   tenantId: string
-  version?: string
+  version?: string | null
 }
 
 /*
@@ -100,32 +99,32 @@ export interface ClientObject {
   action?: ClientAction
   uuid?: string
   hostname?: string
-  ClientSocket?: WebSocket
+  ClientSocket: Server
   ClientData?: any
   count?: number
   payload?: any
-  certObj?: ProvisioningCertObj
+  certObj?: ProvisioningCertObj | null
   readyState?: number
   activationStatus?: boolean
   delayEndTime?: number
-  amtPassword?: string
-  mebxPassword?: string
+  amtPassword: string | null
+  mebxPassword?: string | null
   ciraconfig?: CIRAConfigFlow
   nonce?: Buffer
   signature?: string
   mpsUsername?: string
   mpsPassword?: string
   network?: NetworkConfigFlow
-  tls?: TLSConfigFlow
-  status?: Status
+  tls: TLSConfigFlow
+  status: Status
   unauthCount: number
-  connectionParams?: connectionParams
+  connectionParams: connectionParams
   messageId?: number
   trustedRootCertificate?: string
   trustedRootCertificateResponse?: any
   pendingPromise?: Promise<any>
-  resolve?: (value: unknown) => void
-  reject?: (value: unknown) => void
+  resolve: (value: unknown) => void
+  reject: (value: unknown) => void
 }
 
 export interface CIRAConfigFlow {
@@ -213,7 +212,7 @@ export interface ClientMsg {
   status: string
   message: string
   payload: any
-  tenantId?: string
+  tenantId: string
 }
 
 export interface Payload {

@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { VersionChecker } from './VersionChecker'
-import { type Version } from './models'
-import { RPSError } from './utils/RPSError'
+import { VersionChecker } from './VersionChecker.js'
+import { type Version } from './models/index.js'
+import { RPSError } from './utils/RPSError.js'
 test('test version string parsing', () => {
   const versionString: string = '1.2.3'
 
@@ -53,11 +53,11 @@ test('test version string parsing empty exception', () => {
 })
 
 test('test version string parsing undefined exception', () => {
-  let versionString: string
+  const versionString: string | null = null
   let rpsError
 
   try {
-    VersionChecker.parseString(versionString)
+    VersionChecker.parseString(versionString as any)
   } catch (error) {
     rpsError = error
   }

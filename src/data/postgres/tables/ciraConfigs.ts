@@ -3,13 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type ICiraConfigTable } from '../../../interfaces/database/ICiraConfigDb'
-import { type CIRAConfig } from '../../../models/RCS.Config'
-import { CIRA_CONFIG_DELETION_FAILED_CONSTRAINT, API_UNEXPECTED_EXCEPTION, CIRA_CONFIG_INSERTION_FAILED_DUPLICATE, DEFAULT_TOP, DEFAULT_SKIP, CONCURRENCY_EXCEPTION, CONCURRENCY_MESSAGE } from '../../../utils/constants'
-import { RPSError } from '../../../utils/RPSError'
-import Logger from '../../../Logger'
-import type PostgresDb from '..'
-import { PostgresErr } from '../errors'
+import { type ICiraConfigTable } from '../../../interfaces/database/ICiraConfigDb.js'
+import { type CIRAConfig } from '../../../models/RCS.Config.js'
+import { CIRA_CONFIG_DELETION_FAILED_CONSTRAINT, API_UNEXPECTED_EXCEPTION, CIRA_CONFIG_INSERTION_FAILED_DUPLICATE, DEFAULT_TOP, DEFAULT_SKIP, CONCURRENCY_EXCEPTION, CONCURRENCY_MESSAGE } from '../../../utils/constants.js'
+import { RPSError } from '../../../utils/RPSError.js'
+import Logger from '../../../Logger.js'
+import type PostgresDb from '../index.js'
+import { PostgresErr } from '../errors.js'
 export class CiraConfigTable implements ICiraConfigTable {
   db: PostgresDb
   log: Logger
@@ -66,7 +66,7 @@ export class CiraConfigTable implements ICiraConfigTable {
    * @param {string} configName
    * @returns {CIRAConfig} CIRA config object
    */
-  async getByName (configName: string, tenantId: string = ''): Promise<CIRAConfig> {
+  async getByName (configName: string, tenantId: string = ''): Promise<CIRAConfig | null> {
     const results = await this.db.query<CIRAConfig>(`
     SELECT 
       cira_config_name as "configName", 
@@ -98,7 +98,11 @@ export class CiraConfigTable implements ICiraConfigTable {
       DELETE FROM ciraconfigs 
       WHERE cira_config_name = $1 AND tenant_id = $2`, [ciraConfigName, tenantId])
 
-      return results.rowCount > 0
+      if (results?.rowCount) {
+        if (results.rowCount > 0) {
+          return true
+        }
+      }
     } catch (error) {
       this.log.error(`Failed to delete CIRA config : ${ciraConfigName}`, error)
       if (error.code === PostgresErr.C23_FOREIGN_KEY_VIOLATION) {
@@ -106,6 +110,7 @@ export class CiraConfigTable implements ICiraConfigTable {
       }
       throw new RPSError(API_UNEXPECTED_EXCEPTION(`Delete CIRA config : ${ciraConfigName}`))
     }
+    return false
   }
 
   /**
@@ -113,7 +118,7 @@ export class CiraConfigTable implements ICiraConfigTable {
    * @param {CIRAConfig} ciraConfig
    * @returns {CIRAConfig} Returns cira config object
    */
-  async insert (ciraConfig: CIRAConfig): Promise<CIRAConfig> {
+  async insert (ciraConfig: CIRAConfig): Promise<CIRAConfig | null> {
     try {
       const results = await this.db.query(`INSERT INTO ciraconfigs(cira_config_name, mps_server_address, mps_port, user_name, password, common_name, server_address_format, auth_method, mps_root_certificate, proxydetails, tenant_id)
         values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
@@ -130,10 +135,11 @@ export class CiraConfigTable implements ICiraConfigTable {
         ciraConfig.proxyDetails,
         ciraConfig.tenantId
       ])
-      if (results.rowCount > 0) {
-        return await this.getByName(ciraConfig.configName, ciraConfig.tenantId)
+      if (results?.rowCount) {
+        if (results.rowCount > 0) {
+          return await this.getByName(ciraConfig.configName, ciraConfig.tenantId)
+        }
       }
-      return null
     } catch (error) {
       this.log.error('Failed to insert CIRA config :', error)
       if (error.code === PostgresErr.C23_UNIQUE_VIOLATION) {
@@ -141,6 +147,7 @@ export class CiraConfigTable implements ICiraConfigTable {
       }
       throw new RPSError(API_UNEXPECTED_EXCEPTION(ciraConfig.configName))
     }
+    return null
   }
 
   /**
@@ -148,8 +155,8 @@ export class CiraConfigTable implements ICiraConfigTable {
    * @param {CIRAConfig} ciraConfig object
    * @returns {CIRAConfig} Returns cira config object
    */
-  async update (ciraConfig: CIRAConfig): Promise<CIRAConfig> {
-    let latestItem: CIRAConfig
+  async update (ciraConfig: CIRAConfig): Promise<CIRAConfig | null> {
+    let latestItem: CIRAConfig | null
     try {
       const results = await this.db.query(`
       UPDATE ciraconfigs 
@@ -170,8 +177,10 @@ export class CiraConfigTable implements ICiraConfigTable {
         ciraConfig.version
       ])
       latestItem = await this.getByName(ciraConfig.configName, ciraConfig.tenantId)
-      if (results.rowCount > 0) {
-        return latestItem
+      if (results?.rowCount) {
+        if (results.rowCount > 0) {
+          return latestItem
+        }
       }
     } catch (error) {
       this.log.error('Failed to update CIRA config :', error)

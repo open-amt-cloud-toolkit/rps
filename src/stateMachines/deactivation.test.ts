@@ -4,33 +4,41 @@
  **********************************************************************/
 
 import { interpret } from 'xstate'
-import { Deactivation, type DeactivationContext } from './deactivation'
-import { v4 as uuid } from 'uuid'
-import { devices } from '../WebSocketListener'
-import { config } from '../test/helper/Config'
-import { Environment } from '../utils/Environment'
-import ClientResponseMsg from '../utils/ClientResponseMsg'
-import { HttpHandler } from '../HttpHandler'
-import * as common from './common'
+import { randomUUID } from 'node:crypto'
+import { devices } from '../devices.js'
+import { config } from '../test/helper/Config.js'
+import { Environment } from '../utils/Environment.js'
+import ClientResponseMsg from '../utils/ClientResponseMsg.js'
+import { HttpHandler } from '../HttpHandler.js'
+import { jest } from '@jest/globals'
+import { type SpyInstance, spyOn } from 'jest-mock'
+import { type Deactivation as DeactivationType, type DeactivationContext } from './deactivation.js'
 
-const clientId = uuid()
+const clientId = randomUUID()
 const tenantId = ''
 Environment.Config = config
 
+const invokeWsmanCallSpy = jest.fn()
+jest.unstable_mockModule('./common.js', () => ({
+  invokeWsmanCall: invokeWsmanCallSpy,
+  invokeEnterpriseAssistantCall: jest.fn(),
+  invokeUnprovision: jest.fn()
+}))
+
+const { Deactivation } = await import('./deactivation.js')
+
 describe('Deactivation State Machine', () => {
-  let deactivation: Deactivation
+  let deactivation: DeactivationType
   let deactivationContext: DeactivationContext
   let config
-  let invokeWsmanCallSpy: jest.SpyInstance
-
   let currentStateIndex: number
-  let setupAndConfigurationServiceSpy: jest.SpyInstance
-  let sendSpy: jest.SpyInstance
-  let responseMessageSpy: jest.SpyInstance
+  let setupAndConfigurationServiceSpy: SpyInstance<any>
+  let sendSpy: SpyInstance<any>
+  let responseMessageSpy: SpyInstance<any>
   beforeEach(() => {
     deactivation = new Deactivation()
-    setupAndConfigurationServiceSpy = jest.spyOn(deactivation.amt.SetupAndConfigurationService, 'Unprovision').mockImplementation().mockReturnValue('abcdef')
-    responseMessageSpy = jest.spyOn(ClientResponseMsg, 'get').mockReturnValue({} as any)
+    setupAndConfigurationServiceSpy = spyOn(deactivation.amt.SetupAndConfigurationService, 'Unprovision').mockImplementation(() => 'abcdef')
+    responseMessageSpy = spyOn(ClientResponseMsg, 'get').mockReturnValue({} as any)
     devices[clientId] = {
       unauthCount: 0,
       ClientId: clientId,
@@ -43,13 +51,13 @@ describe('Deactivation State Machine', () => {
       connectionParams: {
         guid: clientId,
         port: 16992,
-        digestChallenge: null,
+        digestChallenge: null as any,
         username: 'admin',
         password: 'P@ssw0rd'
       },
       uuid: clientId,
       messageId: 1
-    }
+    } as any
     deactivationContext = {
       message: '',
       clientId,
@@ -61,8 +69,7 @@ describe('Deactivation State Machine', () => {
       tenantId,
       httpHandler: new HttpHandler()
     }
-    sendSpy = jest.spyOn(devices[clientId].ClientSocket, 'send').mockImplementation().mockReturnValue()
-    invokeWsmanCallSpy = jest.spyOn(common, 'invokeWsmanCall').mockResolvedValue(null)
+    sendSpy = jest.spyOn(devices[clientId].ClientSocket, 'send').mockImplementation(() => {})
     currentStateIndex = 0
     config = {
       services: {
@@ -181,21 +188,21 @@ describe('Deactivation State Machine', () => {
   })
 
   it('should invoke unprovision and return promise', async () => {
-    void deactivation.invokeUnprovision(deactivationContext)
+    await deactivation.invokeUnprovision(deactivationContext)
     expect(setupAndConfigurationServiceSpy).toHaveBeenCalled()
     expect(deactivationContext.xmlMessage).toBe('abcdef')
     expect(invokeWsmanCallSpy).toHaveBeenCalledWith(deactivationContext)
   })
 
   it('should send success message to device', () => {
-    deactivation.sendMessageToDevice(deactivationContext, null)
+    deactivation.sendMessageToDevice(deactivationContext, null as any)
     expect(responseMessageSpy).toHaveBeenCalledWith(deactivationContext.clientId, null, deactivationContext.status, 'success', JSON.stringify(devices[clientId].status))
     expect(sendSpy).toHaveBeenCalled()
   })
 
   it('should send error message to device', () => {
     deactivationContext.status = 'error'
-    deactivation.sendMessageToDevice(deactivationContext, null)
+    deactivation.sendMessageToDevice(deactivationContext, null as any)
     expect(responseMessageSpy).toHaveBeenCalledWith(deactivationContext.clientId, null, deactivationContext.status, 'failed', JSON.stringify(devices[clientId].status))
     expect(sendSpy).toHaveBeenCalled()
   })

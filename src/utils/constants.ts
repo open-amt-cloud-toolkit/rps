@@ -3,11 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type apiResponse } from '../models/RCS.Config'
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const packageObj = require('../../package.json')
-
-export const ServiceVersion = packageObj.version
+import { type apiResponse } from '../models/RCS.Config.js'
 export const ProtocolVersion = '4.0.0'
 export const AMTUserName = 'admin'
 export const mpsserver = (name: string): string => `<Address xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing">http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</Address><ReferenceParameters xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing"><ResourceURI xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd">http://intel.com/wbem/wscim/1/amt-schema/1/AMT_ManagementPresenceRemoteSAP</ResourceURI><SelectorSet xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"><Selector Name="Name">${name}</Selector></SelectorSet></ReferenceParameters>`
@@ -45,7 +41,7 @@ export const CONCURRENCY_MESSAGE = 'No records were updated'
 export const NOT_FOUND_EXCEPTION = 'Not Found'
 export const NOT_FOUND_MESSAGE = (type: 'Domain' | 'Wireless' | '802.1x' | 'CIRA' | 'AMT', name: string): string => `${type} profile ${name} Not Found`
 // JSON response
-export const API_RESPONSE = (data?: any, error?: string, message?: string): apiResponse => {
+export const API_RESPONSE = (data?: any, error?: string | null, message?: string): apiResponse => {
   const response: apiResponse = {}
   if (error != null) {
     response.error = error

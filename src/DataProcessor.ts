@@ -5,24 +5,24 @@
 
 import type WebSocket from 'ws'
 
-import type { ILogger } from './interfaces/ILogger'
-import { ClientMethods, type ClientMsg } from './models/RCS.Config'
-import { RPSError } from './utils/RPSError'
-import type { IValidator } from './interfaces/IValidator'
-import { HttpHandler } from './HttpHandler'
-import { parse, type HttpZResponseModel } from 'http-z'
-import { devices } from './WebSocketListener'
-import { Deactivation } from './stateMachines/deactivation'
-import { Maintenance, type MaintenanceEvent } from './stateMachines/maintenance/maintenance'
-import { Activation, type ActivationEvent } from './stateMachines/activation'
-import ClientResponseMsg from './utils/ClientResponseMsg'
-import { parseChunkedMessage } from './utils/parseChunkedMessage'
-import { UNEXPECTED_PARSE_ERROR } from './utils/constants'
-import { SyncTimeEventType } from './stateMachines/maintenance/syncTime'
-import { ChangePasswordEventType } from './stateMachines/maintenance/changePassword'
-import { SyncHostNameEventType } from './stateMachines/maintenance/syncHostName'
-import { SyncIPEventType } from './stateMachines/maintenance/syncIP'
-import { SyncDeviceInfoEventType } from './stateMachines/maintenance/syncDeviceInfo'
+import type { ILogger } from './interfaces/ILogger.js'
+import { ClientMethods, type ClientMsg } from './models/RCS.Config.js'
+import { RPSError } from './utils/RPSError.js'
+import type { IValidator } from './interfaces/IValidator.js'
+import { HttpHandler } from './HttpHandler.js'
+import pkg, { type HttpZResponseModel } from 'http-z'
+import { Deactivation } from './stateMachines/deactivation.js'
+import { Maintenance, type MaintenanceEvent } from './stateMachines/maintenance/maintenance.js'
+import { Activation, type ActivationEvent } from './stateMachines/activation.js'
+import ClientResponseMsg from './utils/ClientResponseMsg.js'
+import { parseChunkedMessage } from './utils/parseChunkedMessage.js'
+import { UNEXPECTED_PARSE_ERROR, type UnexpectedParseError } from './utils/constants.js'
+import { SyncTimeEventType } from './stateMachines/maintenance/syncTime.js'
+import { ChangePasswordEventType } from './stateMachines/maintenance/changePassword.js'
+import { SyncHostNameEventType } from './stateMachines/maintenance/syncHostName.js'
+import { SyncIPEventType } from './stateMachines/maintenance/syncIP.js'
+import { SyncDeviceInfoEventType } from './stateMachines/maintenance/syncDeviceInfo.js'
+import { devices } from './devices.js'
 export class DataProcessor {
   httpHandler: HttpHandler
   constructor (
@@ -40,7 +40,7 @@ export class DataProcessor {
      */
   async processData (message: WebSocket.Data, clientId: string): Promise<ClientMsg | null> {
     try {
-      let clientMsg: ClientMsg = null
+      let clientMsg: ClientMsg
 
       try {
         clientMsg = this.validator.parseClientMsg(message, clientId)
@@ -77,6 +77,7 @@ export class DataProcessor {
         ClientResponseMsg.get(clientId, null, 'error', 'failed', 'request failed')
       }
     }
+    return null
   }
 
   async activateDevice (clientMsg: ClientMsg, clientId: string, activation: Activation = new Activation()): Promise<void> {
@@ -104,9 +105,10 @@ export class DataProcessor {
   async handleResponse (clientMsg: ClientMsg, clientId: string): Promise<void> {
     const clientObj = devices[clientId]
     let resolveValue = null
-    let rejectValue = null
+    let rejectValue: UnexpectedParseError | HttpZResponseModel | null = null
     let statusCode = -1
     try {
+      const { parse } = pkg
       const httpRsp = parse(clientMsg.payload) as HttpZResponseModel
       statusCode = httpRsp.statusCode
       if (statusCode === 200) {
@@ -123,10 +125,12 @@ export class DataProcessor {
       rejectValue = new UNEXPECTED_PARSE_ERROR()
     }
     if (clientObj.pendingPromise != null) {
-      if (resolveValue) {
-        clientObj.resolve(resolveValue)
-      } else {
-        clientObj.reject(rejectValue)
+      if (clientObj.resolve && clientObj.reject) {
+        if (resolveValue) {
+          clientObj.resolve(resolveValue)
+        } else {
+          clientObj.reject(rejectValue)
+        }
       }
     }
     this.logger.debug(`Device ${clientId}` +
@@ -176,7 +180,7 @@ export class DataProcessor {
     return mEvent
   }
 
-  setConnectionParams (clientId: string, username: string = null, password: string = null, uuid: string = null): void {
+  setConnectionParams (clientId: string, username: string | null = null, password: string | null = null, uuid: string | null = null): void {
     const clientObj = devices[clientId]
     clientObj.connectionParams = {
       port: 16992,

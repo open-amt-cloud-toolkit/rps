@@ -29,7 +29,7 @@ jobs:
       - run: npm run compile --if-present
       - run: npm test
       - name: Test Report
-        uses: dorny/test-reporter@86a20101473378575dcbaa709a4f2b772001fbbb # v1
+        uses: dorny/test-reporter@eaa763f6ffc21c7a37837f56cd5f9737f27fc6c8 # v1
         if: success() || failure() # run this step even if previous step failed
         continue-on-error: true
         with:
@@ -37,7 +37,7 @@ jobs:
           path: junit.xml # Path to test results
           reporter: jest-junit # Format of test results
           fail-on-error: "false"
-      - uses: codecov/codecov-action@eaaf4bedf32dbdc6b720b63067d99c4d77d6047d # v3.1.4
+      - uses: codecov/codecov-action@4fe8c5f003fae66aa5ebb77cfd3e7bfbbda0b6b0 # v3.1.5
         name: Upload Coverage Results
         if: ${{ matrix.node-version == '18.x' }}
       - run: mv junit.xml rps-unit-${{ matrix.node-version }}.xml

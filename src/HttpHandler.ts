@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { createHash } from 'crypto'
-import * as xml2js from 'xml2js'
-import { type DigestChallenge } from '@open-amt-cloud-toolkit/wsman-messages/models/common'
-import Logger from './Logger'
-import { type connectionParams } from './models/RCS.Config'
+import { createHash } from 'node:crypto'
+import xml2js from 'xml2js'
+import { type DigestChallenge } from '@open-amt-cloud-toolkit/wsman-messages/models/common.js'
+import Logger from './Logger.js'
+import { type connectionParams } from './models/RCS.Config.js'
 
 export class HttpHandler {
   authResolve: any
@@ -24,7 +24,7 @@ export class HttpHandler {
     this.logger = new Logger('HttpHandler')
   }
 
-  wrapIt (data: string, connectionParams: connectionParams): string {
+  wrapIt (data: string, connectionParams: connectionParams): string | null {
     try {
       const url = '/wsman'
       const action = 'POST'
@@ -34,7 +34,7 @@ export class HttpHandler {
       }
       if (connectionParams.digestChallenge != null) {
         // Prepare an Authorization request header from the 401 unauthorized response from AMT
-        let responseDigest = null
+        let responseDigest: string | null = null
         // console nonce should be a unique opaque quoted string
         connectionParams.consoleNonce = Math.random().toString(36).substring(7)
         const nc = ('00000000' + (this.nonceCounter++).toString(16)).slice(-8)
@@ -77,7 +77,7 @@ export class HttpHandler {
 
   // Prepares Authorization Request Header
   digestIt (params: object): string {
-    const paramNames = []
+    const paramNames: string[] = []
     for (const i in params) {
       paramNames.push(i)
     }

@@ -4,14 +4,14 @@
  **********************************************************************/
 
 import { createMachine, sendParent } from 'xstate'
-import { pure } from 'xstate/lib/actions'
-import { HttpHandler } from '../HttpHandler'
-import { devices } from '../WebSocketListener'
+import { pure } from 'xstate/lib/actions.js'
+import { HttpHandler } from '../HttpHandler.js'
+import { devices } from '../devices.js'
 import { type HttpZResponseModel } from 'http-z'
 
 const httpHandler = new HttpHandler()
 export interface ErrorContext {
-  message: HttpZResponseModel
+  message: HttpZResponseModel | null
   clientId: string
 }
 
@@ -22,7 +22,7 @@ interface ErrorEvent {
 
 export class Error {
   machine =
-  /** @xstate-layout N4IgpgJg5mDOIC5RgE4oPYoLQFsCGAxgBYCWAdmAHQCiASrQPK3UAiAxAAoCCtAytYlAAHdLBIAXEujKCQAD0QBmAEwAOSgDYADAE5FGgKxqdqjQEYDAGhABPRKp2UdznQYAsy5fpWqzAXz9rVAxsfGJyKgBVADkuSIAVAAkmAEkALVY2WRExSWlZBQQdAHZ1RUUtZS13Yq1ig2LrOyLHOvKzNzcDA1Vq4o0AwJAydAg4WWDMXEJSChp6JlZs0QkpGSR5RCrFSmLFN0UdSp7So40mxDNis0o3FyNVfTda5QCgtCmw2ajYhOTadJLDY5Vb5DaFbTFShmKrHXRqXyNWz2Ny3e6PVQGGF1HRvcAfUIzCKUOJJVIZFjLXJrAqXZTmSj04r05TOerMxQXBAwjSMwzlDReNwaFy4oaTQnhOYAMS4KQAMqxSf9AZTgSs8utQIUYd1KKpiiUdB1lD1KqouRV1G4LB5DX09oo8RLplKqAAhLgsZgARUi1F48SpoK1mwQ5mUlEUZg0pS0Zi0IsUBh0lsOUZK1y0jwMdQ0XWdBNd30oMQA0tEGAB1aLBzW0hDKerQhpmXy5jSqDGW1xOXoI6OCizuQshYsROs08GXQ27faHY4GhyJrkwtFsswWYoHA2DPxAA */
+    /** @xstate-layout N4IgpgJg5mDOIC5RgE4oPYoLQFsCGAxgBYCWAdmAHQCiASrQPK3UAiAxAAoCCtAytYlAAHdLBIAXEujKCQAD0QBmAEwAOSgDYADAE5FGgKxqdqjQEYDAGhABPRKp2UdznQYAsy5fpWqzAXz9rVAxsfGJyKgBVADkuSIAVAAkmAEkALVY2WRExSWlZBQQdAHZ1RUUtZS13Yq1ig2LrOyLHOvKzNzcDA1Vq4o0AwJAydAg4WWDMXEJSChp6JlZs0QkpGSR5RCrFSmLFN0UdSp7So40mxDNis0o3FyNVfTda5QCgtCmw2ajYhOTadJLDY5Vb5DaFbTFShmKrHXRqXyNWz2Ny3e6PVQGGF1HRvcAfUIzCKUOJJVIZFjLXJrAqXZTmSj04r05TOerMxQXBAwjSMwzlDReNwaFy4oaTQnhOYAMS4KQAMqxSf9AZTgSs8utQIUYd1KKpiiUdB1lD1KqouRV1G4LB5DX09oo8RLplKqAAhLgsZgARUi1F48SpoK1mwQ5mUlEUZg0pS0Zi0IsUBh0lsOUZK1y0jwMdQ0XWdBNd30oMQA0tEGAB1aLBzW0hDKerQhpmXy5jSqDGW1xOXoI6OCizuQshYsROs08GXQ27faHY4GhyJrkwtFsswWYoHA2DPxAA */
     createMachine<ErrorContext, ErrorEvent>({
       preserveActionOrder: true,
       predictableActionArguments: true,
@@ -101,7 +101,9 @@ export class Error {
     clientObj.unauthCount++
     const found = message.headers?.find(item => item.name === 'Www-Authenticate')
     if (found != null) {
-      clientObj.connectionParams.digestChallenge = httpHandler.parseAuthenticateResponseHeader(found.value)
+      if (clientObj.connectionParams) {
+        clientObj.connectionParams.digestChallenge = httpHandler.parseAuthenticateResponseHeader(found.value)
+      }
     }
   }
 

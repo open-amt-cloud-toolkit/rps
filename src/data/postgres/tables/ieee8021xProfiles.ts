@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type Ieee8021xConfig } from '../../../models/RCS.Config'
+import { type Ieee8021xConfig } from '../../../models/RCS.Config.js'
 import {
   API_UNEXPECTED_EXCEPTION,
   DEFAULT_SKIP,
@@ -14,12 +14,12 @@ import {
   IEEE8021X_DELETION_FAILED_CONSTRAINT_WIRELESS,
   IEEE8021X_INSERTION_FAILED_DUPLICATE,
   IEEE8021X_INSERTION_FAILED
-} from '../../../utils/constants'
-import Logger from '../../../Logger'
-import { RPSError } from '../../../utils/RPSError'
-import type PostgresDb from '..'
-import { type IIEEE8021xProfileTable } from '../../../interfaces/database/IIEEE8021xProfilesDB'
-import { PostgresErr } from '../errors'
+} from '../../../utils/constants.js'
+import Logger from '../../../Logger.js'
+import { RPSError } from '../../../utils/RPSError.js'
+import type PostgresDb from '../index.js'
+import { type IIEEE8021xProfileTable } from '../../../interfaces/database/IIEEE8021xProfilesDB.js'
+import { PostgresErr } from '../errors.js'
 
 export class IEEE8021xProfilesTable implements IIEEE8021xProfileTable {
   db: PostgresDb
@@ -75,11 +75,7 @@ export class IEEE8021xProfilesTable implements IIEEE8021xProfileTable {
         AND tenant_id = $2`
     , [profileName, tenantId]
     )
-
-    if (results.rowCount > 0) {
-      return results.rows[0]
-    }
-    return null
+    return results?.rows?.length > 0 ? results.rows[0] : null
   }
 
   async checkProfileExits (profileName: string, tenantId: string = ''): Promise<boolean> {
@@ -90,7 +86,12 @@ export class IEEE8021xProfilesTable implements IIEEE8021xProfileTable {
         AND tenant_id = $2`
     , [profileName, tenantId])
 
-    return results.rowCount > 0
+    if (results?.rowCount) {
+      if (results.rowCount > 0) {
+        return true
+      }
+    }
+    return false
   }
 
   // Delete an item from the table by its name
@@ -103,7 +104,12 @@ export class IEEE8021xProfilesTable implements IIEEE8021xProfileTable {
           AND tenant_id = $2`
       , [profileName, tenantId])
 
-      return result.rowCount > 0
+      if (result?.rowCount) {
+        if (result.rowCount > 0) {
+          return true
+        }
+      }
+      return false
     } catch (error) {
       this.log.error(`Failed to delete 802.1x configuration : ${profileName} `, error)
       if (error.code === PostgresErr.C23_FOREIGN_KEY_VIOLATION) {
@@ -117,7 +123,7 @@ export class IEEE8021xProfilesTable implements IIEEE8021xProfileTable {
     }
   }
 
-  public async insert (item: Ieee8021xConfig): Promise<Ieee8021xConfig> {
+  public async insert (item: Ieee8021xConfig): Promise<Ieee8021xConfig | null> {
     try {
       const results = await this.db.query(`
         INSERT
@@ -134,7 +140,6 @@ export class IEEE8021xProfilesTable implements IIEEE8021xProfileTable {
       if (results.rowCount === 0) {
         return null
       }
-
       return await this.getByName(item.profileName)
     } catch (error) {
       this.log.error(`Failed to insert 802.1x configuration : ${item.profileName}`, error.message || JSON.stringify(error))
@@ -145,8 +150,8 @@ export class IEEE8021xProfilesTable implements IIEEE8021xProfileTable {
     }
   }
 
-  async update (item: Ieee8021xConfig): Promise<Ieee8021xConfig> {
-    let latestItem: Ieee8021xConfig
+  async update (item: Ieee8021xConfig): Promise<Ieee8021xConfig | null> {
+    let latestItem: Ieee8021xConfig | null = null
     try {
       const results = await this.db.query(`
         UPDATE ieee8021xconfigs
@@ -176,9 +181,10 @@ export class IEEE8021xProfilesTable implements IIEEE8021xProfileTable {
         item.tenantId,
         item.version
       ])
-      if (results.rowCount > 0) {
-        latestItem = await this.getByName(item.profileName)
-        return latestItem
+      if (results?.rowCount) {
+        if (results.rowCount > 0) {
+          return await this.getByName(item.profileName)
+        }
       }
       // if rowcount is 0, we assume update failed and grab the current reflection of the record in the DB to be
       // returned in the Concurrency Error

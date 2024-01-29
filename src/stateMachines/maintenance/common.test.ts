@@ -3,25 +3,27 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { Environment } from '../../utils/Environment'
-import { HttpHandler } from '../../HttpHandler'
-import ClientResponseMsg from '../../utils/ClientResponseMsg'
-import { devices } from '../../WebSocketListener'
-import { GatewayTimeoutError, UnexpectedParseError } from '../../utils/constants'
-import { v4 as uuid } from 'uuid'
-import { coalesceMessage, HttpResponseError, invokeWsmanCall, isDigestRealmValid } from './common'
-import { config } from '../../test/helper/Config'
-import { type HttpZResponseModel, parse } from 'http-z'
-import { response401 } from '../../test/helper/AMTMessages'
+import { Environment } from '../../utils/Environment.js'
+import { HttpHandler } from '../../HttpHandler.js'
+import ClientResponseMsg from '../../utils/ClientResponseMsg.js'
+import { devices } from '../../devices.js'
+import { GatewayTimeoutError, UnexpectedParseError } from '../../utils/constants.js'
+import { randomUUID } from 'node:crypto'
+import { coalesceMessage, HttpResponseError, invokeWsmanCall, isDigestRealmValid } from './common.js'
+import { config } from '../../test/helper/Config.js'
+import pkg, { type HttpZResponseModel } from 'http-z'
+import { response401 } from '../../test/helper/AMTMessages.js'
+import { jest } from '@jest/globals'
+import { type SpyInstance, spyOn } from 'jest-mock'
 
 Environment.Config = config
 
-const clientId = uuid()
+const clientId = randomUUID()
 const HttpUnauthorizedError = new HttpResponseError('Unauthorized', 401)
 const xmlMessage = '<?xml version="1.0" encoding="UTF-8"?><a:Envelope><a:Body>Test Content</a:Envelope>'
 let sendSpy
-let responseMessageSpy: jest.SpyInstance
-let wrapItSpy: jest.SpyInstance
+let responseMessageSpy: SpyInstance<any>
+let wrapItSpy: SpyInstance<any>
 let wsmanRsp: any
 beforeEach(() => {
   Environment.Config.delay_timer = 1
@@ -37,9 +39,9 @@ beforeEach(() => {
     unauthCount: 0
   } as any
 
-  wrapItSpy = jest.spyOn(HttpHandler.prototype, 'wrapIt')
-  responseMessageSpy = jest.spyOn(ClientResponseMsg, 'get')
-  sendSpy = jest.spyOn(devices[clientId].ClientSocket, 'send').mockReturnValue()
+  wrapItSpy = spyOn(HttpHandler.prototype, 'wrapIt')
+  responseMessageSpy = spyOn(ClientResponseMsg, 'get')
+  sendSpy = spyOn(devices[clientId].ClientSocket, 'send').mockReturnValue()
   wsmanRsp = {
     Envelope: {
       Body: {
@@ -63,8 +65,8 @@ const delayedResolve = function (value): null {
 }
 
 it('should send a WSMan message once with successful reply', async () => {
-  sendSpy = jest.spyOn(devices[clientId].ClientSocket, 'send')
-    .mockImplementationOnce(delayedResolve(wsmanRsp))
+  sendSpy = spyOn(devices[clientId].ClientSocket, 'send')
+    .mockImplementationOnce(delayedResolve(wsmanRsp) as any)
   await expect(invokeWsmanCall(clientId, xmlMessage, 2)).resolves.toEqual(wsmanRsp.Envelope.Body)
   expect(wrapItSpy).toHaveBeenCalled()
   expect(responseMessageSpy).toHaveBeenCalled()
@@ -72,41 +74,42 @@ it('should send a WSMan message once with successful reply', async () => {
   expect(devices[clientId].pendingPromise).toBeDefined()
 })
 it('should successfully resolve after one UnexpectedParseError', async () => {
-  sendSpy = jest.spyOn(devices[clientId].ClientSocket, 'send')
-    .mockImplementationOnce(delayedReject(new UnexpectedParseError()))
-    .mockImplementationOnce(delayedResolve(wsmanRsp))
+  sendSpy = spyOn(devices[clientId].ClientSocket, 'send')
+    .mockImplementationOnce(delayedReject(new UnexpectedParseError()) as any)
+    .mockImplementationOnce(delayedResolve(wsmanRsp) as any)
   await expect(invokeWsmanCall(clientId, xmlMessage, 2)).resolves.toEqual(wsmanRsp.Envelope.Body)
   expect(sendSpy).toHaveBeenCalledTimes(2)
 })
 it('should successfully resolve after two UnexpectedParseError', async () => {
-  sendSpy = jest.spyOn(devices[clientId].ClientSocket, 'send')
-    .mockImplementationOnce(delayedReject(new UnexpectedParseError()))
-    .mockImplementationOnce(delayedReject(new UnexpectedParseError()))
-    .mockImplementationOnce(delayedResolve(wsmanRsp))
+  sendSpy = spyOn(devices[clientId].ClientSocket, 'send')
+    .mockImplementationOnce(delayedReject(new UnexpectedParseError()) as any)
+    .mockImplementationOnce(delayedReject(new UnexpectedParseError()) as any)
+    .mockImplementationOnce(delayedResolve(wsmanRsp) as any)
   await expect(invokeWsmanCall(clientId, xmlMessage, 2)).resolves.toEqual(wsmanRsp.Envelope.Body)
   expect(sendSpy).toHaveBeenCalledTimes(3)
 })
 it('should try three times on UnexpectedParseError', async () => {
-  sendSpy = jest.spyOn(devices[clientId].ClientSocket, 'send')
-    .mockImplementationOnce(delayedReject(new UnexpectedParseError()))
-    .mockImplementationOnce(delayedReject(new UnexpectedParseError()))
-    .mockImplementationOnce(delayedReject(new UnexpectedParseError()))
+  sendSpy = spyOn(devices[clientId].ClientSocket, 'send')
+    .mockImplementationOnce(delayedReject(new UnexpectedParseError()) as any)
+    .mockImplementationOnce(delayedReject(new UnexpectedParseError()) as any)
+    .mockImplementationOnce(delayedReject(new UnexpectedParseError()) as any)
   await expect(invokeWsmanCall(clientId, xmlMessage, 2)).rejects.toBeInstanceOf(UnexpectedParseError)
   expect(sendSpy).toHaveBeenCalledTimes(3)
 })
 it('should try authentication three times on 401 Unauthorized', async () => {
+  const { parse } = pkg
   const httpRsp401 = parse(response401) as HttpZResponseModel
   const expectedToThrow = new HttpResponseError('Unauthorized', 401)
-  sendSpy = jest.spyOn(devices[clientId].ClientSocket, 'send')
-    .mockImplementationOnce(delayedReject(httpRsp401))
-    .mockImplementationOnce(delayedReject(httpRsp401))
-    .mockImplementationOnce(delayedReject(httpRsp401))
+  sendSpy = spyOn(devices[clientId].ClientSocket, 'send')
+    .mockImplementationOnce(delayedReject(httpRsp401) as any)
+    .mockImplementationOnce(delayedReject(httpRsp401) as any)
+    .mockImplementationOnce(delayedReject(httpRsp401) as any)
   await expect(invokeWsmanCall(clientId, xmlMessage)).rejects.toEqual(expectedToThrow)
   expect(sendSpy).toHaveBeenCalledTimes(3)
 })
 it('should not retry by default on new UnexpectedParseError()', async () => {
-  sendSpy = jest.spyOn(devices[clientId].ClientSocket, 'send')
-    .mockImplementationOnce(delayedReject(new UnexpectedParseError()))
+  sendSpy = spyOn(devices[clientId].ClientSocket, 'send')
+    .mockImplementationOnce(delayedReject(new UnexpectedParseError()) as any)
   await expect(invokeWsmanCall(clientId, xmlMessage)).rejects.toBeInstanceOf(UnexpectedParseError)
   expect(sendSpy).toHaveBeenCalledTimes(1)
 })
@@ -115,9 +118,9 @@ it('should not retry when error is not new UnexpectedParseError()', async () => 
     statusCode: 401,
     statusMessage: 'Unauthorized'
   }
-  sendSpy = jest.spyOn(devices[clientId].ClientSocket, 'send')
-    .mockImplementationOnce(delayedReject(new UnexpectedParseError()))
-    .mockImplementationOnce(delayedReject(unauthorizedResponse))
+  sendSpy = spyOn(devices[clientId].ClientSocket, 'send')
+    .mockImplementationOnce(delayedReject(new UnexpectedParseError()) as any)
+    .mockImplementationOnce(delayedReject(unauthorizedResponse) as any)
   await expect(invokeWsmanCall(clientId, xmlMessage, 2)).rejects.toEqual(HttpUnauthorizedError)
   expect(sendSpy).toHaveBeenCalledTimes(2)
 })
@@ -126,22 +129,22 @@ it('should timeout on no reponse', async () => {
 })
 it('should fail if parsed xml is malformed', async () => {
   delete wsmanRsp.Envelope
-  sendSpy = jest.spyOn(devices[clientId].ClientSocket, 'send')
-    .mockImplementationOnce(delayedResolve(wsmanRsp))
+  sendSpy = spyOn(devices[clientId].ClientSocket, 'send')
+    .mockImplementationOnce(delayedResolve(wsmanRsp) as any)
   await expect(invokeWsmanCall(clientId, xmlMessage)).rejects.toBeInstanceOf(UnexpectedParseError)
   expect(wrapItSpy).toHaveBeenCalled()
   expect(responseMessageSpy).toHaveBeenCalled()
 })
 it('should rethrow same error it catches if error object has no statusCode', async () => {
   const noStatusCodeErr = new Error('just a plain, regular, boring error')
-  sendSpy = jest.spyOn(devices[clientId].ClientSocket, 'send')
-    .mockImplementationOnce(delayedReject(noStatusCodeErr))
+  sendSpy = spyOn(devices[clientId].ClientSocket, 'send')
+    .mockImplementationOnce(delayedReject(noStatusCodeErr) as any)
   await expect(invokeWsmanCall(clientId, xmlMessage)).rejects.toEqual(noStatusCodeErr)
   expect(wrapItSpy).toHaveBeenCalled()
   expect(responseMessageSpy).toHaveBeenCalled()
 })
 it('should return false if digest realm is null', () => {
-  expect(isDigestRealmValid(null)).toBeFalsy()
+  expect(isDigestRealmValid(null as any)).toBeFalsy()
 })
 it('should return coalesced error message', () => {
   const prefix = 'test error'

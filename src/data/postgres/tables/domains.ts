@@ -3,13 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type IDomainsTable } from '../../../interfaces/database/IDomainsDb'
-import { DUPLICATE_DOMAIN_FAILED, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP, CONCURRENCY_EXCEPTION, CONCURRENCY_MESSAGE } from '../../../utils/constants'
-import { type AMTDomain } from '../../../models'
-import { RPSError } from '../../../utils/RPSError'
-import Logger from '../../../Logger'
-import type PostgresDb from '..'
-import { PostgresErr } from '../errors'
+import { type IDomainsTable } from '../../../interfaces/database/IDomainsDb.js'
+import { DUPLICATE_DOMAIN_FAILED, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP, CONCURRENCY_EXCEPTION, CONCURRENCY_MESSAGE } from '../../../utils/constants.js'
+import { type AMTDomain } from '../../../models/index.js'
+import { RPSError } from '../../../utils/RPSError.js'
+import Logger from '../../../Logger.js'
+import type PostgresDb from '../index.js'
+import { PostgresErr } from '../errors.js'
 
 export class DomainsTable implements IDomainsTable {
   db: PostgresDb
@@ -66,7 +66,7 @@ export class DomainsTable implements IDomainsTable {
    * @param {string} domainSuffix
    * @returns {AMTDomain} Domain object
    */
-  async getDomainByDomainSuffix (domainSuffix: string, tenantId: string = ''): Promise<AMTDomain> {
+  async getDomainByDomainSuffix (domainSuffix: string, tenantId: string = ''): Promise<AMTDomain | null> {
     const results = await this.db.query<AMTDomain>(`
     SELECT 
       name as "profileName", 
@@ -80,7 +80,13 @@ export class DomainsTable implements IDomainsTable {
     FROM domains 
     WHERE domain_suffix = $1 and tenant_id = $2`, [domainSuffix, tenantId])
 
-    return results.rowCount > 0 ? results.rows[0] : null
+    if (results?.rowCount) {
+      if (results.rowCount > 0) {
+        return results.rows[0]
+      }
+    }
+    return null
+    // return results.rowCount > 0 ? results.rows[0] : null
   }
 
   /**
@@ -88,7 +94,7 @@ export class DomainsTable implements IDomainsTable {
    * @param {string} domainName
    * @returns {AMTDomain} Domain object
    */
-  async getByName (domainName: string, tenantId: string = ''): Promise<AMTDomain> {
+  async getByName (domainName: string, tenantId: string = ''): Promise<AMTDomain | null> {
     const results = await this.db.query<AMTDomain>(`
     SELECT 
       name as "profileName", 
@@ -102,7 +108,13 @@ export class DomainsTable implements IDomainsTable {
     FROM domains 
     WHERE Name = $1 and tenant_id = $2`, [domainName, tenantId])
 
-    return results.rowCount > 0 ? results.rows[0] : null
+    if (results?.rowCount) {
+      if (results.rowCount > 0) {
+        return results.rows[0]
+      }
+    }
+    return null
+    // return results.rowCount > 0 ? results.rows[0] : null
   }
 
   /**
@@ -116,7 +128,14 @@ export class DomainsTable implements IDomainsTable {
     FROM domains 
     WHERE Name = $1 and tenant_id = $2`, [domainName, tenantId])
 
-    return results.rowCount > 0
+    if (results?.rowCount) {
+      if (results.rowCount > 0) {
+        return true
+      }
+    }
+    return false
+
+    // return results.rowCount > 0
   }
 
   /**
@@ -124,7 +143,7 @@ export class DomainsTable implements IDomainsTable {
    * @param {AMTDomain} amtDomain
    * @returns {AMTDomain} Returns amtDomain object
    */
-  async insert (amtDomain: AMTDomain): Promise<AMTDomain> {
+  async insert (amtDomain: AMTDomain): Promise<AMTDomain | null> {
     try {
       const results = await this.db.query(`
       INSERT INTO domains(name, domain_suffix, provisioning_cert, provisioning_cert_storage_format, provisioning_cert_key, expiration_date, tenant_id)
@@ -138,11 +157,12 @@ export class DomainsTable implements IDomainsTable {
         amtDomain.expirationDate,
         amtDomain.tenantId
       ])
-      if (results.rowCount > 0) {
-        const domain = await this.getByName(amtDomain.profileName, amtDomain.tenantId)
-        return domain
+      if (results?.rowCount) {
+        if (results.rowCount > 0) {
+          const domain = await this.getByName(amtDomain.profileName, amtDomain.tenantId)
+          return domain
+        }
       }
-      return null
     } catch (error) {
       this.log.error(`Failed to insert Domain: ${amtDomain.profileName}`, error)
       if (error.code === PostgresErr.C23_UNIQUE_VIOLATION) {
@@ -150,6 +170,7 @@ export class DomainsTable implements IDomainsTable {
       }
       throw new RPSError(API_UNEXPECTED_EXCEPTION(amtDomain.profileName))
     }
+    return null
   }
 
   /**
@@ -157,8 +178,8 @@ export class DomainsTable implements IDomainsTable {
    * @param {AMTDomain} amtDomain object
    * @returns {AMTDomain} Returns amtDomain object
    */
-  async update (amtDomain: AMTDomain): Promise <AMTDomain> {
-    let latestItem: AMTDomain
+  async update (amtDomain: AMTDomain): Promise <AMTDomain | null> {
+    let latestItem: AMTDomain | null
     try {
       const results = await this.db.query(`
       UPDATE domains 
@@ -175,8 +196,10 @@ export class DomainsTable implements IDomainsTable {
         amtDomain.version
       ])
       latestItem = await this.getByName(amtDomain.profileName, amtDomain.tenantId)
-      if (results.rowCount > 0) {
-        return latestItem
+      if (results?.rowCount) {
+        if (results.rowCount > 0) {
+          return latestItem
+        }
       }
     } catch (error) {
       this.log.error('Failed to update Domain :', error)

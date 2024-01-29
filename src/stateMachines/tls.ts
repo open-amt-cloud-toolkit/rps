@@ -5,20 +5,20 @@
 
 import { type AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 import { assign, createMachine, sendTo } from 'xstate'
-import { CertManager } from '../certManager'
-import { HttpHandler } from '../HttpHandler'
-import Logger from '../Logger'
-import { type AMTConfiguration, type AMTKeyUsage, type CertAttributes } from '../models'
-import { NodeForge } from '../NodeForge'
-import { devices } from '../WebSocketListener'
-import { Error } from './error'
-import { TimeSync } from './timeMachine'
-import { TlsSigningAuthority } from '../models/RCS.Config'
-import { UNEXPECTED_PARSE_ERROR } from '../utils/constants'
-import { parseChunkedMessage } from '../utils/parseChunkedMessage'
-import { Environment } from '../utils/Environment'
-import { getCertFromEnterpriseAssistant, initiateCertRequest, sendEnterpriseAssistantKeyPairResponse } from './enterpriseAssistant'
-import { invokeWsmanCall } from './common'
+import { CertManager } from '../certManager.js'
+import { HttpHandler } from '../HttpHandler.js'
+import Logger from '../Logger.js'
+import { type AMTConfiguration, type AMTKeyUsage, type CertAttributes } from '../models/index.js'
+import { NodeForge } from '../NodeForge.js'
+import { devices } from '../devices.js'
+import { Error } from './error.js'
+import { TimeSync } from './timeMachine.js'
+import { TlsSigningAuthority } from '../models/RCS.Config.js'
+import { UNEXPECTED_PARSE_ERROR } from '../utils/constants.js'
+import { parseChunkedMessage } from '../utils/parseChunkedMessage.js'
+import { Environment } from '../utils/Environment.js'
+import { getCertFromEnterpriseAssistant, initiateCertRequest, sendEnterpriseAssistantKeyPairResponse } from './enterpriseAssistant.js'
+import { invokeWsmanCall } from './common.js'
 
 export interface TLSContext {
   message: any
@@ -32,8 +32,8 @@ export interface TLSContext {
   tlsCredentialContext: any
   amtProfile: AMTConfiguration
   unauthCount: number
-  amt?: AMT.Messages
-  retryCount?: number
+  amt: AMT.Messages
+  retryCount: number
   keyPairHandle?: string
   authProtocol: number
 }
@@ -57,18 +57,20 @@ export class TLS {
       id: 'tls-configuration-machine',
       initial: 'PROVISIONED',
       context: {
-        clientId: '',
+        clientId: '', // provided by parent machine
         unauthCount: 0,
         status: 'success',
         message: null,
-        httpHandler: new HttpHandler(),
+        httpHandler: new HttpHandler(), // provided by parent machine
         xmlMessage: '',
         errorMessage: '',
         statusMessage: '',
-        tlsSettingData: null,
+        tlsSettingData: [],
         tlsCredentialContext: null,
-        amtProfile: null,
-        authProtocol: 0
+        authProtocol: 0,
+        retryCount: 0,
+        amtProfile: {} as any, // provided by parent machine
+        amt: {} as any // provided by parent machine
       },
       states: {
         PROVISIONED: {

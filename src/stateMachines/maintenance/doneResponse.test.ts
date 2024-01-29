@@ -8,7 +8,7 @@ import {
   doneSuccess,
   StatusFailed,
   StatusSuccess
-} from './doneResponse'
+} from './doneResponse.js'
 
 const taskName = 'syncTestSomething'
 it('should create a successful response with detail', () => {

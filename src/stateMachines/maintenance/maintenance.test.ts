@@ -3,22 +3,29 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import resetAllMocks = jest.resetAllMocks
-import * as common from './common'
-import { HttpResponseError } from './common'
+import { HttpResponseError } from './common.js'
 import { interpret } from 'xstate'
-import { Maintenance, type MaintenanceEvent } from './maintenance'
-import { devices } from '../../WebSocketListener'
-import { waitFor } from 'xstate/lib/waitFor'
-import { Environment } from '../../utils/Environment'
-import { config, setupTestClient } from '../../test/helper/Config'
-import Logger from '../../Logger'
-import { doneFail, type DoneResponse, doneSuccess } from './doneResponse'
-import { type SyncTimeEvent, SyncTimeEventType } from './syncTime'
-import { ChangePasswordEventType } from './changePassword'
-import { SyncHostNameEventType } from './syncHostName'
-import { SyncDeviceInfoEventType } from './syncDeviceInfo'
-import { SyncIPEventType } from './syncIP'
+
+import { devices } from '../../devices.js'
+import { waitFor } from 'xstate/lib/waitFor.js'
+import { Environment } from '../../utils/Environment.js'
+import { config, setupTestClient } from '../../test/helper/Config.js'
+import Logger from '../../Logger.js'
+import { doneFail, type DoneResponse, doneSuccess } from './doneResponse.js'
+import { type SyncTimeEvent, SyncTimeEventType } from './syncTime.js'
+import { ChangePasswordEventType } from './changePassword.js'
+import { SyncHostNameEventType } from './syncHostName.js'
+import { SyncDeviceInfoEventType } from './syncDeviceInfo.js'
+import { SyncIPEventType } from './syncIP.js'
+import { jest } from '@jest/globals'
+import { spyOn } from 'jest-mock'
+
+import { Maintenance, type MaintenanceEvent } from './maintenance.js'
+
+const invokeWsmanCallSpy = jest.fn<any>()
+jest.unstable_mockModule('./common.js', () => ({
+  invokeWsmanCall: invokeWsmanCallSpy
+}))
 
 Environment.Config = config
 
@@ -26,15 +33,14 @@ const HttpBadRequestError = new HttpResponseError('Bad Request', 400)
 const clientId = setupTestClient()
 
 beforeEach(() => {
-  resetAllMocks()
+  jest.resetAllMocks()
 })
 
 describe('service logging', () => {
   it('should include child state machine', async () => {
     const event: SyncTimeEvent = { type: SyncTimeEventType, clientId }
-    const logInfoSpy = jest.spyOn(Logger.prototype, 'info').mockReturnValue(null)
-    jest.spyOn(common, 'invokeWsmanCall')
-      .mockRejectedValueOnce(HttpBadRequestError)
+    const logInfoSpy = spyOn(Logger.prototype, 'info').mockReturnValue(null as any)
+    invokeWsmanCallSpy.mockRejectedValueOnce(HttpBadRequestError)
     const maintenance = new Maintenance()
     maintenance.service.start()
     maintenance.service.send(event)
@@ -117,9 +123,9 @@ describe('events and states', () => {
     machineConfig.services[ti.taskName] = Promise.resolve(doneResponse)
     const maintenance = new Maintenance()
     const mockMachine = maintenance.machine.withConfig(machineConfig)
-    const afterDoneSpy = jest.spyOn(maintenance, 'respondAfterDone')
+    const afterDoneSpy = spyOn(maintenance, 'respondAfterDone')
     let clientRspMsg
-    jest.spyOn(devices[clientId].ClientSocket, 'send')
+    spyOn(devices[clientId].ClientSocket, 'send')
       .mockImplementation((arg) => {
         // eslint-disable-next-line @typescript-eslint/no-base-to-string
         clientRspMsg = JSON.parse(arg.toString())

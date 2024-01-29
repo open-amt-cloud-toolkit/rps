@@ -3,19 +3,19 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { API_RESPONSE, NOT_FOUND_MESSAGE, NOT_FOUND_EXCEPTION } from '../../../utils/constants'
-import { type AMTDomain } from '../../../models'
-import Logger from '../../../Logger'
-import { MqttProvider } from '../../../utils/MqttProvider'
+import { API_RESPONSE, NOT_FOUND_MESSAGE, NOT_FOUND_EXCEPTION } from '../../../utils/constants.js'
+import { type AMTDomain } from '../../../models/index.js'
+import Logger from '../../../Logger.js'
+import { MqttProvider } from '../../../utils/MqttProvider.js'
 import { type Request, type Response } from 'express'
-import handleError from '../../../utils/handleError'
-import { RPSError } from '../../../utils/RPSError'
+import handleError from '../../../utils/handleError.js'
+import { RPSError } from '../../../utils/RPSError.js'
 
 export async function getDomain (req: Request, res: Response): Promise<void> {
   const log = new Logger('getDomain')
   const { domainName } = req.params
   try {
-    const result: AMTDomain = await req.db.domains.getByName(domainName, req.tenantId)
+    const result: AMTDomain | null = await req.db.domains.getByName(domainName, req.tenantId)
     if (result != null) {
       // Return null. Check Security objectives around returning passwords.
       delete result.provisioningCertPassword

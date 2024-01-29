@@ -3,8 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type CIRAConfig } from '../../models/RCS.Config.js'
-import { type ITable } from './ITable.js'
+import { type ClientObject } from 'models/RCS.Config.js'
 
-export interface ICiraConfigTable extends ITable<CIRAConfig> {
-}
+const devices: Record<string, ClientObject> = {}
+export { devices }

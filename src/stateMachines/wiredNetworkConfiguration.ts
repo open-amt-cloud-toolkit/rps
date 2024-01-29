@@ -5,38 +5,38 @@
 
 import { type AMT, type CIM, type IPS } from '@open-amt-cloud-toolkit/wsman-messages'
 import { assign, createMachine, sendTo } from 'xstate'
-import { type HttpHandler } from '../HttpHandler'
-import Logger from '../Logger'
-import { type AMTConfiguration } from '../models'
-import { devices } from '../WebSocketListener'
-import { Error } from './error'
-import { Configurator } from '../Configurator'
-import { DbCreatorFactory } from '../factories/DbCreatorFactory'
-import { invokeWsmanCall } from './common'
-import { UNEXPECTED_PARSE_ERROR } from '../utils/constants'
-import { getCertFromEnterpriseAssistant, initiateCertRequest, sendEnterpriseAssistantKeyPairResponse } from './enterpriseAssistant'
-import { RPSError } from '../utils/RPSError'
+import { type HttpHandler } from '../HttpHandler.js'
+import Logger from '../Logger.js'
+import { type AMTConfiguration } from '../models/index.js'
+import { devices } from '../devices.js'
+import { Error } from './error.js'
+import { Configurator } from '../Configurator.js'
+import { DbCreatorFactory } from '../factories/DbCreatorFactory.js'
+import { invokeWsmanCall } from './common.js'
+import { UNEXPECTED_PARSE_ERROR } from '../utils/constants.js'
+import { getCertFromEnterpriseAssistant, initiateCertRequest, sendEnterpriseAssistantKeyPairResponse } from './enterpriseAssistant.js'
+import { RPSError } from '../utils/RPSError.js'
 
 interface WiredConfigContext {
-  amtProfile: AMTConfiguration
+  amtProfile: AMTConfiguration | null
   ieee8021xProfile: any
   message: any
   clientId: string
   xmlMessage: any
   statusMessage: string
   errorMessage: string
-  generalSettings: AMT.Models.GeneralSettings
+  generalSettings: AMT.Models.GeneralSettings | null
   wiredSettings: any
-  httpHandler: HttpHandler
+  httpHandler: HttpHandler | null
   amt?: AMT.Messages
   ips?: IPS.Messages
   cim?: CIM.Messages
-  retryCount?: number
+  retryCount: number
   eaResponse: any
   addTrustedRootCertResponse: any
   addCertResponse: any
   keyPairHandle?: string
-  targetAfterError: string
+  targetAfterError: string | null
   wirelessSettings: any
   authProtocol: number
 }
@@ -73,7 +73,8 @@ export class WiredConfiguration {
         eaResponse: null,
         addTrustedRootCertResponse: null,
         addCertResponse: null,
-        authProtocol: 0
+        authProtocol: 0,
+        retryCount: 0
       },
       id: 'wired-network-configuration-machine',
       initial: 'ACTIVATION',
@@ -82,7 +83,7 @@ export class WiredConfiguration {
           on: {
             WIREDCONFIG: {
               actions: [
-                assign({ statusMessage: () => '', authProtocol: (context, event) => context.amtProfile?.ieee8021xProfileObject?.authenticationProtocol }),
+                assign({ statusMessage: () => '', authProtocol: (context, event) => context.amtProfile?.ieee8021xProfileObject != null ? context.amtProfile?.ieee8021xProfileObject?.authenticationProtocol : 0 }),
                 'Reset Unauth Count',
                 'Reset Retry Count'],
               target: 'PUT_ETHERNET_PORT_SETTINGS'
@@ -325,24 +326,28 @@ export class WiredConfiguration {
       guards: {
         isNotEthernetSettingsUpdated: (context, event) => {
           const settings: AMT.Models.EthernetPortSettings = context.message.Envelope.Body.AMT_EthernetPortSettings
-          if (context.amtProfile.dhcpEnabled) {
-            return !settings.DHCPEnabled || !settings.IpSyncEnabled || settings.SharedStaticIp
-          } else {
-            return settings.DHCPEnabled ||
-              settings.IpSyncEnabled !== (context.amtProfile.ipSyncEnabled ?? true) ||
-              settings.SharedStaticIp !== settings.IpSyncEnabled
+          if (context.amtProfile != null && settings.DHCPEnabled != null && settings.IpSyncEnabled != null && settings.SharedStaticIp != null) {
+            if (context.amtProfile.dhcpEnabled) {
+              return !settings.DHCPEnabled || !settings.IpSyncEnabled || settings.SharedStaticIp
+            } else {
+              return settings.DHCPEnabled ||
+                settings.IpSyncEnabled !== (context.amtProfile.ipSyncEnabled ?? true) ||
+                settings.SharedStaticIp !== settings.IpSyncEnabled
+            }
           }
+          return false
         },
-        is8021xProfilesExists: (context, event) => context.amtProfile.ieee8021xProfileName != null,
+        is8021xProfilesExists: (context, event) => context.amtProfile?.ieee8021xProfileName != null,
         shouldRetry: (context, event) => context.retryCount < 3 && event.data instanceof UNEXPECTED_PARSE_ERROR,
-        isMSCHAPv2: (context, event) => context.amtProfile.ieee8021xProfileObject.authenticationProtocol === 2
+        isMSCHAPv2: (context, event) => context.amtProfile?.ieee8021xProfileObject?.authenticationProtocol === 2
       },
       actions: {
         'Reset Unauth Count': (context, event) => { devices[context.clientId].unauthCount = 0 },
         'Reset Retry Count': assign({ retryCount: (context, event) => 0 }),
         'Increment Retry Count': assign({ retryCount: (context, event) => context.retryCount + 1 }),
         'Update Configuration Status': (context, event) => {
-          devices[context.clientId].status.Network = context.errorMessage ?? context.statusMessage
+          const device = devices[context.clientId]
+          device.status.Network = context.errorMessage ?? context.statusMessage
         }
       }
     })
@@ -401,13 +406,13 @@ export class WiredConfiguration {
   }
 
   async get8021xProfile (context: WiredConfigContext, event: WiredConfigEvent): Promise<void> {
-    context.xmlMessage = context.ips.IEEE8021xSettings.Get()
+    context.xmlMessage = context.ips?.IEEE8021xSettings.Get()
     return await invokeWsmanCall(context, 2)
   }
 
   async put8021xProfile (context: WiredConfigContext, event: WiredConfigEvent): Promise<void> {
     this.logger.info('EA Response :', JSON.stringify(context.eaResponse))
-    switch (context.amtProfile.ieee8021xProfileObject.authenticationProtocol) {
+    switch (context.amtProfile?.ieee8021xProfileObject?.authenticationProtocol) {
       case 0: {
         devices[context.clientId].trustedRootCertificateResponse = context.message.Envelope.Body
         context.addTrustedRootCertResponse = devices[context.clientId].trustedRootCertificateResponse
@@ -424,13 +429,13 @@ export class WiredConfiguration {
         this.logger.info('Not a supported protocol')
       }
     }
-    context.ieee8021xProfile.AuthenticationProtocol = context.amtProfile.ieee8021xProfileObject.authenticationProtocol
-    context.ieee8021xProfile.ElementName = `${context.ieee8021xProfile.ElementName} ${context.amtProfile.ieee8021xProfileName}`
-    context.ieee8021xProfile.PxeTimeout = context.amtProfile.ieee8021xProfileObject.pxeTimeout
+    context.ieee8021xProfile.AuthenticationProtocol = context.amtProfile?.ieee8021xProfileObject?.authenticationProtocol
+    context.ieee8021xProfile.ElementName = `${context.ieee8021xProfile.ElementName} ${context.amtProfile?.ieee8021xProfileName}`
+    context.ieee8021xProfile.PxeTimeout = context.amtProfile?.ieee8021xProfileObject?.pxeTimeout
     context.ieee8021xProfile.Username = context.eaResponse?.username
     context.ieee8021xProfile.Enabled = 2
     context.ieee8021xProfile.AvailableInS0 = true
-    context.xmlMessage = context.ips.IEEE8021xSettings.Put(context.ieee8021xProfile)
+    context.xmlMessage = context.ips?.IEEE8021xSettings.Put(context.ieee8021xProfile)
     return await invokeWsmanCall(context, 2)
   }
 
@@ -440,28 +445,28 @@ export class WiredConfiguration {
     const rootCertReference = `<a:Address>default</a:Address><a:ReferenceParameters><w:ResourceURI>http://intel.com/wbem/wscim/1/amt-schema/1/AMT_PublicKeyCertificate</w:ResourceURI><w:SelectorSet><w:Selector Name="InstanceID">${rootCertReference1}</w:Selector></w:SelectorSet></a:ReferenceParameters>`
     const clientCertReference = `<a:Address>default</a:Address><a:ReferenceParameters><w:ResourceURI>http://intel.com/wbem/wscim/1/amt-schema/1/AMT_PublicKeyCertificate</w:ResourceURI><w:SelectorSet><w:Selector Name="InstanceID">${clientCertReference1}</w:Selector></w:SelectorSet></a:ReferenceParameters>`
 
-    context.xmlMessage = context.ips.IEEE8021xSettings.SetCertificates(rootCertReference, clientCertReference)
+    context.xmlMessage = context.ips?.IEEE8021xSettings.SetCertificates(rootCertReference, clientCertReference)
     return await invokeWsmanCall(context, 2)
   }
 
   async generateKeyPair (context: WiredConfigContext, event: WiredConfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.PublicKeyManagementService.GenerateKeyPair({ KeyAlgorithm: 0, KeyLength: 2048 })
+    context.xmlMessage = context.amt?.PublicKeyManagementService.GenerateKeyPair({ KeyAlgorithm: 0, KeyLength: 2048 })
     return await invokeWsmanCall(context)
   }
 
   async enumeratePublicPrivateKeyPair (context: WiredConfigContext, event: WiredConfigEvent): Promise<void> {
     context.keyPairHandle = context.message.Envelope.Body?.GenerateKeyPair_OUTPUT?.KeyPair?.ReferenceParameters?.SelectorSet?.Selector?._
-    context.xmlMessage = context.amt.PublicPrivateKeyPair.Enumerate()
+    context.xmlMessage = context.amt?.PublicPrivateKeyPair.Enumerate()
     return await invokeWsmanCall(context, 2)
   }
 
   async pullPublicPrivateKeyPair (context: WiredConfigContext, event: WiredConfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.PublicPrivateKeyPair.Pull(context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+    context.xmlMessage = context.amt?.PublicPrivateKeyPair.Pull(context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
     return await invokeWsmanCall(context)
   }
 
   async signCSR (context: WiredConfigContext, event: WiredConfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.PublicKeyManagementService.GeneratePKCS10RequestEx({
+    context.xmlMessage = context.amt?.PublicKeyManagementService.GeneratePKCS10RequestEx({
       KeyPair: '<a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address><a:ReferenceParameters><w:ResourceURI>http://intel.com/wbem/wscim/1/amt-schema/1/AMT_PublicPrivateKeyPair</w:ResourceURI><w:SelectorSet><w:Selector Name="InstanceID">' + (context.message.response.keyInstanceId as string) + '</w:Selector></w:SelectorSet></a:ReferenceParameters>',
       SigningAlgorithm: 1,
       NullSignedCertificateRequest: context.message.response.csr
@@ -472,7 +477,7 @@ export class WiredConfiguration {
   async addCertificate (context: WiredConfigContext, event: WiredConfigEvent): Promise<void> {
     context.eaResponse = event.data.response
     const cert = event.data.response.certificate
-    context.xmlMessage = context.amt.PublicKeyManagementService.AddCertificate({ CertificateBlob: cert })
+    context.xmlMessage = context.amt?.PublicKeyManagementService.AddCertificate({ CertificateBlob: cert })
     return await invokeWsmanCall(context)
   }
 
@@ -480,7 +485,7 @@ export class WiredConfiguration {
     // To Do: Needs to replace the logic with how we will pull the radius server root certificate
     devices[context.clientId].trustedRootCertificate = context.eaResponse.rootcert
     const cert = context.eaResponse.rootcert
-    context.xmlMessage = context.amt.PublicKeyManagementService.AddTrustedRootCertificate({ CertificateBlob: cert })
+    context.xmlMessage = context.amt?.PublicKeyManagementService.AddTrustedRootCertificate({ CertificateBlob: cert })
     return await invokeWsmanCall(context)
   }
 }

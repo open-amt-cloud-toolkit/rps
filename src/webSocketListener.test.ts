@@ -3,21 +3,41 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type ClientMsg } from './models/RCS.Config'
-import { devices, WebSocketListener } from './WebSocketListener'
-import Logger from './Logger'
-import { type ILogger } from './interfaces/ILogger'
-import WebSocket from 'ws'
-import { Environment } from './utils/Environment'
-import { config } from './test/helper/Config'
+import { type ClientMsg } from './models/RCS.Config.js'
+import Logger from './Logger.js'
+import { type ILogger } from './interfaces/ILogger.js'
+import { Environment } from './utils/Environment.js'
+import { config } from './test/helper/Config.js'
+import { jest } from '@jest/globals'
+import { spyOn } from 'jest-mock'
+import { devices } from './devices.js'
+type Data = string | ArrayBuffer | Buffer | Buffer[]
+const onSpy = jest.fn<any>()
+let itshouldthrowerror = false
+jest.unstable_mockModule('ws', () => ({
+  WebSocketServer: class {
+    constructor () {
+      if (itshouldthrowerror) {
+        throw new Error('fake')
+      }
+      // do nothing
+      console.log('fake')
+    }
+
+    on = onSpy
+  }
+}))
+
+const wslistener = await import('./WebSocketListener.js')
 
 describe('Websocket Listener', () => {
   const log: ILogger = new Logger('WebSocketListener')
-  let server: WebSocketListener
+  let server
   let isConnected: boolean
-  let onSpy: jest.SpyInstance
+  // let onSpy: SpyInstance<any>
   let clientid: string
   beforeEach(() => {
+    itshouldthrowerror = false
     Environment.Config = config
     clientid = 'abcd'
     devices[clientid] = {} as any
@@ -29,12 +49,13 @@ describe('Websocket Listener', () => {
     const stub = {
       processData: jest.fn()
     } as any
-    const serverStub = {
-      on: jest.fn()
-    } as any
-    onSpy = jest.spyOn(serverStub, 'on')
-    jest.spyOn(WebSocket, 'Server').mockReturnValue(serverStub)
-    server = new WebSocketListener(log, stub)
+    // const serverStub = {
+    //   on: jest.fn<any>()
+    // } as any
+    // onSpy = spyOn(serverStub, 'on')
+    // spyOn(WebSocket, 'WebSocketServer').mockReturnValue(serverStub)
+    server = new wslistener.WebSocketListener(log, stub)
+    onSpy.mockReset()
   })
   it('should start WebSocket server', () => {
     isConnected = server.connect()
@@ -42,7 +63,7 @@ describe('Websocket Listener', () => {
   })
 
   it('should NOT start WebSocket server when exception ', () => {
-    jest.spyOn(WebSocket, 'Server').mockReturnValue(null)
+    itshouldthrowerror = true
     const ret = server.connect()
     expect(onSpy).toHaveBeenCalledTimes(0)
     expect(ret).toEqual(false)
@@ -57,7 +78,7 @@ describe('Websocket Listener', () => {
     const mockWebSocket = {
       on: jest.fn()
     }
-    const webSocketMock = jest.spyOn(mockWebSocket, 'on')
+    const webSocketMock = spyOn(mockWebSocket, 'on')
     server.onClientConnected(mockWebSocket as any)
     expect(webSocketMock).toHaveBeenCalledTimes(3)
     expect(Object.keys(devices).length).toBe(2)
@@ -68,7 +89,7 @@ describe('Websocket Listener', () => {
       name: 'abc',
       message: 'abcd'
     }
-    const loggerSpy = jest.spyOn(server.logger, 'error')
+    const loggerSpy = spyOn(server.logger, 'error')
     server.onError(error, clientid)
     expect(loggerSpy).toHaveBeenCalled()
   })
@@ -84,32 +105,32 @@ describe('Websocket Listener', () => {
       payload: null,
       tenantId: ''
     }
-    const sendMessage = jest.spyOn(server, 'sendMessage')
-    const processMessageSpy = jest.spyOn(server.dataProcessor, 'processData').mockResolvedValue(clientMsg)
-    const message: WebSocket.Data = 'abcd'
+    const sendMessage = spyOn(server, 'sendMessage')
+    const processMessageSpy = spyOn(server.dataProcessor, 'processData').mockResolvedValue(clientMsg)
+    const message: Data = 'abcd'
     await server.onMessageReceived(message, clientid)
     expect(sendMessage).toHaveBeenCalledTimes(1)
     expect(processMessageSpy).toHaveBeenCalled()
   })
   it('Should generate error when maximum message length exceeded', async () => {
-    const loggerSpy = jest.spyOn(server.logger, 'error')
-    const message: WebSocket.Data = 'X'.repeat(1024 * 10 * 10 + 1)
+    const loggerSpy = spyOn(server.logger, 'error')
+    const message: Data = 'X'.repeat(1024 * 10 * 10 + 1)
     await server.onMessageReceived(message as any, clientid)
     expect(loggerSpy).toHaveBeenCalled()
     expect(loggerSpy).toHaveBeenCalledWith('Incoming message exceeds allowed length')
   })
 
   it('Should generate error when not a string', async () => {
-    const loggerSpy = jest.spyOn(server.logger, 'error')
-    const message: WebSocket.Data = Buffer.from('break the code')
+    const loggerSpy = spyOn(server.logger, 'error')
+    const message: Data = Buffer.from('break the code')
     await server.onMessageReceived(message, clientid)
     expect(loggerSpy).toHaveBeenCalled()
     expect(loggerSpy).toHaveBeenCalledWith('Incoming message exceeds allowed length')
   })
   it('Should process client message and not respond when no response to send', async () => {
-    const sendMessage = jest.spyOn(server, 'sendMessage')
-    const processMessageSpy = jest.spyOn(server.dataProcessor, 'processData').mockResolvedValue(null)
-    const message: WebSocket.Data = 'abcd'
+    const sendMessage = spyOn(server, 'sendMessage')
+    const processMessageSpy = spyOn(server.dataProcessor, 'processData').mockResolvedValue(null)
+    const message: Data = 'abcd'
     await server.onMessageReceived(message, clientid)
     expect(processMessageSpy).toHaveBeenCalled()
     expect(sendMessage).not.toHaveBeenCalled()
@@ -121,7 +142,7 @@ describe('Websocket Listener', () => {
         send: jest.fn()
       }
     } as any
-    const spy = jest.spyOn(devices[clientid].ClientSocket, 'send')
+    const spy = spyOn(devices[clientid].ClientSocket, 'send')
     const message: ClientMsg = {} as any
     server.sendMessage(message, clientid)
     expect(spy).toHaveBeenCalled()

@@ -3,14 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import Logger from '../../../Logger'
+import Logger from '../../../Logger.js'
 import { type Request, type Response } from 'express'
-import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, POSTGRES_RESPONSE_CODES, VAULT_RESPONSE_CODES } from '../../../utils/constants'
-import { MqttProvider } from '../../../utils/MqttProvider'
-import { type HealthCheck } from '../../../models/RCS.Config'
-import { Environment } from '../../../utils/Environment'
-import { type ISecretManagerService } from '../../../interfaces/ISecretManagerService'
-import { type IDB } from '../../../interfaces/database/IDb'
+import { API_RESPONSE, API_UNEXPECTED_EXCEPTION, POSTGRES_RESPONSE_CODES, VAULT_RESPONSE_CODES } from '../../../utils/constants.js'
+import { MqttProvider } from '../../../utils/MqttProvider.js'
+import { type HealthCheck } from '../../../models/RCS.Config.js'
+import { Environment } from '../../../utils/Environment.js'
+import { type ISecretManagerService } from '../../../interfaces/ISecretManagerService.js'
+import { type IDB } from '../../../interfaces/database/IDb.js'
 
 export async function getHealthCheck (req: Request, res: Response): Promise<void> {
   const log = new Logger('getHealthCheck')

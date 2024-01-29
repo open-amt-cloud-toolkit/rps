@@ -5,43 +5,28 @@
 
 import express from 'express'
 import cors from 'cors'
-import Logger from './Logger'
-import { WebSocketListener } from './WebSocketListener'
-import { Configurator } from './Configurator'
-import { Environment } from './utils/Environment'
-import { type RPSConfig } from './models'
-import { parseValue } from './utils/parseEnvValue'
-import routes from './routes'
-import rc = require('rc')
-import { MqttProvider } from './utils/MqttProvider'
-import { DbCreatorFactory } from './factories/DbCreatorFactory'
+import Logger from './Logger.js'
+import { WebSocketListener } from './WebSocketListener.js'
+import { Configurator } from './Configurator.js'
+import { Environment } from './utils/Environment.js'
+import { type RPSConfig } from './models/index.js'
+import routes from './routes/index.js'
+import { MqttProvider } from './utils/MqttProvider.js'
+import { DbCreatorFactory } from './factories/DbCreatorFactory.js'
 import { backOff } from 'exponential-backoff'
-import { type ISecretManagerService } from './interfaces/ISecretManagerService'
-import { type IDB } from './interfaces/database/IDb'
-import { WSEnterpriseAssistantListener } from './WSEnterpriseAssistantListener'
-import { existsSync, lstatSync, readdirSync } from 'fs'
-import * as ServiceManager from './serviceManager'
-import { ConsulService } from './consul'
-import { type IServiceManager } from './interfaces/IServiceManager'
-import path = require('path')
+import { type ISecretManagerService } from './interfaces/ISecretManagerService.js'
+import { type IDB } from './interfaces/database/IDb.js'
+import { WSEnterpriseAssistantListener } from './WSEnterpriseAssistantListener.js'
+import { existsSync, lstatSync, readdirSync } from 'node:fs'
+import { processServiceConfigs, waitForServiceManager } from './serviceManager.js'
+import { ConsulService } from './consulService.js'
+import { type IServiceManager } from './interfaces/IServiceManager.js'
+import path from 'node:path'
+import { URL, fileURLToPath, pathToFileURL } from 'node:url'
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const __dirname = fileURLToPath(new URL('.', import.meta.url))
 const log = new Logger('Index')
-
-// To merge ENV variables. consider after lowercasing ENV since our config keys are lowercase
-process.env = Object.keys(process.env)
-  .reduce((destination, key) => {
-    destination[key.toLowerCase()] = parseValue(process.env[key])
-    return destination
-  }, {})
-
-// build config object
-const config: RPSConfig = rc('rps')
-config.delay_activation_sync = config.delay_timer * 1000
-config.delay_setup_and_config_sync = 5000
-config.delay_tls_put_data_sync = 5000
-log.silly(`config: ${JSON.stringify(config, null, 2)}`)
-
-Environment.Config = config
 
 const app = express()
 app.use(cors())
@@ -72,7 +57,7 @@ export const startItUp = (): void => {
   const serverForEnterpriseAssistant: WSEnterpriseAssistantListener = new WSEnterpriseAssistantListener(new Logger('WSEnterpriseAssistantListener'))
   const server: WebSocketListener = new WebSocketListener(new Logger('WebSocketListener'), configurator.dataProcessor)
 
-  const mqtt: MqttProvider = new MqttProvider(config)
+  const mqtt: MqttProvider = new MqttProvider(Environment.Config)
   mqtt.connectBroker()
 
   const dbFactory = new DbCreatorFactory()
@@ -86,9 +71,10 @@ export const startItUp = (): void => {
       const files = readdirSync(pathToCustomMiddleware)
       for (const file of files) {
         if (path.extname(file) === '.js' && !file.endsWith('test.js')) {
-          const pathToMiddleware = path.join(pathToCustomMiddleware, file.substring(0, file.lastIndexOf('.')))
+          const filePath = path.join(pathToCustomMiddleware, file)
+          const fileURL = pathToFileURL(filePath) // Convert path to URL
+          const customMiddleware = await import(fileURL.href) // Use URL href for dynamic import
           log.info('Loading custom middleware: ' + file)
-          const customMiddleware = await import(pathToMiddleware)
           if (customMiddleware?.default != null) {
             middleware.push(customMiddleware.default)
           }
@@ -121,8 +107,8 @@ export const startItUp = (): void => {
         await waitForSecretsManager(configurator.secretsManager)
       })
       .then(() => {
-        app.listen(config.web_port, () => {
-          log.info(`RPS Microservice Rest APIs listening on http://:${config.web_port}.`)
+        app.listen(Environment.Config.web_port, () => {
+          log.info(`RPS Microservice Rest APIs listening on http://:${Environment.Config.web_port}.`)
         })
         server.connect()
         serverForEnterpriseAssistant.connect()
@@ -136,12 +122,12 @@ export const startItUp = (): void => {
 
 export async function setupServiceManager (config: RPSConfig): Promise<void> {
   const consul: IServiceManager = new ConsulService(config.consul_host, config.consul_port)
-  await ServiceManager.waitForServiceManager(consul, 'consul')
-  await ServiceManager.processServiceConfigs(consul, config)
+  await waitForServiceManager(consul, 'consul')
+  await processServiceConfigs(consul, config)
 }
 
-if (config.consul_enabled) {
-  setupServiceManager(config).then(() => {
+if (Environment.Config.consul_enabled) {
+  setupServiceManager(Environment.Config).then(() => {
     startItUp()
   }).catch(err => {
     log.error(`Unable to reach consul: ${err}`)

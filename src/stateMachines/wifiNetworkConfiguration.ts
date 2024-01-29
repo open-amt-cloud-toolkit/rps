@@ -5,35 +5,35 @@
 
 import { type AMT, type CIM } from '@open-amt-cloud-toolkit/wsman-messages'
 import { assign, createMachine, sendTo } from 'xstate'
-import { type WirelessConfig } from '../models/RCS.Config'
-import { type HttpHandler } from '../HttpHandler'
-import Logger from '../Logger'
-import { type AMTConfiguration } from '../models'
-import { devices } from '../WebSocketListener'
-import { Error } from './error'
-import { Configurator } from '../Configurator'
-import { DbCreatorFactory } from '../factories/DbCreatorFactory'
-import { invokeWsmanCall } from './common'
-import { type WifiCredentials } from '../interfaces/ISecretManagerService'
-import { UNEXPECTED_PARSE_ERROR } from '../utils/constants'
-import { getCertFromEnterpriseAssistant, initiateCertRequest, sendEnterpriseAssistantKeyPairResponse } from './enterpriseAssistant'
+import { type WirelessConfig } from '../models/RCS.Config.js'
+import { type HttpHandler } from '../HttpHandler.js'
+import Logger from '../Logger.js'
+import { type AMTConfiguration } from '../models/index.js'
+import { devices } from '../devices.js'
+import { Error } from './error.js'
+import { Configurator } from '../Configurator.js'
+import { DbCreatorFactory } from '../factories/DbCreatorFactory.js'
+import { invokeWsmanCall } from './common.js'
+import { type WifiCredentials } from '../interfaces/ISecretManagerService.js'
+import { UNEXPECTED_PARSE_ERROR } from '../utils/constants.js'
+import { getCertFromEnterpriseAssistant, initiateCertRequest, sendEnterpriseAssistantKeyPairResponse } from './enterpriseAssistant.js'
 
 export interface WiFiConfigContext {
-  amtProfile: AMTConfiguration
+  amtProfile: AMTConfiguration | null
   wifiProfileCount: number
   message: any
   clientId: string
   xmlMessage: any
   errorMessage: string
-  statusMessage: string
-  generalSettings: AMT.Models.GeneralSettings
+  statusMessage: string | null
+  generalSettings: AMT.Models.GeneralSettings | null
   wifiSettings: any
   wifiEndPointSettings?: any
-  wifiProfileName: string
-  httpHandler: HttpHandler
+  wifiProfileName: string | null
+  httpHandler: HttpHandler | null
   amt?: AMT.Messages
   cim?: CIM.Messages
-  retryCount?: number
+  retryCount: number
   eaResponse?: any
   addTrustedRootCertResponse?: any
   addCertResponse?: any
@@ -74,7 +74,8 @@ export class WiFiConfiguration {
         generalSettings: null,
         wifiSettings: null,
         wifiEndPointSettings: [],
-        authProtocol: 0
+        authProtocol: 0,
+        retryCount: 0
       },
       id: 'wifi-network-configuration-machine',
       initial: 'ACTIVATION',
@@ -377,9 +378,9 @@ export class WiFiConfiguration {
       }
     }, {
       guards: {
-        is8021xProfileAssociated: (context, event) => context.wifiProfile.ieee8021xProfileName != null && context.eaResponse == null && context.addCertResponse == null,
-        isMoreWiFiProfiles: (context, event) => context.wifiProfileCount < context.amtProfile.wifiConfigs.length,
-        isWiFiProfilesExist: (context, event) => context.amtProfile.wifiConfigs.length > 0,
+        is8021xProfileAssociated: (context, event) => context.wifiProfile?.ieee8021xProfileName != null && context.eaResponse == null && context.addCertResponse == null,
+        isMoreWiFiProfiles: (context, event) => context.amtProfile?.wifiConfigs != null ? context.wifiProfileCount < context.amtProfile.wifiConfigs.length : false,
+        isWiFiProfilesExist: (context, event) => context.amtProfile?.wifiConfigs != null ? context.amtProfile.wifiConfigs.length > 0 : false,
         isLocalProfileSynchronizationNotEnabled: (context, event) => context.message.Envelope.Body.AMT_WiFiPortConfigurationService.localProfileSynchronizationEnabled === 0,
         isTrustedRootCertifcateExists: (context, event) => {
           const res = devices[context.clientId].trustedRootCertificateResponse
@@ -389,14 +390,15 @@ export class WiFiConfiguration {
           }
           return false
         },
-        isMSCHAPv2: (context, event) => context.wifiProfile.ieee8021xProfileObject.authenticationProtocol === 2,
-        shouldRetry: (context, event) => context.retryCount < 3 && event.data instanceof UNEXPECTED_PARSE_ERROR
+        isMSCHAPv2: (context, event) => context.wifiProfile?.ieee8021xProfileObject?.authenticationProtocol === 2,
+        shouldRetry: (context, event) => context.retryCount != null ? context.retryCount < 3 && event.data instanceof UNEXPECTED_PARSE_ERROR : false
       },
       actions: {
         'Reset Unauth Count': (context, event) => { devices[context.clientId].unauthCount = 0 },
         'Update Configuration Status': (context, event) => {
           const { clientId, profilesAdded, profilesFailed, statusMessage, errorMessage } = context
-          const status = devices[clientId].status.Network
+          const device = devices[clientId]
+          const networkStatus = device.status.Network
           let message
           if (errorMessage) {
             message = errorMessage
@@ -405,7 +407,7 @@ export class WiFiConfiguration {
           } else {
             message = statusMessage
           }
-          devices[context.clientId].status.Network = status ? `${status}. ${message}` : message
+          device.status.Network = networkStatus ? `${networkStatus}. ${message}` : message
         },
         'Reset Retry Count': assign({ retryCount: (context, event) => 0 }),
         'Increment Retry Count': assign({ retryCount: (context, event) => context.retryCount + 1 }),
@@ -444,25 +446,31 @@ export class WiFiConfiguration {
 
   async updateWifiPort (context: WiFiConfigContext, event: WiFiConfigEvent): Promise<any> {
     // Enumeration 32769 - WiFi is enabled in S0 + Sx/AC
-    context.xmlMessage = context.cim.WiFiPort.RequestStateChange(32769)
+    context.xmlMessage = context.cim?.WiFiPort.RequestStateChange(32769)
     return await invokeWsmanCall(context)
   }
 
   async getWifiProfile (context: WiFiConfigContext, event: WiFiConfigEvent): Promise<void> {
-    // Get WiFi profile information based on the profile name from db.
-    this.db = await this.dbFactory.getDb()
-    context.wifiProfile = await this.db.wirelessProfiles.getByName(context.amtProfile.wifiConfigs[context.wifiProfileCount].profileName, context.amtProfile.tenantId)
-    if (context.wifiProfile.ieee8021xProfileName != null) {
-      context.wifiProfile.ieee8021xProfileObject = await this.db.ieee8021xProfiles.getByName(context.wifiProfile.ieee8021xProfileName, context.wifiProfile.tenantId)
-      context.authProtocol = context.wifiProfile.ieee8021xProfileObject.authenticationProtocol
-    }
-    if (this.configurator?.secretsManager) {
-      // Get WiFi profile pskPassphrase from vault
-      const data = await this.configurator.secretsManager.getSecretAtPath(`Wireless/${context.wifiProfile.profileName}`) as WifiCredentials
-      if (data != null) {
-        context.wifiProfile.pskPassphrase = data.PSK_PASSPHRASE
+    if (context.amtProfile?.wifiConfigs != null) {
+      // Get WiFi profile information based on the profile name from db.
+      this.db = await this.dbFactory.getDb()
+      context.wifiProfile = await this.db.wirelessProfiles.getByName(context.amtProfile.wifiConfigs[context.wifiProfileCount].profileName, context.amtProfile.tenantId)
+      if (context.wifiProfile != null) {
+        if (context.wifiProfile.ieee8021xProfileName != null) {
+          context.wifiProfile.ieee8021xProfileObject = await this.db.ieee8021xProfiles.getByName(context.wifiProfile.ieee8021xProfileName, context.wifiProfile.tenantId)
+          context.authProtocol = context.wifiProfile.ieee8021xProfileObject != null ? context.wifiProfile.ieee8021xProfileObject.authenticationProtocol : 0
+        }
+        if (this.configurator?.secretsManager) {
+          // Get WiFi profile pskPassphrase from vault
+          const data = await this.configurator.secretsManager.getSecretAtPath(`Wireless/${context.wifiProfile.profileName}`) as WifiCredentials
+          if (data != null) {
+            context.wifiProfile.pskPassphrase = data.PSK_PASSPHRASE
+          }
+        }
+        return
       }
     }
+    this.logger.error('Null object in getWifiProfile()')
   }
 
   async addWifiConfigs (context: WiFiConfigContext, event: WiFiConfigEvent): Promise<any> {
@@ -475,19 +483,19 @@ export class WiFiConfiguration {
     const selector = { name: 'Name', value: 'WiFi Endpoint 0' }
     // Add  WiFi profile information to WiFi endpoint settings object
     const wifiEndpointSettings: CIM.Models.WiFiEndpointSettings = {
-      ElementName: context.wifiProfile.profileName,
-      InstanceID: `Intel(r) AMT:WiFi Endpoint Settings ${context.wifiProfile.profileName}`,
-      AuthenticationMethod: context.wifiProfile.authenticationMethod as CIM.Types.WiFiEndpointSettings.AuthenticationMethod,
-      EncryptionMethod: context.wifiProfile.encryptionMethod as CIM.Types.WiFiEndpointSettings.EncryptionMethod,
-      SSID: context.wifiProfile.ssid,
-      Priority: context.amtProfile.wifiConfigs[context.wifiProfileCount].priority
+      ElementName: context.wifiProfile != null ? context.wifiProfile.profileName : '',
+      InstanceID: context.wifiProfile != null ? `Intel(r) AMT:WiFi Endpoint Settings ${context.wifiProfile.profileName}` : '',
+      AuthenticationMethod: context.wifiProfile != null ? context.wifiProfile.authenticationMethod as CIM.Types.WiFiEndpointSettings.AuthenticationMethod : 6,
+      EncryptionMethod: context.wifiProfile != null ? context.wifiProfile.encryptionMethod as CIM.Types.WiFiEndpointSettings.EncryptionMethod : 4,
+      SSID: context.wifiProfile != null ? context.wifiProfile.ssid : '',
+      Priority: context.amtProfile?.wifiConfigs != null ? context.amtProfile.wifiConfigs[context.wifiProfileCount].priority : 0
     }
 
     if (wifiEndpointSettings.AuthenticationMethod === 5 || wifiEndpointSettings.AuthenticationMethod === 7) {
       // const authProtocol = context.wifiProfile.ieee8021xProfileObject.authenticationProtocol
       const ieee8021xSettings: CIM.Models.IEEE8021xSettings = {
-        ElementName: context.wifiProfile.ieee8021xProfileObject.profileName,
-        InstanceID: `Intel(r) AMT: 8021X Settings ${context.wifiProfile.ieee8021xProfileObject.profileName}`,
+        ElementName: context.wifiProfile?.ieee8021xProfileObject != null ? context.wifiProfile.ieee8021xProfileObject.profileName : '',
+        InstanceID: context.wifiProfile?.ieee8021xProfileObject != null ? `Intel(r) AMT: 8021X Settings ${context.wifiProfile.ieee8021xProfileObject.profileName}` : '',
         AuthenticationProtocol: context.authProtocol as CIM.Types.IEEE8021xSettings.AuthenticationProtocol,
         Username: context.eaResponse?.username
       }
@@ -496,48 +504,48 @@ export class WiFiConfiguration {
       }
       const cert = context.authProtocol === 2 ? null : context.addCertResponse?.AddCertificate_OUTPUT?.CreatedCertificate?.ReferenceParameters?.SelectorSet?.Selector?._
       const root = context.addTrustedRootCertResponse?.AddTrustedRootCertificate_OUTPUT?.CreatedCertificate?.ReferenceParameters?.SelectorSet?.Selector?._
-      context.xmlMessage = context.amt.WiFiPortConfigurationService.AddWiFiSettings(wifiEndpointSettings, selector, ieee8021xSettings, cert, root)
+      context.xmlMessage = context.amt?.WiFiPortConfigurationService.AddWiFiSettings(wifiEndpointSettings, selector, ieee8021xSettings, cert, root)
     } else {
-      wifiEndpointSettings.PSKPassPhrase = context.wifiProfile.pskPassphrase
-      context.xmlMessage = context.amt.WiFiPortConfigurationService.AddWiFiSettings(wifiEndpointSettings, selector)
+      wifiEndpointSettings.PSKPassPhrase = context.wifiProfile?.pskPassphrase
+      context.xmlMessage = context.amt?.WiFiPortConfigurationService.AddWiFiSettings(wifiEndpointSettings, selector)
     }
 
     // Increment the count to keep track of profiles added to AMT
-    context.wifiProfileName = context.wifiProfile.profileName
+    context.wifiProfileName = context.wifiProfile != null ? context.wifiProfile.profileName : null
     ++context.wifiProfileCount
     return await invokeWsmanCall(context)
   }
 
   async getWiFiPortConfigurationService (context: WiFiConfigContext, event: WiFiConfigEvent): Promise<any> {
-    context.xmlMessage = context.amt.WiFiPortConfigurationService.Get()
+    context.xmlMessage = context.amt?.WiFiPortConfigurationService.Get()
     return await invokeWsmanCall(context, 2)
   }
 
   async putWiFiPortConfigurationService (context: WiFiConfigContext, event: WiFiConfigEvent): Promise<any> {
     const wifiPortConfigurationService: AMT.Models.WiFiPortConfigurationService = context.message.Envelope.Body.AMT_WiFiPortConfigurationService
     wifiPortConfigurationService.localProfileSynchronizationEnabled = 3
-    context.xmlMessage = context.amt.WiFiPortConfigurationService.Put(wifiPortConfigurationService)
+    context.xmlMessage = context.amt?.WiFiPortConfigurationService.Put(wifiPortConfigurationService)
     return await invokeWsmanCall(context, 2)
   }
 
   async generateKeyPair (context: WiFiConfigContext, event: WiFiConfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.PublicKeyManagementService.GenerateKeyPair({ KeyAlgorithm: 0, KeyLength: 2048 })
+    context.xmlMessage = context.amt?.PublicKeyManagementService.GenerateKeyPair({ KeyAlgorithm: 0, KeyLength: 2048 })
     return await invokeWsmanCall(context)
   }
 
   async enumeratePublicPrivateKeyPair (context: WiFiConfigContext, event: WiFiConfigEvent): Promise<void> {
     context.keyPairHandle = context.message.Envelope.Body?.GenerateKeyPair_OUTPUT?.KeyPair?.ReferenceParameters?.SelectorSet?.Selector?._
-    context.xmlMessage = context.amt.PublicPrivateKeyPair.Enumerate()
+    context.xmlMessage = context.amt?.PublicPrivateKeyPair.Enumerate()
     return await invokeWsmanCall(context, 2)
   }
 
   async pullPublicPrivateKeyPair (context: WiFiConfigContext, event: WiFiConfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.PublicPrivateKeyPair.Pull(context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+    context.xmlMessage = context.amt?.PublicPrivateKeyPair.Pull(context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
     return await invokeWsmanCall(context)
   }
 
   async signCSR (context: WiFiConfigContext, event: WiFiConfigEvent): Promise<void> {
-    context.xmlMessage = context.amt.PublicKeyManagementService.GeneratePKCS10RequestEx({
+    context.xmlMessage = context.amt?.PublicKeyManagementService.GeneratePKCS10RequestEx({
       KeyPair: '<a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address><a:ReferenceParameters><w:ResourceURI>http://intel.com/wbem/wscim/1/amt-schema/1/AMT_PublicPrivateKeyPair</w:ResourceURI><w:SelectorSet><w:Selector Name="InstanceID">' + (context.message.response.keyInstanceId as string) + '</w:Selector></w:SelectorSet></a:ReferenceParameters>',
       SigningAlgorithm: 1,
       NullSignedCertificateRequest: context.message.response.csr
@@ -548,14 +556,14 @@ export class WiFiConfiguration {
   async addCertificate (context: WiFiConfigContext, event: WiFiConfigEvent): Promise<void> {
     context.eaResponse = event.data.response
     const cert = event.data.response.certificate
-    context.xmlMessage = context.amt.PublicKeyManagementService.AddCertificate({ CertificateBlob: cert })
+    context.xmlMessage = context.amt?.PublicKeyManagementService.AddCertificate({ CertificateBlob: cert })
     return await invokeWsmanCall(context)
   }
 
   async addRadiusServerRootCertificate (context: WiFiConfigContext, event: WiFiConfigEvent): Promise<void> {
     // To Do: Needs to replace the logic with how we will pull the radius server root certificate
     const cert = context.eaResponse.rootcert
-    context.xmlMessage = context.amt.PublicKeyManagementService.AddTrustedRootCertificate({ CertificateBlob: cert })
+    context.xmlMessage = context.amt?.PublicKeyManagementService.AddTrustedRootCertificate({ CertificateBlob: cert })
     return await invokeWsmanCall(context)
   }
 }

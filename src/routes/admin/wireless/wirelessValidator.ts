@@ -5,7 +5,7 @@
 
 import { check } from 'express-validator'
 import { type Request } from 'express'
-import { AuthenticationMethods, EncryptionMethods } from './constants'
+import { AuthenticationMethods, EncryptionMethods } from './constants.js'
 
 const isValidLinkPolicy = (n: number): boolean =>
   // ValueMap={1, 14, 16, 224}
@@ -95,5 +95,5 @@ const validateIEEE8021xConfigs = async (value: any, req: Request): Promise<boole
 
 const getProfileInterface = async (value: any, req: Request): Promise<boolean | null> => {
   const prof = await req.db.ieee8021xProfiles.getByName(value, req.tenantId)
-  return prof?.wiredInterface
+  return prof?.wiredInterface ?? null
 }

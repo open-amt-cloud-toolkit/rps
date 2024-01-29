@@ -3,20 +3,25 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { createSpyObj } from '../../../test/helper/jest'
-import { allProfiles } from './all'
+import { createSpyObj } from '../../../test/helper/jest.js'
+import { allProfiles } from './all.js'
+import { jest } from '@jest/globals'
+import { spyOn } from 'jest-mock'
 
 describe('Wireless - All', () => {
   let resSpy
   let req
-  let getSpy: jest.SpyInstance
   beforeEach(() => {
     resSpy = createSpyObj('Response', ['status', 'json', 'end', 'send'])
     req = {
-      db: { wirelessProfiles: { get: jest.fn() } },
-      query: { }
+      db: {
+        wirelessProfiles: {
+          get: jest.fn<() => Promise<any>>().mockImplementation(async () => await Promise.resolve([])),
+          getCount: jest.fn<() => Promise<number>>().mockImplementation(async () => await Promise.resolve(123))
+        }
+      },
+      query: {}
     }
-    getSpy = jest.spyOn(req.db.wirelessProfiles, 'get').mockResolvedValue([])
     resSpy.status.mockReturnThis()
     resSpy.json.mockReturnThis()
     resSpy.send.mockReturnThis()
@@ -24,24 +29,22 @@ describe('Wireless - All', () => {
 
   it('should get all', async () => {
     await allProfiles(req, resSpy)
-    expect(getSpy).toHaveBeenCalled()
+    expect(req.db.wirelessProfiles.get).toHaveBeenCalled()
     expect(resSpy.status).toHaveBeenCalledWith(200)
   })
 
   it('should get all with wirelessConfigs length > 0', async () => {
-    req.db.wirelessProfiles.getCount = jest.fn().mockImplementation().mockResolvedValue(123)
     req.query.$count = true
-    jest.spyOn(req.db.wirelessProfiles, 'get').mockResolvedValue(['abc'])
+    spyOn(req.db.wirelessProfiles, 'get').mockResolvedValue(['abc'])
     await allProfiles(req, resSpy)
-    expect(getSpy).toHaveBeenCalled()
+    expect(req.db.wirelessProfiles.get).toHaveBeenCalled()
     expect(resSpy.status).toHaveBeenCalledWith(200)
   })
 
   it('should get all with req.query.$count as true', async () => {
-    req.db.wirelessProfiles.getCount = jest.fn().mockImplementation().mockResolvedValue(123)
     req.query.$count = true
     await allProfiles(req, resSpy)
-    expect(getSpy).toHaveBeenCalled()
+    expect(req.db.wirelessProfiles.get).toHaveBeenCalled()
     expect(req.db.wirelessProfiles.getCount).toHaveBeenCalled()
     expect(resSpy.status).toHaveBeenCalledWith(200)
   })
@@ -52,7 +55,7 @@ describe('Wireless - All', () => {
     })
     req.query.$count = true
     await allProfiles(req, resSpy)
-    expect(getSpy).toHaveBeenCalled()
+    expect(req.db.wirelessProfiles.get).toHaveBeenCalled()
     expect(req.db.wirelessProfiles.getCount).toHaveBeenCalled()
     expect(resSpy.status).toHaveBeenCalledWith(500)
   })

@@ -3,19 +3,19 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import * as WebSocket from 'ws'
-import { v4 as uuid } from 'uuid'
-
-import { type ClientMsg, type ClientObject } from './models/RCS.Config'
-import { type ILogger } from './interfaces/ILogger'
-import { type DataProcessor } from './DataProcessor'
-import { Environment } from './utils/Environment'
-const devices: Record<string, ClientObject> = {}
+import type Server from 'ws'
+import { WebSocketServer, type Data } from 'ws'
+import { randomUUID } from 'node:crypto'
+import { type ClientMsg } from './models/RCS.Config.js'
+import { type ILogger } from './interfaces/ILogger.js'
+import { type DataProcessor } from './DataProcessor.js'
+import { Environment } from './utils/Environment.js'
+import { devices } from './devices.js'
 const maxMessageSize = 1024 * 10 * 10
-export { devices }
+
 export class WebSocketListener {
   dataProcessor: DataProcessor
-  wsServer: WebSocket.Server
+  wsServer: WebSocketServer
   logger: ILogger
 
   constructor (logger: ILogger, dataProcessor: DataProcessor) {
@@ -28,7 +28,7 @@ export class WebSocketListener {
    */
   connect (): boolean {
     try {
-      this.wsServer = new WebSocket.Server({ port: Environment.Config.websocketport })
+      this.wsServer = new WebSocketServer({ port: Environment.Config.websocketport })
       this.wsServer.on('connection', this.onClientConnected)
       this.logger.info(`RPS Microservice socket listening on port: ${Environment.Config.websocketport} ...!`)
       return true
@@ -42,11 +42,11 @@ export class WebSocketListener {
    * @description Called on connection event of WebSocket Server
    * @param {WebSocket} ws  websocket object
    */
-  onClientConnected = (ws: WebSocket): void => {
-    const clientId = uuid()
-    devices[clientId] = { ClientId: clientId, ClientSocket: ws, ciraconfig: {}, network: { count: 0 }, status: {}, tls: {}, activationStatus: false, unauthCount: 0, messageId: 0 }
+  onClientConnected = (ws: Server): void => {
+    const clientId = randomUUID()
+    devices[clientId] = { ClientId: clientId, ClientSocket: ws, ciraconfig: {}, network: { count: 0 }, status: {}, tls: {}, activationStatus: false, unauthCount: 0, messageId: 0, amtPassword: '', connectionParams: { port: 16992, guid: '', username: '', password: '' }, resolve: (value: unknown) => {}, reject: (value: unknown) => {} }
 
-    ws.on('message', async (data: WebSocket.Data, isBinary: boolean) => {
+    ws.on('message', async (data: Data, isBinary: boolean) => {
       // eslint-disable-next-line @typescript-eslint/no-base-to-string
       const message = isBinary ? data : data.toString()
       await this.onMessageReceived(message, clientId)
@@ -81,7 +81,7 @@ export class WebSocketListener {
    * @param {Number} index Index of the connected client
    * @param {WSMessage} message Received from the client
    */
-  async onMessageReceived (message: WebSocket.Data, clientId: string): Promise<void> {
+  async onMessageReceived (message: Data, clientId: string): Promise<void> {
     let messageLength
     if (typeof message === 'string') {
       messageLength = Buffer.from(message).length
@@ -90,11 +90,14 @@ export class WebSocketListener {
     }
     if (messageLength > maxMessageSize) {
       this.logger.error('Incoming message exceeds allowed length')
-      devices[clientId].ClientSocket.close()
+      const clientDevice = devices[clientId]
+      if (clientDevice?.ClientSocket != null) {
+        clientDevice.ClientSocket.close()
+      }
     }
     try {
       // this.logger.debug(`Message from client ${clientId}: ${JSON.stringify(message, null, "\t")}`);
-      let responseMsg: ClientMsg
+      let responseMsg: ClientMsg | null
       if (this.dataProcessor) {
         responseMsg = await this.dataProcessor.processData(message, clientId)
         if (responseMsg) {
@@ -115,8 +118,9 @@ export class WebSocketListener {
   sendMessage (message: ClientMsg, clientId: string): void {
     try {
       this.logger.debug(`${clientId} : response message sent to device: ${JSON.stringify(message, null, '\t')}`)
-      if (devices[clientId] != null) {
-        devices[clientId].ClientSocket.send(JSON.stringify(message))
+      const clientDevice = devices[clientId]
+      if (clientDevice?.ClientSocket != null) {
+        clientDevice.ClientSocket.send(JSON.stringify(message))
       }
     } catch (error) {
       this.logger.error(`Failed to send message to AMT: ${error}`)

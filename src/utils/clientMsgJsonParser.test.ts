@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { v4 as uuid } from 'uuid'
-import { type ClientMsg } from '../models/RCS.Config'
-import { devices } from '../WebSocketListener'
-import { ClientMsgJsonParser } from './ClientMsgJsonParser'
-import { RPSError } from './RPSError'
+import { randomUUID } from 'node:crypto'
+import { type ClientMsg } from '../models/RCS.Config.js'
+import { devices } from '../devices.js'
+import { ClientMsgJsonParser } from './ClientMsgJsonParser.js'
+import { RPSError } from './RPSError.js'
 
 const jsonParser = new ClientMsgJsonParser()
 
@@ -56,8 +56,8 @@ describe('Parse the message received from client', () => {
       }
     }
 
-    const clientId = uuid()
-    devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
+    const clientId = randomUUID()
+    devices[clientId] = { ClientId: clientId, ClientSocket: null as any, unauthCount: 0 } as any
     const clientMsg = jsonParser.parse(msg)
     expect(clientMsg).toEqual(activationmsg)
   })
@@ -75,8 +75,8 @@ describe('Parse the message received from client', () => {
     }
     let rpsError
     try {
-      const clientId = uuid()
-      devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
+      const clientId = randomUUID()
+      devices[clientId] = { ClientId: clientId, ClientSocket: null as any, unauthCount: 0 } as any
       jsonParser.convertClientMsg(msg)
     } catch (error) {
       rpsError = error
@@ -97,8 +97,8 @@ describe('Parse the message received from client', () => {
       payload: 'HTTP/1.1 401 Unauthorized\r\nWWW-Authenticate: Digest realm="Digest:A4070000000000000000000000000000", nonce="wlbEK1EtAAAAAAAAWW5aUHFp+mQQ1j63",stale="false",qop="auth"\r\nContent-Type: text/html\r\nServer: Intel(R) Active Management Technology 11.8.50.3425\r\nContent-Length: 690\r\nConnection: close\r\n\r\n<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" >\n<html><head><link rel=stylesheet href=/styles.css>\n<meta http-equiv="Content-Type" content="text/html; charset=utf-8">\n<title>Intel&reg; Active Management Technology</title></head>\n<body>\n<table class=header>\n<tr><td valign=top nowrap>\n<p class=top1>Intel<font class=r><sup>&reg;</sup></font> Active Management Technology\n<td valign="top"><img src="logo.gif" align="right" alt="Intel">\n</table>\n<br />\n<h2 class=warn>Log on failed. Incorrect user name or password, or user account temporarily locked.</h2>\n\n<p>\n<form METHOD="GET" action="index.htm"><h2><input type=submit value="Try again">\n</h2></form>\n<p>\n\n</body>\n</html>\n'
     }
 
-    const clientId = uuid()
-    devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
+    const clientId = randomUUID()
+    devices[clientId] = { ClientId: clientId, ClientSocket: null as any, unauthCount: 0 } as any
     const clientMsg = jsonParser.parse(msg)
     expect(clientMsg).toEqual(activationmsg)
   })
@@ -115,8 +115,8 @@ describe('Parse the message received from client', () => {
       status: 'success'
     }
 
-    const clientId = uuid()
-    devices[clientId] = { ClientId: clientId, ClientSocket: null, unauthCount: 0 }
+    const clientId = randomUUID()
+    devices[clientId] = { ClientId: clientId, ClientSocket: null as any, unauthCount: 0 } as any
     const clientMsg = jsonParser.parse(msg)
     expect(clientMsg).toEqual(heartbeatResponse)
   })

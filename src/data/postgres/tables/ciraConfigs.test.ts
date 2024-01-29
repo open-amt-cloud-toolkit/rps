@@ -3,15 +3,17 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { CiraConfigTable } from './ciraConfigs'
-import { type CIRAConfig } from '../../../models/RCS.Config'
-import PostgresDb from '..'
-import { API_UNEXPECTED_EXCEPTION, CONCURRENCY_MESSAGE, DEFAULT_SKIP, DEFAULT_TOP } from '../../../utils/constants'
+import { CiraConfigTable } from './ciraConfigs.js'
+import { type CIRAConfig } from '../../../models/RCS.Config.js'
+import PostgresDb from '../index.js'
+import { API_UNEXPECTED_EXCEPTION, CONCURRENCY_MESSAGE, DEFAULT_SKIP, DEFAULT_TOP } from '../../../utils/constants.js'
+import { jest } from '@jest/globals'
+import { type SpyInstance, spyOn } from 'jest-mock'
 
 describe('ciraconfig tests', () => {
   let db: PostgresDb
   let ciraConfigTable: CiraConfigTable
-  let querySpy: jest.SpyInstance
+  let querySpy: SpyInstance<any>
   let ciraConfig: CIRAConfig
   const configName = 'configName'
 
@@ -27,11 +29,11 @@ describe('ciraconfig tests', () => {
       authMethod: 2,
       mpsRootCertificate: 'enabled',
       proxyDetails: 'details',
-      tenantId: null
+      tenantId: null as any
     }
     db = new PostgresDb('')
     ciraConfigTable = new CiraConfigTable(db)
-    querySpy = jest.spyOn(ciraConfigTable.db, 'query')
+    querySpy = spyOn(ciraConfigTable.db, 'query')
   })
   afterEach(() => {
     jest.clearAllMocks()
@@ -63,7 +65,7 @@ describe('ciraconfig tests', () => {
 
     test('should get null for non existant getByName', async () => {
       querySpy.mockResolvedValueOnce({ rows: [], command: '', fields: null, rowCount: 0, oid: 0 })
-      const config: CIRAConfig = await ciraConfigTable.getByName(configName)
+      const config: CIRAConfig = await ciraConfigTable.getByName(configName) as any
       expect(config).toBeNull()
     })
 
@@ -98,7 +100,7 @@ describe('ciraconfig tests', () => {
 
     test('should get a ciraconfig by hostname when exist', async () => {
       querySpy.mockResolvedValueOnce({ rows: [ciraConfig], command: '', fields: null, rowCount: 1, oid: 0 })
-      const result: CIRAConfig = await ciraConfigTable.getByName(configName)
+      const result: CIRAConfig = await ciraConfigTable.getByName(configName) as any
       expect(result).toBe(ciraConfig)
       expect(querySpy).toBeCalledTimes(1)
       expect(querySpy).toBeCalledWith(`
@@ -121,7 +123,7 @@ describe('ciraconfig tests', () => {
   })
   describe('Insert', () => {
     test('should return ciraconfig when successfully inserted', async () => {
-      const getByName = jest.spyOn(ciraConfigTable, 'getByName')
+      const getByName = spyOn(ciraConfigTable, 'getByName')
       querySpy.mockResolvedValueOnce({ rows: [{ ciraConfig }], command: '', fields: null, rowCount: 1, oid: 0 })
       getByName.mockResolvedValueOnce(ciraConfig)
       const result = await ciraConfigTable.insert(ciraConfig)
@@ -146,7 +148,7 @@ describe('ciraconfig tests', () => {
     })
 
     test('should return null when insert failed', async () => {
-      const getByName = jest.spyOn(ciraConfigTable, 'getByName')
+      const getByName = spyOn(ciraConfigTable, 'getByName')
       querySpy.mockResolvedValueOnce({ rows: [{ ciraConfig }], command: '', fields: null, rowCount: 0, oid: 0 })
       getByName.mockResolvedValueOnce(ciraConfig)
       const result = await ciraConfigTable.insert(ciraConfig)
@@ -203,7 +205,7 @@ describe('ciraconfig tests', () => {
   describe('Update', () => {
     test('should update ciraconfig', async () => {
       querySpy.mockResolvedValueOnce({ rows: [{ ciraConfig }], command: '', fields: null, rowCount: 1, oid: 0 })
-      const getByName = jest.spyOn(ciraConfigTable, 'getByName')
+      const getByName = spyOn(ciraConfigTable, 'getByName')
       getByName.mockResolvedValueOnce(ciraConfig)
       const result = await ciraConfigTable.update(ciraConfig)
       expect(querySpy).toBeCalledTimes(1)
@@ -230,7 +232,7 @@ describe('ciraconfig tests', () => {
     })
     test('should NOT update when concurrency issue', async () => {
       querySpy.mockResolvedValueOnce({ rows: [], command: '', fields: null, rowCount: 0, oid: 0 })
-      const getByName = jest.spyOn(ciraConfigTable, 'getByName')
+      const getByName = spyOn(ciraConfigTable, 'getByName')
       getByName.mockResolvedValueOnce(ciraConfig)
       await expect(ciraConfigTable.update(ciraConfig)).rejects.toThrow(CONCURRENCY_MESSAGE)
     })

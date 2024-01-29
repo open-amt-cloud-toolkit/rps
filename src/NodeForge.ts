@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import * as forge from 'node-forge'
+import forge from 'node-forge'
 
 export class NodeForge {
   public readonly pkiOidsCertBag: string = '1.2.840.113549.1.12.10.1.3'
@@ -18,7 +18,7 @@ export class NodeForge {
   }
 
   getBags (pkcs12Pfx: forge.pkcs12.Pkcs12Pfx, filter: forge.pkcs12.BagsFilter): {
-    [key: string]: forge.pkcs12.Bag[]
+    [key: string]: forge.pkcs12.Bag[] | undefined
     localKeyId?: forge.pkcs12.Bag[]
     friendlyName?: forge.pkcs12.Bag[]
   } {

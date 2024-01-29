@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import * as crypto from 'crypto'
-import { type NodeForge } from '../NodeForge'
+import crypto from 'node:crypto'
+import { type NodeForge } from '../NodeForge.js'
 
 export class SignatureHelper {
   private readonly nodeForge: NodeForge

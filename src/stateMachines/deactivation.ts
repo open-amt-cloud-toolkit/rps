@@ -5,15 +5,15 @@
 
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 import { assign, createMachine, interpret, sendTo } from 'xstate'
-import { Configurator } from '../Configurator'
-import { HttpHandler } from '../HttpHandler'
-import Logger from '../Logger'
-import ClientResponseMsg from '../utils/ClientResponseMsg'
-import { Environment } from '../utils/Environment'
-import { devices } from '../WebSocketListener'
-import { Error } from './error'
-import got from 'got'
-import { invokeWsmanCall } from './common'
+import { Configurator } from '../Configurator.js'
+import { HttpHandler } from '../HttpHandler.js'
+import Logger from '../Logger.js'
+import ClientResponseMsg from '../utils/ClientResponseMsg.js'
+import { Environment } from '../utils/Environment.js'
+import { devices } from '../devices.js'
+import { Error } from './error.js'
+import got, { type Got } from 'got'
+import { invokeWsmanCall } from './common.js'
 
 export interface DeactivationContext {
   message: any
@@ -38,6 +38,7 @@ export class Deactivation {
   amt: AMT.Messages
   logger: Logger
   error: Error = new Error()
+  gotClient: Got
   machine =
     createMachine<DeactivationContext, DeactivationEvent>({
       predictableActionArguments: true,
@@ -202,7 +203,12 @@ export class Deactivation {
       clientObj.status.Status = context.errorMessage !== '' ? context.errorMessage : 'Failed'
       method = 'failed'
     }
+
     const responseMessage = ClientResponseMsg.get(clientId, null, status, method, JSON.stringify(clientObj.status))
-    devices[clientId].ClientSocket.send(JSON.stringify(responseMessage))
+    if (clientObj.ClientSocket) {
+      clientObj.ClientSocket.send(JSON.stringify(responseMessage))
+    } else {
+      this.logger.error('No client socket')
+    }
   }
 }

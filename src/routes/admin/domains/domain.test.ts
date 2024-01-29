@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { passwordChecker, domainSuffixChecker, expirationChecker } from './domain'
-import { NodeForge } from '../../../NodeForge'
-import { CertManager } from '../../../certManager'
-import Logger from '../../../Logger'
+import { passwordChecker, domainSuffixChecker, expirationChecker } from './domain.js'
+import { NodeForge } from '../../../NodeForge.js'
+import { CertManager } from '../../../certManager.js'
+import Logger from '../../../Logger.js'
 
 describe('Domain Profile Validation', () => {
   const nodeForge = new NodeForge()

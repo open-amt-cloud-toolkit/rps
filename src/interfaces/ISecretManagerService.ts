@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type CertCreationResult } from '../models'
+import { type CertCreationResult } from '../models/index.js'
 
 export interface DeviceCredentials {
-  AMT_PASSWORD: string
+  AMT_PASSWORD: string | null
   MPS_PASSWORD?: string // only required for CIRA
-  MEBX_PASSWORD: string
+  MEBX_PASSWORD?: string | null
   version?: string
 }
 
@@ -35,8 +35,8 @@ export interface CertCredentials {
 }
 
 export interface ISecretManagerService {
-  getSecretFromKey: (path: string, key: string) => Promise<string>
-  getSecretAtPath: (path: string) => Promise<DeviceCredentials | WifiCredentials | TLSCredentials | CertCredentials | CiraConfigSecrets>
+  getSecretFromKey: (path: string, key: string) => Promise<string | null>
+  getSecretAtPath: (path: string) => Promise<DeviceCredentials | WifiCredentials | TLSCredentials | CertCredentials | CiraConfigSecrets | null>
   writeSecretWithObject: (
     path: string,
     data: DeviceCredentials | WifiCredentials | TLSCredentials | CertCredentials | CiraConfigSecrets

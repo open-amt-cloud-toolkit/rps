@@ -3,11 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import * as svcMngr from './serviceManager'
-import { type IServiceManager } from './interfaces/IServiceManager'
-import { ConsulService } from './consul'
-import { Environment } from './utils/Environment'
-import * as exponentialBackoff from 'exponential-backoff'
+import { } from './serviceManager.js'
+import { type IServiceManager } from './interfaces/IServiceManager.js'
+import { ConsulService } from './consulService.js'
+import { Environment } from './utils/Environment.js'
+import { jest } from '@jest/globals'
+
+const { processServiceConfigs, waitForServiceManager } = await import ('./serviceManager.js')
 
 const consul: IServiceManager = new ConsulService('consul', '8500')
 let componentName: string
@@ -37,7 +39,6 @@ describe('Index', () => {
   })
 
   it('should wait for service provider', async () => {
-    const backOffSpy = jest.spyOn(exponentialBackoff, 'backOff')
     let shouldBeOk = false
     const secretMock: IServiceManager = {
       health: jest.fn(() => {
@@ -46,26 +47,26 @@ describe('Index', () => {
         throw new Error('error')
       })
     } as any
-    await svcMngr.waitForServiceManager(secretMock, 'consul')
-    expect(backOffSpy).toHaveBeenCalled()
+    await waitForServiceManager(secretMock, 'consul')
+    expect(secretMock.health).toHaveBeenCalled()
   })
   it('should pass processServiceConfigs empty Consul', async () => {
-    consul.get = jest.fn(() => null)
+    consul.get = jest.fn(() => null as any)
     consul.seed = jest.fn(async () => await Promise.resolve(true))
-    await svcMngr.processServiceConfigs(consul, config)
+    await processServiceConfigs(consul, config)
     expect(consul.get).toHaveBeenCalledWith(config.consul_key_prefix)
     expect(consul.seed).toHaveBeenCalledWith(config.consul_key_prefix, config)
   })
   it('should pass processServiceConfigs seeded Consul', async () => {
     const consulValues: Array<{ Key: string, Value: string }> = [
       {
-        Key: componentName + '/config',
+        Key: componentName + '/Config.js',
         Value: '{"web_port": 8081, "delay_timer": 12}'
       }
     ]
     consul.get = jest.fn(async () => await Promise.resolve(consulValues))
     consul.process = jest.fn(() => JSON.stringify(consulValues, null, 2))
-    await svcMngr.processServiceConfigs(consul, config)
+    await processServiceConfigs(consul, config)
     expect(consul.get).toHaveBeenCalledWith(config.consul_key_prefix)
     expect(consul.process).toHaveBeenCalledWith(consulValues)
   })

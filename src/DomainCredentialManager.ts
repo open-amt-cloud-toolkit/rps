@@ -3,22 +3,21 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type IDomainCredentialManager } from './interfaces/IDomainCredentialManager'
-import { type ILogger } from './interfaces/ILogger'
-import { type IDomainsTable } from './interfaces/database/IDomainsDb'
-import { type AMTDomain } from './models'
-import { type Configurator } from './Configurator'
-import { type CertCredentials } from './interfaces/ISecretManagerService'
+import { type IDomainCredentialManager } from './interfaces/IDomainCredentialManager.js'
+import { type ILogger } from './interfaces/ILogger.js'
+import { type IDomainsTable } from './interfaces/database/IDomainsDb.js'
+import { type AMTDomain } from './models/index.js'
+import { type ISecretManagerService, type CertCredentials } from './interfaces/ISecretManagerService.js'
 
 export class DomainCredentialManager implements IDomainCredentialManager {
   private readonly amtDomains: IDomainsTable
   private readonly logger: ILogger
-  private readonly configurator: Configurator = null
+  private readonly secretsManager: ISecretManagerService | null = null
 
-  constructor (logger: ILogger, amtDomains: IDomainsTable, configurator?: Configurator) {
+  constructor (logger: ILogger, amtDomains: IDomainsTable, secretsManager?: ISecretManagerService) {
     this.amtDomains = amtDomains
     this.logger = logger
-    this.configurator = configurator
+    this.secretsManager = secretsManager ?? null
   }
 
   /**
@@ -27,13 +26,13 @@ export class DomainCredentialManager implements IDomainCredentialManager {
      * @param {string} tenantId
      * @returns {AMTDomain} returns domain object
      */
-  async getProvisioningCert (domainSuffix: string, tenantId: string): Promise<AMTDomain> {
+  async getProvisioningCert (domainSuffix: string, tenantId: string): Promise<AMTDomain | null> {
     const domain = await this.amtDomains.getDomainByDomainSuffix(domainSuffix, tenantId)
     this.logger.debug(`domain : ${JSON.stringify(domain)}`)
 
     if (domain?.provisioningCert) {
-      if (this.configurator?.secretsManager) {
-        const certPwd = await this.configurator.secretsManager.getSecretAtPath(`certs/${domain.profileName}`) as CertCredentials
+      if (this.secretsManager) {
+        const certPwd = await this.secretsManager.getSecretAtPath(`certs/${domain.profileName}`) as CertCredentials
         this.logger.debug('Received CertPwd from vault')
         domain.provisioningCert = certPwd.CERT
         domain.provisioningCertPassword = certPwd.CERT_PASSWORD
