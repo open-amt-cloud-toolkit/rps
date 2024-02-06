@@ -24,7 +24,7 @@ jobs:
 
         run: docker build . --file Dockerfile --tag vprodemo.azurecr.io/rps:${{ github.sha }} --tag vprodemo.azurecr.io/rps:latest
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@d43c1f16c00cfd3978dde6c07f4bbcf9eb6993ca # master
+        uses: aquasecurity/trivy-action@84384bd6e777ef152729993b8145ea352e9dd3ef # master
         with:
           image-ref: 'vprodemo.azurecr.io/rps:${{ github.sha }}'
           format: 'sarif'
@@ -39,7 +39,7 @@ jobs:
         with:
           sarif_file: 'trivy-results.sarif'
       - name: Upload Trivy Artifacts
-        uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8 # v4.3.0
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         if: always()
         with:
           name: trivy-results.sarif
