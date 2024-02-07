@@ -37,6 +37,7 @@
   "exports": "./index.js",
   "scripts": {
     "compile": "tsc --project tsconfig.build.json && genversion dist/utils/version.js --es6",
+    "build": "npm run compile",
     "start": "tsc && node ./dist/Index.js",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js  --forceExit --coverage",
     "watch": "nodemon -e ts -w ./src -x npm run start",
