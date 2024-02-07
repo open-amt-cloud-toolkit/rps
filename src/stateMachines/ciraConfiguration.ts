@@ -31,7 +31,7 @@ export interface CIRAConfigContext {
   errorMessage: string
   xmlMessage: string // the message we send to the device
   message: any // the parsed json response
-  ciraConfig: CIRAConfig
+  ciraConfig: CIRAConfig | null
   profile: AMTConfiguration | null
   statusMessage: string
   privateCerts: any[]
@@ -104,7 +104,8 @@ export class CIRAConfiguration {
             // TODO: [tech debt] coupling, would expect a direct call to the persistence with the name of the cira config to retrieve it rather than use (amt) profile manager
             src: async (context, event) => {
               const profileName = context.profile?.profileName != null ? context.profile.profileName : null
-              await this.configurator.profileManager.getCiraConfiguration(profileName, context.tenantId)
+              context.ciraConfig = await this.configurator.profileManager.getCiraConfiguration(profileName, context.tenantId)
+              return context.ciraConfig
             },
             id: 'get-cira-config',
             onDone: {
@@ -123,10 +124,12 @@ export class CIRAConfiguration {
             id: 'set-mps-password',
             onDone: {
               actions: assign((context, event) => {
-                if (event.data?.MPS_PASSWORD) {
-                  context.ciraConfig.password = event.data?.MPS_PASSWORD
-                } else {
-                  context.ciraConfig.password = PasswordHelper.generateRandomPassword()
+                if (context.ciraConfig) {
+                  if (event.data?.MPS_PASSWORD) {
+                    context.ciraConfig.password = event.data?.MPS_PASSWORD
+                  } else {
+                    context.ciraConfig.password = PasswordHelper.generateRandomPassword()
+                  }
                 }
                 return context
               }),
@@ -155,7 +158,7 @@ export class CIRAConfiguration {
         SAVE_MPS_PASSWORD_TO_SECRET_PROVIDER: {
           invoke: {
             src: async (context, event) => await this.configurator.secretsManager.writeSecretWithObject(`devices/${devices[context.clientId].uuid}`, {
-              MPS_PASSWORD: context.ciraConfig.password,
+              MPS_PASSWORD: context.ciraConfig?.password,
               AMT_PASSWORD: devices[context.clientId].amtPassword,
               MEBX_PASSWORD: devices[context.clientId].action === ClientAction.ADMINCTLMODE ? devices[context.clientId].mebxPassword : ''
             }),
@@ -174,9 +177,9 @@ export class CIRAConfiguration {
               json: {
                 guid: devices[context.clientId].uuid,
                 hostname: devices[context.clientId].hostname,
-                mpsusername: context.ciraConfig.username,
+                mpsusername: context.ciraConfig?.username,
                 tags: context.profile != null ? context.profile.tags ?? [] : null,
-                tenantId: context.ciraConfig.tenantId
+                tenantId: context.ciraConfig?.tenantId
               }
             }),
             id: 'save-device-to-mps',
@@ -441,7 +444,7 @@ export class CIRAConfiguration {
 
   async addTrustedRootCertificate (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
     if (context.amt != null) {
-      context.xmlMessage = context.amt.PublicKeyManagementService.AddTrustedRootCertificate({ CertificateBlob: context.ciraConfig.mpsRootCertificate })
+      context.xmlMessage = context.amt.PublicKeyManagementService.AddTrustedRootCertificate({ CertificateBlob: context.ciraConfig?.mpsRootCertificate ?? '' })
       return await invokeWsmanCall(context, 2)
     } else {
       this.logger.error('Null object in addTrustedRootCertificate()')
@@ -451,14 +454,14 @@ export class CIRAConfiguration {
   async addMPS (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
     if (context.amt != null) {
       const server: Models.MPServer = {
-        AccessInfo: context.ciraConfig.mpsServerAddress,
-        InfoFormat: context.ciraConfig.serverAddressFormat,
-        Port: context.ciraConfig.mpsPort,
-        AuthMethod: context.ciraConfig.authMethod,
-        Username: context.ciraConfig.username,
-        Password: context.ciraConfig.password
+        AccessInfo: context.ciraConfig?.mpsServerAddress,
+        InfoFormat: context.ciraConfig?.serverAddressFormat,
+        Port: context.ciraConfig?.mpsPort,
+        AuthMethod: context.ciraConfig?.authMethod,
+        Username: context.ciraConfig?.username,
+        Password: context.ciraConfig?.password
       }
-      if (context.ciraConfig.serverAddressFormat === 3 && context.ciraConfig.commonName) {
+      if (context.ciraConfig?.serverAddressFormat === 3 && context.ciraConfig?.commonName) {
         server.CommonName = context.ciraConfig.commonName
       }
       context.xmlMessage = context.amt.RemoteAccessService.AddMPS(server)
