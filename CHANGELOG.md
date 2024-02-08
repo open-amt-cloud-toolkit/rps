@@ -1,3 +1,10 @@
+## [2.22.1](https://github.com/open-amt-cloud-toolkit/rps/compare/v2.22.0...v2.22.1) (2024-02-08)
+
+
+### Bug Fixes
+
+* update build tasks ([#1457](https://github.com/open-amt-cloud-toolkit/rps/issues/1457)) ([6d8a2f9](https://github.com/open-amt-cloud-toolkit/rps/commit/6d8a2f9471432159803f3e25d71db83d33119603))
+
 <a name="2.22.0"></a>
 ## [2.22.0] - 2023-12-13
 ### Build
