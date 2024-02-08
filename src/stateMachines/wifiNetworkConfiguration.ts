@@ -502,8 +502,8 @@ export class WiFiConfiguration {
       if (context.authProtocol === 2) {
         ieee8021xSettings.Password = context.eaResponse?.password
       }
-      const cert = context.authProtocol === 2 ? null : context.addCertResponse?.AddCertificate_OUTPUT?.CreatedCertificate?.ReferenceParameters?.SelectorSet?.Selector?._
-      const root = context.addTrustedRootCertResponse?.AddTrustedRootCertificate_OUTPUT?.CreatedCertificate?.ReferenceParameters?.SelectorSet?.Selector?._
+      const cert: string = context.authProtocol === 2 ? null : context.addCertResponse?.AddCertificate_OUTPUT?.CreatedCertificate?.ReferenceParameters?.SelectorSet?.Selector?._
+      const root: string = context.addTrustedRootCertResponse?.AddTrustedRootCertificate_OUTPUT?.CreatedCertificate?.ReferenceParameters?.SelectorSet?.Selector?._
       context.xmlMessage = context.amt?.WiFiPortConfigurationService.AddWiFiSettings(wifiEndpointSettings, selector, ieee8021xSettings, cert, root)
     } else {
       wifiEndpointSettings.PSKPassPhrase = context.wifiProfile?.pskPassphrase

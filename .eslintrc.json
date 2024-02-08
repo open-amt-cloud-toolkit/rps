@@ -39,6 +39,8 @@
         "@typescript-eslint/no-dynamic-delete": 0,
         "@typescript-eslint/prefer-nullish-coalescing": 0,
         "@typescript-eslint/unbound-method": 0,
-        "@typescript-eslint/no-non-null-assertion": "off"
+        "@typescript-eslint/no-non-null-assertion": 0,
+        "@typescript-eslint/no-unsafe-assignment": 0,
+        "@typescript-eslint/no-unsafe-argument": 0
     }
 }
