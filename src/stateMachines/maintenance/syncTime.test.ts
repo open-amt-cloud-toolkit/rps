@@ -54,13 +54,13 @@ beforeEach(() => {
     message: expect.any(String)
   }
   lowAccuracyRsp = {
-    GetLowAccuracyTimeSynchOutput: {
+    GetLowAccuracyTimeSynch_OUTPUT: {
       ReturnValue: 0,
       Ta0: 0
     }
   }
   highAccuracyRsp = {
-    SetHighAccuracyTimeSynchOutput: {
+    SetHighAccuracyTimeSynch_OUTPUT: {
       ReturnValue: 0
     }
   }
@@ -79,22 +79,22 @@ it('should succeed synchronizing time', async () => {
 })
 it('should fail getting low accuracy time sync on bad return value', async () => {
   doneResponse.status = StatusFailed
-  lowAccuracyRsp.GetLowAccuracyTimeSynchOutput.ReturnValue = PTStatus.INTERNAL_ERROR.value
+  lowAccuracyRsp.GetLowAccuracyTimeSynch_OUTPUT.ReturnValue = PTStatus.INTERNAL_ERROR.value
   await runTheTest()
 })
 it('should fail setting high accuracy time sync on bad return value', async () => {
   doneResponse.status = StatusFailed
-  highAccuracyRsp.SetHighAccuracyTimeSynchOutput.ReturnValue = PTStatus.INTERNAL_ERROR.value
+  highAccuracyRsp.SetHighAccuracyTimeSynch_OUTPUT.ReturnValue = PTStatus.INTERNAL_ERROR.value
   await runTheTest()
 })
 it('should fail missing lowAccuracyRsp.GetLowAccuracyTimeSynchOutput', async () => {
-  const { GetLowAccuracyTimeSynchOutput, ...newLowAccuracyRsp } = lowAccuracyRsp
+  const { GetLowAccuracyTimeSynch_OUTPUT: GetLowAccuracyTimeSynchOutput, ...newLowAccuracyRsp } = lowAccuracyRsp
   lowAccuracyRsp = newLowAccuracyRsp as any
   doneResponse.status = StatusFailed
   await runTheTest()
 })
 it('should fail missing highAccuracyRsp.SetHighAccuracyTimeSynchOutput', async () => {
-  const { SetHighAccuracyTimeSynchOutput, ...newHighAccuracyRsp } = highAccuracyRsp
+  const { SetHighAccuracyTimeSynch_OUTPUT: SetHighAccuracyTimeSynchOutput, ...newHighAccuracyRsp } = highAccuracyRsp
   highAccuracyRsp = newHighAccuracyRsp as any
   doneResponse.status = StatusFailed
   await runTheTest()
