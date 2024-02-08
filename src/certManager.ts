@@ -126,7 +126,6 @@ export class CertManager {
     } catch (e) {
       throw new Error('ASN.1 parsing failed')
     }
-    // const asn = this.nodeForge.asn1FromDer(pfxder)
     let pfx: pkcs12.Pkcs12Pfx
     try {
       pfx = this.nodeForge.pkcs12FromAsn1(asn, true, passphrase)

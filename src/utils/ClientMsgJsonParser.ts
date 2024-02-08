@@ -39,13 +39,13 @@ export class ClientMsgJsonParser {
 
   /**
    * @description Convert the payload received from client
-   * @param {string} payloadstring
+   * @param {string} payloadString
    * @returns {Payload}
    */
-  parsePayload (payloadstring: string): Payload {
+  parsePayload (payloadString: string): Payload {
     let payload: Payload
     try {
-      payload = JSON.parse(payloadstring)
+      payload = JSON.parse(payloadString)
     } catch (error) {
       throw new RPSError(`Failed to parse client message payload. ${error.message}`)
     }
@@ -71,14 +71,14 @@ export class ClientMsgJsonParser {
     return zlp + str
   }
 
-  getUUID (uuid: any): any {
-    uuid = Buffer.from(uuid)
+  getUUID (uuid: any[]): any {
+    const bufUuid = Buffer.from(uuid)
     const guid = [
-      this.zeroLeftPad(uuid.readUInt32LE(0).toString(16), 8),
-      this.zeroLeftPad(uuid.readUInt16LE(4).toString(16), 4),
-      this.zeroLeftPad(uuid.readUInt16LE(6).toString(16), 4),
-      this.zeroLeftPad(uuid.readUInt16BE(8).toString(16), 4),
-      this.zeroLeftPad(uuid.slice(10).toString('hex').toLowerCase(), 12)].join('-')
+      this.zeroLeftPad(bufUuid.readUInt32LE(0).toString(16), 8),
+      this.zeroLeftPad(bufUuid.readUInt16LE(4).toString(16), 4),
+      this.zeroLeftPad(bufUuid.readUInt16LE(6).toString(16), 4),
+      this.zeroLeftPad(bufUuid.readUInt16BE(8).toString(16), 4),
+      this.zeroLeftPad(bufUuid.slice(10).toString('hex').toLowerCase(), 12)].join('-')
 
     return guid
   }

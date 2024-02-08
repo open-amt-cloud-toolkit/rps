@@ -198,7 +198,8 @@ export class ChangePassword {
   async refreshMPS (context: ChangePasswordContext): Promise<boolean> {
     const clientObj = devices[context.clientId]
     const url = `${Environment.Config.mps_server}/api/v1/devices/refresh/${clientObj.uuid}`
-    let rsp, rsperr
+    let rsp: any
+    let rsperr: any
     try {
       rsp = await got.delete(url)
     } catch (error) {
