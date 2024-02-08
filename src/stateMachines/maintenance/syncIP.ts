@@ -227,11 +227,11 @@ export class SyncIP {
     if (context.wiredSettings?.DHCPEnabled) {
       settingsToPut.IpSyncEnabled = true
       settingsToPut.SharedStaticIp = false
-      // settingsToPut.IPAddress = null
-      // settingsToPut.SubnetMask = null
-      // settingsToPut.DefaultGateway = null
-      // settingsToPut.PrimaryDNS = null
-      // settingsToPut.SecondaryDNS = null
+      delete settingsToPut.IPAddress
+      delete settingsToPut.SubnetMask
+      delete settingsToPut.DefaultGateway
+      delete settingsToPut.PrimaryDNS
+      delete settingsToPut.SecondaryDNS
     } else {
       settingsToPut.IpSyncEnabled = false
       settingsToPut.SharedStaticIp = false

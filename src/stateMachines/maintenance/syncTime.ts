@@ -16,14 +16,14 @@ import { doneFail, doneSuccess } from './doneResponse.js'
 import { getPTStatusName, PTStatus } from '../../utils/PTStatus.js'
 
 export interface GetLowAccuracyTimeSynchResponse {
-  GetLowAccuracyTimeSynchOutput: {
+  GetLowAccuracyTimeSynch_OUTPUT: {
     ReturnValue: number
     Ta0: number
   }
 }
 
 export interface SetHighAccuracyTimeSynchResponse {
-  SetHighAccuracyTimeSynchOutput: {
+  SetHighAccuracyTimeSynch_OUTPUT: {
     ReturnValue: number
   }
 }
@@ -68,7 +68,9 @@ export class SyncTime {
           id: 'get-low-accuracy-time-synch',
           src: this.getLowAccuracyTimeSync,
           onDone: {
-            actions: assign({ lowAccuracyData: (context, event) => event.data }),
+            actions: assign({
+              lowAccuracyData: (context, event) => event.data
+            }),
             target: 'SET_HIGH_ACCURACY_TIME_SYNCH'
           },
           onError: {
@@ -108,7 +110,7 @@ export class SyncTime {
   async getLowAccuracyTimeSync (context: SyncTimeContext): Promise<LowAccuracyData> {
     const wsmanXml = amt.TimeSynchronizationService.GetLowAccuracyTimeSynch()
     const rsp = await invokeWsmanCall<GetLowAccuracyTimeSynchResponse>(context.clientId, wsmanXml)
-    const output = rsp.GetLowAccuracyTimeSynchOutput
+    const output = rsp.GetLowAccuracyTimeSynch_OUTPUT
     if (output?.ReturnValue !== PTStatus.SUCCESS.value) {
       const msg = `ReturnValue ${getPTStatusName(output?.ReturnValue)}`
       throw new Error(msg)
@@ -128,7 +130,7 @@ export class SyncTime {
     const wsmanXml = amt.TimeSynchronizationService.SetHighAccuracyTimeSynch(Ta0, Tm1, Tm2)
     logger.debug(`sending SetHighAccuracyTimeSynch: Ta0: ${Ta0} Tm1: ${Tm1} Tm2: ${Tm2}`)
     const wsmanRsp = await invokeWsmanCall<SetHighAccuracyTimeSynchResponse>(context.clientId, wsmanXml)
-    const output = wsmanRsp.SetHighAccuracyTimeSynchOutput
+    const output = wsmanRsp.SetHighAccuracyTimeSynch_OUTPUT
     if (output?.ReturnValue !== PTStatus.SUCCESS.value) {
       const msg = `ReturnValue ${getPTStatusName(output?.ReturnValue)}`
       throw new Error(msg)
