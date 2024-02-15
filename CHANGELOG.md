@@ -1,3 +1,10 @@
+## [2.22.2](https://github.com/open-amt-cloud-toolkit/rps/compare/v2.22.1...v2.22.2) (2024-02-14)
+
+
+### Bug Fixes
+
+* **db:** adds create database to init.sql ([a1eee8b](https://github.com/open-amt-cloud-toolkit/rps/commit/a1eee8b6ed12348c892edf74edc95124f0193174))
+
 ## [2.22.1](https://github.com/open-amt-cloud-toolkit/rps/compare/v2.22.0...v2.22.1) (2024-02-08)
 
 
