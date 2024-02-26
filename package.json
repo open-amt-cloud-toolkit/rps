@@ -91,7 +91,7 @@
     "jest-mock": "^29.7.0",
     "jest-sinon": "^1.1.0",
     "jest-transform-stub": "^2.0.0",
-    "nodemon": "^3.0.3",
+    "nodemon": "^3.1.0",
     "sinon": "^17.0.1",
     "ts-jest": "^29.1.2",
     "ts-jest-mock-import-meta": "^1.2.0",
