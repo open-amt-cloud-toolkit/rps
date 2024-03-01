@@ -416,6 +416,13 @@ export class CIRAConfiguration {
     } else {
       this.logger.error('Null object in addRemoteAccessPolicyRule()')
     }
+    const policy: AMT.Models.RemoteAccessPolicyRule = {
+      Trigger: 2, // 2 – Periodic
+      TunnelLifeTime: 3600, // 3600 means that the tunnel should stay open for 1 hour then disconnect and reconnect.  This prevents an issue where AMT can get into a disconnected state and never attempt to reconnect.
+      ExtendedData: 'AAAAAAAAABk=' // Equals to 25 seconds in base 64 with network order.
+    }
+    context.xmlMessage = context.amt.RemoteAccessService.AddRemoteAccessPolicyRule(policy, selector)
+    return await invokeWsmanCall(context, 2)
   }
 
   async getEnvironmentDetectionSettings (context: CIRAConfigContext, event: CIRAConfigEvent): Promise<void> {
