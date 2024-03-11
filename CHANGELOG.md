@@ -1,3 +1,5 @@
+## [2.22.3](https://github.com/open-amt-cloud-toolkit/rps/compare/v2.22.2...v2.22.3) (2024-03-11)
+
 ## [2.22.2](https://github.com/open-amt-cloud-toolkit/rps/compare/v2.22.1...v2.22.2) (2024-02-14)
 
 
