@@ -14,7 +14,7 @@ import { WSEnterpriseAssistantListener, enterpriseAssistantSocket, promises } fr
 import { config } from '../test/helper/Config.js'
 import { jest } from '@jest/globals'
 import { type SpyInstance, spyOn } from 'jest-mock'
-import { invokeEnterpriseAssistantCall, invokeEnterpriseAssistantCallInternal, invokeWsmanCall } from './common.js'
+import { invokeEnterpriseAssistantCall, invokeEnterpriseAssistantCallInternal, invokeWsmanCall, coalesceMessage } from './common.js'
 
 Environment.Config = config
 describe('Common', () => {
@@ -172,5 +172,17 @@ describe('Common', () => {
     } catch (err) {
       expect(err).toBeInstanceOf(EA_TIMEOUT_ERROR)
     }
+  })
+  it('should return coalesced error message', () => {
+    const prefix = 'test error'
+    const anyErr = {
+      statusCode: 400,
+      statusMessage: 'Bad Request'
+    }
+    const msg = coalesceMessage(prefix, anyErr)
+    expect(msg).toBeTruthy()
+    expect(msg).toContain(prefix)
+    expect(msg).toContain('Bad Request')
+    expect(msg).toContain('400')
   })
 })

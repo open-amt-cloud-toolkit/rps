@@ -3,24 +3,39 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { assign, createMachine } from 'xstate'
+import { assign, setup, sendTo, fromPromise } from 'xstate'
 import {
   coalesceMessage,
-  commonActions,
-  commonContext,
-  commonGuards,
   type CommonMaintenanceContext,
-  type EnumerationContext,
-  invokeWsmanCall
-} from './common.js'
+  type EnumerationContext
+} from '../common.js'
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
-import { type Enumerate, type Pull } from '@open-amt-cloud-toolkit/wsman-messages/models/common.js'
 import { doneFail, doneSuccess } from './doneResponse.js'
 import Logger from '../../Logger.js'
+import { UNEXPECTED_PARSE_ERROR } from '../../utils/constants.js'
+import { invokeWsmanCall } from '../common.js'
+import { Error as ErrorStateMachine } from './../error.js'
 
-export type EthernetPortSettingsPullResponse = Pull<{
-  AMT_EthernetPortSettings: AMT.Models.EthernetPortSettings | AMT.Models.EthernetPortSettings[]
-}>
+export interface EthernetPortSettingsPullResponse {
+  Envelope: {
+    Body: {
+      PullResponse: {
+        Items: {
+          AMT_EthernetPortSettings: AMT.Models.EthernetPortSettings | AMT.Models.EthernetPortSettings[]
+        }
+      }
+    }
+  }
+}
+export interface EthernetPortSettingsEnumerateResponse {
+  Envelope: {
+    Body: {
+      EnumerateResponse: {
+        EnumerationContext
+      }
+    }
+  }
+}
 
 export const MessageNoWiredSettingsOnDevice = 'Device has no wired configuration settings'
 export const MessageWirelessOnly = 'Not applicable for wireless only device'
@@ -35,14 +50,18 @@ export interface IPConfiguration {
 }
 
 export const SyncIPEventType = 'SYNC_IP'
-export type SyncIPEvent =
-  | { type: typeof SyncIPEventType, clientId: string, targetIPConfig?: IPConfiguration }
+export interface SyncIPEvent {
+  type: typeof SyncIPEventType | 'ONFAILED'
+  clientId: string
+  targetIPConfig?: IPConfiguration
+  output?: any
+}
 
 export interface SyncIPContext extends CommonMaintenanceContext {
   targetIPConfig?: IPConfiguration
   enumerationContext: EnumerationContext
   parseErrorCount: number
-  wiredSettings?: AMT.Models.EthernetPortSettings
+  wiredSettings: AMT.Models.EthernetPortSettings
   wirelessSettings?: AMT.Models.EthernetPortSettings
 }
 
@@ -55,130 +74,19 @@ export const amt = new AMT.Messages()
 const logger = new Logger('syncIP')
 
 export class SyncIP {
-  machine = createMachine<SyncIPContext, SyncIPEvent>({
-    id: 'sync-ip',
-    predictableActionArguments: true,
-    context: {
-      ...commonContext,
-      taskName: 'syncip',
-      enumerationContext: '',
-      parseErrorCount: 0
-    },
-    initial: 'INITIAL',
-    states: {
-      INITIAL: {
-        on: {
-          SYNC_IP: [
-            {
-              cond: (context, event) => !event.targetIPConfig?.ipAddress,
-              actions: assign({
-                statusMessage: 'at INITIAL invalid ip configuration'
-              }),
-              target: 'FAILED'
-            },
-            {
-              actions: assign({
-                clientId: (context, event) => event.clientId,
-                targetIPConfig: (context, event) => event.targetIPConfig
-              }),
-              target: 'ENUMERATE_ETHERNET_PORT_SETTINGS'
-            }
-          ]
-        }
-      },
-      ENUMERATE_ETHERNET_PORT_SETTINGS: {
-        invoke: {
-          id: 'enumerate-ethernet-port-settings',
-          src: this.enumerateEthernetPortSettings.bind(this),
-          onDone: {
-            actions: assign({ enumerationContext: (context, event) => event.data }),
-            target: 'PULL_ETHERNET_PORT_SETTINGS'
-          },
-          onError: {
-            actions: assign({
-              statusMessage: (_, event) => coalesceMessage('at ENUMERATE_ETHERNET_PORT_SETTINGS', event.data)
-            }),
-            target: 'FAILED'
-          }
-        }
-      },
-      PULL_ETHERNET_PORT_SETTINGS: {
-        invoke: {
-          id: 'pull-ethernet-port-settings',
-          src: this.pullEthernetPortSettings.bind(this),
-          onDone: {
-            actions: assign((context, event) => ({
-              wiredSettings: event.data.wiredSettings,
-              wirelessSettings: event.data.wirelessSettings
-            })),
-            target: 'PUT_ETHERNET_PORT_SETTINGS'
-          },
-          onError: [
-            {
-              cond: 'shoudRetryOnParseError',
-              actions: 'incrementParseErrorCount',
-              target: 'ENUMERATE_ETHERNET_PORT_SETTINGS'
-            },
-            {
-              actions: [
-                'resetParseErrorCount',
-                assign({
-                  statusMessage: (_, event) =>
-                    coalesceMessage('at PULL_ETHERNET_PORT_SETTINGS', event.data)
-                })
-              ],
-              target: 'FAILED'
-            }
-          ]
-        }
-      },
-      PUT_ETHERNET_PORT_SETTINGS: {
-        invoke: {
-          src: this.putEthernetPortSettings.bind(this),
-          id: 'put-ethernet-port-settings',
-          onDone: {
-            actions: assign({ statusMessage: (context, event) => event.data }),
-            target: 'SUCCESS'
-          },
-          onError: {
-            actions: assign({
-              statusMessage: (_, event) => coalesceMessage('at PUT_ETHERNET_PORT_SETTINGS', event.data)
-            }),
-            target: 'FAILED'
-          }
-        }
-      },
-      FAILED: {
-        type: 'final',
-        data: (context) => (doneFail(context.taskName, context.statusMessage))
-      },
-      SUCCESS: {
-        type: 'final',
-        data: (context) => (doneSuccess(context.taskName, context.statusMessage))
-      }
-    }
-  }, {
-    actions: {
-      ...commonActions
-    },
-    guards: {
-      ...commonGuards
-    }
-  })
-
-  async enumerateEthernetPortSettings (context: SyncIPContext): Promise<EnumerationContext> {
-    const wsmanXml = amt.EthernetPortSettings.Enumerate()
-    const rsp = await invokeWsmanCall<Enumerate>(context.clientId, wsmanXml, 2)
-    const enumCtx = rsp.EnumerateResponse?.EnumerationContext
+  enumerateEthernetPortSettings = async ({ input }: { input: SyncIPContext }): Promise<EnumerationContext> => {
+    input.xmlMessage = amt.EthernetPortSettings.Enumerate()
+    const rsp = await invokeWsmanCall<EthernetPortSettingsEnumerateResponse>(input, 2)
+    const enumCtx = rsp.Envelope.Body.EnumerateResponse.EnumerationContext
     if (!enumCtx) { throw new Error(`invalid response: ${JSON.stringify(rsp)}`) }
     logger.debug(`EnumerationContext: ${enumCtx}`)
     return enumCtx
   }
 
-  async pullEthernetPortSettings (context: SyncIPContext): Promise<PullData> {
-    const wsmanXml = amt.EthernetPortSettings.Pull(context.enumerationContext)
-    const rsp = await invokeWsmanCall<EthernetPortSettingsPullResponse>(context.clientId, wsmanXml)
-    const settings = rsp.PullResponse?.Items?.AMT_EthernetPortSettings
+  pullEthernetPortSettings = async ({ input }: { input: SyncIPContext }): Promise<PullData> => {
+    input.xmlMessage = amt.EthernetPortSettings.Pull(input.enumerationContext)
+    const rsp = await invokeWsmanCall<EthernetPortSettingsPullResponse>(input)
+    const settings = rsp.Envelope.Body.PullResponse.Items.AMT_EthernetPortSettings
     if (!settings) {
       throw new Error(`invalid response: ${JSON.stringify(rsp)}`)
     }
@@ -206,13 +114,13 @@ export class SyncIP {
     return pullData
   }
 
-  async putEthernetPortSettings (context: SyncIPContext): Promise<string> {
+  putEthernetPortSettings = async ({ input }: { input: SyncIPContext }): Promise<string> => {
     let statusMessage: string = ''
-    if (!context.wiredSettings) {
+    if (!input.wiredSettings) {
       statusMessage = MessageNoWiredSettingsOnDevice
-    } else if (context.wirelessSettings != null && context.wiredSettings.MACAddress == null) {
+    } else if (input.wirelessSettings != null && input.wiredSettings.MACAddress == null) {
       statusMessage = MessageWirelessOnly
-    } else if (context.wiredSettings.IPAddress === context.targetIPConfig?.ipAddress) {
+    } else if (input.wiredSettings.IPAddress === input.targetIPConfig?.ipAddress) {
       statusMessage = MessageAlreadySynchronized
     }
     if (statusMessage !== '') {
@@ -220,11 +128,11 @@ export class SyncIP {
       return await new Promise<string>((resolve, reject) => { reject(err) })
     }
 
-    // preserve what is in the context
+    // preserve what is in the input
     const settingsToPut = {
-      ...context.wiredSettings
+      ...input.wiredSettings
     }
-    if (context.wiredSettings?.DHCPEnabled) {
+    if (input.wiredSettings?.DHCPEnabled) {
       settingsToPut.IpSyncEnabled = true
       settingsToPut.SharedStaticIp = false
       delete settingsToPut.IPAddress
@@ -235,20 +143,204 @@ export class SyncIP {
     } else {
       settingsToPut.IpSyncEnabled = false
       settingsToPut.SharedStaticIp = false
-      settingsToPut.IPAddress = context.targetIPConfig?.ipAddress
-      settingsToPut.SubnetMask = context.targetIPConfig?.netmask ?? settingsToPut.SubnetMask
-      settingsToPut.DefaultGateway = context.targetIPConfig?.gateway ?? settingsToPut.DefaultGateway
-      settingsToPut.PrimaryDNS = context.targetIPConfig?.primaryDns ?? settingsToPut.PrimaryDNS
-      settingsToPut.SecondaryDNS = context.targetIPConfig?.secondaryDns ?? settingsToPut.SecondaryDNS
+      settingsToPut.IPAddress = input.targetIPConfig?.ipAddress
+      settingsToPut.SubnetMask = input.targetIPConfig?.netmask ?? settingsToPut.SubnetMask
+      settingsToPut.DefaultGateway = input.targetIPConfig?.gateway ?? settingsToPut.DefaultGateway
+      settingsToPut.PrimaryDNS = input.targetIPConfig?.primaryDns ?? settingsToPut.PrimaryDNS
+      settingsToPut.SecondaryDNS = input.targetIPConfig?.secondaryDns ?? settingsToPut.SecondaryDNS
     }
 
     logger.debug(`putting wired settings: ${JSON.stringify(settingsToPut)}`)
-    const wsmanXml = amt.EthernetPortSettings.Put(settingsToPut)
-    const rsp = await invokeWsmanCall<AMT.Models.EthernetPortSettings>(context.clientId, wsmanXml)
+    input.xmlMessage = amt.EthernetPortSettings.Put(settingsToPut)
+    const rsp = await invokeWsmanCall<AMT.Models.EthernetPortSettings>(input)
     if (!rsp) {
       throw new Error(`invalid response: ${JSON.stringify(rsp)}`)
     }
     // interestingly, the ipAddress that was put is not in the response
-    return context.targetIPConfig!.ipAddress
+    return input.targetIPConfig!.ipAddress
   }
+
+  error: ErrorStateMachine = new ErrorStateMachine()
+  machine = setup({
+    types: {} as {
+      context: SyncIPContext
+      events: SyncIPEvent
+      actions: any
+      input: SyncIPContext
+    },
+    actors: {
+      enumerateEthernetPortSettings: fromPromise(this.enumerateEthernetPortSettings),
+      pullEthernetPortSettings: fromPromise(this.pullEthernetPortSettings),
+      putEthernetPortSettings: fromPromise(this.putEthernetPortSettings),
+      error: this.error.machine
+    },
+    actions: {
+      incrementParseErrorCount: assign({ parseErrorCount: ({ context }) => context.parseErrorCount + 1 }),
+      resetParseErrorCount: assign({ parseErrorCount: 0 })
+    },
+    guards: {
+      checkIPAddress: ({ context, event }) => event.targetIPConfig?.ipAddress != null && event.targetIPConfig?.ipAddress !== '',
+      shouldRetryOnParseError: ({ context, event }) => context.parseErrorCount < 3 && event.output instanceof UNEXPECTED_PARSE_ERROR,
+      isEnumEthernetPort: ({ context, event }) => context.targetAfterError === 'ENUMERATE_ETHERNET_PORT_SETTINGS'
+    }
+  }).createMachine({
+    /** @xstate-layout N4IgpgJg5mDOIC5SwJ4DsDGBaAlgBwDoBJAOSIBUiBBAGQGIBlATRIGEB9IgBQG0AGALqJQeAPawcAFxyi0wkAA9EARj7KCADgCsWgEwAWAGwBmPQHZl+gDQgUKw+uMBOXU7Onjhvid0BfXzaomLiEpBTU9MxsnLzKQkggYhLSsvJKCKrq2npGproW1raIWFp8BPpa+rq6Jk5OhoYuyv6B6Nj4BACiJACqALKdAEpU5J3sneQAEkMkE+xcAPKD5OwME5QkAOIMdBCyYAQ4aABuogDWB2BoAK4AtmAATgCGkmBYYJIAFo9oH1hiD0kWFgH2kaCgsH48RE4ikMjkCXSui0TgIyi0ZjMhmRGg8FhsdgQWF0xl0BCcGnyFL4Zn0TksLRAQXahG6-SGIzGE2mg1mK0Wy1W61I2zojweogeBDwABsXgAzSW3AhXO6PF5vD7fB6-IEAoEgyRgiFQ+RJOGpRGINz6Ai6bRmbQaDRmPgkwwE4rKZx25TaZTVYxmVzojSM5khAhcHo0GjjKYzOYClZrcgbUV7X6HE7nA54a4ymXvL4-P764Ggo4mwRm2EpBGgdKZTQ6AwmcyWT1E0m2gyu3H05GeIPhtqR6Ox+M8vnzJYp4VbHbiyXSuWSRUPZX5wvF7W6-6Sg2V8GQmsJc31tIqNQtnLt-KdopEyzqCz+wPB+laMMBJljjoTnG3KJvyc5CmmIpLg8EpSrKCpKtKBZFlqpZ6oeFZGlWkJxLWyTwleGQ3tkbZ5AUXb6MYmh8PoGiGI6xhOn6o7BABPQrMBvJJmBqbpjsmYHEcpwXIhQIoTqZboYaxqntCiR1vhVoIDadoOk6Lpup4XZYMY+jqF4hj6HwTgVHwGj6JihjMSyUZsVOIGzoKPGQWK0ErnB64IfmokluJaGAhh0mmue8mWo21q0ipGJqa67paciZQ6boAaeN61SVP4v5oKIEBwPIEb4LhFoNooxRBmYaKqEY9SlN+ThaFpVQaAQjq4nROk0hYZhWZGYSULQhWXopJRkuZuhumYTimcGGhunFelaEGdSNFVFHaN1HRsgMwyjHZnGgY5C7bANClhQgUUEKSfDeBSuLBrNT5YOi6jKAZOkosYOmWDo62EIBu0zsm4G8cdoUld2rgVdRjSGDVGh1Vpxh8JRxleHUtLeCSxk-TZ7EJntDnzhBi4g8V6TnZd13OkGY26Ajnhoi49JYqZMNY7++WEAAYlQRA0J0AAiJMEd6bpom6DguHwKLKPUWnKJY5ITe9X6eCSxjYwwPSsKwnQMAwQuKSLZKqDUMtjdLssPaS6jVRNwaOt69IZb4QA */
+    id: 'sync-ip',
+    context: ({ input }) => ({
+      taskName: input.taskName,
+      clientId: input.clientId,
+      message: input.message,
+      errorMessage: input.errorMessage,
+      statusMessage: input.statusMessage,
+      httpHandler: input.httpHandler,
+      parseErrorCount: input.parseErrorCount,
+      enumerationContext: input.enumerationContext,
+      wiredSettings: input.wiredSettings
+    }),
+    initial: 'INITIAL',
+    states: {
+      INITIAL: {
+        on: {
+          SYNC_IP: [
+            {
+              guard: 'checkIPAddress',
+              actions: assign({
+                clientId: ({ event }) => event.clientId,
+                targetIPConfig: ({ event }) => event.targetIPConfig
+              }),
+              target: 'ENUMERATE_ETHERNET_PORT_SETTINGS'
+            },
+            {
+              actions: assign({
+                message: 'at INITIAL - invalid ip configuration'
+              }),
+              target: 'FAILED'
+            }
+          ]
+        }
+      },
+      ENUMERATE_ETHERNET_PORT_SETTINGS: {
+        entry: assign({
+          message: () => '',
+          errorMessage: () => ''
+        }),
+        invoke: {
+          id: 'enumerate-ethernet-port-settings',
+          src: 'enumerateEthernetPortSettings',
+          input: ({ context }) => (context),
+          onDone: {
+            actions: assign({ enumerationContext: ({ event }) => event.output }),
+            target: 'PULL_ETHERNET_PORT_SETTINGS'
+          },
+          onError: {
+            actions: assign({
+              message: ({ event }) => event.error,
+              errorMessage: ({ event }) => coalesceMessage('at ENUMERATE_ETHERNET_PORT_SETTINGS', event.error),
+              targetAfterError: () => 'ENUMERATE_ETHERNET_PORT_SETTINGS'
+            }),
+            target: 'ERROR'
+          }
+        }
+      },
+      PULL_ETHERNET_PORT_SETTINGS: {
+        entry: assign({
+          message: () => '',
+          errorMessage: () => ''
+        }),
+        invoke: {
+          id: 'pull-ethernet-port-settings',
+          src: 'pullEthernetPortSettings',
+          input: ({ context }) => (context),
+          onDone: {
+            actions: assign(({ event }) => ({
+              wiredSettings: (event.output as any).wiredSettings,
+              wirelessSettings: (event.output as any).wirelessSettings
+            })),
+            target: 'PUT_ETHERNET_PORT_SETTINGS'
+          },
+          onError: [
+            {
+              guard: 'shouldRetryOnParseError',
+              actions: 'incrementParseErrorCount',
+              target: 'ENUMERATE_ETHERNET_PORT_SETTINGS'
+            },
+            {
+              actions: [
+                'resetParseErrorCount',
+                assign({
+                  errorMessage: ({ event }) => coalesceMessage('at PULL_ETHERNET_PORT_SETTINGS', event.error)
+                })
+              ],
+              target: 'FAILED'
+            }
+          ]
+        }
+      },
+      PUT_ETHERNET_PORT_SETTINGS: {
+        entry: assign({
+          message: () => '',
+          errorMessage: () => ''
+        }),
+        invoke: {
+          id: 'put-ethernet-port-settings',
+          src: 'putEthernetPortSettings',
+          input: ({ context }) => (context),
+          onDone: {
+            actions: assign({ statusMessage: ({ event }) => event.output }),
+            target: 'SUCCESS'
+          },
+          onError: {
+            actions: assign({
+              errorMessage: ({ event }) => coalesceMessage('at PUT_ETHERNET_PORT_SETTINGS', event.error)
+            }),
+            target: 'FAILED'
+          }
+        }
+      },
+      ERROR: {
+        entry: sendTo('error-machine', { type: 'PARSE' }),
+        invoke: {
+          src: 'error',
+          id: 'error-machine',
+          input: ({ context }) => ({
+            message: context.message,
+            clientId: context.clientId
+          }),
+          onError: {
+            actions: assign({ message: ({ event }) => event.error }),
+            target: 'FAILED'
+          },
+          onDone: 'NEXT_STATE'
+        },
+        on: {
+          ONFAILED: {
+            actions: assign({ errorMessage: ({ context, event }) => coalesceMessage(context.errorMessage, event.output) }),
+            target: 'FAILED'
+          }
+        }
+      },
+      NEXT_STATE: {
+        always: [
+          {
+            guard: 'isEnumEthernetPort',
+            target: 'ENUMERATE_ETHERNET_PORT_SETTINGS'
+          }]
+      },
+      FAILED: {
+        entry: assign({ statusMessage: () => 'FAILED' }),
+        type: 'final'
+      },
+      SUCCESS: {
+        entry: assign({ statusMessage: () => 'SUCCESS' }),
+        type: 'final'
+      }
+    },
+    output: ({ context }) => {
+      if (context.statusMessage === 'SUCCESS') {
+        return doneSuccess(context.taskName)
+      } else {
+        return doneFail(context.taskName, context.errorMessage)
+      }
+    }
+  })
 }

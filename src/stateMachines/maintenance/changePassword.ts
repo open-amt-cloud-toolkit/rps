@@ -3,16 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { assign, createMachine } from 'xstate'
+import { assign, fromPromise, sendTo, setup } from 'xstate'
 import {
-  coalesceMessage,
-  commonContext,
   type CommonMaintenanceContext,
-  invokeWsmanCall,
   isDigestRealmValid,
-  HttpResponseError
-} from './common.js'
-import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
+  coalesceMessage,
+  HttpResponseError,
+  invokeWsmanCall
+} from '../common.js'
+import { AMT, type Common } from '@open-amt-cloud-toolkit/wsman-messages'
 import { PasswordHelper } from '../../utils/PasswordHelper.js'
 import { SignatureHelper } from '../../utils/SignatureHelper.js'
 import { AMTUserName } from '../../utils/constants.js'
@@ -24,20 +23,28 @@ import { SecretManagerCreatorFactory } from '../../factories/SecretManagerCreato
 import { getPTStatusName, PTStatus } from '../../utils/PTStatus.js'
 import got from 'got'
 import { Environment } from '../../utils/Environment.js'
-
+import { Error as ErrorStateMachine } from './../error.js'
 export interface SetAdminACLEntryExResponse {
-  SetAdminAclEntryEx_OUTPUT: {
-    ReturnValue: number
+  Envelope: {
+    Body: {
+      SetAdminAclEntryEx_OUTPUT: {
+        ReturnValue: number
+      }
+    }
   }
 }
 
 export const ChangePasswordEventType = 'CHANGE_PASSWORD'
-export type ChangePasswordEvent =
-  | { type: typeof ChangePasswordEventType, clientId: string, newStaticPassword: string }
+export interface ChangePasswordEvent {
+  type: typeof ChangePasswordEventType | 'ONFAILED'
+  clientId: string
+  newStaticPassword: string
+  output?: any
+}
 
 export interface ChangePasswordContext extends CommonMaintenanceContext {
+  generalSettings?: Common.Models.Response<AMT.Models.GeneralSettingsResponse>
   newStaticPassword?: string
-  generalSettings?: AMT.Models.GeneralSettings
   updatedPassword?: string
 }
 
@@ -45,118 +52,27 @@ const amt = new AMT.Messages()
 const logger = new Logger('changePassword')
 
 export class ChangePassword {
-  machine = createMachine<ChangePasswordContext, ChangePasswordEvent>({
-    id: 'change-password',
-    predictableActionArguments: true,
-    context: {
-      ...commonContext,
-      taskName: 'changepassword'
-    },
-    initial: 'INITIAL',
-    states: {
-      INITIAL: {
-        on: {
-          CHANGE_PASSWORD: {
-            actions: assign({
-              clientId: (context, event) => event.clientId,
-              newStaticPassword: (context, event) => event.newStaticPassword
-            }),
-            target: 'GET_GENERAL_SETTINGS'
-          }
-        }
-      },
-      GET_GENERAL_SETTINGS: {
-        invoke: {
-          src: this.getGeneralSettings.bind(this),
-          id: 'get-general-settings',
-          onDone: {
-            actions: assign({ generalSettings: (context, event) => event.data }),
-            target: 'SET_ADMIN_ACL_ENTRY'
-          },
-          onError: {
-            actions: assign({
-              statusMessage: (_, event) => coalesceMessage('at GET_GENERAL_SETTINGS', event.data)
-            }),
-            target: 'FAILED'
-          }
-        }
-      },
-      SET_ADMIN_ACL_ENTRY: {
-        invoke: {
-          src: this.setAdminACLEntry.bind(this),
-          id: 'set-on-device',
-          onDone: {
-            actions: assign({ updatedPassword: (context, event) => event.data }),
-            target: 'SAVE_TO_SECRET_PROVIDER'
-          },
-          onError: {
-            actions: assign({
-              statusMessage: (_, event) => coalesceMessage('at SET_ADMIN_ACL_ENTRY', event.data)
-            }),
-            target: 'FAILED'
-          }
-        }
-      },
-      SAVE_TO_SECRET_PROVIDER: {
-        invoke: {
-          src: this.saveToSecretProvider.bind(this),
-          id: 'save-to-secret-provider',
-          onDone: {
-            target: 'REFRESH_MPS'
-          },
-          onError: {
-            actions: assign({
-              statusMessage: (_, event) => coalesceMessage('at SAVE_TO_SECRET_PROVIDER', event.data)
-            }),
-            target: 'FAILED'
-          }
-        }
-      },
-      REFRESH_MPS: {
-        invoke: {
-          src: this.refreshMPS.bind(this),
-          id: 'refresh-mps',
-          onDone: {
-            target: 'SUCCESS'
-          },
-          onError: {
-            actions: assign({
-              statusMessage: (context, event) => coalesceMessage('at REFRESH_MPS', event.data)
-            }),
-            target: 'FAILED'
-          }
-        }
-      },
-      FAILED: {
-        type: 'final',
-        data: (context) => (doneFail(context.taskName, context.statusMessage))
-      },
-      SUCCESS: {
-        type: 'final',
-        data: (context) => (doneSuccess(context.taskName, context.statusMessage))
-      }
-    }
-  })
+  error: ErrorStateMachine = new ErrorStateMachine()
 
-  async getGeneralSettings (context: ChangePasswordContext): Promise<AMT.Models.GeneralSettings> {
-    const wsmanXml = amt.GeneralSettings.Get()
-    const rsp = await invokeWsmanCall<AMT.Models.GeneralSettingsResponse>(context.clientId, wsmanXml, 2)
-    const settings = rsp.AMT_GeneralSettings
+  getGeneralSettings = async ({ input }: { input: ChangePasswordContext }): Promise<Common.Models.Response<AMT.Models.GeneralSettingsResponse>> => {
+    input.xmlMessage = amt.GeneralSettings.Get()
+    const rsp = await invokeWsmanCall<Common.Models.Response<AMT.Models.GeneralSettingsResponse>>(input, 2)
+    const settings = rsp.Envelope?.Body.AMT_GeneralSettings
     if (!settings) {
       throw new Error(`invalid response: ${JSON.stringify(rsp)}`)
     }
     if (settings.DigestRealm == null || !isDigestRealmValid(settings.DigestRealm)) {
-      throw new Error(`invalid DigestRealm ${rsp.AMT_GeneralSettings?.DigestRealm}`)
+      throw new Error(`invalid DigestRealm ${rsp.Envelope.Body.AMT_GeneralSettings?.DigestRealm}`)
     }
     logger.debug(`AMT_GeneralSettings: ${JSON.stringify(settings)}`)
-    return settings
+    return rsp
   }
 
-  async setAdminACLEntry (context: ChangePasswordContext): Promise<string> {
-    const password = context.newStaticPassword
-      ? context.newStaticPassword
+  setAdminACLEntry = async ({ input }: { input: ChangePasswordContext }): Promise<string> => {
+    const password = input.newStaticPassword
+      ? input.newStaticPassword
       : PasswordHelper.generateRandomPassword()
-    const data: string = `${AMTUserName}:${context.generalSettings?.DigestRealm}:${password}`
+    const data: string = `${AMTUserName}:${input.generalSettings?.Envelope.Body.AMT_GeneralSettings.DigestRealm}:${password}`
     const signPassword = SignatureHelper.createMd5Hash(data)
     // Convert MD5 hash to raw string which utf16
     const signPasswordMatch = signPassword.match(/../g) ?? []
@@ -164,9 +80,9 @@ export class ChangePassword {
     // Encode to base64
     const encodedPassword = Buffer.from(result, 'binary').toString('base64')
     logger.debug('sending updated password to device')
-    const wsmanXml = amt.AuthorizationService.SetAdminACLEntryEx(AMTUserName, encodedPassword)
-    const wsmanRsp = await invokeWsmanCall<SetAdminACLEntryExResponse>(context.clientId, wsmanXml)
-    const output = wsmanRsp.SetAdminAclEntryEx_OUTPUT
+    input.xmlMessage = amt.AuthorizationService.SetAdminACLEntryEx(AMTUserName, encodedPassword)
+    const wsmanRsp = await invokeWsmanCall<SetAdminACLEntryExResponse>(input)
+    const output = wsmanRsp.Envelope.Body.SetAdminAclEntryEx_OUTPUT
     if (output?.ReturnValue !== PTStatus.SUCCESS.value) {
       const msg = `ReturnValue ${getPTStatusName(output?.ReturnValue)}`
       throw new Error(msg)
@@ -174,17 +90,17 @@ export class ChangePassword {
     return password
   }
 
-  async saveToSecretProvider (context: ChangePasswordContext): Promise<boolean> {
+  saveToSecretProvider = async ({ input }: { input: ChangePasswordContext }): Promise<boolean> => {
     const smcf = new SecretManagerCreatorFactory()
     const secretMgr = await smcf.getSecretManager(new Logger('SecretManagerService'))
-    const clientObj = devices[context.clientId]
+    const clientObj = devices[input.clientId]
     let credentials = await secretMgr.getSecretAtPath(`devices/${clientObj.uuid}`) as DeviceCredentials
     if (!credentials) {
       logger.debug(`creating new DeviceCredentials for ${clientObj.uuid}`)
       credentials = { AMT_PASSWORD: '', MEBX_PASSWORD: '' }
     }
-    if (context.updatedPassword != null) {
-      credentials.AMT_PASSWORD = clientObj.amtPassword = context.updatedPassword
+    if (input.updatedPassword != null) {
+      credentials.AMT_PASSWORD = clientObj.amtPassword = input.updatedPassword
       logger.debug(`saving DeviceCredentials for ${clientObj.uuid}`)
       const writtenCredentials = await secretMgr.writeSecretWithObject(`devices/${clientObj.uuid}`, credentials)
       if (!writtenCredentials) {
@@ -195,8 +111,8 @@ export class ChangePassword {
     return false
   }
 
-  async refreshMPS (context: ChangePasswordContext): Promise<boolean> {
-    const clientObj = devices[context.clientId]
+  refreshMPS = async ({ input }: { input: ChangePasswordContext }): Promise<boolean> => {
+    const clientObj = devices[input.clientId]
     const url = `${Environment.Config.mps_server}/api/v1/devices/refresh/${clientObj.uuid}`
     let rsp: any
     let rsperr: any
@@ -206,9 +122,181 @@ export class ChangePassword {
       rsperr = error
     }
     if (rsp === undefined && rsperr.response.statusCode !== 404) {
-      throw new HttpResponseError(rsp.statusMessage, rsp.statusCode)
+      throw new HttpResponseError(rsp.message, rsp.statusCode)
     }
     logger.debug(`refreshMPS ${url}`)
     return true
   }
+
+  machine = setup({
+    types: {} as {
+      context: ChangePasswordContext
+      events: ChangePasswordEvent
+      input: ChangePasswordContext
+      actions: any
+    },
+    actors: {
+      getGeneralSettings: fromPromise(this.getGeneralSettings),
+      setAdminACLEntry: fromPromise(this.setAdminACLEntry),
+      saveToSecretProvider: fromPromise(this.saveToSecretProvider),
+      refreshMPS: fromPromise(this.refreshMPS),
+      error: this.error.machine
+    },
+    guards: {
+      isGeneralSettings: ({ context }) => context.targetAfterError === 'GET_GENERAL_SETTINGS'
+    }
+  }).createMachine({
+    id: 'change-password',
+    context: ({ input }) => ({
+      clientId: input.clientId,
+      message: input.message,
+      errorMessage: input.errorMessage,
+      httpHandler: input.httpHandler,
+      taskName: input.taskName
+    }),
+    initial: 'INITIAL',
+    states: {
+      INITIAL: {
+        on: {
+          CHANGE_PASSWORD: {
+            actions: assign({
+              clientId: ({ event }) => event.clientId,
+              newStaticPassword: ({ event }) => event.newStaticPassword
+            }),
+            target: 'GET_GENERAL_SETTINGS'
+          }
+        }
+      },
+      GET_GENERAL_SETTINGS: {
+        entry: assign({
+          message: () => '',
+          errorMessage: () => ''
+        }),
+        invoke: {
+          src: 'getGeneralSettings',
+          input: ({ context }) => (context),
+          id: 'get-general-settings',
+          onDone: {
+            actions: assign({
+              generalSettings: ({ event }) => event.output as any
+            }),
+            target: 'SET_ADMIN_ACL_ENTRY'
+          },
+          onError: {
+            actions: assign({
+              message: ({ event }) => event.error,
+              errorMessage: ({ event }) => coalesceMessage('at GET_GENERAL_SETTINGS', event.error),
+              targetAfterError: () => 'GET_GENERAL_SETTINGS'
+            }),
+            target: 'ERROR'
+          }
+        }
+      },
+      SET_ADMIN_ACL_ENTRY: {
+        entry: assign({
+          message: () => '',
+          errorMessage: () => ''
+        }),
+        invoke: {
+          src: 'setAdminACLEntry',
+          input: ({ context }) => (context),
+          id: 'set-on-device',
+          onDone: {
+            actions: assign({ updatedPassword: ({ event }) => event.output }),
+            target: 'SAVE_TO_SECRET_PROVIDER'
+          },
+          onError: {
+            actions: assign({
+              errorMessage: ({ event }) => coalesceMessage('at SET_ADMIN_ACL_ENTRY', event.error)
+            }),
+            target: 'FAILED'
+          }
+        }
+      },
+      SAVE_TO_SECRET_PROVIDER: {
+        entry: assign({
+          message: () => '',
+          errorMessage: () => ''
+        }),
+        invoke: {
+          src: 'saveToSecretProvider',
+          input: ({ context }) => (context),
+          id: 'save-to-secret-provider',
+          onDone: {
+            target: 'REFRESH_MPS'
+          },
+          onError: {
+            actions: assign({
+              errorMessage: ({ event }) => coalesceMessage('at SAVE_TO_SECRET_PROVIDER', event.error)
+            }),
+            target: 'FAILED'
+          }
+        }
+      },
+      REFRESH_MPS: {
+        entry: assign({
+          message: () => '',
+          errorMessage: () => ''
+        }),
+        invoke: {
+          src: 'refreshMPS',
+          input: ({ context }) => (context),
+          id: 'refresh-mps',
+          onDone: {
+            target: 'SUCCESS'
+          },
+          onError: {
+            actions: assign({
+              errorMessage: ({ event }) => coalesceMessage('at REFRESH_MPS', event.error)
+            }),
+            target: 'FAILED'
+          }
+        }
+      },
+      ERROR: {
+        entry: sendTo('error-machine', { type: 'PARSE' }),
+        invoke: {
+          src: 'error',
+          id: 'error-machine',
+          input: ({ context }) => ({
+            message: context.message,
+            clientId: context.clientId
+          }),
+          onError: {
+            actions: assign({ message: ({ event }) => event.error }),
+            target: 'FAILED'
+          },
+          onDone: 'NEXT_STATE'
+        },
+        on: {
+          ONFAILED: {
+            actions: assign({ errorMessage: ({ context, event }) => coalesceMessage(context.errorMessage, event.output) }),
+            target: 'FAILED'
+          }
+        }
+      },
+      NEXT_STATE: {
+        always: [
+          {
+            guard: 'isGeneralSettings',
+            target: 'GET_GENERAL_SETTINGS'
+          }]
+      },
+      FAILED: {
+        entry: assign({ statusMessage: () => 'FAILED' }),
+        type: 'final'
+      },
+      SUCCESS: {
+        entry: assign({ statusMessage: () => 'SUCCESS' }),
+        type: 'final'
+      }
+    },
+    output: ({ context }) => {
+      if (context.statusMessage === 'SUCCESS') {
+        return doneSuccess(context.taskName)
+      } else {
+        return doneFail(context.taskName, context.errorMessage)
+      }
+    }
+  })
 }
