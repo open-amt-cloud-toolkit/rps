@@ -14,10 +14,6 @@ export const runTilDone = async function (machine: any, inputEvent: any, doneRes
       done()
     }
   })
-  // Observer as a plain function
-  // actor.subscribe((snapshot) => {
-  //   console.log('snapshot: ', snapshot)
-  // })
   actor.start()
   actor.send(inputEvent)
   const state = await waitFor(actor, (state) => state.status === 'done')

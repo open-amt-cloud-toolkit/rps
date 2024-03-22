@@ -41,6 +41,7 @@ const { ChangePassword } = await import('./changePassword.js')
 Environment.Config = config
 
 const HttpBadRequestError = new HttpResponseError('Bad Request', 400)
+const HttpUnauthorizedError = new HttpResponseError('Unauthorized Request', 401)
 
 describe('ChangePassword State Machine', () => {
   let clientId: string
@@ -110,15 +111,8 @@ describe('ChangePassword State Machine', () => {
     } as any
     implementationConfig = {
       actors: {
-        // getGeneralSettings: fromPromise(async ({ input }) => await Promise.resolve({
-        //   Envelope: {
-        //     Header: {},
-        //     Body: generalSettingsRsp
-        //   }
-        // })),
-        // setAdminACLEntry: fromPromise(async ({ input }) => await Promise.resolve(true)),
-        // saveToSecretProvider: fromPromise(async ({ input }) => await Promise.resolve(true)),
-        // refreshMPS: fromPromise(async ({ input }) => await Promise.resolve({}))
+      },
+      guards: {
       }
     }
     const mockSecretsManager: ISecretManagerService = {
@@ -174,6 +168,12 @@ describe('ChangePassword State Machine', () => {
     doneResponse.status = StatusFailed
     invokeWsmanCallSpy.mockRejectedValueOnce(HttpBadRequestError)
     void runTilDone(implementation.machine, event, doneResponse, context, done)
+  })
+  it('should fail on invalid next state response', (done) => {
+    implementationConfig.guards!.isGeneralSettings = () => false
+    doneResponse.status = StatusFailed
+    invokeWsmanCallSpy.mockRejectedValueOnce(HttpUnauthorizedError)
+    void runTilDone(implementation.machine.provide(implementationConfig), event, doneResponse, context, done)
   })
   it('should pass on empty credentials in secret manager', (done) => {
     const expectedCredentials: DeviceCredentials = {

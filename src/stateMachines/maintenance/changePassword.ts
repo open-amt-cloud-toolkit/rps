@@ -280,6 +280,9 @@ export class ChangePassword {
           {
             guard: 'isGeneralSettings',
             target: 'GET_GENERAL_SETTINGS'
+          }, {
+            actions: assign({ errorMessage: ({ context }) => 'No valid next state' }),
+            target: 'FAILED'
           }]
       },
       FAILED: {

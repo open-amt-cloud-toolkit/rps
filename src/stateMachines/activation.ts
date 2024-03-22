@@ -1018,6 +1018,9 @@ export class Activation {
           }, {
             guard: 'isCheckActivationOnAMT',
             target: 'CHECK_ACTIVATION_ON_AMT'
+          }, {
+            actions: assign({ errorMessage: ({ context }) => 'No valid next state' }),
+            target: 'FAILED'
           }]
       },
       INVALID_DIGEST_REALM: {
