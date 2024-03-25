@@ -70,7 +70,7 @@ describe('Enterprise Assistant', () => {
   })
 
   it('should initiateCertRequest', async () => {
-    await initiateCertRequest(eaConfigContext, null)
+    await initiateCertRequest({ input: eaConfigContext })
     expect(eaConfigContext.message).toEqual({
       action: 'satellite',
       subaction: '802.1x-ProFile-Request',
@@ -122,7 +122,7 @@ describe('Enterprise Assistant', () => {
       keyInstanceId: 'Intel(r) AMT Key: Handle: 0',
       ver: ''
     }
-    await sendEnterpriseAssistantKeyPairResponse(eaConfigContext, null)
+    await sendEnterpriseAssistantKeyPairResponse({ input: eaConfigContext })
     expect(eaConfigContext.message).toEqual(expectedMessage)
     expect(invokeEnterpriseAssistantCallSpy).toHaveBeenCalled()
     expect(devices[eaConfigContext.clientId].tls.PublicPrivateKeyPair).toEqual([
@@ -144,7 +144,7 @@ describe('Enterprise Assistant', () => {
       }
     }
 
-    await getCertFromEnterpriseAssistant(eaConfigContext, null)
+    await getCertFromEnterpriseAssistant({ input: eaConfigContext })
     expect(eaConfigContext.message).toEqual({
       action: 'satellite',
       subaction: '802.1x-CSR-Response',

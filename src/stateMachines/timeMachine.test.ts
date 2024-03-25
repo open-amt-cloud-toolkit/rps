@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { interpret } from 'xstate'
+import { type MachineImplementations, createActor, fromPromise } from 'xstate'
 import { HttpHandler } from '../HttpHandler.js'
 import { devices } from '../devices.js'
 import { jest } from '@jest/globals'
-import { type TimeSync as TimeSyncType } from './timeMachine.js'
+import { type TimeSyncContext, type TimeSyncEvent, type TimeSync as TimeSyncType } from './timeMachine.js'
 const invokeWsmanCallSpy = jest.fn<any>()
 jest.unstable_mockModule('./common.js', () => ({
   invokeWsmanCall: invokeWsmanCallSpy
@@ -16,7 +16,7 @@ const { TimeSync } = await import('./timeMachine.js')
 
 describe('TLS State Machine', () => {
   let timeMachine: TimeSyncType
-  let config
+  let config: MachineImplementations<TimeSyncContext, TimeSyncEvent>
   let context
   let currentStateIndex = 0
 
@@ -39,18 +39,18 @@ describe('TLS State Machine', () => {
     }
     timeMachine = new TimeSync()
     config = {
-      services: {
-        'get-low-accuracy-time-synch': Promise.resolve({
-          Envelope: { Body: { GetLowAccuracyTimeSynchOutput: { ReturnValue: 0 } } }
-        }),
-        'set-high-accuracy-time-synch': Promise.resolve({
-          Envelope: { Body: { SetHighAccuracyTimeSynchOutput: { ReturnValue: 0 } } }
-        })
+      actors: {
+        getLowAccuracyTimeSync: fromPromise(async ({ input }) => await Promise.resolve({
+          Envelope: { Body: { GetLowAccuracyTimeSynch_OUTPUT: { ReturnValue: 0 } } }
+        })),
+        setHighAccuracyTimeSync: fromPromise(async ({ input }) => await Promise.resolve({
+          Envelope: { Body: { SetHighAccuracyTimeSynch_OUTPUT: { ReturnValue: 0 } } }
+        }))
       }
     }
   })
   it('should sync the time', (done) => {
-    const timeMachineStateMachine = timeMachine.machine.withConfig(config).withContext(context)
+    const timeMachineStateMachine = timeMachine.machine.provide(config)
     const flowStates = [
       'THE_PAST',
       'GET_LOW_ACCURACY_TIME_SYNCH',
@@ -58,8 +58,10 @@ describe('TLS State Machine', () => {
       'SUCCESS'
     ]
 
-    const timeMachineService = interpret(timeMachineStateMachine).onTransition((state) => {
-      expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+    const timeMachineService = createActor(timeMachineStateMachine, { input: context })
+    timeMachineService.subscribe((state) => {
+      const expectedState: any = flowStates[currentStateIndex++]
+      expect(state.matches(expectedState)).toBe(true)
       if (state.matches('SUCCESS') && currentStateIndex === flowStates.length) {
         done()
       }
@@ -69,16 +71,16 @@ describe('TLS State Machine', () => {
     timeMachineService.send({ type: 'TIMETRAVEL', clientId, data: null })
   })
 
-  it('should setHighAccuracyTimeSynch', async () => {
+  it('should setHighAccuracyTimeSync', async () => {
     context.message = {
-      Envelope: { Body: { GetLowAccuracyTimeSynchOutput: { Ta0: 123456 } } }
+      Envelope: { Body: { GetLowAccuracyTimeSynch_OUTPUT: { Ta0: 123456 } } }
     }
-    await timeMachine.setHighAccuracyTimeSynch(context)
+    await timeMachine.setHighAccuracyTimeSync({ input: context })
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
 
   it('should getLowAccuracyTimeSync', async () => {
-    await timeMachine.getLowAccuracyTimeSync(context)
+    await timeMachine.getLowAccuracyTimeSync({ input: context })
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
 })

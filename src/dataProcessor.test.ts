@@ -18,6 +18,7 @@ import { Deactivation } from './stateMachines/deactivation.js'
 import { Activation } from './stateMachines/activation.js'
 import { ClientMethods, type ClientMsg } from './models/RCS.Config.js'
 import { Maintenance, type MaintenanceEvent } from './stateMachines/maintenance/maintenance.js'
+import { ChangePasswordEventType, type ChangePasswordEvent } from './stateMachines/maintenance/changePassword.js'
 // import { type IPConfiguration } from './stateMachines/syncIP.js'
 import { RPSError } from './utils/RPSError.js'
 // import { type HostnameConfiguration } from './stateMachines/syncHostName.js'
@@ -33,7 +34,6 @@ import {
 import { UNEXPECTED_PARSE_ERROR } from './utils/constants.js'
 import { SyncTimeEventType } from './stateMachines/maintenance/syncTime.js'
 import { type IPConfiguration, type SyncIPEvent, SyncIPEventType } from './stateMachines/maintenance/syncIP.js'
-import { type ChangePasswordEvent, ChangePasswordEventType } from './stateMachines/maintenance/changePassword.js'
 import { SyncDeviceInfoEventType, type DeviceInfo } from './stateMachines/maintenance/syncDeviceInfo.js'
 import {
   type HostNameInfo,
@@ -42,7 +42,6 @@ import {
 } from './stateMachines/maintenance/syncHostName.js'
 import { jest } from '@jest/globals'
 import { spyOn } from 'jest-mock'
-
 Environment.Config = config
 const configurator = new Configurator()
 const validator = new Validator(new Logger('Validator'), configurator)

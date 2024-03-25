@@ -4,180 +4,91 @@
  **********************************************************************/
 
 import { type AMT, type CIM, Common, type IPS } from '@open-amt-cloud-toolkit/wsman-messages'
-import { type HttpHandler } from '../HttpHandler.js'
 import Logger from '../Logger.js'
-import { assign, createMachine, interpret } from 'xstate'
+import { assign, setup, fromPromise } from 'xstate'
 import { type AMTConfiguration, AMTRedirectionServiceEnabledStates, mapAMTUserConsent, AMTUserConsent } from '../models/index.js'
-import { invokeWsmanCall } from './common.js'
+import { type CommonContext, invokeWsmanCall } from './common.js'
 
-export interface FeatureContext {
-  clientId: string
+export interface FeatureContext extends CommonContext {
+  isRedirectionChanged: boolean
+  isOptInServiceChanged: boolean
   AMT_RedirectionService?: any
   IPS_OptInService?: any
   CIM_KVMRedirectionSAP?: any
-  isRedirectionChanged: boolean
-  isOptInServiceChanged: boolean
-  statusMessage: string
   amtConfiguration: AMTConfiguration
-  httpHandler: HttpHandler | null
-  xmlMessage: string
   amt?: AMT.Messages
   cim?: CIM.Messages
   ips?: IPS.Messages
 }
-interface FeatureEvent {
+export interface FeatureEvent {
   type: 'CONFIGURE_FEATURES'
   clientId: string
-  data?: any
+  output?: any
 }
 export class FeaturesConfiguration {
   logger: Logger
-  constructor () {
-    this.logger = new Logger('FeaturesConfiguration')
+
+  getAmtRedirectionService = async ({ input }: { input: FeatureContext }): Promise<any> => {
+    input.xmlMessage = input.amt != null ? input.amt.RedirectionService.Get() : ''
+    return await invokeWsmanCall(input, 2)
   }
 
-  machine = createMachine<FeatureContext, FeatureEvent>({
-    id: 'features-configuration-machine',
-    predictableActionArguments: true,
-    preserveActionOrder: true,
-    context: {
-      clientId: '',
-      httpHandler: null,
-      amtConfiguration: { profileName: '', ciraConfigName: '', activation: '', tenantId: '' },
-      AMT_RedirectionService: null,
-      IPS_OptInService: null,
-      CIM_KVMRedirectionSAP: null,
-      isRedirectionChanged: false,
-      isOptInServiceChanged: false,
-      statusMessage: '',
-      xmlMessage: ''
-    },
-    initial: 'DEFAULT_FEATURES',
-    states: {
-      DEFAULT_FEATURES: {
-        on: {
-          CONFIGURE_FEATURES: {
-            target: 'GET_AMT_REDIRECTION_SERVICE'
-          }
-        }
-      },
-      GET_AMT_REDIRECTION_SERVICE: {
-        invoke: {
-          id: 'get-amt-redirection-service',
-          src: this.getAmtRedirectionService.bind(this),
-          onDone: {
-            actions: ['cacheAmtRedirectionService'],
-            target: 'GET_IPS_OPT_IN_SERVICE'
-          },
-          onError: {
-            actions: assign({ statusMessage: (context, event) => 'Failed to get AMT redirection service' }),
-            target: 'FAILED'
-          }
-        }
-      },
-      GET_IPS_OPT_IN_SERVICE: {
-        invoke: {
-          id: 'get-ips-opt-in-service',
-          src: this.getIpsOptInService.bind(this),
-          onDone: {
-            actions: ['cacheIpsOptInService'],
-            target: 'GET_CIM_KVM_REDIRECTION_SAP'
-          },
-          onError: {
-            actions: assign({ statusMessage: (context, event) => 'Failed to get ips opt in service' }),
-            target: 'FAILED'
-          }
-        }
-      },
-      GET_CIM_KVM_REDIRECTION_SAP: {
-        invoke: {
-          id: 'get-cim-kvm-redirection-sap',
-          src: this.getCimKvmRedirectionSAP.bind(this),
-          onDone: {
-            actions: 'cacheCimKvmRedirectionSAP',
-            target: 'COMPUTE_UPDATES'
-          },
-          onError: {
-            actions: assign({ statusMessage: (context, event) => 'Failed to get cim kvm redirection sap' }),
-            target: 'FAILED'
-          }
-        }
-      },
+  getIpsOptInService = async ({ input }: { input: FeatureContext }): Promise<any> => {
+    input.xmlMessage = input.ips != null ? input.ips.OptInService.Get() : ''
+    return await invokeWsmanCall(input, 2)
+  }
 
-      COMPUTE_UPDATES: {
-        id: 'compute-updates',
-        entry: ['computeUpdates'],
-        always: [
-          { target: 'SET_REDIRECTION_SERVICE', cond: (context, _) => context.isRedirectionChanged },
-          { target: 'PUT_IPS_OPT_IN_SERVICE', cond: (context, _) => context.isOptInServiceChanged },
-          { target: 'SUCCESS' }
-        ]
-      },
-      SET_REDIRECTION_SERVICE: {
-        invoke: {
-          id: 'set-redirection-service',
-          src: this.setRedirectionService.bind(this),
-          onDone: 'SET_KVM_REDIRECTION_SAP',
-          onError: {
-            actions: assign({ statusMessage: (context, event) => 'Failed to set redirection service' }),
-            target: 'FAILED'
-          }
-        }
-      },
-      SET_KVM_REDIRECTION_SAP: {
-        invoke: {
-          id: 'set-kvm-redirection-sap',
-          src: this.setKvmRedirectionSap.bind(this),
-          onDone: 'PUT_REDIRECTION_SERVICE',
-          onError: {
-            actions: assign({ statusMessage: (context, event) => 'Failed to set kvm redirection sap' }),
-            target: 'FAILED'
-          }
-        }
-      },
-      PUT_REDIRECTION_SERVICE: {
-        invoke: {
-          id: 'put-redirection-service',
-          src: this.putRedirectionService.bind(this),
-          onDone: [
-            { target: 'PUT_IPS_OPT_IN_SERVICE', cond: (context, _) => context.isOptInServiceChanged },
-            { target: 'SUCCESS' }
-          ],
-          onError: {
-            actions: assign({ statusMessage: (context, event) => 'Failed to put redirection service' }),
-            target: 'FAILED'
-          }
-        }
-      },
-      PUT_IPS_OPT_IN_SERVICE: {
-        invoke: {
-          id: 'put-ips-opt-in-service',
-          src: this.putIpsOptInService.bind(this),
-          onDone: 'SUCCESS',
-          onError: {
-            actions: assign({ statusMessage: (context, event) => 'Failed to put ips opt in service' }),
-            target: 'FAILED'
-          }
-        }
-      },
-      SUCCESS: {
-        entry: (context, _) => { this.logger.info('AMT Features Configuration success') },
-        type: 'final'
-      },
-      FAILED: {
-        entry: (context, _) => { this.logger.error(`AMT Features Configuration failed: ${context.statusMessage}`) },
-        type: 'final'
-      }
+  getCimKvmRedirectionSAP = async ({ input }: { input: FeatureContext }): Promise<any> => {
+    input.xmlMessage = input.cim != null ? input.cim.KVMRedirectionSAP.Get() : ''
+    return await invokeWsmanCall(input, 2)
+  }
+
+  setRedirectionService = async ({ input }: { input: FeatureContext }): Promise<any> => {
+    input.xmlMessage = input.amt != null ? input.amt.RedirectionService.RequestStateChange(input.AMT_RedirectionService.EnabledState) : ''
+    return await invokeWsmanCall(input, 2)
+  }
+
+  setKvmRedirectionSap = async ({ input }: { input: FeatureContext }): Promise<any> => {
+    input.xmlMessage = input.cim != null ? input.cim.KVMRedirectionSAP.RequestStateChange(input.CIM_KVMRedirectionSAP.EnabledState) : ''
+    return await invokeWsmanCall(input, 2)
+  }
+
+  putRedirectionService = async ({ input }: { input: FeatureContext }): Promise<any> => {
+    const redirectionService: AMT.Models.RedirectionService = input.AMT_RedirectionService
+    input.xmlMessage = input.amt != null ? input.amt.RedirectionService.Put(redirectionService) : ''
+    return await invokeWsmanCall(input, 2)
+  }
+
+  putIpsOptInService = async ({ input }: { input: FeatureContext }): Promise<any> => {
+    const ipsOptInService: IPS.Models.OptInService = input.IPS_OptInService
+    const ipsOptInSvcResponse: IPS.Models.OptInServiceResponse = {
+      IPS_OptInService: JSON.parse(JSON.stringify(ipsOptInService))
     }
-  },
-  {
+    input.xmlMessage = input.ips != null ? input.ips.OptInService.Put(ipsOptInSvcResponse) : ''
+    return await invokeWsmanCall(input, 2)
+  }
+
+  machine = setup({
+    types: {} as {
+      context: FeatureContext
+      events: FeatureEvent
+      actions: any
+      input: FeatureContext
+    },
+    actors: {
+      getAmtRedirectionService: fromPromise(this.getAmtRedirectionService),
+      getIpsOptInService: fromPromise(this.getIpsOptInService),
+      getCimKvmRedirectionSAP: fromPromise(this.getCimKvmRedirectionSAP),
+      setRedirectionService: fromPromise(this.setRedirectionService),
+      setKvmRedirectionSap: fromPromise(this.setKvmRedirectionSap),
+      putRedirectionService: fromPromise(this.putRedirectionService),
+      putIpsOptInService: fromPromise(this.putIpsOptInService)
+    },
     actions: {
-      cacheAmtRedirectionService: assign({ AMT_RedirectionService: (_, event) => event.data.Envelope.Body.AMT_RedirectionService }),
-      cacheIpsOptInService: assign({ IPS_OptInService: (_, event) => event.data.Envelope.Body.IPS_OptInService }),
-      cacheCimKvmRedirectionSAP: assign({
-        CIM_KVMRedirectionSAP: (_, event) => event.data.Envelope.Body.CIM_KVMRedirectionSAP
-      }),
-      computeUpdates: assign((context, _) => {
+      cacheAmtRedirectionService: assign({ AMT_RedirectionService: ({ event }) => event.output.Envelope.Body.AMT_RedirectionService }),
+      cacheIpsOptInService: assign({ IPS_OptInService: ({ event }) => event.output.Envelope.Body.IPS_OptInService }),
+      cacheCimKvmRedirectionSAP: assign({ CIM_KVMRedirectionSAP: ({ event }) => event.output.Envelope.Body.CIM_KVMRedirectionSAP }),
+      computeUpdates: assign(({ context }) => {
         const amtRedirectionService = context.AMT_RedirectionService
         const cimKVMRedirectionSAP = context.CIM_KVMRedirectionSAP
         const ipsOptInService = context.IPS_OptInService
@@ -198,7 +109,7 @@ export class FeaturesConfiguration {
         }
         const kvmEnabled = (
           context.CIM_KVMRedirectionSAP.EnabledState === Common.Models.CIM_KVM_REDIRECTION_SAP_ENABLED_STATE.Enabled ||
-            context.CIM_KVMRedirectionSAP.EnabledState === Common.Models.CIM_KVM_REDIRECTION_SAP_ENABLED_STATE.EnabledButOffline
+          context.CIM_KVMRedirectionSAP.EnabledState === Common.Models.CIM_KVM_REDIRECTION_SAP_ENABLED_STATE.EnabledButOffline
         )
 
         if (context.amtConfiguration?.solEnabled !== solEnabled) {
@@ -251,47 +162,145 @@ export class FeaturesConfiguration {
         }
       })
     }
+  }).createMachine({
+    id: 'features-configuration-machine',
+    context: ({ input }) => ({
+      clientId: input.clientId,
+      httpHandler: input.httpHandler,
+      amtConfiguration: input.amtConfiguration,
+      isRedirectionChanged: input.isRedirectionChanged,
+      isOptInServiceChanged: input.isOptInServiceChanged,
+      amt: input.amt,
+      ips: input.ips,
+      cim: input.cim
+    }),
+    initial: 'DEFAULT_FEATURES',
+    states: {
+      DEFAULT_FEATURES: {
+        on: {
+          CONFIGURE_FEATURES: {
+            target: 'GET_AMT_REDIRECTION_SERVICE'
+          }
+        }
+      },
+      GET_AMT_REDIRECTION_SERVICE: {
+        invoke: {
+          id: 'get-amt-redirection-service',
+          src: 'getAmtRedirectionService',
+          input: ({ context }) => (context),
+          onDone: {
+            actions: ['cacheAmtRedirectionService'],
+            target: 'GET_IPS_OPT_IN_SERVICE'
+          },
+          onError: {
+            actions: assign({ statusMessage: () => 'Failed to get AMT redirection service' }),
+            target: 'FAILED'
+          }
+        }
+      },
+      GET_IPS_OPT_IN_SERVICE: {
+        invoke: {
+          id: 'get-ips-opt-in-service',
+          src: 'getIpsOptInService',
+          input: ({ context }) => (context),
+          onDone: {
+            actions: ['cacheIpsOptInService'],
+            target: 'GET_CIM_KVM_REDIRECTION_SAP'
+          },
+          onError: {
+            actions: assign({ statusMessage: () => 'Failed to get ips opt in service' }),
+            target: 'FAILED'
+          }
+        }
+      },
+      GET_CIM_KVM_REDIRECTION_SAP: {
+        invoke: {
+          id: 'get-cim-kvm-redirection-sap',
+          src: 'getCimKvmRedirectionSAP',
+          input: ({ context }) => (context),
+          onDone: {
+            actions: 'cacheCimKvmRedirectionSAP',
+            target: 'COMPUTE_UPDATES'
+          },
+          onError: {
+            actions: assign({ statusMessage: () => 'Failed to get cim kvm redirection sap' }),
+            target: 'FAILED'
+          }
+        }
+      },
+
+      COMPUTE_UPDATES: {
+        id: 'compute-updates',
+        entry: ['computeUpdates'],
+        always: [
+          { target: 'SET_REDIRECTION_SERVICE', guard: ({ context }) => context.isRedirectionChanged },
+          { target: 'PUT_IPS_OPT_IN_SERVICE', guard: ({ context }) => context.isOptInServiceChanged },
+          { target: 'SUCCESS' }
+        ]
+      },
+      SET_REDIRECTION_SERVICE: {
+        invoke: {
+          id: 'set-redirection-service',
+          src: 'setRedirectionService',
+          input: ({ context }) => (context),
+          onDone: 'SET_KVM_REDIRECTION_SAP',
+          onError: {
+            actions: assign({ statusMessage: () => 'Failed to set redirection service' }),
+            target: 'FAILED'
+          }
+        }
+      },
+      SET_KVM_REDIRECTION_SAP: {
+        invoke: {
+          id: 'set-kvm-redirection-sap',
+          src: 'setKvmRedirectionSap',
+          input: ({ context }) => (context),
+          onDone: 'PUT_REDIRECTION_SERVICE',
+          onError: {
+            actions: assign({ statusMessage: () => 'Failed to set kvm redirection sap' }),
+            target: 'FAILED'
+          }
+        }
+      },
+      PUT_REDIRECTION_SERVICE: {
+        invoke: {
+          id: 'put-redirection-service',
+          src: 'putRedirectionService',
+          input: ({ context }) => (context),
+          onDone: [
+            { target: 'PUT_IPS_OPT_IN_SERVICE', guard: ({ context }) => context.isOptInServiceChanged },
+            { target: 'SUCCESS' }
+          ],
+          onError: {
+            actions: assign({ statusMessage: () => 'Failed to put redirection service' }),
+            target: 'FAILED'
+          }
+        }
+      },
+      PUT_IPS_OPT_IN_SERVICE: {
+        invoke: {
+          id: 'put-ips-opt-in-service',
+          src: 'putIpsOptInService',
+          input: ({ context }) => (context),
+          onDone: 'SUCCESS',
+          onError: {
+            actions: assign({ statusMessage: () => 'Failed to put ips opt in service' }),
+            target: 'FAILED'
+          }
+        }
+      },
+      SUCCESS: {
+        entry: () => { this.logger.info('AMT Features Configuration success') },
+        type: 'final'
+      },
+      FAILED: {
+        entry: ({ context }) => { this.logger.error(`AMT Features Configuration failed: ${context.statusMessage}`) },
+        type: 'final'
+      }
+    }
   })
 
-  service = interpret(this.machine)
-
-  async getAmtRedirectionService (context: FeatureContext): Promise<any> {
-    context.xmlMessage = context.amt != null ? context.amt.RedirectionService.Get() : ''
-    return await invokeWsmanCall(context, 2)
-  }
-
-  async getIpsOptInService (context: FeatureContext): Promise<any> {
-    context.xmlMessage = context.ips != null ? context.ips.OptInService.Get() : ''
-    return await invokeWsmanCall(context, 2)
-  }
-
-  async getCimKvmRedirectionSAP (context: FeatureContext): Promise<any> {
-    context.xmlMessage = context.cim != null ? context.cim.KVMRedirectionSAP.Get() : ''
-    return await invokeWsmanCall(context, 2)
-  }
-
-  async setRedirectionService (context: FeatureContext): Promise<any> {
-    context.xmlMessage = context.amt != null ? context.amt.RedirectionService.RequestStateChange(context.AMT_RedirectionService.EnabledState) : ''
-    return await invokeWsmanCall(context, 2)
-  }
-
-  async setKvmRedirectionSap (context: FeatureContext): Promise<any> {
-    context.xmlMessage = context.cim != null ? context.cim.KVMRedirectionSAP.RequestStateChange(context.CIM_KVMRedirectionSAP.EnabledState) : ''
-    return await invokeWsmanCall(context, 2)
-  }
-
-  async putRedirectionService (context: FeatureContext): Promise<any> {
-    const redirectionService: AMT.Models.RedirectionService = context.AMT_RedirectionService
-    context.xmlMessage = context.amt != null ? context.amt.RedirectionService.Put(redirectionService) : ''
-    return await invokeWsmanCall(context, 2)
-  }
-
-  async putIpsOptInService (context: FeatureContext): Promise<any> {
-    const ipsOptInService: IPS.Models.OptInService = context.IPS_OptInService
-    const ipsOptInSvcResponse: IPS.Models.OptInServiceResponse = {
-      IPS_OptInService: JSON.parse(JSON.stringify(ipsOptInService))
-    }
-    context.xmlMessage = context.ips != null ? context.ips.OptInService.Put(ipsOptInSvcResponse) : ''
-    return await invokeWsmanCall(context, 2)
+  constructor () {
+    this.logger = new Logger('FeaturesConfiguration')
   }
 }
