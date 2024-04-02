@@ -11,6 +11,8 @@ import { type Request, type Response } from 'express'
 import handleError from '../../../utils/handleError.js'
 import { RPSError } from '../../../utils/RPSError.js'
 import { type CertCredentials } from '../../../interfaces/ISecretManagerService.js'
+import { NodeForge } from '../../../NodeForge.js'
+import { CertManager } from '../../../certManager.js'
 
 export async function editDomain (req: Request, res: Response): Promise<void> {
   let amtDomain: AMTDomain = {} as AMTDomain
@@ -59,7 +61,10 @@ export async function editDomain (req: Request, res: Response): Promise<void> {
 
 function getUpdatedData (newDomain: any, oldDomain: AMTDomain): AMTDomain {
   const amtDomain: AMTDomain = { profileName: newDomain.profileName } as AMTDomain
+  const nodeForge = new NodeForge()
+  const certManager = new CertManager(new Logger('CertManager'), nodeForge)
   amtDomain.domainSuffix = newDomain.domainSuffix ?? oldDomain.domainSuffix
+  amtDomain.expirationDate = certManager.getExpirationDate(newDomain.provisioningCert, newDomain.provisioningCertPassword) ?? oldDomain.expirationDate
   amtDomain.provisioningCert = newDomain.provisioningCert ?? oldDomain.provisioningCert
   amtDomain.provisioningCertStorageFormat = newDomain.provisioningCertStorageFormat ?? oldDomain.provisioningCertStorageFormat
   amtDomain.provisioningCertPassword = newDomain.provisioningCertPassword ?? oldDomain.provisioningCertPassword
