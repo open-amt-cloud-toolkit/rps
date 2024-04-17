@@ -65,7 +65,7 @@
     "winston": "^3.13.0",
     "ws": "^8.16.0",
     "xml2js": "^0.6.2",
-    "xstate": "^5.10.0"
+    "xstate": "^5.11.0"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
