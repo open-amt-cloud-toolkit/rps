@@ -276,4 +276,15 @@ export class CertManager {
       key: keys?.privateKey
     }
   }
+
+  getExpirationDate (cert: string, password: string): Date {
+    const pfxobj = this.convertPfxToObject(cert, password)
+    let expiresFirst = pfxobj.certs[0].validity.notAfter
+    for (const cert of pfxobj.certs) {
+      if (cert.validity.notAfter < expiresFirst) {
+        expiresFirst = cert.validity.notAfter
+      }
+    }
+    return expiresFirst
+  }
 }
