@@ -1,3 +1,10 @@
+## [2.22.5](https://github.com/open-amt-cloud-toolkit/rps/compare/v2.22.4...v2.22.5) (2024-04-29)
+
+
+### Bug Fixes
+
+* edit domain api cert expiry date returning null ([#1531](https://github.com/open-amt-cloud-toolkit/rps/issues/1531)) ([4eee76b](https://github.com/open-amt-cloud-toolkit/rps/commit/4eee76b9e0eafac39590d17ac517503d729bfb24))
+
 ## [2.22.4](https://github.com/open-amt-cloud-toolkit/rps/compare/v2.22.3...v2.22.4) (2024-04-08)
 
 ## [2.22.3](https://github.com/open-amt-cloud-toolkit/rps/compare/v2.22.2...v2.22.3) (2024-03-11)
