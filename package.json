@@ -1,6 +1,6 @@
 {
   "name": "@open-amt-cloud-toolkit/rps",
-  "version": "2.22.5",
+  "version": "2.22.6",
   "description": "Containerized RPS service for activating and configuring Intel&reg; AMT devices",
   "homepage": "https://github.com/open-amt-cloud-toolkit/rps",
   "contributors": [
@@ -44,7 +44,7 @@
     "lint": "eslint . --ext .ts"
   },
   "dependencies": {
-    "@open-amt-cloud-toolkit/wsman-messages": "^5.6.5",
+    "@open-amt-cloud-toolkit/wsman-messages": "^5.6.6",
     "body-parser": "^1.20.2",
     "consul": "^1.2.0",
     "cors": "^2.8.5",
