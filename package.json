@@ -54,7 +54,7 @@
     "express-promise-router": "^4.1.1",
     "express-validator": "^7.1.0",
     "express-ws": "^5.0.2",
-    "got": "^14.2.1",
+    "got": "^14.3.0",
     "http-z": "^7.0.0",
     "minimist": "^1.2.8",
     "mqtt": "^5.6.1",
