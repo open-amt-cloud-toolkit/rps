@@ -11,6 +11,9 @@ on:
             description: 'Tag you wish to use on the docker image'     
             required: true
             default: 'rps:v1'
+permissions:
+  contents: read
+
 jobs:
 
   build:
