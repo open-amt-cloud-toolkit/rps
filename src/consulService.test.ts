@@ -13,7 +13,7 @@ let serviceName: string
 let consul: ConsulService
 describe('consul', () => {
   beforeEach(() => {
-    consul = new ConsulService('consul', '8500')
+    consul = new ConsulService('localhost', '8500')
 
     jest.clearAllMocks()
     jest.restoreAllMocks()
