@@ -6,7 +6,11 @@
 import { randomUUID } from 'node:crypto'
 import { devices } from '../devices.js'
 import { Environment } from '../utils/Environment.js'
-import { type Unconfiguration as UnconfigurationType, type UnconfigContext as UnconfigContextType, type UnconfigEvent } from './unconfiguration.js'
+import {
+  type Unconfiguration as UnconfigurationType,
+  type UnconfigContext as UnconfigContextType,
+  type UnconfigEvent
+} from './unconfiguration.js'
 import { config } from '../test/helper/Config.js'
 import { HttpHandler } from '../HttpHandler.js'
 import { type MachineImplementations, createActor, fromPromise } from 'xstate'
@@ -61,7 +65,9 @@ describe('Unconfiguration State Machine', () => {
       unauthCount: 0,
       ClientId: clientId,
       ClientSocket: { send: jest.fn() } as any,
-      ciraconfig: { TLSSettingData: { Enabled: true, AcceptNonSecureConnections: true, MutualAuthentication: true, TrustedCN: null } },
+      ciraconfig: {
+        TLSSettingData: { Enabled: true, AcceptNonSecureConnections: true, MutualAuthentication: true, TrustedCN: null }
+      },
       network: {},
       status: {},
       activationStatus: false,
@@ -79,31 +85,56 @@ describe('Unconfiguration State Machine', () => {
     configuration = {
       actors: {
         errorMachine: fromPromise(async ({ input }) => await Promise.resolve({ clientId })),
-        enumerateEthernetPortSettings: fromPromise(async ({ input }) => await Promise.resolve({
-          Envelope: {
-            Body: { EnumerateResponse: { EnumerationContext: '09000000-0000-0000-0000-000000000000' } }
-          }
-        })),
-        pullEthernetPortSettings: fromPromise(async ({ input }) => await Promise.resolve({
-          Envelope: {
-            Body: {
-              PullResponse: {
-                Items: {
-                  AMT_EthernetPortSettings: [
-                    { DHCPEnabled: true, ElementName: 'Intel(r) AMT Ethernet Port Settings', InstanceID: 'Intel(r) AMT Ethernet Port Settings 0', IpSyncEnabled: false, MACAddress: '00-00-00-02-00-05' },
-                    { ElementName: 'Intel(r) AMT Ethernet Port Settings', InstanceID: 'Intel(r) AMT Ethernet Port Settings 1', MACAddress: '00-00-00-02-00-05' }
-                  ]
+        enumerateEthernetPortSettings: fromPromise(
+          async ({ input }) =>
+            await Promise.resolve({
+              Envelope: {
+                Body: { EnumerateResponse: { EnumerationContext: '09000000-0000-0000-0000-000000000000' } }
+              }
+            })
+        ),
+        pullEthernetPortSettings: fromPromise(
+          async ({ input }) =>
+            await Promise.resolve({
+              Envelope: {
+                Body: {
+                  PullResponse: {
+                    Items: {
+                      AMT_EthernetPortSettings: [
+                        {
+                          DHCPEnabled: true,
+                          ElementName: 'Intel(r) AMT Ethernet Port Settings',
+                          InstanceID: 'Intel(r) AMT Ethernet Port Settings 0',
+                          IpSyncEnabled: false,
+                          MACAddress: '00-00-00-02-00-05'
+                        },
+                        {
+                          ElementName: 'Intel(r) AMT Ethernet Port Settings',
+                          InstanceID: 'Intel(r) AMT Ethernet Port Settings 1',
+                          MACAddress: '00-00-00-02-00-05'
+                        }
+                      ]
+                    }
+                  }
                 }
               }
-            }
-          }
-        })),
+            })
+        ),
         get8021xProfile: fromPromise(async ({ input }) => await Promise.resolve({ clientId })),
         disableWired8021xConfiguration: fromPromise(async ({ input }) => await Promise.resolve({ clientId })),
-        enumerateWifiEndpointSettings: fromPromise(async ({ input }) => await Promise.resolve({ clientId: input.clientId })),
-        pullWifiEndpointSettings: fromPromise(async ({ input }) => await Promise.resolve({ Envelope: { Body: { PullResponse: { Items: { CIM_WiFiEndpointSettings: null } } } } })),
+        enumerateWifiEndpointSettings: fromPromise(
+          async ({ input }) => await Promise.resolve({ clientId: input.clientId })
+        ),
+        pullWifiEndpointSettings: fromPromise(
+          async ({ input }) =>
+            await Promise.resolve({
+              Envelope: { Body: { PullResponse: { Items: { CIM_WiFiEndpointSettings: null } } } }
+            })
+        ),
         deleteWifiProfileOnAMTDevice: fromPromise(async ({ input }) => await Promise.resolve({ clientId })),
-        removeRemoteAccessPolicyRuleUserInitiated: fromPromise(async ({ input }) => await Promise.resolve({ clientId })),
+        removeRemoteAccessPolicyRuleUserInitiated: fromPromise(
+          async ({ input }) => await Promise.resolve({ clientId })
+        ),
         removeRemoteAccessPolicyRuleRuleAlert: fromPromise(async ({ input }) => await Promise.resolve({ clientId })),
         removeRemoteAccessPolicyRulePeriodic: fromPromise(async ({ input }) => await Promise.resolve({ clientId })),
         enumerateManagementPresenceRemoteSAP: fromPromise(async ({ input }) => await Promise.resolve({ clientId })),
@@ -121,13 +152,18 @@ describe('Unconfiguration State Machine', () => {
         pullPublicPrivateKeyPair: fromPromise(async ({ input }) => await Promise.resolve({ clientId })),
         deletePublicPrivateKeyPair: fromPromise(async ({ input }) => await Promise.resolve({ clientId })),
         enumeratePublicKeyCertificate: fromPromise(async ({ input }) => await Promise.resolve({ clientId })),
-        pullPublicKeyCertificate: fromPromise(async ({ input }) => await Promise.resolve({ Envelope: { Body: { PullResponse: { Items: { AMT_PublicKeyCertificate: [{}] } } } } })),
+        pullPublicKeyCertificate: fromPromise(
+          async ({ input }) =>
+            await Promise.resolve({
+              Envelope: { Body: { PullResponse: { Items: { AMT_PublicKeyCertificate: [{}] } } } }
+            })
+        ),
         deletePublicKeyCertificate: fromPromise(async ({ input }) => await Promise.resolve({ clientId })),
         getEnvironmentDetectionSettings: fromPromise(async ({ input }) => await Promise.resolve({ clientId })),
         clearEnvironmentDetectionSettings: fromPromise(async ({ input }) => await Promise.resolve({ clientId }))
       },
       actions: {
-        'Reset Unauth Count': () => { }
+        'Reset Unauth Count': () => {}
       },
       guards: {
         isExpectedBadRequest: () => false,
@@ -147,8 +183,26 @@ describe('Unconfiguration State Machine', () => {
 
   it('should eventually reach FAILURE after ENUMERATE_WIFI_ENDPOINT_SETTINGS', (done) => {
     if (configuration.actors != null) {
-      configuration.actors.pullEthernetPortSettings = fromPromise(async ({ input }) => await Promise.resolve({ Envelope: { Body: { PullResponse: { Items: { AMT_EthernetPortSettings: [{ ElementName: 'Ethernet Settings', InstanceID: 'Settings 0' }, { ElementName: 'Ethernet Settings', InstanceID: 'Settings 1', MACAddress: '00-00-00-02-00-05' }] } } } } }))
-      configuration.actors.enumerateWifiEndpointSettings = fromPromise(async ({ input }) => await Promise.reject(new Error()))
+      configuration.actors.pullEthernetPortSettings = fromPromise(
+        async ({ input }) =>
+          await Promise.resolve({
+            Envelope: {
+              Body: {
+                PullResponse: {
+                  Items: {
+                    AMT_EthernetPortSettings: [
+                      { ElementName: 'Ethernet Settings', InstanceID: 'Settings 0' },
+                      { ElementName: 'Ethernet Settings', InstanceID: 'Settings 1', MACAddress: '00-00-00-02-00-05' }
+                    ]
+                  }
+                }
+              }
+            }
+          })
+      )
+      configuration.actors.enumerateWifiEndpointSettings = fromPromise(
+        async ({ input }) => await Promise.reject(new Error())
+      )
     }
 
     const mockUnconfigurationMachine = unconfiguration.machine.provide(configuration)
@@ -157,7 +211,8 @@ describe('Unconfiguration State Machine', () => {
       'ENUMERATE_ETHERNET_PORT_SETTINGS',
       'PULL_ETHERNET_PORT_SETTINGS',
       'ENUMERATE_WIFI_ENDPOINT_SETTINGS',
-      'FAILURE']
+      'FAILURE'
+    ]
     const service = createActor(mockUnconfigurationMachine, { input: unconfigContext })
     service.subscribe((state) => {
       const expectedState: any = flowStates[currentStateIndex++]
@@ -171,7 +226,9 @@ describe('Unconfiguration State Machine', () => {
   })
 
   it('should eventually reach FAILURE after ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP', (done) => {
-    configuration.actors!.enumerateManagementPresenceRemoteSAP = fromPromise(async ({ input }) => await Promise.reject(new Error()))
+    configuration.actors!.enumerateManagementPresenceRemoteSAP = fromPromise(
+      async ({ input }) => await Promise.reject(new Error())
+    )
     const mockUnconfigurationMachine = unconfiguration.machine.provide(configuration)
     const flowStates = [
       'UNCONFIGURED',
@@ -184,7 +241,8 @@ describe('Unconfiguration State Machine', () => {
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT',
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_PERIODIC',
       'ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP',
-      'FAILURE']
+      'FAILURE'
+    ]
     const service = createActor(mockUnconfigurationMachine, { input: unconfigContext })
     service.subscribe((state) => {
       const expectedState: any = flowStates[currentStateIndex++]
@@ -199,8 +257,26 @@ describe('Unconfiguration State Machine', () => {
 
   it('should eventually reach FAILURE after REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED', (done) => {
     configuration.guards!.is8021xProfileEnabled = () => true
-    configuration.actors!.pullWifiEndpointSettings = fromPromise(async ({ input }) => await Promise.resolve({ Envelope: { Body: { PullResponse: { Items: { CIM_WiFiEndpointSettings: [{ InstanceID: 'testID', Priority: 1 }, { InstanceID: 'testID2', Priority: 2 }] } } } } }))
-    configuration.actors!.deleteWiFiProfileOnAMTDevice = fromPromise(async ({ input }) => await Promise.reject(new Error()))
+    configuration.actors!.pullWifiEndpointSettings = fromPromise(
+      async ({ input }) =>
+        await Promise.resolve({
+          Envelope: {
+            Body: {
+              PullResponse: {
+                Items: {
+                  CIM_WiFiEndpointSettings: [
+                    { InstanceID: 'testID', Priority: 1 },
+                    { InstanceID: 'testID2', Priority: 2 }
+                  ]
+                }
+              }
+            }
+          }
+        })
+    )
+    configuration.actors!.deleteWiFiProfileOnAMTDevice = fromPromise(
+      async ({ input }) => await Promise.reject(new Error())
+    )
     const mockUnconfigurationMachine = unconfiguration.machine.provide(configuration)
     const flowStates = [
       'UNCONFIGURED',
@@ -211,7 +287,8 @@ describe('Unconfiguration State Machine', () => {
       'ENUMERATE_WIFI_ENDPOINT_SETTINGS',
       'PULL_WIFI_ENDPOINT_SETTINGS',
       'DELETE_WIFI_ENDPOINT_SETTINGS',
-      'FAILURE']
+      'FAILURE'
+    ]
     const service = createActor(mockUnconfigurationMachine, { input: unconfigContext })
     service.subscribe((state) => {
       const expectedState: any = flowStates[currentStateIndex++]
@@ -225,7 +302,9 @@ describe('Unconfiguration State Machine', () => {
   })
   it('should eventually reach FAILURE after PULL_MANAGEMENT_PRESENCE_REMOTE_SAP', (done) => {
     configuration.guards!.is8021xProfileEnabled = () => true
-    configuration.actors!.pullManagementPresenceRemoteSAP = fromPromise(async ({ input }) => await Promise.reject(new Error()))
+    configuration.actors!.pullManagementPresenceRemoteSAP = fromPromise(
+      async ({ input }) => await Promise.reject(new Error())
+    )
     const mockUnconfigurationMachine = unconfiguration.machine.provide(configuration)
     const flowStates = [
       'UNCONFIGURED',
@@ -240,7 +319,8 @@ describe('Unconfiguration State Machine', () => {
       'REMOVE_REMOTE_ACCESS_POLICY_RULE_PERIODIC',
       'ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP',
       'PULL_MANAGEMENT_PRESENCE_REMOTE_SAP',
-      'FAILURE']
+      'FAILURE'
+    ]
     const service = createActor(mockUnconfigurationMachine, { input: unconfigContext })
     service.subscribe((state) => {
       const expectedState: any = flowStates[currentStateIndex++]
@@ -256,7 +336,8 @@ describe('Unconfiguration State Machine', () => {
   it('should eventually reach FAILURE after ENUMERATE_TLS_SETTING_DATA', (done) => {
     configuration.actors!.enumerateTLSSettingData = fromPromise(async ({ input }) => await Promise.reject(new Error()))
     const mockUnconfigurationMachine = unconfiguration.machine.provide(configuration)
-    const flowStates = ['UNCONFIGURED',
+    const flowStates = [
+      'UNCONFIGURED',
       'ENUMERATE_ETHERNET_PORT_SETTINGS',
       'PULL_ETHERNET_PORT_SETTINGS',
       'GET_8021X_PROFILE',
@@ -268,7 +349,8 @@ describe('Unconfiguration State Machine', () => {
       'ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP',
       'PULL_MANAGEMENT_PRESENCE_REMOTE_SAP',
       'ENUMERATE_TLS_SETTING_DATA',
-      'FAILURE']
+      'FAILURE'
+    ]
     const service = createActor(mockUnconfigurationMachine, { input: unconfigContext })
     service.subscribe((state) => {
       const expectedState: any = flowStates[currentStateIndex++]
@@ -284,7 +366,8 @@ describe('Unconfiguration State Machine', () => {
   it('should eventually reach FAILURE after PULL_TLS_SETTING_DATA', (done) => {
     configuration.actors!.pullTLSSettingData = fromPromise(async ({ input }) => await Promise.reject(new Error()))
     const mockUnconfigurationMachine = unconfiguration.machine.provide(configuration)
-    const flowStates = ['UNCONFIGURED',
+    const flowStates = [
+      'UNCONFIGURED',
       'ENUMERATE_ETHERNET_PORT_SETTINGS',
       'PULL_ETHERNET_PORT_SETTINGS',
       'GET_8021X_PROFILE',
@@ -297,7 +380,8 @@ describe('Unconfiguration State Machine', () => {
       'PULL_MANAGEMENT_PRESENCE_REMOTE_SAP',
       'ENUMERATE_TLS_SETTING_DATA',
       'PULL_TLS_SETTING_DATA',
-      'FAILURE']
+      'FAILURE'
+    ]
     const service = createActor(mockUnconfigurationMachine, { input: unconfigContext })
     service.subscribe((state) => {
       const expectedState: any = flowStates[currentStateIndex++]
@@ -311,9 +395,12 @@ describe('Unconfiguration State Machine', () => {
   })
 
   it('should eventually reach FAILURE after ENUMERATE_PUBLIC_KEY_CERTIFICATE', (done) => {
-    configuration.actors!.enumeratePublicKeyCertificate = fromPromise(async ({ input }) => await Promise.reject(new Error()))
+    configuration.actors!.enumeratePublicKeyCertificate = fromPromise(
+      async ({ input }) => await Promise.reject(new Error())
+    )
     const mockUnconfigurationMachine = unconfiguration.machine.provide(configuration)
-    const flowStates = ['UNCONFIGURED',
+    const flowStates = [
+      'UNCONFIGURED',
       'ENUMERATE_ETHERNET_PORT_SETTINGS',
       'PULL_ETHERNET_PORT_SETTINGS',
       'GET_8021X_PROFILE',
@@ -327,7 +414,8 @@ describe('Unconfiguration State Machine', () => {
       'ENUMERATE_TLS_SETTING_DATA',
       'PULL_TLS_SETTING_DATA',
       'ENUMERATE_PUBLIC_KEY_CERTIFICATE',
-      'FAILURE']
+      'FAILURE'
+    ]
     const service = createActor(mockUnconfigurationMachine, { input: unconfigContext })
     service.subscribe((state) => {
       const expectedState: any = flowStates[currentStateIndex++]
@@ -343,7 +431,8 @@ describe('Unconfiguration State Machine', () => {
   it('should eventually reach FAILURE after PULL_PUBLIC_KEY_CERTIFICATE', (done) => {
     configuration.actors!.pullPublicKeyCertificate = fromPromise(async ({ input }) => await Promise.reject(new Error()))
     const mockUnconfigurationMachine = unconfiguration.machine.provide(configuration)
-    const flowStates = ['UNCONFIGURED',
+    const flowStates = [
+      'UNCONFIGURED',
       'ENUMERATE_ETHERNET_PORT_SETTINGS',
       'PULL_ETHERNET_PORT_SETTINGS',
       'GET_8021X_PROFILE',
@@ -358,7 +447,8 @@ describe('Unconfiguration State Machine', () => {
       'PULL_TLS_SETTING_DATA',
       'ENUMERATE_PUBLIC_KEY_CERTIFICATE',
       'PULL_PUBLIC_KEY_CERTIFICATE',
-      'FAILURE']
+      'FAILURE'
+    ]
     const service = createActor(mockUnconfigurationMachine, { input: unconfigContext })
     service.subscribe((state) => {
       const expectedState: any = flowStates[currentStateIndex++]
@@ -373,10 +463,15 @@ describe('Unconfiguration State Machine', () => {
 
   it('should eventually reach FAILURE after ENUMERATE_PUBLIC_KEY_CERTIFICATE', (done) => {
     unconfigContext.is8021xProfileUpdated = true
-    configuration.actors!.pullPublicPrivateKeyPair = fromPromise(async ({ input }) => await Promise.resolve({ Envelope: { Body: { PullResponse: { Items: {} } } } }))
-    configuration.actors!.enumeratePublicKeyCertificate = fromPromise(async ({ input }) => await Promise.reject(new Error()))
+    configuration.actors!.pullPublicPrivateKeyPair = fromPromise(
+      async ({ input }) => await Promise.resolve({ Envelope: { Body: { PullResponse: { Items: {} } } } })
+    )
+    configuration.actors!.enumeratePublicKeyCertificate = fromPromise(
+      async ({ input }) => await Promise.reject(new Error())
+    )
     const mockUnconfigurationMachine = unconfiguration.machine.provide(configuration)
-    const flowStates = ['UNCONFIGURED',
+    const flowStates = [
+      'UNCONFIGURED',
       'ENUMERATE_ETHERNET_PORT_SETTINGS',
       'PULL_ETHERNET_PORT_SETTINGS',
       'GET_8021X_PROFILE',
@@ -392,7 +487,8 @@ describe('Unconfiguration State Machine', () => {
       'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR',
       'PULL_PUBLIC_PRIVATE_KEY_PAIR',
       'ENUMERATE_PUBLIC_KEY_CERTIFICATE',
-      'FAILURE']
+      'FAILURE'
+    ]
     const service = createActor(mockUnconfigurationMachine, { input: unconfigContext })
     service.subscribe((state) => {
       const expectedState: any = flowStates[currentStateIndex++]
@@ -406,9 +502,12 @@ describe('Unconfiguration State Machine', () => {
   })
 
   it('should eventually reach FAILURE after GET_ENVIRONMENT_DETECTION_SETTINGS', (done) => {
-    configuration.actors!.getEnvironmentDetectionSettings = fromPromise(async ({ input }) => await Promise.reject(new Error()))
+    configuration.actors!.getEnvironmentDetectionSettings = fromPromise(
+      async ({ input }) => await Promise.reject(new Error())
+    )
     const mockUnconfigurationMachine = unconfiguration.machine.provide(configuration)
-    const flowStates = ['UNCONFIGURED',
+    const flowStates = [
+      'UNCONFIGURED',
       'ENUMERATE_ETHERNET_PORT_SETTINGS',
       'PULL_ETHERNET_PORT_SETTINGS',
       'GET_8021X_PROFILE',
@@ -424,7 +523,8 @@ describe('Unconfiguration State Machine', () => {
       'ENUMERATE_PUBLIC_KEY_CERTIFICATE',
       'PULL_PUBLIC_KEY_CERTIFICATE',
       'GET_ENVIRONMENT_DETECTION_SETTINGS',
-      'FAILURE']
+      'FAILURE'
+    ]
     const service = createActor(mockUnconfigurationMachine, { input: unconfigContext })
     service.subscribe((state) => {
       const expectedState: any = flowStates[currentStateIndex++]
@@ -454,7 +554,11 @@ describe('Unconfiguration State Machine', () => {
     expect(loggerSpy).toHaveBeenCalled()
   })
   it('should disable Wired 8021x Config', async () => {
-    unconfigContext.message = { Envelope: { Body: { IPS_IEEE8021xSettings: { Username: 'testName', Password: 'testPw', AuthenticationProtocol: 'x' } } } }
+    unconfigContext.message = {
+      Envelope: {
+        Body: { IPS_IEEE8021xSettings: { Username: 'testName', Password: 'testPw', AuthenticationProtocol: 'x' } }
+      }
+    }
     await unconfiguration.disableWired8021xConfiguration({ input: unconfigContext })
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
@@ -575,7 +679,7 @@ describe('Unconfiguration State Machine', () => {
     expect(loggerSpy).toHaveBeenCalled()
   })
   it('should clear Environment Detection Settings', async () => {
-    unconfigContext.message = { Envelope: { Body: { AMT_EnvironmentDetectionSettingData: { } } } }
+    unconfigContext.message = { Envelope: { Body: { AMT_EnvironmentDetectionSettingData: {} } } }
     await unconfiguration.clearEnvironmentDetectionSettings({ input: unconfigContext })
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
@@ -604,7 +708,9 @@ describe('Unconfiguration State Machine', () => {
     expect(loggerSpy).toHaveBeenCalled()
   })
   it('should disable remote TLS Setting Data', async () => {
-    unconfigContext.message = { Envelope: { Body: { PullResponse: { Items: { AMT_TLSSettingData: unconfigContext.tlsSettingData } } } } }
+    unconfigContext.message = {
+      Envelope: { Body: { PullResponse: { Items: { AMT_TLSSettingData: unconfigContext.tlsSettingData } } } }
+    }
     await unconfiguration.disableRemoteTLSSettingData({ input: unconfigContext })
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })

@@ -10,10 +10,7 @@ import { runTilDone } from '../../test/helper/xstate.js'
 import { type MachineImplementations } from 'xstate'
 import { jest } from '@jest/globals'
 
-import {
-  HttpResponseError,
-  coalesceMessage
-} from '../common.js'
+import { HttpResponseError, coalesceMessage } from '../common.js'
 
 import {
   type GetLowAccuracyTimeSynchResponse,
@@ -30,10 +27,7 @@ jest.unstable_mockModule('../common.js', () => ({
   coalesceMessage
 }))
 
-const {
-  SyncTime,
-  SyncTimeEventType
-} = await import('./syncTime.js')
+const { SyncTime, SyncTimeEventType } = await import('./syncTime.js')
 
 describe('SyncTime State Machine', () => {
   let clientId: string
@@ -88,9 +82,7 @@ describe('SyncTime State Machine', () => {
   })
 
   const runTheTest = async function (done): Promise<void> {
-    invokeWsmanCallSpy
-      .mockResolvedValueOnce(lowAccuracyRsp)
-      .mockResolvedValueOnce(highAccuracyRsp)
+    invokeWsmanCallSpy.mockResolvedValueOnce(lowAccuracyRsp).mockResolvedValueOnce(highAccuracyRsp)
     await runTilDone(implementation.machine.provide(implementationConfig), event, doneResponse, context, done)
   }
 

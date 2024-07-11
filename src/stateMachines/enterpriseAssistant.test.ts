@@ -14,7 +14,9 @@ jest.unstable_mockModule('./common.js', () => ({
   invokeEnterpriseAssistantCall: invokeEnterpriseAssistantCallSpy
 }))
 
-const { initiateCertRequest, sendEnterpriseAssistantKeyPairResponse, getCertFromEnterpriseAssistant } = await import ('./enterpriseAssistant.js')
+const { initiateCertRequest, sendEnterpriseAssistantKeyPairResponse, getCertFromEnterpriseAssistant } = await import(
+  './enterpriseAssistant.js'
+)
 const clientId = randomUUID()
 
 describe('Enterprise Assistant', () => {
@@ -39,7 +41,11 @@ describe('Enterprise Assistant', () => {
         ieee8021xProfileName: 'p1',
         tenantId: ''
       },
-      eaResponse: { rootcert: 'MIIDhTCCAm2gAwIBAgIQSxKZZpPSAo5ACu3OFx0Y8jANBgkqhkiG9w0BAQsFADBVMRMwEQYKCZImiZPyLGQBGRYDY29tMRgwFgYKCZImiZPyLGQBGRYIdnByb2RlbW8xJDAiBgNVBAMTG3Zwcm9kZW1vLVdJTi1QRVFIRjBSTjQwVi1DQTAeFw0yMzAyMDEyMjU1NTVaFw0yODAyMDEyMzA1NTRaMFUxEzARBgoJkiaJk/IsZAEZFgNjb20xGDAWBgoJkiaJk/IsZAEZFgh2cHJvZGVtbzEkMCIGA1UEAxMbdnByb2RlbW8tV0lOLVBFUUhGMFJONDBWLUNBMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAz9eNHbevH3k/TorT4+yWJMBrk8t15Ig+yGFJWsZEgXN8/VfN9naeacPjDYxzWZOvUpWRZZMiZTAvctvUo8vi02qy2qVyHhjA+IYyMYsBEN9QNmWjpsfDvwUyJ2W4Zz3IeTjYF9LhOKvr99Z2CvAXqMKR6CmSvnvLyizJW+RkVASOavXMawWKzyKknLAUVLXP9dbT2T80oJ5irtLhOXfGgwJWVTE13V1YJ3erix0PT+cFyNCqDWR1u5JNfgUcJuzrYisBsngfWLYQilxDy8sMUVPGwV4Pz04N30ri1GGsj2BgvnLl9Q17wow5d54funPvnoa6fM33Uiad3jZoL9ABNQIDAQABo1EwTzALBgNVHQ8EBAMCAYYwDwYDVR0TAQH/BAUwAwEB/zAdBgNVHQ4EFgQUb8R8CBWHno23fZN+Y3PfS4EzW9IwEAYJKwYBBAGCNxUBBAMCAQAwDQYJKoZIhvcNAQELBQADggEBAGIIZtWeThNBTDEmrZcb6yg9U376ImdGaso637RqDzS3nFgudKrl6/cVUDvS+YKp97bK7ryPn9lLRLI66mSw5TgPUOZ7eXfAw9uuULKAPA8eO0wJsDbVKflmTFIr8THrE0Bdyq4cm9swRzKnNiu/mx2w8b3TITHsBVx+xTO5WkW32GRq4jkqYpL3FMbDUjOJ2fP5yqGVIxpUSrh7k5Bxo5eUoOevRmBMTeDeaw/f0Bs2lf/buc+zLtL15Y3ZzIJugWVF/6BtOiknD7olbI9uATq/LrHoPCOdlrxIXqqB0GDDDvOWcLrRECfUQNkH7IE27vsSs7yosCET/gRtF6UV5MU=', username: 'abc' },
+      eaResponse: {
+        rootcert:
+          'MIIDhTCCAm2gAwIBAgIQSxKZZpPSAo5ACu3OFx0Y8jANBgkqhkiG9w0BAQsFADBVMRMwEQYKCZImiZPyLGQBGRYDY29tMRgwFgYKCZImiZPyLGQBGRYIdnByb2RlbW8xJDAiBgNVBAMTG3Zwcm9kZW1vLVdJTi1QRVFIRjBSTjQwVi1DQTAeFw0yMzAyMDEyMjU1NTVaFw0yODAyMDEyMzA1NTRaMFUxEzARBgoJkiaJk/IsZAEZFgNjb20xGDAWBgoJkiaJk/IsZAEZFgh2cHJvZGVtbzEkMCIGA1UEAxMbdnByb2RlbW8tV0lOLVBFUUhGMFJONDBWLUNBMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAz9eNHbevH3k/TorT4+yWJMBrk8t15Ig+yGFJWsZEgXN8/VfN9naeacPjDYxzWZOvUpWRZZMiZTAvctvUo8vi02qy2qVyHhjA+IYyMYsBEN9QNmWjpsfDvwUyJ2W4Zz3IeTjYF9LhOKvr99Z2CvAXqMKR6CmSvnvLyizJW+RkVASOavXMawWKzyKknLAUVLXP9dbT2T80oJ5irtLhOXfGgwJWVTE13V1YJ3erix0PT+cFyNCqDWR1u5JNfgUcJuzrYisBsngfWLYQilxDy8sMUVPGwV4Pz04N30ri1GGsj2BgvnLl9Q17wow5d54funPvnoa6fM33Uiad3jZoL9ABNQIDAQABo1EwTzALBgNVHQ8EBAMCAYYwDwYDVR0TAQH/BAUwAwEB/zAdBgNVHQ4EFgQUb8R8CBWHno23fZN+Y3PfS4EzW9IwEAYJKwYBBAGCNxUBBAMCAQAwDQYJKoZIhvcNAQELBQADggEBAGIIZtWeThNBTDEmrZcb6yg9U376ImdGaso637RqDzS3nFgudKrl6/cVUDvS+YKp97bK7ryPn9lLRLI66mSw5TgPUOZ7eXfAw9uuULKAPA8eO0wJsDbVKflmTFIr8THrE0Bdyq4cm9swRzKnNiu/mx2w8b3TITHsBVx+xTO5WkW32GRq4jkqYpL3FMbDUjOJ2fP5yqGVIxpUSrh7k5Bxo5eUoOevRmBMTeDeaw/f0Bs2lf/buc+zLtL15Y3ZzIJugWVF/6BtOiknD7olbI9uATq/LrHoPCOdlrxIXqqB0GDDDvOWcLrRECfUQNkH7IE27vsSs7yosCET/gRtF6UV5MU=',
+        username: 'abc'
+      },
       message: { Envelope: { Body: {} } },
       targetAfterError: null,
       ieee8021xProfile: null,
@@ -51,7 +57,9 @@ describe('Enterprise Assistant', () => {
       unauthCount: 0,
       ClientId: clientId,
       ClientSocket: { send: jest.fn() } as any,
-      ciraconfig: { TLSSettingData: { Enabled: true, AcceptNonSecureConnections: true, MutualAuthentication: true, TrustedCN: null } },
+      ciraconfig: {
+        TLSSettingData: { Enabled: true, AcceptNonSecureConnections: true, MutualAuthentication: true, TrustedCN: null }
+      },
       network: {},
       status: {},
       tls: {},

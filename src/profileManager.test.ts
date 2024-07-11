@@ -15,32 +15,34 @@ import { Environment } from './utils/Environment.js'
 Environment.Config = config
 const logger: ILogger = new Logger('ProfileManagerTests')
 
-const ciraConfigurations: CIRAConfig[] = [{
-  configName: 'ciraconfig1',
-  mpsServerAddress: 'localhost',
-  mpsPort: 4433,
-  username: 'admin',
-  password: 'P@ssw0rd',
-  commonName: 'localhost',
-  serverAddressFormat: 201, // IPv4 (3), IPv6 (4), FQDN (201)
-  authMethod: 2, // Mutual Auth (1), Username/Password (2) (We only support 2)
-  mpsRootCertificate: 'rootcert', // Assumption is Root Cert for MPS. Need to validate.
-  proxyDetails: '',
-  tenantId: ''
-},
-{
-  configName: 'ciraconfig2',
-  mpsServerAddress: 'localhost',
-  mpsPort: 4433,
-  username: 'admin',
-  password: 'P@ssw0rd',
-  commonName: 'localhost',
-  serverAddressFormat: 201, // IPv4 (3), IPv6 (4), FQDN (201)
-  authMethod: 2, // Mutual Auth (1), Username/Password (2) (We only support 2)
-  mpsRootCertificate: 'rootcert', // Assumption is Root Cert for MPS. Need to validate.
-  proxyDetails: '',
-  tenantId: ''
-}]
+const ciraConfigurations: CIRAConfig[] = [
+  {
+    configName: 'ciraconfig1',
+    mpsServerAddress: 'localhost',
+    mpsPort: 4433,
+    username: 'admin',
+    password: 'P@ssw0rd',
+    commonName: 'localhost',
+    serverAddressFormat: 201, // IPv4 (3), IPv6 (4), FQDN (201)
+    authMethod: 2, // Mutual Auth (1), Username/Password (2) (We only support 2)
+    mpsRootCertificate: 'rootcert', // Assumption is Root Cert for MPS. Need to validate.
+    proxyDetails: '',
+    tenantId: ''
+  },
+  {
+    configName: 'ciraconfig2',
+    mpsServerAddress: 'localhost',
+    mpsPort: 4433,
+    username: 'admin',
+    password: 'P@ssw0rd',
+    commonName: 'localhost',
+    serverAddressFormat: 201, // IPv4 (3), IPv6 (4), FQDN (201)
+    authMethod: 2, // Mutual Auth (1), Username/Password (2) (We only support 2)
+    mpsRootCertificate: 'rootcert', // Assumption is Root Cert for MPS. Need to validate.
+    proxyDetails: '',
+    tenantId: ''
+  }
+]
 
 const ieee8021xConfigurations: Ieee8021xConfig[] = [
   {
@@ -56,7 +58,8 @@ const ieee8021xConfigurations: Ieee8021xConfig[] = [
     pxeTimeout: 120,
     wiredInterface: false,
     tenantId: ''
-  }]
+  }
+]
 
 const amtConfigurations: AMTConfiguration[] = [
   {
@@ -85,10 +88,12 @@ const amtConfigurations: AMTConfiguration[] = [
 ]
 const profileStub: IProfilesTable = {
   getCount: async () => 2,
-  getByName: async (name) => amtConfigurations.find(c => c.profileName === name) as any,
+  getByName: async (name) => amtConfigurations.find((c) => c.profileName === name) as any,
   get: async (top, skip) => amtConfigurations,
-  getCiraConfigForProfile: async (ciraConfigName) => ciraConfigurations.find(c => c.configName === ciraConfigName) as any,
-  get8021XConfigForProfile: async (profileName) => ieee8021xConfigurations.find(p => p.profileName === profileName) as any,
+  getCiraConfigForProfile: async (ciraConfigName) =>
+    ciraConfigurations.find((c) => c.configName === ciraConfigName) as any,
+  get8021XConfigForProfile: async (profileName) =>
+    ieee8021xConfigurations.find((p) => p.profileName === profileName) as any,
   delete: async (profileName) => true,
   insert: async (amtConfig: AMTConfiguration) => {
     amtConfigurations.push(amtConfig)

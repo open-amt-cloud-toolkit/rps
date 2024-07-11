@@ -40,12 +40,18 @@ describe('TLS State Machine', () => {
     timeMachine = new TimeSync()
     config = {
       actors: {
-        getLowAccuracyTimeSync: fromPromise(async ({ input }) => await Promise.resolve({
-          Envelope: { Body: { GetLowAccuracyTimeSynch_OUTPUT: { ReturnValue: 0 } } }
-        })),
-        setHighAccuracyTimeSync: fromPromise(async ({ input }) => await Promise.resolve({
-          Envelope: { Body: { SetHighAccuracyTimeSynch_OUTPUT: { ReturnValue: 0 } } }
-        }))
+        getLowAccuracyTimeSync: fromPromise(
+          async ({ input }) =>
+            await Promise.resolve({
+              Envelope: { Body: { GetLowAccuracyTimeSynch_OUTPUT: { ReturnValue: 0 } } }
+            })
+        ),
+        setHighAccuracyTimeSync: fromPromise(
+          async ({ input }) =>
+            await Promise.resolve({
+              Envelope: { Body: { SetHighAccuracyTimeSynch_OUTPUT: { ReturnValue: 0 } } }
+            })
+        )
       }
     }
   })

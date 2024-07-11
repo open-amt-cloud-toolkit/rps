@@ -13,7 +13,12 @@ describe('Checks createIEEE8021xProfile', () => {
   let req
   let insertSpy: SpyInstance<any>
   beforeEach(() => {
-    resSpy = createSpyObj('Response', ['status', 'json', 'end', 'send'])
+    resSpy = createSpyObj('Response', [
+      'status',
+      'json',
+      'end',
+      'send'
+    ])
     req = {
       db: { ieee8021xProfiles: { insert: jest.fn() } },
       body: {},

@@ -36,7 +36,9 @@ export interface CertCredentials {
 
 export interface ISecretManagerService {
   getSecretFromKey: (path: string, key: string) => Promise<string | null>
-  getSecretAtPath: (path: string) => Promise<DeviceCredentials | WifiCredentials | TLSCredentials | CertCredentials | CiraConfigSecrets | null>
+  getSecretAtPath: (
+    path: string
+  ) => Promise<DeviceCredentials | WifiCredentials | TLSCredentials | CertCredentials | CiraConfigSecrets | null>
   writeSecretWithObject: (
     path: string,
     data: DeviceCredentials | WifiCredentials | TLSCredentials | CertCredentials | CiraConfigSecrets

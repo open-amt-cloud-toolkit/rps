@@ -187,7 +187,7 @@ describe('Maintenance State Machine', () => {
       const logInfoSpy = spyOn(Logger.prototype, 'info').mockReturnValue(null as any)
       invokeWsmanCallSpy.mockRejectedValueOnce(HttpBadRequestError)
       const implementation = new Maintenance()
-      const actor = createActor(implementation.machine.provide(implementationConfig), ({ input: context }))
+      const actor = createActor(implementation.machine.provide(implementationConfig), { input: context })
 
       actor.start()
       actor.send(event)

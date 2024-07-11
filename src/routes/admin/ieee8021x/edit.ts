@@ -11,7 +11,7 @@ import { type Request, type Response } from 'express'
 import handleError from '../../../utils/handleError.js'
 import { RPSError } from '../../../utils/RPSError.js'
 
-export async function editIEEE8021xProfile (req: Request, res: Response): Promise<void> {
+export async function editIEEE8021xProfile(req: Request, res: Response): Promise<void> {
   const log = new Logger('edit8021xProfile')
   try {
     const config: Ieee8021xConfig | null = await req.db.ieee8021xProfiles.getByName(req.body.profileName, req.tenantId)

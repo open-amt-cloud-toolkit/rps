@@ -16,7 +16,7 @@ import { CertManager } from '../../../certManager.js'
 import Logger from '../../../Logger.js'
 import { ClientAction, TlsSigningAuthority } from '../../../models/RCS.Config.js'
 
-export function adjustTlsConfiguration (amtConfig: AMTConfiguration): AMTConfiguration {
+export function adjustTlsConfiguration(amtConfig: AMTConfiguration): AMTConfiguration {
   // default to self-signed if tls is indicated
   if (amtConfig.tlsMode) {
     if (!amtConfig.tlsSigningAuthority) {
@@ -31,7 +31,7 @@ export function adjustTlsConfiguration (amtConfig: AMTConfiguration): AMTConfigu
   return amtConfig
 }
 
-export function adjustRedirectionConfiguration (amtConfig: AMTConfiguration): AMTConfiguration {
+export function adjustRedirectionConfiguration(amtConfig: AMTConfiguration): AMTConfiguration {
   // sets to default AMT redirection configuration settings, incase the information is not given.
   if (amtConfig.userConsent == null) {
     if (amtConfig.activation === ClientAction.CLIENTCTLMODE) {
@@ -46,7 +46,10 @@ export function adjustRedirectionConfiguration (amtConfig: AMTConfiguration): AM
   return amtConfig
 }
 
-export async function generateSelfSignedCertificate (secretsManager: ISecretManagerService, profileName: string): Promise<any> {
+export async function generateSelfSignedCertificate(
+  secretsManager: ISecretManagerService,
+  profileName: string
+): Promise<any> {
   // generate root certificate
   const cm = new CertManager(new Logger('CertManager'), new NodeForge())
   const certAttr: CertAttributes = {

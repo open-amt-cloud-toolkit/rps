@@ -5,7 +5,15 @@
 
 import PostgresDb from '../index.js'
 import { type AMTConfiguration, AMTUserConsent } from '../../../models/index.js'
-import { PROFILE_INSERTION_FAILED_DUPLICATE, PROFILE_INSERTION_CIRA_CONSTRAINT, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP, PROFILE_INSERTION_GENERIC_CONSTRAINT, CONCURRENCY_MESSAGE } from '../../../utils/constants.js'
+import {
+  PROFILE_INSERTION_FAILED_DUPLICATE,
+  PROFILE_INSERTION_CIRA_CONSTRAINT,
+  API_UNEXPECTED_EXCEPTION,
+  DEFAULT_SKIP,
+  DEFAULT_TOP,
+  PROFILE_INSERTION_GENERIC_CONSTRAINT,
+  CONCURRENCY_MESSAGE
+} from '../../../utils/constants.js'
 import { RPSError } from '../../../utils/RPSError.js'
 import { ProfilesTable } from './profiles.js'
 import { jest } from '@jest/globals'
@@ -50,13 +58,25 @@ describe('profiles tests', () => {
   describe('Get', () => {
     test('should get expected count', async () => {
       const expected = 10
-      querySpy.mockResolvedValueOnce({ rows: [{ total_count: expected }], command: '', fields: null, rowCount: expected, oid: 0 })
+      querySpy.mockResolvedValueOnce({
+        rows: [{ total_count: expected }],
+        command: '',
+        fields: null,
+        rowCount: expected,
+        oid: 0
+      })
       const count: number = await profilesTable.getCount()
       expect(count).toBe(expected)
     })
     test('should get count of 0 on no counts made', async () => {
       const expected = 0
-      querySpy.mockResolvedValueOnce({ rows: [{ total_count: expected }], command: '', fields: null, rowCount: expected, oid: 0 })
+      querySpy.mockResolvedValueOnce({
+        rows: [{ total_count: expected }],
+        command: '',
+        fields: null,
+        rowCount: expected,
+        oid: 0
+      })
       const count: number = await profilesTable.getCount()
       expect(count).toBe(0)
     })
@@ -67,7 +87,7 @@ describe('profiles tests', () => {
       expect(count).toBe(expected)
     })
     test('should get count of 0 on no rows returned', async () => {
-      querySpy.mockResolvedValueOnce({ })
+      querySpy.mockResolvedValueOnce({})
       const count: number = await profilesTable.getCount()
       expect(count).toBe(0)
     })
@@ -83,7 +103,8 @@ describe('profiles tests', () => {
       const result = await profilesTable.get()
       expect(result).toStrictEqual(rows)
       expect(querySpy).toBeCalledTimes(1)
-      expect(querySpy).toBeCalledWith(`
+      expect(querySpy).toBeCalledWith(
+        `
     SELECT 
       p.profile_name as "profileName", 
       activation as "activation", 
@@ -126,7 +147,13 @@ describe('profiles tests', () => {
       ip_sync_enabled,
       local_wifi_sync_enabled
     ORDER BY p.profile_name 
-    LIMIT $1 OFFSET $2`, [DEFAULT_TOP, DEFAULT_SKIP, ''])
+    LIMIT $1 OFFSET $2`,
+        [
+          DEFAULT_TOP,
+          DEFAULT_SKIP,
+          ''
+        ]
+      )
     })
     test('should get by name', async () => {
       const rows = [{}]
@@ -134,7 +161,8 @@ describe('profiles tests', () => {
       const result = await profilesTable.getByName(profileName)
       expect(result).toStrictEqual(rows[0])
       expect(querySpy).toBeCalledTimes(1)
-      expect(querySpy).toBeCalledWith(`
+      expect(querySpy).toBeCalledWith(
+        `
     SELECT 
       p.profile_name as "profileName",
       activation as "activation",
@@ -176,7 +204,9 @@ describe('profiles tests', () => {
       ieee8021x_profile_name,
       ip_sync_enabled,
       local_wifi_sync_enabled
-    `, [profileName, ''])
+    `,
+        [profileName, '']
+      )
     })
     test('should NOT get by name when no profiles exists', async () => {
       querySpy.mockResolvedValueOnce({ rows: [], rowCount: 0 })
@@ -207,10 +237,13 @@ describe('profiles tests', () => {
       expect(result).toBeTruthy()
       expect(wirelessConfigSpy).toHaveBeenLastCalledWith(profileName, tenantId)
       expect(querySpy).toBeCalledTimes(1)
-      expect(querySpy).toBeCalledWith(`
+      expect(querySpy).toBeCalledWith(
+        `
       DELETE 
       FROM profiles 
-      WHERE profile_name = $1 and tenant_id = $2`, [profileName, tenantId])
+      WHERE profile_name = $1 and tenant_id = $2`,
+        [profileName, tenantId]
+      )
     })
     test('should NOT delete', async () => {
       querySpy.mockResolvedValueOnce({ rows: [], rowCount: 0 })
@@ -236,10 +269,15 @@ describe('profiles tests', () => {
       const result = await profilesTable.insert(amtConfig)
 
       expect(result).toBe(amtConfig)
-      expect(profileWirelessConfigsSpy).toHaveBeenCalledWith(amtConfig.wifiConfigs, amtConfig.profileName, amtConfig.tenantId)
+      expect(profileWirelessConfigsSpy).toHaveBeenCalledWith(
+        amtConfig.wifiConfigs,
+        amtConfig.profileName,
+        amtConfig.tenantId
+      )
       expect(getByNameSpy).toHaveBeenCalledWith(amtConfig.profileName, amtConfig.tenantId)
       expect(querySpy).toBeCalledTimes(1)
-      expect(querySpy).toBeCalledWith(`
+      expect(querySpy).toBeCalledWith(
+        `
         INSERT INTO profiles(
           profile_name, activation,
           amt_password, generate_random_password,
@@ -248,27 +286,29 @@ describe('profiles tests', () => {
           tags, dhcp_enabled, tls_mode,
           user_consent, ider_enabled, kvm_enabled, sol_enabled,
           tenant_id, tls_signing_authority, ieee8021x_profile_name, ip_sync_enabled, local_wifi_sync_enabled)
-        values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)`, [
-        amtConfig.profileName,
-        amtConfig.activation,
-        amtConfig.amtPassword,
-        amtConfig.generateRandomPassword,
-        amtConfig.ciraConfigName,
-        amtConfig.mebxPassword,
-        amtConfig.generateRandomMEBxPassword,
-        amtConfig.tags,
-        amtConfig.dhcpEnabled,
-        amtConfig.tlsMode,
-        amtConfig.userConsent,
-        amtConfig.iderEnabled,
-        amtConfig.kvmEnabled,
-        amtConfig.solEnabled,
-        amtConfig.tenantId,
-        amtConfig.tlsSigningAuthority,
-        amtConfig.ieee8021xProfileName,
-        amtConfig.ipSyncEnabled,
-        amtConfig.localWifiSyncEnabled
-      ])
+        values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)`,
+        [
+          amtConfig.profileName,
+          amtConfig.activation,
+          amtConfig.amtPassword,
+          amtConfig.generateRandomPassword,
+          amtConfig.ciraConfigName,
+          amtConfig.mebxPassword,
+          amtConfig.generateRandomMEBxPassword,
+          amtConfig.tags,
+          amtConfig.dhcpEnabled,
+          amtConfig.tlsMode,
+          amtConfig.userConsent,
+          amtConfig.iderEnabled,
+          amtConfig.kvmEnabled,
+          amtConfig.solEnabled,
+          amtConfig.tenantId,
+          amtConfig.tlsSigningAuthority,
+          amtConfig.ieee8021xProfileName,
+          amtConfig.ipSyncEnabled,
+          amtConfig.localWifiSyncEnabled
+        ]
+      )
     })
     test('should insert without wificonfigs', async () => {
       querySpy.mockResolvedValueOnce({ rows: [], rowCount: 1 })
@@ -279,10 +319,15 @@ describe('profiles tests', () => {
       const result = await profilesTable.insert(amtConfig)
 
       expect(result).toBe(amtConfig)
-      expect(profileWirelessConfigsSpy).not.toHaveBeenCalledWith(amtConfig.wifiConfigs, amtConfig.profileName, amtConfig.tenantId)
+      expect(profileWirelessConfigsSpy).not.toHaveBeenCalledWith(
+        amtConfig.wifiConfigs,
+        amtConfig.profileName,
+        amtConfig.tenantId
+      )
       expect(getByNameSpy).toHaveBeenCalledWith(amtConfig.profileName, amtConfig.tenantId)
       expect(querySpy).toBeCalledTimes(1)
-      expect(querySpy).toBeCalledWith(`
+      expect(querySpy).toBeCalledWith(
+        `
         INSERT INTO profiles(
           profile_name, activation,
           amt_password, generate_random_password,
@@ -292,35 +337,40 @@ describe('profiles tests', () => {
           user_consent, ider_enabled, kvm_enabled, sol_enabled,
           tenant_id, tls_signing_authority, ieee8021x_profile_name, ip_sync_enabled, local_wifi_sync_enabled)
         values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)`,
-      [
-        amtConfig.profileName,
-        amtConfig.activation,
-        amtConfig.amtPassword,
-        amtConfig.generateRandomPassword,
-        amtConfig.ciraConfigName,
-        amtConfig.mebxPassword,
-        amtConfig.generateRandomMEBxPassword,
-        amtConfig.tags,
-        amtConfig.dhcpEnabled,
-        amtConfig.tlsMode,
-        amtConfig.userConsent,
-        amtConfig.iderEnabled,
-        amtConfig.kvmEnabled,
-        amtConfig.solEnabled,
-        amtConfig.tenantId,
-        amtConfig.tlsSigningAuthority,
-        amtConfig.ieee8021xProfileName,
-        amtConfig.ipSyncEnabled,
-        amtConfig.localWifiSyncEnabled
-      ])
+        [
+          amtConfig.profileName,
+          amtConfig.activation,
+          amtConfig.amtPassword,
+          amtConfig.generateRandomPassword,
+          amtConfig.ciraConfigName,
+          amtConfig.mebxPassword,
+          amtConfig.generateRandomMEBxPassword,
+          amtConfig.tags,
+          amtConfig.dhcpEnabled,
+          amtConfig.tlsMode,
+          amtConfig.userConsent,
+          amtConfig.iderEnabled,
+          amtConfig.kvmEnabled,
+          amtConfig.solEnabled,
+          amtConfig.tenantId,
+          amtConfig.tlsSigningAuthority,
+          amtConfig.ieee8021xProfileName,
+          amtConfig.ipSyncEnabled,
+          amtConfig.localWifiSyncEnabled
+        ]
+      )
     })
     test('should NOT insert when duplicate name', async () => {
       querySpy.mockRejectedValueOnce({ code: '23505' })
-      await expect(profilesTable.insert(amtConfig)).rejects.toThrow(PROFILE_INSERTION_FAILED_DUPLICATE(amtConfig.profileName))
+      await expect(profilesTable.insert(amtConfig)).rejects.toThrow(
+        PROFILE_INSERTION_FAILED_DUPLICATE(amtConfig.profileName)
+      )
     })
     test('should NOT insert when constraint violation', async () => {
       querySpy.mockRejectedValueOnce({ code: '23503' })
-      await expect(profilesTable.insert(amtConfig)).rejects.toThrow(PROFILE_INSERTION_GENERIC_CONSTRAINT(amtConfig.ciraConfigName))
+      await expect(profilesTable.insert(amtConfig)).rejects.toThrow(
+        PROFILE_INSERTION_GENERIC_CONSTRAINT(amtConfig.ciraConfigName)
+      )
     })
     test('should NOT insert when unexpected exception', async () => {
       querySpy.mockRejectedValueOnce(new Error('unknown'))
@@ -340,7 +390,8 @@ describe('profiles tests', () => {
       const result = await profilesTable.update(amtConfig)
       expect(result).toBe(amtConfig)
       expect(querySpy).toBeCalledTimes(1)
-      expect(querySpy).toBeCalledWith(`
+      expect(querySpy).toBeCalledWith(
+        `
       UPDATE profiles 
       SET activation=$2, amt_password=$3, generate_random_password=$4, cira_config_name=$5,
           mebx_password=$6, generate_random_mebx_password=$7,
@@ -349,28 +400,29 @@ describe('profiles tests', () => {
           tls_signing_authority=$17, ieee8021x_profile_name=$18,
           ip_sync_enabled=$19, local_wifi_sync_enabled=$20
       WHERE profile_name=$1 and tenant_id = $11 and xmin = $12`,
-      [
-        amtConfig.profileName,
-        amtConfig.activation,
-        amtConfig.amtPassword,
-        amtConfig.generateRandomPassword,
-        amtConfig.ciraConfigName,
-        amtConfig.mebxPassword,
-        amtConfig.generateRandomMEBxPassword,
-        amtConfig.tags,
-        amtConfig.dhcpEnabled,
-        amtConfig.tlsMode,
-        amtConfig.tenantId,
-        amtConfig.version,
-        amtConfig.userConsent,
-        amtConfig.iderEnabled,
-        amtConfig.kvmEnabled,
-        amtConfig.solEnabled,
-        amtConfig.tlsSigningAuthority,
-        amtConfig.ieee8021xProfileName,
-        amtConfig.ipSyncEnabled,
-        amtConfig.localWifiSyncEnabled
-      ])
+        [
+          amtConfig.profileName,
+          amtConfig.activation,
+          amtConfig.amtPassword,
+          amtConfig.generateRandomPassword,
+          amtConfig.ciraConfigName,
+          amtConfig.mebxPassword,
+          amtConfig.generateRandomMEBxPassword,
+          amtConfig.tags,
+          amtConfig.dhcpEnabled,
+          amtConfig.tlsMode,
+          amtConfig.tenantId,
+          amtConfig.version,
+          amtConfig.userConsent,
+          amtConfig.iderEnabled,
+          amtConfig.kvmEnabled,
+          amtConfig.solEnabled,
+          amtConfig.tlsSigningAuthority,
+          amtConfig.ieee8021xProfileName,
+          amtConfig.ipSyncEnabled,
+          amtConfig.localWifiSyncEnabled
+        ]
+      )
     })
     test('should update with wificonfigs', async () => {
       querySpy.mockResolvedValueOnce({ rows: [], rowCount: 1 })
@@ -383,7 +435,8 @@ describe('profiles tests', () => {
       const result = await profilesTable.update(amtConfig)
       expect(result).toBe(amtConfig)
       expect(querySpy).toBeCalledTimes(1)
-      expect(querySpy).toBeCalledWith(`
+      expect(querySpy).toBeCalledWith(
+        `
       UPDATE profiles 
       SET activation=$2, amt_password=$3, generate_random_password=$4, cira_config_name=$5,
           mebx_password=$6, generate_random_mebx_password=$7,
@@ -392,33 +445,36 @@ describe('profiles tests', () => {
           tls_signing_authority=$17, ieee8021x_profile_name=$18,
           ip_sync_enabled=$19, local_wifi_sync_enabled=$20
       WHERE profile_name=$1 and tenant_id = $11 and xmin = $12`,
-      [
-        amtConfig.profileName,
-        amtConfig.activation,
-        amtConfig.amtPassword,
-        amtConfig.generateRandomPassword,
-        amtConfig.ciraConfigName,
-        amtConfig.mebxPassword,
-        amtConfig.generateRandomMEBxPassword,
-        amtConfig.tags,
-        amtConfig.dhcpEnabled,
-        amtConfig.tlsMode,
-        amtConfig.tenantId,
-        amtConfig.version,
-        amtConfig.userConsent,
-        amtConfig.iderEnabled,
-        amtConfig.kvmEnabled,
-        amtConfig.solEnabled,
-        amtConfig.tlsSigningAuthority,
-        amtConfig.ieee8021xProfileName,
-        amtConfig.ipSyncEnabled,
-        amtConfig.localWifiSyncEnabled
-      ])
+        [
+          amtConfig.profileName,
+          amtConfig.activation,
+          amtConfig.amtPassword,
+          amtConfig.generateRandomPassword,
+          amtConfig.ciraConfigName,
+          amtConfig.mebxPassword,
+          amtConfig.generateRandomMEBxPassword,
+          amtConfig.tags,
+          amtConfig.dhcpEnabled,
+          amtConfig.tlsMode,
+          amtConfig.tenantId,
+          amtConfig.version,
+          amtConfig.userConsent,
+          amtConfig.iderEnabled,
+          amtConfig.kvmEnabled,
+          amtConfig.solEnabled,
+          amtConfig.tlsSigningAuthority,
+          amtConfig.ieee8021xProfileName,
+          amtConfig.ipSyncEnabled,
+          amtConfig.localWifiSyncEnabled
+        ]
+      )
     })
 
     test('should NOT update when constraint violation', async () => {
       querySpy.mockRejectedValueOnce({ code: '23503', message: 'profiles_cira_config_name_fkey' })
-      await expect(profilesTable.update(amtConfig)).rejects.toThrow(PROFILE_INSERTION_CIRA_CONSTRAINT(amtConfig.ciraConfigName))
+      await expect(profilesTable.update(amtConfig)).rejects.toThrow(
+        PROFILE_INSERTION_CIRA_CONSTRAINT(amtConfig.ciraConfigName)
+      )
     })
     test('should NOT update when unexpected error', async () => {
       querySpy.mockRejectedValueOnce('unknown')

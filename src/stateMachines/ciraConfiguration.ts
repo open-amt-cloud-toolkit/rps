@@ -60,11 +60,15 @@ export class CIRAConfiguration {
   db: any
   error: Error = new Error()
   saveMPSPasswordToSecretProvider = async ({ input }: { input: CIRAConfigContext }): Promise<any> => {
-    const data = await this.configurator.secretsManager.writeSecretWithObject(`devices/${devices[input.clientId].uuid}`, {
-      MPS_PASSWORD: input.ciraConfig?.password,
-      AMT_PASSWORD: devices[input.clientId].amtPassword,
-      MEBX_PASSWORD: devices[input.clientId].action === ClientAction.ADMINCTLMODE ? devices[input.clientId].mebxPassword : null
-    })
+    const data = await this.configurator.secretsManager.writeSecretWithObject(
+      `devices/${devices[input.clientId].uuid}`,
+      {
+        MPS_PASSWORD: input.ciraConfig?.password,
+        AMT_PASSWORD: devices[input.clientId].amtPassword,
+        MEBX_PASSWORD:
+          devices[input.clientId].action === ClientAction.ADMINCTLMODE ? devices[input.clientId].mebxPassword : null
+      }
+    )
     return data
   }
 
@@ -104,7 +108,9 @@ export class CIRAConfiguration {
   pullManagementPresenceRemoteSAP = async ({ input }: { input: CIRAConfigContext }): Promise<any> => {
     if (input.amt != null) {
       // TODO: [tech debt] uncouple nested dependency for wrapped message
-      input.xmlMessage = input.amt.ManagementPresenceRemoteSAP.Pull(input.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+      input.xmlMessage = input.amt.ManagementPresenceRemoteSAP.Pull(
+        input.message.Envelope.Body?.EnumerateResponse?.EnumerationContext
+      )
       return await invokeWsmanCall(input)
     } else {
       this.logger.error('Null object in pullManagementPresenceRemoteSAP()')
@@ -140,7 +146,8 @@ export class CIRAConfiguration {
 
   putEnvironmentDetectionSettings = async ({ input }: { input: CIRAConfigContext }): Promise<any> => {
     if (input.amt != null && Environment.Config != null) {
-      const envSettings: AMT.Models.EnvironmentDetectionSettingData = input.message.Envelope.Body.AMT_EnvironmentDetectionSettingData
+      const envSettings: AMT.Models.EnvironmentDetectionSettingData =
+        input.message.Envelope.Body.AMT_EnvironmentDetectionSettingData
       if (Environment.Config.disable_cira_domain_name) {
         envSettings.DetectionStrings = [Environment.Config.disable_cira_domain_name]
       } else {
@@ -155,7 +162,9 @@ export class CIRAConfiguration {
 
   addTrustedRootCertificate = async ({ input }: { input: CIRAConfigContext }): Promise<any> => {
     if (input.amt != null) {
-      input.xmlMessage = input.amt.PublicKeyManagementService.AddTrustedRootCertificate({ CertificateBlob: input.ciraConfig?.mpsRootCertificate ?? '' })
+      input.xmlMessage = input.amt.PublicKeyManagementService.AddTrustedRootCertificate({
+        CertificateBlob: input.ciraConfig?.mpsRootCertificate ?? ''
+      })
       return await invokeWsmanCall(input, 2)
     } else {
       this.logger.error('Null object in addTrustedRootCertificate()')
@@ -193,7 +202,9 @@ export class CIRAConfiguration {
 
   pullRemoteAccessPolicyRule = async ({ input }: { input: CIRAConfigContext }): Promise<any> => {
     if (input.amt != null) {
-      input.xmlMessage = input.amt.RemoteAccessPolicyRule.Pull(input.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+      input.xmlMessage = input.amt.RemoteAccessPolicyRule.Pull(
+        input.message.Envelope.Body?.EnumerateResponse?.EnumerationContext
+      )
       return await invokeWsmanCall(input)
     } else {
       this.logger.error('Null object in pullRemoteAccessPolicyRule()')
@@ -245,14 +256,17 @@ export class CIRAConfiguration {
       saveMPSPasswordToSecretProvider: fromPromise(this.saveMPSPasswordToSecretProvider)
     },
     guards: {
-      userInitiatedConnectionServiceSuccessful: ({ event }) => event.output.Envelope.Body?.RequestStateChange_OUTPUT?.ReturnValue === 0,
+      userInitiatedConnectionServiceSuccessful: ({ event }) =>
+        event.output.Envelope.Body?.RequestStateChange_OUTPUT?.ReturnValue === 0,
       shouldRetry: ({ context, event }) => context.retryCount < 3 && event.output instanceof UNEXPECTED_PARSE_ERROR
     },
     actions: {
       'Update Configuration Status': ({ context, event }) => {
         devices[context.clientId].status.CIRAConnection = context.statusMessage
       },
-      'Reset Unauth Count': ({ context, event }) => { devices[context.clientId].unauthCount = 0 },
+      'Reset Unauth Count': ({ context, event }) => {
+        devices[context.clientId].unauthCount = 0
+      },
       'Reset Retry Count': assign({ retryCount: ({ context, event }) => 0 }),
       'Increment Retry Count': assign({ retryCount: ({ context, event }) => context.retryCount + 1 })
     }
@@ -321,7 +335,7 @@ export class CIRAConfiguration {
           }),
           id: 'set-mps-password',
           onDone: {
-            actions: assign(({ context, event }: { context: CIRAConfigContext, event: any }) => {
+            actions: assign(({ context, event }: { context: CIRAConfigContext; event: any }) => {
               if (context.ciraConfig) {
                 if (event.output?.MPS_PASSWORD) {
                   context.ciraConfig.password = event.output?.MPS_PASSWORD
@@ -705,7 +719,7 @@ export class CIRAConfiguration {
     }
   })
 
-  constructor () {
+  constructor() {
     this.nodeForge = new NodeForge()
     this.certManager = new CertManager(new Logger('CertManager'), this.nodeForge)
     this.signatureHelper = new SignatureHelper(this.nodeForge)

@@ -4,11 +4,7 @@
  **********************************************************************/
 
 import { assign, setup, sendTo, fromPromise } from 'xstate'
-import {
-  coalesceMessage,
-  type CommonMaintenanceContext,
-  type EnumerationContext
-} from '../common.js'
+import { coalesceMessage, type CommonMaintenanceContext, type EnumerationContext } from '../common.js'
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 import { doneFail, doneSuccess } from './doneResponse.js'
 import Logger from '../../Logger.js'
@@ -78,7 +74,9 @@ export class SyncIP {
     input.xmlMessage = amt.EthernetPortSettings.Enumerate()
     const rsp = await invokeWsmanCall<EthernetPortSettingsEnumerateResponse>(input, 2)
     const enumCtx = rsp.Envelope.Body.EnumerateResponse.EnumerationContext
-    if (!enumCtx) { throw new Error(`invalid response: ${JSON.stringify(rsp)}`) }
+    if (!enumCtx) {
+      throw new Error(`invalid response: ${JSON.stringify(rsp)}`)
+    }
     logger.debug(`EnumerationContext: ${enumCtx}`)
     return enumCtx
   }
@@ -90,7 +88,7 @@ export class SyncIP {
     if (!settings) {
       throw new Error(`invalid response: ${JSON.stringify(rsp)}`)
     }
-    const pullData: PullData = { }
+    const pullData: PullData = {}
     // settings might be a single entry or an array
     // set it up for processing as an array
     let settingsArray: any[]
@@ -102,7 +100,7 @@ export class SyncIP {
     // In Intel AMT Release 6.0 and later releases InstanceId value is
     // 'Intel(r) AMT Ethernet Port Settings 0' for wired instance
     // 'Intel(r) AMT Ethernet Port Settings 1' for wireless instance
-    settingsArray.forEach(e => {
+    settingsArray.forEach((e) => {
       if (e.InstanceID.includes('Settings 0')) {
         pullData.wiredSettings = e
       }
@@ -115,7 +113,7 @@ export class SyncIP {
   }
 
   putEthernetPortSettings = async ({ input }: { input: SyncIPContext }): Promise<string> => {
-    let statusMessage: string = ''
+    let statusMessage = ''
     if (!input.wiredSettings) {
       statusMessage = MessageNoWiredSettingsOnDevice
     } else if (input.wirelessSettings != null && input.wiredSettings.MACAddress == null) {
@@ -125,7 +123,9 @@ export class SyncIP {
     }
     if (statusMessage !== '') {
       const err = new Error(statusMessage)
-      return await new Promise<string>((resolve, reject) => { reject(err) })
+      return await new Promise<string>((resolve, reject) => {
+        reject(err)
+      })
     }
 
     // preserve what is in the input
@@ -179,8 +179,10 @@ export class SyncIP {
       resetParseErrorCount: assign({ parseErrorCount: 0 })
     },
     guards: {
-      checkIPAddress: ({ context, event }) => event.targetIPConfig?.ipAddress != null && event.targetIPConfig?.ipAddress !== '',
-      shouldRetryOnParseError: ({ context, event }) => context.parseErrorCount < 3 && event.output instanceof UNEXPECTED_PARSE_ERROR,
+      checkIPAddress: ({ context, event }) =>
+        event.targetIPConfig?.ipAddress != null && event.targetIPConfig?.ipAddress !== '',
+      shouldRetryOnParseError: ({ context, event }) =>
+        context.parseErrorCount < 3 && event.output instanceof UNEXPECTED_PARSE_ERROR,
       isEnumEthernetPort: ({ context, event }) => context.targetAfterError === 'ENUMERATE_ETHERNET_PORT_SETTINGS'
     }
   }).createMachine({
@@ -227,7 +229,7 @@ export class SyncIP {
         invoke: {
           id: 'enumerate-ethernet-port-settings',
           src: 'enumerateEthernetPortSettings',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           onDone: {
             actions: assign({ enumerationContext: ({ event }) => event.output }),
             target: 'PULL_ETHERNET_PORT_SETTINGS'
@@ -250,7 +252,7 @@ export class SyncIP {
         invoke: {
           id: 'pull-ethernet-port-settings',
           src: 'pullEthernetPortSettings',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           onDone: {
             actions: assign(({ event }) => ({
               wiredSettings: (event.output as any).wiredSettings,
@@ -270,6 +272,7 @@ export class SyncIP {
                 assign({
                   errorMessage: ({ event }) => coalesceMessage('at PULL_ETHERNET_PORT_SETTINGS', event.error)
                 })
+
               ],
               target: 'FAILED'
             }
@@ -284,7 +287,7 @@ export class SyncIP {
         invoke: {
           id: 'put-ethernet-port-settings',
           src: 'putEthernetPortSettings',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           onDone: {
             actions: assign({ statusMessage: ({ event }) => event.output }),
             target: 'SUCCESS'
@@ -314,7 +317,9 @@ export class SyncIP {
         },
         on: {
           ONFAILED: {
-            actions: assign({ errorMessage: ({ context, event }) => coalesceMessage(context.errorMessage, event.output) }),
+            actions: assign({
+              errorMessage: ({ context, event }) => coalesceMessage(context.errorMessage, event.output)
+            }),
             target: 'FAILED'
           }
         }
@@ -324,7 +329,8 @@ export class SyncIP {
           {
             guard: 'isEnumEthernetPort',
             target: 'ENUMERATE_ETHERNET_PORT_SETTINGS'
-          }]
+          }
+        ]
       },
       FAILED: {
         entry: assign({ statusMessage: () => 'FAILED' }),

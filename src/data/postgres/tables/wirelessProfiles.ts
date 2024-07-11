@@ -23,7 +23,7 @@ import { PostgresErr } from '../errors.js'
 export class WirelessProfilesTable implements IWirelessProfilesTable {
   db: PostgresDb
   log: Logger
-  constructor (db: PostgresDb) {
+  constructor(db: PostgresDb) {
     this.db = db
     this.log = new Logger('WirelessConfigDb')
   }
@@ -32,11 +32,14 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
    * @description Get count of all wifiConfigs from DB
    * @returns {number}
    */
-  async getCount (tenantId: string = ''): Promise<number> {
-    const result = await this.db.query<{ total_count: number }>(`
+  async getCount(tenantId = ''): Promise<number> {
+    const result = await this.db.query<{ total_count: number }>(
+      `
     SELECT count(*) OVER() AS total_count 
     FROM wirelessconfigs 
-    WHERE tenant_id = $1`, [tenantId])
+    WHERE tenant_id = $1`,
+      [tenantId]
+    )
     let count = 0
     if (result != null && result.rows?.length > 0) {
       count = Number(result.rows[0].total_count)
@@ -45,13 +48,14 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
   }
 
   /**
-    * @description Get all wireless profiles from DB
-    * @param {number} top
-    * @param {number} skip
-    * @returns {WirelessConfig []} returns an array of WirelessConfig objects
-  */
-  async get (top: number = DEFAULT_TOP, skip: number = DEFAULT_SKIP, tenantId: string = ''): Promise<WirelessConfig[]> {
-    const results = await this.db.query<WirelessConfig>(`
+   * @description Get all wireless profiles from DB
+   * @param {number} top
+   * @param {number} skip
+   * @returns {WirelessConfig []} returns an array of WirelessConfig objects
+   */
+  async get(top: number = DEFAULT_TOP, skip: number = DEFAULT_SKIP, tenantId = ''): Promise<WirelessConfig[]> {
+    const results = await this.db.query<WirelessConfig>(
+      `
     SELECT 
       wireless_profile_name as "profileName", 
       authentication_method as "authenticationMethod", 
@@ -67,17 +71,24 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
     FROM wirelessconfigs 
     WHERE tenant_id = $3
     ORDER BY wireless_profile_name 
-    LIMIT $1 OFFSET $2`, [top, skip, tenantId])
+    LIMIT $1 OFFSET $2`,
+      [
+        top,
+        skip,
+        tenantId
+      ]
+    )
     return results.rows
   }
 
   /**
-    * @description Get wireless profile from DB by name
-    * @param {string} profileName
-    * @returns {WirelessConfig } WirelessConfig object
-    */
-  async getByName (configName: string, tenantId: string = ''): Promise<WirelessConfig | null> {
-    const results = await this.db.query<WirelessConfig>(`
+   * @description Get wireless profile from DB by name
+   * @param {string} profileName
+   * @returns {WirelessConfig } WirelessConfig object
+   */
+  async getByName(configName: string, tenantId = ''): Promise<WirelessConfig | null> {
+    const results = await this.db.query<WirelessConfig>(
+      `
     SELECT 
       wireless_profile_name as "profileName", 
       authentication_method as "authenticationMethod", 
@@ -90,7 +101,9 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
       ieee8021x_profile_name as "ieee8021xProfileName",
       xmin as "version"
     FROM wirelessconfigs 
-    WHERE wireless_profile_name = $1 and tenant_id = $2`, [configName, tenantId])
+    WHERE wireless_profile_name = $1 and tenant_id = $2`,
+      [configName, tenantId]
+    )
 
     if (results?.rowCount) {
       if (results.rowCount > 0) {
@@ -101,15 +114,18 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
   }
 
   /**
-    * @description Get wireless profile exists in DB by wifinames
-    * @param {string} profileNames
-    * @returns {string[]}
-    */
-  async checkProfileExits (configName: string, tenantId: string = ''): Promise<boolean> {
-    const results = await this.db.query(`
+   * @description Get wireless profile exists in DB by wifinames
+   * @param {string} profileNames
+   * @returns {string[]}
+   */
+  async checkProfileExits(configName: string, tenantId = ''): Promise<boolean> {
+    const results = await this.db.query(
+      `
     SELECT 1
     FROM wirelessconfigs 
-    WHERE wireless_profile_name = $1 and tenant_id = $2`, [configName, tenantId])
+    WHERE wireless_profile_name = $1 and tenant_id = $2`,
+      [configName, tenantId]
+    )
 
     if (results?.rowCount) {
       if (results.rowCount > 0) {
@@ -120,25 +136,31 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
   }
 
   /**
-    * @description Delete Wireless profile from DB by name
-    * @param {string} configName
-    * @returns {boolean} Return true on successful deletion
-    */
-  async delete (configName: string, tenantId = ''): Promise<boolean> {
-    const profiles = await this.db.query(`
+   * @description Delete Wireless profile from DB by name
+   * @param {string} configName
+   * @returns {boolean} Return true on successful deletion
+   */
+  async delete(configName: string, tenantId = ''): Promise<boolean> {
+    const profiles = await this.db.query(
+      `
     SELECT 1
     FROM profiles_wirelessconfigs
-    WHERE wireless_profile_name = $1 and tenant_id = $2`, [configName, tenantId])
+    WHERE wireless_profile_name = $1 and tenant_id = $2`,
+      [configName, tenantId]
+    )
     if (profiles?.rowCount) {
       if (profiles.rowCount > 0) {
         throw new RPSError(NETWORK_CONFIG_DELETION_FAILED_CONSTRAINT('Wireless', configName), 'Foreign key violation')
       }
     }
     try {
-      const results = await this.db.query(`
+      const results = await this.db.query(
+        `
       DELETE
       FROM wirelessconfigs
-      WHERE wireless_profile_name = $1 and tenant_id = $2`, [configName, tenantId])
+      WHERE wireless_profile_name = $1 and tenant_id = $2`,
+        [configName, tenantId]
+      )
       if (results?.rowCount) {
         return results.rowCount > 0
       }
@@ -153,29 +175,31 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
   }
 
   /**
-    * @description Insert wireless profile into DB
-    * @param {WirelessConfig } wirelessConfig
-    * @returns {WirelessConfig } Returns WirelessConfig object
-    */
-  async insert (wirelessConfig: WirelessConfig): Promise<WirelessConfig | null> {
+   * @description Insert wireless profile into DB
+   * @param {WirelessConfig } wirelessConfig
+   * @returns {WirelessConfig } Returns WirelessConfig object
+   */
+  async insert(wirelessConfig: WirelessConfig): Promise<WirelessConfig | null> {
     try {
       const date = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
-      const results = await this.db.query(`
+      const results = await this.db.query(
+        `
         INSERT INTO wirelessconfigs
         (wireless_profile_name, authentication_method, encryption_method, ssid, psk_value, psk_passphrase, link_policy, creation_date, tenant_id, ieee8021x_profile_name)
         values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-      [
-        wirelessConfig.profileName,
-        wirelessConfig.authenticationMethod,
-        wirelessConfig.encryptionMethod,
-        wirelessConfig.ssid,
-        wirelessConfig.pskValue,
-        wirelessConfig.pskPassphrase,
-        wirelessConfig.linkPolicy,
-        date,
-        wirelessConfig.tenantId,
-        wirelessConfig.ieee8021xProfileName
-      ])
+        [
+          wirelessConfig.profileName,
+          wirelessConfig.authenticationMethod,
+          wirelessConfig.encryptionMethod,
+          wirelessConfig.ssid,
+          wirelessConfig.pskValue,
+          wirelessConfig.pskPassphrase,
+          wirelessConfig.linkPolicy,
+          date,
+          wirelessConfig.tenantId,
+          wirelessConfig.ieee8021xProfileName
+        ]
+      )
       if (results?.rowCount) {
         if (results.rowCount > 0) {
           const config = await this.getByName(wirelessConfig.profileName, wirelessConfig.tenantId)
@@ -184,39 +208,43 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
       }
     } catch (error) {
       if (error.code === PostgresErr.C23_UNIQUE_VIOLATION) {
-        throw new RPSError(NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE('Wireless', wirelessConfig.profileName), 'Unique key violation')
+        throw new RPSError(
+          NETWORK_CONFIG_INSERTION_FAILED_DUPLICATE('Wireless', wirelessConfig.profileName),
+          'Unique key violation'
+        )
       }
-      throw new RPSError(NETWORK_CONFIG_ERROR('Wireless', wirelessConfig.profileName)
-      )
+      throw new RPSError(NETWORK_CONFIG_ERROR('Wireless', wirelessConfig.profileName))
     }
     return null
   }
 
   /**
-    * @description Update Wireless profile into DB
-    * @param {WirelessConfig } wirelessConfig
-    * @returns {boolean} Returns wirelessConfig object
-    */
-  async update (wirelessConfig: WirelessConfig): Promise<WirelessConfig | null> {
+   * @description Update Wireless profile into DB
+   * @param {WirelessConfig } wirelessConfig
+   * @returns {boolean} Returns wirelessConfig object
+   */
+  async update(wirelessConfig: WirelessConfig): Promise<WirelessConfig | null> {
     let latestItem: WirelessConfig | null
 
     try {
-      const results = await this.db.query(`
+      const results = await this.db.query(
+        `
       UPDATE wirelessconfigs 
       SET authentication_method=$2, encryption_method=$3, ssid=$4, psk_value=$5, psk_passphrase=$6, link_policy=$7, ieee8021x_profile_name=$9 
       WHERE wireless_profile_name=$1 and tenant_id = $8 and xmin = $10`,
-      [
-        wirelessConfig.profileName,
-        wirelessConfig.authenticationMethod,
-        wirelessConfig.encryptionMethod,
-        wirelessConfig.ssid,
-        wirelessConfig.pskValue,
-        wirelessConfig.pskPassphrase,
-        wirelessConfig.linkPolicy,
-        wirelessConfig.tenantId,
-        wirelessConfig.ieee8021xProfileName,
-        wirelessConfig.version
-      ])
+        [
+          wirelessConfig.profileName,
+          wirelessConfig.authenticationMethod,
+          wirelessConfig.encryptionMethod,
+          wirelessConfig.ssid,
+          wirelessConfig.pskValue,
+          wirelessConfig.pskPassphrase,
+          wirelessConfig.linkPolicy,
+          wirelessConfig.tenantId,
+          wirelessConfig.ieee8021xProfileName,
+          wirelessConfig.version
+        ]
+      )
 
       latestItem = await this.getByName(wirelessConfig.profileName, wirelessConfig.tenantId)
       if (results?.rowCount) {
@@ -225,8 +253,7 @@ export class WirelessProfilesTable implements IWirelessProfilesTable {
         }
       }
     } catch (error) {
-      throw new RPSError(NETWORK_CONFIG_ERROR('Wireless', wirelessConfig.profileName)
-      )
+      throw new RPSError(NETWORK_CONFIG_ERROR('Wireless', wirelessConfig.profileName))
     }
     // making assumption that if no records are updated, that it is due to concurrency. We've already checked for if it doesn't exist before calling update.
     throw new RPSError(CONCURRENCY_MESSAGE, CONCURRENCY_EXCEPTION, latestItem)

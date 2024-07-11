@@ -15,12 +15,17 @@ describe('Wireless - Create', () => {
   let writeSpy: SpyInstance<any>
 
   beforeEach(() => {
-    resSpy = createSpyObj('Response', ['status', 'json', 'end', 'send'])
+    resSpy = createSpyObj('Response', [
+      'status',
+      'json',
+      'end',
+      'send'
+    ])
     req = {
       db: { wirelessProfiles: { insert: jest.fn() } },
       secretsManager: { writeSecretWithObject: jest.fn() },
       body: {},
-      query: { }
+      query: {}
     }
     insertSpy = spyOn(req.db.wirelessProfiles, 'insert').mockResolvedValue({})
     writeSpy = spyOn(req.secretsManager, 'writeSecretWithObject').mockResolvedValue({})

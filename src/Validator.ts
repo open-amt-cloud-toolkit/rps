@@ -21,7 +21,7 @@ import { type DeviceCredentials } from './interfaces/ISecretManagerService.js'
 export class Validator implements IValidator {
   jsonParser: ClientMsgJsonParser
 
-  constructor (
+  constructor(
     private readonly logger: ILogger,
     readonly configurator: Configurator
   ) {
@@ -34,7 +34,7 @@ export class Validator implements IValidator {
    * @param {string} clientId Id to keep track of connections
    * @returns {ClientMsg} returns ClientMsg object if client message is valid. Otherwise returns null.
    */
-  parseClientMsg (message: WebSocket.Data, clientId: string): ClientMsg | null {
+  parseClientMsg(message: WebSocket.Data, clientId: string): ClientMsg | null {
     let msg: ClientMsg | null = null
     try {
       // Parse and convert the message
@@ -66,7 +66,7 @@ export class Validator implements IValidator {
    * @param {string} clientId
    * @returns {RCSMessage}
    */
-  async validateActivationMsg (msg: ClientMsg, clientId: string): Promise<void> {
+  async validateActivationMsg(msg: ClientMsg, clientId: string): Promise<void> {
     const clientObj = devices[clientId]
     const payload: Payload = this.verifyPayload(msg, clientId)
     // Check version and build compatibility
@@ -76,9 +76,14 @@ export class Validator implements IValidator {
       throw new RPSError(`Device ${payload.uuid} activation failed. Missing password.`)
     }
     // Check for client requested action and profile activation
-    const profile: AMTConfiguration | null = await this.configurator.profileManager.getAmtProfile(payload.profile, msg.tenantId)
+    const profile: AMTConfiguration | null = await this.configurator.profileManager.getAmtProfile(
+      payload.profile,
+      msg.tenantId
+    )
     if (!profile) {
-      throw new RPSError(`Device ${payload.uuid} activation failed. ${payload.profile} does not match list of available AMT profiles.`)
+      throw new RPSError(
+        `Device ${payload.uuid} activation failed. ${payload.profile} does not match list of available AMT profiles.`
+      )
     }
     payload.profile = profile
     clientObj.uuid = payload.uuid
@@ -93,7 +98,9 @@ export class Validator implements IValidator {
     await this.verifyCurrentModeForActivation(msg, profile, clientId)
 
     if (!clientObj.action) {
-      throw new RPSError(`Device ${payload.uuid} activation failed. Failed to get activation mode for the profile :${payload.profile}`)
+      throw new RPSError(
+        `Device ${payload.uuid} activation failed. Failed to get activation mode for the profile :${payload.profile}`
+      )
     }
     // Validate client message to configure ACM message
     if (clientObj.action === ClientAction.ADMINCTLMODE) {
@@ -103,12 +110,12 @@ export class Validator implements IValidator {
   }
 
   /**
- * @description Validate the client message only if action is not acmactivate-success or ccmactivate-success
- * @param {ClientMsg} msg
- * @param {string} clientId
- * @returns {RCSMessage}
- */
-  async validateDeactivationMsg (msg: ClientMsg, clientId: string): Promise<void> {
+   * @description Validate the client message only if action is not acmactivate-success or ccmactivate-success
+   * @param {ClientMsg} msg
+   * @param {string} clientId
+   * @returns {RCSMessage}
+   */
+  async validateDeactivationMsg(msg: ClientMsg, clientId: string): Promise<void> {
     const clientObj = devices[clientId]
     const payload: Payload = this.verifyPayload(msg, clientId)
     // Check for the current mode
@@ -128,7 +135,9 @@ export class Validator implements IValidator {
           break
         }
         default: {
-          throw new RPSError(`Device ${payload.uuid} deactivation failed. It is in unknown mode: ${payload.currentMode}.`)
+          throw new RPSError(
+            `Device ${payload.uuid} deactivation failed. It is in unknown mode: ${payload.currentMode}.`
+          )
         }
       }
     }
@@ -152,9 +161,9 @@ export class Validator implements IValidator {
    * @param {string} clientId
    * @returns {boolean}
    */
-  isDigestRealmValid (realm: string): boolean {
-    const regex: RegExp = /[0-9A-Fa-f]{32}/g
-    let isValidRealm: boolean = false
+  isDigestRealmValid(realm: string): boolean {
+    const regex = /[0-9A-Fa-f]{32}/g
+    let isValidRealm = false
     let realmElements: any = {}
     if (realm?.startsWith('Digest:')) {
       realmElements = realm.split('Digest:')
@@ -165,7 +174,7 @@ export class Validator implements IValidator {
     return isValidRealm
   }
 
-  async updateTags (uuid: string, profile: AMTConfiguration): Promise<void> {
+  async updateTags(uuid: string, profile: AMTConfiguration): Promise<void> {
     let tags: any[] = []
     if (profile.tags != null && profile?.tags.length > 0) {
       tags = profile.tags
@@ -179,7 +188,7 @@ export class Validator implements IValidator {
     }
   }
 
-  async validateMaintenanceMsg (msg: ClientMsg, clientId: string): Promise<void> {
+  async validateMaintenanceMsg(msg: ClientMsg, clientId: string): Promise<void> {
     const clientObj = devices[clientId]
     const payload: Payload = this.verifyPayload(msg, clientId)
     // Task must be specified
@@ -203,10 +212,12 @@ export class Validator implements IValidator {
     clientObj.ClientData = msg
   }
 
-  async verifyDevicePassword (payload: Payload, clientId: string): Promise<void> {
+  async verifyDevicePassword(payload: Payload, clientId: string): Promise<void> {
     try {
       const clientObj = devices[clientId]
-      const amtDevice = await this.configurator.secretsManager.getSecretAtPath(`devices/${payload.uuid}`) as DeviceCredentials
+      const amtDevice = (await this.configurator.secretsManager.getSecretAtPath(
+        `devices/${payload.uuid}`
+      )) as DeviceCredentials
 
       if (amtDevice?.AMT_PASSWORD && payload.password && payload.password === amtDevice.AMT_PASSWORD) {
         this.logger.debug(`AMT password matches stored version for Device ${payload.uuid}`)
@@ -228,7 +239,7 @@ export class Validator implements IValidator {
     }
   }
 
-  verifyPayload (msg: ClientMsg, clientId: string): Payload {
+  verifyPayload(msg: ClientMsg, clientId: string): Payload {
     if (!msg) {
       throw new RPSError(`${clientId} - Error while Validating the client message`)
     }
@@ -241,21 +252,26 @@ export class Validator implements IValidator {
     return msg.payload
   }
 
-  async verifyActivationMsgForACM (msg: ClientMsg): Promise<void> {
+  async verifyActivationMsgForACM(msg: ClientMsg): Promise<void> {
     if (!msg.payload.certHashes) {
       throw new RPSError(`Device ${msg.payload.uuid} activation failed. Missing certificate hashes from the device.`)
     }
 
-    if (!msg.payload.fqdn && (msg.payload.currentMode !== 2)) {
+    if (!msg.payload.fqdn && msg.payload.currentMode !== 2) {
       throw new RPSError(`Device ${msg.payload.uuid} activation failed. Missing DNS Suffix.`)
     }
 
-    if (!(await this.configurator.domainCredentialManager.doesDomainExist(msg.payload.fqdn, msg.tenantId)) && (msg.payload.currentMode !== 2)) {
-      throw new RPSError(`Device ${msg.payload.uuid} activation failed. Specified AMT domain suffix: ${msg.payload.fqdn} does not match list of available AMT domain suffixes.`)
+    if (
+      !(await this.configurator.domainCredentialManager.doesDomainExist(msg.payload.fqdn, msg.tenantId)) &&
+      msg.payload.currentMode !== 2
+    ) {
+      throw new RPSError(
+        `Device ${msg.payload.uuid} activation failed. Specified AMT domain suffix: ${msg.payload.fqdn} does not match list of available AMT domain suffixes.`
+      )
     }
   }
 
-  async verifyCurrentModeForActivation (msg: ClientMsg, profile: AMTConfiguration, clientId: string): Promise<void> {
+  async verifyCurrentModeForActivation(msg: ClientMsg, profile: AMTConfiguration, clientId: string): Promise<void> {
     const clientObj = devices[clientId]
     switch (msg.payload.currentMode) {
       case 0: {
@@ -264,7 +280,9 @@ export class Validator implements IValidator {
       }
       case 1: {
         if (profile.activation === ClientAction.ADMINCTLMODE) {
-          this.logger.debug(`Device ${msg.payload.uuid} already enabled in client mode. Upgrading to admin control mode.`)
+          this.logger.debug(
+            `Device ${msg.payload.uuid} already enabled in client mode. Upgrading to admin control mode.`
+          )
           clientObj.status.Status = 'Upgraded to admin control mode.'
         } else {
           this.logger.debug(`Device ${msg.payload.uuid} already enabled in client mode.`)
@@ -288,7 +306,7 @@ export class Validator implements IValidator {
     }
   }
 
-  async getDeviceCredentials (msg: ClientMsg): Promise<DeviceCredentials | null> {
+  async getDeviceCredentials(msg: ClientMsg): Promise<DeviceCredentials | null> {
     try {
       const secretData = await this.configurator.secretsManager.getSecretAtPath(`devices/${msg.payload.uuid}`)
 
@@ -303,7 +321,7 @@ export class Validator implements IValidator {
     return null
   }
 
-  async setNextStepsForConfiguration (msg: ClientMsg, clientId: string): Promise<void> {
+  async setNextStepsForConfiguration(msg: ClientMsg, clientId: string): Promise<void> {
     const clientObj = devices[clientId]
     let amtDevice: DeviceCredentials | null = null
     try {
@@ -332,14 +350,28 @@ export class Validator implements IValidator {
     clientObj.ClientData = msg
   }
 
-  verifyAMTVersion (payload: Payload, action: string): void {
-    const verifiedVersions = [7.0, 7.1, 8.0, 8.1, 9.0, 9.1, 9.5, 10.0, 11.0, 11.5, 11.6]
+  verifyAMTVersion(payload: Payload, action: string): void {
+    const verifiedVersions = [
+      7.0,
+      7.1,
+      8.0,
+      8.1,
+      9.0,
+      9.1,
+      9.5,
+      10.0,
+      11.0,
+      11.5,
+      11.6
+    ]
     if (verifiedVersions.includes(parseFloat(payload.ver))) {
       if (parseInt(payload.build) < 3000) {
         throw new RPSError(`Device ${payload.uuid} ${action} failed. Please check with your OEM for a firmware update.`)
       }
     } else if (parseFloat(payload.ver) < 7) {
-      throw new RPSError(`Device ${payload.uuid} ${action} failed. AMT version: ${payload.ver}. Version less than 7 cannot be remotely configured `)
+      throw new RPSError(
+        `Device ${payload.uuid} ${action} failed. AMT version: ${payload.ver}. Version less than 7 cannot be remotely configured `
+      )
     }
   }
 }

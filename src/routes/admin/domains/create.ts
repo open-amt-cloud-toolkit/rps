@@ -18,8 +18,8 @@ export class DomainCreate {
     const amtDomain: AMTDomain = req.body
     amtDomain.tenantId = req.tenantId || ''
     const log = new Logger('createDomain')
-    let cert: string = ''
-    let domainPwd: string = ''
+    let cert = ''
+    let domainPwd = ''
     const nodeForge = new NodeForge()
     const certManager = new CertManager(new Logger('CertManager'), nodeForge)
     try {

@@ -10,13 +10,19 @@ import type { ILogger } from './interfaces/ILogger.js'
 
 const options = {
   string: ['text', 'password'],
-  boolean: ['force', 'synctime', 'syncip', 'changepassword', 'synchostname'],
+  boolean: [
+    'force',
+    'synctime',
+    'syncip',
+    'changepassword',
+    'synchostname'
+  ],
   alias: { t: 'text', p: 'password', f: 'force', e: 'encrypted' }
 }
 
 const CommandParser = {
   logger: new Logger('CommandParser') as ILogger,
-  parse (msg: ClientMsg): ClientMsg {
+  parse(msg: ClientMsg): ClientMsg {
     try {
       if (msg?.method?.length > 0) {
         const input: string[] = msg.method.trim().split(' ')
@@ -24,7 +30,13 @@ const CommandParser = {
         let firstNonFlagArg = args._[0]
 
         // TODO: text mode is assumed right now, switch shouldn't be used for method going forward
-        if (typeof args.t === 'undefined' && typeof args.e === 'undefined' && input.length > 0 && input[0].length > 0 && !input[0].startsWith('-')) {
+        if (
+          typeof args.t === 'undefined' &&
+          typeof args.e === 'undefined' &&
+          input.length > 0 &&
+          input[0].length > 0 &&
+          !input[0].startsWith('-')
+        ) {
           args.t = input[0]
           // if text is assumed, the command is also in the unparsed arguments
           firstNonFlagArg = firstNonFlagArg = args._[1]

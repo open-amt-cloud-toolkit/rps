@@ -18,5 +18,4 @@ export const odataValidator = (): any => [
   query('$count')
     .optional()
     .isBoolean()
-    .withMessage('To return total number of records in result set should be boolean')
-]
+    .withMessage('To return total number of records in result set should be boolean')]

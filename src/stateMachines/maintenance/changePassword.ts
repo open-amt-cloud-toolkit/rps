@@ -54,7 +54,11 @@ const logger = new Logger('changePassword')
 export class ChangePassword {
   error: ErrorStateMachine = new ErrorStateMachine()
 
-  getGeneralSettings = async ({ input }: { input: ChangePasswordContext }): Promise<Common.Models.Response<AMT.Models.GeneralSettingsResponse>> => {
+  getGeneralSettings = async ({
+    input
+  }: {
+    input: ChangePasswordContext
+  }): Promise<Common.Models.Response<AMT.Models.GeneralSettingsResponse>> => {
     input.xmlMessage = amt.GeneralSettings.Get()
     const rsp = await invokeWsmanCall<Common.Models.Response<AMT.Models.GeneralSettingsResponse>>(input, 2)
     const settings = rsp.Envelope?.Body.AMT_GeneralSettings
@@ -69,10 +73,8 @@ export class ChangePassword {
   }
 
   setAdminACLEntry = async ({ input }: { input: ChangePasswordContext }): Promise<string> => {
-    const password = input.newStaticPassword
-      ? input.newStaticPassword
-      : PasswordHelper.generateRandomPassword()
-    const data: string = `${AMTUserName}:${input.generalSettings?.Envelope.Body.AMT_GeneralSettings.DigestRealm}:${password}`
+    const password = input.newStaticPassword ? input.newStaticPassword : PasswordHelper.generateRandomPassword()
+    const data = `${AMTUserName}:${input.generalSettings?.Envelope.Body.AMT_GeneralSettings.DigestRealm}:${password}`
     const signPassword = SignatureHelper.createMd5Hash(data)
     // Convert MD5 hash to raw string which utf16
     const signPasswordMatch = signPassword.match(/../g) ?? []
@@ -94,7 +96,7 @@ export class ChangePassword {
     const smcf = new SecretManagerCreatorFactory()
     const secretMgr = await smcf.getSecretManager(new Logger('SecretManagerService'))
     const clientObj = devices[input.clientId]
-    let credentials = await secretMgr.getSecretAtPath(`devices/${clientObj.uuid}`) as DeviceCredentials
+    let credentials = (await secretMgr.getSecretAtPath(`devices/${clientObj.uuid}`)) as DeviceCredentials
     if (!credentials) {
       logger.debug(`creating new DeviceCredentials for ${clientObj.uuid}`)
       credentials = { AMT_PASSWORD: '', MEBX_PASSWORD: '' }
@@ -174,7 +176,7 @@ export class ChangePassword {
         }),
         invoke: {
           src: 'getGeneralSettings',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'get-general-settings',
           onDone: {
             actions: assign({
@@ -199,7 +201,7 @@ export class ChangePassword {
         }),
         invoke: {
           src: 'setAdminACLEntry',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'set-on-device',
           onDone: {
             actions: assign({ updatedPassword: ({ event }) => event.output }),
@@ -220,7 +222,7 @@ export class ChangePassword {
         }),
         invoke: {
           src: 'saveToSecretProvider',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'save-to-secret-provider',
           onDone: {
             target: 'REFRESH_MPS'
@@ -240,7 +242,7 @@ export class ChangePassword {
         }),
         invoke: {
           src: 'refreshMPS',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'refresh-mps',
           onDone: {
             target: 'SUCCESS'
@@ -270,7 +272,9 @@ export class ChangePassword {
         },
         on: {
           ONFAILED: {
-            actions: assign({ errorMessage: ({ context, event }) => coalesceMessage(context.errorMessage, event.output) }),
+            actions: assign({
+              errorMessage: ({ context, event }) => coalesceMessage(context.errorMessage, event.output)
+            }),
             target: 'FAILED'
           }
         }
@@ -280,10 +284,12 @@ export class ChangePassword {
           {
             guard: 'isGeneralSettings',
             target: 'GET_GENERAL_SETTINGS'
-          }, {
+          },
+          {
             actions: assign({ errorMessage: ({ context }) => 'No valid next state' }),
             target: 'FAILED'
-          }]
+          }
+        ]
       },
       FAILED: {
         entry: assign({ statusMessage: () => 'FAILED' }),

@@ -8,7 +8,7 @@ import { type RPSConfig } from '../../models/index.js'
 import { jest } from '@jest/globals'
 import { devices } from '../../devices.js'
 
-export function setupTestClient (): string {
+export function setupTestClient(): string {
   const clientId = randomUUID()
   devices[clientId] = {
     ClientId: clientId,

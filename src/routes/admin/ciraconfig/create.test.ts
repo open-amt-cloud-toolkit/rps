@@ -14,11 +14,16 @@ describe('CIRA Config - Create', () => {
   let insertSpy: SpyInstance<any>
 
   beforeEach(() => {
-    resSpy = createSpyObj('Response', ['status', 'json', 'end', 'send'])
+    resSpy = createSpyObj('Response', [
+      'status',
+      'json',
+      'end',
+      'send'
+    ])
     req = {
       db: { ciraConfigs: { insert: jest.fn() } },
       body: {},
-      query: { }
+      query: {}
     }
     insertSpy = spyOn(req.db.ciraConfigs, 'insert').mockResolvedValue({})
     resSpy.status.mockReturnThis()

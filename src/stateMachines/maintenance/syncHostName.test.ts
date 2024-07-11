@@ -13,7 +13,12 @@ import { type SpyInstance, spyOn } from 'jest-mock'
 import { jest } from '@jest/globals'
 import { type MachineImplementations, fromPromise } from 'xstate'
 import got from 'got'
-import { type SyncHostNameContext, type HostNameInfo, type SyncHostName as SyncHostNameType, type SyncHostNameEvent } from './syncHostName.js'
+import {
+  type SyncHostNameContext,
+  type HostNameInfo,
+  type SyncHostName as SyncHostNameType,
+  type SyncHostNameEvent
+} from './syncHostName.js'
 
 const invokeWsmanCallSpy = jest.fn<any>()
 jest.unstable_mockModule('../common.js', () => ({
@@ -91,12 +96,15 @@ describe('SyncHostName State Machine', () => {
     } as any
     implementationConfig = {
       actors: {
-        getGeneralSettings: fromPromise(async ({ input }) => await Promise.resolve({
-          Envelope: {
-            Header: {},
-            Body: { AMT_GeneralSettings: { HostName: 'old.host.com' } }
-          }
-        }))
+        getGeneralSettings: fromPromise(
+          async ({ input }) =>
+            await Promise.resolve({
+              Envelope: {
+                Header: {},
+                Body: { AMT_GeneralSettings: { HostName: 'old.host.com' } }
+              }
+            })
+        )
         // saveToMPS: fromPromise(async ({ input }) => await Promise.resolve({}))
       }
     }
@@ -105,9 +113,7 @@ describe('SyncHostName State Machine', () => {
   })
 
   const runTheTest = async function (done): Promise<void> {
-    invokeWsmanCallSpy
-      .mockResolvedValueOnce(generalSettingsRsp)
-      .mockResolvedValueOnce(putRsp)
+    invokeWsmanCallSpy.mockResolvedValueOnce(generalSettingsRsp).mockResolvedValueOnce(putRsp)
     gotSpy.mockResolvedValue(mpsRsp)
     await runTilDone(implementation.machine.provide(implementationConfig), event, doneResponse, context, done)
   }
@@ -116,7 +122,9 @@ describe('SyncHostName State Machine', () => {
     void runTheTest(done)
   })
   it('should fail on failed general settings response', (done) => {
-    implementationConfig.actors!.getGeneralSettings = fromPromise(async ({ input }) => await Promise.reject(new Error()))
+    implementationConfig.actors!.getGeneralSettings = fromPromise(
+      async ({ input }) => await Promise.reject(new Error())
+    )
     doneResponse.status = StatusFailed
     void runTheTest(done)
   })
@@ -131,7 +139,9 @@ describe('SyncHostName State Machine', () => {
     void runTheTest(done)
   })
   it('should fail on failed put general settings response', (done) => {
-    implementationConfig.actors!.putGeneralSettings = fromPromise(async ({ input }) => await Promise.reject(new Error()))
+    implementationConfig.actors!.putGeneralSettings = fromPromise(
+      async ({ input }) => await Promise.reject(new Error())
+    )
     doneResponse.status = StatusFailed
     void runTheTest(done)
   })
@@ -149,7 +159,7 @@ describe('SyncHostName State Machine', () => {
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
   it('should save to MPS', async () => {
-    jest.spyOn(got, 'patch').mockImplementation(() => (mpsRsp))
+    jest.spyOn(got, 'patch').mockImplementation(() => mpsRsp)
     const x = await implementation.saveToMPS({ input: context })
     expect(x).toEqual(hostNameInfo.hostname)
   })

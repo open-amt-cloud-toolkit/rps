@@ -121,7 +121,7 @@ export enum AMTUserConsentValues {
   KVM = 1,
   ALL = 4294967295
 }
-export function mapAMTUserConsent (e: AMTUserConsent): AMTUserConsentValues {
+export function mapAMTUserConsent(e: AMTUserConsent): AMTUserConsentValues {
   switch (e) {
     case AMTUserConsent.ALL:
       return AMTUserConsentValues.ALL
@@ -190,7 +190,7 @@ export class WSMessage {
   status: string
   data?: any
   errorText?: string
-  constructor (version: number, status: string, data?: any, errorText?: string) {
+  constructor(version: number, status: string, data?: any, errorText?: string) {
     this.version = version
     this.status = status
     this.data = data
@@ -205,7 +205,18 @@ export class RCSMessage extends WSMessage {
   signature: string
   profileScript: string
   password: string
-  constructor (version: number, status: string, certs: string[], action: string, nonce: string, signature: string, profileScript: string, password: string, data?: any, errorText?: string) {
+  constructor(
+    version: number,
+    status: string,
+    certs: string[],
+    action: string,
+    nonce: string,
+    signature: string,
+    profileScript: string,
+    password: string,
+    data?: any,
+    errorText?: string
+  ) {
     super(version, status, data, errorText)
     this.certs = certs
     this.action = action
@@ -216,7 +227,7 @@ export class RCSMessage extends WSMessage {
   }
 }
 export class RcsObj {
-  constructor (
+  constructor(
     public action?: string,
     public certs?: string[],
     public nonce?: string,
@@ -227,7 +238,7 @@ export class RcsObj {
   ) {}
 }
 export class Client {
-  constructor (
+  constructor(
     public client?: string,
     public dnsSuffix?: string,
     public digestRealm?: string,
@@ -247,7 +258,7 @@ export class Version {
   minor: number
   revision: number
 
-  constructor () {
+  constructor() {
     this.major = 0
     this.minor = 0
     this.revision = 0

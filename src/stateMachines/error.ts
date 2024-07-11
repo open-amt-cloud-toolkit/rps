@@ -27,7 +27,7 @@ export class Error {
       clientObj.unauthCount = 0
     }
     clientObj.unauthCount++
-    const found = message?.headers?.find(item => item.name === 'Www-Authenticate')
+    const found = message?.headers?.find((item) => item.name === 'Www-Authenticate')
     if (found?.value != null) {
       if (clientObj.connectionParams) {
         clientObj.connectionParams.digestChallenge = httpHandler.parseAuthenticateResponseHeader(found.value)
@@ -41,81 +41,80 @@ export class Error {
     }
   }
 
-  machine =
-    setup({
-      types: {} as {
-        context: ErrorContext
-        events: ErrorEvent
-        actions: any
-        input: ErrorContext
-      },
-      guards: {
-        isMaxRetries: ({ context }) => devices[context.clientId].unauthCount < 3,
-        isBadRequest: ({ context }) => context.message?.statusCode === 400,
-        isUnauthorized: ({ context }) => context.message?.statusCode === 401
-      },
-      actions: {
-        respondUnauthorized: sendParent(() => ({
-          type: 'ONFAILED',
-          output: 'Unable to authenticate with AMT'
-        })),
-        respondBadRequest: sendParent(({ context }) => ({
-          type: 'ONFAILED',
-          output: context.message?.statusMessage
-        })),
-        respondUnknown: sendParent(() => ({
-          type: 'ONFAILED',
-          output: 'Unknown error has occured'
-        })),
-        addAuthorizationHeader: this.addAuthorizationHeader,
-        resetAuthCount: this.resetAuthCount
-      }
-    }).createMachine({
-      context: ({ input }) => ({ message: input.message, clientId: input.clientId }),
-      id: 'error-machine',
-      initial: 'ERRORED',
-      states: {
-        ERRORED: {
-          on: {
-            PARSE: [
-              {
-                guard: 'isUnauthorized',
-                target: 'UNAUTHORIZED'
-              },
-              {
-                guard: 'isBadRequest',
-                target: 'BADREQUEST'
-              },
-              {
-                target: 'UNKNOWN'
-              }
-            ]
-          }
-        },
-        UNAUTHORIZED: {
-          entry: 'addAuthorizationHeader',
-          always: [
+  machine = setup({
+    types: {} as {
+      context: ErrorContext
+      events: ErrorEvent
+      actions: any
+      input: ErrorContext
+    },
+    guards: {
+      isMaxRetries: ({ context }) => devices[context.clientId].unauthCount < 3,
+      isBadRequest: ({ context }) => context.message?.statusCode === 400,
+      isUnauthorized: ({ context }) => context.message?.statusCode === 401
+    },
+    actions: {
+      respondUnauthorized: sendParent(() => ({
+        type: 'ONFAILED',
+        output: 'Unable to authenticate with AMT'
+      })),
+      respondBadRequest: sendParent(({ context }) => ({
+        type: 'ONFAILED',
+        output: context.message?.statusMessage
+      })),
+      respondUnknown: sendParent(() => ({
+        type: 'ONFAILED',
+        output: 'Unknown error has occured'
+      })),
+      addAuthorizationHeader: this.addAuthorizationHeader,
+      resetAuthCount: this.resetAuthCount
+    }
+  }).createMachine({
+    context: ({ input }) => ({ message: input.message, clientId: input.clientId }),
+    id: 'error-machine',
+    initial: 'ERRORED',
+    states: {
+      ERRORED: {
+        on: {
+          PARSE: [
             {
-              guard: 'isMaxRetries',
-              target: 'AUTHORIZED'
+              guard: 'isUnauthorized',
+              target: 'UNAUTHORIZED'
             },
             {
-              target: 'FAILEDAUTHORIZED'
+              guard: 'isBadRequest',
+              target: 'BADREQUEST'
+            },
+            {
+              target: 'UNKNOWN'
             }
           ]
-        },
-        AUTHORIZED: {
-          type: 'final'
-        },
-        FAILEDAUTHORIZED: {
-          entry: ['resetAuthCount', 'respondUnauthorized']
-        },
-        BADREQUEST: {
-          entry: ['resetAuthCount', 'respondBadRequest']
-        },
-        UNKNOWN: {
-          entry: ['resetAuthCount', 'respondUnknown']
         }
+      },
+      UNAUTHORIZED: {
+        entry: 'addAuthorizationHeader',
+        always: [
+          {
+            guard: 'isMaxRetries',
+            target: 'AUTHORIZED'
+          },
+          {
+            target: 'FAILEDAUTHORIZED'
+          }
+        ]
+      },
+      AUTHORIZED: {
+        type: 'final'
+      },
+      FAILEDAUTHORIZED: {
+        entry: ['resetAuthCount', 'respondUnauthorized']
+      },
+      BADREQUEST: {
+        entry: ['resetAuthCount', 'respondBadRequest']
+      },
+      UNKNOWN: {
+        entry: ['resetAuthCount', 'respondUnknown']
       }
-    })
+    }
+  })
 }

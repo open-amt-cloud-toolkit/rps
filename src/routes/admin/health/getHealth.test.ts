@@ -16,7 +16,12 @@ describe('Checks health of dependent services', () => {
     let req
     let mqttSpy: SpyInstance<any>
     beforeEach(() => {
-      resSpy = createSpyObj('Response', ['status', 'json', 'end', 'send'])
+      resSpy = createSpyObj('Response', [
+        'status',
+        'json',
+        'end',
+        'send'
+      ])
       req = {
         rpsService: {
           secrets: createSpyObj('SecretProvider', ['health'])

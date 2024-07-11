@@ -11,9 +11,11 @@ import { createSpyObj } from '../../../test/helper/jest.js'
 
 describe('AMT Profile Validation', () => {
   const testExpressValidatorMiddleware = async (req: Request, res: Response, middlewares): Promise<void> => {
-    await Promise.all(middlewares.map(async (middleware) => {
-      await middleware(req, res, () => undefined)
-    }))
+    await Promise.all(
+      middlewares.map(async (middleware) => {
+        await middleware(req, res, () => undefined)
+      })
+    )
   }
 
   let req
@@ -39,7 +41,12 @@ describe('AMT Profile Validation', () => {
       },
       query: {}
     }
-    res = createSpyObj('Response', ['status', 'json', 'end', 'send'])
+    res = createSpyObj('Response', [
+      'status',
+      'json',
+      'end',
+      'send'
+    ])
     res.status.mockReturnThis()
     res.json.mockReturnThis()
     res.send.mockReturnThis()

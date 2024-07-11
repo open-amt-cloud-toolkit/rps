@@ -5,8 +5,10 @@
 
 import { check } from 'express-validator'
 
-const ipv4 = '^([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])$'
-const ipv6 = '^((?:[0-9A-Fa-f]{1,4}))((?::[0-9A-Fa-f]{1,4}))*::((?:[0-9A-Fa-f]{1,4}))((?::[0-9A-Fa-f]{1,4}))*|((?:[0-9A-Fa-f]{1,4}))((?::[0-9A-Fa-f]{1,4})){7}$'
+const ipv4 =
+  '^([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])$'
+const ipv6 =
+  '^((?:[0-9A-Fa-f]{1,4}))((?::[0-9A-Fa-f]{1,4}))*::((?:[0-9A-Fa-f]{1,4}))((?::[0-9A-Fa-f]{1,4}))*|((?:[0-9A-Fa-f]{1,4}))((?::[0-9A-Fa-f]{1,4})){7}$'
 const fqdn = '^(?=.{1,254}$)((?=[a-z0-9-]{1,63}\\.)(xn--+)?[a-z0-9]+(-[a-z0-9]+)*\\.)+[a-z]{2,63}$'
 
 export const ciraInsertValidator = (): any => [
@@ -20,7 +22,11 @@ export const ciraInsertValidator = (): any => [
     .not()
     .isEmpty()
     .withMessage('MPS server address format is required')
-    .isIn([3, 4, 201])
+    .isIn([
+      3,
+      4,
+      201
+    ])
     .withMessage('MPS server address format should be either 3(IPV4) , 4(IPV6) or 201(FQDN)'),
   check('mpsServerAddress')
     .not()
@@ -49,7 +55,9 @@ export const ciraInsertValidator = (): any => [
   check('commonName')
     .if((value, { req }) => req.body.serverAddressFormat !== 201)
     .optional()
-    .matches('^([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])$')
+    .matches(
+      '^([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])$'
+    )
     .withMessage('Cert. Hostname(CN) should be an IP address.'),
   check('authMethod')
     .not()
@@ -57,12 +65,8 @@ export const ciraInsertValidator = (): any => [
     .withMessage('Authentication method is required')
     .isIn([1, 2])
     .withMessage('Authentication method should be either 1 (Mutual Auth) or 2 (username and password)'),
-  check('mpsRootCertificate')
-    .not()
-    .isEmpty()
-    .withMessage('MPS public root certificate is required'),
-  check('proxyDetails')
-    .optional()
+  check('mpsRootCertificate').not().isEmpty().withMessage('MPS public root certificate is required'),
+  check('proxyDetails').optional()
 ]
 
 export const ciraUpdateValidator = (): any => [
@@ -74,7 +78,11 @@ export const ciraUpdateValidator = (): any => [
     .withMessage('CIRA profile name accepts letters, numbers, special characters and no spaces'),
   check('serverAddressFormat')
     .optional()
-    .isIn([3, 4, 201])
+    .isIn([
+      3,
+      4,
+      201
+    ])
     .withMessage('MPS server address format 3(IPV4) , 4(IPV6) or 201(FQDN)')
     .custom((value, { req }) => {
       if (req.body.mpsServerAddress == null) {
@@ -107,7 +115,9 @@ export const ciraUpdateValidator = (): any => [
   check('commonName')
     .if((value, { req }) => req.body.serverAddressFormat !== 201)
     .optional()
-    .matches('^([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])$')
+    .matches(
+      '^([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])$'
+    )
     .withMessage('Cert. Hostname(CN) should be an IP address.')
     .custom((value, { req }) => {
       if (req.body.serverAddressFormat == null || req.body.mpsServerAddress == null) {
@@ -119,16 +129,12 @@ export const ciraUpdateValidator = (): any => [
     .optional()
     .isIn([1, 2])
     .withMessage('Authentication method accepts either 1 - Mutual Auth or 2 -username/password)'),
-  check('mpsRootCertificate')
-    .optional(),
-  check('proxyDetails')
-    .optional(),
-  check('regeneratePassword')
-    .optional()
-    .isBoolean()
+  check('mpsRootCertificate').optional(),
+  check('proxyDetails').optional(),
+  check('regeneratePassword').optional().isBoolean()
 ]
 
-function serverAddressFormatValidator (value, req): boolean {
+function serverAddressFormatValidator(value, req): boolean {
   if (req.body.serverAddressFormat == null) {
     throw new Error('serverAddressFormat is required')
   }

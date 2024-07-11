@@ -15,7 +15,7 @@ import { RPSError } from '../../../utils/RPSError.js'
 import { type DeviceCredentials } from '../../../interfaces/ISecretManagerService.js'
 import { adjustTlsConfiguration, generateSelfSignedCertificate } from './common.js'
 
-export async function editProfile (req: Request, res: Response): Promise<void> {
+export async function editProfile(req: Request, res: Response): Promise<void> {
   const log = new Logger('editProfile')
   const newConfig: AMTConfiguration = req.body
   newConfig.tenantId = req.tenantId || ''
@@ -90,7 +90,11 @@ export async function editProfile (req: Request, res: Response): Promise<void> {
   }
 }
 
-export const handleAMTPassword = (amtConfig: AMTConfiguration, newConfig: AMTConfiguration, oldConfig: AMTConfiguration): AMTConfiguration => {
+export const handleAMTPassword = (
+  amtConfig: AMTConfiguration,
+  newConfig: AMTConfiguration,
+  oldConfig: AMTConfiguration
+): AMTConfiguration => {
   if (newConfig.amtPassword == null) {
     amtConfig.amtPassword = oldConfig.amtPassword
     amtConfig.generateRandomPassword = false
@@ -100,7 +104,11 @@ export const handleAMTPassword = (amtConfig: AMTConfiguration, newConfig: AMTCon
   return amtConfig
 }
 
-export const handleMEBxPassword = (amtConfig: AMTConfiguration, newConfig: AMTConfiguration, oldConfig: AMTConfiguration): AMTConfiguration => {
+export const handleMEBxPassword = (
+  amtConfig: AMTConfiguration,
+  newConfig: AMTConfiguration,
+  oldConfig: AMTConfiguration
+): AMTConfiguration => {
   if (newConfig.mebxPassword == null) {
     amtConfig.mebxPassword = oldConfig.mebxPassword
     amtConfig.generateRandomMEBxPassword = false
@@ -110,7 +118,11 @@ export const handleMEBxPassword = (amtConfig: AMTConfiguration, newConfig: AMTCo
   return amtConfig
 }
 
-export const handleGenerateRandomPassword = (amtConfig: AMTConfiguration, newConfig: AMTConfiguration, oldConfig: AMTConfiguration): AMTConfiguration => {
+export const handleGenerateRandomPassword = (
+  amtConfig: AMTConfiguration,
+  newConfig: AMTConfiguration,
+  oldConfig: AMTConfiguration
+): AMTConfiguration => {
   if (newConfig.generateRandomPassword) {
     amtConfig.generateRandomPassword = newConfig.generateRandomPassword
     amtConfig.amtPassword = null
@@ -120,7 +132,11 @@ export const handleGenerateRandomPassword = (amtConfig: AMTConfiguration, newCon
   return amtConfig
 }
 
-export const handleGenerateRandomMEBxPassword = (amtConfig: AMTConfiguration, newConfig: AMTConfiguration, oldConfig: AMTConfiguration): AMTConfiguration => {
+export const handleGenerateRandomMEBxPassword = (
+  amtConfig: AMTConfiguration,
+  newConfig: AMTConfiguration,
+  oldConfig: AMTConfiguration
+): AMTConfiguration => {
   if (newConfig.generateRandomMEBxPassword) {
     amtConfig.generateRandomMEBxPassword = newConfig.generateRandomMEBxPassword
     amtConfig.mebxPassword = null
@@ -130,7 +146,11 @@ export const handleGenerateRandomMEBxPassword = (amtConfig: AMTConfiguration, ne
   return amtConfig
 }
 
-export const handleWifiConfigs = async (newConfig: AMTConfiguration, oldConfig: AMTConfiguration, profileWifiConfigsDb: IProfilesWifiConfigsTable): Promise<ProfileWifiConfigs[] | null> => {
+export const handleWifiConfigs = async (
+  newConfig: AMTConfiguration,
+  oldConfig: AMTConfiguration,
+  profileWifiConfigsDb: IProfilesWifiConfigsTable
+): Promise<ProfileWifiConfigs[] | null> => {
   let wifiConfigs: ProfileWifiConfigs[] | null = null
   if (oldConfig.dhcpEnabled && !newConfig.dhcpEnabled) {
     await profileWifiConfigsDb.deleteProfileWifiConfigs(newConfig.profileName, newConfig.tenantId)

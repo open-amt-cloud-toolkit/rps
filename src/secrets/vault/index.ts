@@ -17,7 +17,7 @@ import got, { type Got } from 'got'
 export class VaultService implements ISecretManagerService {
   gotClient: Got
   logger: ILogger
-  constructor (logger: ILogger) {
+  constructor(logger: ILogger) {
     this.logger = logger
     this.gotClient = got.extend({
       prefixUrl: `${Environment.Config.vault_address}/v1/${Environment.Config.secrets_path}`,
@@ -27,7 +27,7 @@ export class VaultService implements ISecretManagerService {
     })
   }
 
-  async getSecretFromKey (path: string, key: string): Promise<string | null> {
+  async getSecretFromKey(path: string, key: string): Promise<string | null> {
     try {
       this.logger.verbose(`getting secret from vault: ${path}, ${key}`)
       const rspJson: any = await this.gotClient.get(path).json()
@@ -42,7 +42,9 @@ export class VaultService implements ISecretManagerService {
     return null
   }
 
-  async getSecretAtPath (path: string): Promise<DeviceCredentials | TLSCredentials | WifiCredentials | CiraConfigSecrets | null> {
+  async getSecretAtPath(
+    path: string
+  ): Promise<DeviceCredentials | TLSCredentials | WifiCredentials | CiraConfigSecrets | null> {
     try {
       this.logger.verbose(`getting secrets from ${path}`)
       const rspJson: any = await this.gotClient.get(path).json()
@@ -57,7 +59,7 @@ export class VaultService implements ISecretManagerService {
     }
   }
 
-  async writeSecretWithObject (path: string, data: any): Promise<any> {
+  async writeSecretWithObject(path: string, data: any): Promise<any> {
     try {
       const json = {
         data
@@ -73,14 +75,16 @@ export class VaultService implements ISecretManagerService {
     }
   }
 
-  async deleteSecretAtPath (path: string): Promise<boolean> {
+  async deleteSecretAtPath(path: string): Promise<boolean> {
     try {
-    // to permanently delete the key, we use metadata path
+      // to permanently delete the key, we use metadata path
       const basePath = Environment.Config.secrets_path.replace('/data/', '/metadata/')
       this.logger.verbose(`Deleting data from vault:${path}`)
-      await this.gotClient.delete(`${path}`, {
-        prefixUrl: `${Environment.Config.vault_address}/v1/${basePath}`
-      }).json()
+      await this.gotClient
+        .delete(`${path}`, {
+          prefixUrl: `${Environment.Config.vault_address}/v1/${basePath}`
+        })
+        .json()
       this.logger.debug(`Successfully Deleted data from vault: ${path}`)
       return true
     } catch (error) {
@@ -89,11 +93,12 @@ export class VaultService implements ISecretManagerService {
     }
   }
 
-  async health (): Promise<any> {
-    const rspJson: any = await this.gotClient.get('sys/health?standbyok=true',
-      {
+  async health(): Promise<any> {
+    const rspJson: any = await this.gotClient
+      .get('sys/health?standbyok=true', {
         prefixUrl: `${Environment.Config.vault_address}/v1/`
-      }).json()
+      })
+      .json()
     return rspJson
   }
 }

@@ -9,12 +9,18 @@ import { version } from './version.js'
 
 export default {
   /**
- * @description builds response message to client
- * @param {string} payload
- * @param {string} clientId Id to keep track of connections
- * @returns {ClientMsg} returns message which is sent to client
- */
-  get (clientId: string, payload: string | null, method: 'error' | 'wsman' | 'success' | 'heartbeat_request', status: 'failed' | 'success' | 'ok' | 'heartbeat', message: string = ''): ClientMsg {
+   * @description builds response message to client
+   * @param {string} payload
+   * @param {string} clientId Id to keep track of connections
+   * @returns {ClientMsg} returns message which is sent to client
+   */
+  get(
+    clientId: string,
+    payload: string | null,
+    method: 'error' | 'wsman' | 'success' | 'heartbeat_request',
+    status: 'failed' | 'success' | 'ok' | 'heartbeat',
+    message = ''
+  ): ClientMsg {
     const msg: ClientMsg = {
       method,
       apiKey: 'xxxxx',

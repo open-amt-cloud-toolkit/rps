@@ -25,7 +25,7 @@ import { SyncDeviceInfoEventType } from './stateMachines/maintenance/syncDeviceI
 import { devices } from './devices.js'
 export class DataProcessor {
   httpHandler: HttpHandler
-  constructor (
+  constructor(
     private readonly logger: ILogger,
     readonly validator: IValidator
   ) {
@@ -33,12 +33,12 @@ export class DataProcessor {
   }
 
   /**
-     * @description Process client data and gets response for desired action
-     * @param {WebSocket.Data} message the message coming in over the websocket connection
-     * @param {string} clientId Id to keep track of connections
-     * @returns {RCSMessage} returns configuration message
-     */
-  async processData (message: WebSocket.Data, clientId: string): Promise<ClientMsg | null> {
+   * @description Process client data and gets response for desired action
+   * @param {WebSocket.Data} message the message coming in over the websocket connection
+   * @param {string} clientId Id to keep track of connections
+   * @returns {RCSMessage} returns configuration message
+   */
+  async processData(message: WebSocket.Data, clientId: string): Promise<ClientMsg | null> {
     try {
       let clientMsg: ClientMsg
 
@@ -80,8 +80,14 @@ export class DataProcessor {
     return null
   }
 
-  async activateDevice (clientMsg: ClientMsg, clientId: string, activation: Activation = new Activation()): Promise<void> {
-    this.logger.debug(`ProcessData: Parsed Message received from device ${clientMsg.payload.uuid}: ${JSON.stringify(clientMsg, null, '\t')}`)
+  async activateDevice(
+    clientMsg: ClientMsg,
+    clientId: string,
+    activation: Activation = new Activation()
+  ): Promise<void> {
+    this.logger.debug(
+      `ProcessData: Parsed Message received from device ${clientMsg.payload.uuid}: ${JSON.stringify(clientMsg, null, '\t')}`
+    )
     await this.validator.validateActivationMsg(clientMsg, clientId) // Validate the activation message payload
     this.setConnectionParams(clientId)
     activation.service.start()
@@ -94,15 +100,27 @@ export class DataProcessor {
     activation.service.send(event)
   }
 
-  async deactivateDevice (clientMsg: ClientMsg, clientId: string, deactivation: Deactivation = new Deactivation()): Promise<void> {
-    this.logger.debug(`ProcessData: Parsed DEACTIVATION Message received from device ${clientMsg.payload.uuid}: ${JSON.stringify(clientMsg, null, '\t')}`)
+  async deactivateDevice(
+    clientMsg: ClientMsg,
+    clientId: string,
+    deactivation: Deactivation = new Deactivation()
+  ): Promise<void> {
+    this.logger.debug(
+      `ProcessData: Parsed DEACTIVATION Message received from device ${clientMsg.payload.uuid}: ${JSON.stringify(clientMsg, null, '\t')}`
+    )
     await this.validator.validateDeactivationMsg(clientMsg, clientId) // Validate the deactivation message payload
     this.setConnectionParams(clientId, 'admin', clientMsg.payload.password, clientMsg.payload.uuid)
     deactivation.service.start()
-    deactivation.service.send({ type: 'UNPROVISION', clientId, tenantId: clientMsg.tenantId, output: null, error: null })
+    deactivation.service.send({
+      type: 'UNPROVISION',
+      clientId,
+      tenantId: clientMsg.tenantId,
+      output: null,
+      error: null
+    })
   }
 
-  async handleResponse (clientMsg: ClientMsg, clientId: string): Promise<void> {
+  async handleResponse(clientMsg: ClientMsg, clientId: string): Promise<void> {
     const clientObj = devices[clientId]
     let resolveValue = null
     let rejectValue: UnexpectedParseError | HttpZResponseModel | null = null
@@ -133,13 +151,21 @@ export class DataProcessor {
         }
       }
     }
-    this.logger.debug(`Device ${clientId}` +
-      `wsman response ${statusCode} ${resolveValue ? 'resolved' : 'rejected'}: ` +
-      `${JSON.stringify(clientMsg.payload, null, '\t')}`)
+    this.logger.debug(
+      `Device ${clientId}` +
+        `wsman response ${statusCode} ${resolveValue ? 'resolved' : 'rejected'}: ` +
+        `${JSON.stringify(clientMsg.payload, null, '\t')}`
+    )
   }
 
-  async maintainDevice (clientMsg: ClientMsg, clientId: string, maintenance: Maintenance = new Maintenance()): Promise<void> {
-    this.logger.debug(`ProcessData: Parsed Maintenance message received from device ${clientMsg.payload.uuid}: ${JSON.stringify(clientMsg, null, '\t')}`)
+  async maintainDevice(
+    clientMsg: ClientMsg,
+    clientId: string,
+    maintenance: Maintenance = new Maintenance()
+  ): Promise<void> {
+    this.logger.debug(
+      `ProcessData: Parsed Maintenance message received from device ${clientMsg.payload.uuid}: ${JSON.stringify(clientMsg, null, '\t')}`
+    )
     await this.validator.validateMaintenanceMsg(clientMsg, clientId)
     this.setConnectionParams(clientId, 'admin', clientMsg.payload.password, clientMsg.payload.uuid)
     maintenance.service.start()
@@ -147,7 +173,7 @@ export class DataProcessor {
     maintenance.service.send(mEvent)
   }
 
-  buildMaintenanceEvent (clientId: string, payload: any): MaintenanceEvent {
+  buildMaintenanceEvent(clientId: string, payload: any): MaintenanceEvent {
     if (payload?.task == null) {
       throw new RPSError(`${clientId} - missing payload data`)
     }
@@ -180,7 +206,12 @@ export class DataProcessor {
     return mEvent
   }
 
-  setConnectionParams (clientId: string, username: string | null = null, password: string | null = null, uuid: string | null = null): void {
+  setConnectionParams(
+    clientId: string,
+    username: string | null = null,
+    password: string | null = null,
+    uuid: string | null = null
+  ): void {
     const clientObj = devices[clientId]
     clientObj.connectionParams = {
       port: 16992,

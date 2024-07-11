@@ -9,7 +9,11 @@ import { Environment } from '../utils/Environment.js'
 import { config } from '../test/helper/Config.js'
 import { ClientAction } from '../models/RCS.Config.js'
 import { type MachineImplementations, createActor, fromPromise } from 'xstate'
-import { type WiredConfigContext, type WiredConfigEvent, type WiredConfiguration as WiredConfigurationType } from './wiredNetworkConfiguration.js'
+import {
+  type WiredConfigContext,
+  type WiredConfigEvent,
+  type WiredConfiguration as WiredConfigurationType
+} from './wiredNetworkConfiguration.js'
 import { HttpHandler } from '../HttpHandler.js'
 import { AMT, CIM, IPS } from '@open-amt-cloud-toolkit/wsman-messages'
 import { jest } from '@jest/globals'
@@ -26,7 +30,7 @@ jest.unstable_mockModule('./common.js', () => ({
   isDigestRealmValid,
   HttpResponseError
 }))
-const { WiredConfiguration } = await import ('./wiredNetworkConfiguration.js')
+const { WiredConfiguration } = await import('./wiredNetworkConfiguration.js')
 
 const clientId = randomUUID()
 Environment.Config = config
@@ -167,22 +171,28 @@ describe('Wired Network Configuration', () => {
     currentStateIndex = 0
     config = {
       actors: {
-        putEthernetPortSettings: fromPromise(async ({ input }) => await Promise.resolve({
-          Envelope: {
-            Body: {
-              AMT_EthernetPortSettings: {
-                DHCPEnabled: true,
-                IpSyncEnabled: true,
-                SharedStaticIp: false
+        putEthernetPortSettings: fromPromise(
+          async ({ input }) =>
+            await Promise.resolve({
+              Envelope: {
+                Body: {
+                  AMT_EthernetPortSettings: {
+                    DHCPEnabled: true,
+                    IpSyncEnabled: true,
+                    SharedStaticIp: false
+                  }
+                }
               }
-            }
-          }
-        })),
-        get8021xProfile: fromPromise(async ({ input }) => await Promise.resolve({
-          Envelope: {
-            Body: {}
-          }
-        })),
+            })
+        ),
+        get8021xProfile: fromPromise(
+          async ({ input }) =>
+            await Promise.resolve({
+              Envelope: {
+                Body: {}
+              }
+            })
+        ),
         errorMachine: fromPromise(async ({ input }) => await Promise.resolve({ clientId: event.clientId })),
         generateKeyPair: fromPromise(async ({ input }) => await Promise.resolve({ clientId })),
         enumeratePublicPrivateKeyPair: fromPromise(async ({ input }) => await Promise.resolve({ clientId })),
@@ -202,9 +212,9 @@ describe('Wired Network Configuration', () => {
         shouldRetry: () => false
       },
       actions: {
-        'Reset Unauth Count': () => { },
-        'Read Ethernet Port Settings': () => { },
-        'Read WiFi Endpoint Settings Pull Response': () => { }
+        'Reset Unauth Count': () => {},
+        'Read Ethernet Port Settings': () => {},
+        'Read WiFi Endpoint Settings Pull Response': () => {}
       }
     }
   })
@@ -217,7 +227,13 @@ describe('Wired Network Configuration', () => {
   })
 
   it('should send a message to get enumerate public private key pairs', async () => {
-    wiredNetworkConfigContext.message = { Envelope: { Body: { GenerateKeyPair_OUTPUT: { KeyPair: { ReferenceParameters: { SelectorSet: { Selector: { _: 'xyz' } } } } } } } }
+    wiredNetworkConfigContext.message = {
+      Envelope: {
+        Body: {
+          GenerateKeyPair_OUTPUT: { KeyPair: { ReferenceParameters: { SelectorSet: { Selector: { _: 'xyz' } } } } }
+        }
+      }
+    }
     wiredNetworkConfigContext.amt = { PublicPrivateKeyPair: { Enumerate: jest.fn() } }
     await wiredConfig.enumeratePublicPrivateKeyPair({ input: wiredNetworkConfigContext })
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
@@ -226,7 +242,7 @@ describe('Wired Network Configuration', () => {
   it('should addCertificate', async () => {
     context.message = { Envelope: { Body: { PullResponse: { Items: { AMT_PublicPrivateKeyPair: {} } } } } }
     event = { output: { response: { certificate: 'abcde' } } }
-    await wiredConfig.addCertificate({ input: ({ context, event }) })
+    await wiredConfig.addCertificate({ input: { context, event } })
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
 
@@ -245,8 +261,12 @@ describe('Wired Network Configuration', () => {
   })
 
   it('should send a WSMan call to setCertificate', async () => {
-    wiredNetworkConfigContext.addCertResponse = { AddCertificate_OUTPUT: { CreatedCertificate: { ReferenceParameters: { SelectorSet: { Selector: { _: '' } } } } } }
-    wiredNetworkConfigContext.addTrustedRootCertificate = { AddCertificate_OUTPUT: { CreatedCertificate: { ReferenceParameters: { SelectorSet: { Selector: { _: '' } } } } } }
+    wiredNetworkConfigContext.addCertResponse = {
+      AddCertificate_OUTPUT: { CreatedCertificate: { ReferenceParameters: { SelectorSet: { Selector: { _: '' } } } } }
+    }
+    wiredNetworkConfigContext.addTrustedRootCertificate = {
+      AddCertificate_OUTPUT: { CreatedCertificate: { ReferenceParameters: { SelectorSet: { Selector: { _: '' } } } } }
+    }
     await wiredConfig.setCertificates({ input: wiredNetworkConfigContext })
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
@@ -271,7 +291,13 @@ describe('Wired Network Configuration', () => {
       Username: ''
     }
     wiredNetworkConfigContext.message = { Envelope: { Body: 'abcd' } }
-    wiredNetworkConfigContext.amtProfile.ieee8021xProfileObject = { profileName: 'p1', authenticationProtocol: 0, pxeTimeout: 120, tenantId: '', wiredInterface: true }
+    wiredNetworkConfigContext.amtProfile.ieee8021xProfileObject = {
+      profileName: 'p1',
+      authenticationProtocol: 0,
+      pxeTimeout: 120,
+      tenantId: '',
+      wiredInterface: true
+    }
     await wiredConfig.put8021xProfile({ input: wiredNetworkConfigContext })
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
@@ -296,7 +322,13 @@ describe('Wired Network Configuration', () => {
       Username: ''
     }
     wiredNetworkConfigContext.message = { Envelope: { Body: 'abcd' } }
-    wiredNetworkConfigContext.amtProfile.ieee8021xProfileObject = { profileName: 'p1', authenticationProtocol: 2, pxeTimeout: 120, tenantId: '', wiredInterface: true }
+    wiredNetworkConfigContext.amtProfile.ieee8021xProfileObject = {
+      profileName: 'p1',
+      authenticationProtocol: 2,
+      pxeTimeout: 120,
+      tenantId: '',
+      wiredInterface: true
+    }
     await wiredConfig.put8021xProfile({ input: wiredNetworkConfigContext })
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
@@ -547,7 +579,9 @@ describe('Wired Network Configuration', () => {
       service.send({ type: 'WIREDCONFIG', clientId })
     })
     it('should eventually reach "FAILED" state', (done) => {
-      config.actors!.sendEnterpriseAssistantKeyPairResponse = fromPromise(async ({ input }) => await Promise.reject(new Error()))
+      config.actors!.sendEnterpriseAssistantKeyPairResponse = fromPromise(
+        async ({ input }) => await Promise.reject(new Error())
+      )
       const mockWiredNetworkConfigurationMachine = wiredConfig.machine.provide(config)
       const flowStates = [
         'ACTIVATION',
@@ -598,7 +632,9 @@ describe('Wired Network Configuration', () => {
       service.send({ type: 'WIREDCONFIG', clientId })
     })
     it('should eventually reach "FAILED" state', (done) => {
-      config.actors!.getCertFromEnterpriseAssistant = fromPromise(async ({ input }) => await Promise.reject(new Error()))
+      config.actors!.getCertFromEnterpriseAssistant = fromPromise(
+        async ({ input }) => await Promise.reject(new Error())
+      )
       const mockWiredNetworkConfigurationMachine = wiredConfig.machine.provide(config)
       const flowStates = [
         'ACTIVATION',
@@ -653,7 +689,9 @@ describe('Wired Network Configuration', () => {
       service.send({ type: 'WIREDCONFIG', clientId })
     })
     it('should eventually reach "FAILED" state', (done) => {
-      config.actors!.addRadiusServerRootCertificate = fromPromise(async ({ input }) => await Promise.reject(new Error()))
+      config.actors!.addRadiusServerRootCertificate = fromPromise(
+        async ({ input }) => await Promise.reject(new Error())
+      )
       const mockWiredNetworkConfigurationMachine = wiredConfig.machine.provide(config)
       const flowStates = [
         'ACTIVATION',

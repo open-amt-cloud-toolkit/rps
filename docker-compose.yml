@@ -16,7 +16,7 @@ services:
     environment:
       RPS_VAULT_ADDRESS: http://vault:8200
       RPS_CONNECTION_STRING: postgresql://postgresadmin:admin123@db:5432/rpsdb
-      RPS_LOG_LEVEL: "silly"
+      RPS_LOG_LEVEL: 'silly'
     depends_on:
       - db
       - vault
@@ -50,8 +50,8 @@ services:
     image: hashicorp/consul
     networks:
       - openamtnetwork1
-    ports: 
+    ports:
       - 8500:8500
 networks:
   openamtnetwork1:
-    driver: "bridge"
+    driver: 'bridge'

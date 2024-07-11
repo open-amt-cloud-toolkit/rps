@@ -8,7 +8,11 @@ import { devices } from '../devices.js'
 import { Environment } from '../utils/Environment.js'
 import { config } from '../test/helper/Config.js'
 import { ClientAction } from '../models/RCS.Config.js'
-import { type NetworkConfigEvent, type NetworkConfigContext, type NetworkConfiguration as NetworkConfigurationType } from './networkConfiguration.js'
+import {
+  type NetworkConfigEvent,
+  type NetworkConfigContext,
+  type NetworkConfiguration as NetworkConfigurationType
+} from './networkConfiguration.js'
 import { type MachineImplementations, createActor, fromPromise } from 'xstate'
 import { HttpHandler } from '../HttpHandler.js'
 import { AMT, CIM } from '@open-amt-cloud-toolkit/wsman-messages'
@@ -26,7 +30,7 @@ jest.unstable_mockModule('./common.js', () => ({
   coalesceMessage
 }))
 
-const { NetworkConfiguration } = await import ('./networkConfiguration.js')
+const { NetworkConfiguration } = await import('./networkConfiguration.js')
 
 const clientId = randomUUID()
 Environment.Config = config
@@ -128,36 +132,50 @@ describe('Network Configuration', () => {
     config = {
       actors: {
         putGeneralSettings: fromPromise(async ({ input }) => await Promise.resolve({ clientId: input.clientId })),
-        enumerateEthernetPortSettings: fromPromise(async ({ input }) => await Promise.resolve({
-          Envelope: {
-            Header: {},
-            Body: { EnumerateResponse: { EnumerationContext: '09000000-0000-0000-0000-000000000000' } }
-          }
-        })),
+        enumerateEthernetPortSettings: fromPromise(
+          async ({ input }) =>
+            await Promise.resolve({
+              Envelope: {
+                Header: {},
+                Body: { EnumerateResponse: { EnumerationContext: '09000000-0000-0000-0000-000000000000' } }
+              }
+            })
+        ),
         errorMachine: fromPromise(async ({ input }) => await Promise.resolve({ clientId: input.clientId })),
-        pullEthernetPortSettings: fromPromise(async ({ input }) => await Promise.resolve({
-          Envelope: {
-            Header: {},
-            Body: {
-              PullResponse: {
-                Items: {
-                  AMT_EthernetPortSettings: [
-                    { DHCPEnabled: true, ElementName: 'Intel(r) AMT Ethernet Port Settings', InstanceID: 'Intel(r) AMT Ethernet Port Settings 0', IpSyncEnabled: false },
-                    { ElementName: 'Intel(r) AMT Ethernet Port Settings', InstanceID: 'Intel(r) AMT Ethernet Port Settings 1', MACAddress: '00-00-00-00-00-00' }
-                  ]
+        pullEthernetPortSettings: fromPromise(
+          async ({ input }) =>
+            await Promise.resolve({
+              Envelope: {
+                Header: {},
+                Body: {
+                  PullResponse: {
+                    Items: {
+                      AMT_EthernetPortSettings: [
+                        {
+                          DHCPEnabled: true,
+                          ElementName: 'Intel(r) AMT Ethernet Port Settings',
+                          InstanceID: 'Intel(r) AMT Ethernet Port Settings 0',
+                          IpSyncEnabled: false
+                        },
+                        {
+                          ElementName: 'Intel(r) AMT Ethernet Port Settings',
+                          InstanceID: 'Intel(r) AMT Ethernet Port Settings 1',
+                          MACAddress: '00-00-00-00-00-00'
+                        }
+                      ]
+                    }
+                  }
                 }
               }
-            }
-          }
-        })),
+            })
+        ),
         wiredConfiguration: fromPromise(async ({ input }) => await Promise.resolve({ clientId })),
         wifiConfiguration: fromPromise(async ({ input }) => await Promise.resolve({ clientId }))
       },
-      guards: {
-      },
+      guards: {},
       actions: {
-        'Reset Unauth Count': () => { },
-        'Read Ethernet Port Settings': () => { },
+        'Reset Unauth Count': () => {},
+        'Read Ethernet Port Settings': () => {},
         'Increment Retry Count': () => {}
       }
     }
@@ -255,7 +273,9 @@ describe('Network Configuration', () => {
 
   describe('Ethernet Port Settings', () => {
     test('should enumerate ethernet port settings', async () => {
-      const ethernetPortSettingsSpy = spyOn(context.amt.EthernetPortSettings, 'Enumerate').mockImplementation(() => 'abcdef')
+      const ethernetPortSettingsSpy = spyOn(context.amt.EthernetPortSettings, 'Enumerate').mockImplementation(
+        () => 'abcdef'
+      )
       await networkConfig.enumerateEthernetPortSettings({ input: context })
       expect(ethernetPortSettingsSpy).toHaveBeenCalled()
       expect(invokeWsmanCallSpy).toHaveBeenCalled()

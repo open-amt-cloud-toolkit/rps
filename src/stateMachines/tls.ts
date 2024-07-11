@@ -16,7 +16,11 @@ import { TlsSigningAuthority } from '../models/RCS.Config.js'
 import { UNEXPECTED_PARSE_ERROR } from '../utils/constants.js'
 import { parseChunkedMessage } from '../utils/parseChunkedMessage.js'
 import { Environment } from '../utils/Environment.js'
-import { getCertFromEnterpriseAssistant, initiateCertRequest, sendEnterpriseAssistantKeyPairResponse } from './enterpriseAssistant.js'
+import {
+  getCertFromEnterpriseAssistant,
+  initiateCertRequest,
+  sendEnterpriseAssistantKeyPairResponse
+} from './enterpriseAssistant.js'
 import { type CommonContext, invokeWsmanCall } from './common.js'
 
 export interface TLSContext extends CommonContext {
@@ -36,7 +40,7 @@ export interface TLSEvent {
   clientId: string
   output?: any
   error?: any
-}/*  */
+} /*  */
 
 export class TLS {
   nodeForge: NodeForge
@@ -47,24 +51,32 @@ export class TLS {
 
   signCSR = async ({ input }: { input: TLSContext }): Promise<any> => {
     input.xmlMessage = input.amt.PublicKeyManagementService.GeneratePKCS10RequestEx({
-      KeyPair: '<a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address><a:ReferenceParameters><w:ResourceURI>http://intel.com/wbem/wscim/1/amt-schema/1/AMT_PublicPrivateKeyPair</w:ResourceURI><w:SelectorSet><w:Selector Name="InstanceID">' + (input.message.response.keyInstanceId as string) + '</w:Selector></w:SelectorSet></a:ReferenceParameters>',
+      KeyPair:
+        '<a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address><a:ReferenceParameters><w:ResourceURI>http://intel.com/wbem/wscim/1/amt-schema/1/AMT_PublicPrivateKeyPair</w:ResourceURI><w:SelectorSet><w:Selector Name="InstanceID">' +
+        (input.message.response.keyInstanceId as string) +
+        '</w:Selector></w:SelectorSet></a:ReferenceParameters>',
       SigningAlgorithm: 1,
       NullSignedCertificateRequest: input.message.response.csr
     })
     return await invokeWsmanCall(input, 2)
   }
 
-  addCertificate = async ({ input }: { input: { context: TLSContext, event: TLSEvent } }): Promise<any> => {
+  addCertificate = async ({ input }: { input: { context: TLSContext; event: TLSEvent } }): Promise<any> => {
     const clientObj = devices[input.context.clientId]
     let cert = ''
-    if (input.context.amtProfile?.tlsSigningAuthority === TlsSigningAuthority.SELF_SIGNED || input.context.amtProfile?.tlsSigningAuthority == null) {
+    if (
+      input.context.amtProfile?.tlsSigningAuthority === TlsSigningAuthority.SELF_SIGNED ||
+      input.context.amtProfile?.tlsSigningAuthority == null
+    ) {
       const potentialArray = input.context.message.Envelope.Body.PullResponse.Items.AMT_PublicPrivateKeyPair
       if (Array.isArray(potentialArray)) {
         clientObj.tls.PublicPrivateKeyPair = potentialArray
       } else {
         clientObj.tls.PublicPrivateKeyPair = [potentialArray]
       }
-      const PublicPrivateKeyPair = clientObj.tls.PublicPrivateKeyPair.filter(x => x.InstanceID === input.context.keyPairHandle)[0]
+      const PublicPrivateKeyPair = clientObj.tls.PublicPrivateKeyPair.filter(
+        (x) => x.InstanceID === input.context.keyPairHandle
+      )[0]
       const DERKey = PublicPrivateKeyPair?.DERKey
       const certAttributes: CertAttributes = { CN: 'AMT', O: 'None', ST: 'None', C: 'None' }
       const issuerAttributes: CertAttributes = { CN: clientObj.uuid ?? 'Untrusted Root Certificate' }
@@ -80,7 +92,13 @@ export class TLS {
         codeSigning: false,
         timeStamping: false
       }
-      const certResult = this.certManager.amtCertSignWithCAKey(DERKey, null, certAttributes, issuerAttributes, keyUsages)
+      const certResult = this.certManager.amtCertSignWithCAKey(
+        DERKey,
+        null,
+        certAttributes,
+        issuerAttributes,
+        keyUsages
+      )
       cert = certResult.pem.substring(27, certResult.pem.length - 25)
     } else {
       cert = input.event.output.response.certificate
@@ -98,13 +116,17 @@ export class TLS {
 
   addTrustedRootCertificate = async ({ input }): Promise<any> => {
     const tlsCerts = devices[input.clientId].ClientData.payload.profile.tlsCerts
-    input.xmlMessage = input.amt.PublicKeyManagementService.AddTrustedRootCertificate({ CertificateBlob: tlsCerts.ROOT_CERTIFICATE.certbin })
+    input.xmlMessage = input.amt.PublicKeyManagementService.AddTrustedRootCertificate({
+      CertificateBlob: tlsCerts.ROOT_CERTIFICATE.certbin
+    })
     return await invokeWsmanCall(input, 2)
   }
 
-  createTLSCredentialContext = async ({ input }: { input: { context: TLSContext, event: TLSEvent } }): Promise<any> => {
+  createTLSCredentialContext = async ({ input }: { input: { context: TLSContext; event: TLSEvent } }): Promise<any> => {
     // TODO: 802.1x shoudl be set here right?
-    const certHandle = input.event.output.Envelope.Body?.AddCertificate_OUTPUT?.CreatedCertificate?.ReferenceParameters?.SelectorSet?.Selector?._ ?? 'Intel(r) AMT Certificate: Handle: 1'
+    const certHandle =
+      input.event.output.Envelope.Body?.AddCertificate_OUTPUT?.CreatedCertificate?.ReferenceParameters?.SelectorSet
+        ?.Selector?._ ?? 'Intel(r) AMT Certificate: Handle: 1'
     input.context.xmlMessage = input.context.amt.TLSCredentialContext.Create(certHandle)
     return await invokeWsmanCall(input.context, 2)
   }
@@ -115,22 +137,27 @@ export class TLS {
   }
 
   pullPublicKeyCertificate = async ({ input }: { input: TLSContext }): Promise<any> => {
-    input.xmlMessage = input.amt.PublicKeyCertificate.Pull(input.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+    input.xmlMessage = input.amt.PublicKeyCertificate.Pull(
+      input.message.Envelope.Body?.EnumerateResponse?.EnumerationContext
+    )
     return await invokeWsmanCall(input)
   }
 
   enumeratePublicPrivateKeyPair = async ({ input }: { input: TLSContext }): Promise<any> => {
-    input.keyPairHandle = input.message?.Envelope?.Body?.GenerateKeyPair_OUTPUT?.KeyPair?.ReferenceParameters?.SelectorSet?.Selector?._
+    input.keyPairHandle =
+      input.message?.Envelope?.Body?.GenerateKeyPair_OUTPUT?.KeyPair?.ReferenceParameters?.SelectorSet?.Selector?._
     input.xmlMessage = input.amt.PublicPrivateKeyPair.Enumerate()
     return await invokeWsmanCall(input, 2)
   }
 
   pullPublicPrivateKeyPair = async ({ input }: { input: TLSContext }): Promise<any> => {
-    input.xmlMessage = input.amt.PublicPrivateKeyPair.Pull(input.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+    input.xmlMessage = input.amt.PublicPrivateKeyPair.Pull(
+      input.message.Envelope.Body?.EnumerateResponse?.EnumerationContext
+    )
     return await invokeWsmanCall(input)
   }
 
-  updateConfigurationStatus ({ context }: { context: TLSContext }): void {
+  updateConfigurationStatus({ context }: { context: TLSContext }): void {
     if (context.status === 'success') {
       devices[context.clientId].status.TLSConfiguration = context.statusMessage
     } else if (context.status === 'error') {
@@ -151,10 +178,14 @@ export class TLS {
   putRemoteTLSData = async ({ input }: { input: TLSContext }): Promise<any> => {
     // Set remote TLS data on AMT
     input.tlsSettingData[0].Enabled = true
-    if (!('NonSecureConnectionsSupported' in input.tlsSettingData[0]) || input.tlsSettingData[0].NonSecureConnectionsSupported === true) {
-      input.tlsSettingData[0].AcceptNonSecureConnections = (input.amtProfile?.tlsMode !== 1 && input.amtProfile?.tlsMode !== 3) // TODO: check what these values should explicitly be
+    if (
+      !('NonSecureConnectionsSupported' in input.tlsSettingData[0]) ||
+      input.tlsSettingData[0].NonSecureConnectionsSupported === true
+    ) {
+      input.tlsSettingData[0].AcceptNonSecureConnections =
+        input.amtProfile?.tlsMode !== 1 && input.amtProfile?.tlsMode !== 3 // TODO: check what these values should explicitly be
     }
-    input.tlsSettingData[0].MutualAuthentication = (input.amtProfile?.tlsMode === 3 || input.amtProfile?.tlsMode === 4)
+    input.tlsSettingData[0].MutualAuthentication = input.amtProfile?.tlsMode === 3 || input.amtProfile?.tlsMode === 4
 
     input.xmlMessage = input.amt.TLSSettingData.Put(input.tlsSettingData[0])
     return await invokeWsmanCall(input, 2)
@@ -204,7 +235,8 @@ export class TLS {
     },
     guards: {
       hasPublicPrivateKeyPairs: ({ context }) => context.message.Envelope.Body.PullResponse.Items !== '',
-      useTLSEnterpriseAssistantCert: ({ context }) => context.amtProfile?.tlsSigningAuthority === TlsSigningAuthority.MICROSOFT_CA,
+      useTLSEnterpriseAssistantCert: ({ context }) =>
+        context.amtProfile?.tlsSigningAuthority === TlsSigningAuthority.MICROSOFT_CA,
       shouldRetry: ({ context, event }) => context.retryCount < 3 && event.error instanceof UNEXPECTED_PARSE_ERROR,
       alreadyExists: ({ context, event }) => {
         let exists = false
@@ -225,7 +257,6 @@ export class TLS {
       'Update Configuration Status': this.updateConfigurationStatus,
       'Reset Retry Count': assign({ retryCount: () => 0 }),
       'Increment Retry Count': assign({ retryCount: ({ context }) => context.retryCount + 1 })
-
     }
   }).createMachine({
     id: 'tls-configuration-machine',
@@ -255,7 +286,7 @@ export class TLS {
       ENUMERATE_PUBLIC_KEY_CERTIFICATE: {
         invoke: {
           src: 'enumeratePublicKeyCertificate',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'enumerate-public-key-certificate',
           onDone: {
             actions: [
@@ -274,7 +305,7 @@ export class TLS {
       PULL_PUBLIC_KEY_CERTIFICATE: {
         invoke: {
           src: 'pullPublicKeyCertificate',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'pull-public-key-certificate',
           onDone: {
             actions: [
@@ -297,21 +328,29 @@ export class TLS {
         }
       },
       CHECK_CERT_MODE: {
-        always: [{
-          guard: 'useTLSEnterpriseAssistantCert',
-          target: 'ENTERPRISE_ASSISTANT_REQUEST'
-        }, 'ADD_TRUSTED_ROOT_CERTIFICATE']
+        always: [
+          {
+            guard: 'useTLSEnterpriseAssistantCert',
+            target: 'ENTERPRISE_ASSISTANT_REQUEST'
+          },
+          'ADD_TRUSTED_ROOT_CERTIFICATE'
+
+        ]
       },
       CHECK_CERT_MODE_AFTER_REQUEST: {
-        always: [{
-          guard: 'useTLSEnterpriseAssistantCert',
-          target: 'ENTERPRISE_ASSISTANT_RESPONSE'
-        }, 'ADD_CERTIFICATE']
+        always: [
+          {
+            guard: 'useTLSEnterpriseAssistantCert',
+            target: 'ENTERPRISE_ASSISTANT_RESPONSE'
+          },
+          'ADD_CERTIFICATE'
+
+        ]
       },
       ENTERPRISE_ASSISTANT_REQUEST: {
         invoke: {
           src: 'initiateCertRequest',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'enterprise-assistant-request',
           onDone: {
             actions: [
@@ -330,7 +369,7 @@ export class TLS {
       ENTERPRISE_ASSISTANT_RESPONSE: {
         invoke: {
           src: 'sendEnterpriseAssistantKeyPairResponse',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'enterprise-assistant-response',
           onDone: {
             actions: [
@@ -349,7 +388,7 @@ export class TLS {
       SIGN_CSR: {
         invoke: {
           src: 'signCSR',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'sign-csr',
           onDone: {
             actions: [
@@ -368,7 +407,7 @@ export class TLS {
       GET_CERT_FROM_ENTERPRISE_ASSISTANT: {
         invoke: {
           src: 'getCertFromEnterpriseAssistant',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'get-cert-from-enterprise-assistant',
           onDone: {
             actions: [
@@ -387,7 +426,7 @@ export class TLS {
       ADD_TRUSTED_ROOT_CERTIFICATE: {
         invoke: {
           src: 'addTrustedRootCertificate',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'add-trusted-root-certificate',
           onDone: {
             actions: [
@@ -406,7 +445,7 @@ export class TLS {
       GENERATE_KEY_PAIR: {
         invoke: {
           src: 'generateKeyPair',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'generate-key-pair',
           onDone: {
             actions: [
@@ -425,7 +464,7 @@ export class TLS {
       ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR: {
         invoke: {
           src: 'enumeratePublicPrivateKeyPair',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'enumerate-public-private-key-pair',
           onDone: {
             actions: [
@@ -444,7 +483,7 @@ export class TLS {
       PULL_PUBLIC_PRIVATE_KEY_PAIR: {
         invoke: {
           src: 'pullPublicPrivateKeyPair',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'pull-public-private-key-pair',
           onDone: {
             actions: [
@@ -467,10 +506,14 @@ export class TLS {
         }
       },
       PULL_PUBLIC_PRIVATE_KEY_PAIR_RESPONSE: {
-        always: [{
-          guard: 'hasPublicPrivateKeyPairs',
-          target: 'CHECK_CERT_MODE_AFTER_REQUEST'
-        }, 'CREATE_TLS_CREDENTIAL_CONTEXT']
+        always: [
+          {
+            guard: 'hasPublicPrivateKeyPairs',
+            target: 'CHECK_CERT_MODE_AFTER_REQUEST'
+          },
+          'CREATE_TLS_CREDENTIAL_CONTEXT'
+
+        ]
       },
       ADD_CERTIFICATE: {
         invoke: {
@@ -518,7 +561,7 @@ export class TLS {
         entry: sendTo('time-machine', { type: 'TIMETRAVEL' }),
         invoke: {
           src: 'timeSync',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'time-machine',
           onDone: 'ENUMERATE_TLS_DATA'
         },
@@ -529,7 +572,7 @@ export class TLS {
       ENUMERATE_TLS_DATA: {
         invoke: {
           src: 'enumerateTLSData',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'enumerate-tls-data',
           onDone: {
             actions: [
@@ -548,15 +591,16 @@ export class TLS {
       PULL_TLS_DATA: {
         invoke: {
           src: 'pullTLSData',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'pull-tls-data',
           onDone: {
             actions: [
               assign({
                 message: ({ event }) => event.output,
-                tlsSettingData: ({ event }) => (event.output).Envelope.Body.PullResponse.Items.AMT_TLSSettingData
+                tlsSettingData: ({ event }) => event.output.Envelope.Body.PullResponse.Items.AMT_TLSSettingData
               }),
               'Reset Retry Count'
+
             ],
             target: 'PUT_REMOTE_TLS_DATA'
           },
@@ -576,13 +620,14 @@ export class TLS {
       PUT_REMOTE_TLS_DATA: {
         invoke: {
           src: 'putRemoteTLSData',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'put-remote-tls-data',
           onDone: {
             actions: [
               assign({
                 message: ({ event }) => event.output
               })
+
             ],
             target: 'WAIT_A_BIT' // should this be commit_changes? and then circle back to setting local tls data
           },
@@ -602,7 +647,7 @@ export class TLS {
       PUT_LOCAL_TLS_DATA: {
         invoke: {
           src: 'putLocalTLSData',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'put-local-tls-data',
           onDone: {
             actions: [
@@ -621,7 +666,7 @@ export class TLS {
       COMMIT_CHANGES: {
         invoke: {
           src: 'commitChanges',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'commit-changes',
           onDone: {
             actions: [
@@ -663,7 +708,7 @@ export class TLS {
     }
   })
 
-  constructor () {
+  constructor() {
     this.nodeForge = new NodeForge()
     this.certManager = new CertManager(new Logger('CertManager'), this.nodeForge)
   }

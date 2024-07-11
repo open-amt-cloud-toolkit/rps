@@ -37,7 +37,7 @@ const sendEnterpriseAssistantKeyPairResponse = async ({ input }): Promise<Enterp
     } else {
       clientObj.tls.PublicPrivateKeyPair = [potentialArray]
     }
-    PublicPrivateKeyPair = clientObj.tls.PublicPrivateKeyPair.filter(x => x.InstanceID === input.keyPairHandle)[0]
+    PublicPrivateKeyPair = clientObj.tls.PublicPrivateKeyPair.filter((x) => x.InstanceID === input.keyPairHandle)[0]
     DERKey = PublicPrivateKeyPair.DERKey
   }
 

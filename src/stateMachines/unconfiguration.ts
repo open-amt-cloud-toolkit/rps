@@ -59,7 +59,9 @@ export class Unconfiguration {
   }
 
   pullEthernetPortSettings = async ({ input }): Promise<any> => {
-    input.xmlMessage = input.amt.EthernetPortSettings.Pull(input.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+    input.xmlMessage = input.amt.EthernetPortSettings.Pull(
+      input.message.Envelope.Body?.EnumerateResponse?.EnumerationContext
+    )
     return await invokeWsmanCall(input)
   }
 
@@ -109,7 +111,9 @@ export class Unconfiguration {
   }
 
   pullWifiEndpointSettings = async ({ input }): Promise<any> => {
-    input.xmlMessage = input.cim.WiFiEndpointSettings.Pull(input.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+    input.xmlMessage = input.cim.WiFiEndpointSettings.Pull(
+      input.message.Envelope.Body?.EnumerateResponse?.EnumerationContext
+    )
     return await invokeWsmanCall(input)
   }
 
@@ -127,7 +131,7 @@ export class Unconfiguration {
     context.wifiEndPointSettings = []
     if (wifiEndPointSettings.length > 0) {
       //  ignore the profiles with Priority 0 and without InstanceID, which is required to delete a wifi profile on AMT device
-      wifiEndPointSettings.forEach(wifi => {
+      wifiEndPointSettings.forEach((wifi) => {
         if (wifi.InstanceID != null && wifi.Priority !== 0) {
           context.wifiEndPointSettings?.push({ ...wifi })
         }
@@ -190,7 +194,9 @@ export class Unconfiguration {
 
   pullManagementPresenceRemoteSAP = async ({ input }): Promise<any> => {
     if (input.amt != null) {
-      input.xmlMessage = input.amt.ManagementPresenceRemoteSAP.Pull(input.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+      input.xmlMessage = input.amt.ManagementPresenceRemoteSAP.Pull(
+        input.message.Envelope.Body?.EnumerateResponse?.EnumerationContext
+      )
       return await invokeWsmanCall(input)
     } else {
       this.logger.error('Null object in pullManagementPresenceRemoteSAP()')
@@ -199,7 +205,10 @@ export class Unconfiguration {
 
   deleteRemoteAccessService = async ({ input }): Promise<any> => {
     if (input.amt != null) {
-      const selector = { name: 'Name', value: input.message.Envelope.Body.PullResponse.Items.AMT_ManagementPresenceRemoteSAP.Name }
+      const selector = {
+        name: 'Name',
+        value: input.message.Envelope.Body.PullResponse.Items.AMT_ManagementPresenceRemoteSAP.Name
+      }
       input.xmlMessage = input.amt.ManagementPresenceRemoteSAP.Delete(selector)
       return await invokeWsmanCall(input)
     } else {
@@ -218,7 +227,9 @@ export class Unconfiguration {
 
   pullPublicKeyCertificate = async ({ input }): Promise<any> => {
     if (input.amt != null) {
-      input.xmlMessage = input.amt.PublicKeyCertificate.Pull(input.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+      input.xmlMessage = input.amt.PublicKeyCertificate.Pull(
+        input.message.Envelope.Body?.EnumerateResponse?.EnumerationContext
+      )
       return await invokeWsmanCall(input)
     } else {
       this.logger.error('Null object in pullPublicKeyCertificate()')
@@ -267,7 +278,9 @@ export class Unconfiguration {
 
   pullTLSSettingData = async ({ input }): Promise<any> => {
     if (input.amt != null) {
-      input.xmlMessage = input.amt.TLSSettingData.Pull(input.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+      input.xmlMessage = input.amt.TLSSettingData.Pull(
+        input.message.Envelope.Body?.EnumerateResponse?.EnumerationContext
+      )
       return await invokeWsmanCall(input)
     } else {
       this.logger.error('Null object in pullTLSSettingData()')
@@ -319,7 +332,9 @@ export class Unconfiguration {
 
   pullTLSCredentialContext = async ({ input }): Promise<any> => {
     if (input.amt != null) {
-      input.xmlMessage = input.amt.TLSCredentialContext.Pull(input.message.Envelope.Body.EnumerateResponse.EnumerationContext)
+      input.xmlMessage = input.amt.TLSCredentialContext.Pull(
+        input.message.Envelope.Body.EnumerateResponse.EnumerationContext
+      )
       return await invokeWsmanCall(input)
     } else {
       this.logger.error('Null object in pullTLSCredentialContext()')
@@ -328,7 +343,9 @@ export class Unconfiguration {
 
   deleteTLSCredentialContext = async ({ input }): Promise<any> => {
     if (input.amt != null) {
-      input.xmlMessage = input.amt.TLSCredentialContext.Delete(input.message.Envelope.Body.PullResponse.Items?.AMT_TLSCredentialContext)
+      input.xmlMessage = input.amt.TLSCredentialContext.Delete(
+        input.message.Envelope.Body.PullResponse.Items?.AMT_TLSCredentialContext
+      )
       return await invokeWsmanCall(input)
     } else {
       this.logger.error('Null object in deleteTLSCredentialContext()')
@@ -346,7 +363,9 @@ export class Unconfiguration {
 
   pullPublicPrivateKeyPair = async ({ input }): Promise<any> => {
     if (input.amt != null) {
-      input.xmlMessage = input.amt.PublicPrivateKeyPair.Pull(input.message.Envelope.Body.EnumerateResponse.EnumerationContext)
+      input.xmlMessage = input.amt.PublicPrivateKeyPair.Pull(
+        input.message.Envelope.Body.EnumerateResponse.EnumerationContext
+      )
       return await invokeWsmanCall(input)
     } else {
       this.logger.error('Null object in pullPublicPrivateKeyPair()')
@@ -409,16 +428,28 @@ export class Unconfiguration {
     guards: {
       isExpectedBadRequest: ({ event }) => event.error?.statusCode === 400,
       hasPrivateCerts: ({ context }) => context.privateCerts.length > 0,
-      isLMSTLSSettings: ({ context }) => context.message.Envelope.Body.AMT_TLSSettingData?.ElementName === 'Intel(r) AMT LMS TLS Settings',
-      is8023TLS: ({ context }) => context.message.Envelope.Body.AMT_TLSSettingData?.ElementName === 'Intel(r) AMT 802.3 TLS Settings' && context.tlsSettingData[1].Enabled,
-      tlsSettingDataEnabled: ({ context }) => context.message.Envelope.Body.PullResponse.Items.AMT_TLSSettingData?.[0].Enabled || context.message.Envelope.Body.PullResponse.Items.AMT_TLSSettingData?.[1].Enabled,
-      hasMPSEntries: ({ context }) => context.message.Envelope.Body.PullResponse.Items?.AMT_ManagementPresenceRemoteSAP != null,
+      isLMSTLSSettings: ({ context }) =>
+        context.message.Envelope.Body.AMT_TLSSettingData?.ElementName === 'Intel(r) AMT LMS TLS Settings',
+      is8023TLS: ({ context }) =>
+        context.message.Envelope.Body.AMT_TLSSettingData?.ElementName === 'Intel(r) AMT 802.3 TLS Settings' &&
+        context.tlsSettingData[1].Enabled,
+      tlsSettingDataEnabled: ({ context }) =>
+        context.message.Envelope.Body.PullResponse.Items.AMT_TLSSettingData?.[0].Enabled ||
+        context.message.Envelope.Body.PullResponse.Items.AMT_TLSSettingData?.[1].Enabled,
+      hasMPSEntries: ({ context }) =>
+        context.message.Envelope.Body.PullResponse.Items?.AMT_ManagementPresenceRemoteSAP != null,
       hasPublicKeyCertificate: ({ context }) => context.publicKeyCertificates?.length > 0,
-      hasEnvSettings: ({ context }) => context.message.Envelope.Body.AMT_EnvironmentDetectionSettingData.DetectionStrings != null,
-      hasTLSCredentialContext: ({ context }) => context.message.Envelope.Body.PullResponse.Items?.AMT_TLSCredentialContext != null,
-      is8021xProfileEnabled: ({ context }) => context.message.Envelope.Body.IPS_IEEE8021xSettings.Enabled === 2 || context.message.Envelope.Body.IPS_IEEE8021xSettings.Enabled === 6,
-      is8021xProfileDisabled: ({ context }) => context.is8021xProfileUpdated != null ? context.is8021xProfileUpdated : false,
-      isWifiProfilesExistsOnDevice: ({ context }) => context.wifiEndPointSettings != null ? context.wifiEndPointSettings.length !== 0 : false,
+      hasEnvSettings: ({ context }) =>
+        context.message.Envelope.Body.AMT_EnvironmentDetectionSettingData.DetectionStrings != null,
+      hasTLSCredentialContext: ({ context }) =>
+        context.message.Envelope.Body.PullResponse.Items?.AMT_TLSCredentialContext != null,
+      is8021xProfileEnabled: ({ context }) =>
+        context.message.Envelope.Body.IPS_IEEE8021xSettings.Enabled === 2 ||
+        context.message.Envelope.Body.IPS_IEEE8021xSettings.Enabled === 6,
+      is8021xProfileDisabled: ({ context }) =>
+        context.is8021xProfileUpdated != null ? context.is8021xProfileUpdated : false,
+      isWifiProfilesExistsOnDevice: ({ context }) =>
+        context.wifiEndPointSettings != null ? context.wifiEndPointSettings.length !== 0 : false,
       isWifiProfileDeleted: ({ context }) => context.message.Envelope.Body == null,
       isWifiOnlyDevice: ({ context }) => context.wifiSettings != null && context.wiredSettings?.MACAddress == null,
       isWifiSupportedOnDevice: ({ context }) => context.wifiSettings?.MACAddress != null,
@@ -440,7 +471,9 @@ export class Unconfiguration {
         device.status.CIRAConnection = ''
         device.status.Status = context.statusMessage
       },
-      'Reset Unauth Count': ({ context }) => { devices[context.clientId].unauthCount = 0 },
+      'Reset Unauth Count': ({ context }) => {
+        devices[context.clientId].unauthCount = 0
+      },
       'Read WiFi Endpoint Settings Pull Response': this.readWiFiEndpointSettingsPullResponse,
       'Reset Retry Count': assign({ retryCount: () => 0 }),
       'Increment Retry Count': assign({ retryCount: ({ context }) => context.retryCount + 1 }),
@@ -489,7 +522,7 @@ export class Unconfiguration {
       ENUMERATE_ETHERNET_PORT_SETTINGS: {
         invoke: {
           src: 'enumerateEthernetPortSettings',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'enumerate-ethernet-port-settings',
           onDone: {
             actions: assign({ message: ({ event }) => event.output }),
@@ -503,7 +536,7 @@ export class Unconfiguration {
       PULL_ETHERNET_PORT_SETTINGS: {
         invoke: {
           src: 'pullEthernetPortSettings',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'pull-ethernet-port-settings',
           onDone: {
             actions: [assign({ message: ({ event }) => event.output }), 'Reset Retry Count'],
@@ -528,7 +561,8 @@ export class Unconfiguration {
           {
             guard: 'isWiredSupportedOnDevice',
             target: 'GET_8021X_PROFILE'
-          }, {
+          },
+          {
             guard: 'isWifiOnlyDevice',
             target: 'ENUMERATE_WIFI_ENDPOINT_SETTINGS'
           }
@@ -537,7 +571,7 @@ export class Unconfiguration {
       GET_8021X_PROFILE: {
         invoke: {
           src: 'get8021xProfile',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'get-8021x-profile',
           onDone: {
             actions: assign({ message: ({ event }) => event.output }),
@@ -554,10 +588,12 @@ export class Unconfiguration {
           {
             guard: 'is8021xProfileEnabled',
             target: 'DISABLE_IEEE8021X_WIRED'
-          }, {
+          },
+          {
             guard: 'isWifiSupportedOnDevice',
             target: 'ENUMERATE_WIFI_ENDPOINT_SETTINGS'
-          }, {
+          },
+          {
             target: 'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED'
           }
         ]
@@ -565,15 +601,18 @@ export class Unconfiguration {
       DISABLE_IEEE8021X_WIRED: {
         invoke: {
           src: 'disableWired8021xConfiguration',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'disable-Wired-8021x-Configuration',
-          onDone: [{
-            guard: 'isWifiSupportedOnDevice',
-            actions: assign({ is8021xProfileUpdated: true }),
-            target: 'ENUMERATE_WIFI_ENDPOINT_SETTINGS'
-          }, {
-            target: 'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED'
-          }],
+          onDone: [
+            {
+              guard: 'isWifiSupportedOnDevice',
+              actions: assign({ is8021xProfileUpdated: true }),
+              target: 'ENUMERATE_WIFI_ENDPOINT_SETTINGS'
+            },
+            {
+              target: 'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED'
+            }
+          ],
           onError: {
             actions: assign({ errorMessage: () => 'Failed to disable 8021x profile' }),
             target: 'FAILURE'
@@ -583,7 +622,7 @@ export class Unconfiguration {
       ENUMERATE_WIFI_ENDPOINT_SETTINGS: {
         invoke: {
           src: 'enumerateWifiEndpointSettings',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'enumerate-wifi-endpoint-settings',
           onDone: {
             actions: assign({
@@ -600,7 +639,7 @@ export class Unconfiguration {
       PULL_WIFI_ENDPOINT_SETTINGS: {
         invoke: {
           src: 'pullWifiEndpointSettings',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'pull-wifi-endpoint-settings',
           onDone: {
             actions: [assign({ message: ({ event }) => event.output }), 'Reset Retry Count'],
@@ -625,7 +664,8 @@ export class Unconfiguration {
           {
             guard: 'isWifiProfilesExistsOnDevice',
             target: 'DELETE_WIFI_ENDPOINT_SETTINGS'
-          }, {
+          },
+          {
             target: 'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED'
           }
         ]
@@ -633,7 +673,7 @@ export class Unconfiguration {
       DELETE_WIFI_ENDPOINT_SETTINGS: {
         invoke: {
           src: 'deleteWiFiProfileOnAMTDevice',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'delete-wifi-endpoint-settings',
           onDone: {
             actions: assign({ message: ({ event }) => event.output }),
@@ -654,7 +694,8 @@ export class Unconfiguration {
           {
             guard: 'isWifiProfilesExistsOnDevice',
             target: 'DELETE_WIFI_ENDPOINT_SETTINGS'
-          }, {
+          },
+          {
             target: 'REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED'
           }
         ]
@@ -662,14 +703,15 @@ export class Unconfiguration {
       REMOVE_REMOTE_ACCESS_POLICY_RULE_USER_INITIATED: {
         invoke: {
           src: 'removeRemoteAccessPolicyRuleUserInitiated',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'remove-remote-access-policy-rule-user-initiated',
           onDone: 'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT',
           onError: [
             {
               guard: 'isExpectedBadRequest',
               target: 'REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT'
-            }, {
+            },
+            {
               target: 'ERROR'
             }
           ]
@@ -678,7 +720,7 @@ export class Unconfiguration {
       REMOVE_REMOTE_ACCESS_POLICY_RULE_ALERT: {
         invoke: {
           src: 'removeRemoteAccessPolicyRuleAlert',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'remove-remote-access-policy-rule-rule-alert',
           onDone: 'REMOVE_REMOTE_ACCESS_POLICY_RULE_PERIODIC',
           onError: 'REMOVE_REMOTE_ACCESS_POLICY_RULE_PERIODIC'
@@ -687,7 +729,7 @@ export class Unconfiguration {
       REMOVE_REMOTE_ACCESS_POLICY_RULE_PERIODIC: {
         invoke: {
           src: 'removeRemoteAccessPolicyRulePeriodic',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'remove-remote-access-policy-rule-periodic',
           onDone: 'ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP',
           onError: 'ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP'
@@ -696,7 +738,7 @@ export class Unconfiguration {
       ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP: {
         invoke: {
           src: 'enumerateManagementPresenceRemoteSAP',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'enumerate-management-presence-remote-sap',
           onDone: {
             actions: assign({ message: ({ event }) => event.output }),
@@ -711,7 +753,7 @@ export class Unconfiguration {
       PULL_MANAGEMENT_PRESENCE_REMOTE_SAP: {
         invoke: {
           src: 'pullManagementPresenceRemoteSAP',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'pull-management-presence-remote-sap',
           onDone: {
             actions: assign({ message: ({ event }) => event.output }),
@@ -728,7 +770,8 @@ export class Unconfiguration {
           {
             guard: 'hasMPSEntries',
             target: 'DELETE_MANAGEMENT_PRESENCE_REMOTE_SAP'
-          }, {
+          },
+          {
             target: 'ENUMERATE_TLS_SETTING_DATA'
           }
         ]
@@ -736,7 +779,7 @@ export class Unconfiguration {
       DELETE_MANAGEMENT_PRESENCE_REMOTE_SAP: {
         invoke: {
           src: 'deleteRemoteAccessService',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'delete-management-presence-remote-sap',
           onDone: {
             actions: [assign({ statusMessage: () => 'unconfigured' }), 'Update CIRA Status'],
@@ -751,7 +794,7 @@ export class Unconfiguration {
       ENUMERATE_TLS_SETTING_DATA: {
         invoke: {
           src: 'enumerateTLSSettingData',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'enumerate-tls-setting-data',
           onDone: { actions: assign({ message: ({ event }) => event.output }), target: 'PULL_TLS_SETTING_DATA' },
           onError: {
@@ -763,9 +806,12 @@ export class Unconfiguration {
       PULL_TLS_SETTING_DATA: {
         invoke: {
           src: 'pullTLSSettingData',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'pull-tls-setting-data',
-          onDone: { actions: assign({ message: ({ event }) => event.output }), target: 'PULL_TLS_SETTING_DATA_RESPONSE' },
+          onDone: {
+            actions: assign({ message: ({ event }) => event.output }),
+            target: 'PULL_TLS_SETTING_DATA_RESPONSE'
+          },
           onError: {
             actions: assign({ statusMessage: () => 'Failed to pull TLS Setting Data' }),
             target: 'FAILURE'
@@ -776,15 +822,17 @@ export class Unconfiguration {
         always: [
           { guard: 'tlsSettingDataEnabled', target: 'DISABLE_TLS_SETTING_DATA' },
           { guard: 'is8021xProfileDisabled', target: 'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR' },
-          { target: 'ENUMERATE_PUBLIC_KEY_CERTIFICATE' }
-        ]
+          { target: 'ENUMERATE_PUBLIC_KEY_CERTIFICATE' }]
       },
       DISABLE_TLS_SETTING_DATA: {
         invoke: {
           src: 'disableRemoteTLSSettingData',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'disable-tls-setting-data',
-          onDone: { actions: assign({ message: ({ event }) => event.output }), target: 'DISABLE_TLS_SETTING_DATA_RESPONSE' },
+          onDone: {
+            actions: assign({ message: ({ event }) => event.output }),
+            target: 'DISABLE_TLS_SETTING_DATA_RESPONSE'
+          },
           onError: {
             target: 'SETUP_AND_CONFIGURATION_SERVICE_COMMIT_CHANGES'
           }
@@ -793,9 +841,12 @@ export class Unconfiguration {
       DISABLE_TLS_SETTING_DATA_2: {
         invoke: {
           src: 'disableLocalTLSSettingData',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'disable-tls-setting-data-2',
-          onDone: { actions: assign({ message: ({ event }) => event.output }), target: 'DISABLE_TLS_SETTING_DATA_RESPONSE' },
+          onDone: {
+            actions: assign({ message: ({ event }) => event.output }),
+            target: 'DISABLE_TLS_SETTING_DATA_RESPONSE'
+          },
           onError: {
             target: 'SETUP_AND_CONFIGURATION_SERVICE_COMMIT_CHANGES'
           }
@@ -805,15 +856,17 @@ export class Unconfiguration {
         always: [
           { guard: 'is8023TLS', target: 'DISABLE_TLS_SETTING_DATA_2' },
           { guard: 'isLMSTLSSettings', target: 'SETUP_AND_CONFIGURATION_SERVICE_COMMIT_CHANGES' },
-          { target: 'FAILURE' }
-        ]
+          { target: 'FAILURE' }]
       },
       SETUP_AND_CONFIGURATION_SERVICE_COMMIT_CHANGES: {
         invoke: {
           src: 'commitSetupAndConfigurationService',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'setup-and-configuration-service-commit-changes',
-          onDone: { actions: [assign({ statusMessage: () => 'unconfigured' }), 'Update TLS Status'], target: 'SETUP_AND_CONFIGURATION_SERVICE_COMMIT_CHANGES_RESPONSE' },
+          onDone: {
+            actions: [assign({ statusMessage: () => 'unconfigured' }), 'Update TLS Status'],
+            target: 'SETUP_AND_CONFIGURATION_SERVICE_COMMIT_CHANGES_RESPONSE'
+          },
           onError: {
             actions: assign({ statusMessage: () => 'Failed at setup and configuration service commit changes' }),
             target: 'FAILURE'
@@ -826,7 +879,7 @@ export class Unconfiguration {
       ENUMERATE_TLS_CREDENTIAL_CONTEXT: {
         invoke: {
           src: 'enumerateTLSCredentialContext',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'enumerate-tls-credential-context',
           onDone: { actions: assign({ message: ({ event }) => event.output }), target: 'PULL_TLS_CREDENTIAL_CONTEXT' },
           onError: {
@@ -838,9 +891,12 @@ export class Unconfiguration {
       PULL_TLS_CREDENTIAL_CONTEXT: {
         invoke: {
           src: 'pullTLSCredentialContext',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'pull-tls-credential-context',
-          onDone: { actions: assign({ message: ({ event }) => event.output }), target: 'PULL_TLS_CREDENTIAL_CONTEXT_RESPONSE' },
+          onDone: {
+            actions: assign({ message: ({ event }) => event.output }),
+            target: 'PULL_TLS_CREDENTIAL_CONTEXT_RESPONSE'
+          },
           onError: {
             actions: assign({ statusMessage: () => 'Failed to pull TLS Credential context' }),
             target: 'FAILURE'
@@ -850,13 +906,12 @@ export class Unconfiguration {
       PULL_TLS_CREDENTIAL_CONTEXT_RESPONSE: {
         always: [
           { guard: 'hasTLSCredentialContext', target: 'DELETE_TLS_CREDENTIAL_CONTEXT' },
-          { target: 'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR' }
-        ]
+          { target: 'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR' }]
       },
       DELETE_TLS_CREDENTIAL_CONTEXT: {
         invoke: {
           src: 'deleteTLSCredentialContext',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'delete-tls-credential-context',
           onDone: 'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR',
           onError: {
@@ -867,7 +922,7 @@ export class Unconfiguration {
       ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR: {
         invoke: {
           src: 'enumeratePublicPrivateKeyPair',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'enumerate-public-private-key-pair',
           onDone: { actions: assign({ message: ({ event }) => event.output }), target: 'PULL_PUBLIC_PRIVATE_KEY_PAIR' },
           onError: {
@@ -879,16 +934,16 @@ export class Unconfiguration {
       PULL_PUBLIC_PRIVATE_KEY_PAIR: {
         invoke: {
           src: 'pullPublicPrivateKeyPair',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'pull-public-private-key-pair',
           onDone: {
             actions: assign({
               privateCerts: ({ event }) => {
-                if ((event.output).Envelope.Body.PullResponse.Items === '') return []
-                if (Array.isArray((event.output).Envelope.Body.PullResponse.Items?.AMT_PublicPrivateKeyPair)) {
-                  return (event.output).Envelope.Body.PullResponse.Items.AMT_PublicPrivateKeyPair
+                if (event.output.Envelope.Body.PullResponse.Items === '') return []
+                if (Array.isArray(event.output.Envelope.Body.PullResponse.Items?.AMT_PublicPrivateKeyPair)) {
+                  return event.output.Envelope.Body.PullResponse.Items.AMT_PublicPrivateKeyPair
                 } else {
-                  return [(event.output).Envelope.Body.PullResponse.Items.AMT_PublicPrivateKeyPair]
+                  return [event.output.Envelope.Body.PullResponse.Items.AMT_PublicPrivateKeyPair]
                 }
               }
             }),
@@ -903,15 +958,17 @@ export class Unconfiguration {
       PULL_PUBLIC_PRIVATE_KEY_PAIR_RESPONSE: {
         always: [
           { guard: 'hasPrivateCerts', target: 'DELETE_PUBLIC_PRIVATE_KEY_PAIR' },
-          { target: 'ENUMERATE_PUBLIC_KEY_CERTIFICATE' }
-        ]
+          { target: 'ENUMERATE_PUBLIC_KEY_CERTIFICATE' }]
       },
       DELETE_PUBLIC_PRIVATE_KEY_PAIR: {
         invoke: {
           src: 'deletePublicPrivateKeyPair',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'delete-public-private-key-pair',
-          onDone: { actions: assign({ message: ({ event }) => event.output }), target: 'PULL_PUBLIC_PRIVATE_KEY_PAIR_RESPONSE' },
+          onDone: {
+            actions: assign({ message: ({ event }) => event.output }),
+            target: 'PULL_PUBLIC_PRIVATE_KEY_PAIR_RESPONSE'
+          },
           onError: {
             target: 'PULL_PUBLIC_PRIVATE_KEY_PAIR_RESPONSE'
           }
@@ -920,7 +977,7 @@ export class Unconfiguration {
       ENUMERATE_PUBLIC_KEY_CERTIFICATE: {
         invoke: {
           src: 'enumeratePublicKeyCertificate',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'enumerate-public-key-certificate',
           onDone: { actions: assign({ message: ({ event }) => event.output }), target: 'PULL_PUBLIC_KEY_CERTIFICATE' },
           onError: {
@@ -932,16 +989,16 @@ export class Unconfiguration {
       PULL_PUBLIC_KEY_CERTIFICATE: {
         invoke: {
           src: 'pullPublicKeyCertificate',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'pull-public-key-certificate',
           onDone: {
             actions: assign({
               publicKeyCertificates: ({ event }) => {
-                if ((event.output).Envelope.Body.PullResponse.Items === '') return []
-                if (Array.isArray((event.output).Envelope.Body.PullResponse.Items?.AMT_PublicKeyCertificate)) {
-                  return (event.output).Envelope.Body.PullResponse.Items.AMT_PublicKeyCertificate
+                if (event.output.Envelope.Body.PullResponse.Items === '') return []
+                if (Array.isArray(event.output.Envelope.Body.PullResponse.Items?.AMT_PublicKeyCertificate)) {
+                  return event.output.Envelope.Body.PullResponse.Items.AMT_PublicKeyCertificate
                 } else {
-                  return [(event.output).Envelope.Body.PullResponse.Items.AMT_PublicKeyCertificate]
+                  return [event.output.Envelope.Body.PullResponse.Items.AMT_PublicKeyCertificate]
                 }
               }
             }),
@@ -956,13 +1013,12 @@ export class Unconfiguration {
       PULL_PUBLIC_KEY_CERTIFICATE_RESPONSE: {
         always: [
           { guard: 'hasPublicKeyCertificate', target: 'DELETE_PUBLIC_KEY_CERTIFICATE' },
-          { target: 'GET_ENVIRONMENT_DETECTION_SETTINGS' }
-        ]
+          { target: 'GET_ENVIRONMENT_DETECTION_SETTINGS' }]
       },
       DELETE_PUBLIC_KEY_CERTIFICATE: {
         invoke: {
           src: 'deletePublicKeyCertificate',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'delete-public-key-certificate',
           onDone: {
             actions: assign({ message: ({ event }) => event.output }),
@@ -976,9 +1032,12 @@ export class Unconfiguration {
       GET_ENVIRONMENT_DETECTION_SETTINGS: {
         invoke: {
           src: 'getEnvironmentDetectionSettings',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'get-environment-detection-settings',
-          onDone: { actions: assign({ message: ({ event }) => event.output }), target: 'GET_ENVIRONMENT_DETECTION_SETTINGS_RESPONSE' },
+          onDone: {
+            actions: assign({ message: ({ event }) => event.output }),
+            target: 'GET_ENVIRONMENT_DETECTION_SETTINGS_RESPONSE'
+          },
           onError: {
             actions: assign({ statusMessage: () => 'Failed to get environment detection settings' }),
             target: 'FAILURE'
@@ -990,7 +1049,8 @@ export class Unconfiguration {
           {
             guard: 'hasEnvSettings',
             target: 'CLEAR_ENVIRONMENT_DETECTION_SETTINGS'
-          }, {
+          },
+          {
             target: 'SUCCESS'
           }
         ]
@@ -998,7 +1058,7 @@ export class Unconfiguration {
       CLEAR_ENVIRONMENT_DETECTION_SETTINGS: {
         invoke: {
           src: 'clearEnvironmentDetectionSettings',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'put-environment-detection-settings',
           onDone: {
             target: 'SUCCESS'
@@ -1019,7 +1079,7 @@ export class Unconfiguration {
     }
   })
 
-  constructor () {
+  constructor() {
     this.nodeForge = new NodeForge()
     this.certManager = new CertManager(new Logger('CertManager'), this.nodeForge)
     this.signatureHelper = new SignatureHelper(this.nodeForge)

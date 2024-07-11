@@ -11,7 +11,12 @@ describe('Domains - All', () => {
   let resSpy
   let req
   beforeEach(() => {
-    resSpy = createSpyObj('Response', ['status', 'json', 'end', 'send'])
+    resSpy = createSpyObj('Response', [
+      'status',
+      'json',
+      'end',
+      'send'
+    ])
     req = {
       db: {
         domains: {
@@ -19,7 +24,7 @@ describe('Domains - All', () => {
           getCount: jest.fn<() => Promise<number>>().mockImplementation(async () => await Promise.resolve(123))
         }
       },
-      query: { }
+      query: {}
     }
     resSpy.status.mockReturnThis()
     resSpy.json.mockReturnThis()

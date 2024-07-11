@@ -6,7 +6,12 @@
 import { type AMT, type CIM, Common, type IPS } from '@open-amt-cloud-toolkit/wsman-messages'
 import Logger from '../Logger.js'
 import { assign, setup, fromPromise } from 'xstate'
-import { type AMTConfiguration, AMTRedirectionServiceEnabledStates, mapAMTUserConsent, AMTUserConsent } from '../models/index.js'
+import {
+  type AMTConfiguration,
+  AMTRedirectionServiceEnabledStates,
+  mapAMTUserConsent,
+  AMTUserConsent
+} from '../models/index.js'
 import { type CommonContext, invokeWsmanCall } from './common.js'
 
 export interface FeatureContext extends CommonContext {
@@ -44,12 +49,16 @@ export class FeaturesConfiguration {
   }
 
   setRedirectionService = async ({ input }: { input: FeatureContext }): Promise<any> => {
-    input.xmlMessage = input.amt != null ? input.amt.RedirectionService.RequestStateChange(input.AMT_RedirectionService.EnabledState) : ''
+    input.xmlMessage =
+      input.amt != null
+        ? input.amt.RedirectionService.RequestStateChange(input.AMT_RedirectionService.EnabledState)
+        : ''
     return await invokeWsmanCall(input, 2)
   }
 
   setKvmRedirectionSap = async ({ input }: { input: FeatureContext }): Promise<any> => {
-    input.xmlMessage = input.cim != null ? input.cim.KVMRedirectionSAP.RequestStateChange(input.CIM_KVMRedirectionSAP.EnabledState) : ''
+    input.xmlMessage =
+      input.cim != null ? input.cim.KVMRedirectionSAP.RequestStateChange(input.CIM_KVMRedirectionSAP.EnabledState) : ''
     return await invokeWsmanCall(input, 2)
   }
 
@@ -85,9 +94,13 @@ export class FeaturesConfiguration {
       putIpsOptInService: fromPromise(this.putIpsOptInService)
     },
     actions: {
-      cacheAmtRedirectionService: assign({ AMT_RedirectionService: ({ event }) => event.output.Envelope.Body.AMT_RedirectionService }),
+      cacheAmtRedirectionService: assign({
+        AMT_RedirectionService: ({ event }) => event.output.Envelope.Body.AMT_RedirectionService
+      }),
       cacheIpsOptInService: assign({ IPS_OptInService: ({ event }) => event.output.Envelope.Body.IPS_OptInService }),
-      cacheCimKvmRedirectionSAP: assign({ CIM_KVMRedirectionSAP: ({ event }) => event.output.Envelope.Body.CIM_KVMRedirectionSAP }),
+      cacheCimKvmRedirectionSAP: assign({
+        CIM_KVMRedirectionSAP: ({ event }) => event.output.Envelope.Body.CIM_KVMRedirectionSAP
+      }),
       computeUpdates: assign(({ context }) => {
         const amtRedirectionService = context.AMT_RedirectionService
         const cimKVMRedirectionSAP = context.CIM_KVMRedirectionSAP
@@ -107,10 +120,10 @@ export class FeaturesConfiguration {
         } else if (enabledState === AMTRedirectionServiceEnabledStates.ONLY_SOL) {
           solEnabled = true
         }
-        const kvmEnabled = (
+        const kvmEnabled =
           context.CIM_KVMRedirectionSAP.EnabledState === Common.Models.CIM_KVM_REDIRECTION_SAP_ENABLED_STATE.Enabled ||
-          context.CIM_KVMRedirectionSAP.EnabledState === Common.Models.CIM_KVM_REDIRECTION_SAP_ENABLED_STATE.EnabledButOffline
-        )
+          context.CIM_KVMRedirectionSAP.EnabledState ===
+            Common.Models.CIM_KVM_REDIRECTION_SAP_ENABLED_STATE.EnabledButOffline
 
         if (context.amtConfiguration?.solEnabled !== solEnabled) {
           solEnabled = context.amtConfiguration?.solEnabled != null ? context.amtConfiguration.solEnabled : false
@@ -143,12 +156,13 @@ export class FeaturesConfiguration {
             enabledState = AMTRedirectionServiceEnabledStates.ONLY_SOL
           }
           amtRedirectionService.EnabledState = enabledState
-          amtRedirectionService.ListenerEnabled = (solEnabled || iderEnabled || kvmEnabled)
+          amtRedirectionService.ListenerEnabled = solEnabled || iderEnabled || kvmEnabled
         }
 
-        const userConsent = context.amtConfiguration?.userConsent != null ? context.amtConfiguration.userConsent : AMTUserConsent.ALL
+        const userConsent =
+          context.amtConfiguration?.userConsent != null ? context.amtConfiguration.userConsent : AMTUserConsent.ALL
         const cfgOptInValue = mapAMTUserConsent(userConsent)
-        const isOptInServiceChanged = (ipsOptInService.OptInRequired !== cfgOptInValue)
+        const isOptInServiceChanged = ipsOptInService.OptInRequired !== cfgOptInValue
         if (isOptInServiceChanged) {
           ipsOptInService.OptInRequired = cfgOptInValue
         }
@@ -187,7 +201,7 @@ export class FeaturesConfiguration {
         invoke: {
           id: 'get-amt-redirection-service',
           src: 'getAmtRedirectionService',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           onDone: {
             actions: ['cacheAmtRedirectionService'],
             target: 'GET_IPS_OPT_IN_SERVICE'
@@ -202,7 +216,7 @@ export class FeaturesConfiguration {
         invoke: {
           id: 'get-ips-opt-in-service',
           src: 'getIpsOptInService',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           onDone: {
             actions: ['cacheIpsOptInService'],
             target: 'GET_CIM_KVM_REDIRECTION_SAP'
@@ -217,7 +231,7 @@ export class FeaturesConfiguration {
         invoke: {
           id: 'get-cim-kvm-redirection-sap',
           src: 'getCimKvmRedirectionSAP',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           onDone: {
             actions: 'cacheCimKvmRedirectionSAP',
             target: 'COMPUTE_UPDATES'
@@ -235,14 +249,13 @@ export class FeaturesConfiguration {
         always: [
           { target: 'SET_REDIRECTION_SERVICE', guard: ({ context }) => context.isRedirectionChanged },
           { target: 'PUT_IPS_OPT_IN_SERVICE', guard: ({ context }) => context.isOptInServiceChanged },
-          { target: 'SUCCESS' }
-        ]
+          { target: 'SUCCESS' }]
       },
       SET_REDIRECTION_SERVICE: {
         invoke: {
           id: 'set-redirection-service',
           src: 'setRedirectionService',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           onDone: 'SET_KVM_REDIRECTION_SAP',
           onError: {
             actions: assign({ statusMessage: () => 'Failed to set redirection service' }),
@@ -254,7 +267,7 @@ export class FeaturesConfiguration {
         invoke: {
           id: 'set-kvm-redirection-sap',
           src: 'setKvmRedirectionSap',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           onDone: 'PUT_REDIRECTION_SERVICE',
           onError: {
             actions: assign({ statusMessage: () => 'Failed to set kvm redirection sap' }),
@@ -266,11 +279,10 @@ export class FeaturesConfiguration {
         invoke: {
           id: 'put-redirection-service',
           src: 'putRedirectionService',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           onDone: [
             { target: 'PUT_IPS_OPT_IN_SERVICE', guard: ({ context }) => context.isOptInServiceChanged },
-            { target: 'SUCCESS' }
-          ],
+            { target: 'SUCCESS' }],
           onError: {
             actions: assign({ statusMessage: () => 'Failed to put redirection service' }),
             target: 'FAILED'
@@ -281,7 +293,7 @@ export class FeaturesConfiguration {
         invoke: {
           id: 'put-ips-opt-in-service',
           src: 'putIpsOptInService',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           onDone: 'SUCCESS',
           onError: {
             actions: assign({ statusMessage: () => 'Failed to put ips opt in service' }),
@@ -290,17 +302,21 @@ export class FeaturesConfiguration {
         }
       },
       SUCCESS: {
-        entry: () => { this.logger.info('AMT Features Configuration success') },
+        entry: () => {
+          this.logger.info('AMT Features Configuration success')
+        },
         type: 'final'
       },
       FAILED: {
-        entry: ({ context }) => { this.logger.error(`AMT Features Configuration failed: ${context.statusMessage}`) },
+        entry: ({ context }) => {
+          this.logger.error(`AMT Features Configuration failed: ${context.statusMessage}`)
+        },
         type: 'final'
       }
     }
   })
 
-  constructor () {
+  constructor() {
     this.logger = new Logger('FeaturesConfiguration')
   }
 }

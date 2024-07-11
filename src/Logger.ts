@@ -7,7 +7,7 @@ import winston from 'winston'
 import { type ILogger } from './interfaces/ILogger.js'
 
 const { combine, timestamp, printf } = winston.format
-const myFormat = printf(info => `${info.timestamp} ${info.level}: ${info.message}`)
+const myFormat = printf((info) => `${info.timestamp} ${info.level}: ${info.message}`)
 
 // file logging removed to avoid disk space consumption and
 // adhere to non-root user requirements
@@ -35,31 +35,31 @@ const logger = winston.createLogger({
 class Logger implements ILogger {
   private readonly name: string
 
-  constructor (name: string) {
+  constructor(name: string) {
     this.name = name
   }
 
-  debug (log: string, ...params: any[]): void {
+  debug(log: string, ...params: any[]): void {
     logger.debug([this.name + ' - ' + log].concat(params))
   }
 
-  info (log: string, ...params: any[]): void {
+  info(log: string, ...params: any[]): void {
     logger.info([this.name + ' - ' + log].concat(params))
   }
 
-  warn (log: string, ...params: any[]): void {
+  warn(log: string, ...params: any[]): void {
     logger.warn([this.name + ' - ' + log].concat(params))
   }
 
-  error (log: string, ...params: any[]): void {
+  error(log: string, ...params: any[]): void {
     logger.error([this.name + ' - ' + log].concat(params))
   }
 
-  verbose (log: string, ...params: any[]): void {
+  verbose(log: string, ...params: any[]): void {
     logger.verbose([this.name + ' - ' + log].concat(params))
   }
 
-  silly (log: string, ...params: any[]): void {
+  silly(log: string, ...params: any[]): void {
     logger.silly([this.name + ' - ' + log].concat(params))
   }
 }

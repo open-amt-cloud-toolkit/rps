@@ -13,11 +13,16 @@ describe('CIRA Config - delete', () => {
   let req
   let deleteSpy: SpyInstance<any>
   beforeEach(() => {
-    resSpy = createSpyObj('Response', ['status', 'json', 'end', 'send'])
+    resSpy = createSpyObj('Response', [
+      'status',
+      'json',
+      'end',
+      'send'
+    ])
     req = {
       db: { ciraConfigs: { delete: jest.fn() } },
       tenantId: '',
-      query: { },
+      query: {},
       params: { ciraConfigName: 'ciraConfig' }
     }
     deleteSpy = spyOn(req.db.ciraConfigs, 'delete').mockResolvedValue({})

@@ -4,7 +4,11 @@
  **********************************************************************/
 
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
-import { type CIRAConfigContext, type CIRAConfigEvent, type CIRAConfiguration as CIRAConfigurationType } from './ciraConfiguration.js'
+import {
+  type CIRAConfigContext,
+  type CIRAConfigEvent,
+  type CIRAConfiguration as CIRAConfigurationType
+} from './ciraConfiguration.js'
 import { randomUUID } from 'node:crypto'
 import { devices } from '../devices.js'
 import { Environment } from '../utils/Environment.js'
@@ -26,7 +30,7 @@ jest.unstable_mockModule('./common.js', () => ({
   coalesceMessage
 }))
 
-const { CIRAConfiguration } = await import ('./ciraConfiguration.js')
+const { CIRAConfiguration } = await import('./ciraConfiguration.js')
 
 describe('CIRA Configuration State Machine', () => {
   const clientId = randomUUID()
@@ -89,13 +93,20 @@ describe('CIRA Configuration State Machine', () => {
         saveMPSPasswordToSecretProvider: fromPromise(async ({ input }) => await Promise.resolve({})),
         saveDeviceToMPS: fromPromise(async ({ input }) => await Promise.resolve({})),
         addMPS: fromPromise(async ({ input }) => await Promise.resolve({})),
-        enumerateManagementPresenceRemoteSAP: fromPromise(async ({ input }) => await Promise.resolve(wsmanEnumerationResponse)),
+        enumerateManagementPresenceRemoteSAP: fromPromise(
+          async ({ input }) => await Promise.resolve(wsmanEnumerationResponse)
+        ),
         pullManagementPresenceRemoteSAP: fromPromise(async ({ input }) => await Promise.resolve({ clientId })),
         addRemoteAccessPolicyRule: fromPromise(async ({ input }) => await Promise.resolve({ clientId })),
-        enumerateRemoteAccessPolicyRule: fromPromise(async ({ input }) => await Promise.resolve(wsmanEnumerationResponse)),
+        enumerateRemoteAccessPolicyRule: fromPromise(
+          async ({ input }) => await Promise.resolve(wsmanEnumerationResponse)
+        ),
         pullRemoteAccessPolicyRule: fromPromise(async ({ input }) => await Promise.resolve({})),
         putRemoteAccessPolicyRule: fromPromise(async ({ input }) => await Promise.resolve({})),
-        userInitiatedConnectionService: fromPromise(async ({ input }) => await Promise.resolve({ Envelope: { Body: { RequestStateChange_OUTPUT: { ReturnValue: 0 } } } })),
+        userInitiatedConnectionService: fromPromise(
+          async ({ input }) =>
+            await Promise.resolve({ Envelope: { Body: { RequestStateChange_OUTPUT: { ReturnValue: 0 } } } })
+        ),
         getEnvironmentDetectionSettings: fromPromise(async ({ input }) => await Promise.resolve({})),
         putEnvironmentDetectionSettings: fromPromise(async ({ input }) => await Promise.resolve({}))
       }
@@ -145,7 +156,9 @@ describe('CIRA Configuration State Machine', () => {
 
   it('should fail on error response for user-initiated-connection-service', (done) => {
     const failedResponse = { Envelope: { Body: { RequestStateChange_OUTPUT: { ReturnValue: 1 } } } }
-    machineConfig.actors!.userInitiatedConnectionService = fromPromise(async ({ input }) => await Promise.resolve(failedResponse))
+    machineConfig.actors!.userInitiatedConnectionService = fromPromise(
+      async ({ input }) => await Promise.resolve(failedResponse)
+    )
     const mockCiraConfigurationMachine = ciraStateMachineImpl.machine.provide(machineConfig)
 
     const ciraConfigurationService = createActor(mockCiraConfigurationMachine, { input: machineContext })
@@ -258,7 +271,9 @@ describe('CIRA Configuration State Machine', () => {
       expect(loggerSpy).toHaveBeenCalled()
     })
     it('should send wsman on call to putRemoteAccessPolicyAppliesToMPS', async () => {
-      machineContext.message = { Envelope: { Body: { PullResponse: { Items: { AMT_RemoteAccessPolicyRule: { PolicyRuleName: 'abcd' } } } } } }
+      machineContext.message = {
+        Envelope: { Body: { PullResponse: { Items: { AMT_RemoteAccessPolicyRule: { PolicyRuleName: 'abcd' } } } } }
+      }
       await ciraStateMachineImpl.putRemoteAccessPolicyRule({ input: machineContext })
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })

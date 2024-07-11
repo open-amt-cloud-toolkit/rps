@@ -7,13 +7,10 @@ import router from './index.js'
 
 describe('Check index from admin', () => {
   const routes = [
-    { path: '/', method: 'get' }
-  ]
+    { path: '/', method: 'get' }]
   it('should have routes', () => {
     routes.forEach((route) => {
-      const match = router.stack.find(
-        (s) => s.route?.path === route.path && s.route?.methods[route.method]
-      )
+      const match = router.stack.find((s) => s.route?.path === route.path && s.route?.methods[route.method])
       expect(match).toBeTruthy()
     })
   })
@@ -24,19 +21,18 @@ describe('Check index from admin', () => {
     { path: '/wirelessconfigs', method: 'use' },
     { path: '/ieee8021xconfigs', method: 'use' },
     { path: '/version', method: 'use' },
-    { path: '/health', method: 'use' }]
+    { path: '/health', method: 'use' }
+  ]
 
   it('should have routers', () => {
     routers.forEach((route) => {
-      const match = router.stack.find(
-        (s) => {
-          const isPathMatched = (s.regexp as RegExp).exec(route.path)
-          if (isPathMatched != null) {
-            return isPathMatched.length > 0 && s.path == null
-          }
-          return false
+      const match = router.stack.find((s) => {
+        const isPathMatched = (s.regexp as RegExp).exec(route.path)
+        if (isPathMatched != null) {
+          return isPathMatched.length > 0 && s.path == null
         }
-      )
+        return false
+      })
       expect(match).toBeTruthy()
     })
   })

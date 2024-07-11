@@ -8,13 +8,14 @@ import { jest } from '@jest/globals'
 
 let mockReturnValue = true
 jest.unstable_mockModule('express-validator', () => ({
-  validationResult: () => ({
-    isEmpty: jest.fn().mockReturnValue(mockReturnValue),
-    array: jest.fn().mockReturnValue([{ test: 'error' }])
-  } as any)
+  validationResult: () =>
+    ({
+      isEmpty: jest.fn().mockReturnValue(mockReturnValue),
+      array: jest.fn().mockReturnValue([{ test: 'error' }])
+    }) as any
 }))
 
-const v = await import ('./validate.js')
+const v = await import('./validate.js')
 
 describe('Check validate', () => {
   let req
@@ -22,7 +23,12 @@ describe('Check validate', () => {
   let next: any
 
   beforeEach(() => {
-    resSpy = createSpyObj('Response', ['status', 'json', 'end', 'send'])
+    resSpy = createSpyObj('Response', [
+      'status',
+      'json',
+      'end',
+      'send'
+    ])
     req = {
       body: {
         username: 'admin',

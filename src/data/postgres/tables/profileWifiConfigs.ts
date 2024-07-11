@@ -13,7 +13,7 @@ import { PostgresErr } from '../errors.js'
 
 export class ProfilesWifiConfigsTable implements IProfilesWifiConfigsTable {
   db: PostgresDb
-  constructor (db: PostgresDb) {
+  constructor(db: PostgresDb) {
     this.db = db
   }
 
@@ -22,14 +22,17 @@ export class ProfilesWifiConfigsTable implements IProfilesWifiConfigsTable {
    * @param {string} profileName
    * @returns {ProfileWifiConfigs[]} Return an array of wifi configs
    */
-  async getProfileWifiConfigs (profileName: string, tenantId: string = ''): Promise<ProfileWifiConfigs[]> {
-    const results = await this.db.query<ProfileWifiConfigs>(`
+  async getProfileWifiConfigs(profileName: string, tenantId = ''): Promise<ProfileWifiConfigs[]> {
+    const results = await this.db.query<ProfileWifiConfigs>(
+      `
     SELECT 
       priority as "priority",
       wireless_profile_name as "profileName"
     FROM profiles_wirelessconfigs
     WHERE profile_name = $1 and tenant_id = $2
-    ORDER BY priority`, [profileName, tenantId])
+    ORDER BY priority`,
+      [profileName, tenantId]
+    )
     return results.rows
   }
 
@@ -39,17 +42,31 @@ export class ProfilesWifiConfigsTable implements IProfilesWifiConfigsTable {
    * @param {string} profileName
    * @returns {ProfileWifiConfigs[]} Return an array of wifi configs
    */
-  async createProfileWifiConfigs (wifiConfigs: ProfileWifiConfigs[], profileName: string, tenantId: string = ''): Promise<boolean> {
+  async createProfileWifiConfigs(
+    wifiConfigs: ProfileWifiConfigs[],
+    profileName: string,
+    tenantId = ''
+  ): Promise<boolean> {
     try {
       if (wifiConfigs.length < 1) {
         throw new RPSError('No wificonfigs provided to insert')
       }
       // Preparing data for inserting multiple rows
-      const configs = wifiConfigs.map(config => [config.profileName, profileName, config.priority, tenantId])
-      const wifiProfilesQueryResults = await this.db.query(format(`
+      const configs = wifiConfigs.map((config) => [
+        config.profileName,
+        profileName,
+        config.priority,
+        tenantId
+      ])
+      const wifiProfilesQueryResults = await this.db.query(
+        format(
+          `
       INSERT INTO
       profiles_wirelessconfigs (wireless_profile_name, profile_name, priority, tenant_id)
-      VALUES %L`, configs))
+      VALUES %L`,
+          configs
+        )
+      )
 
       if (wifiProfilesQueryResults?.rowCount) {
         if (wifiProfilesQueryResults.rowCount > 0) {
@@ -66,15 +83,18 @@ export class ProfilesWifiConfigsTable implements IProfilesWifiConfigsTable {
   }
 
   /**
-  * @description Delete wifi configs of an AMT Profile from DB by profile name
-  * @param {string} profileName
-  * @returns {boolean} Return true on successful deletion
-  */
-  async deleteProfileWifiConfigs (profileName: string, tenantId: string = ''): Promise<boolean> {
-    const deleteProfileWifiResults = await this.db.query(`
+   * @description Delete wifi configs of an AMT Profile from DB by profile name
+   * @param {string} profileName
+   * @returns {boolean} Return true on successful deletion
+   */
+  async deleteProfileWifiConfigs(profileName: string, tenantId = ''): Promise<boolean> {
+    const deleteProfileWifiResults = await this.db.query(
+      `
     DELETE
     FROM profiles_wirelessconfigs
-    WHERE profile_name = $1 and tenant_id = $2`, [profileName, tenantId])
+    WHERE profile_name = $1 and tenant_id = $2`,
+      [profileName, tenantId]
+    )
 
     if (deleteProfileWifiResults?.rowCount) {
       if (deleteProfileWifiResults.rowCount > 0) {

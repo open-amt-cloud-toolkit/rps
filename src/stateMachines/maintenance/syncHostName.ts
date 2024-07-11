@@ -5,11 +5,7 @@
 
 import { AMT, type Common } from '@open-amt-cloud-toolkit/wsman-messages'
 import { assign, fromPromise, sendTo, setup } from 'xstate'
-import {
-  coalesceMessage,
-  type CommonMaintenanceContext,
-  HttpResponseError
-} from '../common.js'
+import { coalesceMessage, type CommonMaintenanceContext, HttpResponseError } from '../common.js'
 import Logger from '../../Logger.js'
 import { doneFail, doneSuccess } from './doneResponse.js'
 import got from 'got'
@@ -140,7 +136,7 @@ export class SyncHostName {
         }),
         invoke: {
           src: 'getGeneralSettings',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'get-general-settings',
           onDone: {
             actions: assign({ generalSettings: ({ event }) => event.output }),
@@ -163,7 +159,7 @@ export class SyncHostName {
         }),
         invoke: {
           src: 'putGeneralSettings',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'put-host-name-info',
           onDone: {
             actions: assign({ statusMessage: ({ event }) => event.output as string }),
@@ -184,7 +180,7 @@ export class SyncHostName {
         }),
         invoke: {
           src: 'saveToMPS',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'save-to-mps',
           onDone: {
             actions: assign({ statusMessage: ({ event }) => event.output }),
@@ -225,7 +221,8 @@ export class SyncHostName {
           {
             guard: 'isGeneralSettings',
             target: 'GET_GENERAL_SETTINGS'
-          }]
+          }
+        ]
       },
       FAILED: {
         entry: assign({ statusMessage: () => 'FAILED' }),

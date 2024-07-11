@@ -6,7 +6,11 @@
 import ClientResponseMsg from '../utils/ClientResponseMsg.js'
 import { Environment } from '../utils/Environment.js'
 import { devices } from '../devices.js'
-import { type EnterpriseAssistantMessage, enterpriseAssistantSocket, promises } from '../WSEnterpriseAssistantListener.js'
+import {
+  type EnterpriseAssistantMessage,
+  enterpriseAssistantSocket,
+  promises
+} from '../WSEnterpriseAssistantListener.js'
 import { GATEWAY_TIMEOUT_ERROR, UNEXPECTED_PARSE_ERROR, EA_TIMEOUT_ERROR } from '../utils/constants.js'
 import Logger from '../Logger.js'
 import { type HttpHandler } from '../HttpHandler.js'
@@ -24,7 +28,7 @@ const invokeWsmanLogger = new Logger('invokeWsmanCall')
 export class HttpResponseError extends Error {
   statusCode: number
 
-  constructor (message: string, statusCode: number) {
+  constructor(message: string, statusCode: number) {
     super(message)
     this.name = this.constructor.name
     this.statusCode = statusCode
@@ -32,7 +36,8 @@ export class HttpResponseError extends Error {
   }
 }
 const invokeWsmanCallInternal = async <T>(context: any): Promise<T> => {
-  let { message, clientId, xmlMessage, httpHandler } = context
+  const { clientId, xmlMessage, httpHandler } = context
+  let { message } = context
   const clientObj = devices[clientId]
   message = httpHandler.wrapIt(xmlMessage, clientObj.connectionParams)
   const clientMsg = ClientResponseMsg.get(clientId, message, 'wsman', 'ok')
@@ -57,14 +62,13 @@ const timeout = async (ms: number): Promise<void> => {
   })
 }
 
-const invokeWsmanCall = async<T>(context: any, maxRetries = 0): Promise<T> => {
+const invokeWsmanCall = async <T>(context: any, maxRetries = 0): Promise<T> => {
   let retries = 0
   while (retries <= maxRetries) {
     try {
       const result = await Promise.race([
         invokeWsmanCallInternal<T>(context),
-        timeout(Environment.Config.delay_timer * 1000)
-      ])
+        timeout(Environment.Config.delay_timer * 1000)])
       return result as any
     } catch (error) {
       if (error instanceof UNEXPECTED_PARSE_ERROR && retries < maxRetries) {
@@ -90,23 +94,23 @@ const invokeEnterpriseAssistantCallInternal = async (context: any): Promise<Ente
   return await promises[clientId].pendingPromise
 }
 
-const eaTimeout = (ms): any => new Promise((resolve, reject) => {
-  setTimeout(() => {
-    reject(new EA_TIMEOUT_ERROR())
-  }, ms)
-})
+const eaTimeout = (ms): any =>
+  new Promise((resolve, reject) => {
+    setTimeout(() => {
+      reject(new EA_TIMEOUT_ERROR())
+    }, ms)
+  })
 
 const invokeEnterpriseAssistantCall = async (context: any): Promise<EnterpriseAssistantMessage> => {
   const result = await Promise.race([
     invokeEnterpriseAssistantCallInternal(context),
-    eaTimeout(Environment.Config.delay_timer * 1000)
-  ])
+    eaTimeout(Environment.Config.delay_timer * 1000)])
   return result
 }
 
 export type EnumerationContext = string
 
-export function coalesceMessage (prefixMsg: string, err: any): string {
+export function coalesceMessage(prefixMsg: string, err: any): string {
   let msg = prefixMsg
   if (err?.statusCode) {
     msg = `${msg} ${err.statusCode}`
@@ -125,8 +129,8 @@ export function coalesceMessage (prefixMsg: string, err: any): string {
 }
 
 const isDigestRealmValid = (realm: string): boolean => {
-  const regex: RegExp = /[0-9A-Fa-f]{32}/g
-  let isValidRealm: boolean = false
+  const regex = /[0-9A-Fa-f]{32}/g
+  let isValidRealm = false
   let realmElements: any = {}
   if (realm?.startsWith('Digest:')) {
     realmElements = realm.split('Digest:')
@@ -151,4 +155,10 @@ export interface CommonMaintenanceContext extends CommonContext {
   taskName: string
   errorMessage: string
 }
-export { invokeWsmanCall, invokeEnterpriseAssistantCall, invokeEnterpriseAssistantCallInternal, invokeWsmanCallInternal, isDigestRealmValid }
+export {
+  invokeWsmanCall,
+  invokeEnterpriseAssistantCall,
+  invokeEnterpriseAssistantCallInternal,
+  invokeWsmanCallInternal,
+  isDigestRealmValid
+}
