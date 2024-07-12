@@ -20,11 +20,13 @@ export const amtProfileValidator = (): ValidationChain[] => [
     .isEmpty()
     .withMessage('Activation is required')
     .isIn(Object.values(ClientAction))
-    .withMessage(`Activation accepts either ${ClientAction.ADMINCTLMODE} (admin control activation) or ${ClientAction.CLIENTCTLMODE} (client control mode activation)`)
+    .withMessage(
+      `Activation accepts either ${ClientAction.ADMINCTLMODE} (admin control activation) or ${ClientAction.CLIENTCTLMODE} (client control mode activation)`
+    )
     .custom((value, { req }) => {
       const pwd = req.body.amtPassword
       const randomPwd = req.body.generateRandomPassword
-      if ((pwd == null && !randomPwd)) {
+      if (pwd == null && !randomPwd) {
         throw new Error('Either generateRandomPassword should be enabled or provide amtPassword')
       }
       const mebxPwd = req.body.mebxPassword
@@ -40,7 +42,9 @@ export const amtProfileValidator = (): ValidationChain[] => [
     .if((value, { req }) => req.body.generateRandomPassword === false)
     .optional()
     .matches('^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9$@$!%*#?&-_~^]{8,32}$')
-    .withMessage('AMT password is required field should contains at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
+    .withMessage(
+      'AMT password is required field should contains at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'
+    ),
   check('generateRandomPassword')
     .default(false)
     .isBoolean()
@@ -49,7 +53,9 @@ export const amtProfileValidator = (): ValidationChain[] => [
       const pwd = req.body.amtPassword
       if (value === true) {
         if (pwd != null) {
-          throw new Error('Either generate Random AMT Password should be enabled or should provide AMT Password but not both')
+          throw new Error(
+            'Either generate Random AMT Password should be enabled or should provide AMT Password but not both'
+          )
         }
       } else {
         if (pwd == null) {
@@ -61,7 +67,9 @@ export const amtProfileValidator = (): ValidationChain[] => [
   check('mebxPassword')
     .optional({ nullable: true })
     .matches('^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9$@$!%*#?&-_~^]{8,32}$')
-    .withMessage('MEBx password is required field should contains at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
+    .withMessage(
+      'MEBx password is required field should contains at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'
+    ),
   check('generateRandomMEBxPassword')
     .default(false)
     .isBoolean()
@@ -72,7 +80,9 @@ export const amtProfileValidator = (): ValidationChain[] => [
       if (activationMode === ClientAction.ADMINCTLMODE) {
         if (value === true) {
           if (pwd != null) {
-            throw new Error('Either generate MEBx password should be enabled or should provide MEBx password, but not both')
+            throw new Error(
+              'Either generate MEBx password should be enabled or should provide MEBx password, but not both'
+            )
           }
         } else {
           if (pwd == null) {
@@ -85,7 +95,9 @@ export const amtProfileValidator = (): ValidationChain[] => [
   check('tlsMode')
     .optional({ nullable: true })
     .isInt({ min: 1, max: 4 })
-    .withMessage('tlsMode must be set to one of these values: 1 (Server Authentication Only), 2 (Server and Non-TLS Authentication), 3 (Mutual TLS only), 4 (Mutual and Non-TLS authentication)'),
+    .withMessage(
+      'tlsMode must be set to one of these values: 1 (Server Authentication Only), 2 (Server and Non-TLS Authentication), 3 (Mutual TLS only), 4 (Mutual and Non-TLS authentication)'
+    ),
   check('tlsSigningAuthority')
     .optional({ nullable: true })
     .isIn(Object.values(TlsSigningAuthority))
@@ -99,13 +111,12 @@ export const amtProfileValidator = (): ValidationChain[] => [
       return true
     }),
   check('tags').optional({ nullable: true }).isArray(),
-  check('dhcpEnabled')
-    .not()
-    .isEmpty()
-    .isBoolean()
-    .withMessage('DHCP enabled must be a boolean'),
+  check('dhcpEnabled').not().isEmpty().isBoolean().withMessage('DHCP enabled must be a boolean'),
   check('ipSyncEnabled').optional({ nullable: true }).isBoolean().withMessage('ipSyncEnabled must be a boolean'),
-  check('localWifiSyncEnabled').optional({ nullable: true }).isBoolean().withMessage('localWifiSyncEnabled must be a boolean'),
+  check('localWifiSyncEnabled')
+    .optional({ nullable: true })
+    .isBoolean()
+    .withMessage('localWifiSyncEnabled must be a boolean'),
   check('wifiConfigs')
     .optional({ nullable: true })
     .isArray()
@@ -146,19 +157,13 @@ export const amtProfileValidator = (): ValidationChain[] => [
     .withMessage(`User consent must be one of ${Object.values(AMTUserConsent)}`)
     .custom((value, { req }) => {
       const activation = req.body.activation
-      if ((activation === ClientAction.CLIENTCTLMODE && value !== AMTUserConsent.ALL)) {
+      if (activation === ClientAction.CLIENTCTLMODE && value !== AMTUserConsent.ALL) {
         throw new Error('User consent is required for all the actions in client control mode')
       }
       return true
     }),
-  check('iderEnabled')
-    .optional({ nullable: true })
-    .isBoolean()
-    .withMessage('IDER enabled must be a boolean'),
-  check('kvmEnabled')
-    .optional({ nullable: true })
-    .isBoolean()
-    .withMessage('KVM enabled must be a boolean'),
+  check('iderEnabled').optional({ nullable: true }).isBoolean().withMessage('IDER enabled must be a boolean'),
+  check('kvmEnabled').optional({ nullable: true }).isBoolean().withMessage('KVM enabled must be a boolean'),
   check('solEnabled')
     .optional({ nullable: true })
     .isBoolean()
@@ -198,11 +203,13 @@ export const profileUpdateValidator = (): any => [
     .withMessage('AMT profile name accepts letters, numbers, special characters and no spaces'),
   check('activation')
     .isIn(Object.values(ClientAction))
-    .withMessage(`Activation accepts either ${ClientAction.ADMINCTLMODE} (admin control activation) or ${ClientAction.CLIENTCTLMODE} (client control mode activation)`)
+    .withMessage(
+      `Activation accepts either ${ClientAction.ADMINCTLMODE} (admin control activation) or ${ClientAction.CLIENTCTLMODE} (client control mode activation)`
+    )
     .custom((value, { req }) => {
       const pwd = req.body.amtPassword
       const randomPwd = req.body.generateRandomPassword
-      if ((pwd == null && !randomPwd)) {
+      if (pwd == null && !randomPwd) {
         throw new Error('Either generateRandomPassword should be enabled or provide amtPassword')
       }
       const mebxPwd = req.body.mebxPassword
@@ -218,7 +225,9 @@ export const profileUpdateValidator = (): any => [
     .if((value, { req }) => req.body.generateRandomPassword === false)
     .optional()
     .matches('^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9$@$!%*#?&-_~^]{8,32}$')
-    .withMessage('AMT password is required field should contains at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
+    .withMessage(
+      'AMT password is required field should contains at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'
+    ),
   check('generateRandomPassword')
     .optional()
     .isBoolean()
@@ -227,7 +236,9 @@ export const profileUpdateValidator = (): any => [
       const pwd = req.body.amtPassword
       if (value === true) {
         if (pwd != null) {
-          throw new Error('Either generate Random AMT Password should be enabled or should provide AMT Password but not both')
+          throw new Error(
+            'Either generate Random AMT Password should be enabled or should provide AMT Password but not both'
+          )
         }
       } else {
         if (pwd == null) {
@@ -240,7 +251,9 @@ export const profileUpdateValidator = (): any => [
     .if((value, { req }) => req.body.generateRandomMEBxPassword === false)
     .optional({ nullable: true })
     .matches('^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9$@$!%*#?&-_~^]{8,32}$')
-    .withMessage('MEBx password is required field should contains at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'),
+    .withMessage(
+      'MEBx password is required field should contains at least one lowercase letter, one uppercase letter, one numeric digit,and one special character and password length should be in between 8 to 32.'
+    ),
   check('generateRandomMEBxPassword')
     .optional()
     .isBoolean()
@@ -251,7 +264,9 @@ export const profileUpdateValidator = (): any => [
       if (activationMode === ClientAction.ADMINCTLMODE) {
         if (value === true) {
           if (pwd != null) {
-            throw new Error('Either generate MEBx password should be enabled or should provide MEBx password, but not both')
+            throw new Error(
+              'Either generate MEBx password should be enabled or should provide MEBx password, but not both'
+            )
           }
         } else {
           if (pwd == null) {
@@ -264,7 +279,9 @@ export const profileUpdateValidator = (): any => [
   check('tlsMode')
     .optional({ nullable: true })
     .isInt({ min: 1, max: 4 })
-    .withMessage('tlsMode must be set to one of these values: 1 (Server Authentication Only), 2 (Server and Non-TLS Authentication), 3 (Mutual TLS only), 4 (Mutual and Non-TLS authentication)'),
+    .withMessage(
+      'tlsMode must be set to one of these values: 1 (Server Authentication Only), 2 (Server and Non-TLS Authentication), 3 (Mutual TLS only), 4 (Mutual and Non-TLS authentication)'
+    ),
   check('tlsSigningAuthority')
     .optional({ nullable: true })
     .isIn(Object.values(TlsSigningAuthority))
@@ -278,12 +295,12 @@ export const profileUpdateValidator = (): any => [
       return true
     }),
   check('tags').optional({ nullable: true }).isArray(),
-  check('dhcpEnabled')
-    .optional()
-    .isBoolean()
-    .withMessage('DHCP enabled must be a boolean'),
+  check('dhcpEnabled').optional().isBoolean().withMessage('DHCP enabled must be a boolean'),
   check('ipSyncEnabled').optional({ nullable: true }).isBoolean().withMessage('ipSyncEnabled must be a boolean'),
-  check('localWifiSyncEnabled').optional({ nullable: true }).isBoolean().withMessage('localWifiSyncEnabled must be a boolean'),
+  check('localWifiSyncEnabled')
+    .optional({ nullable: true })
+    .isBoolean()
+    .withMessage('localWifiSyncEnabled must be a boolean'),
   check('wifiConfigs')
     .optional({ nullable: true })
     .isArray()
@@ -321,25 +338,16 @@ export const profileUpdateValidator = (): any => [
     .withMessage(`User consent must be one of ${Object.values(AMTUserConsent)}`)
     .custom((value, { req }) => {
       const activation = req.body.activation
-      if ((activation === ClientAction.CLIENTCTLMODE && value !== AMTUserConsent.ALL)) {
+      if (activation === ClientAction.CLIENTCTLMODE && value !== AMTUserConsent.ALL) {
         throw new Error('User consent is required for all the actions in client control mode')
       }
       return true
     }),
-  check('iderEnabled')
-    .optional({ nullable: true })
-    .isBoolean()
-    .withMessage('IDER enabled must be a boolean'),
-  check('kvmEnabled')
-    .optional({ nullable: true })
-    .isBoolean()
-    .withMessage('KVM enabled must be a boolean'),
+  check('iderEnabled').optional({ nullable: true }).isBoolean().withMessage('IDER enabled must be a boolean'),
+  check('kvmEnabled').optional({ nullable: true }).isBoolean().withMessage('KVM enabled must be a boolean'),
   check('solEnabled')
     .optional({ nullable: true })
     .isBoolean()
     .withMessage('Serial Over Lan (sol) enabled must be a boolean'),
-  check('version')
-    .not()
-    .isEmpty()
-    .withMessage('Version is required to patch/update a record.')
+  check('version').not().isEmpty().withMessage('Version is required to patch/update a record.')
 ]

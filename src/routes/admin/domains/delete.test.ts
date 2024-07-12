@@ -14,10 +14,15 @@ describe('CIRA Config - Delete', () => {
   let deleteSpy: SpyInstance<any>
 
   beforeEach(() => {
-    resSpy = createSpyObj('Response', ['status', 'json', 'end', 'send'])
+    resSpy = createSpyObj('Response', [
+      'status',
+      'json',
+      'end',
+      'send'
+    ])
     req = {
       db: { domains: { delete: jest.fn(), getByName: jest.fn() } },
-      query: { },
+      query: {},
       params: { domainName: 'domainName' },
       tenantId: ''
     }

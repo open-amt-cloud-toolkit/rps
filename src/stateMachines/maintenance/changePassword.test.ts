@@ -3,11 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import {
-  isDigestRealmValid,
-  HttpResponseError,
-  coalesceMessage
-} from '../common.js'
+import { isDigestRealmValid, HttpResponseError, coalesceMessage } from '../common.js'
 
 import { type AMT, type Common } from '@open-amt-cloud-toolkit/wsman-messages'
 import { SecretManagerCreatorFactory } from '../../factories/SecretManagerCreatorFactory.js'
@@ -110,10 +106,8 @@ describe('ChangePassword State Machine', () => {
       clientId
     } as any
     implementationConfig = {
-      actors: {
-      },
-      guards: {
-      }
+      actors: {},
+      guards: {}
     }
     const mockSecretsManager: ISecretManagerService = {
       deleteSecretAtPath: jest.fn<any>(),
@@ -122,8 +116,7 @@ describe('ChangePassword State Machine', () => {
       writeSecretWithObject: jest.fn<any>(),
       getSecretAtPath: jest.fn<any>()
     }
-    spyOn(SecretManagerCreatorFactory.prototype, 'getSecretManager')
-      .mockResolvedValue(mockSecretsManager)
+    spyOn(SecretManagerCreatorFactory.prototype, 'getSecretManager').mockResolvedValue(mockSecretsManager)
     secretGetterSpy = spyOn(mockSecretsManager, 'getSecretAtPath').mockResolvedValue(deviceCredentials)
     secretWriterSpy = spyOn(mockSecretsManager, 'writeSecretWithObject').mockResolvedValue(deviceCredentials)
 
@@ -131,9 +124,7 @@ describe('ChangePassword State Machine', () => {
   })
 
   const runTheTest = async function (done?): Promise<void> {
-    invokeWsmanCallSpy
-      .mockResolvedValueOnce(generalSettingsRsp)
-      .mockResolvedValueOnce(setAdminACLEntryExResponse)
+    invokeWsmanCallSpy.mockResolvedValueOnce(generalSettingsRsp).mockResolvedValueOnce(setAdminACLEntryExResponse)
     deleteSpy.mockResolvedValue(mpsRsp)
     await runTilDone(implementation.machine.provide(implementationConfig), event, doneResponse, context, done)
   }
@@ -155,7 +146,9 @@ describe('ChangePassword State Machine', () => {
     void runTheTest(done)
   })
   it('should fail on failed SaveToSecretProvider', (done) => {
-    implementationConfig.actors!.saveToSecretProvider = fromPromise(async ({ input }) => await Promise.reject(new Error()))
+    implementationConfig.actors!.saveToSecretProvider = fromPromise(
+      async ({ input }) => await Promise.reject(new Error())
+    )
     doneResponse.status = StatusFailed
     void runTheTest(done)
   })
@@ -201,7 +194,7 @@ describe('ChangePassword State Machine', () => {
     expect(x).toBeTruthy()
   })
   it('should save to MPS', async () => {
-    jest.spyOn(got, 'delete').mockImplementation(() => ({} as any))
+    jest.spyOn(got, 'delete').mockImplementation(() => ({}) as any)
     const x = await implementation.refreshMPS({ input: context })
     expect(x).toBeTruthy()
   })

@@ -44,8 +44,10 @@ export class TimeSync {
       setHighAccuracyTimeSync: fromPromise(this.setHighAccuracyTimeSync)
     },
     guards: {
-      isGetLowAccuracyTimeSynchSuccessful: ({ context }) => context.message.Envelope.Body?.GetLowAccuracyTimeSynch_OUTPUT?.ReturnValue === 0,
-      isSetHighAccuracyTimeSynchSuccessful: ({ context }) => context.message.Envelope.Body?.SetHighAccuracyTimeSynch_OUTPUT?.ReturnValue === 0
+      isGetLowAccuracyTimeSynchSuccessful: ({ context }) =>
+        context.message.Envelope.Body?.GetLowAccuracyTimeSynch_OUTPUT?.ReturnValue === 0,
+      isSetHighAccuracyTimeSynchSuccessful: ({ context }) =>
+        context.message.Envelope.Body?.SetHighAccuracyTimeSynch_OUTPUT?.ReturnValue === 0
     }
   }).createMachine({
     context: ({ input }) => ({
@@ -71,11 +73,13 @@ export class TimeSync {
         invoke: {
           id: 'get-low-accuracy-time-synch',
           src: 'getLowAccuracyTimeSync',
-          input: ({ context }) => (context),
-          onDone: [{
-            actions: assign({ message: ({ event }) => event.output }),
-            target: 'GET_LOW_ACCURACY_TIME_SYNCH_RESPONSE'
-          }],
+          input: ({ context }) => context,
+          onDone: [
+            {
+              actions: assign({ message: ({ event }) => event.output }),
+              target: 'GET_LOW_ACCURACY_TIME_SYNCH_RESPONSE'
+            }
+          ],
           onError: {
             actions: assign({
               message: ({ event }) => event.error
@@ -85,25 +89,30 @@ export class TimeSync {
         }
       },
       GET_LOW_ACCURACY_TIME_SYNCH_RESPONSE: {
-        always: [{
-          guard: 'isGetLowAccuracyTimeSynchSuccessful',
-          target: 'SET_HIGH_ACCURACY_TIME_SYNCH'
-        }, {
-          actions: assign({
-            errorMessage: 'Failed to GET_LOW_ACCURACY_TIME_SYNC'
-          }),
-          target: 'FAILED'
-        }]
+        always: [
+          {
+            guard: 'isGetLowAccuracyTimeSynchSuccessful',
+            target: 'SET_HIGH_ACCURACY_TIME_SYNCH'
+          },
+          {
+            actions: assign({
+              errorMessage: 'Failed to GET_LOW_ACCURACY_TIME_SYNC'
+            }),
+            target: 'FAILED'
+          }
+        ]
       },
       SET_HIGH_ACCURACY_TIME_SYNCH: {
         invoke: {
           id: 'set-high-accuracy-time-sync',
           src: 'setHighAccuracyTimeSync',
-          input: ({ context }) => (context),
-          onDone: [{
-            actions: assign({ message: ({ event }) => event.output }),
-            target: 'SET_HIGH_ACCURACY_TIME_SYNCH_RESPONSE'
-          }],
+          input: ({ context }) => context,
+          onDone: [
+            {
+              actions: assign({ message: ({ event }) => event.output }),
+              target: 'SET_HIGH_ACCURACY_TIME_SYNCH_RESPONSE'
+            }
+          ],
           onError: {
             actions: assign({
               errorMessage: 'Failed to SET_HIGH_ACCURACY_TIME_SYNCH'
@@ -113,15 +122,18 @@ export class TimeSync {
         }
       },
       SET_HIGH_ACCURACY_TIME_SYNCH_RESPONSE: {
-        always: [{
-          guard: 'isSetHighAccuracyTimeSynchSuccessful',
-          target: 'SUCCESS'
-        }, {
-          actions: assign({
-            errorMessage: 'Failed to SET_HIGH_ACCURACY_TIME_SYNCH'
-          }),
-          target: 'FAILED'
-        }]
+        always: [
+          {
+            guard: 'isSetHighAccuracyTimeSynchSuccessful',
+            target: 'SUCCESS'
+          },
+          {
+            actions: assign({
+              errorMessage: 'Failed to SET_HIGH_ACCURACY_TIME_SYNCH'
+            }),
+            target: 'FAILED'
+          }
+        ]
       },
       FAILED: {
         type: 'final'

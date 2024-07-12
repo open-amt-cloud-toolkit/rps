@@ -6,25 +6,25 @@
 import { PasswordHelper } from './PasswordHelper.js'
 
 test('check password length 7', () => {
-  const input: string = 'aB$1abc'
+  const input = 'aB$1abc'
   const actual = PasswordHelper.passwordCheck(input)
   expect(actual).toBeFalsy()
 })
 
 test('check password length 8', () => {
-  const input: string = 'aB$1abcd'
+  const input = 'aB$1abcd'
   const actual = PasswordHelper.passwordCheck(input)
   expect(actual).toBeTruthy()
 })
 
 test('check password length 33', () => {
-  const input: string = 'aB$1abcdefghijklmnopqrstuvwxyz123'
+  const input = 'aB$1abcdefghijklmnopqrstuvwxyz123'
   const actual = PasswordHelper.passwordCheck(input)
   expect(actual).toBeFalsy()
 })
 
 test('check password length 32', () => {
-  const input: string = 'aB$1abcdefghijklmnopqrstuvwxyz12'
+  const input = 'aB$1abcdefghijklmnopqrstuvwxyz12'
   const actual = PasswordHelper.passwordCheck(input)
   expect(actual).toBeTruthy()
 })
@@ -35,13 +35,13 @@ test('check password generate length 20', () => {
 })
 
 test('check password complexity weak', () => {
-  const input: string = 'aB11abcd'
+  const input = 'aB11abcd'
   const actual = PasswordHelper.passwordCheck(input)
   expect(actual).toBeFalsy()
 })
 
 test('check password complexity bad symbol &', () => {
-  const input: string = 'aB&1abcd'
+  const input = 'aB&1abcd'
   const actual = PasswordHelper.passwordCheck(input)
   expect(actual).toBeFalsy()
 })

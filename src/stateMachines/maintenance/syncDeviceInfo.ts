@@ -4,11 +4,7 @@
  **********************************************************************/
 
 import { assign, fromPromise, setup } from 'xstate'
-import {
-  type CommonMaintenanceContext,
-  coalesceMessage,
-  HttpResponseError
-} from '../common.js'
+import { type CommonMaintenanceContext, coalesceMessage, HttpResponseError } from '../common.js'
 import Logger from '../../Logger.js'
 import { doneFail, doneSuccess } from './doneResponse.js'
 import { devices } from '../../devices.js'
@@ -58,7 +54,7 @@ export class SyncDeviceInfo {
 
     const rsp = await got.patch(url, { json: jsonData })
     if (rsp.statusCode !== 200) {
-      throw new HttpResponseError((rsp.statusMessage ? rsp.statusMessage : ''), rsp.statusCode)
+      throw new HttpResponseError(rsp.statusMessage ? rsp.statusMessage : '', rsp.statusCode)
     }
     logger.debug(`savedToMPS ${JSON.stringify(jsonData)}`)
   }
@@ -103,7 +99,7 @@ export class SyncDeviceInfo {
         }),
         invoke: {
           src: 'saveToMPS',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'save-to-mps',
           onDone: {
             // actions: assign({ statusMessage: ({ event }) => event.output as string }),

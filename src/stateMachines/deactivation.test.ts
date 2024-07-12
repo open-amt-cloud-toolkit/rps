@@ -12,7 +12,11 @@ import ClientResponseMsg from '../utils/ClientResponseMsg.js'
 import { HttpHandler } from '../HttpHandler.js'
 import { jest } from '@jest/globals'
 import { type SpyInstance, spyOn } from 'jest-mock'
-import { type Deactivation as DeactivationType, type DeactivationContext, type DeactivationEvent } from './deactivation.js'
+import {
+  type Deactivation as DeactivationType,
+  type DeactivationContext,
+  type DeactivationEvent
+} from './deactivation.js'
 import { HttpResponseError, coalesceMessage, isDigestRealmValid } from './common.js'
 
 const clientId = randomUUID()
@@ -40,7 +44,10 @@ describe('Deactivation State Machine', () => {
 
   beforeEach(() => {
     deactivation = new Deactivation()
-    setupAndConfigurationServiceSpy = spyOn(deactivation.amt.SetupAndConfigurationService, 'Unprovision').mockImplementation(() => 'abcdef')
+    setupAndConfigurationServiceSpy = spyOn(
+      deactivation.amt.SetupAndConfigurationService,
+      'Unprovision'
+    ).mockImplementation(() => 'abcdef')
     responseMessageSpy = spyOn(ClientResponseMsg, 'get').mockReturnValue({} as any)
     devices[clientId] = {
       unauthCount: 0,
@@ -72,7 +79,7 @@ describe('Deactivation State Machine', () => {
       tenantId,
       httpHandler: new HttpHandler()
     } as any
-    sendSpy = jest.spyOn(devices[clientId].ClientSocket, 'send').mockImplementation(() => { })
+    sendSpy = jest.spyOn(devices[clientId].ClientSocket, 'send').mockImplementation(() => {})
     currentStateIndex = 0
     config = {
       actors: {
@@ -82,7 +89,7 @@ describe('Deactivation State Machine', () => {
         errorMachine: fromPromise(async ({ input }) => clientId)
       },
       actions: {
-        'Send Message to Device': () => { }
+        'Send Message to Device': () => {}
       }
     }
   })
@@ -108,7 +115,9 @@ describe('Deactivation State Machine', () => {
     deactivationService.send({ type: 'UNPROVISION', clientId, tenantId, output: null, error: null })
   })
   it('should eventually reach "UNPROVISIONED" when service provider gives not found error', (done) => {
-    config.actors!.removeDeviceFromSecretPprovider = fromPromise(async ({ input }) => await Promise.reject(new Error('HTTPError: Response code 404 (Not Found)')))
+    config.actors!.removeDeviceFromSecretPprovider = fromPromise(
+      async ({ input }) => await Promise.reject(new Error('HTTPError: Response code 404 (Not Found)'))
+    )
     config.actors!.removeDeviceFromMPS = fromPromise(async ({ input }) => await Promise.resolve(true))
     const mockDeactivationMachine = deactivation.machine.provide(config)
     const flowStates = [
@@ -131,7 +140,9 @@ describe('Deactivation State Machine', () => {
     deactivationService.send({ type: 'UNPROVISION', clientId, tenantId, output: null, error: null })
   })
   it('should eventually reach "UNPROVISIONED" when mps not running', (done) => {
-    config.actors!.removeDeviceFromMPS = fromPromise(async ({ input }) => await Promise.reject(new Error('RequestError: getaddrinfo EAI_AGAIN mps')))
+    config.actors!.removeDeviceFromMPS = fromPromise(
+      async ({ input }) => await Promise.reject(new Error('RequestError: getaddrinfo EAI_AGAIN mps'))
+    )
     const mockDeactivationMachine = deactivation.machine.provide(config)
     const flowStates = [
       'PROVISIONED',
@@ -152,7 +163,9 @@ describe('Deactivation State Machine', () => {
     deactivationService.send({ type: 'UNPROVISION', clientId, tenantId, output: null, error: null })
   })
   it('should eventually reach "Unprovisioned" when mps running and device is not found', (done) => {
-    config.actors!.removeDeviceFromMPS = fromPromise(async ({ input }) => await Promise.reject(new Error('HTTPError: Response code 404 (Not Found)')))
+    config.actors!.removeDeviceFromMPS = fromPromise(
+      async ({ input }) => await Promise.reject(new Error('HTTPError: Response code 404 (Not Found)'))
+    )
     const mockDeactivationMachine = deactivation.machine.provide(config)
     const flowStates = [
       'PROVISIONED',
@@ -174,14 +187,22 @@ describe('Deactivation State Machine', () => {
   })
   it('should eventually reach "Failed"', (done) => {
     config.actors!.invokeUnprovision = fromPromise(async ({ input }) => await Promise.reject(new Error()))
-    config.actors!.errorMachine = fromPromise(async ({ input }) => await new Promise((resolve, reject) => {
-      setTimeout(() => {
-        deactivationService.send({ type: 'ONFAILED', clientId, tenantId, output: null, error: null })
-        reject(new Error())
-      }, 50)
-    }))
+    config.actors!.errorMachine = fromPromise(
+      async ({ input }) =>
+        await new Promise((resolve, reject) => {
+          setTimeout(() => {
+            deactivationService.send({ type: 'ONFAILED', clientId, tenantId, output: null, error: null })
+            reject(new Error())
+          }, 50)
+        })
+    )
     const mockDeactivationMachine = deactivation.machine.provide(config)
-    const flowStates = ['PROVISIONED', 'UNPROVISIONING', 'ERROR', 'FAILED']
+    const flowStates = [
+      'PROVISIONED',
+      'UNPROVISIONING',
+      'ERROR',
+      'FAILED'
+    ]
     const deactivationService = createActor(mockDeactivationMachine, { input: deactivationContext })
     deactivationService.subscribe((state) => {
       // assert that effects were executed
@@ -204,14 +225,26 @@ describe('Deactivation State Machine', () => {
 
   it('should send success message to device', () => {
     deactivation.sendMessageToDevice({ context: deactivationContext })
-    expect(responseMessageSpy).toHaveBeenCalledWith(deactivationContext.clientId, null, deactivationContext.status, 'success', JSON.stringify(devices[clientId].status))
+    expect(responseMessageSpy).toHaveBeenCalledWith(
+      deactivationContext.clientId,
+      null,
+      deactivationContext.status,
+      'success',
+      JSON.stringify(devices[clientId].status)
+    )
     expect(sendSpy).toHaveBeenCalled()
   })
 
   it('should send error message to device', () => {
     deactivationContext.status = 'error'
     deactivation.sendMessageToDevice({ context: deactivationContext })
-    expect(responseMessageSpy).toHaveBeenCalledWith(deactivationContext.clientId, null, deactivationContext.status, 'failed', JSON.stringify(devices[clientId].status))
+    expect(responseMessageSpy).toHaveBeenCalledWith(
+      deactivationContext.clientId,
+      null,
+      deactivationContext.status,
+      'failed',
+      JSON.stringify(devices[clientId].status)
+    )
     expect(sendSpy).toHaveBeenCalled()
   })
 

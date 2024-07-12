@@ -64,15 +64,24 @@ describe('TLS State Machine', () => {
         timeSync: fromPromise(async ({ input }) => await Promise.resolve({})),
         errorMachine: fromPromise(async ({ input }) => await Promise.resolve({})),
         enumeratePublicKeyCertificate: fromPromise(async ({ input }) => await Promise.resolve({})),
-        pullPublicKeyCertificate: fromPromise(async ({ input }) => await Promise.resolve({ Envelope: { Body: { PullResponse: { Items: { AMT_TLSSettingData: {} } } } } })),
+        pullPublicKeyCertificate: fromPromise(
+          async ({ input }) =>
+            await Promise.resolve({ Envelope: { Body: { PullResponse: { Items: { AMT_TLSSettingData: {} } } } } })
+        ),
         addTrustedRootCertificate: fromPromise(async ({ input }) => await Promise.resolve({})),
         generateKeyPair: fromPromise(async ({ input }) => await Promise.resolve({})),
         enumeratePublicPrivateKeyPair: fromPromise(async ({ input }) => await Promise.resolve({})),
-        pullPublicPrivateKeyPair: fromPromise(async ({ input }) => await Promise.resolve({ Envelope: { Body: { PullResponse: { Items: { AMT_PublicPrivateKeyPair: {} } } } } })),
+        pullPublicPrivateKeyPair: fromPromise(
+          async ({ input }) =>
+            await Promise.resolve({ Envelope: { Body: { PullResponse: { Items: { AMT_PublicPrivateKeyPair: {} } } } } })
+        ),
         addCertificate: fromPromise(async ({ input }) => await Promise.resolve({})),
         createTLSCredentialContext: fromPromise(async ({ input }) => await Promise.resolve({})),
         enumerateTLSData: fromPromise(async ({ input }) => await Promise.resolve({})),
-        pullTLSData: fromPromise(async ({ input }) => await Promise.resolve({ Envelope: { Body: { PullResponse: { Items: { AMT_TLSSettingData: [{}, {}] } } } } })),
+        pullTLSData: fromPromise(
+          async ({ input }) =>
+            await Promise.resolve({ Envelope: { Body: { PullResponse: { Items: { AMT_TLSSettingData: [{}, {}] } } } } })
+        ),
         putRemoteTLSData: fromPromise(async ({ input }) => await Promise.resolve({})),
         putLocalTLSData: fromPromise(async ({ input }) => await Promise.resolve({})),
         commitChanges: fromPromise(async ({ input }) => await Promise.resolve({}))
@@ -91,11 +100,14 @@ describe('TLS State Machine', () => {
     context.amtProfile = { tlsMode: 3, tlsSigningAuthoritys: 'SelfSigned' } as any
     // already existing error case is covered with this reject
     // eslint-disable-next-line prefer-promise-reject-errors
-    config.actors.createTlsCredentialContext = fromPromise(async ({ input }) => await Promise.reject({
-      body: {
-        text: wsmanAlreadyExistsAllChunks
-      }
-    }))
+    config.actors.createTlsCredentialContext = fromPromise(
+      async ({ input }) =>
+        await Promise.reject({
+          body: {
+            text: wsmanAlreadyExistsAllChunks
+          }
+        })
+    )
     const tlsStateMachine = tls.machine.provide(config)
     const flowStates = [
       'PROVISIONED',
@@ -135,7 +147,9 @@ describe('TLS State Machine', () => {
 
   it('should retry', (done) => {
     context.amtProfile = { tlsMode: 3, tlsSigningAuthoritys: 'SelfSigned' } as any
-    config.actors.pullPublicKeyCertificate = fromPromise(async ({ input }) => await Promise.reject(new UNEXPECTED_PARSE_ERROR()))
+    config.actors.pullPublicKeyCertificate = fromPromise(
+      async ({ input }) => await Promise.reject(new UNEXPECTED_PARSE_ERROR())
+    )
 
     const tlsStateMachine = tls.machine.provide(config)
     const flowStates = [
@@ -172,7 +186,10 @@ describe('TLS State Machine', () => {
       }
     }
 
-    const publicKeyManagementSpy = spyOn(context.amt.PublicKeyManagementService, 'GeneratePKCS10RequestEx').mockReturnValue({} as any)
+    const publicKeyManagementSpy = spyOn(
+      context.amt.PublicKeyManagementService,
+      'GeneratePKCS10RequestEx'
+    ).mockReturnValue({} as any)
 
     await tls.signCSR({ input: context })
 
@@ -192,7 +209,7 @@ describe('TLS State Machine', () => {
       }
     }
     context.message = { Envelope: { Body: { PullResponse: { Items: { AMT_PublicPrivateKeyPair: {} } } } } }
-    await tls.addCertificate({ input: ({ context, event }) })
+    await tls.addCertificate({ input: { context, event } })
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
 
@@ -207,8 +224,18 @@ describe('TLS State Machine', () => {
   })
 
   it('should createTLSCredentialContext', async () => {
-    const event: any = { output: { Envelope: { Body: { AddCertificate_OUTPUT: { CreatedCertificate: { ReferenceParameters: { SelectorSet: { Selector: { _: '' } } } } } } } } }
-    await tls.createTLSCredentialContext({ input: ({ context, event }) })
+    const event: any = {
+      output: {
+        Envelope: {
+          Body: {
+            AddCertificate_OUTPUT: {
+              CreatedCertificate: { ReferenceParameters: { SelectorSet: { Selector: { _: '' } } } }
+            }
+          }
+        }
+      }
+    }
+    await tls.createTLSCredentialContext({ input: { context, event } })
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
 
@@ -266,9 +293,11 @@ describe('TLS State Machine', () => {
     expect(tlsSettingDataSpy).toHaveBeenCalled()
   })
   it('should putRemoteTLSData on AMT 16.0 and older systems when tlsMode is not 1 or 3', async () => {
-    context.tlsSettingData = [{
-      NonSecureConnectionsSupported: true
-    }]
+    context.tlsSettingData = [
+      {
+        NonSecureConnectionsSupported: true
+      }
+    ]
     if (context.amtProfile != null) {
       context.amtProfile.tlsMode = 4
     }
@@ -280,9 +309,11 @@ describe('TLS State Machine', () => {
     expect(tlsSettingDataSpy).toHaveBeenCalled()
   })
   it('should putRemoteTLSData on AMT 16.0 and older systems when tlsMode is 1 or 3', async () => {
-    context.tlsSettingData = [{
-      NonSecureConnectionsSupported: true
-    }]
+    context.tlsSettingData = [
+      {
+        NonSecureConnectionsSupported: true
+      }
+    ]
     spyOn(forge.pki, 'certificateFromPem').mockReturnValue({ subject: { getField: () => ({}) } } as any)
     const tlsSettingDataSpy = spyOn(context.amt.TLSSettingData, 'Put').mockReturnValue('')
     await tls.putRemoteTLSData({ input: context })
@@ -291,9 +322,11 @@ describe('TLS State Machine', () => {
     expect(tlsSettingDataSpy).toHaveBeenCalled()
   })
   it('should putRemoteTLSData on AMT 16.1 and newer systems', async () => {
-    context.tlsSettingData = [{
-      NonSecureConnectionsSupported: false
-    }]
+    context.tlsSettingData = [
+      {
+        NonSecureConnectionsSupported: false
+      }
+    ]
     spyOn(forge.pki, 'certificateFromPem').mockReturnValue({ subject: { getField: () => ({}) } } as any)
     const tlsSettingDataSpy = spyOn(context.amt.TLSSettingData, 'Put').mockReturnValue('')
     await tls.putRemoteTLSData({ input: context })

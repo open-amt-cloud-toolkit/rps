@@ -12,7 +12,7 @@ import handleError from '../../../utils/handleError.js'
 import { type DeviceCredentials } from '../../../interfaces/ISecretManagerService.js'
 import { adjustTlsConfiguration, generateSelfSignedCertificate, adjustRedirectionConfiguration } from './common.js'
 
-export async function createProfile (req: Request, res: Response): Promise<void> {
+export async function createProfile(req: Request, res: Response): Promise<void> {
   let vaultStatus: any
   const log = new Logger('createProfile')
   let amtConfig: AMTConfiguration = req.body

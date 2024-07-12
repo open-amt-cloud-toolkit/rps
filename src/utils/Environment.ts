@@ -11,12 +11,11 @@ import Logger from '../Logger.js'
 const log = new Logger('Environment')
 
 // To merge ENV variables. consider after lowercasing ENV since our config keys are lowercase
-process.env = Object.keys(process.env)
-  .reduce((destination, key) => {
-    const value = process.env[key] ?? ''
-    destination[key.toLowerCase()] = parseValue(value)
-    return destination
-  }, {})
+process.env = Object.keys(process.env).reduce((destination, key) => {
+  const value = process.env[key] ?? ''
+  destination[key.toLowerCase()] = parseValue(value)
+  return destination
+}, {})
 
 // build config object
 const config: RPSConfig = rc('rps')

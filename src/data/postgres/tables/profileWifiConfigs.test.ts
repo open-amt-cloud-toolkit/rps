@@ -32,40 +32,49 @@ describe('profilewificonfig tests', () => {
       const result = await profilesWifiConfigsTable.getProfileWifiConfigs(profileName)
       expect(result).toStrictEqual([{}])
       expect(querySpy).toBeCalledTimes(1)
-      expect(querySpy).toBeCalledWith(`
+      expect(querySpy).toBeCalledWith(
+        `
     SELECT 
       priority as "priority",
       wireless_profile_name as "profileName"
     FROM profiles_wirelessconfigs
     WHERE profile_name = $1 and tenant_id = $2
-    ORDER BY priority`, [profileName, ''])
+    ORDER BY priority`,
+        [profileName, '']
+      )
     })
   })
   describe('Delete', () => {
     test('should Delete', async () => {
-      querySpy.mockResolvedValueOnce({ rows: [{ }], rowCount: 1 })
+      querySpy.mockResolvedValueOnce({ rows: [{}], rowCount: 1 })
       const result = await profilesWifiConfigsTable.deleteProfileWifiConfigs(profileName)
       expect(result).toBe(true)
       expect(querySpy).toBeCalledTimes(1)
-      expect(querySpy).toBeCalledWith(`
+      expect(querySpy).toBeCalledWith(
+        `
     DELETE
     FROM profiles_wirelessconfigs
-    WHERE profile_name = $1 and tenant_id = $2`, [profileName, ''])
+    WHERE profile_name = $1 and tenant_id = $2`,
+        [profileName, '']
+      )
     })
     test('should Delete with tenandId', async () => {
-      querySpy.mockResolvedValueOnce({ rows: [{ }], rowCount: 1 })
+      querySpy.mockResolvedValueOnce({ rows: [{}], rowCount: 1 })
       const result = await profilesWifiConfigsTable.deleteProfileWifiConfigs(profileName, tenantId)
       expect(result).toBe(true)
       expect(querySpy).toBeCalledTimes(1)
-      expect(querySpy).toBeCalledWith(`
+      expect(querySpy).toBeCalledWith(
+        `
     DELETE
     FROM profiles_wirelessconfigs
-    WHERE profile_name = $1 and tenant_id = $2`, [profileName, tenantId])
+    WHERE profile_name = $1 and tenant_id = $2`,
+        [profileName, tenantId]
+      )
     })
   })
   describe('Insert', () => {
     test('should Insert', async () => {
-      querySpy.mockResolvedValueOnce({ rows: [{ }], rowCount: 1 })
+      querySpy.mockResolvedValueOnce({ rows: [{}], rowCount: 1 })
       const result = await profilesWifiConfigsTable.createProfileWifiConfigs(wifiConfigs, profileName)
       expect(result).toBe(true)
       expect(querySpy).toBeCalledTimes(1)
@@ -75,7 +84,9 @@ describe('profilewificonfig tests', () => {
       VALUES ('wirelessConfig', 'profileName', '1', '')`)
     })
     test('should NOT insert when no wificonfigs', async () => {
-      await expect(profilesWifiConfigsTable.createProfileWifiConfigs([], profileName)).rejects.toThrow('Operation failed: profileName')
+      await expect(profilesWifiConfigsTable.createProfileWifiConfigs([], profileName)).rejects.toThrow(
+        'Operation failed: profileName'
+      )
     })
     test('should NOT insert when constraint violation', async () => {
       querySpy.mockRejectedValueOnce({ code: '23503', detail: 'error' })
@@ -83,7 +94,9 @@ describe('profilewificonfig tests', () => {
     })
     test('should NOT insert when unknown error', async () => {
       querySpy.mockRejectedValueOnce('unknown')
-      await expect(profilesWifiConfigsTable.createProfileWifiConfigs(wifiConfigs, profileName)).rejects.toThrow(API_UNEXPECTED_EXCEPTION(profileName))
+      await expect(profilesWifiConfigsTable.createProfileWifiConfigs(wifiConfigs, profileName)).rejects.toThrow(
+        API_UNEXPECTED_EXCEPTION(profileName)
+      )
     })
   })
 })

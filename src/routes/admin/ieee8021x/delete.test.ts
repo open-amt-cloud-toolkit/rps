@@ -13,14 +13,19 @@ describe('checks deleteIEEE8021xProfile', () => {
   let req
   let deleteSpy: SpyInstance<any>
   beforeEach(() => {
-    resSpy = createSpyObj('Response', ['status', 'json', 'end', 'send'])
+    resSpy = createSpyObj('Response', [
+      'status',
+      'json',
+      'end',
+      'send'
+    ])
     req = {
       db: { ieee8021xProfiles: { delete: jest.fn() } },
       body: {},
       query: {},
       secretsManager: { writeSecretWithObject: jest.fn(), deleteSecretAtPath: jest.fn() },
       profileName: 'abcd',
-      params: { }
+      params: {}
     }
     spyOn(req.secretsManager, 'deleteSecretAtPath').mockResolvedValue({})
     deleteSpy = spyOn(req.db.ieee8021xProfiles, 'delete').mockResolvedValue({})

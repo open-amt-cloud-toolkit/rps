@@ -12,10 +12,7 @@ import { type SpyInstance, spyOn } from 'jest-mock'
 import { type MachineImplementations } from 'xstate'
 import got from 'got'
 
-import {
-  coalesceMessage,
-  HttpResponseError
-} from '../common.js'
+import { coalesceMessage, HttpResponseError } from '../common.js'
 
 import {
   type DeviceInfo,
@@ -92,7 +89,7 @@ describe('SyncDeviceInfo State Machine', () => {
     void runTheTest(done)
   })
   it('should save to MPS', async () => {
-    gotSpy = spyOn(got, 'patch').mockImplementation(() => (mpsRsp))
+    gotSpy = spyOn(got, 'patch').mockImplementation(() => mpsRsp)
     await implementation.saveToMPS({ input: context })
     expect(gotSpy).toHaveBeenCalled()
   })

@@ -54,7 +54,9 @@ export const waitForSecretsManager = async function (secretsManager: ISecretMana
 export const startItUp = (): void => {
   const configurator = new Configurator()
   log.silly(`WebSocket Cert Info ${JSON.stringify(Environment.Config)}`)
-  const serverForEnterpriseAssistant: WSEnterpriseAssistantListener = new WSEnterpriseAssistantListener(new Logger('WSEnterpriseAssistantListener'))
+  const serverForEnterpriseAssistant: WSEnterpriseAssistantListener = new WSEnterpriseAssistantListener(
+    new Logger('WSEnterpriseAssistantListener')
+  )
   const server: WebSocketListener = new WebSocketListener(new Logger('WebSocketListener'), configurator.dataProcessor)
 
   const mqtt: MqttProvider = new MqttProvider(Environment.Config)
@@ -85,23 +87,31 @@ export const startItUp = (): void => {
     return middleware
   }
 
-  loadCustomMiddleware().then(customMiddleware => {
-    app.use('/api/v1', async (req: express.Request, res: express.Response, next) => {
-      if (configurator.secretsManager) {
-        (req as any).secretsManager = configurator.secretsManager
-      }
-      req.db = await dbFactory.getDb()
-      next()
-    }, customMiddleware, routes)
-  }).catch(err => {
-    log.error('Error loading custom middleware')
-    log.error(err)
-    process.exit(0)
-  })
+  loadCustomMiddleware()
+    .then((customMiddleware) => {
+      app.use(
+        '/api/v1',
+        async (req: express.Request, res: express.Response, next) => {
+          if (configurator.secretsManager) {
+            ;(req as any).secretsManager = configurator.secretsManager
+          }
+          req.db = await dbFactory.getDb()
+          next()
+        },
+        customMiddleware,
+        routes
+      )
+    })
+    .catch((err) => {
+      log.error('Error loading custom middleware')
+      log.error(err)
+      process.exit(0)
+    })
 
   // the env keys have been lower-cased!!
   if (process.env.node_env !== 'test') {
-    dbFactory.getDb()
+    dbFactory
+      .getDb()
       .then(async (db) => {
         await waitForDB(db)
         await waitForSecretsManager(configurator.secretsManager)
@@ -113,26 +123,28 @@ export const startItUp = (): void => {
         server.connect()
         serverForEnterpriseAssistant.connect()
       })
-      .catch(err => {
+      .catch((err) => {
         log.error(err)
         process.exit(0)
       })
   }
 }
 
-export async function setupServiceManager (config: RPSConfig): Promise<void> {
+export async function setupServiceManager(config: RPSConfig): Promise<void> {
   const consul: IServiceManager = new ConsulService(config.consul_host, config.consul_port)
   await waitForServiceManager(consul, 'consul')
   await processServiceConfigs(consul, config)
 }
 
 if (Environment.Config.consul_enabled) {
-  setupServiceManager(Environment.Config).then(() => {
-    startItUp()
-  }).catch(err => {
-    log.error(`Unable to reach consul: ${err}`)
-    process.exit(0)
-  })
+  setupServiceManager(Environment.Config)
+    .then(() => {
+      startItUp()
+    })
+    .catch((err) => {
+      log.error(`Unable to reach consul: ${err}`)
+      process.exit(0)
+    })
 } else {
   startItUp()
 }

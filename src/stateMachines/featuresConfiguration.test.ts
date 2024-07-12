@@ -3,9 +3,18 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type FeatureContext, type FeaturesConfiguration as FeaturesConfigurationType, type FeatureEvent } from './featuresConfiguration.js'
+import {
+  type FeatureContext,
+  type FeaturesConfiguration as FeaturesConfigurationType,
+  type FeatureEvent
+} from './featuresConfiguration.js'
 import { ClientAction } from '../models/RCS.Config.js'
-import { type AMTConfiguration, AMTRedirectionServiceEnabledStates, AMTUserConsent, AMTUserConsentValues } from '../models/index.js'
+import {
+  type AMTConfiguration,
+  AMTRedirectionServiceEnabledStates,
+  AMTUserConsent,
+  AMTUserConsentValues
+} from '../models/index.js'
 import { randomUUID } from 'node:crypto'
 import { devices } from '../devices.js'
 import { HttpHandler } from '../HttpHandler.js'
@@ -18,7 +27,7 @@ jest.unstable_mockModule('./common.js', () => ({
   invokeWsmanCall: invokeWsmanCallSpy
 }))
 
-const { FeaturesConfiguration } = await import ('./featuresConfiguration.js')
+const { FeaturesConfiguration } = await import('./featuresConfiguration.js')
 
 describe('Features State Machine', () => {
   let clientId: string
@@ -27,7 +36,7 @@ describe('Features State Machine', () => {
   let amtRedirectionSvcJson
   let ipsOptInsSvcJson
   let kvmRedirectionSvcJson
-  let currentStateIndex: number = 0
+  let currentStateIndex = 0
   let machineConfig: MachineImplementations<FeatureContext, FeatureEvent>
   let context: FeatureContext
   beforeEach(() => {
@@ -89,9 +98,17 @@ describe('Features State Machine', () => {
     currentStateIndex = 0
     machineConfig = {
       actors: {
-        getAmtRedirectionService: fromPromise(async ({ input }) => await Promise.resolve({ Envelope: { Body: { AMT_RedirectionService: amtRedirectionSvcJson } } })),
-        getIpsOptInService: fromPromise(async ({ input }) => await Promise.resolve({ Envelope: { Body: { IPS_OptInService: ipsOptInsSvcJson } } })),
-        getCimKvmRedirectionSAP: fromPromise(async ({ input }) => await Promise.resolve({ Envelope: { Body: { CIM_KVMRedirectionSAP: kvmRedirectionSvcJson } } })),
+        getAmtRedirectionService: fromPromise(
+          async ({ input }) =>
+            await Promise.resolve({ Envelope: { Body: { AMT_RedirectionService: amtRedirectionSvcJson } } })
+        ),
+        getIpsOptInService: fromPromise(
+          async ({ input }) => await Promise.resolve({ Envelope: { Body: { IPS_OptInService: ipsOptInsSvcJson } } })
+        ),
+        getCimKvmRedirectionSAP: fromPromise(
+          async ({ input }) =>
+            await Promise.resolve({ Envelope: { Body: { CIM_KVMRedirectionSAP: kvmRedirectionSvcJson } } })
+        ),
         setRedirectionService: fromPromise(async ({ input }) => await Promise.resolve({ clientId })),
         putRedirectionService: fromPromise(async ({ input }) => await Promise.resolve({ clientId })),
         putIpsOptInService: fromPromise(async ({ input }) => await Promise.resolve({ clientId }))
@@ -182,7 +199,9 @@ describe('Features State Machine', () => {
   })
 
   it('Should NOT configure AMT features when failure', (done) => {
-    machineConfig.actors!.getAmtRedirectionService = fromPromise(async ({ input }) => await Promise.reject(new Error('FAILURE')))
+    machineConfig.actors!.getAmtRedirectionService = fromPromise(
+      async ({ input }) => await Promise.reject(new Error('FAILURE'))
+    )
     const mockFeaturesMachine = featuresConfiguration.machine.provide(machineConfig)
     const flowStates = [
       'DEFAULT_FEATURES',
@@ -233,7 +252,7 @@ describe('Features State Machine', () => {
     await featuresConfiguration.putIpsOptInService({ input: context })
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
-  function setDefaultResponses (): void {
+  function setDefaultResponses(): void {
     amtRedirectionSvcJson = {
       CreationClassName: 'AMT_RedirectionService',
       ElementName: 'Intel(r) AMT Redirection Service',

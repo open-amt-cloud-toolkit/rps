@@ -5,10 +5,7 @@
 
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 import { assign, fromPromise, sendTo, setup } from 'xstate'
-import {
-  coalesceMessage,
-  type CommonMaintenanceContext
-} from '../common.js'
+import { coalesceMessage, type CommonMaintenanceContext } from '../common.js'
 import Logger from '../../Logger.js'
 import { doneFail, doneSuccess } from './doneResponse.js'
 import { getPTStatusName, PTStatus } from '../../utils/PTStatus.js'
@@ -132,7 +129,7 @@ export class SyncTime {
         invoke: {
           id: 'get-low-accuracy-time-synch',
           src: 'getLowAccuracyTimeSync',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           onDone: {
             actions: assign({
               lowAccuracyData: ({ event }) => (event as any).output
@@ -157,7 +154,7 @@ export class SyncTime {
         invoke: {
           id: 'set-high-accuracy-time-synch',
           src: 'setHighAccuracyTimeSynch',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           onDone: {
             target: 'SUCCESS'
           },
@@ -196,7 +193,8 @@ export class SyncTime {
           {
             guard: 'isLowAccuracy',
             target: 'GET_LOW_ACCURACY_TIME_SYNCH'
-          }]
+          }
+        ]
       },
       FAILED: {
         entry: assign({ statusMessage: () => 'FAILED' }),

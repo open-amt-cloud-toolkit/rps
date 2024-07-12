@@ -16,7 +16,7 @@ const onSpy = jest.fn<any>()
 let itshouldthrowerror = false
 jest.unstable_mockModule('ws', () => ({
   WebSocketServer: class {
-    constructor () {
+    constructor() {
       if (itshouldthrowerror) {
         throw new Error('fake')
       }

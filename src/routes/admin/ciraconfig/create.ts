@@ -10,7 +10,7 @@ import { type Request, type Response } from 'express'
 import handleError from '../../../utils/handleError.js'
 import { type CiraConfigSecrets } from '../../../interfaces/ISecretManagerService.js'
 
-export async function createCiraConfig (req: Request, res: Response): Promise<void> {
+export async function createCiraConfig(req: Request, res: Response): Promise<void> {
   const log = new Logger('createCiraConfig')
   const ciraConfig: CIRAConfig = req.body
   ciraConfig.tenantId = req.tenantId || ''

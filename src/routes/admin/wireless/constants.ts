@@ -15,11 +15,11 @@ export const AuthenticationMethods = {
   WPA_IEEE8021X: { value: 5, label: 'WPA IEEE 802.1x' },
   WPA2_PSK: { value: 6, label: 'WPA2 PSK' },
   WPA2_IEEE8021X: { value: 7, label: 'WPA2 IEEE 802.1x' },
-  labelForValue (value: number): string {
-    const e = this.all().find(e => e.value === value)
+  labelForValue(value: number): string {
+    const e = this.all().find((e) => e.value === value)
     return e ? e.label : ''
   },
-  all (): AuthenticationMethod[] {
+  all(): AuthenticationMethod[] {
     return [
       this.WPA_PSK,
       this.WPA_IEEE8021X,
@@ -27,14 +27,14 @@ export const AuthenticationMethods = {
       this.WPA2_IEEE8021X
     ]
   },
-  allExceptIEEE8021X (): AuthenticationMethod[] {
+  allExceptIEEE8021X(): AuthenticationMethod[] {
     // for now, these are same as ...
-    return this.all().filter(m => m !== this.WPA_IEEE8021X && m !== this.WPA2_IEEE8021X)
+    return this.all().filter((m) => m !== this.WPA_IEEE8021X && m !== this.WPA2_IEEE8021X)
   },
-  isIEEE8021X (value: number): boolean {
+  isIEEE8021X(value: number): boolean {
     return value === this.WPA_IEEE8021X.value || value === this.WPA2_IEEE8021X.value
   },
-  isPSK (value: number): boolean {
+  isPSK(value: number): boolean {
     return value === this.WPA_PSK.value || value === this.WPA2_PSK.value
   }
 }
@@ -43,11 +43,11 @@ export type EncryptionMethod = FormOption<number>
 export const EncryptionMethods = {
   TKIP: { value: 3, label: 'TKIP' },
   CCMP: { value: 4, label: 'CCMP' },
-  labelForValue (value: number): string {
-    const e = this.all().find(e => e.value === value)
+  labelForValue(value: number): string {
+    const e = this.all().find((e) => e.value === value)
     return e ? e.label : ''
   },
-  all (): EncryptionMethod[] {
+  all(): EncryptionMethod[] {
     return [
       this.TKIP,
       this.CCMP

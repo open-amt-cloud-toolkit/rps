@@ -13,7 +13,11 @@ import { Configurator } from '../Configurator.js'
 import { DbCreatorFactory } from '../factories/DbCreatorFactory.js'
 import { type CommonContext, invokeWsmanCall } from './common.js'
 import { UNEXPECTED_PARSE_ERROR } from '../utils/constants.js'
-import { getCertFromEnterpriseAssistant, initiateCertRequest, sendEnterpriseAssistantKeyPairResponse } from './enterpriseAssistant.js'
+import {
+  getCertFromEnterpriseAssistant,
+  initiateCertRequest,
+  sendEnterpriseAssistantKeyPairResponse
+} from './enterpriseAssistant.js'
 import { RPSError } from '../utils/RPSError.js'
 
 export interface WiredConfigContext extends CommonContext {
@@ -48,7 +52,10 @@ export class WiredConfiguration {
 
   signCSR = async ({ input }: { input: WiredConfigContext }): Promise<any> => {
     input.xmlMessage = input.amt?.PublicKeyManagementService.GeneratePKCS10RequestEx({
-      KeyPair: '<a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address><a:ReferenceParameters><w:ResourceURI>http://intel.com/wbem/wscim/1/amt-schema/1/AMT_PublicPrivateKeyPair</w:ResourceURI><w:SelectorSet><w:Selector Name="InstanceID">' + (input.message.response.keyInstanceId as string) + '</w:Selector></w:SelectorSet></a:ReferenceParameters>',
+      KeyPair:
+        '<a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address><a:ReferenceParameters><w:ResourceURI>http://intel.com/wbem/wscim/1/amt-schema/1/AMT_PublicPrivateKeyPair</w:ResourceURI><w:SelectorSet><w:Selector Name="InstanceID">' +
+        (input.message.response.keyInstanceId as string) +
+        '</w:Selector></w:SelectorSet></a:ReferenceParameters>',
       SigningAlgorithm: 1,
       NullSignedCertificateRequest: input.message.response.csr
     })
@@ -95,7 +102,8 @@ export class WiredConfiguration {
     } else {
       if (!input.wiredSettings.IPAddress || !input.wiredSettings.SubnetMask) {
         throw new RPSError(
-          'Invalid configuration - IPAddress and SubnetMask are required when AMT profile is static and IpSyncEnabled is false')
+          'Invalid configuration - IPAddress and SubnetMask are required when AMT profile is static and IpSyncEnabled is false'
+        )
       }
     }
     input.xmlMessage = input.amt.EthernetPortSettings.Put(input.wiredSettings)
@@ -137,8 +145,11 @@ export class WiredConfiguration {
   }
 
   setCertificates = async ({ input }: { input: WiredConfigContext }): Promise<any> => {
-    const clientCertReference1 = input.addCertResponse?.AddCertificate_OUTPUT?.CreatedCertificate?.ReferenceParameters?.SelectorSet?.Selector?._
-    const rootCertReference1 = input.addTrustedRootCertResponse?.AddTrustedRootCertificate_OUTPUT?.CreatedCertificate?.ReferenceParameters?.SelectorSet?.Selector?._
+    const clientCertReference1 =
+      input.addCertResponse?.AddCertificate_OUTPUT?.CreatedCertificate?.ReferenceParameters?.SelectorSet?.Selector?._
+    const rootCertReference1 =
+      input.addTrustedRootCertResponse?.AddTrustedRootCertificate_OUTPUT?.CreatedCertificate?.ReferenceParameters
+        ?.SelectorSet?.Selector?._
     const rootCertReference = `<a:Address>default</a:Address><a:ReferenceParameters><w:ResourceURI>http://intel.com/wbem/wscim/1/amt-schema/1/AMT_PublicKeyCertificate</w:ResourceURI><w:SelectorSet><w:Selector Name="InstanceID">${rootCertReference1}</w:Selector></w:SelectorSet></a:ReferenceParameters>`
     const clientCertReference = `<a:Address>default</a:Address><a:ReferenceParameters><w:ResourceURI>http://intel.com/wbem/wscim/1/amt-schema/1/AMT_PublicKeyCertificate</w:ResourceURI><w:SelectorSet><w:Selector Name="InstanceID">${clientCertReference1}</w:Selector></w:SelectorSet></a:ReferenceParameters>`
 
@@ -152,17 +163,20 @@ export class WiredConfiguration {
   }
 
   enumeratePublicPrivateKeyPair = async ({ input }: { input: WiredConfigContext }): Promise<any> => {
-    input.keyPairHandle = input.message.Envelope.Body?.GenerateKeyPair_OUTPUT?.KeyPair?.ReferenceParameters?.SelectorSet?.Selector?._
+    input.keyPairHandle =
+      input.message.Envelope.Body?.GenerateKeyPair_OUTPUT?.KeyPair?.ReferenceParameters?.SelectorSet?.Selector?._
     input.xmlMessage = input.amt?.PublicPrivateKeyPair.Enumerate()
     return await invokeWsmanCall(input, 2)
   }
 
   pullPublicPrivateKeyPair = async ({ input }: { input: WiredConfigContext }): Promise<any> => {
-    input.xmlMessage = input.amt?.PublicPrivateKeyPair.Pull(input.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+    input.xmlMessage = input.amt?.PublicPrivateKeyPair.Pull(
+      input.message.Envelope.Body?.EnumerateResponse?.EnumerationContext
+    )
     return await invokeWsmanCall(input)
   }
 
-  async addCertificate ({ input }: { input: { context: WiredConfigContext, event: WiredConfigEvent } }): Promise<any> {
+  async addCertificate({ input }: { input: { context: WiredConfigContext; event: WiredConfigEvent } }): Promise<any> {
     input.context.eaResponse = input.event.output.response
     const cert = input.event.output.response.certificate
     input.context.xmlMessage = input.context.amt?.PublicKeyManagementService.AddCertificate({ CertificateBlob: cert })
@@ -203,13 +217,20 @@ export class WiredConfiguration {
     guards: {
       isNotEthernetSettingsUpdated: ({ context }) => {
         const settings: AMT.Models.EthernetPortSettings = context.message.Envelope.Body.AMT_EthernetPortSettings
-        if (context.amtProfile != null && settings.DHCPEnabled != null && settings.IpSyncEnabled != null && settings.SharedStaticIp != null) {
+        if (
+          context.amtProfile != null &&
+          settings.DHCPEnabled != null &&
+          settings.IpSyncEnabled != null &&
+          settings.SharedStaticIp != null
+        ) {
           if (context.amtProfile.dhcpEnabled) {
             return !settings.DHCPEnabled || !settings.IpSyncEnabled || settings.SharedStaticIp
           } else {
-            return settings.DHCPEnabled ||
+            return (
+              settings.DHCPEnabled ||
               settings.IpSyncEnabled !== (context.amtProfile.ipSyncEnabled ?? true) ||
               settings.SharedStaticIp !== settings.IpSyncEnabled
+            )
           }
         }
         return false
@@ -219,7 +240,9 @@ export class WiredConfiguration {
       isMSCHAPv2: ({ context }) => context.amtProfile?.ieee8021xProfileObject?.authenticationProtocol === 2
     },
     actions: {
-      'Reset Unauth Count': ({ context }) => { devices[context.clientId].unauthCount = 0 },
+      'Reset Unauth Count': ({ context }) => {
+        devices[context.clientId].unauthCount = 0
+      },
       'Reset Retry Count': assign({ retryCount: () => 0 }),
       'Increment Retry Count': assign({ retryCount: ({ context }) => context.retryCount + 1 }),
       'Update Configuration Status': ({ context }) => {
@@ -247,9 +270,17 @@ export class WiredConfiguration {
         on: {
           WIREDCONFIG: {
             actions: [
-              assign({ statusMessage: () => '', authProtocol: ({ context }) => context.amtProfile?.ieee8021xProfileObject != null ? context.amtProfile?.ieee8021xProfileObject?.authenticationProtocol : 0 }),
+              assign({
+                statusMessage: () => '',
+                authProtocol: ({ context }) =>
+                  context.amtProfile?.ieee8021xProfileObject != null
+                    ? context.amtProfile?.ieee8021xProfileObject?.authenticationProtocol
+                    : 0
+              }),
               'Reset Unauth Count',
-              'Reset Retry Count'],
+              'Reset Retry Count'
+
+            ],
             target: 'PUT_ETHERNET_PORT_SETTINGS'
           }
         }
@@ -257,7 +288,7 @@ export class WiredConfiguration {
       PUT_ETHERNET_PORT_SETTINGS: {
         invoke: {
           src: 'putEthernetPortSettings',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'put-ethernet-port-settings',
           onDone: {
             actions: assign({ message: ({ event }) => event.output }),
@@ -275,10 +306,12 @@ export class WiredConfiguration {
             guard: 'isNotEthernetSettingsUpdated',
             actions: assign({ errorMessage: () => 'Failed to put to ethernet port settings' }),
             target: 'FAILED'
-          }, {
+          },
+          {
             guard: 'is8021xProfilesExists',
             target: 'GET_8021X_PROFILE'
-          }, {
+          },
+          {
             target: 'SUCCESS'
           }
         ]
@@ -286,10 +319,10 @@ export class WiredConfiguration {
       GET_8021X_PROFILE: {
         invoke: {
           src: 'get8021xProfile',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'get-8021x-profile',
           onDone: {
-            actions: assign({ ieee8021xProfile: ({ event }) => (event.output).Envelope.Body.IPS_IEEE8021xSettings }),
+            actions: assign({ ieee8021xProfile: ({ event }) => event.output.Envelope.Body.IPS_IEEE8021xSettings }),
             target: 'ENTERPRISE_ASSISTANT_REQUEST'
           },
           onError: {
@@ -301,16 +334,19 @@ export class WiredConfiguration {
       ENTERPRISE_ASSISTANT_REQUEST: {
         invoke: {
           src: 'initiateCertRequest',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'enterprise-assistant-request',
-          onDone: [{
-            guard: 'isMSCHAPv2',
-            actions: assign({ eaResponse: ({ event }) => (event.output as any).response }),
-            target: 'ADD_RADIUS_SERVER_ROOT_CERTIFICATE'
-          }, {
-            actions: assign({ message: ({ event }) => event.output }),
-            target: 'GENERATE_KEY_PAIR'
-          }],
+          onDone: [
+            {
+              guard: 'isMSCHAPv2',
+              actions: assign({ eaResponse: ({ event }) => (event.output as any).response }),
+              target: 'ADD_RADIUS_SERVER_ROOT_CERTIFICATE'
+            },
+            {
+              actions: assign({ message: ({ event }) => event.output }),
+              target: 'GENERATE_KEY_PAIR'
+            }
+          ],
           onError: {
             actions: assign({ errorMessage: 'Failed to initiate cert request with enterprise assistant in 802.1x' }),
             target: 'FAILED'
@@ -320,7 +356,7 @@ export class WiredConfiguration {
       GENERATE_KEY_PAIR: {
         invoke: {
           src: 'generateKeyPair',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'generate-key-pair',
           onDone: {
             actions: assign({ message: ({ event }) => event.output }),
@@ -335,7 +371,7 @@ export class WiredConfiguration {
       ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR: {
         invoke: {
           src: 'enumeratePublicPrivateKeyPair',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'enumerate-public-private-key-pair',
           onDone: {
             actions: assign({ message: ({ event }) => event.output }),
@@ -350,26 +386,29 @@ export class WiredConfiguration {
       PULL_PUBLIC_PRIVATE_KEY_PAIR: {
         invoke: {
           src: 'pullPublicPrivateKeyPair',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'pull-public-private-key-pair',
           onDone: {
             actions: [assign({ message: ({ event }) => event.output }), 'Reset Retry Count'],
             target: 'ENTERPRISE_ASSISTANT_RESPONSE'
           },
-          onError: [{
-            guard: 'shouldRetry',
-            actions: 'Increment Retry Count',
-            target: 'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR'
-          }, {
-            actions: assign({ errorMessage: 'Failed to pull public private key pair in 802.1x' }),
-            target: 'FAILED'
-          }]
+          onError: [
+            {
+              guard: 'shouldRetry',
+              actions: 'Increment Retry Count',
+              target: 'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR'
+            },
+            {
+              actions: assign({ errorMessage: 'Failed to pull public private key pair in 802.1x' }),
+              target: 'FAILED'
+            }
+          ]
         }
       },
       ENTERPRISE_ASSISTANT_RESPONSE: {
         invoke: {
           src: 'sendEnterpriseAssistantKeyPairResponse',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'enterprise-assistant-response',
           onDone: {
             actions: assign({ message: ({ event }) => event.output }),
@@ -384,7 +423,7 @@ export class WiredConfiguration {
       SIGN_CSR: {
         invoke: {
           src: 'signCSR',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'sign-csr',
           onDone: {
             actions: assign({ message: ({ event }) => event.output }),
@@ -399,7 +438,7 @@ export class WiredConfiguration {
       GET_CERT_FROM_ENTERPRISE_ASSISTANT: {
         invoke: {
           src: 'getCertFromEnterpriseAssistant',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'get-cert-from-enterprise-assistant',
           onDone: {
             actions: assign({ message: ({ event }) => event.output }),
@@ -417,7 +456,7 @@ export class WiredConfiguration {
           input: ({ context, event }) => ({ context, event }),
           id: 'add-certificate',
           onDone: {
-            actions: assign({ addCertResponse: ({ event }) => (event.output).Envelope?.Body }),
+            actions: assign({ addCertResponse: ({ event }) => event.output.Envelope?.Body }),
             target: 'ADD_RADIUS_SERVER_ROOT_CERTIFICATE'
           },
           onError: {
@@ -429,7 +468,7 @@ export class WiredConfiguration {
       ADD_RADIUS_SERVER_ROOT_CERTIFICATE: {
         invoke: {
           src: 'addRadiusServerRootCertificate',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'add-radius-server-root-certificate',
           onDone: {
             actions: assign({ message: ({ event }) => event.output }),
@@ -444,16 +483,19 @@ export class WiredConfiguration {
       PUT_8021X_PROFILE: {
         invoke: {
           src: 'put8021xProfile',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'put-8021x-profile',
-          onDone: [{
-            guard: 'isMSCHAPv2',
-            actions: assign({ message: ({ event }) => event.output }),
-            target: 'SUCCESS'
-          }, {
-            actions: [assign({ message: ({ event }) => event.output }), 'Reset Unauth Count'],
-            target: 'SET_CERTIFICATES'
-          }],
+          onDone: [
+            {
+              guard: 'isMSCHAPv2',
+              actions: assign({ message: ({ event }) => event.output }),
+              target: 'SUCCESS'
+            },
+            {
+              actions: [assign({ message: ({ event }) => event.output }), 'Reset Unauth Count'],
+              target: 'SET_CERTIFICATES'
+            }
+          ],
           onError: {
             actions: assign({ errorMessage: 'Failed to put 802.1x profile' }),
             target: 'FAILED'
@@ -463,7 +505,7 @@ export class WiredConfiguration {
       SET_CERTIFICATES: {
         invoke: {
           src: 'setCertificates',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'set-certificates',
           onDone: {
             actions: [assign({ message: ({ event }) => event.output })],
@@ -500,7 +542,7 @@ export class WiredConfiguration {
     }
   })
 
-  constructor () {
+  constructor() {
     this.configurator = new Configurator()
     this.dbFactory = new DbCreatorFactory()
     this.logger = new Logger('Network_Configuration_State_Machine')

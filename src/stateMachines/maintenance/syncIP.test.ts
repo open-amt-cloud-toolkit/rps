@@ -10,10 +10,7 @@ import { type MachineImplementations } from 'xstate'
 import { setupTestClient } from '../../test/helper/Config.js'
 import { jest } from '@jest/globals'
 
-import {
-  HttpResponseError,
-  coalesceMessage
-} from '../common.js'
+import { HttpResponseError, coalesceMessage } from '../common.js'
 
 import {
   type EthernetPortSettingsPullResponse,
@@ -31,13 +28,8 @@ jest.unstable_mockModule('../common.js', () => ({
   coalesceMessage
 }))
 
-const {
-  MessageAlreadySynchronized,
-  MessageNoWiredSettingsOnDevice,
-  MessageWirelessOnly,
-  SyncIP,
-  SyncIPEventType
-} = await import ('./syncIP.js')
+const { MessageAlreadySynchronized, MessageNoWiredSettingsOnDevice, MessageWirelessOnly, SyncIP, SyncIPEventType } =
+  await import('./syncIP.js')
 
 const HttpBadRequestError = new HttpResponseError('Bad Request', 400)
 
@@ -85,7 +77,11 @@ describe('SyncIP State Machine', () => {
       InstanceID: 'Intel(r) AMT Ethernet Port Settings 0',
       IpSyncEnabled: true,
       LinkIsUp: true,
-      LinkPolicy: [1, 14, 16],
+      LinkPolicy: [
+        1,
+        14,
+        16
+      ],
       MACAddress: '70-b5-e8-61-f5-20',
       PhysicalConnectionType: 0,
       DHCPEnabled: false,
@@ -103,7 +99,11 @@ describe('SyncIP State Machine', () => {
       InstanceID: 'Intel(r) AMT Ethernet Port Settings 1',
       LinkControl: 2,
       LinkIsUp: false,
-      LinkPolicy: [1, 14, 16],
+      LinkPolicy: [
+        1,
+        14,
+        16
+      ],
       LinkPreference: 2,
       MACAddress: '00-00-00-00-00-00',
       PhysicalConnectionType: 3,
@@ -136,18 +136,14 @@ describe('SyncIP State Machine', () => {
       }
     } as any
     implementationConfig = {
-      actors: {
-      }
+      actors: {}
     }
     putRsp = wiredPortSettings
     event = { type: SyncIPEventType, clientId, targetIPConfig }
   })
 
   const runTheTest = async function (done): Promise<void> {
-    invokeWsmanCallSpy
-      .mockResolvedValueOnce(enumerateRsp)
-      .mockResolvedValueOnce(pullRsp)
-      .mockResolvedValueOnce(putRsp)
+    invokeWsmanCallSpy.mockResolvedValueOnce(enumerateRsp).mockResolvedValueOnce(pullRsp).mockResolvedValueOnce(putRsp)
     await runTilDone(implementation.machine.provide(implementationConfig), event, doneResponse, context, done)
   }
 
@@ -212,15 +208,12 @@ describe('SyncIP State Machine', () => {
   })
   it('should fail enumerate response on http response error', (done) => {
     doneResponse.status = StatusFailed
-    invokeWsmanCallSpy
-      .mockRejectedValueOnce(HttpBadRequestError)
+    invokeWsmanCallSpy.mockRejectedValueOnce(HttpBadRequestError)
     void runTilDone(implementation.machine, event, doneResponse, context, done)
   })
   it('should fail pull response on http response error', (done) => {
     doneResponse.status = StatusFailed
-    invokeWsmanCallSpy
-      .mockResolvedValueOnce(enumerateRsp)
-      .mockRejectedValueOnce(HttpBadRequestError)
+    invokeWsmanCallSpy.mockResolvedValueOnce(enumerateRsp).mockRejectedValueOnce(HttpBadRequestError)
     void runTilDone(implementation.machine, event, doneResponse, context, done)
   })
   it('should fail put response on http response error', (done) => {

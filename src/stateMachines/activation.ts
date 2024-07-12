@@ -73,7 +73,7 @@ export class Activation {
   unconfiguration: Unconfiguration = new Unconfiguration()
   tls: TLS = new TLS()
 
-  updateCredentials ({ context }): void {
+  updateCredentials({ context }): void {
     const device = devices[context.clientId]
     if (device.connectionParams != null && device.amtPassword != null) {
       device.connectionParams.username = AMTUserName
@@ -83,7 +83,10 @@ export class Activation {
 
   getAMTProfile = async ({ input }: { input: ActivationContext }): Promise<AMTConfiguration | null> => {
     this.db = await this.dbFactory.getDb()
-    const profile = await this.configurator.profileManager.getAmtProfile(devices[input.clientId].ClientData.payload.profile.profileName, input.tenantId)
+    const profile = await this.configurator.profileManager.getAmtProfile(
+      devices[input.clientId].ClientData.payload.profile.profileName,
+      input.tenantId
+    )
     return profile
   }
 
@@ -91,9 +94,12 @@ export class Activation {
     const clientObj = devices[input.clientId]
     try {
       if (input.profile != null) {
-        const result = await got(`${Environment.Config.mps_server}/api/v1/devices/${clientObj.uuid}?tenantId=${input.profile.tenantId}`, {
-          method: 'GET'
-        })
+        const result = await got(
+          `${Environment.Config.mps_server}/api/v1/devices/${clientObj.uuid}?tenantId=${input.profile.tenantId}`,
+          {
+            method: 'GET'
+          }
+        )
 
         if (result?.body != null && result?.body !== '') {
           return true // if we have a result the device is already in their tenant and can activated
@@ -109,11 +115,14 @@ export class Activation {
   }
 
   getAMTDomainCert = async ({ input }: { input: ActivationContext }): Promise<AMTDomain | null> => {
-    const domain = await this.configurator.domainCredentialManager.getProvisioningCert(devices[input.clientId].ClientData.payload.fqdn, input.tenantId)
+    const domain = await this.configurator.domainCredentialManager.getProvisioningCert(
+      devices[input.clientId].ClientData.payload.fqdn,
+      input.tenantId
+    )
     return domain
   }
 
-  sendMessageToDevice ({ context }): void {
+  sendMessageToDevice({ context }): void {
     const { clientId, status } = context
     const clientObj = devices[clientId]
     let method: 'failed' | 'success' | 'ok' | 'heartbeat' | null = null
@@ -128,13 +137,17 @@ export class Activation {
     devices[clientId].ClientSocket?.send(JSON.stringify(responseMessage))
   }
 
-  createSignedString (clientId: string, hashAlgorithm: string): boolean {
+  createSignedString(clientId: string, hashAlgorithm: string): boolean {
     const clientObj = devices[clientId]
     clientObj.nonce = PasswordHelper.generateNonce()
     const arr: Buffer[] = [clientObj.ClientData.payload.fwNonce, clientObj.nonce]
     try {
       if (clientObj.certObj != null) {
-        clientObj.signature = this.signatureHelper.signString(Buffer.concat(arr), clientObj.certObj.privateKey, hashAlgorithm)
+        clientObj.signature = this.signatureHelper.signString(
+          Buffer.concat(arr),
+          clientObj.certObj.privateKey,
+          hashAlgorithm
+        )
         return true
       } else {
         return false
@@ -163,13 +176,19 @@ export class Activation {
   }
 
   getPassword = async (input: ActivationContext): Promise<string> => {
-    const amtPassword: string | null = await this.configurator.profileManager.getAmtPassword(input.profile.profileName, input.tenantId)
+    const amtPassword: string | null = await this.configurator.profileManager.getAmtPassword(
+      input.profile.profileName,
+      input.tenantId
+    )
     devices[input.clientId].amtPassword = amtPassword
     if (input.profile.activation === ClientAction.ADMINCTLMODE) {
-      const mebxPassword: string | null = await this.configurator.profileManager.getMEBxPassword(input.profile.profileName, input.tenantId)
+      const mebxPassword: string | null = await this.configurator.profileManager.getMEBxPassword(
+        input.profile.profileName,
+        input.tenantId
+      )
       devices[input.clientId].mebxPassword = mebxPassword
     }
-    const data: string = `admin:${devices[input.clientId].ClientData.payload.digestRealm}:${amtPassword}`
+    const data = `admin:${devices[input.clientId].ClientData.payload.digestRealm}:${amtPassword}`
     const password = SignatureHelper.createMd5Hash(data)
     return password
   }
@@ -181,7 +200,13 @@ export class Activation {
     this.createSignedString(clientId, certChainPfx.hashAlgorithm)
     const clientObj = devices[clientId]
     if (clientObj.nonce != null && clientObj.signature != null) {
-      input.xmlMessage = ips.HostBasedSetupService.AdminSetup(2, password, clientObj.nonce.toString('base64'), 2, clientObj.signature)
+      input.xmlMessage = ips.HostBasedSetupService.AdminSetup(
+        2,
+        password,
+        clientObj.nonce.toString('base64'),
+        2,
+        clientObj.signature
+      )
       return await invokeWsmanCall(input)
     }
     return null
@@ -193,7 +218,11 @@ export class Activation {
     this.createSignedString(clientId, certChainPfx.hashAlgorithm)
     const clientObj = devices[clientId]
     if (clientObj.nonce != null && clientObj.signature != null) {
-      input.xmlMessage = ips.HostBasedSetupService.UpgradeClientToAdmin(clientObj.nonce.toString('base64'), 2, clientObj.signature)
+      input.xmlMessage = ips.HostBasedSetupService.UpgradeClientToAdmin(
+        clientObj.nonce.toString('base64'),
+        2,
+        clientObj.signature
+      )
       return await invokeWsmanCall(input)
     }
     return null
@@ -234,7 +263,7 @@ export class Activation {
     return null
   }
 
-  injectCertificate (clientId: string, ips: IPS.Messages): string | null {
+  injectCertificate(clientId: string, ips: IPS.Messages): string | null {
     const clientObj = devices[clientId]
     // inject certificates in proper order with proper flags
     if (clientObj.count != null && clientObj.certObj != null) {
@@ -247,7 +276,11 @@ export class Activation {
         } else if (clientObj.count === clientObj.certObj.certChain.length) {
           isRoot = true
         }
-        xmlRequestBody = ips.HostBasedSetupService.AddNextCertInChain(clientObj.certObj.certChain[clientObj.count - 1], isLeaf, isRoot)
+        xmlRequestBody = ips.HostBasedSetupService.AddNextCertInChain(
+          clientObj.certObj.certChain[clientObj.count - 1],
+          isLeaf,
+          isRoot
+        )
         ++clientObj.count
         this.logger.debug(`xmlRequestBody ${clientObj.uuid} : ${xmlRequestBody}`)
         return xmlRequestBody
@@ -256,7 +289,7 @@ export class Activation {
     return null
   }
 
-  GetProvisioningCertObj ({ context }): void {
+  GetProvisioningCertObj({ context }): void {
     const { amtDomain, clientId } = context
     try {
       if (amtDomain?.provisioningCert != null && amtDomain.provisioningCertPassword != null) {
@@ -275,37 +308,49 @@ export class Activation {
     }
   }
 
-  compareCertHashes ({ context }): void {
+  compareCertHashes({ context }): void {
     const { clientId, certChainPfx } = context
     // check that provisioning certificate root matches one of the trusted roots from AMT
     for (const hash in devices[clientId].ClientData.payload.certHashes) {
-      if (devices[clientId].ClientData.payload.certHashes[hash]?.toLowerCase() === certChainPfx.fingerprint?.sha256?.toLowerCase()) {
+      if (
+        devices[clientId].ClientData.payload.certHashes[hash]?.toLowerCase() ===
+        certChainPfx.fingerprint?.sha256?.toLowerCase()
+      ) {
         devices[clientId].certObj = certChainPfx.provisioningCertificateObj
-      } else if (devices[clientId].ClientData.payload.certHashes[hash]?.toLowerCase() === certChainPfx.fingerprint?.sha1?.toLowerCase()) {
+      } else if (
+        devices[clientId].ClientData.payload.certHashes[hash]?.toLowerCase() ===
+        certChainPfx.fingerprint?.sha1?.toLowerCase()
+      ) {
         devices[clientId].certObj = certChainPfx.provisioningCertificateObj
       }
     }
   }
 
-  readGeneralSettings ({ context }): void {
+  readGeneralSettings({ context }): void {
     const clientObj = devices[context.clientId]
     context.generalSettings = context.message.Envelope.Body.AMT_GeneralSettings
-    clientObj.ClientData.payload.digestRealm = context.generalSettings != null ? context.generalSettings.DigestRealm : null
+    clientObj.ClientData.payload.digestRealm =
+      context.generalSettings != null ? context.generalSettings.DigestRealm : null
     clientObj.hostname = clientObj.ClientData.payload.hostname
   }
 
-  readHostBasedSetupService ({ context }): void {
+  readHostBasedSetupService({ context }): void {
     const resBody = context.message.Envelope.Body
     const clientObj = devices[context.clientId]
     clientObj.ClientData.payload.fwNonce = Buffer.from(resBody.IPS_HostBasedSetupService.ConfigurationNonce, 'base64')
     clientObj.ClientData.payload.modes = resBody.IPS_HostBasedSetupService.AllowedControlModes
   }
 
-  setActivationStatus ({ context }): void {
+  setActivationStatus({ context }): void {
     const clientObj = devices[context.clientId]
     this.logger.debug(`Device ${clientObj.uuid} activated in ${clientObj.status.Status}.`)
     clientObj.activationStatus = true
-    MqttProvider.publishEvent('success', ['Activator', 'execute'], `Device activated in ${clientObj.status.Status}`, clientObj.uuid)
+    MqttProvider.publishEvent(
+      'success',
+      ['Activator', 'execute'],
+      `Device activated in ${clientObj.status.Status}`,
+      clientObj.uuid
+    )
   }
 
   saveDeviceInfoToSecretProvider = async ({ input }: { input: ActivationContext }): Promise<boolean> => {
@@ -394,10 +439,12 @@ export class Activation {
       DELAY_TIME_ACTIVATION_SYNC: () => Environment.Config.delay_activation_sync
     },
     guards: {
-      isAdminMode: ({ context }) => context.profile != null ? context.profile.activation === ClientAction.ADMINCTLMODE : false,
+      isAdminMode: ({ context }) =>
+        context.profile != null ? context.profile.activation === ClientAction.ADMINCTLMODE : false,
       isCertExtracted: ({ context }) => context.certChainPfx != null,
       isValidCert: ({ context }) => devices[context.clientId].certObj != null,
-      isDigestRealmInvalid: ({ context }) => !this.validator.isDigestRealmValid(devices[context.clientId].ClientData.payload.digestRealm),
+      isDigestRealmInvalid: ({ context }) =>
+        !this.validator.isDigestRealmValid(devices[context.clientId].ClientData.payload.digestRealm),
       maxCertLength: ({ context }) => {
         const device = devices[context.clientId]
         if (device.count != null && device.certObj != null) {
@@ -407,21 +454,30 @@ export class Activation {
       },
       isDeviceAdminModeActivated: ({ context }) => context.message.Envelope.Body?.AdminSetup_OUTPUT?.ReturnValue === 0,
       isDeviceClientModeActivated: ({ context }) => context.message.Envelope.Body?.Setup_OUTPUT?.ReturnValue === 0,
-      isDeviceActivatedInACM: ({ context }) => context.message.Envelope.Body?.IPS_HostBasedSetupService?.CurrentControlMode === 2,
-      isDeviceActivatedInCCM: ({ context }) => context.message.Envelope.Body?.IPS_HostBasedSetupService?.CurrentControlMode === 1,
+      isDeviceActivatedInACM: ({ context }) =>
+        context.message.Envelope.Body?.IPS_HostBasedSetupService?.CurrentControlMode === 2,
+      isDeviceActivatedInCCM: ({ context }) =>
+        context.message.Envelope.Body?.IPS_HostBasedSetupService?.CurrentControlMode === 1,
       isCertNotAdded: ({ context }) => context.message.Envelope.Body.AddNextCertInChain_OUTPUT.ReturnValue !== 0,
       isGeneralSettings: ({ context }) => context.targetAfterError === 'GET_GENERAL_SETTINGS',
       isMebxPassword: ({ context }) => context.targetAfterError === 'SET_MEBX_PASSWORD',
       isCheckActivationOnAMT: ({ context }) => context.targetAfterError === 'CHECK_ACTIVATION_ON_AMT',
       isUpgraded: ({ context }) => context.message.Envelope.Body.UpgradeClientToAdmin_OUTPUT.ReturnValue === 0,
-      hasCIRAProfile: ({ context }) => context.profile != null ? context.profile.ciraConfigName != null : false,
-      isActivated: ({ context }) => context.isActivated != null ? context.isActivated : false,
+      hasCIRAProfile: ({ context }) => (context.profile != null ? context.profile.ciraConfigName != null : false),
+      isActivated: ({ context }) => (context.isActivated != null ? context.isActivated : false),
       canActivate: ({ context }) => context.canActivate,
-      hasToUpgrade: ({ context }) => context.hasToUpgrade != null ? context.hasToUpgrade : false,
-      canUpgrade: ({ context }) => context.profile != null && context.isActivated != null ? context.isActivated && devices[context.clientId].ClientData.payload.currentMode === 1 && context.profile.activation === ClientAction.ADMINCTLMODE : false
+      hasToUpgrade: ({ context }) => (context.hasToUpgrade != null ? context.hasToUpgrade : false),
+      canUpgrade: ({ context }) =>
+        context.profile != null && context.isActivated != null
+          ? context.isActivated &&
+            devices[context.clientId].ClientData.payload.currentMode === 1 &&
+            context.profile.activation === ClientAction.ADMINCTLMODE
+          : false
     },
     actions: {
-      'Reset Unauth Count': ({ context }) => { devices[context.clientId].unauthCount = 0 },
+      'Reset Unauth Count': ({ context }) => {
+        devices[context.clientId].unauthCount = 0
+      },
       'Read General Settings': this.readGeneralSettings.bind(this),
       'Read Host Based Setup Service': this.readHostBasedSetupService.bind(this),
       'Set activation status': this.setActivationStatus.bind(this),
@@ -480,7 +536,7 @@ export class Activation {
       GET_AMT_PROFILE: {
         invoke: {
           src: 'getAMTProfile',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'get-amt-profile',
           onDone: {
             actions: assign({ profile: ({ event }) => (event as any).output }),
@@ -497,10 +553,12 @@ export class Activation {
           {
             guard: 'isActivated',
             target: 'CHECK_TENANT_ACCESS'
-          }, {
+          },
+          {
             guard: 'isAdminMode',
             target: 'GET_AMT_DOMAIN_CERT'
-          }, {
+          },
+          {
             target: 'GET_GENERAL_SETTINGS'
           }
         ]
@@ -508,7 +566,7 @@ export class Activation {
       CHECK_TENANT_ACCESS: {
         invoke: {
           src: 'getDeviceFromMPS',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'check-tenant-access',
           onDone: {
             actions: assign({ canActivate: ({ event }) => event.output as any }),
@@ -520,23 +578,28 @@ export class Activation {
         }
       },
       DETERMINE_CAN_ACTIVATE: {
-        always: [{
-          guard: 'canUpgrade',
-          actions: assign({ hasToUpgrade: () => true }),
-          target: 'GET_AMT_DOMAIN_CERT'
-        }, {
-          guard: 'canActivate',
-          target: 'GET_GENERAL_SETTINGS'
-        }, {
-          actions: assign({ errorMessage: 'Device belongs to another tenant. Please unprovision and re-activate device.' }),
-          target: 'FAILED'
-        }
+        always: [
+          {
+            guard: 'canUpgrade',
+            actions: assign({ hasToUpgrade: () => true }),
+            target: 'GET_AMT_DOMAIN_CERT'
+          },
+          {
+            guard: 'canActivate',
+            target: 'GET_GENERAL_SETTINGS'
+          },
+          {
+            actions: assign({
+              errorMessage: 'Device belongs to another tenant. Please unprovision and re-activate device.'
+            }),
+            target: 'FAILED'
+          }
         ]
       },
       GET_AMT_DOMAIN_CERT: {
         invoke: {
           src: 'getAMTDomainCert',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'get-amt-domain',
           onDone: {
             actions: assign({ amtDomain: ({ event }) => event.output as any }),
@@ -553,7 +616,9 @@ export class Activation {
         always: [
           {
             guard: 'isCertExtracted',
-            actions: ({ context }) => { devices[context.clientId].count = 1 },
+            actions: ({ context }) => {
+              devices[context.clientId].count = 1
+            },
             target: 'COMPARE_DEVICE_HASHES'
           },
           {
@@ -567,11 +632,16 @@ export class Activation {
         always: [
           {
             guard: 'isValidCert',
-            actions: ({ context }) => { devices[context.clientId].count = 1 },
+            actions: ({ context }) => {
+              devices[context.clientId].count = 1
+            },
             target: 'GET_GENERAL_SETTINGS'
           },
           {
-            actions: assign({ errorMessage: 'Invalid domain certificate, hash does not exists in list of trusted root certificates on AMT' }),
+            actions: assign({
+              errorMessage:
+                'Invalid domain certificate, hash does not exists in list of trusted root certificates on AMT'
+            }),
             target: 'FAILED'
           }
         ]
@@ -579,7 +649,7 @@ export class Activation {
       GET_GENERAL_SETTINGS: {
         invoke: {
           src: 'getGeneralSettings',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'send-generalsettings',
           onDone: {
             actions: [assign({ message: ({ event }) => event.output }), 'Reset Unauth Count'],
@@ -605,16 +675,20 @@ export class Activation {
           {
             guard: 'isDigestRealmInvalid',
             target: 'INVALID_DIGEST_REALM'
-          }, {
+          },
+          {
             guard: 'canUpgrade',
             target: 'IPS_HOST_BASED_SETUP_SERVICE'
-          }, {
+          },
+          {
             guard: 'isActivated',
             target: 'CHANGE_AMT_PASSWORD'
-          }, {
+          },
+          {
             guard: 'isAdminMode',
             target: 'IPS_HOST_BASED_SETUP_SERVICE'
-          }, {
+          },
+          {
             target: 'SETUP'
           }
         ]
@@ -622,7 +696,7 @@ export class Activation {
       IPS_HOST_BASED_SETUP_SERVICE: {
         invoke: {
           src: 'getHostBasedSetupService',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'send-hostbasedsetup',
           onDone: {
             actions: [assign({ message: ({ event }) => event.output }), 'Read Host Based Setup Service'],
@@ -636,7 +710,7 @@ export class Activation {
       ADD_NEXT_CERT_IN_CHAIN: {
         invoke: {
           src: 'getNextCERTInChain',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'send-certificate',
           onDone: {
             actions: assign({ message: ({ event }) => event.output }),
@@ -651,15 +725,21 @@ export class Activation {
         always: [
           {
             guard: 'isCertNotAdded',
-            actions: assign({ errorMessage: ({ context }) => `Device ${devices[context.clientId].uuid} activation failed. Error while adding the certificates to AMT.` }),
+            actions: assign({
+              errorMessage: ({ context }) =>
+                `Device ${devices[context.clientId].uuid} activation failed. Error while adding the certificates to AMT.`
+            }),
             target: 'FAILED'
-          }, {
+          },
+          {
             guard: 'maxCertLength',
             target: 'ADD_NEXT_CERT_IN_CHAIN'
-          }, {
+          },
+          {
             guard: 'canUpgrade',
             target: 'UPGRADE_TO_ADMIN_SETUP'
-          }, {
+          },
+          {
             target: 'ADMIN_SETUP'
           }
         ]
@@ -667,7 +747,7 @@ export class Activation {
       ADMIN_SETUP: {
         invoke: {
           src: 'sendAdminSetup',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'send-adminsetup',
           onDone: {
             actions: assign({ message: ({ event }) => event.output }),
@@ -688,14 +768,27 @@ export class Activation {
         always: [
           {
             guard: 'isDeviceActivatedInACM',
-            actions: [({ context }) => { devices[context.clientId].status.Status = 'Admin control mode.' }, 'Set activation status'],
+            actions: [
+              ({ context }) => {
+                devices[context.clientId].status.Status = 'Admin control mode.'
+              },
+              'Set activation status'
+
+            ],
             target: 'UPDATE_CREDENTIALS'
           },
           {
             guard: 'isDeviceAdminModeActivated',
-            actions: [({ context }) => { devices[context.clientId].status.Status = 'Admin control mode.' }, 'Set activation status'],
+            actions: [
+              ({ context }) => {
+                devices[context.clientId].status.Status = 'Admin control mode.'
+              },
+              'Set activation status'
+
+            ],
             target: 'DELAYED_TRANSITION'
-          }, {
+          },
+          {
             actions: assign({ errorMessage: 'Failed to activate in admin control mode.' }),
             target: 'FAILED'
           }
@@ -704,7 +797,7 @@ export class Activation {
       UPGRADE_TO_ADMIN_SETUP: {
         invoke: {
           src: 'sendUpgradeClientToAdmin',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'send-upgrade-to-admin',
           onDone: [
             {
@@ -727,14 +820,27 @@ export class Activation {
         always: [
           {
             guard: 'isDeviceActivatedInACM',
-            actions: [({ context }) => { devices[context.clientId].status.Status = 'Upgraded to admin control mode.' }, 'Set activation status'],
+            actions: [
+              ({ context }) => {
+                devices[context.clientId].status.Status = 'Upgraded to admin control mode.'
+              },
+              'Set activation status'
+
+            ],
             target: 'CHANGE_AMT_PASSWORD'
           },
           {
             guard: 'isUpgraded',
-            actions: [({ context }) => { devices[context.clientId].status.Status = 'Upgraded to admin control mode.' }, 'Set activation status'],
+            actions: [
+              ({ context }) => {
+                devices[context.clientId].status.Status = 'Upgraded to admin control mode.'
+              },
+              'Set activation status'
+
+            ],
             target: 'CHANGE_AMT_PASSWORD'
-          }, {
+          },
+          {
             actions: assign({ errorMessage: 'Failed to upgrade to admin control mode.' }),
             target: 'FAILED'
           }
@@ -743,7 +849,7 @@ export class Activation {
       SETUP: {
         invoke: {
           src: 'sendClientSetup',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'send-setup',
           onDone: {
             actions: assign({ message: ({ event }) => event.output }),
@@ -764,14 +870,27 @@ export class Activation {
         always: [
           {
             guard: 'isDeviceActivatedInCCM',
-            actions: [({ context }) => { devices[context.clientId].status.Status = 'Client control mode.' }, 'Set activation status'],
+            actions: [
+              ({ context }) => {
+                devices[context.clientId].status.Status = 'Client control mode.'
+              },
+              'Set activation status'
+
+            ],
             target: 'UPDATE_CREDENTIALS'
           },
           {
             guard: 'isDeviceClientModeActivated',
-            actions: [({ context }) => { devices[context.clientId].status.Status = 'Client control mode.' }, 'Set activation status'],
+            actions: [
+              ({ context }) => {
+                devices[context.clientId].status.Status = 'Client control mode.'
+              },
+              'Set activation status'
+
+            ],
             target: 'DELAYED_TRANSITION'
-          }, {
+          },
+          {
             actions: assign({ errorMessage: 'Failed to activate in client control mode.' }),
             target: 'FAILED'
           }
@@ -780,7 +899,7 @@ export class Activation {
       CHECK_ACTIVATION_ON_AMT: {
         invoke: {
           src: 'getActivationStatus',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'get-activationstatus',
           onDone: [
             {
@@ -796,7 +915,8 @@ export class Activation {
             {
               actions: assign({ message: ({ event }) => event.output }),
               target: 'CHECK_SETUP'
-            }],
+            }
+          ],
           onError: [
             {
               actions: assign({
@@ -819,14 +939,16 @@ export class Activation {
           {
             guard: 'isAdminMode',
             target: 'SET_MEBX_PASSWORD'
-          }, {
+          },
+          {
             target: 'SAVE_DEVICE_TO_SECRET_PROVIDER'
-          }]
+          }
+        ]
       },
       SET_MEBX_PASSWORD: {
         invoke: {
           src: 'setMEBxPassword',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'send-mebx-password',
           onDone: {
             actions: [assign({ message: ({ event }) => event.output }), 'Reset Unauth Count'],
@@ -844,7 +966,7 @@ export class Activation {
       SAVE_DEVICE_TO_SECRET_PROVIDER: {
         invoke: {
           src: 'saveDeviceInfoToSecretProvider',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'save-device-secret-provider',
           onDone: 'SAVE_DEVICE_TO_MPS',
           onError: 'SAVE_DEVICE_TO_SECRET_PROVIDER_FAILURE'
@@ -853,7 +975,7 @@ export class Activation {
       SAVE_DEVICE_TO_MPS: {
         invoke: {
           src: 'saveDeviceInfoToMPS',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'save-device-to-mps',
           onDone: 'UNCONFIGURATION',
           onError: 'SAVE_DEVICE_TO_MPS_FAILURE'
@@ -870,7 +992,7 @@ export class Activation {
       CHANGE_AMT_PASSWORD: {
         invoke: {
           src: 'changeAMTPassword',
-          input: ({ context }) => (context),
+          input: ({ context }) => context,
           id: 'send-to-change-amt-password',
           onDone: {
             actions: assign({ message: ({ event }) => event.output }),
@@ -1012,16 +1134,20 @@ export class Activation {
           {
             guard: 'isGeneralSettings',
             target: 'GET_GENERAL_SETTINGS'
-          }, {
+          },
+          {
             guard: 'isMebxPassword',
             target: 'SET_MEBX_PASSWORD'
-          }, {
+          },
+          {
             guard: 'isCheckActivationOnAMT',
             target: 'CHECK_ACTIVATION_ON_AMT'
-          }, {
+          },
+          {
             actions: assign({ errorMessage: ({ context }) => 'No valid next state' }),
             target: 'FAILED'
-          }]
+          }
+        ]
       },
       INVALID_DIGEST_REALM: {
         entry: assign({ errorMessage: 'Not a valid digest realm.' }),
@@ -1041,7 +1167,7 @@ export class Activation {
 
   service = createActor(this.machine, { input: {} as ActivationContext })
 
-  constructor () {
+  constructor() {
     this.nodeForge = new NodeForge()
     this.certManager = new CertManager(new Logger('CertManager'), this.nodeForge)
     this.signatureHelper = new SignatureHelper(this.nodeForge)

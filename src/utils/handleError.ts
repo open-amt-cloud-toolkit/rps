@@ -14,14 +14,26 @@ const handleError = (log: Logger, configName: string, req: Request, res: Respons
   log.error(`Failed to ${req.method}: ${configName}`, error)
   if (error instanceof RPSError) {
     if (error.name === CONCURRENCY_EXCEPTION) {
-      res.status(req.get('if-match') ? 412 : 409).set('ETag', error.item.version).json(error.item)
+      res
+        .status(req.get('if-match') ? 412 : 409)
+        .set('ETag', error.item.version)
+        .json(error.item)
     } else if (error.name === NOT_FOUND_EXCEPTION) {
-      res.status(404).json(API_RESPONSE(null, NOT_FOUND_EXCEPTION, error.message)).end()
+      res
+        .status(404)
+        .json(API_RESPONSE(null, NOT_FOUND_EXCEPTION, error.message))
+        .end()
     } else {
-      res.status(400).json(API_RESPONSE(null, error.name, error.message)).end()
+      res
+        .status(400)
+        .json(API_RESPONSE(null, error.name, error.message))
+        .end()
     }
   } else {
-    res.status(500).json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`${req.method} ${configName}`))).end()
+    res
+      .status(500)
+      .json(API_RESPONSE(null, null, API_UNEXPECTED_EXCEPTION(`${req.method} ${configName}`)))
+      .end()
   }
 }
 

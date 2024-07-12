@@ -3,12 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import {
-  doneFail,
-  doneSuccess,
-  StatusFailed,
-  StatusSuccess
-} from './doneResponse.js'
+import { doneFail, doneSuccess, StatusFailed, StatusSuccess } from './doneResponse.js'
 
 const taskName = 'syncTestSomething'
 it('should create a successful response with detail', () => {

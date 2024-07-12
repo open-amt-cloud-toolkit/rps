@@ -10,7 +10,7 @@ import { AuthenticationMethods, EncryptionMethods } from './constants.js'
 const isValidLinkPolicy = (n: number): boolean =>
   // ValueMap={1, 14, 16, 224}
   // Values={available on S0 AC, available on Sx AC, available on S0 DC, available on Sx DC}
-  (n === 1 || n === 14 || n === 16 || n === 224)
+  n === 1 || n === 14 || n === 16 || n === 224
 
 export const wirelessValidator = (): any => [
   check('profileName')
@@ -25,16 +25,24 @@ export const wirelessValidator = (): any => [
     .not()
     .isEmpty()
     .withMessage('Authentication method is required')
-    .isIn(AuthenticationMethods.all().map(m => m.value))
-    .withMessage('Authentication method must be one of ' +
-      AuthenticationMethods.all().map(m => m.value.toString() + ':' + m.label).join(', ')),
+    .isIn(AuthenticationMethods.all().map((m) => m.value))
+    .withMessage(
+      'Authentication method must be one of ' +
+        AuthenticationMethods.all()
+          .map((m) => m.value.toString() + ':' + m.label)
+          .join(', ')
+    ),
   check('encryptionMethod')
     .not()
     .isEmpty()
     .withMessage('Encryption method is required')
-    .isIn(EncryptionMethods.all().map(m => m.value))
-    .withMessage('Encryption method must be one of ' +
-      EncryptionMethods.all().map(m => m.value.toString() + ':' + m.label).join(', ')),
+    .isIn(EncryptionMethods.all().map((m) => m.value))
+    .withMessage(
+      'Encryption method must be one of ' +
+        EncryptionMethods.all()
+          .map((m) => m.value.toString() + ':' + m.label)
+          .join(', ')
+    ),
   check('ssid')
     .not()
     .isEmpty()
@@ -42,15 +50,15 @@ export const wirelessValidator = (): any => [
     .isLength({ max: 32 })
     .withMessage('Maximum length is 32'),
   check('pskPassphrase')
-    .if(check('authenticationMethod').custom(value => AuthenticationMethods.isPSK(value)))
+    .if(check('authenticationMethod').custom((value) => AuthenticationMethods.isPSK(value)))
     .isLength({ min: 8, max: 63 })
     .withMessage('PSK Passphrase length should be greater than or equal to 8 and less than or equal to 63'),
   check('ieee8021xProfileName')
-    .if(check('authenticationMethod').custom(value => AuthenticationMethods.isIEEE8021X(value)))
+    .if(check('authenticationMethod').custom((value) => AuthenticationMethods.isIEEE8021X(value)))
     .notEmpty()
     .withMessage('ieee8021xProfileName is required'),
   check('ieee8021xProfileName')
-    .if(check('authenticationMethod').custom(value => !AuthenticationMethods.isIEEE8021X(value)))
+    .if(check('authenticationMethod').custom((value) => !AuthenticationMethods.isIEEE8021X(value)))
     .isEmpty()
     .withMessage('ieee8021xProfileName can not be specified with the provided authenticationMethod'),
   check('ieee8021xProfileName')
@@ -72,18 +80,17 @@ export const wirelessValidator = (): any => [
     .withMessage('LinkPolicy should be an array of integers')
     .custom((value) => {
       if (!value.every(Number.isInteger)) throw new Error('Array does not contain integers') // check that contains Integers
-      if (!value.every(isValidLinkPolicy)) throw new Error('Array values should be either 1: available on S0 AC, 14: available on Sx AC, 16: available on S0 DC, 224: available on Sx DC')
+      if (!value.every(isValidLinkPolicy))
+        throw new Error(
+          'Array values should be either 1: available on S0 AC, 14: available on Sx AC, 16: available on S0 DC, 224: available on Sx DC'
+        )
       return true
     })
 ]
 
 export const wirelessEditValidator = (): any => [
   ...wirelessValidator(),
-  check('version')
-    .not()
-    .isEmpty()
-    .withMessage('Version is required to patch/update a record.')
-]
+  check('version').not().isEmpty().withMessage('Version is required to patch/update a record.')]
 
 const validateIEEE8021xConfigs = async (value: any, req: Request): Promise<boolean> => {
   const isProfileExist = await req.db.ieee8021xProfiles.checkProfileExits(value, req.tenantId)

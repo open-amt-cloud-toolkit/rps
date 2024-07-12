@@ -21,14 +21,19 @@ describe('Profiles - Create', () => {
   let sparseAcmCfg
 
   beforeEach(() => {
-    resSpy = createSpyObj('Response', ['status', 'json', 'end', 'send'])
+    resSpy = createSpyObj('Response', [
+      'status',
+      'json',
+      'end',
+      'send'
+    ])
     req = {
       db: { profiles: { insert: jest.fn(), delete: jest.fn() } },
       secretsManager: {
         writeSecretWithObject: jest.fn()
       },
       body: {},
-      query: { }
+      query: {}
     }
     defaultRedirectionCfgACM = {
       iderEnabled: false,

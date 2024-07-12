@@ -4,7 +4,14 @@
  **********************************************************************/
 
 import { type IDomainsTable } from '../../../interfaces/database/IDomainsDb.js'
-import { DUPLICATE_DOMAIN_FAILED, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP, CONCURRENCY_EXCEPTION, CONCURRENCY_MESSAGE } from '../../../utils/constants.js'
+import {
+  DUPLICATE_DOMAIN_FAILED,
+  API_UNEXPECTED_EXCEPTION,
+  DEFAULT_SKIP,
+  DEFAULT_TOP,
+  CONCURRENCY_EXCEPTION,
+  CONCURRENCY_MESSAGE
+} from '../../../utils/constants.js'
 import { type AMTDomain } from '../../../models/index.js'
 import { RPSError } from '../../../utils/RPSError.js'
 import Logger from '../../../Logger.js'
@@ -14,7 +21,7 @@ import { PostgresErr } from '../errors.js'
 export class DomainsTable implements IDomainsTable {
   db: PostgresDb
   log: Logger
-  constructor (db: PostgresDb) {
+  constructor(db: PostgresDb) {
     this.db = db
     this.log = new Logger('DomainsDb')
   }
@@ -23,12 +30,15 @@ export class DomainsTable implements IDomainsTable {
    * @description Get count of all domains from DB
    * @returns {number}
    */
-  async getCount (tenantId: string = ''): Promise<number> {
-    const result = await this.db.query<{ total_count: number }>(`
+  async getCount(tenantId = ''): Promise<number> {
+    const result = await this.db.query<{ total_count: number }>(
+      `
     SELECT count(*) OVER() AS total_count 
     FROM domains
     WHERE tenant_id = $1
-    `, [tenantId])
+    `,
+      [tenantId]
+    )
     let count = 0
     if (result != null && result.rows?.length > 0) {
       count = Number(result.rows[0].total_count)
@@ -42,8 +52,9 @@ export class DomainsTable implements IDomainsTable {
    * @param {number} skip
    * @returns {AMTDomain[]} returns an array of AMT Domain objects from DB
    */
-  async get (top: number = DEFAULT_TOP, skip: number = DEFAULT_SKIP, tenantId: string = ''): Promise<AMTDomain[]> {
-    const results = await this.db.query<AMTDomain>(`
+  async get(top: number = DEFAULT_TOP, skip: number = DEFAULT_SKIP, tenantId = ''): Promise<AMTDomain[]> {
+    const results = await this.db.query<AMTDomain>(
+      `
     SELECT 
       name as "profileName", 
       domain_suffix as "domainSuffix", 
@@ -56,7 +67,13 @@ export class DomainsTable implements IDomainsTable {
     FROM domains 
     WHERE tenant_id = $3
     ORDER BY name 
-    LIMIT $1 OFFSET $2`, [top, skip, tenantId])
+    LIMIT $1 OFFSET $2`,
+      [
+        top,
+        skip,
+        tenantId
+      ]
+    )
 
     return results.rows
   }
@@ -66,8 +83,9 @@ export class DomainsTable implements IDomainsTable {
    * @param {string} domainSuffix
    * @returns {AMTDomain} Domain object
    */
-  async getDomainByDomainSuffix (domainSuffix: string, tenantId: string = ''): Promise<AMTDomain | null> {
-    const results = await this.db.query<AMTDomain>(`
+  async getDomainByDomainSuffix(domainSuffix: string, tenantId = ''): Promise<AMTDomain | null> {
+    const results = await this.db.query<AMTDomain>(
+      `
     SELECT 
       name as "profileName", 
       domain_suffix as "domainSuffix", 
@@ -78,7 +96,9 @@ export class DomainsTable implements IDomainsTable {
       tenant_id as "tenantId",
       xmin as "version"
     FROM domains 
-    WHERE domain_suffix = $1 and tenant_id = $2`, [domainSuffix, tenantId])
+    WHERE domain_suffix = $1 and tenant_id = $2`,
+      [domainSuffix, tenantId]
+    )
 
     if (results?.rowCount) {
       if (results.rowCount > 0) {
@@ -94,8 +114,9 @@ export class DomainsTable implements IDomainsTable {
    * @param {string} domainName
    * @returns {AMTDomain} Domain object
    */
-  async getByName (domainName: string, tenantId: string = ''): Promise<AMTDomain | null> {
-    const results = await this.db.query<AMTDomain>(`
+  async getByName(domainName: string, tenantId = ''): Promise<AMTDomain | null> {
+    const results = await this.db.query<AMTDomain>(
+      `
     SELECT 
       name as "profileName", 
       domain_suffix as "domainSuffix", 
@@ -106,7 +127,9 @@ export class DomainsTable implements IDomainsTable {
       tenant_id as "tenantId",
       xmin as "version"
     FROM domains 
-    WHERE Name = $1 and tenant_id = $2`, [domainName, tenantId])
+    WHERE Name = $1 and tenant_id = $2`,
+      [domainName, tenantId]
+    )
 
     if (results?.rowCount) {
       if (results.rowCount > 0) {
@@ -122,11 +145,14 @@ export class DomainsTable implements IDomainsTable {
    * @param {string} domainName
    * @returns {boolean} Return true on successful deletion
    */
-  async delete (domainName: string, tenantId: string = ''): Promise<boolean> {
-    const results = await this.db.query(`
+  async delete(domainName: string, tenantId = ''): Promise<boolean> {
+    const results = await this.db.query(
+      `
     DELETE 
     FROM domains 
-    WHERE Name = $1 and tenant_id = $2`, [domainName, tenantId])
+    WHERE Name = $1 and tenant_id = $2`,
+      [domainName, tenantId]
+    )
 
     if (results?.rowCount) {
       if (results.rowCount > 0) {
@@ -143,20 +169,22 @@ export class DomainsTable implements IDomainsTable {
    * @param {AMTDomain} amtDomain
    * @returns {AMTDomain} Returns amtDomain object
    */
-  async insert (amtDomain: AMTDomain): Promise<AMTDomain | null> {
+  async insert(amtDomain: AMTDomain): Promise<AMTDomain | null> {
     try {
-      const results = await this.db.query(`
+      const results = await this.db.query(
+        `
       INSERT INTO domains(name, domain_suffix, provisioning_cert, provisioning_cert_storage_format, provisioning_cert_key, expiration_date, tenant_id)
       values($1, $2, $3, $4, $5, $6, $7)`,
-      [
-        amtDomain.profileName,
-        amtDomain.domainSuffix,
-        amtDomain.provisioningCert,
-        amtDomain.provisioningCertStorageFormat,
-        amtDomain.provisioningCertPassword,
-        amtDomain.expirationDate,
-        amtDomain.tenantId
-      ])
+        [
+          amtDomain.profileName,
+          amtDomain.domainSuffix,
+          amtDomain.provisioningCert,
+          amtDomain.provisioningCertStorageFormat,
+          amtDomain.provisioningCertPassword,
+          amtDomain.expirationDate,
+          amtDomain.tenantId
+        ]
+      )
       if (results?.rowCount) {
         if (results.rowCount > 0) {
           const domain = await this.getByName(amtDomain.profileName, amtDomain.tenantId)
@@ -178,23 +206,25 @@ export class DomainsTable implements IDomainsTable {
    * @param {AMTDomain} amtDomain object
    * @returns {AMTDomain} Returns amtDomain object
    */
-  async update (amtDomain: AMTDomain): Promise <AMTDomain | null> {
+  async update(amtDomain: AMTDomain): Promise<AMTDomain | null> {
     let latestItem: AMTDomain | null
     try {
-      const results = await this.db.query(`
+      const results = await this.db.query(
+        `
       UPDATE domains 
       SET domain_suffix=$2, provisioning_cert=$3, provisioning_cert_storage_format=$4, provisioning_cert_key=$5, expiration_date=$6 
       WHERE name=$1 and tenant_id = $7 and xmin = $8`,
-      [
-        amtDomain.profileName,
-        amtDomain.domainSuffix,
-        amtDomain.provisioningCert,
-        amtDomain.provisioningCertStorageFormat,
-        amtDomain.provisioningCertPassword,
-        amtDomain.expirationDate,
-        amtDomain.tenantId,
-        amtDomain.version
-      ])
+        [
+          amtDomain.profileName,
+          amtDomain.domainSuffix,
+          amtDomain.provisioningCert,
+          amtDomain.provisioningCertStorageFormat,
+          amtDomain.provisioningCertPassword,
+          amtDomain.expirationDate,
+          amtDomain.tenantId,
+          amtDomain.version
+        ]
+      )
       latestItem = await this.getByName(amtDomain.profileName, amtDomain.tenantId)
       if (results?.rowCount) {
         if (results.rowCount > 0) {

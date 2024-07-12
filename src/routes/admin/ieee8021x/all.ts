@@ -11,7 +11,7 @@ import { type Request, type Response } from 'express'
 import handleError from '../../../utils/handleError.js'
 import { type Ieee8021xConfig } from '../../../models/RCS.Config.js'
 
-export async function getAllIEEE8021xConfigs (req: Request, res: Response): Promise<void> {
+export async function getAllIEEE8021xConfigs(req: Request, res: Response): Promise<void> {
   const log = new Logger('getAllIEEE8021xConfigs')
   const top = Number(req.query.$top)
   const skip = Number(req.query.$skip)

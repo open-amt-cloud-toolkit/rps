@@ -22,10 +22,12 @@ export const AuthenticationProtocols = {
   EAP_SIM: { value: 8, label: 'EAP-SIM ' },
   EAP_AKA: { value: 9, label: 'EAP-AKA ' },
   EAP_FAST_TLS: { value: 10, label: 'EAP-FAST/TLS' },
-  labelForValue (value: number): string {
-    return this.all().filter(p => p.value === value).map(p => p.label)[0]
+  labelForValue(value: number): string {
+    return this.all()
+      .filter((p) => p.value === value)
+      .map((p) => p.label)[0]
   },
-  all (): AuthenticationProtocol[] {
+  all(): AuthenticationProtocol[] {
     return [
       this.EAP_TLS,
       this.EAP_TTLS_MSCHAPv2,
@@ -40,7 +42,7 @@ export const AuthenticationProtocols = {
       this.EAP_FAST_TLS
     ]
   },
-  forWiredInterface (): AuthenticationProtocol[] {
+  forWiredInterface(): AuthenticationProtocol[] {
     return [
       this.EAP_TLS,
       this.PEAP_GTC,
@@ -49,7 +51,7 @@ export const AuthenticationProtocols = {
       this.PEAP_MSCHAPv2
     ]
   },
-  forWirelessInterface (): AuthenticationProtocol[] {
+  forWirelessInterface(): AuthenticationProtocol[] {
     return [
       this.EAP_TLS,
       this.PEAP_MSCHAPv2

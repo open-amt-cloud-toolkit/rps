@@ -22,11 +22,11 @@ const unauthorizedResponse = {
     { name: 'Transfer-Encoding', value: 'chunked' },
     {
       name: 'Www-Authenticate',
-      value: 'Digest realm="Digest:34BF4B5A0561F95248F58509A406E046", nonce="bQali2IAAAAAAAAAn0xaWCOcxNsRcEHX",stale="false",qop="auth"'
+      value:
+        'Digest realm="Digest:34BF4B5A0561F95248F58509A406E046", nonce="bQali2IAAAAAAAAAn0xaWCOcxNsRcEHX",stale="false",qop="auth"'
     }
   ],
-  body: {
-  }
+  body: {}
 }
 
 describe('Error State Machine', () => {
@@ -37,8 +37,7 @@ describe('Error State Machine', () => {
     error = new Error()
     currentStateIndex = 0
     config = {
-      actors: {
-      },
+      actors: {},
       actions: {
         respondUnknown: () => {},
         respondBadRequest: () => {}

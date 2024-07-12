@@ -12,7 +12,7 @@ export class ClientMsgJsonParser {
    * @param {WebSocket.Data} message the message coming in over the websocket connection
    * @returns {ClientMsg} returns ClientMsg object if client message is valid
    */
-  parse (message: string): ClientMsg {
+  parse(message: string): ClientMsg {
     let msg: ClientMsg | null = null
     // Parse and convert the message
     const clientMsg: ClientMsg = JSON.parse(message)
@@ -25,7 +25,7 @@ export class ClientMsgJsonParser {
    * @param {ClientMsg} message
    * @returns {ClientMsg}
    */
-  convertClientMsg (message: ClientMsg): ClientMsg {
+  convertClientMsg(message: ClientMsg): ClientMsg {
     if (message.payload) {
       const decodedPayload = Buffer.from(message.payload, 'base64').toString('utf8')
       if (message.method !== ClientMethods.RESPONSE) {
@@ -42,7 +42,7 @@ export class ClientMsgJsonParser {
    * @param {string} payloadString
    * @returns {Payload}
    */
-  parsePayload (payloadString: string): Payload {
+  parsePayload(payloadString: string): Payload {
     let payload: Payload
     try {
       payload = JSON.parse(payloadString)
@@ -59,7 +59,7 @@ export class ClientMsgJsonParser {
     return payload
   }
 
-  zeroLeftPad (str: string, len: number): string | null {
+  zeroLeftPad(str: string, len: number): string | null {
     if (len == null && typeof len !== 'number') {
       return null
     }
@@ -71,7 +71,7 @@ export class ClientMsgJsonParser {
     return zlp + str
   }
 
-  getUUID (uuid: any[]): any {
+  getUUID(uuid: any[]): any {
     const bufUuid = Buffer.from(uuid)
     const guid = [
       this.zeroLeftPad(bufUuid.readUInt32LE(0).toString(16), 8),

@@ -44,7 +44,8 @@ describe('ciraconfig tests', () => {
       const ciraConfig: CIRAConfig[] = await ciraConfigTable.get()
       expect(ciraConfig.length).toBe(0)
       expect(querySpy).toBeCalledTimes(1)
-      expect(querySpy).toBeCalledWith(`SELECT 
+      expect(querySpy).toBeCalledWith(
+        `SELECT 
       cira_config_name as "configName", 
       mps_server_address as "mpsServerAddress", 
       mps_port as "mpsPort", 
@@ -60,24 +61,42 @@ describe('ciraconfig tests', () => {
     FROM ciraconfigs 
     WHERE tenant_id = $3
     ORDER BY cira_config_name 
-    LIMIT $1 OFFSET $2`, [DEFAULT_TOP, DEFAULT_SKIP, ''])
+    LIMIT $1 OFFSET $2`,
+        [
+          DEFAULT_TOP,
+          DEFAULT_SKIP,
+          ''
+        ]
+      )
     })
 
     test('should get null for non existant getByName', async () => {
       querySpy.mockResolvedValueOnce({ rows: [], command: '', fields: null, rowCount: 0, oid: 0 })
-      const config: CIRAConfig = await ciraConfigTable.getByName(configName) as any
+      const config: CIRAConfig = (await ciraConfigTable.getByName(configName)) as any
       expect(config).toBeNull()
     })
 
     test('should get expected count', async () => {
       const expected = 10
-      querySpy.mockResolvedValueOnce({ rows: [{ total_count: expected }], command: '', fields: null, rowCount: expected, oid: 0 })
+      querySpy.mockResolvedValueOnce({
+        rows: [{ total_count: expected }],
+        command: '',
+        fields: null,
+        rowCount: expected,
+        oid: 0
+      })
       const count: number = await ciraConfigTable.getCount()
       expect(count).toBe(expected)
     })
     test('should get count of 0 on no counts made', async () => {
       const expected = 0
-      querySpy.mockResolvedValueOnce({ rows: [{ total_count: expected }], command: '', fields: null, rowCount: expected, oid: 0 })
+      querySpy.mockResolvedValueOnce({
+        rows: [{ total_count: expected }],
+        command: '',
+        fields: null,
+        rowCount: expected,
+        oid: 0
+      })
       const count: number = await ciraConfigTable.getCount()
       expect(count).toBe(0)
     })
@@ -88,7 +107,7 @@ describe('ciraconfig tests', () => {
       expect(count).toBe(expected)
     })
     test('should get count of 0 on rows property missing', async () => {
-      querySpy.mockResolvedValueOnce({ })
+      querySpy.mockResolvedValueOnce({})
       const count: number = await ciraConfigTable.getCount()
       expect(count).toBe(0)
     })
@@ -100,10 +119,11 @@ describe('ciraconfig tests', () => {
 
     test('should get a ciraconfig by hostname when exist', async () => {
       querySpy.mockResolvedValueOnce({ rows: [ciraConfig], command: '', fields: null, rowCount: 1, oid: 0 })
-      const result: CIRAConfig = await ciraConfigTable.getByName(configName) as any
+      const result: CIRAConfig = (await ciraConfigTable.getByName(configName)) as any
       expect(result).toBe(ciraConfig)
       expect(querySpy).toBeCalledTimes(1)
-      expect(querySpy).toBeCalledWith(`
+      expect(querySpy).toBeCalledWith(
+        `
     SELECT 
       cira_config_name as "configName", 
       mps_server_address as "mpsServerAddress", 
@@ -118,7 +138,9 @@ describe('ciraconfig tests', () => {
       tenant_id as "tenantId",
       xmin as "version"
     FROM ciraconfigs 
-    WHERE cira_config_name = $1 and tenant_id = $2`, [configName, ''])
+    WHERE cira_config_name = $1 and tenant_id = $2`,
+        [configName, '']
+      )
     })
   })
   describe('Insert', () => {
@@ -128,21 +150,23 @@ describe('ciraconfig tests', () => {
       getByName.mockResolvedValueOnce(ciraConfig)
       const result = await ciraConfigTable.insert(ciraConfig)
       expect(querySpy).toBeCalledTimes(1)
-      expect(querySpy).toBeCalledWith(`INSERT INTO ciraconfigs(cira_config_name, mps_server_address, mps_port, user_name, password, common_name, server_address_format, auth_method, mps_root_certificate, proxydetails, tenant_id)
+      expect(querySpy).toBeCalledWith(
+        `INSERT INTO ciraconfigs(cira_config_name, mps_server_address, mps_port, user_name, password, common_name, server_address_format, auth_method, mps_root_certificate, proxydetails, tenant_id)
         values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-      [
-        ciraConfig.configName,
-        ciraConfig.mpsServerAddress,
-        ciraConfig.mpsPort,
-        ciraConfig.username,
-        ciraConfig.password,
-        ciraConfig.commonName,
-        ciraConfig.serverAddressFormat,
-        ciraConfig.authMethod,
-        ciraConfig.mpsRootCertificate,
-        ciraConfig.proxyDetails,
-        ciraConfig.tenantId
-      ])
+        [
+          ciraConfig.configName,
+          ciraConfig.mpsServerAddress,
+          ciraConfig.mpsPort,
+          ciraConfig.username,
+          ciraConfig.password,
+          ciraConfig.commonName,
+          ciraConfig.serverAddressFormat,
+          ciraConfig.authMethod,
+          ciraConfig.mpsRootCertificate,
+          ciraConfig.proxyDetails,
+          ciraConfig.tenantId
+        ]
+      )
       expect(getByName).toBeCalledTimes(1)
       expect(result).toBe(ciraConfig)
     })
@@ -153,21 +177,23 @@ describe('ciraconfig tests', () => {
       getByName.mockResolvedValueOnce(ciraConfig)
       const result = await ciraConfigTable.insert(ciraConfig)
       expect(querySpy).toBeCalledTimes(1)
-      expect(querySpy).toBeCalledWith(`INSERT INTO ciraconfigs(cira_config_name, mps_server_address, mps_port, user_name, password, common_name, server_address_format, auth_method, mps_root_certificate, proxydetails, tenant_id)
+      expect(querySpy).toBeCalledWith(
+        `INSERT INTO ciraconfigs(cira_config_name, mps_server_address, mps_port, user_name, password, common_name, server_address_format, auth_method, mps_root_certificate, proxydetails, tenant_id)
         values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-      [
-        ciraConfig.configName,
-        ciraConfig.mpsServerAddress,
-        ciraConfig.mpsPort,
-        ciraConfig.username,
-        ciraConfig.password,
-        ciraConfig.commonName,
-        ciraConfig.serverAddressFormat,
-        ciraConfig.authMethod,
-        ciraConfig.mpsRootCertificate,
-        ciraConfig.proxyDetails,
-        ciraConfig.tenantId
-      ])
+        [
+          ciraConfig.configName,
+          ciraConfig.mpsServerAddress,
+          ciraConfig.mpsPort,
+          ciraConfig.username,
+          ciraConfig.password,
+          ciraConfig.commonName,
+          ciraConfig.serverAddressFormat,
+          ciraConfig.authMethod,
+          ciraConfig.mpsRootCertificate,
+          ciraConfig.proxyDetails,
+          ciraConfig.tenantId
+        ]
+      )
       expect(getByName).toBeCalledTimes(0)
       expect(result).toBe(null)
     })
@@ -188,18 +214,25 @@ describe('ciraconfig tests', () => {
       const isDeleted: boolean = await ciraConfigTable.delete(configName)
       expect(isDeleted).toBe(false)
       expect(querySpy).toBeCalledTimes(1)
-      expect(querySpy).toBeCalledWith(`
+      expect(querySpy).toBeCalledWith(
+        `
       DELETE FROM ciraconfigs 
-      WHERE cira_config_name = $1 AND tenant_id = $2`, [configName, ''])
+      WHERE cira_config_name = $1 AND tenant_id = $2`,
+        [configName, '']
+      )
     })
     test('should NOT delete when constraint violation', async () => {
       querySpy.mockRejectedValueOnce({ code: '23503' })
-      await expect(ciraConfigTable.delete(ciraConfig.configName, '')).rejects.toThrow('CIRA Config: test config is associated with an AMT profile')
+      await expect(ciraConfigTable.delete(ciraConfig.configName, '')).rejects.toThrow(
+        'CIRA Config: test config is associated with an AMT profile'
+      )
     })
 
     test('should NOT delete when unexpected exception', async () => {
       querySpy.mockRejectedValueOnce(new Error('unknown'))
-      await expect(ciraConfigTable.delete(ciraConfig.configName, '')).rejects.toThrow('Operation failed: Delete CIRA config : test config')
+      await expect(ciraConfigTable.delete(ciraConfig.configName, '')).rejects.toThrow(
+        'Operation failed: Delete CIRA config : test config'
+      )
     })
   })
   describe('Update', () => {
@@ -209,24 +242,26 @@ describe('ciraconfig tests', () => {
       getByName.mockResolvedValueOnce(ciraConfig)
       const result = await ciraConfigTable.update(ciraConfig)
       expect(querySpy).toBeCalledTimes(1)
-      expect(querySpy).toBeCalledWith(`
+      expect(querySpy).toBeCalledWith(
+        `
       UPDATE ciraconfigs 
       SET mps_server_address=$2, mps_port=$3, user_name=$4, password=$5, common_name=$6, server_address_format=$7, auth_method=$8, mps_root_certificate=$9, proxydetails=$10 
       WHERE cira_config_name=$1 and tenant_id = $11 and xmin = $12`,
-      [
-        ciraConfig.configName,
-        ciraConfig.mpsServerAddress,
-        ciraConfig.mpsPort,
-        ciraConfig.username,
-        ciraConfig.password,
-        ciraConfig.commonName,
-        ciraConfig.serverAddressFormat,
-        ciraConfig.authMethod,
-        ciraConfig.mpsRootCertificate,
-        ciraConfig.proxyDetails,
-        ciraConfig.tenantId,
-        ciraConfig.version
-      ])
+        [
+          ciraConfig.configName,
+          ciraConfig.mpsServerAddress,
+          ciraConfig.mpsPort,
+          ciraConfig.username,
+          ciraConfig.password,
+          ciraConfig.commonName,
+          ciraConfig.serverAddressFormat,
+          ciraConfig.authMethod,
+          ciraConfig.mpsRootCertificate,
+          ciraConfig.proxyDetails,
+          ciraConfig.tenantId,
+          ciraConfig.version
+        ]
+      )
       expect(getByName).toBeCalledTimes(1)
       expect(result).toBe(ciraConfig)
     })

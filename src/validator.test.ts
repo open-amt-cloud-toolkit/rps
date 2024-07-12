@@ -61,13 +61,17 @@ describe('validator', () => {
   describe('get Device Credentials ', () => {
     test('should get device credentials from secret provider', async () => {
       const cred = { MPS_PASSWORD: 'sOK1A4Wh$rtp!FB2', AMT_PASSWORD: 'Intel123!', MEBX_PASSWORD: 'Intel123!' }
-      const getSpy = spyOn(validator.configurator.secretsManager, 'getSecretAtPath').mockImplementation(async () => cred)
+      const getSpy = spyOn(validator.configurator.secretsManager, 'getSecretAtPath').mockImplementation(
+        async () => cred
+      )
       const amtDevice = await validator.getDeviceCredentials(msg)
       expect(amtDevice).toBe(cred)
       expect(getSpy).toHaveBeenCalled()
     })
     test('should return null when credentials does not exists', async () => {
-      const getSpy = spyOn(validator.configurator.secretsManager, 'getSecretAtPath').mockImplementation(async () => null)
+      const getSpy = spyOn(validator.configurator.secretsManager, 'getSecretAtPath').mockImplementation(
+        async () => null
+      )
       const amtDevice = await validator.getDeviceCredentials(msg)
       expect(amtDevice).toBeNull()
       expect(getSpy).toHaveBeenCalled()
@@ -86,7 +90,9 @@ describe('validator', () => {
     let getSpy
     beforeEach(() => {
       const cred = { MPS_PASSWORD: 'sOK1A4Wh$rtp!FB2', AMT_PASSWORD: 'Intel123!', MEBX_PASSWORD: 'Intel123!' }
-      getSpy = spyOn(validator.configurator.secretsManager, 'getSecretAtPath').mockImplementation(async () => cred as any)
+      getSpy = spyOn(validator.configurator.secretsManager, 'getSecretAtPath').mockImplementation(
+        async () => cred as any
+      )
     })
     test('should get device credentials from secret provider', async () => {
       const clientId = randomUUID()
@@ -116,13 +122,15 @@ describe('validator', () => {
         description: 'should throw an exception if version is less than 7',
         input: { ver: '6.8.50' },
         shouldThrow: true,
-        expectedError: 'Device 4c4c4544-005a-3510-804b-b4c04f564433 activation failed. AMT version: 6.8.50. Version less than 7 cannot be remotely configured '
+        expectedError:
+          'Device 4c4c4544-005a-3510-804b-b4c04f564433 activation failed. AMT version: 6.8.50. Version less than 7 cannot be remotely configured '
       },
       {
         description: 'should throw an exception if version is 11.6 and build is less than 3000',
         input: { ver: '11.6.50', build: '2425' },
         shouldThrow: true,
-        expectedError: 'Device 4c4c4544-005a-3510-804b-b4c04f564433 activation failed. Please check with your OEM for a firmware update.'
+        expectedError:
+          'Device 4c4c4544-005a-3510-804b-b4c04f564433 activation failed. Please check with your OEM for a firmware update.'
       },
       {
         description: 'should not throw an exception if version is less than 11.6 and build is great than 3000',
@@ -136,16 +144,20 @@ describe('validator', () => {
       }
     ]
 
-    testCases.forEach(testCase => {
+    testCases.forEach((testCase) => {
       test(testCase.description, async () => {
         msg.payload.ver = testCase.input.ver
         if (testCase.input.build) {
           msg.payload.build = testCase.input.build
         }
         if (testCase.shouldThrow) {
-          expect(() => { validator.verifyAMTVersion(msg.payload, 'activation') }).toThrow(testCase.expectedError)
+          expect(() => {
+            validator.verifyAMTVersion(msg.payload, 'activation')
+          }).toThrow(testCase.expectedError)
         } else {
-          expect(() => { validator.verifyAMTVersion(msg.payload, 'activation') }).not.toThrow()
+          expect(() => {
+            validator.verifyAMTVersion(msg.payload, 'activation')
+          }).not.toThrow()
         }
       })
     })
@@ -156,9 +168,10 @@ describe('validator', () => {
       const msg = {
         apiKey: 'key',
         appVersion: '1.2.0',
-        message: 'all\'s good!',
+        message: "all's good!",
         method: 'activation',
-        payload: 'eyJidWlsZCI6IjM0MjUiLCJjZXJ0SGFzaGVzIjpbImU3Njg1NjM0ZWZhY2Y2OWFjZTkzOWE2YjI1NWI3YjRmYWJlZjQyOTM1YjUwYTI2NWFjYjVjYjYwMjdlNDRlNzAiLCJlYjA0Y2Y1ZWIxZjM5YWZhNzYyZjJiYjEyMGYyOTZjYmE1MjBjMWI5N2RiMTU4OTU2NWI4MWNiOWExN2I3MjQ0IiwiYzM4NDZiZjI0YjllOTNjYTY0Mjc0YzBlYzY3YzFlY2M1ZTAyNGZmY2FjZDJkNzQwMTkzNTBlODFmZTU0NmFlNCIsImQ3YTdhMGZiNWQ3ZTI3MzFkNzcxZTk0ODRlYmNkZWY3MWQ1ZjBjM2UwYTI5NDg3ODJiYzgzZWUwZWE2OTllZjQiLCIxNDY1ZmEyMDUzOTdiODc2ZmFhNmYwYTk5NThlNTU5MGU0MGZjYzdmYWE0ZmI3YzJjODY3NzUyMWZiNWZiNjU4IiwiODNjZTNjMTIyOTY4OGE1OTNkNDg1ZjgxOTczYzBmOTE5NTQzMWVkYTM3Y2M1ZTM2NDMwZTc5YzdhODg4NjM4YiIsImE0YjZiMzk5NmZjMmYzMDZiM2ZkODY4MWJkNjM0MTNkOGM1MDA5Y2M0ZmEzMjljMmNjZjBlMmZhMWIxNDAzMDUiLCI5YWNmYWI3ZTQzYzhkODgwZDA2YjI2MmE5NGRlZWVlNGI0NjU5OTg5YzNkMGNhZjE5YmFmNjQwNWU0MWFiN2RmIiwiYTUzMTI1MTg4ZDIxMTBhYTk2NGIwMmM3YjdjNmRhMzIwMzE3MDg5NGU1ZmI3MWZmZmI2NjY3ZDVlNjgxMGEzNiIsIjE2YWY1N2E5ZjY3NmIwYWIxMjYwOTVhYTVlYmFkZWYyMmFiMzExMTlkNjQ0YWM5NWNkNGI5M2RiZjNmMjZhZWIiLCI5NjBhZGYwMDYzZTk2MzU2NzUwYzI5NjVkZDBhMDg2N2RhMGI5Y2JkNmU3NzcxNGFlYWZiMjM0OWFiMzkzZGEzIiwiNjhhZDUwOTA5YjA0MzYzYzYwNWVmMTM1ODFhOTM5ZmYyYzk2MzcyZTNmMTIzMjViMGE2ODYxZTFkNTlmNjYwMyIsIjZkYzQ3MTcyZTAxY2JjYjBiZjYyNTgwZDg5NWZlMmI4YWM5YWQ0Zjg3MzgwMWUwYzEwYjljODM3ZDIxZWIxNzciLCI3M2MxNzY0MzRmMWJjNmQ1YWRmNDViMGU3NmU3MjcyODdjOGRlNTc2MTZjMWU2ZTYxNDFhMmIyY2JjN2Q4ZTRjIiwiMjM5OTU2MTEyN2E1NzEyNWRlOGNlZmVhNjEwZGRmMmZhMDc4YjVjODA2N2Y0ZTgyODI5MGJmYjg2MGU4NGIzYyIsIjQ1MTQwYjMyNDdlYjljYzhjNWI0ZjBkN2I1MzA5MWY3MzI5MjA4OWU2ZTVhNjNlMjc0OWRkM2FjYTkxOThlZGEiLCI0M2RmNTc3NGIwM2U3ZmVmNWZlNDBkOTMxYTdiZWRmMWJiMmU2YjQyNzM4YzRlNmQzODQxMTAzZDNhYTdmMzM5IiwiMmNlMWNiMGJmOWQyZjllMTAyOTkzZmJlMjE1MTUyYzNiMmRkMGNhYmRlMWM2OGU1MzE5YjgzOTE1NGRiYjdmNSIsIjcwYTczZjdmMzc2YjYwMDc0MjQ4OTA0NTM0YjExNDgyZDViZjBlNjk4ZWNjNDk4ZGY1MjU3N2ViZjJlOTNiOWEiXSwiY2xpZW50IjoiUFBDIiwiY3VycmVudE1vZGUiOjAsImZxZG4iOiJ2cHJvZGVtby5jb20iLCJwYXNzd29yZCI6IktRR25IK041cUo4WUxxakVGSk1uR1NnY25GTE12MFRrIiwicHJvZmlsZSI6InByb2ZpbGUxIiwic2t1IjoiMTYzOTIiLCJ1c2VybmFtZSI6IiQkT3NBZG1pbiIsInV1aWQiOlsxNiwxNDksMTcyLDc1LDE2Niw0LDMzLDY3LDE4NiwyMjYsMjEyLDkzLDIyMyw3LDE4MiwxMzJdLCJ2ZXIiOiIxMS44LjUwIn0=',
+        payload:
+          'eyJidWlsZCI6IjM0MjUiLCJjZXJ0SGFzaGVzIjpbImU3Njg1NjM0ZWZhY2Y2OWFjZTkzOWE2YjI1NWI3YjRmYWJlZjQyOTM1YjUwYTI2NWFjYjVjYjYwMjdlNDRlNzAiLCJlYjA0Y2Y1ZWIxZjM5YWZhNzYyZjJiYjEyMGYyOTZjYmE1MjBjMWI5N2RiMTU4OTU2NWI4MWNiOWExN2I3MjQ0IiwiYzM4NDZiZjI0YjllOTNjYTY0Mjc0YzBlYzY3YzFlY2M1ZTAyNGZmY2FjZDJkNzQwMTkzNTBlODFmZTU0NmFlNCIsImQ3YTdhMGZiNWQ3ZTI3MzFkNzcxZTk0ODRlYmNkZWY3MWQ1ZjBjM2UwYTI5NDg3ODJiYzgzZWUwZWE2OTllZjQiLCIxNDY1ZmEyMDUzOTdiODc2ZmFhNmYwYTk5NThlNTU5MGU0MGZjYzdmYWE0ZmI3YzJjODY3NzUyMWZiNWZiNjU4IiwiODNjZTNjMTIyOTY4OGE1OTNkNDg1ZjgxOTczYzBmOTE5NTQzMWVkYTM3Y2M1ZTM2NDMwZTc5YzdhODg4NjM4YiIsImE0YjZiMzk5NmZjMmYzMDZiM2ZkODY4MWJkNjM0MTNkOGM1MDA5Y2M0ZmEzMjljMmNjZjBlMmZhMWIxNDAzMDUiLCI5YWNmYWI3ZTQzYzhkODgwZDA2YjI2MmE5NGRlZWVlNGI0NjU5OTg5YzNkMGNhZjE5YmFmNjQwNWU0MWFiN2RmIiwiYTUzMTI1MTg4ZDIxMTBhYTk2NGIwMmM3YjdjNmRhMzIwMzE3MDg5NGU1ZmI3MWZmZmI2NjY3ZDVlNjgxMGEzNiIsIjE2YWY1N2E5ZjY3NmIwYWIxMjYwOTVhYTVlYmFkZWYyMmFiMzExMTlkNjQ0YWM5NWNkNGI5M2RiZjNmMjZhZWIiLCI5NjBhZGYwMDYzZTk2MzU2NzUwYzI5NjVkZDBhMDg2N2RhMGI5Y2JkNmU3NzcxNGFlYWZiMjM0OWFiMzkzZGEzIiwiNjhhZDUwOTA5YjA0MzYzYzYwNWVmMTM1ODFhOTM5ZmYyYzk2MzcyZTNmMTIzMjViMGE2ODYxZTFkNTlmNjYwMyIsIjZkYzQ3MTcyZTAxY2JjYjBiZjYyNTgwZDg5NWZlMmI4YWM5YWQ0Zjg3MzgwMWUwYzEwYjljODM3ZDIxZWIxNzciLCI3M2MxNzY0MzRmMWJjNmQ1YWRmNDViMGU3NmU3MjcyODdjOGRlNTc2MTZjMWU2ZTYxNDFhMmIyY2JjN2Q4ZTRjIiwiMjM5OTU2MTEyN2E1NzEyNWRlOGNlZmVhNjEwZGRmMmZhMDc4YjVjODA2N2Y0ZTgyODI5MGJmYjg2MGU4NGIzYyIsIjQ1MTQwYjMyNDdlYjljYzhjNWI0ZjBkN2I1MzA5MWY3MzI5MjA4OWU2ZTVhNjNlMjc0OWRkM2FjYTkxOThlZGEiLCI0M2RmNTc3NGIwM2U3ZmVmNWZlNDBkOTMxYTdiZWRmMWJiMmU2YjQyNzM4YzRlNmQzODQxMTAzZDNhYTdmMzM5IiwiMmNlMWNiMGJmOWQyZjllMTAyOTkzZmJlMjE1MTUyYzNiMmRkMGNhYmRlMWM2OGU1MzE5YjgzOTE1NGRiYjdmNSIsIjcwYTczZjdmMzc2YjYwMDc0MjQ4OTA0NTM0YjExNDgyZDViZjBlNjk4ZWNjNDk4ZGY1MjU3N2ViZjJlOTNiOWEiXSwiY2xpZW50IjoiUFBDIiwiY3VycmVudE1vZGUiOjAsImZxZG4iOiJ2cHJvZGVtby5jb20iLCJwYXNzd29yZCI6IktRR25IK041cUo4WUxxakVGSk1uR1NnY25GTE12MFRrIiwicHJvZmlsZSI6InByb2ZpbGUxIiwic2t1IjoiMTYzOTIiLCJ1c2VybmFtZSI6IiQkT3NBZG1pbiIsInV1aWQiOlsxNiwxNDksMTcyLDc1LDE2Niw0LDMzLDY3LDE4NiwyMjYsMjEyLDkzLDIyMyw3LDE4MiwxMzJdLCJ2ZXIiOiIxMS44LjUwIn0=',
         protocolVersion: '4.0.0',
         status: 'ok'
       }
@@ -168,7 +181,8 @@ describe('validator', () => {
     })
 
     test('check protocol version of message', () => {
-      const msg = '{"apiKey":"key","appVersion":"1.2.0","message":"all\'s good!","method":"activation","payload":"eyJidWlsZCI6IjM0MjUiLCJjZXJ0SGFzaGVzIjpbImU3Njg1NjM0ZWZhY2Y2OWFjZTkzOWE2YjI1NWI3YjRmYWJlZjQyOTM1YjUwYTI2NWFjYjVjYjYwMjdlNDRlNzAiLCJlYjA0Y2Y1ZWIxZjM5YWZhNzYyZjJiYjEyMGYyOTZjYmE1MjBjMWI5N2RiMTU4OTU2NWI4MWNiOWExN2I3MjQ0IiwiYzM4NDZiZjI0YjllOTNjYTY0Mjc0YzBlYzY3YzFlY2M1ZTAyNGZmY2FjZDJkNzQwMTkzNTBlODFmZTU0NmFlNCIsImQ3YTdhMGZiNWQ3ZTI3MzFkNzcxZTk0ODRlYmNkZWY3MWQ1ZjBjM2UwYTI5NDg3ODJiYzgzZWUwZWE2OTllZjQiLCIxNDY1ZmEyMDUzOTdiODc2ZmFhNmYwYTk5NThlNTU5MGU0MGZjYzdmYWE0ZmI3YzJjODY3NzUyMWZiNWZiNjU4IiwiODNjZTNjMTIyOTY4OGE1OTNkNDg1ZjgxOTczYzBmOTE5NTQzMWVkYTM3Y2M1ZTM2NDMwZTc5YzdhODg4NjM4YiIsImE0YjZiMzk5NmZjMmYzMDZiM2ZkODY4MWJkNjM0MTNkOGM1MDA5Y2M0ZmEzMjljMmNjZjBlMmZhMWIxNDAzMDUiLCI5YWNmYWI3ZTQzYzhkODgwZDA2YjI2MmE5NGRlZWVlNGI0NjU5OTg5YzNkMGNhZjE5YmFmNjQwNWU0MWFiN2RmIiwiYTUzMTI1MTg4ZDIxMTBhYTk2NGIwMmM3YjdjNmRhMzIwMzE3MDg5NGU1ZmI3MWZmZmI2NjY3ZDVlNjgxMGEzNiIsIjE2YWY1N2E5ZjY3NmIwYWIxMjYwOTVhYTVlYmFkZWYyMmFiMzExMTlkNjQ0YWM5NWNkNGI5M2RiZjNmMjZhZWIiLCI5NjBhZGYwMDYzZTk2MzU2NzUwYzI5NjVkZDBhMDg2N2RhMGI5Y2JkNmU3NzcxNGFlYWZiMjM0OWFiMzkzZGEzIiwiNjhhZDUwOTA5YjA0MzYzYzYwNWVmMTM1ODFhOTM5ZmYyYzk2MzcyZTNmMTIzMjViMGE2ODYxZTFkNTlmNjYwMyIsIjZkYzQ3MTcyZTAxY2JjYjBiZjYyNTgwZDg5NWZlMmI4YWM5YWQ0Zjg3MzgwMWUwYzEwYjljODM3ZDIxZWIxNzciLCI3M2MxNzY0MzRmMWJjNmQ1YWRmNDViMGU3NmU3MjcyODdjOGRlNTc2MTZjMWU2ZTYxNDFhMmIyY2JjN2Q4ZTRjIiwiMjM5OTU2MTEyN2E1NzEyNWRlOGNlZmVhNjEwZGRmMmZhMDc4YjVjODA2N2Y0ZTgyODI5MGJmYjg2MGU4NGIzYyIsIjQ1MTQwYjMyNDdlYjljYzhjNWI0ZjBkN2I1MzA5MWY3MzI5MjA4OWU2ZTVhNjNlMjc0OWRkM2FjYTkxOThlZGEiLCI0M2RmNTc3NGIwM2U3ZmVmNWZlNDBkOTMxYTdiZWRmMWJiMmU2YjQyNzM4YzRlNmQzODQxMTAzZDNhYTdmMzM5IiwiMmNlMWNiMGJmOWQyZjllMTAyOTkzZmJlMjE1MTUyYzNiMmRkMGNhYmRlMWM2OGU1MzE5YjgzOTE1NGRiYjdmNSIsIjcwYTczZjdmMzc2YjYwMDc0MjQ4OTA0NTM0YjExNDgyZDViZjBlNjk4ZWNjNDk4ZGY1MjU3N2ViZjJlOTNiOWEiXSwiY2xpZW50IjoiUFBDIiwiY3VycmVudE1vZGUiOjAsImZxZG4iOiJ2cHJvZGVtby5jb20iLCJwYXNzd29yZCI6IktRR25IK041cUo4WUxxakVGSk1uR1NnY25GTE12MFRrIiwicHJvZmlsZSI6InByb2ZpbGUxIiwic2t1IjoiMTYzOTIiLCJ1c2VybmFtZSI6IiQkT3NBZG1pbiIsInV1aWQiOlsxNiwxNDksMTcyLDc1LDE2Niw0LDMzLDY3LDE4NiwyMjYsMjEyLDkzLDIyMyw3LDE4MiwxMzJdLCJ2ZXIiOiIxMS44LjUwIn0=","protocolVersion":"3.0.0","status":"ok"}'
+      const msg =
+        '{"apiKey":"key","appVersion":"1.2.0","message":"all\'s good!","method":"activation","payload":"eyJidWlsZCI6IjM0MjUiLCJjZXJ0SGFzaGVzIjpbImU3Njg1NjM0ZWZhY2Y2OWFjZTkzOWE2YjI1NWI3YjRmYWJlZjQyOTM1YjUwYTI2NWFjYjVjYjYwMjdlNDRlNzAiLCJlYjA0Y2Y1ZWIxZjM5YWZhNzYyZjJiYjEyMGYyOTZjYmE1MjBjMWI5N2RiMTU4OTU2NWI4MWNiOWExN2I3MjQ0IiwiYzM4NDZiZjI0YjllOTNjYTY0Mjc0YzBlYzY3YzFlY2M1ZTAyNGZmY2FjZDJkNzQwMTkzNTBlODFmZTU0NmFlNCIsImQ3YTdhMGZiNWQ3ZTI3MzFkNzcxZTk0ODRlYmNkZWY3MWQ1ZjBjM2UwYTI5NDg3ODJiYzgzZWUwZWE2OTllZjQiLCIxNDY1ZmEyMDUzOTdiODc2ZmFhNmYwYTk5NThlNTU5MGU0MGZjYzdmYWE0ZmI3YzJjODY3NzUyMWZiNWZiNjU4IiwiODNjZTNjMTIyOTY4OGE1OTNkNDg1ZjgxOTczYzBmOTE5NTQzMWVkYTM3Y2M1ZTM2NDMwZTc5YzdhODg4NjM4YiIsImE0YjZiMzk5NmZjMmYzMDZiM2ZkODY4MWJkNjM0MTNkOGM1MDA5Y2M0ZmEzMjljMmNjZjBlMmZhMWIxNDAzMDUiLCI5YWNmYWI3ZTQzYzhkODgwZDA2YjI2MmE5NGRlZWVlNGI0NjU5OTg5YzNkMGNhZjE5YmFmNjQwNWU0MWFiN2RmIiwiYTUzMTI1MTg4ZDIxMTBhYTk2NGIwMmM3YjdjNmRhMzIwMzE3MDg5NGU1ZmI3MWZmZmI2NjY3ZDVlNjgxMGEzNiIsIjE2YWY1N2E5ZjY3NmIwYWIxMjYwOTVhYTVlYmFkZWYyMmFiMzExMTlkNjQ0YWM5NWNkNGI5M2RiZjNmMjZhZWIiLCI5NjBhZGYwMDYzZTk2MzU2NzUwYzI5NjVkZDBhMDg2N2RhMGI5Y2JkNmU3NzcxNGFlYWZiMjM0OWFiMzkzZGEzIiwiNjhhZDUwOTA5YjA0MzYzYzYwNWVmMTM1ODFhOTM5ZmYyYzk2MzcyZTNmMTIzMjViMGE2ODYxZTFkNTlmNjYwMyIsIjZkYzQ3MTcyZTAxY2JjYjBiZjYyNTgwZDg5NWZlMmI4YWM5YWQ0Zjg3MzgwMWUwYzEwYjljODM3ZDIxZWIxNzciLCI3M2MxNzY0MzRmMWJjNmQ1YWRmNDViMGU3NmU3MjcyODdjOGRlNTc2MTZjMWU2ZTYxNDFhMmIyY2JjN2Q4ZTRjIiwiMjM5OTU2MTEyN2E1NzEyNWRlOGNlZmVhNjEwZGRmMmZhMDc4YjVjODA2N2Y0ZTgyODI5MGJmYjg2MGU4NGIzYyIsIjQ1MTQwYjMyNDdlYjljYzhjNWI0ZjBkN2I1MzA5MWY3MzI5MjA4OWU2ZTVhNjNlMjc0OWRkM2FjYTkxOThlZGEiLCI0M2RmNTc3NGIwM2U3ZmVmNWZlNDBkOTMxYTdiZWRmMWJiMmU2YjQyNzM4YzRlNmQzODQxMTAzZDNhYTdmMzM5IiwiMmNlMWNiMGJmOWQyZjllMTAyOTkzZmJlMjE1MTUyYzNiMmRkMGNhYmRlMWM2OGU1MzE5YjgzOTE1NGRiYjdmNSIsIjcwYTczZjdmMzc2YjYwMDc0MjQ4OTA0NTM0YjExNDgyZDViZjBlNjk4ZWNjNDk4ZGY1MjU3N2ViZjJlOTNiOWEiXSwiY2xpZW50IjoiUFBDIiwiY3VycmVudE1vZGUiOjAsImZxZG4iOiJ2cHJvZGVtby5jb20iLCJwYXNzd29yZCI6IktRR25IK041cUo4WUxxakVGSk1uR1NnY25GTE12MFRrIiwicHJvZmlsZSI6InByb2ZpbGUxIiwic2t1IjoiMTYzOTIiLCJ1c2VybmFtZSI6IiQkT3NBZG1pbiIsInV1aWQiOlsxNiwxNDksMTcyLDc1LDE2Niw0LDMzLDY3LDE4NiwyMjYsMjEyLDkzLDIyMyw3LDE4MiwxMzJdLCJ2ZXIiOiIxMS44LjUwIn0=","protocolVersion":"3.0.0","status":"ok"}'
       VersionChecker.setCurrentVersion('4.0.0')
       let rpsError: any = null
       try {
@@ -178,9 +192,7 @@ describe('validator', () => {
       }
 
       expect(rpsError).toBeInstanceOf(RPSError)
-      expect(rpsError.message).toEqual(
-        'protocol version NOT supported: 3.0.0'
-      )
+      expect(rpsError.message).toEqual('protocol version NOT supported: 3.0.0')
     })
   })
 
@@ -323,7 +335,9 @@ describe('validator', () => {
       }
       expect(rpsError).toBeInstanceOf(RPSError)
       expect(getAMTProfileSpy).toHaveBeenCalled()
-      expect(rpsError.message).toEqual(`Device ${msg.payload.uuid} activation failed. ${msg.payload.profile} does not match list of available AMT profiles.`)
+      expect(rpsError.message).toEqual(
+        `Device ${msg.payload.uuid} activation failed. ${msg.payload.profile} does not match list of available AMT profiles.`
+      )
     })
     test('Should throw an exception if uuid length is not 36', async () => {
       let rpsError: any = null
@@ -378,7 +392,9 @@ describe('validator', () => {
         rpsError = error
       }
       expect(rpsError).toBeInstanceOf(RPSError)
-      expect(rpsError.message).toContain(`Device ${msg.payload.uuid} deactivation failed. It is in unknown mode: ${msg.payload.currentMode}.`)
+      expect(rpsError.message).toContain(
+        `Device ${msg.payload.uuid} deactivation failed. It is in unknown mode: ${msg.payload.currentMode}.`
+      )
     })
     test('should set client data when current mode is 1', async () => {
       msg.payload.currentMode = 1
@@ -408,7 +424,9 @@ describe('validator', () => {
         rpsError = error
       }
       expect(rpsError).toBeInstanceOf(RPSError)
-      expect(rpsError.message).toEqual(`Device ${msg.payload.uuid} activation failed. Missing certificate hashes from the device.`)
+      expect(rpsError.message).toEqual(
+        `Device ${msg.payload.uuid} activation failed. Missing certificate hashes from the device.`
+      )
     })
     test('should throw an exception if no fqdn', async () => {
       let rpsError: any = null
@@ -431,7 +449,9 @@ describe('validator', () => {
         rpsError = error
       }
       expect(rpsError).toBeInstanceOf(RPSError)
-      expect(rpsError.message).toEqual(`Device ${msg.payload.uuid} activation failed. Specified AMT domain suffix: abcd does not match list of available AMT domain suffixes.`)
+      expect(rpsError.message).toEqual(
+        `Device ${msg.payload.uuid} activation failed. Specified AMT domain suffix: abcd does not match list of available AMT domain suffixes.`
+      )
     })
     test('should not throw an exception if device already in ACM without FQDN', async () => {
       let rpsError = null
@@ -469,7 +489,10 @@ describe('validator', () => {
         unauthCount: 0
       } as any
       devices[clientId] = clientObj
-      const getDevcieCredentialsSpy = spyOn(validator, 'getDeviceCredentials').mockResolvedValue({ AMT_PASSWORD: msg.payload.password, MEBX_PASSWORD: 'TestP{assw0rd' } as DeviceCredentials)
+      const getDevcieCredentialsSpy = spyOn(validator, 'getDeviceCredentials').mockResolvedValue({
+        AMT_PASSWORD: msg.payload.password,
+        MEBX_PASSWORD: 'TestP{assw0rd'
+      } as DeviceCredentials)
       const updateTagsSpy = spyOn(validator, 'updateTags').mockResolvedValue()
       await validator.setNextStepsForConfiguration(msg, clientObj.ClientId)
       expect(clientObj.amtPassword).toBe(msg.payload.password)
@@ -487,7 +510,9 @@ describe('validator', () => {
         unauthCount: 0
       } as any
       devices[clientId] = clientObj
-      const getDeviceCredentialsSpy = spyOn(validator, 'getDeviceCredentials').mockResolvedValue({ AMT_PASSWORD: msg.payload.password } as DeviceCredentials)
+      const getDeviceCredentialsSpy = spyOn(validator, 'getDeviceCredentials').mockResolvedValue({
+        AMT_PASSWORD: msg.payload.password
+      } as DeviceCredentials)
       const updateTagsSpy = spyOn(validator, 'updateTags').mockResolvedValue()
       await validator.setNextStepsForConfiguration(msg, clientObj.ClientId)
       expect(clientObj.amtPassword).toBe(msg.payload.password)
@@ -501,7 +526,13 @@ describe('validator', () => {
     let profile
     let setNextStepsForConfigurationSpy
     beforeEach(() => {
-      profile = { profileName: 'profile1', amtPassword: 'P@ssw0rd', activation: 'ccmactivate', mebxPassword: 'P@ssw0rd', tenantId: '' }
+      profile = {
+        profileName: 'profile1',
+        amtPassword: 'P@ssw0rd',
+        activation: 'ccmactivate',
+        mebxPassword: 'P@ssw0rd',
+        tenantId: ''
+      }
       setNextStepsForConfigurationSpy = spyOn(validator, 'setNextStepsForConfiguration')
     })
     test('should set nothing when current mode is 0', async () => {
