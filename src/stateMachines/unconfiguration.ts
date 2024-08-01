@@ -510,7 +510,7 @@ export class Unconfiguration {
           src: 'errorMachine',
           id: 'error-machine',
           input: ({ context, event }) => ({
-            message: event.output,
+            message: event.error,
             clientId: context.clientId
           }),
           onDone: 'ENUMERATE_ETHERNET_PORT_SETTINGS'
@@ -1086,6 +1086,6 @@ export class Unconfiguration {
     this.configurator = new Configurator()
     this.validator = new Validator(new Logger('Validator'), this.configurator)
     this.dbFactory = new DbCreatorFactory()
-    this.logger = new Logger('Activation_State_Machine')
+    this.logger = new Logger('Unconfiguration_State_Machine')
   }
 }

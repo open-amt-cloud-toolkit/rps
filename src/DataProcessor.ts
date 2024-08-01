@@ -152,7 +152,7 @@ export class DataProcessor {
       }
     }
     this.logger.debug(
-      `Device ${clientId}` +
+      `Device ${clientId} ` +
         `wsman response ${statusCode} ${resolveValue ? 'resolved' : 'rejected'}: ` +
         `${JSON.stringify(clientMsg.payload, null, '\t')}`
     )

@@ -877,7 +877,7 @@ export class Activation {
               'Set activation status'
 
             ],
-            target: 'UPDATE_CREDENTIALS'
+            target: 'DELAYED_TRANSITION'
           },
           {
             guard: 'isDeviceClientModeActivated',
