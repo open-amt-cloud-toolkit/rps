@@ -109,7 +109,7 @@ export class Deactivation {
       unauthCount: 0,
       xmlMessage: input.xmlMessage,
       errorMessage: input.errorMessage,
-      statusMessage: input.statusMessage,
+      statusMessage: '',
       tenantId: input.tenantId,
       httpHandler: new HttpHandler()
     }),

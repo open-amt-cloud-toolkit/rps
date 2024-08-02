@@ -7,6 +7,7 @@ import { sendParent, setup } from 'xstate'
 import { HttpHandler } from '../HttpHandler.js'
 import { devices } from '../devices.js'
 import { type HttpZResponseModel } from 'http-z'
+import Logger from '../Logger.js'
 
 const httpHandler = new HttpHandler()
 export interface ErrorContext {
@@ -20,6 +21,8 @@ interface ErrorEvent {
 }
 
 export class Error {
+  logger: Logger
+
   addAuthorizationHeader = ({ context }: { context: ErrorContext }): void => {
     const { message, clientId } = context
     const clientObj = devices[clientId]
@@ -38,6 +41,7 @@ export class Error {
   resetAuthCount = ({ context }: { context: ErrorContext }): void => {
     if (devices[context.clientId] != null) {
       devices[context.clientId].unauthCount = 0
+      this.logger.silly(`Reset unauthCount of ${context.clientId} to 0`)
     }
   }
 
@@ -70,7 +74,10 @@ export class Error {
       resetAuthCount: this.resetAuthCount
     }
   }).createMachine({
-    context: ({ input }) => ({ message: input.message, clientId: input.clientId }),
+    context: ({ input }) => {
+      this.logger.silly(`${JSON.stringify(input.message)}`)
+      return { message: input.message, clientId: input.clientId }
+    },
     id: 'error-machine',
     initial: 'ERRORED',
     states: {
@@ -117,4 +124,8 @@ export class Error {
       }
     }
   })
+
+  constructor() {
+    this.logger = new Logger('Error_State_Machine')
+  }
 }
