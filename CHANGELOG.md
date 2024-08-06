@@ -1,9 +1,8 @@
 ## [2.22.9](https://github.com/open-amt-cloud-toolkit/rps/compare/v2.22.8...v2.22.9) (2024-08-02)
 
-
 ### Bug Fixes
 
-* abnormal websocket closure post ccm ([#1727](https://github.com/open-amt-cloud-toolkit/rps/issues/1727)) ([755aa02](https://github.com/open-amt-cloud-toolkit/rps/commit/755aa0222fbdabf477433aabf49bcc53088ed050))
+- abnormal websocket closure post ccm ([#1727](https://github.com/open-amt-cloud-toolkit/rps/issues/1727)) ([755aa02](https://github.com/open-amt-cloud-toolkit/rps/commit/755aa0222fbdabf477433aabf49bcc53088ed050))
 
 ## [2.22.8](https://github.com/open-amt-cloud-toolkit/rps/compare/v2.22.7...v2.22.8) (2024-07-15)
 
