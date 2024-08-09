@@ -64,7 +64,7 @@ export class HttpHandler {
         message += `Authorization: ${authorizationRequestHeader}\r\n`
       }
       // Use Chunked-Encoding
-      // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+
       message += Buffer.from(
         [
           `Host: ${connectionParams.guid}:${connectionParams.port}`,

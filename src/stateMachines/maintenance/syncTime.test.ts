@@ -7,7 +7,7 @@ import { type DoneResponse, StatusFailed } from './doneResponse.js'
 import { setupTestClient } from '../../test/helper/Config.js'
 import { PTStatus } from '../../utils/PTStatus.js'
 import { runTilDone } from '../../test/helper/xstate.js'
-import { type MachineImplementations } from 'xstate'
+import { type MachineImplementationsSimplified } from 'xstate'
 import { jest } from '@jest/globals'
 
 import { HttpResponseError, coalesceMessage } from '../common.js'
@@ -34,7 +34,7 @@ describe('SyncTime State Machine', () => {
   let doneResponse: DoneResponse
   let context: SyncTimeContext
   let implementation: SyncTimeType
-  let implementationConfig: MachineImplementations<SyncTimeContext, SyncTimeEvent>
+  let implementationConfig: MachineImplementationsSimplified<SyncTimeContext, SyncTimeEvent>
   let event: SyncTimeEvent
   let lowAccuracyRsp: GetLowAccuracyTimeSynchResponse
   let highAccuracyRsp: SetHighAccuracyTimeSynchResponse
@@ -75,7 +75,10 @@ describe('SyncTime State Machine', () => {
       actors: {
         // getLowAccuracyTimeSync: fromPromise(async ({ input }) => await Promise.resolve({})),
         // setHighAccuracyTimeSynch: fromPromise(async ({ input }) => await Promise.resolve({}))
-      }
+      },
+      actions: {},
+      guards: {},
+      delays: {}
     }
 
     event = { type: SyncTimeEventType, clientId }

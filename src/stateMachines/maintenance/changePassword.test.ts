@@ -15,7 +15,7 @@ import { Environment } from '../../utils/Environment.js'
 import { jest } from '@jest/globals'
 import { type SpyInstance, spyOn } from 'jest-mock'
 import got from 'got'
-import { type MachineImplementations, fromPromise } from 'xstate'
+import { type MachineImplementationsSimplified, fromPromise } from 'xstate'
 
 import {
   type ChangePassword as ChangePasswordType,
@@ -46,7 +46,7 @@ describe('ChangePassword State Machine', () => {
   let deviceCredentials: DeviceCredentials
   let event: ChangePasswordEvent
   let implementation: ChangePasswordType
-  let implementationConfig: MachineImplementations<ChangePasswordContext, ChangePasswordEvent>
+  let implementationConfig: MachineImplementationsSimplified<ChangePasswordContext, ChangePasswordEvent>
   let setAdminACLEntryExResponse: SetAdminACLEntryExResponse
   let secretWriterSpy: SpyInstance<any>
   let secretGetterSpy: SpyInstance<any>
@@ -107,7 +107,9 @@ describe('ChangePassword State Machine', () => {
     } as any
     implementationConfig = {
       actors: {},
-      guards: {}
+      guards: {},
+      actions: {},
+      delays: {}
     }
     const mockSecretsManager: ISecretManagerService = {
       deleteSecretAtPath: jest.fn<any>(),

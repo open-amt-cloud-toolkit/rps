@@ -13,7 +13,7 @@ import {
   type WiFiConfigEvent,
   type WiFiConfiguration as WiFiConfigurationType
 } from './wifiNetworkConfiguration.js'
-import { type MachineImplementations, createActor, fromPromise } from 'xstate'
+import { type MachineImplementationsSimplified, createActor, fromPromise } from 'xstate'
 import { HttpHandler } from '../HttpHandler.js'
 import { AMT, CIM } from '@open-amt-cloud-toolkit/wsman-messages'
 import { jest } from '@jest/globals'
@@ -34,7 +34,7 @@ const { WiFiConfiguration } = await import('./wifiNetworkConfiguration.js')
 const clientId = randomUUID()
 Environment.Config = config
 describe('WiFi Network Configuration', () => {
-  let config: MachineImplementations<WiFiConfigContext, WiFiConfigEvent>
+  let config: MachineImplementationsSimplified<WiFiConfigContext, WiFiConfigEvent>
   let currentStateIndex: number
   let wifiConfiguration: WiFiConfigurationType
   let context
@@ -180,7 +180,8 @@ describe('WiFi Network Configuration', () => {
       actions: {
         'Reset Unauth Count': () => {},
         'Read Ethernet Port Settings': () => {}
-      }
+      },
+      delays: {}
     }
   })
 

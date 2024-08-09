@@ -6,7 +6,7 @@
 import { type AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 import { type DoneResponse, StatusFailed, StatusSuccess } from './doneResponse.js'
 import { runTilDone } from '../../test/helper/xstate.js'
-import { type MachineImplementations } from 'xstate'
+import { type MachineImplementationsSimplified } from 'xstate'
 import { setupTestClient } from '../../test/helper/Config.js'
 import { jest } from '@jest/globals'
 
@@ -39,7 +39,7 @@ describe('SyncIP State Machine', () => {
   let event: SyncIPEvent
   let implementation: SyncIPType
   let context: SyncIPContext
-  let implementationConfig: MachineImplementations<SyncIPContext, SyncIPEvent>
+  let implementationConfig: MachineImplementationsSimplified<SyncIPContext, SyncIPEvent>
   let targetIPConfig: IPConfiguration
   let enumerateRsp: EthernetPortSettingsEnumerateResponse
   let wiredPortSettings: AMT.Models.EthernetPortSettings
@@ -136,7 +136,10 @@ describe('SyncIP State Machine', () => {
       }
     } as any
     implementationConfig = {
-      actors: {}
+      actors: {},
+      actions: {},
+      guards: {},
+      delays: {}
     }
     putRsp = wiredPortSettings
     event = { type: SyncIPEventType, clientId, targetIPConfig }

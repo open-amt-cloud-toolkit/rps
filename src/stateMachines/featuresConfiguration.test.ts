@@ -18,7 +18,7 @@ import {
 import { randomUUID } from 'node:crypto'
 import { devices } from '../devices.js'
 import { HttpHandler } from '../HttpHandler.js'
-import { type MachineImplementations, createActor, fromPromise } from 'xstate'
+import { type MachineImplementationsSimplified, createActor, fromPromise } from 'xstate'
 import { AMT, CIM, IPS } from '@open-amt-cloud-toolkit/wsman-messages'
 import { jest } from '@jest/globals'
 
@@ -37,7 +37,7 @@ describe('Features State Machine', () => {
   let ipsOptInsSvcJson
   let kvmRedirectionSvcJson
   let currentStateIndex = 0
-  let machineConfig: MachineImplementations<FeatureContext, FeatureEvent>
+  let machineConfig: MachineImplementationsSimplified<FeatureContext, FeatureEvent>
   let context: FeatureContext
   beforeEach(() => {
     clientId = randomUUID()
@@ -113,7 +113,9 @@ describe('Features State Machine', () => {
         putRedirectionService: fromPromise(async ({ input }) => await Promise.resolve({ clientId })),
         putIpsOptInService: fromPromise(async ({ input }) => await Promise.resolve({ clientId }))
       },
-      actions: {}
+      actions: {},
+      guards: {},
+      delays: {}
     }
   })
 
