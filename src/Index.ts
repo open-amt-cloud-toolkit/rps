@@ -24,7 +24,6 @@ import { type IServiceManager } from './interfaces/IServiceManager.js'
 import path from 'node:path'
 import { URL, fileURLToPath, pathToFileURL } from 'node:url'
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
 const log = new Logger('Index')
 

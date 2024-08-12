@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type MachineImplementations, createActor, fromPromise } from 'xstate'
+import { type MachineImplementationsSimplified, createActor, fromPromise } from 'xstate'
 import { HttpHandler } from '../HttpHandler.js'
 import { devices } from '../devices.js'
 import { jest } from '@jest/globals'
@@ -16,7 +16,7 @@ const { TimeSync } = await import('./timeMachine.js')
 
 describe('TLS State Machine', () => {
   let timeMachine: TimeSyncType
-  let config: MachineImplementations<TimeSyncContext, TimeSyncEvent>
+  let config: MachineImplementationsSimplified<TimeSyncContext, TimeSyncEvent>
   let context
   let currentStateIndex = 0
 
@@ -52,7 +52,10 @@ describe('TLS State Machine', () => {
               Envelope: { Body: { SetHighAccuracyTimeSynch_OUTPUT: { ReturnValue: 0 } } }
             })
         )
-      }
+      },
+      actions: {},
+      guards: {},
+      delays: {}
     }
   })
   it('should sync the time', (done) => {

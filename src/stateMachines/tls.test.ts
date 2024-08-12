@@ -99,7 +99,7 @@ describe('TLS State Machine', () => {
     jest.useFakeTimers()
     context.amtProfile = { tlsMode: 3, tlsSigningAuthoritys: 'SelfSigned' } as any
     // already existing error case is covered with this reject
-    // eslint-disable-next-line prefer-promise-reject-errors
+
     config.actors.createTlsCredentialContext = fromPromise(
       async ({ input }) =>
         await Promise.reject({

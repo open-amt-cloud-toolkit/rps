@@ -44,7 +44,6 @@ export class WSEnterpriseAssistantListener {
     enterpriseAssistantSocket = ws
 
     enterpriseAssistantSocket.on('message', async (data: Data, isBinary: boolean) => {
-      // eslint-disable-next-line @typescript-eslint/no-base-to-string
       const message: string = data.toString()
       await this.onMessageReceived(message)
     })

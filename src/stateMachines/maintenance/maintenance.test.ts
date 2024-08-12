@@ -15,7 +15,7 @@ import { type DeviceInfo } from './syncDeviceInfo.js'
 import { jest } from '@jest/globals'
 import { spyOn } from 'jest-mock'
 import { HttpHandler } from '../../HttpHandler.js'
-import { type MachineImplementations, fromPromise } from 'xstate'
+import { type MachineImplementationsSimplified, fromPromise } from 'xstate'
 import { type DoneResponse, StatusFailed } from './doneResponse.js'
 import { type Maintenance as MaintenanceType, type MaintenanceContext, type MaintenanceEvent } from './maintenance.js'
 
@@ -34,7 +34,7 @@ describe('Maintenance State Machine', () => {
   const clientId = setupTestClient()
   let currentStateIndex: number
   let implementation: MaintenanceType
-  let implementationConfig: MachineImplementations<MaintenanceContext, MaintenanceEvent>
+  let implementationConfig: MachineImplementationsSimplified<MaintenanceContext, MaintenanceEvent>
   let context: MaintenanceContext
   let hostNameInfo: HostNameInfo
   let deviceInfo: DeviceInfo
@@ -63,7 +63,10 @@ describe('Maintenance State Machine', () => {
         syncTime: fromPromise(async ({ input }) => await Promise.resolve({ taskName: 'synctime', status: 'SUCCESS' })),
         syncHostName: fromPromise(async ({ input }) => await Promise.resolve({ status: 'SUCCESS' })),
         syncDeviceInfo: fromPromise(async ({ input }) => await Promise.resolve({ status: 'SUCCESS' }))
-      }
+      },
+      actions: {},
+      guards: {},
+      delays: {}
     }
   })
   afterEach(() => {
