@@ -1,3 +1,5 @@
+## [2.22.10](https://github.com/open-amt-cloud-toolkit/rps/compare/v2.22.9...v2.22.10) (2024-08-12)
+
 ## [2.22.9](https://github.com/open-amt-cloud-toolkit/rps/compare/v2.22.8...v2.22.9) (2024-08-02)
 
 ### Bug Fixes
