@@ -9,7 +9,7 @@ import { runTilDone } from '../../test/helper/xstate.js'
 import { Environment } from '../../utils/Environment.js'
 import { jest } from '@jest/globals'
 import { type SpyInstance, spyOn } from 'jest-mock'
-import { type MachineImplementations } from 'xstate'
+import { type MachineImplementationsSimplified } from 'xstate'
 import got from 'got'
 
 import { coalesceMessage, HttpResponseError } from '../common.js'
@@ -40,7 +40,7 @@ describe('SyncDeviceInfo State Machine', () => {
   let event: SyncDeviceInfoEvent
   let context: SyncDeviceInfoContext
   let implementation: SyncDeviceInfoType
-  let implementationConfig: MachineImplementations<SyncDeviceInfoContext, SyncDeviceInfoEvent>
+  let implementationConfig: MachineImplementationsSimplified<SyncDeviceInfoContext, SyncDeviceInfoEvent>
   let deviceInfo: DeviceInfo
   let mpsRsp: any
   let gotSpy: SpyInstance<any>
@@ -74,7 +74,10 @@ describe('SyncDeviceInfo State Machine', () => {
     implementationConfig = {
       actors: {
         // saveToMPS: fromPromise(async ({ input }) => await Promise.resolve({}))
-      }
+      },
+      actions: {},
+      guards: {},
+      delays: {}
     }
 
     gotSpy = spyOn(got, 'patch')

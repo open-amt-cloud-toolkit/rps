@@ -15,7 +15,7 @@ import { Environment } from '../utils/Environment.js'
 import { config } from '../test/helper/Config.js'
 import { type CIRAConfig } from '../models/RCS.Config.js'
 import { HttpHandler } from '../HttpHandler.js'
-import { type MachineImplementations, createActor, fromPromise } from 'xstate'
+import { type MachineImplementationsSimplified, createActor, fromPromise } from 'xstate'
 import { HttpResponseError, coalesceMessage, isDigestRealmValid } from './common.js'
 import { jest } from '@jest/globals'
 
@@ -45,7 +45,7 @@ describe('CIRA Configuration State Machine', () => {
     Envelope: { Body: { EnumerateResponse: { EnumerationContext: 'abcd' } } }
   }
   let ciraStateMachineImpl: CIRAConfigurationType
-  let machineConfig: MachineImplementations<CIRAConfigContext, CIRAConfigEvent>
+  let machineConfig: MachineImplementationsSimplified<CIRAConfigContext, CIRAConfigEvent>
   let machineContext
   let ciraConfig: CIRAConfig
   beforeEach(() => {
@@ -109,7 +109,10 @@ describe('CIRA Configuration State Machine', () => {
         ),
         getEnvironmentDetectionSettings: fromPromise(async ({ input }) => await Promise.resolve({})),
         putEnvironmentDetectionSettings: fromPromise(async ({ input }) => await Promise.resolve({}))
-      }
+      },
+      actions: {},
+      guards: {},
+      delays: {}
     }
   })
 

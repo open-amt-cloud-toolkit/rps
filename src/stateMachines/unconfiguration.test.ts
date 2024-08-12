@@ -13,7 +13,7 @@ import {
 } from './unconfiguration.js'
 import { config } from '../test/helper/Config.js'
 import { HttpHandler } from '../HttpHandler.js'
-import { type MachineImplementations, createActor, fromPromise } from 'xstate'
+import { type MachineImplementationsSimplified, createActor, fromPromise } from 'xstate'
 import { AMT, CIM, IPS } from '@open-amt-cloud-toolkit/wsman-messages'
 import { jest } from '@jest/globals'
 import { HttpResponseError, coalesceMessage, isDigestRealmValid } from './common.js'
@@ -36,7 +36,7 @@ describe('Unconfiguration State Machine', () => {
   let unconfiguration: UnconfigurationType
   let currentStateIndex: number
   let unconfigContext: UnconfigContextType
-  let configuration: MachineImplementations<UnconfigContextType, UnconfigEvent>
+  let configuration: MachineImplementationsSimplified<UnconfigContextType, UnconfigEvent>
   let loggerSpy
 
   beforeEach(() => {
@@ -176,7 +176,8 @@ describe('Unconfiguration State Machine', () => {
         hasEnvSettings: () => false,
         hasTLSCredentialContext: () => false,
         is8021xProfileEnabled: () => false
-      }
+      },
+      delays: {}
     }
     loggerSpy = jest.spyOn(unconfiguration.logger, 'error')
   })

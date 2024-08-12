@@ -10,7 +10,6 @@ import { type MqttClient } from 'mqtt'
 import { jest } from '@jest/globals'
 import { spyOn } from 'jest-mock'
 
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
 jest.mock('mqtt', () => ({ ...(jest.requireActual('mqtt') as object) }))
 
 describe('MQTT Turned ON Tests', () => {

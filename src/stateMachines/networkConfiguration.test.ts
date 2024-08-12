@@ -13,7 +13,7 @@ import {
   type NetworkConfigContext,
   type NetworkConfiguration as NetworkConfigurationType
 } from './networkConfiguration.js'
-import { type MachineImplementations, createActor, fromPromise } from 'xstate'
+import { type MachineImplementationsSimplified, createActor, fromPromise } from 'xstate'
 import { HttpHandler } from '../HttpHandler.js'
 import { AMT, CIM } from '@open-amt-cloud-toolkit/wsman-messages'
 import { jest } from '@jest/globals'
@@ -35,7 +35,7 @@ const { NetworkConfiguration } = await import('./networkConfiguration.js')
 const clientId = randomUUID()
 Environment.Config = config
 describe('Network Configuration', () => {
-  let config: MachineImplementations<NetworkConfigContext, NetworkConfigEvent>
+  let config: MachineImplementationsSimplified<NetworkConfigContext, NetworkConfigEvent>
   let currentStateIndex: number
   let networkConfig: NetworkConfigurationType
   let context
@@ -177,7 +177,8 @@ describe('Network Configuration', () => {
         'Reset Unauth Count': () => {},
         'Read Ethernet Port Settings': () => {},
         'Increment Retry Count': () => {}
-      }
+      },
+      delays: {}
     }
   })
 

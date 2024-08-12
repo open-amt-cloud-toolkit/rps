@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type MachineImplementations, createActor, fromPromise, type StateValue } from 'xstate'
+import { type MachineImplementationsSimplified, createActor, fromPromise, type StateValue } from 'xstate'
 import { randomUUID } from 'node:crypto'
 import { devices } from '../devices.js'
 import { config } from '../test/helper/Config.js'
@@ -36,7 +36,7 @@ const { Deactivation } = await import('./deactivation.js')
 describe('Deactivation State Machine', () => {
   let deactivation: DeactivationType
   let deactivationContext: DeactivationContext
-  let config: MachineImplementations<DeactivationContext, DeactivationEvent>
+  let config: MachineImplementationsSimplified<DeactivationContext, DeactivationEvent>
   let currentStateIndex: number
   let setupAndConfigurationServiceSpy: SpyInstance<any>
   let sendSpy: SpyInstance<any>
@@ -90,7 +90,9 @@ describe('Deactivation State Machine', () => {
       },
       actions: {
         'Send Message to Device': () => {}
-      }
+      },
+      guards: {},
+      delays: {}
     }
   })
 

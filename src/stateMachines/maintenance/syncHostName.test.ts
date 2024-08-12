@@ -11,7 +11,7 @@ import { runTilDone } from '../../test/helper/xstate.js'
 import { Environment } from '../../utils/Environment.js'
 import { type SpyInstance, spyOn } from 'jest-mock'
 import { jest } from '@jest/globals'
-import { type MachineImplementations, fromPromise } from 'xstate'
+import { type MachineImplementationsSimplified, fromPromise } from 'xstate'
 import got from 'got'
 import {
   type SyncHostNameContext,
@@ -39,7 +39,7 @@ describe('SyncHostName State Machine', () => {
   let doneResponse: DoneResponse
   let event: SyncHostNameEvent
   let implementation: SyncHostNameType
-  let implementationConfig: MachineImplementations<SyncHostNameContext, SyncHostNameEvent>
+  let implementationConfig: MachineImplementationsSimplified<SyncHostNameContext, SyncHostNameEvent>
   let hostNameInfo: HostNameInfo
   let generalSettingsRsp: Common.Models.Response<AMT.Models.GeneralSettingsResponse>
   let putRsp: any
@@ -106,7 +106,10 @@ describe('SyncHostName State Machine', () => {
             })
         )
         // saveToMPS: fromPromise(async ({ input }) => await Promise.resolve({}))
-      }
+      },
+      actions: {},
+      guards: {},
+      delays: {}
     }
     event = { type: SyncHostNameEventType, clientId, hostNameInfo }
     gotSpy = spyOn(got, 'patch')

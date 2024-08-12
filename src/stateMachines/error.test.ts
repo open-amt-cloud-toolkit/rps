@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { type MachineImplementations, createActor } from 'xstate'
+import { type MachineImplementationsSimplified, createActor } from 'xstate'
 import { Error, type ErrorContext } from './error.js'
 import { randomUUID } from 'node:crypto'
 import { devices } from '../devices.js'
@@ -30,7 +30,7 @@ const unauthorizedResponse = {
 }
 
 describe('Error State Machine', () => {
-  let config: MachineImplementations<ErrorContext, ErrorEvent>
+  let config: MachineImplementationsSimplified<ErrorContext, ErrorEvent>
   let currentStateIndex
   let error: Error
   beforeEach(() => {
@@ -45,7 +45,8 @@ describe('Error State Machine', () => {
       guards: {
         isBadRequest: () => false,
         isUnauthorized: () => false
-      }
+      },
+      delays: {}
     }
     devices[clientId] = {
       unauthCount: 0,

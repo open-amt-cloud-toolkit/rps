@@ -8,7 +8,7 @@ import { devices } from '../devices.js'
 import { Environment } from '../utils/Environment.js'
 import { config } from '../test/helper/Config.js'
 import { ClientAction } from '../models/RCS.Config.js'
-import { type MachineImplementations, createActor, fromPromise } from 'xstate'
+import { type MachineImplementationsSimplified, createActor, fromPromise } from 'xstate'
 import {
   type WiredConfigContext,
   type WiredConfigEvent,
@@ -36,7 +36,7 @@ const clientId = randomUUID()
 Environment.Config = config
 
 describe('Wired Network Configuration', () => {
-  let config: MachineImplementations<WiredConfigContext, WiredConfigEvent>
+  let config: MachineImplementationsSimplified<WiredConfigContext, WiredConfigEvent>
   let currentStateIndex: number
   let wiredConfig: WiredConfigurationType
   let wiredNetworkConfigContext
@@ -215,7 +215,8 @@ describe('Wired Network Configuration', () => {
         'Reset Unauth Count': () => {},
         'Read Ethernet Port Settings': () => {},
         'Read WiFi Endpoint Settings Pull Response': () => {}
-      }
+      },
+      delays: {}
     }
   })
 
