@@ -1,3 +1,10 @@
+## [2.22.11](https://github.com/open-amt-cloud-toolkit/rps/compare/v2.22.10...v2.22.11) (2024-08-13)
+
+
+### Bug Fixes
+
+* cira connection in static ip environment ([#1747](https://github.com/open-amt-cloud-toolkit/rps/issues/1747)) ([09be848](https://github.com/open-amt-cloud-toolkit/rps/commit/09be84855f09df34eb6ffc3504ae73b4d7fe9c88))
+
 ## [2.22.10](https://github.com/open-amt-cloud-toolkit/rps/compare/v2.22.9...v2.22.10) (2024-08-12)
 
 ## [2.22.9](https://github.com/open-amt-cloud-toolkit/rps/compare/v2.22.8...v2.22.9) (2024-08-02)
