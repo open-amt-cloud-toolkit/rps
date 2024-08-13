@@ -30,7 +30,7 @@ jest.unstable_mockModule('./common.js', () => ({
   coalesceMessage
 }))
 
-const { CIRAConfiguration } = await import('./ciraConfiguration.js')
+const { CIRAConfiguration, MPSType } = await import('./ciraConfiguration.js')
 
 describe('CIRA Configuration State Machine', () => {
   const clientId = randomUUID()
@@ -98,11 +98,11 @@ describe('CIRA Configuration State Machine', () => {
         ),
         pullManagementPresenceRemoteSAP: fromPromise(async ({ input }) => await Promise.resolve({ clientId })),
         addRemoteAccessPolicyRule: fromPromise(async ({ input }) => await Promise.resolve({ clientId })),
-        enumerateRemoteAccessPolicyRule: fromPromise(
+        enumerateRemoteAccessPolicyAppliesToMPS: fromPromise(
           async ({ input }) => await Promise.resolve(wsmanEnumerationResponse)
         ),
-        pullRemoteAccessPolicyRule: fromPromise(async ({ input }) => await Promise.resolve({})),
-        putRemoteAccessPolicyRule: fromPromise(async ({ input }) => await Promise.resolve({})),
+        pullRemoteAccessPolicyAppliesToMPS: fromPromise(async ({ input }) => await Promise.resolve({})),
+        putRemoteAccessPolicyAppliesToMPS: fromPromise(async ({ input }) => await Promise.resolve({})),
         userInitiatedConnectionService: fromPromise(
           async ({ input }) =>
             await Promise.resolve({ Envelope: { Body: { RequestStateChange_OUTPUT: { ReturnValue: 0 } } } })
@@ -129,9 +129,9 @@ describe('CIRA Configuration State Machine', () => {
       'ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP',
       'PULL_MANAGEMENT_PRESENCE_REMOTE_SAP',
       'ADD_REMOTE_ACCESS_POLICY_RULE',
-      'ENUMERATE_REMOTE_ACCESS_POLICY_RULE',
-      'PULL_REMOTE_ACCESS_POLICY_RULE',
-      'PUT_REMOTE_ACCESS_POLICY_RULE',
+      'ENUMERATE_REMOTE_ACCESS_POLICY_APPLIESTOMPS',
+      'PULL_REMOTE_ACCESS_POLICY_APPLIESTOMPS',
+      'PUT_REMOTE_ACCESS_POLICY_APPLIESTOMPS',
       'USER_INITIATED_CONNECTION_SERVICE',
       'GET_ENVIRONMENT_DETECTION_SETTINGS',
       'PUT_ENVIRONMENT_DETECTION_SETTINGS',
@@ -247,14 +247,14 @@ describe('CIRA Configuration State Machine', () => {
 
   describe('send wsman message for Remote Access Policy Applies To MPS', () => {
     it('should send wsman message to enumerate Remote Access Policy Applies To MPS', async () => {
-      await ciraStateMachineImpl.enumerateRemoteAccessPolicyRule({ input: machineContext })
+      await ciraStateMachineImpl.enumerateRemoteAccessPolicyAppliesToMPS({ input: machineContext })
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
     it('should send wsman message to pull Remote Access Policy Applies To MPS', async () => {
       machineContext.message = {
         Envelope: { Body: { EnumerateResponse: { EnumerationContext: 'abcde' } } }
       }
-      await ciraStateMachineImpl.pullRemoteAccessPolicyRule({ input: machineContext })
+      await ciraStateMachineImpl.pullRemoteAccessPolicyAppliesToMPS({ input: machineContext })
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
     it('should send wsman message to User Initiated Connection Service', async () => {
@@ -264,26 +264,26 @@ describe('CIRA Configuration State Machine', () => {
     it('should log error on call to enumerateRemoteAccessPolicyAppliesToMPS', async () => {
       machineContext.amt = null as any
       const loggerSpy = jest.spyOn(ciraStateMachineImpl.logger, 'error')
-      await ciraStateMachineImpl.enumerateRemoteAccessPolicyRule({ input: machineContext })
+      await ciraStateMachineImpl.enumerateRemoteAccessPolicyAppliesToMPS({ input: machineContext })
       expect(loggerSpy).toHaveBeenCalled()
     })
     it('should log error on call to pullRemoteAccessPolicyAppliesToMPS', async () => {
       machineContext.amt = null as any
       const loggerSpy = jest.spyOn(ciraStateMachineImpl.logger, 'error')
-      await ciraStateMachineImpl.pullRemoteAccessPolicyRule({ input: machineContext })
+      await ciraStateMachineImpl.pullRemoteAccessPolicyAppliesToMPS({ input: machineContext })
       expect(loggerSpy).toHaveBeenCalled()
     })
     it('should send wsman on call to putRemoteAccessPolicyAppliesToMPS', async () => {
       machineContext.message = {
-        Envelope: { Body: { PullResponse: { Items: { AMT_RemoteAccessPolicyRule: { PolicyRuleName: 'abcd' } } } } }
+        Envelope: { Body: { PullResponse: { Items: { AMT_RemoteAccessPolicyAppliesToMPS: MPSType } } } }
       }
-      await ciraStateMachineImpl.putRemoteAccessPolicyRule({ input: machineContext })
+      await ciraStateMachineImpl.putRemoteAccessPolicyAppliesToMPS({ input: machineContext })
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
     it('should log error on call to putRemoteAccessPolicyAppliesToMPS', async () => {
       machineContext.amt = null as any
       const loggerSpy = jest.spyOn(ciraStateMachineImpl.logger, 'error')
-      await ciraStateMachineImpl.putRemoteAccessPolicyRule({ input: machineContext })
+      await ciraStateMachineImpl.putRemoteAccessPolicyAppliesToMPS({ input: machineContext })
       expect(loggerSpy).toHaveBeenCalled()
     })
     it('should log error on call to userInitiatedConnectionService', async () => {

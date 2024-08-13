@@ -191,34 +191,34 @@ export class CIRAConfiguration {
     }
   }
 
-  enumerateRemoteAccessPolicyRule = async ({ input }: { input: CIRAConfigContext }): Promise<any> => {
+  enumerateRemoteAccessPolicyAppliesToMPS = async ({ input }: { input: CIRAConfigContext }): Promise<any> => {
     if (input.amt != null) {
-      input.xmlMessage = input.amt.RemoteAccessPolicyRule.Enumerate()
+      input.xmlMessage = input.amt.RemoteAccessPolicyAppliesToMPS.Enumerate()
       return await invokeWsmanCall(input, 2)
     } else {
-      this.logger.error('Null object in enumerateRemoteAccessPolicyRule()')
+      this.logger.error('Null object in enumerateRemoteAccessPolicyAppliesToMPS()')
     }
   }
 
-  pullRemoteAccessPolicyRule = async ({ input }: { input: CIRAConfigContext }): Promise<any> => {
+  pullRemoteAccessPolicyAppliesToMPS = async ({ input }: { input: CIRAConfigContext }): Promise<any> => {
     if (input.amt != null) {
-      input.xmlMessage = input.amt.RemoteAccessPolicyRule.Pull(
+      input.xmlMessage = input.amt.RemoteAccessPolicyAppliesToMPS.Pull(
         input.message.Envelope.Body?.EnumerateResponse?.EnumerationContext
       )
       return await invokeWsmanCall(input)
     } else {
-      this.logger.error('Null object in pullRemoteAccessPolicyRule()')
+      this.logger.error('Null object in pullRemoteAccessPolicyAppliesToMPS()')
     }
   }
 
-  putRemoteAccessPolicyRule = async ({ input }: { input: CIRAConfigContext }): Promise<any> => {
+  putRemoteAccessPolicyAppliesToMPS = async ({ input }: { input: CIRAConfigContext }): Promise<any> => {
     if (input.amt != null) {
-      const data = input.message.Envelope.Body.PullResponse.Items.AMT_RemoteAccessPolicyRule
+      const data = input.message.Envelope.Body.PullResponse.Items.AMT_RemoteAccessPolicyAppliesToMPS
       data.MpsType = MPSType.Both
-      input.xmlMessage = input.amt.RemoteAccessPolicyRule.Put(data)
+      input.xmlMessage = input.amt.RemoteAccessPolicyAppliesToMPS.Put(data)
       return await invokeWsmanCall(input, 2)
     } else {
-      this.logger.error('Null object in putRemoteAccessPolicyRule()')
+      this.logger.error('Null object in putRemoteAccessPolicyAppliesToMPS()')
     }
   }
 
@@ -244,9 +244,9 @@ export class CIRAConfiguration {
       enumerateManagementPresenceRemoteSAP: fromPromise(this.enumerateManagementPresenceRemoteSAP),
       pullManagementPresenceRemoteSAP: fromPromise(this.pullManagementPresenceRemoteSAP),
       addRemoteAccessPolicyRule: fromPromise(this.addRemoteAccessPolicyRule),
-      enumerateRemoteAccessPolicyRule: fromPromise(this.enumerateRemoteAccessPolicyRule),
-      pullRemoteAccessPolicyRule: fromPromise(this.pullRemoteAccessPolicyRule),
-      putRemoteAccessPolicyRule: fromPromise(this.putRemoteAccessPolicyRule),
+      enumerateRemoteAccessPolicyAppliesToMPS: fromPromise(this.enumerateRemoteAccessPolicyAppliesToMPS),
+      pullRemoteAccessPolicyAppliesToMPS: fromPromise(this.pullRemoteAccessPolicyAppliesToMPS),
+      putRemoteAccessPolicyAppliesToMPS: fromPromise(this.putRemoteAccessPolicyAppliesToMPS),
       userInitiatedConnectionService: fromPromise(this.userInitiatedConnectionService),
       getEnvironmentDetectionSettings: fromPromise(this.getEnvironmentDetectionSettings),
       putEnvironmentDetectionSettings: fromPromise(this.putEnvironmentDetectionSettings),
@@ -527,16 +527,16 @@ export class CIRAConfiguration {
             xmlMessage: context.xmlMessage
           }),
           id: 'add-remote-policy-access-rule',
-          onDone: 'ENUMERATE_REMOTE_ACCESS_POLICY_RULE',
+          onDone: 'ENUMERATE_REMOTE_ACCESS_POLICY_APPLIESTOMPS',
           onError: {
             actions: assign({ statusMessage: () => 'Failed to add remote policy access rule' }),
             target: 'FAILURE'
           }
         }
       },
-      ENUMERATE_REMOTE_ACCESS_POLICY_RULE: {
+      ENUMERATE_REMOTE_ACCESS_POLICY_APPLIESTOMPS: {
         invoke: {
-          src: 'enumerateRemoteAccessPolicyRule',
+          src: 'enumerateRemoteAccessPolicyAppliesToMPS',
           input: ({ context }) => ({
             clientId: context.clientId,
             tenantId: context.tenantId,
@@ -553,7 +553,7 @@ export class CIRAConfiguration {
           id: 'enumerate-remote-access-policy-rule',
           onDone: {
             actions: assign({ message: ({ event }) => event.output }),
-            target: 'PULL_REMOTE_ACCESS_POLICY_RULE'
+            target: 'PULL_REMOTE_ACCESS_POLICY_APPLIESTOMPS'
           },
           onError: {
             actions: assign({ statusMessage: () => 'Failed to enumerate remote access policy rule' }),
@@ -561,9 +561,9 @@ export class CIRAConfiguration {
           }
         }
       },
-      PULL_REMOTE_ACCESS_POLICY_RULE: {
+      PULL_REMOTE_ACCESS_POLICY_APPLIESTOMPS: {
         invoke: {
-          src: 'pullRemoteAccessPolicyRule',
+          src: 'pullRemoteAccessPolicyAppliesToMPS',
           input: ({ context }) => ({
             clientId: context.clientId,
             tenantId: context.tenantId,
@@ -580,24 +580,24 @@ export class CIRAConfiguration {
           id: 'pull-remote-access-policy-rule',
           onDone: {
             actions: [assign({ message: ({ event }) => event.output }), 'Reset Retry Count'],
-            target: 'PUT_REMOTE_ACCESS_POLICY_RULE'
+            target: 'PUT_REMOTE_ACCESS_POLICY_APPLIESTOMPS'
           },
           onError: [
             {
               guard: 'shouldRetry',
               actions: 'Increment Retry Count',
-              target: 'ENUMERATE_REMOTE_ACCESS_POLICY_RULE'
+              target: 'ENUMERATE_REMOTE_ACCESS_POLICY_APPLIESTOMPS'
             },
             {
-              actions: assign({ statusMessage: () => 'Failed to pull remote access policy rule' }),
+              actions: assign({ statusMessage: () => 'Failed to pull AMT_RemoteAccessPolicyAppliesToMPS' }),
               target: 'FAILURE'
             }
           ]
         }
       },
-      PUT_REMOTE_ACCESS_POLICY_RULE: {
+      PUT_REMOTE_ACCESS_POLICY_APPLIESTOMPS: {
         invoke: {
-          src: 'putRemoteAccessPolicyRule',
+          src: 'putRemoteAccessPolicyAppliesToMPS',
           input: ({ context }) => ({
             clientId: context.clientId,
             tenantId: context.tenantId,
@@ -617,7 +617,7 @@ export class CIRAConfiguration {
             target: 'USER_INITIATED_CONNECTION_SERVICE'
           },
           onError: {
-            actions: assign({ statusMessage: () => 'Failed to put remote access policy rule' }),
+            actions: assign({ statusMessage: () => 'Failed to put AMT_RemoteAccessPolicyAppliesToMPS' }),
             target: 'FAILURE'
           }
         }
@@ -726,6 +726,6 @@ export class CIRAConfiguration {
     this.configurator = new Configurator()
     this.validator = new Validator(new Logger('Validator'), this.configurator)
     this.dbFactory = new DbCreatorFactory()
-    this.logger = new Logger('Activation_State_Machine')
+    this.logger = new Logger('CIRA_State_Machine')
   }
 }
