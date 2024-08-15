@@ -42,8 +42,8 @@
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js  --forceExit --coverage",
     "watch": "nodemon -e ts -w ./src -x npm run start",
     "lint": "eslint .",
-    "prettify": "npx prettier --write .",
-    "ci-prettify": "npx prettier --check ."
+    "prettify": "npx prettier --write '**/*.{ts,js,yaml,css,scss,json}'",
+    "ci-prettify": "npx prettier --check '**/*.{ts,js,yaml,css,scss,json}'"
   },
   "dependencies": {
     "@open-amt-cloud-toolkit/wsman-messages": "^5.6.9",
