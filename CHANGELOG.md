@@ -1,3 +1,10 @@
+## [2.22.12](https://github.com/open-amt-cloud-toolkit/rps/compare/v2.22.11...v2.22.12) (2024-09-24)
+
+
+### Bug Fixes
+
+* add tenantid to ieee8021x db queries ([#1812](https://github.com/open-amt-cloud-toolkit/rps/issues/1812)) ([f559ce8](https://github.com/open-amt-cloud-toolkit/rps/commit/f559ce8ce319532ced15efc1bff62bdf59257cda)), closes [#1811](https://github.com/open-amt-cloud-toolkit/rps/issues/1811) [#1807](https://github.com/open-amt-cloud-toolkit/rps/issues/1807)
+
 ## [2.22.11](https://github.com/open-amt-cloud-toolkit/rps/compare/v2.22.10...v2.22.11) (2024-08-13)
 
 ### Bug Fixes
