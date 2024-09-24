@@ -18,7 +18,11 @@ export async function editIEEE8021xProfile(req: Request, res: Response): Promise
     if (config == null) {
       throw new RPSError(NOT_FOUND_MESSAGE('802.1x', req.body.profileName), NOT_FOUND_EXCEPTION)
     }
-    const updatedConfig: Ieee8021xConfig = { ...config, ...req.body }
+    const updatedConfig: Ieee8021xConfig = {
+      ...config,
+      ...req.body,
+      tenantId: req.tenantId
+    }
     if (req.body.version === null) {
       updatedConfig.version = null
     }

@@ -17,7 +17,7 @@ export async function getAllIEEE8021xConfigs(req: Request, res: Response): Promi
   const skip = Number(req.query.$skip)
   const includeCount = req.query.$count
   try {
-    let ieee8021xConfigs: Ieee8021xConfig[] = await req.db.ieee8021xProfiles.get(top, skip)
+    let ieee8021xConfigs: Ieee8021xConfig[] = await req.db.ieee8021xProfiles.get(top, skip, req.tenantId)
     if (ieee8021xConfigs.length >= 0) {
       ieee8021xConfigs = ieee8021xConfigs.map((result: Ieee8021xConfig) => {
         delete result.password
@@ -27,7 +27,7 @@ export async function getAllIEEE8021xConfigs(req: Request, res: Response): Promi
     if (includeCount == null || includeCount === 'false') {
       res.status(200).json(API_RESPONSE(ieee8021xConfigs)).end()
     } else {
-      const count: number = await req.db.ieee8021xProfiles.getCount()
+      const count: number = await req.db.ieee8021xProfiles.getCount(req.tenantId)
       const dataWithCount: DataWithCount = {
         data: ieee8021xConfigs,
         totalCount: count
