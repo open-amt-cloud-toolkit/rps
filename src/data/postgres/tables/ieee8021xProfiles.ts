@@ -160,7 +160,7 @@ export class IEEE8021xProfilesTable implements IIEEE8021xProfileTable {
       if (results.rowCount === 0) {
         return null
       }
-      return await this.getByName(item.profileName)
+      return await this.getByName(item.profileName, item.tenantId)
     } catch (error) {
       this.log.error(
         `Failed to insert 802.1x configuration : ${item.profileName}`,
@@ -208,12 +208,12 @@ export class IEEE8021xProfilesTable implements IIEEE8021xProfileTable {
       )
       if (results?.rowCount) {
         if (results.rowCount > 0) {
-          return await this.getByName(item.profileName)
+          return await this.getByName(item.profileName, item.tenantId)
         }
       }
       // if rowcount is 0, we assume update failed and grab the current reflection of the record in the DB to be
       // returned in the Concurrency Error
-      latestItem = await this.getByName(item.profileName)
+      latestItem = await this.getByName(item.profileName, item.tenantId)
     } catch (error) {
       this.log.error(`Failed to update 802.1x configuration : ${item.profileName}`, error)
       throw new RPSError(API_UNEXPECTED_EXCEPTION(item.profileName))
