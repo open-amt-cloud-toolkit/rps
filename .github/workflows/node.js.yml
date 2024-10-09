@@ -50,7 +50,7 @@ jobs:
         if: ${{ matrix.node-version == '18.x' }}
       - run: mv junit.xml rps-unit-${{ matrix.node-version }}.xml
       - name: Upload JEST Results
-        uses: actions/upload-artifact@604373da6381bf24206979c74d06a550515601b9 # v4.4.1
+        uses: actions/upload-artifact@84480863f228bb9747b473957fcc9e309aa96097 # v4.4.2
         with:
           name: rps-unit-${{ matrix.node-version }}
           path: rps-unit-${{ matrix.node-version }}.xml
