@@ -2,7 +2,7 @@
 # Copyright (c) Intel Corporation 2021
 # SPDX-License-Identifier: Apache-2.0
 #*********************************************************************/
-FROM node:23-bullseye-slim@sha256:df034b600d5edba788e7fc7e44b92452fe1b725481f843678ba5b476ecdb8db3 as builder
+FROM node:23-bullseye-slim@sha256:57fcaeea7900853617cdf12fb74de5068412259d82c591f45dfe17e97dcf2cf6 as builder
 
 WORKDIR /rps
 
@@ -23,7 +23,7 @@ RUN npm prune --production
 # set the user to non-root
 USER node
 
-FROM alpine:latest@sha256:beefdbd8a1da6d2915566fde36db9db0b524eb737fc57cd1367effd16dc0d06d
+FROM alpine:latest@sha256:1e42bbe2508154c9126d48c2b8a75420c3544343bf86fd041fb7527e017a4b4a
 LABEL license='SPDX-License-Identifier: Apache-2.0' \
       copyright='Copyright (c) Intel Corporation 2021'
 
