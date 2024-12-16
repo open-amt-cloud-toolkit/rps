@@ -11,7 +11,7 @@ import { jest } from '@jest/globals'
 
 const { processServiceConfigs, waitForServiceManager } = await import('./serviceManager.js')
 
-const consul: IServiceManager = new ConsulService('consul', '8500')
+const consul: IServiceManager = new ConsulService('consul', 8500)
 let componentName: string
 let config: any
 

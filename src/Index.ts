@@ -130,7 +130,7 @@ export const startItUp = (): void => {
 }
 
 export async function setupServiceManager(config: RPSConfig): Promise<void> {
-  const consul: IServiceManager = new ConsulService(config.consul_host, config.consul_port)
+  const consul: IServiceManager = new ConsulService(config.consul_host, parseInt(config.consul_port, 10))
   await waitForServiceManager(consul, 'consul')
   await processServiceConfigs(consul, config)
 }
