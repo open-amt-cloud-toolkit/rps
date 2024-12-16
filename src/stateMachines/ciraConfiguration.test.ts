@@ -32,6 +32,26 @@ jest.unstable_mockModule('./common.js', () => ({
 
 const { CIRAConfiguration, MPSType } = await import('./ciraConfiguration.js')
 
+const pullRemoteAccessPolicyAppliesToMPSResponse = {
+  Envelope: {
+    Body: {
+      PullResponse: {
+        Items: {
+          AMT_RemoteAccessPolicyAppliesToMPS: [
+            {
+              PolicySet: {
+                ReferenceParameters: {
+                  SelectorSet: { Selector: [{ $: { Name: 'PolicyRuleName' }, _: 'TestPolicy1' }] }
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+
 describe('CIRA Configuration State Machine', () => {
   const clientId = randomUUID()
   const httpHandler = new HttpHandler()
@@ -83,7 +103,8 @@ describe('CIRA Configuration State Machine', () => {
       message: null,
       ciraConfig: null,
       statusMessage: '',
-      privateCerts: []
+      privateCerts: [],
+      remoteAccessPolicies: []
     }
     machineConfig = {
       actors: {
@@ -101,7 +122,9 @@ describe('CIRA Configuration State Machine', () => {
         enumerateRemoteAccessPolicyAppliesToMPS: fromPromise(
           async ({ input }) => await Promise.resolve(wsmanEnumerationResponse)
         ),
-        pullRemoteAccessPolicyAppliesToMPS: fromPromise(async ({ input }) => await Promise.resolve({})),
+        pullRemoteAccessPolicyAppliesToMPS: fromPromise(
+          async ({ input }) => await Promise.resolve(pullRemoteAccessPolicyAppliesToMPSResponse)
+        ),
         putRemoteAccessPolicyAppliesToMPS: fromPromise(async ({ input }) => await Promise.resolve({})),
         userInitiatedConnectionService: fromPromise(
           async ({ input }) =>
@@ -129,6 +152,7 @@ describe('CIRA Configuration State Machine', () => {
       'ENUMERATE_MANAGEMENT_PRESENCE_REMOTE_SAP',
       'PULL_MANAGEMENT_PRESENCE_REMOTE_SAP',
       'ADD_REMOTE_ACCESS_POLICY_RULE',
+      'ADD_USER_INITIATED_REMOTE_ACCESS_POLICY_RULE',
       'ENUMERATE_REMOTE_ACCESS_POLICY_APPLIESTOMPS',
       'PULL_REMOTE_ACCESS_POLICY_APPLIESTOMPS',
       'PUT_REMOTE_ACCESS_POLICY_APPLIESTOMPS',
@@ -144,13 +168,15 @@ describe('CIRA Configuration State Machine', () => {
     }
     const ciraConfigurationService = createActor(mockCiraConfigurationMachine, { input: machineContext })
     ciraConfigurationService.subscribe((state) => {
-      const expected = flowStates[currentStateIndex++]
-      const actual = state.value as string
-      expect(actual).toEqual(expected)
-      if (state.matches('SUCCESS') || state.matches('FAILURE') || currentStateIndex === flowStates.length) {
-        const status = devices[clientId].status.CIRAConnection
-        expect(status).toEqual('Configured')
-        done()
+      if (state.value) {
+        const expected = flowStates[currentStateIndex++]
+        const actual = state.value as string
+        expect(actual).toEqual(expected)
+        if (state.matches('SUCCESS') || state.matches('FAILURE') || currentStateIndex === flowStates.length) {
+          const status = devices[clientId].status.CIRAConnection
+          expect(status).toEqual('Configured')
+          done()
+        }
       }
     })
     ciraConfigurationService.start()
@@ -274,9 +300,9 @@ describe('CIRA Configuration State Machine', () => {
       expect(loggerSpy).toHaveBeenCalled()
     })
     it('should send wsman on call to putRemoteAccessPolicyAppliesToMPS', async () => {
-      machineContext.message = {
-        Envelope: { Body: { PullResponse: { Items: { AMT_RemoteAccessPolicyAppliesToMPS: MPSType } } } }
-      }
+      machineContext.message = pullRemoteAccessPolicyAppliesToMPSResponse
+      machineContext.remoteAccessPolicies =
+        machineContext.message.Envelope.Body.PullResponse.Items.AMT_RemoteAccessPolicyAppliesToMPS
       await ciraStateMachineImpl.putRemoteAccessPolicyAppliesToMPS({ input: machineContext })
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
@@ -296,7 +322,6 @@ describe('CIRA Configuration State Machine', () => {
 
   describe('send wsman message to add MPS server and certificate', () => {
     beforeEach(() => {
-      // spoof getCiraConfiguration
       machineContext.ciraConfig = ciraConfig
     })
     it('should send wsman message to add Trusted Root Certificate', async () => {

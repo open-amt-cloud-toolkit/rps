@@ -32,6 +32,7 @@ export interface CIRAConfigContext extends CommonContext {
   amt?: AMT.Messages
   retryCount: number
   tenantId: string
+  remoteAccessPolicies: any[]
 }
 
 export interface CIRAConfigEvent {
@@ -135,6 +136,24 @@ export class CIRAConfiguration {
     }
   }
 
+  addUserInitiatedRemoteAccessPolicyRule = async ({ input }: { input: CIRAConfigContext }): Promise<any> => {
+    if (input.amt != null) {
+      const selector = {
+        name: 'Name',
+        value: input.message.Envelope.Body.PullResponse.Items.AMT_ManagementPresenceRemoteSAP.Name
+      }
+      const policy: AMT.Models.RemoteAccessPolicyRule = {
+        Trigger: 0, // 0 – User Initiated
+        TunnelLifeTime: 300, // 300 seconds
+        ExtendedData: '' // Empty for User Initiated
+      }
+      input.xmlMessage = input.amt.RemoteAccessService.AddRemoteAccessPolicyRule(policy, selector)
+      return await invokeWsmanCall(input, 2)
+    } else {
+      this.logger.error('Null object in addUserInitiatedRemoteAccessPolicyRule()')
+    }
+  }
+
   getEnvironmentDetectionSettings = async ({ input }: { input: CIRAConfigContext }): Promise<any> => {
     if (input.amt != null) {
       input.xmlMessage = input.amt.EnvironmentDetectionSettingData.Get()
@@ -213,9 +232,24 @@ export class CIRAConfiguration {
 
   putRemoteAccessPolicyAppliesToMPS = async ({ input }: { input: CIRAConfigContext }): Promise<any> => {
     if (input.amt != null) {
-      const data = input.message.Envelope.Body.PullResponse.Items.AMT_RemoteAccessPolicyAppliesToMPS
+      const data = input.remoteAccessPolicies.length > 0 ? input.remoteAccessPolicies[0] : input.remoteAccessPolicies
       data.MpsType = MPSType.Both
-      input.xmlMessage = input.amt.RemoteAccessPolicyAppliesToMPS.Put(data)
+      data.OrderOfAccess = 0
+
+      let policySelector
+      try {
+        policySelector = data.PolicySet.ReferenceParameters.SelectorSet.Selector.find(
+          (selector: any) => selector.$?.Name === 'PolicyRuleName'
+        )
+      } catch (err) {
+        this.logger.error('Error in putRemoteAccessPolicyAppliesToMPS()', err)
+      }
+
+      const policyName = policySelector?._
+      const baseXml = input.amt.RemoteAccessPolicyAppliesToMPS.Put(data)
+      const customSelector = `</w:OperationTimeout><wsman:SelectorSet xmlns:wsman="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"><wsman:Selector Name="ManagedElement"><EndpointReference xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing"><Address xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing">http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</Address><ReferenceParameters xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing"><ResourceURI xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd">http://intel.com/wbem/wscim/1/amt-schema/1/AMT_ManagementPresenceRemoteSAP</ResourceURI><SelectorSet xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"><Selector Name="CreationClassName">AMT_ManagementPresenceRemoteSAP</Selector><Selector Name="Name">Intel(r) AMT:Management Presence Server 0</Selector><Selector Name="SystemCreationClassName">CIM_ComputerSystem</Selector><Selector Name="SystemName">Intel(r) AMT</Selector></SelectorSet></ReferenceParameters></EndpointReference></wsman:Selector><wsman:Selector Name="PolicySet"><EndpointReference xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing"><Address xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing">http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</Address><ReferenceParameters xmlns="http://schemas.xmlsoap.org/ws/2004/08/addressing"><ResourceURI xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd">http://intel.com/wbem/wscim/1/amt-schema/1/AMT_RemoteAccessPolicyRule</ResourceURI><SelectorSet xmlns="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"><Selector Name="CreationClassName">AMT_RemoteAccessPolicyRule</Selector><Selector Name="PolicyRuleName">${policyName}</Selector><Selector Name="SystemCreationClassName">CIM_ComputerSystem</Selector><Selector Name="SystemName">Intel(r) AMT</Selector></SelectorSet></ReferenceParameters></EndpointReference></wsman:Selector></wsman:SelectorSet>`
+      input.xmlMessage = baseXml.replace('</w:OperationTimeout>', customSelector.trim())
+
       return await invokeWsmanCall(input, 2)
     } else {
       this.logger.error('Null object in putRemoteAccessPolicyAppliesToMPS()')
@@ -245,6 +279,7 @@ export class CIRAConfiguration {
       pullManagementPresenceRemoteSAP: fromPromise(this.pullManagementPresenceRemoteSAP),
       addRemoteAccessPolicyRule: fromPromise(this.addRemoteAccessPolicyRule),
       enumerateRemoteAccessPolicyAppliesToMPS: fromPromise(this.enumerateRemoteAccessPolicyAppliesToMPS),
+      addUserInitiatedRemoteAccessPolicyRule: fromPromise(this.addUserInitiatedRemoteAccessPolicyRule),
       pullRemoteAccessPolicyAppliesToMPS: fromPromise(this.pullRemoteAccessPolicyAppliesToMPS),
       putRemoteAccessPolicyAppliesToMPS: fromPromise(this.putRemoteAccessPolicyAppliesToMPS),
       userInitiatedConnectionService: fromPromise(this.userInitiatedConnectionService),
@@ -258,7 +293,14 @@ export class CIRAConfiguration {
     guards: {
       userInitiatedConnectionServiceSuccessful: ({ event }) =>
         event.output.Envelope.Body?.RequestStateChange_OUTPUT?.ReturnValue === 0,
-      shouldRetry: ({ context, event }) => context.retryCount < 3 && event.output instanceof UNEXPECTED_PARSE_ERROR
+      shouldRetry: ({ context, event }) => context.retryCount < 3 && event.output instanceof UNEXPECTED_PARSE_ERROR,
+      isRemoteAccessPolicyExists: ({ context }) => {
+        context.remoteAccessPolicies = context.remoteAccessPolicies.slice(1)
+        if (context.remoteAccessPolicies.length > 0) {
+          return true
+        }
+        return false
+      }
     },
     actions: {
       'Update Configuration Status': ({ context, event }) => {
@@ -284,7 +326,8 @@ export class CIRAConfiguration {
       privateCerts: input.privateCerts,
       tenantId: input.tenantId,
       retryCount: input.retryCount,
-      amt: input.amt
+      amt: input.amt,
+      remoteAccessPolicies: []
     }),
     id: 'cira-machine',
     initial: 'CIRACONFIGURED',
@@ -310,7 +353,8 @@ export class CIRAConfiguration {
             ciraConfig: context.ciraConfig,
             retryCount: context.retryCount,
             httpHandler: context.httpHandler,
-            status: context.status
+            status: context.status,
+            remoteAccessPolicies: context.remoteAccessPolicies
           }),
           id: 'get-cira-config',
           onDone: {
@@ -331,7 +375,8 @@ export class CIRAConfiguration {
             ciraConfig: context.ciraConfig,
             retryCount: context.retryCount,
             httpHandler: context.httpHandler,
-            status: context.status
+            status: context.status,
+            remoteAccessPolicies: context.remoteAccessPolicies
           }),
           id: 'set-mps-password',
           onDone: {
@@ -367,7 +412,8 @@ export class CIRAConfiguration {
             httpHandler: context.httpHandler,
             message: context.message,
             amt: context.amt,
-            xmlMessage: context.xmlMessage
+            xmlMessage: context.xmlMessage,
+            remoteAccessPolicies: context.remoteAccessPolicies
           }),
           id: 'add-trusted-root-certificate',
           onDone: {
@@ -391,7 +437,8 @@ export class CIRAConfiguration {
             ciraConfig: context.ciraConfig,
             retryCount: context.retryCount,
             httpHandler: context.httpHandler,
-            status: context.status
+            status: context.status,
+            remoteAccessPolicies: context.remoteAccessPolicies
           }),
           id: 'save-mps-password-to-secret-provider',
           onDone: 'SAVE_DEVICE_TO_MPS',
@@ -412,7 +459,8 @@ export class CIRAConfiguration {
             ciraConfig: context.ciraConfig,
             retryCount: context.retryCount,
             httpHandler: context.httpHandler,
-            status: context.status
+            status: context.status,
+            remoteAccessPolicies: context.remoteAccessPolicies
           }),
           id: 'save-device-to-mps',
           onDone: 'ADD_MPS',
@@ -436,7 +484,8 @@ export class CIRAConfiguration {
             httpHandler: context.httpHandler,
             message: context.message,
             amt: context.amt,
-            xmlMessage: context.xmlMessage
+            xmlMessage: context.xmlMessage,
+            remoteAccessPolicies: context.remoteAccessPolicies
           }),
           id: 'add-mps',
           onDone: {
@@ -463,7 +512,8 @@ export class CIRAConfiguration {
             httpHandler: context.httpHandler,
             message: context.message,
             amt: context.amt,
-            xmlMessage: context.xmlMessage
+            xmlMessage: context.xmlMessage,
+            remoteAccessPolicies: context.remoteAccessPolicies
           }),
           id: 'enumerate-management-presence-remote-sap',
           onDone: {
@@ -490,7 +540,8 @@ export class CIRAConfiguration {
             httpHandler: context.httpHandler,
             message: context.message,
             amt: context.amt,
-            xmlMessage: context.xmlMessage
+            xmlMessage: context.xmlMessage,
+            remoteAccessPolicies: context.remoteAccessPolicies
           }),
           id: 'pull-management-presence-remote-sap',
           onDone: {
@@ -524,12 +575,38 @@ export class CIRAConfiguration {
             httpHandler: context.httpHandler,
             message: context.message,
             amt: context.amt,
-            xmlMessage: context.xmlMessage
+            xmlMessage: context.xmlMessage,
+            remoteAccessPolicies: context.remoteAccessPolicies
           }),
           id: 'add-remote-policy-access-rule',
-          onDone: 'ENUMERATE_REMOTE_ACCESS_POLICY_APPLIESTOMPS',
+          onDone: 'ADD_USER_INITIATED_REMOTE_ACCESS_POLICY_RULE',
           onError: {
             actions: assign({ statusMessage: () => 'Failed to add remote policy access rule' }),
+            target: 'FAILURE'
+          }
+        }
+      },
+      ADD_USER_INITIATED_REMOTE_ACCESS_POLICY_RULE: {
+        invoke: {
+          src: 'addUserInitiatedRemoteAccessPolicyRule',
+          input: ({ context }) => ({
+            clientId: context.clientId,
+            tenantId: context.tenantId,
+            profile: context.profile,
+            profileName: context.profile?.profileName,
+            ciraConfig: context.ciraConfig,
+            retryCount: context.retryCount,
+            status: context.status,
+            httpHandler: context.httpHandler,
+            message: context.message,
+            amt: context.amt,
+            xmlMessage: context.xmlMessage,
+            remoteAccessPolicies: context.remoteAccessPolicies
+          }),
+          id: 'add-user-initiated-remote-policy-access-rule',
+          onDone: 'ENUMERATE_REMOTE_ACCESS_POLICY_APPLIESTOMPS',
+          onError: {
+            actions: assign({ statusMessage: () => 'Failed to add User Initiated remote policy access rule' }),
             target: 'FAILURE'
           }
         }
@@ -548,7 +625,8 @@ export class CIRAConfiguration {
             httpHandler: context.httpHandler,
             message: context.message,
             amt: context.amt,
-            xmlMessage: context.xmlMessage
+            xmlMessage: context.xmlMessage,
+            remoteAccessPolicies: context.remoteAccessPolicies
           }),
           id: 'enumerate-remote-access-policy-rule',
           onDone: {
@@ -575,11 +653,20 @@ export class CIRAConfiguration {
             httpHandler: context.httpHandler,
             message: context.message,
             amt: context.amt,
-            xmlMessage: context.xmlMessage
+            xmlMessage: context.xmlMessage,
+            remoteAccessPolicies: context.remoteAccessPolicies
           }),
           id: 'pull-remote-access-policy-rule',
           onDone: {
-            actions: [assign({ message: ({ event }) => event.output }), 'Reset Retry Count'],
+            actions: [
+              assign({
+                message: ({ event }) => event.output,
+                remoteAccessPolicies: ({ event }) =>
+                  event.output.Envelope.Body.PullResponse.Items.AMT_RemoteAccessPolicyAppliesToMPS
+              }),
+              'Reset Retry Count'
+
+            ],
             target: 'PUT_REMOTE_ACCESS_POLICY_APPLIESTOMPS'
           },
           onError: [
@@ -609,18 +696,32 @@ export class CIRAConfiguration {
             httpHandler: context.httpHandler,
             message: context.message,
             amt: context.amt,
-            xmlMessage: context.xmlMessage
+            xmlMessage: context.xmlMessage,
+            remoteAccessPolicies: context.remoteAccessPolicies
           }),
           id: 'put-remote-access-policy-rule',
-          onDone: {
-            actions: assign({ message: ({ event }) => event.output }),
-            target: 'USER_INITIATED_CONNECTION_SERVICE'
-          },
+          onDone: [
+            {
+              actions: assign({ message: ({ event }) => event.output }),
+              target: 'CHECK_REMOTE_ACCESS_POLICY_APPLIESTOMPS'
+            }
+          ],
           onError: {
             actions: assign({ statusMessage: () => 'Failed to put AMT_RemoteAccessPolicyAppliesToMPS' }),
             target: 'FAILURE'
           }
         }
+      },
+      CHECK_REMOTE_ACCESS_POLICY_APPLIESTOMPS: {
+        always: [
+          {
+            guard: 'isRemoteAccessPolicyExists',
+            target: 'PUT_REMOTE_ACCESS_POLICY_APPLIESTOMPS'
+          },
+          {
+            target: 'USER_INITIATED_CONNECTION_SERVICE'
+          }
+        ]
       },
       USER_INITIATED_CONNECTION_SERVICE: {
         invoke: {
@@ -636,7 +737,8 @@ export class CIRAConfiguration {
             httpHandler: context.httpHandler,
             message: context.message,
             amt: context.amt,
-            xmlMessage: context.xmlMessage
+            xmlMessage: context.xmlMessage,
+            remoteAccessPolicies: context.remoteAccessPolicies
           }),
           id: 'user-initiated-connection-service',
           onDone: [
@@ -669,7 +771,8 @@ export class CIRAConfiguration {
             httpHandler: context.httpHandler,
             message: context.message,
             amt: context.amt,
-            xmlMessage: context.xmlMessage
+            xmlMessage: context.xmlMessage,
+            remoteAccessPolicies: context.remoteAccessPolicies
           }),
           id: 'get-environment-detection-settings',
           onDone: {
@@ -696,7 +799,8 @@ export class CIRAConfiguration {
             httpHandler: context.httpHandler,
             message: context.message,
             amt: context.amt,
-            xmlMessage: context.xmlMessage
+            xmlMessage: context.xmlMessage,
+            remoteAccessPolicies: context.remoteAccessPolicies
           }),
           id: 'put-environment-detection-settings',
           onDone: {
