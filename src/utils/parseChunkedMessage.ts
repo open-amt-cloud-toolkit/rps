@@ -7,7 +7,7 @@
 // the input must be well-formed including
 // the final character sequence of '0\r\n\r\n'
 // returns an empty string on any unexpected values, lengths, or missing data
-export function parseChunkedMessage (original: string): string {
+export function parseChunkedMessage(original: string): string {
   const endMarker = '0\r\n\r\n'
   let parsed = ''
   let indexCur = 0

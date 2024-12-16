@@ -11,7 +11,7 @@ import { MqttProvider } from '../../../utils/MqttProvider.js'
 import { type Request, type Response } from 'express'
 import handleError from '../../../utils/handleError.js'
 
-export async function allProfiles (req: Request, res: Response): Promise<void> {
+export async function allProfiles(req: Request, res: Response): Promise<void> {
   let wirelessConfigs: any[] = []
   const log = new Logger('allProfiles')
   const top = Number(req.query.$top)

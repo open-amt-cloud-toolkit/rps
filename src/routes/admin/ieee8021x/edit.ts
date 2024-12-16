@@ -11,14 +11,18 @@ import { type Request, type Response } from 'express'
 import handleError from '../../../utils/handleError.js'
 import { RPSError } from '../../../utils/RPSError.js'
 
-export async function editIEEE8021xProfile (req: Request, res: Response): Promise<void> {
+export async function editIEEE8021xProfile(req: Request, res: Response): Promise<void> {
   const log = new Logger('edit8021xProfile')
   try {
     const config: Ieee8021xConfig | null = await req.db.ieee8021xProfiles.getByName(req.body.profileName, req.tenantId)
     if (config == null) {
       throw new RPSError(NOT_FOUND_MESSAGE('802.1x', req.body.profileName), NOT_FOUND_EXCEPTION)
     }
-    const updatedConfig: Ieee8021xConfig = { ...config, ...req.body }
+    const updatedConfig: Ieee8021xConfig = {
+      ...config,
+      ...req.body,
+      tenantId: req.tenantId
+    }
     if (req.body.version === null) {
       updatedConfig.version = null
     }

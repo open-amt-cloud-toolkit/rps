@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { interpret } from 'xstate'
+import { createActor, fromPromise } from 'xstate'
 import { HttpHandler } from '../HttpHandler.js'
 import { devices } from '../devices.js'
-import { type TLS as TLSType, type TLSContext } from './tls.js'
+import { type TLS as TLSType, type TLSContext, type TLSEvent } from './tls.js'
 import forge from 'node-forge'
 import { AMT } from '@open-amt-cloud-toolkit/wsman-messages'
 import { UNEXPECTED_PARSE_ERROR } from '../utils/constants.js'
@@ -54,29 +54,37 @@ describe('TLS State Machine', () => {
       amtProfile: { tlsMode: 3, tlsCerts: { ISSUED_CERTIFICATE: { pem: '' } } } as any,
       unauthCount: 0,
       authProtocol: 0,
+      retryCount: 0,
       amt: new AMT.Messages()
     } as any
     tls = new TLS()
 
     config = {
-      services: {
-        'enumerate-public-key-certificate': Promise.resolve({}),
-        'pull-public-key-certificate': Promise.resolve({ Envelope: { Body: { PullResponse: { Items: { AMT_TLSSettingData: {} } } } } }),
-        'add-trusted-root-certificate': Promise.resolve({}),
-        'generate-key-pair': Promise.resolve({}),
-        'enumerate-public-private-key-pair': Promise.resolve({}),
-        'pull-public-private-key-pair': Promise.resolve({ Envelope: { Body: { PullResponse: { Items: { AMT_PublicPrivateKeyPair: {} } } } } }),
-        'add-certificate': Promise.resolve({}),
-        'enumerate-tls-credential-context': Promise.resolve({}),
-        'pull-tls-credential-context': Promise.resolve({}),
-        'create-tls-credential-context': Promise.resolve({}),
-        'time-machine': Promise.resolve({}),
-        'error-machine': Promise.resolve({}),
-        'enumerate-tls-data': Promise.resolve({}),
-        'pull-tls-data': Promise.resolve({ Envelope: { Body: { PullResponse: { Items: { AMT_TLSSettingData: [{}, {}] } } } } }),
-        'put-remote-tls-data': Promise.resolve({}),
-        'put-local-tls-data': Promise.resolve({}),
-        'commit-changes': Promise.resolve({})
+      actors: {
+        timeSync: fromPromise(async ({ input }) => await Promise.resolve({})),
+        errorMachine: fromPromise(async ({ input }) => await Promise.resolve({})),
+        enumeratePublicKeyCertificate: fromPromise(async ({ input }) => await Promise.resolve({})),
+        pullPublicKeyCertificate: fromPromise(
+          async ({ input }) =>
+            await Promise.resolve({ Envelope: { Body: { PullResponse: { Items: { AMT_TLSSettingData: {} } } } } })
+        ),
+        addTrustedRootCertificate: fromPromise(async ({ input }) => await Promise.resolve({})),
+        generateKeyPair: fromPromise(async ({ input }) => await Promise.resolve({})),
+        enumeratePublicPrivateKeyPair: fromPromise(async ({ input }) => await Promise.resolve({})),
+        pullPublicPrivateKeyPair: fromPromise(
+          async ({ input }) =>
+            await Promise.resolve({ Envelope: { Body: { PullResponse: { Items: { AMT_PublicPrivateKeyPair: {} } } } } })
+        ),
+        addCertificate: fromPromise(async ({ input }) => await Promise.resolve({})),
+        createTLSCredentialContext: fromPromise(async ({ input }) => await Promise.resolve({})),
+        enumerateTLSData: fromPromise(async ({ input }) => await Promise.resolve({})),
+        pullTLSData: fromPromise(
+          async ({ input }) =>
+            await Promise.resolve({ Envelope: { Body: { PullResponse: { Items: { AMT_TLSSettingData: [{}, {}] } } } } })
+        ),
+        putRemoteTLSData: fromPromise(async ({ input }) => await Promise.resolve({})),
+        putLocalTLSData: fromPromise(async ({ input }) => await Promise.resolve({})),
+        commitChanges: fromPromise(async ({ input }) => await Promise.resolve({}))
       },
       actions: {
         'Send Message to Device': () => {}
@@ -91,13 +99,16 @@ describe('TLS State Machine', () => {
     jest.useFakeTimers()
     context.amtProfile = { tlsMode: 3, tlsSigningAuthoritys: 'SelfSigned' } as any
     // already existing error case is covered with this reject
-    // eslint-disable-next-line prefer-promise-reject-errors
-    config.services['create-tls-credential-context'] = Promise.reject({
-      body: {
-        text: wsmanAlreadyExistsAllChunks
-      }
-    })
-    const tlsStateMachine = tls.machine.withConfig(config).withContext(context)
+
+    config.actors.createTlsCredentialContext = fromPromise(
+      async ({ input }) =>
+        await Promise.reject({
+          body: {
+            text: wsmanAlreadyExistsAllChunks
+          }
+        })
+    )
+    const tlsStateMachine = tls.machine.provide(config)
     const flowStates = [
       'PROVISIONED',
       'ENUMERATE_PUBLIC_KEY_CERTIFICATE',
@@ -118,8 +129,10 @@ describe('TLS State Machine', () => {
       'SUCCESS'
     ]
 
-    const tlsService = interpret(tlsStateMachine).onTransition((state) => {
-      expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+    const tlsService = createActor(tlsStateMachine, { input: context })
+    tlsService.subscribe((state) => {
+      const expectedState: any = flowStates[currentStateIndex++]
+      expect(state.matches(expectedState)).toBe(true)
       if (state.matches('WAIT_A_BIT')) {
         jest.advanceTimersByTime(5000)
       } else if (state.matches('SUCCESS') && currentStateIndex === flowStates.length) {
@@ -134,8 +147,11 @@ describe('TLS State Machine', () => {
 
   it('should retry', (done) => {
     context.amtProfile = { tlsMode: 3, tlsSigningAuthoritys: 'SelfSigned' } as any
-    config.services['pull-public-key-certificate'] = Promise.reject(new UNEXPECTED_PARSE_ERROR())
-    const tlsStateMachine = tls.machine.withConfig(config).withContext(context)
+    config.actors.pullPublicKeyCertificate = fromPromise(
+      async ({ input }) => await Promise.reject(new UNEXPECTED_PARSE_ERROR())
+    )
+
+    const tlsStateMachine = tls.machine.provide(config)
     const flowStates = [
       'PROVISIONED',
       'ENUMERATE_PUBLIC_KEY_CERTIFICATE',
@@ -149,8 +165,9 @@ describe('TLS State Machine', () => {
       'FAILED'
     ]
 
-    const tlsService = interpret(tlsStateMachine).onTransition((state) => {
-      const expected = flowStates[currentStateIndex++]
+    const tlsService = createActor(tlsStateMachine, { input: context })
+    tlsService.subscribe((state) => {
+      const expected: any = flowStates[currentStateIndex++]
       expect(state.matches(expected)).toBe(true)
       if (state.matches('FAILED') || currentStateIndex === flowStates.length) {
         done()
@@ -169,9 +186,12 @@ describe('TLS State Machine', () => {
       }
     }
 
-    const publicKeyManagementSpy = spyOn(context.amt.PublicKeyManagementService, 'GeneratePKCS10RequestEx').mockReturnValue({} as any)
+    const publicKeyManagementSpy = spyOn(
+      context.amt.PublicKeyManagementService,
+      'GeneratePKCS10RequestEx'
+    ).mockReturnValue({} as any)
 
-    await tls.signCSR(context, null as any)
+    await tls.signCSR({ input: context })
 
     expect(publicKeyManagementSpy).toHaveBeenCalledWith({
       KeyPair: expect.stringContaining('ABC123'),
@@ -179,116 +199,137 @@ describe('TLS State Machine', () => {
       NullSignedCertificateRequest: context.message.response.csr
     })
   })
+
   it('should addCertificate', async () => {
+    const event: TLSEvent = {
+      type: 'CONFIGURE_TLS',
+      clientId: clientId as string,
+      output: {
+        response: ''
+      }
+    }
     context.message = { Envelope: { Body: { PullResponse: { Items: { AMT_PublicPrivateKeyPair: {} } } } } }
-    await tls.addCertificate(context, null as any)
+    await tls.addCertificate({ input: { context, event } })
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
 
   it('should generateKeyPair', async () => {
-    await tls.generateKeyPair(context, null as any)
+    await tls.generateKeyPair({ input: context })
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
   it('should addTrustedRootCertificate', async () => {
     devices[clientId].ClientData = { payload: { profile: { tlsCerts: { ROOT_CERTIFICATE: { certbin: '' } } } } }
-    await tls.addTrustedRootCertificate(context, null as any)
+    await tls.addTrustedRootCertificate({ input: context })
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
-  it('should enumerateTLSCredentialContext', async () => {
-    await tls.enumerateTLSCredentialContext(context, null as any)
-    expect(invokeWsmanCallSpy).toHaveBeenCalled()
-  })
-  it('should pullTLSCredentialContext', async () => {
-    context.message = { Envelope: { Body: { EnumerateResponse: { EnumerationContext: '' } } } }
-    await tls.pullTLSCredentialContext(context, null as any)
-    expect(invokeWsmanCallSpy).toHaveBeenCalled()
-  })
+
   it('should createTLSCredentialContext', async () => {
-    const event: any = { data: { Envelope: { Body: { AddCertificate_OUTPUT: { CreatedCertificate: { ReferenceParameters: { SelectorSet: { Selector: { _: '' } } } } } } } } }
-    await tls.createTLSCredentialContext(context, event)
+    const event: any = {
+      output: {
+        Envelope: {
+          Body: {
+            AddCertificate_OUTPUT: {
+              CreatedCertificate: { ReferenceParameters: { SelectorSet: { Selector: { _: '' } } } }
+            }
+          }
+        }
+      }
+    }
+    await tls.createTLSCredentialContext({ input: { context, event } })
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
+
   it('should enumeratePublicKeyCertificate', async () => {
-    await tls.enumeratePublicKeyCertificate(context, null as any)
+    await tls.enumeratePublicKeyCertificate({ input: context })
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
   it('should pullPublicKeyCertificate', async () => {
     context.message = { Envelope: { Body: { EnumerateResponse: { EnumerationContext: '' } } } }
-    await tls.pullPublicKeyCertificate(context, null as any)
+    await tls.pullPublicKeyCertificate({ input: context })
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
   it('should enumeratePublicPrivateKeyPair', async () => {
-    await tls.enumeratePublicPrivateKeyPair(context, null as any)
+    await tls.enumeratePublicPrivateKeyPair({ input: context })
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
   it('should pullPublicPrivateKeyPair', async () => {
     context.message = { Envelope: { Body: { EnumerateResponse: { EnumerationContext: '' } } } }
-    await tls.pullPublicPrivateKeyPair(context, null as any)
+    await tls.pullPublicPrivateKeyPair({ input: context })
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
   it('should updateConfigurationStatus when success', async () => {
     context.status = 'success'
     context.statusMessage = 'success status message'
-    tls.updateConfigurationStatus(context)
+    tls.updateConfigurationStatus({ context })
     expect(devices[context.clientId].status.TLSConfiguration).toEqual('success status message')
     expect(invokeWsmanCallSpy).not.toHaveBeenCalled()
   })
   it('should updateConfigurationStatus when failure', async () => {
     context.status = 'error'
     context.errorMessage = 'error status message'
-    tls.updateConfigurationStatus(context)
+    tls.updateConfigurationStatus({ context })
     expect(devices[context.clientId].status.TLSConfiguration).toEqual('error status message')
     expect(invokeWsmanCallSpy).not.toHaveBeenCalled()
   })
-  it('should enumerateTlsData', async () => {
-    await tls.enumerateTlsData(context, null as any)
+  it('should enumerateTLSData', async () => {
+    await tls.enumerateTLSData({ input: context })
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
   it('should pullTLSData', async () => {
     context.message = { Envelope: { Body: { EnumerateResponse: { EnumerationContext: '' } } } }
-    await tls.pullTLSData(context, null as any)
+    await tls.pullTLSData({ input: context })
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
   it('should putRemoteTLSData on AMT 16.0 and older systems when tlsMode is not 1 or 3 and NonSecureConnectionsSupported does not exist', async () => {
     context.tlsSettingData = [{}]
-    context.amtProfile.tlsMode = 4
+    if (context.amtProfile != null) {
+      context.amtProfile.tlsMode = 4
+    }
     spyOn(forge.pki, 'certificateFromPem').mockReturnValue({ subject: { getField: () => ({}) } } as any)
     const tlsSettingDataSpy = spyOn(context.amt.TLSSettingData, 'Put').mockReturnValue('')
-    await tls.putRemoteTLSData(context, null as any)
+    await tls.putRemoteTLSData({ input: context })
     expect(context.tlsSettingData[0].AcceptNonSecureConnections).toBe(true)
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
     expect(tlsSettingDataSpy).toHaveBeenCalled()
   })
   it('should putRemoteTLSData on AMT 16.0 and older systems when tlsMode is not 1 or 3', async () => {
-    context.tlsSettingData = [{
-      NonSecureConnectionsSupported: true
-    }]
-    context.amtProfile.tlsMode = 4
+    context.tlsSettingData = [
+      {
+        NonSecureConnectionsSupported: true
+      }
+    ]
+    if (context.amtProfile != null) {
+      context.amtProfile.tlsMode = 4
+    }
     spyOn(forge.pki, 'certificateFromPem').mockReturnValue({ subject: { getField: () => ({}) } } as any)
     const tlsSettingDataSpy = spyOn(context.amt.TLSSettingData, 'Put').mockReturnValue('')
-    await tls.putRemoteTLSData(context, null as any)
+    await tls.putRemoteTLSData({ input: context })
     expect(context.tlsSettingData[0].AcceptNonSecureConnections).toBe(true)
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
     expect(tlsSettingDataSpy).toHaveBeenCalled()
   })
   it('should putRemoteTLSData on AMT 16.0 and older systems when tlsMode is 1 or 3', async () => {
-    context.tlsSettingData = [{
-      NonSecureConnectionsSupported: true
-    }]
+    context.tlsSettingData = [
+      {
+        NonSecureConnectionsSupported: true
+      }
+    ]
     spyOn(forge.pki, 'certificateFromPem').mockReturnValue({ subject: { getField: () => ({}) } } as any)
     const tlsSettingDataSpy = spyOn(context.amt.TLSSettingData, 'Put').mockReturnValue('')
-    await tls.putRemoteTLSData(context, null as any)
+    await tls.putRemoteTLSData({ input: context })
     expect(context.tlsSettingData[0].AcceptNonSecureConnections).toBe(false)
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
     expect(tlsSettingDataSpy).toHaveBeenCalled()
   })
   it('should putRemoteTLSData on AMT 16.1 and newer systems', async () => {
-    context.tlsSettingData = [{
-      NonSecureConnectionsSupported: false
-    }]
+    context.tlsSettingData = [
+      {
+        NonSecureConnectionsSupported: false
+      }
+    ]
     spyOn(forge.pki, 'certificateFromPem').mockReturnValue({ subject: { getField: () => ({}) } } as any)
     const tlsSettingDataSpy = spyOn(context.amt.TLSSettingData, 'Put').mockReturnValue('')
-    await tls.putRemoteTLSData(context, null as any)
+    await tls.putRemoteTLSData({ input: context })
     expect(context.tlsSettingData[0].AcceptNonSecureConnections).toBe(undefined)
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
     expect(tlsSettingDataSpy).toHaveBeenCalled()
@@ -297,12 +338,12 @@ describe('TLS State Machine', () => {
     context.tlsSettingData = [{}, {}]
     spyOn(forge.pki, 'certificateFromPem').mockReturnValue({ subject: { getField: () => ({}) } } as any)
     const tlsSettingDataSpy = spyOn(context.amt.TLSSettingData, 'Put').mockReturnValue('')
-    await tls.putLocalTLSData(context, null as any)
+    await tls.putLocalTLSData({ input: context })
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
     expect(tlsSettingDataSpy).toHaveBeenCalled()
   })
   it('should commitChanges', async () => {
-    await tls.commitChanges(context, null as any)
+    await tls.commitChanges({ input: context })
     expect(invokeWsmanCallSpy).toHaveBeenCalled()
   })
 })

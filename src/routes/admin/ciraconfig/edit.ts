@@ -11,7 +11,7 @@ import { type Request, type Response } from 'express'
 import handleError from '../../../utils/handleError.js'
 import { RPSError } from '../../../utils/RPSError.js'
 
-export async function editCiraConfig (req: Request, res: Response): Promise<void> {
+export async function editCiraConfig(req: Request, res: Response): Promise<void> {
   const log = new Logger('editCiraConfig')
   const newConfig: CIRAConfig = req.body
   newConfig.tenantId = req.tenantId || ''
@@ -28,7 +28,11 @@ export async function editCiraConfig (req: Request, res: Response): Promise<void
         // secrets rules: never return sensitive data (passwords) in a response
         delete results.password
         log.verbose(`Updated CIRA config profile : ${ciraConfig.configName}`)
-        MqttProvider.publishEvent('success', ['editCiraConfig'], `Updated CIRA config profile : ${ciraConfig.configName}`)
+        MqttProvider.publishEvent(
+          'success',
+          ['editCiraConfig'],
+          `Updated CIRA config profile : ${ciraConfig.configName}`
+        )
         res.status(200).json(results).end()
       }
     }
@@ -37,7 +41,7 @@ export async function editCiraConfig (req: Request, res: Response): Promise<void
   }
 }
 
-function getUpdatedData (newConfig: CIRAConfig, oldConfig: CIRAConfig): CIRAConfig {
+function getUpdatedData(newConfig: CIRAConfig, oldConfig: CIRAConfig): CIRAConfig {
   const config: CIRAConfig = { configName: newConfig.configName } as CIRAConfig
   config.mpsServerAddress = newConfig.mpsServerAddress ?? oldConfig.mpsServerAddress
   config.mpsPort = newConfig.mpsPort ?? oldConfig.mpsPort

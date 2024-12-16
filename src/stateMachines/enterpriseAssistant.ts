@@ -7,28 +7,28 @@ import { type EnterpriseAssistantMessage } from '../WSEnterpriseAssistantListene
 import { invokeEnterpriseAssistantCall } from './common.js'
 import { devices } from '../devices.js'
 
-const initiateCertRequest = async (context: any, event: any): Promise<EnterpriseAssistantMessage> => {
-  context.message = {
+const initiateCertRequest = async ({ input }): Promise<EnterpriseAssistantMessage> => {
+  input.message = {
     action: 'satellite',
     subaction: '802.1x-ProFile-Request',
     satelliteFlags: 2,
-    nodeid: context.clientId,
+    nodeid: input.clientId,
     domain: '',
     reqid: '',
-    authProtocol: context.authProtocol,
+    authProtocol: input.authProtocol,
     osname: 'win11',
-    devname: devices[context.clientId].hostname,
+    devname: devices[input.clientId].hostname,
     icon: 1,
     cert: null,
     certid: null,
     ver: ''
   }
-  return await invokeEnterpriseAssistantCall(context)
+  return await invokeEnterpriseAssistantCall(input)
 }
 
-const sendEnterpriseAssistantKeyPairResponse = async (context: any, event: any): Promise<EnterpriseAssistantMessage> => {
-  const clientObj = devices[context.clientId]
-  const potentialArray = context.message.Envelope.Body.PullResponse.Items.AMT_PublicPrivateKeyPair
+const sendEnterpriseAssistantKeyPairResponse = async ({ input }): Promise<EnterpriseAssistantMessage> => {
+  const clientObj = devices[input.clientId]
+  const potentialArray = input.message.Envelope.Body.PullResponse.Items.AMT_PublicPrivateKeyPair
   let PublicPrivateKeyPair: any
   let DERKey: any
   if (clientObj.tls) {
@@ -37,18 +37,18 @@ const sendEnterpriseAssistantKeyPairResponse = async (context: any, event: any):
     } else {
       clientObj.tls.PublicPrivateKeyPair = [potentialArray]
     }
-    PublicPrivateKeyPair = clientObj.tls.PublicPrivateKeyPair.filter(x => x.InstanceID === context.keyPairHandle)[0]
+    PublicPrivateKeyPair = clientObj.tls.PublicPrivateKeyPair.filter((x) => x.InstanceID === input.keyPairHandle)[0]
     DERKey = PublicPrivateKeyPair.DERKey
   }
 
-  context.message = {
+  input.message = {
     action: 'satellite',
     subaction: '802.1x-KeyPair-Response',
     satelliteFlags: 2,
-    nodeid: context.clientId,
+    nodeid: input.clientId,
     domain: '',
     reqid: '',
-    devname: devices[context.clientId].hostname,
+    devname: devices[input.clientId].hostname,
     authProtocol: 0,
     osname: 'win11',
     icon: 1,
@@ -56,26 +56,26 @@ const sendEnterpriseAssistantKeyPairResponse = async (context: any, event: any):
     keyInstanceId: PublicPrivateKeyPair?.InstanceID,
     ver: ''
   }
-  return await invokeEnterpriseAssistantCall(context)
+  return await invokeEnterpriseAssistantCall(input)
 }
 
-const getCertFromEnterpriseAssistant = async (context: any, event: any): Promise<EnterpriseAssistantMessage> => {
-  const signedCSR = context.message.Envelope?.Body?.GeneratePKCS10RequestEx_OUTPUT?.SignedCertificateRequest
-  context.message = {
+const getCertFromEnterpriseAssistant = async ({ input }): Promise<EnterpriseAssistantMessage> => {
+  const signedCSR = input.message.Envelope?.Body?.GeneratePKCS10RequestEx_OUTPUT?.SignedCertificateRequest
+  input.message = {
     action: 'satellite',
     subaction: '802.1x-CSR-Response',
     satelliteFlags: 2,
-    nodeid: context.clientId,
+    nodeid: input.clientId,
     domain: '',
     reqid: '',
     authProtocol: 0,
     osname: 'win11',
-    devname: devices[context.clientId].hostname,
+    devname: devices[input.clientId].hostname,
     icon: 1,
     signedcsr: signedCSR,
     ver: ''
   }
-  return await invokeEnterpriseAssistantCall(context)
+  return await invokeEnterpriseAssistantCall(input)
 }
 
 export { initiateCertRequest, sendEnterpriseAssistantKeyPairResponse, getCertFromEnterpriseAssistant }

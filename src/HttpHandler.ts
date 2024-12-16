@@ -14,21 +14,27 @@ export class HttpHandler {
   isAuthInProgress: any
   // The purpose of this directive is to allow the server to detect request replays by maintaining its own copy of this count.
   // if the same nonceCounter-value is seen twice, then the request is a replay
-  nonceCounter: number = 1
+  nonceCounter = 1
   stripPrefix: any
   parser: any
   logger: Logger
-  constructor () {
+  constructor() {
     this.stripPrefix = xml2js.processors.stripPrefix
-    this.parser = new xml2js.Parser({ ignoreAttrs: false, mergeAttrs: false, explicitArray: false, tagNameProcessors: [this.stripPrefix], valueProcessors: [xml2js.processors.parseNumbers, xml2js.processors.parseBooleans] })
+    this.parser = new xml2js.Parser({
+      ignoreAttrs: false,
+      mergeAttrs: false,
+      explicitArray: false,
+      tagNameProcessors: [this.stripPrefix],
+      valueProcessors: [xml2js.processors.parseNumbers, xml2js.processors.parseBooleans]
+    })
     this.logger = new Logger('HttpHandler')
   }
 
-  wrapIt (data: string, connectionParams: connectionParams): string | null {
+  wrapIt(data: string, connectionParams: connectionParams): string | null {
     try {
       const url = '/wsman'
       const action = 'POST'
-      let message: string = `${action} ${url} HTTP/1.1\r\n`
+      let message = `${action} ${url} HTTP/1.1\r\n`
       if (data == null) {
         return null
       }
@@ -38,9 +44,13 @@ export class HttpHandler {
         // console nonce should be a unique opaque quoted string
         connectionParams.consoleNonce = Math.random().toString(36).substring(7)
         const nc = ('00000000' + (this.nonceCounter++).toString(16)).slice(-8)
-        const HA1 = this.hashIt(`${connectionParams.username}:${connectionParams.digestChallenge.realm}:${connectionParams.password}`)
+        const HA1 = this.hashIt(
+          `${connectionParams.username}:${connectionParams.digestChallenge.realm}:${connectionParams.password}`
+        )
         const HA2 = this.hashIt(`${action}:${url}`)
-        responseDigest = this.hashIt(`${HA1}:${connectionParams.digestChallenge.nonce}:${nc}:${connectionParams.consoleNonce}:${connectionParams.digestChallenge.qop}:${HA2}`)
+        responseDigest = this.hashIt(
+          `${HA1}:${connectionParams.digestChallenge.nonce}:${nc}:${connectionParams.consoleNonce}:${connectionParams.digestChallenge.qop}:${HA2}`
+        )
         const authorizationRequestHeader = this.digestIt({
           username: connectionParams.username,
           realm: connectionParams.digestChallenge.realm,
@@ -54,16 +64,19 @@ export class HttpHandler {
         message += `Authorization: ${authorizationRequestHeader}\r\n`
       }
       // Use Chunked-Encoding
-      // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-      message += Buffer.from([
-        `Host: ${connectionParams.guid}:${connectionParams.port}`,
-        'Transfer-Encoding: chunked',
-        '',
-        data.length.toString(16).toUpperCase(),
-        data,
-        0,
-        '\r\n'
-      ].join('\r\n'), 'utf8')
+
+      message += Buffer.from(
+        [
+          `Host: ${connectionParams.guid}:${connectionParams.port}`,
+          'Transfer-Encoding: chunked',
+          '',
+          data.length.toString(16).toUpperCase(),
+          data,
+          0,
+          '\r\n'
+        ].join('\r\n'),
+        'utf8'
+      )
       return message
     } catch (err) {
       this.logger.error('httpHandler unable to create hashed string: ', err.message)
@@ -71,12 +84,12 @@ export class HttpHandler {
     }
   }
 
-  hashIt (data: string): string {
+  hashIt(data: string): string {
     return createHash('md5').update(data).digest('hex')
   }
 
   // Prepares Authorization Request Header
-  digestIt (params: object): string {
+  digestIt(params: object): string {
     const paramNames: string[] = []
     for (const i in params) {
       paramNames.push(i)
@@ -98,7 +111,7 @@ export class HttpHandler {
     return obj
   }
 
-  parseXML (xmlBody: string): any {
+  parseXML(xmlBody: string): any {
     let wsmanResponse: any
     this.parser.parseString(xmlBody, (err, result) => {
       if (err) {

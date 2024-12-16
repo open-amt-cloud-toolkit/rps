@@ -17,7 +17,7 @@ export class ProfileManager implements IProfileManager {
   private readonly secretsManager: ISecretManagerService
   private readonly envConfig: any
 
-  constructor (logger: ILogger, secretsManager: ISecretManagerService, amtConfigurations: IProfilesTable, config?: any) {
+  constructor(logger: ILogger, secretsManager: ISecretManagerService, amtConfigurations: IProfilesTable, config?: any) {
     this.logger = logger
     this.secretsManager = secretsManager
     this.amtConfigurations = amtConfigurations
@@ -29,7 +29,7 @@ export class ProfileManager implements IProfileManager {
    * @param {string} profileName profile to look up
    * @returns {string} returns the activation to be performed
    */
-  public async getActivationMode (profileName: string, tenantId: string): Promise<string | null> {
+  public async getActivationMode(profileName: string, tenantId: string): Promise<string | null> {
     const profile = await this.getAmtProfile(profileName, tenantId)
     let activation: string | null = null
 
@@ -48,7 +48,7 @@ export class ProfileManager implements IProfileManager {
    * @param {string} profile of cira config
    * @returns {string} returns the config for CIRA for a given profile
    */
-  public async getCiraConfiguration (profileName: string | null, tenantId: string): Promise<CIRAConfig | null> {
+  public async getCiraConfiguration(profileName: string | null, tenantId: string): Promise<CIRAConfig | null> {
     const profile = await this.getAmtProfile(profileName, tenantId)
     let ciraConfig: CIRAConfig | null = null
 
@@ -71,7 +71,7 @@ export class ProfileManager implements IProfileManager {
    * @param {string} profileName profile name of amt password
    * @returns {string} returns the amt password for a given profile
    */
-  public async getAmtPassword (profileName: string, tenantId: string): Promise<string | null> {
+  public async getAmtPassword(profileName: string, tenantId: string): Promise<string | null> {
     const profile: AMTConfiguration | null = await this.getAmtProfile(profileName, tenantId)
     let amtPassword: string | null = null
     if (profile) {
@@ -103,11 +103,11 @@ export class ProfileManager implements IProfileManager {
   }
 
   /**
-    * @description Retrieves the amt password set in the configuration or generates a nonstatic password
-    * @param {string} profileName profile name of amt password
-    * @returns {string} returns the amt password for a given profile
+   * @description Retrieves the amt password set in the configuration or generates a nonstatic password
+   * @param {string} profileName profile name of amt password
+   * @returns {string} returns the amt password for a given profile
    */
-  public async getMEBxPassword (profileName: string, tenantId: string): Promise<string | null> {
+  public async getMEBxPassword(profileName: string, tenantId: string): Promise<string | null> {
     const profile: AMTConfiguration | null = await this.getAmtProfile(profileName, tenantId)
     let mebxPassword: string | null = null
     if (profile) {
@@ -139,12 +139,12 @@ export class ProfileManager implements IProfileManager {
   }
 
   /**
-     * @description generates a random password unless custom-ui is used which
-     * includes an MPS password
-     * @param {string} profileName profile name of MPS password
-     * @returns {string} returns the MPS password for a given profile
-     */
-  public async getMPSPassword (profileName: string, tenantId: string): Promise<string> {
+   * @description generates a random password unless custom-ui is used which
+   * includes an MPS password
+   * @param {string} profileName profile name of MPS password
+   * @returns {string} returns the MPS password for a given profile
+   */
+  public async getMPSPassword(profileName: string, tenantId: string): Promise<string> {
     const profile: AMTConfiguration | null = await this.getAmtProfile(profileName, tenantId)
     let mpsPassword: string | null = null
 
@@ -169,11 +169,11 @@ export class ProfileManager implements IProfileManager {
   }
 
   /**
-    * @description Checks if the AMT profile exists or not
-    * @param {string} profile
-    * @returns {AMTConfiguration} returns AMTConfig object if profile exists otherwise null.
-    */
-  public async getAmtProfile (profile: string | null, tenantId: string): Promise<AMTConfiguration | null> {
+   * @description Checks if the AMT profile exists or not
+   * @param {string} profile
+   * @returns {AMTConfiguration} returns AMTConfig object if profile exists otherwise null.
+   */
+  public async getAmtProfile(profile: string | null, tenantId: string): Promise<AMTConfiguration | null> {
     try {
       if (!profile) {
         return null
@@ -184,7 +184,10 @@ export class ProfileManager implements IProfileManager {
       }
       // If the CIRA Config associated with profile, retrieves from DB
       if (amtProfile.ciraConfigName != null) {
-        amtProfile.ciraConfigObject = await this.amtConfigurations.getCiraConfigForProfile(amtProfile.ciraConfigName, tenantId)
+        amtProfile.ciraConfigObject = await this.amtConfigurations.getCiraConfigForProfile(
+          amtProfile.ciraConfigName,
+          tenantId
+        )
       }
       // If the TLS Config associated with profile, retrieves from DB
       if (amtProfile.tlsMode != null && amtProfile.tlsSigningAuthority) {
@@ -195,7 +198,10 @@ export class ProfileManager implements IProfileManager {
       }
       // If the CIRA Config associated with profile, retrieves from DB
       if (amtProfile.ieee8021xProfileName != null) {
-        amtProfile.ieee8021xProfileObject = await this.amtConfigurations.get8021XConfigForProfile(amtProfile.ieee8021xProfileName, tenantId)
+        amtProfile.ieee8021xProfileObject = await this.amtConfigurations.get8021XConfigForProfile(
+          amtProfile.ieee8021xProfileName,
+          tenantId
+        )
       }
       this.logger.debug(`AMT Profile returned from db: ${amtProfile?.profileName}`)
       return amtProfile
@@ -206,11 +212,11 @@ export class ProfileManager implements IProfileManager {
   }
 
   /**
-  * @description Checks if the AMT profile exists or not
-  * @param {string} profile
-  * @returns {boolean} returns true if profile exists otherwise false.
-  */
-  public async doesProfileExist (profileName: string, tenantId: string): Promise<boolean> {
+   * @description Checks if the AMT profile exists or not
+   * @param {string} profile
+   * @returns {boolean} returns true if profile exists otherwise false.
+   */
+  public async doesProfileExist(profileName: string, tenantId: string): Promise<boolean> {
     const profile = await this.getAmtProfile(profileName, tenantId)
     if (profile) {
       // this.logger.debug(`found profile ${profileName}`);

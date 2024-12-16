@@ -11,7 +11,7 @@ import { type Request, type Response } from 'express'
 import handleError from '../../../utils/handleError.js'
 import { RPSError } from '../../../utils/RPSError.js'
 
-export async function editWirelessProfile (req: Request, res: Response): Promise<void> {
+export async function editWirelessProfile(req: Request, res: Response): Promise<void> {
   const log = new Logger('editNetProfile')
   try {
     const config: WirelessConfig | null = await req.db.wirelessProfiles.getByName(req.body.profileName, req.tenantId)
@@ -27,12 +27,18 @@ export async function editWirelessProfile (req: Request, res: Response): Promise
       updateConfig.version = null
     }
     if (req.secretsManager && passphrase) {
-      await req.secretsManager.writeSecretWithObject(`Wireless/${updateConfig.profileName}`, { PSK_PASSPHRASE: passphrase })
+      await req.secretsManager.writeSecretWithObject(`Wireless/${updateConfig.profileName}`, {
+        PSK_PASSPHRASE: passphrase
+      })
       log.debug(`pskPassphrase stored in Vault for wireless profile: ${updateConfig.profileName}`)
     }
     const results: WirelessConfig | null = await req.db.wirelessProfiles.update(updateConfig)
     const { pskPassphrase, pskValue, ...response } = results || {}
-    MqttProvider.publishEvent('success', ['editWirelessProfiles'], `Updated Wireless Profile : ${updateConfig.profileName}`)
+    MqttProvider.publishEvent(
+      'success',
+      ['editWirelessProfiles'],
+      `Updated Wireless Profile : ${updateConfig.profileName}`
+    )
     res.status(200).json(response).end()
   } catch (error) {
     handleError(log, req.body.profileName, req, res, error)

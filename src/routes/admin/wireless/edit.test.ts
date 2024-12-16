@@ -14,12 +14,17 @@ describe('Wireless - Edit', () => {
   let getByNameSpy: SpyInstance<any>
 
   beforeEach(() => {
-    resSpy = createSpyObj('Response', ['status', 'json', 'end', 'send'])
+    resSpy = createSpyObj('Response', [
+      'status',
+      'json',
+      'end',
+      'send'
+    ])
     req = {
       db: { wirelessProfiles: { getByName: jest.fn(), update: jest.fn() } },
       body: { profileName: 'profileName' },
       tenantId: '',
-      query: { }
+      query: {}
     }
     getByNameSpy = spyOn(req.db.wirelessProfiles, 'getByName').mockResolvedValue({})
     spyOn(req.db.wirelessProfiles, 'update').mockResolvedValue({})

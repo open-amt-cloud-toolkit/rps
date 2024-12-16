@@ -10,8 +10,7 @@ import { type MqttClient } from 'mqtt'
 import { jest } from '@jest/globals'
 import { spyOn } from 'jest-mock'
 
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-jest.mock('mqtt', () => ({ ...jest.requireActual('mqtt') as object }))
+jest.mock('mqtt', () => ({ ...(jest.requireActual('mqtt') as object) }))
 
 describe('MQTT Turned ON Tests', () => {
   beforeEach(() => {
@@ -42,17 +41,20 @@ describe('MQTT Turned ON Tests', () => {
 
   it('Should send an event message when turned on', async () => {
     MqttProvider.instance.client = {
-      publish: (topic, message, opts, callback) => ('unknown')
+      publish: (topic, message, opts, callback) => 'unknown'
     } as any
-    const spy = spyOn(MqttProvider.instance.client, 'publish').mockImplementation((topic, message, opts, callback: () => 'unknown') => {
-      callback()
-      return {} as MqttClient
-    })
+    const spy = spyOn(MqttProvider.instance.client, 'publish').mockImplementation(
+      (topic, message, opts, callback: () => 'unknown') => {
+        callback()
+        return {} as MqttClient
+      }
+    )
     MqttProvider.instance.turnedOn = true
     try {
       await MqttProvider.publishEvent('success', ['testMethod'], 'Test Message')
       expect(spy).toHaveBeenCalled()
     } catch (err) {
+      console.log(err)
     }
   })
 
@@ -95,9 +97,11 @@ describe('MQTT Turned OFF Tests', () => {
 
   it('Should NOT Send an event message when turned off', async () => {
     MqttProvider.instance.client = {
-      publish: (topic, message, callback) => ({} as any)
+      publish: (topic, message, callback) => ({}) as any
     } as any
-    const spy = spyOn(MqttProvider.instance.client, 'publish').mockImplementation((topic, message, callback) => ({} as any))
+    const spy = spyOn(MqttProvider.instance.client, 'publish').mockImplementation(
+      (topic, message, callback) => ({}) as any
+    )
     MqttProvider.instance.turnedOn = false
     MqttProvider.publishEvent('success', ['testMethod'], 'Test Message')
     expect(spy).not.toHaveBeenCalled()

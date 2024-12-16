@@ -6,7 +6,16 @@
 import { type IProfilesTable } from '../../../interfaces/database/IProfilesDb.js'
 import { type Ieee8021xConfig, type CIRAConfig } from '../../../models/RCS.Config.js'
 import { type AMTConfiguration } from '../../../models/index.js'
-import { PROFILE_INSERTION_FAILED_DUPLICATE, PROFILE_INSERTION_CIRA_CONSTRAINT, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP, PROFILE_INSERTION_GENERIC_CONSTRAINT, CONCURRENCY_EXCEPTION, CONCURRENCY_MESSAGE } from '../../../utils/constants.js'
+import {
+  PROFILE_INSERTION_FAILED_DUPLICATE,
+  PROFILE_INSERTION_CIRA_CONSTRAINT,
+  API_UNEXPECTED_EXCEPTION,
+  DEFAULT_SKIP,
+  DEFAULT_TOP,
+  PROFILE_INSERTION_GENERIC_CONSTRAINT,
+  CONCURRENCY_EXCEPTION,
+  CONCURRENCY_MESSAGE
+} from '../../../utils/constants.js'
 import Logger from '../../../Logger.js'
 import { RPSError } from '../../../utils/RPSError.js'
 import type PostgresDb from '../index.js'
@@ -15,7 +24,7 @@ import { PostgresErr } from '../errors.js'
 export class ProfilesTable implements IProfilesTable {
   db: PostgresDb
   log: Logger
-  constructor (db: PostgresDb) {
+  constructor(db: PostgresDb) {
     this.db = db
     this.log = new Logger('ProfilesDb')
   }
@@ -25,11 +34,14 @@ export class ProfilesTable implements IProfilesTable {
    * @param {string} tenantId
    * @returns {number}
    */
-  async getCount (tenantId: string = ''): Promise<number> {
-    const result = await this.db.query<{ total_count: number }>(`
+  async getCount(tenantId = ''): Promise<number> {
+    const result = await this.db.query<{ total_count: number }>(
+      `
     SELECT count(*) OVER() AS total_count 
     FROM profiles
-    WHERE tenant_id = $1`, [tenantId])
+    WHERE tenant_id = $1`,
+      [tenantId]
+    )
     let count = 0
     if (result != null && result.rows?.length > 0) {
       count = Number(result.rows[0].total_count)
@@ -44,8 +56,9 @@ export class ProfilesTable implements IProfilesTable {
    * @param {string} tenantId
    * @returns {Pagination} returns an array of AMT profiles from DB
    */
-  async get (top: number = DEFAULT_TOP, skip: number = DEFAULT_SKIP, tenantId: string = ''): Promise<AMTConfiguration[]> {
-    const results = await this.db.query<AMTConfiguration>(`
+  async get(top: number = DEFAULT_TOP, skip: number = DEFAULT_SKIP, tenantId = ''): Promise<AMTConfiguration[]> {
+    const results = await this.db.query<AMTConfiguration>(
+      `
     SELECT 
       p.profile_name as "profileName", 
       activation as "activation", 
@@ -88,7 +101,13 @@ export class ProfilesTable implements IProfilesTable {
       ip_sync_enabled,
       local_wifi_sync_enabled
     ORDER BY p.profile_name 
-    LIMIT $1 OFFSET $2`, [top, skip, tenantId])
+    LIMIT $1 OFFSET $2`,
+      [
+        top,
+        skip,
+        tenantId
+      ]
+    )
 
     return results.rows
   }
@@ -99,8 +118,9 @@ export class ProfilesTable implements IProfilesTable {
    * @param {string} tenantId
    * @returns {AMTConfiguration} AMT Profile object
    */
-  async getByName (profileName: string, tenantId: string = ''): Promise<AMTConfiguration | null> {
-    const results = await this.db.query<AMTConfiguration>(`
+  async getByName(profileName: string, tenantId = ''): Promise<AMTConfiguration | null> {
+    const results = await this.db.query<AMTConfiguration>(
+      `
     SELECT 
       p.profile_name as "profileName",
       activation as "activation",
@@ -142,7 +162,9 @@ export class ProfilesTable implements IProfilesTable {
       ieee8021x_profile_name,
       ip_sync_enabled,
       local_wifi_sync_enabled
-    `, [profileName, tenantId])
+    `,
+      [profileName, tenantId]
+    )
 
     return results.rows.length > 0 ? results.rows[0] : null
   }
@@ -153,11 +175,11 @@ export class ProfilesTable implements IProfilesTable {
    * @param {string} tenantId
    * @returns {CIRAConfig} CIRA config object
    */
-  async getCiraConfigForProfile (configName: string, tenantId: string): Promise<CIRAConfig | null> {
+  async getCiraConfigForProfile(configName: string, tenantId: string): Promise<CIRAConfig | null> {
     return await this.db.ciraConfigs.getByName(configName, tenantId)
   }
 
-  async get8021XConfigForProfile (profileName: string, tenantId?: string): Promise<Ieee8021xConfig | null> {
+  async get8021XConfigForProfile(profileName: string, tenantId?: string): Promise<Ieee8021xConfig | null> {
     return await this.db.ieee8021xProfiles.getByName(profileName, tenantId)
   }
 
@@ -167,14 +189,17 @@ export class ProfilesTable implements IProfilesTable {
    * @param {string} tenantId
    * @returns {boolean} Return true on successful deletion
    */
-  async delete (profileName: string, tenantId: string = ''): Promise<boolean> {
+  async delete(profileName: string, tenantId = ''): Promise<boolean> {
     // delete any associations with wificonfigs
     await this.db.profileWirelessConfigs.deleteProfileWifiConfigs(profileName, tenantId)
 
-    const results = await this.db.query(`
+    const results = await this.db.query(
+      `
       DELETE 
       FROM profiles 
-      WHERE profile_name = $1 and tenant_id = $2`, [profileName, tenantId])
+      WHERE profile_name = $1 and tenant_id = $2`,
+      [profileName, tenantId]
+    )
     if (results?.rowCount) {
       if (results.rowCount > 0) {
         return true
@@ -188,9 +213,10 @@ export class ProfilesTable implements IProfilesTable {
    * @param {AMTConfiguration} amtConfig
    * @returns {boolean} Returns amtConfig object
    */
-  async insert (amtConfig: AMTConfiguration): Promise<AMTConfiguration | null> {
+  async insert(amtConfig: AMTConfiguration): Promise<AMTConfiguration | null> {
     try {
-      const results = await this.db.query(`
+      const results = await this.db.query(
+        `
         INSERT INTO profiles(
           profile_name, activation,
           amt_password, generate_random_password,
@@ -200,27 +226,28 @@ export class ProfilesTable implements IProfilesTable {
           user_consent, ider_enabled, kvm_enabled, sol_enabled,
           tenant_id, tls_signing_authority, ieee8021x_profile_name, ip_sync_enabled, local_wifi_sync_enabled)
         values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)`,
-      [
-        amtConfig.profileName,
-        amtConfig.activation,
-        amtConfig.amtPassword,
-        amtConfig.generateRandomPassword,
-        amtConfig.ciraConfigName,
-        amtConfig.mebxPassword,
-        amtConfig.generateRandomMEBxPassword,
-        amtConfig.tags,
-        amtConfig.dhcpEnabled,
-        amtConfig.tlsMode,
-        amtConfig.userConsent,
-        amtConfig.iderEnabled,
-        amtConfig.kvmEnabled,
-        amtConfig.solEnabled,
-        amtConfig.tenantId,
-        amtConfig.tlsSigningAuthority,
-        amtConfig.ieee8021xProfileName,
-        amtConfig.ipSyncEnabled,
-        amtConfig.localWifiSyncEnabled
-      ])
+        [
+          amtConfig.profileName,
+          amtConfig.activation,
+          amtConfig.amtPassword,
+          amtConfig.generateRandomPassword,
+          amtConfig.ciraConfigName,
+          amtConfig.mebxPassword,
+          amtConfig.generateRandomMEBxPassword,
+          amtConfig.tags,
+          amtConfig.dhcpEnabled,
+          amtConfig.tlsMode,
+          amtConfig.userConsent,
+          amtConfig.iderEnabled,
+          amtConfig.kvmEnabled,
+          amtConfig.solEnabled,
+          amtConfig.tenantId,
+          amtConfig.tlsSigningAuthority,
+          amtConfig.ieee8021xProfileName,
+          amtConfig.ipSyncEnabled,
+          amtConfig.localWifiSyncEnabled
+        ]
+      )
 
       if (results.rowCount === 0) {
         return null
@@ -228,7 +255,11 @@ export class ProfilesTable implements IProfilesTable {
 
       if (amtConfig.wifiConfigs) {
         if (amtConfig.wifiConfigs?.length > 0) {
-          await this.db.profileWirelessConfigs.createProfileWifiConfigs(amtConfig.wifiConfigs, amtConfig.profileName, amtConfig.tenantId)
+          await this.db.profileWirelessConfigs.createProfileWifiConfigs(
+            amtConfig.wifiConfigs,
+            amtConfig.profileName,
+            amtConfig.tenantId
+          )
         }
       }
 
@@ -242,7 +273,10 @@ export class ProfilesTable implements IProfilesTable {
         throw new RPSError(PROFILE_INSERTION_FAILED_DUPLICATE(amtConfig.profileName), 'Unique key violation')
       }
       if (error.code === PostgresErr.C23_FOREIGN_KEY_VIOLATION) {
-        throw new RPSError(PROFILE_INSERTION_GENERIC_CONSTRAINT(amtConfig.ciraConfigName ?? ''), `Foreign key constraint violation: ${error.message}`)
+        throw new RPSError(
+          PROFILE_INSERTION_GENERIC_CONSTRAINT(amtConfig.ciraConfigName ?? ''),
+          `Foreign key constraint violation: ${error.message}`
+        )
       }
       throw new RPSError(API_UNEXPECTED_EXCEPTION(amtConfig.profileName))
     }
@@ -253,10 +287,11 @@ export class ProfilesTable implements IProfilesTable {
    * @param {AMTConfiguration} amtConfig
    * @returns {AMTConfiguration} Returns amtConfig object
    */
-  async update (amtConfig: AMTConfiguration): Promise<AMTConfiguration | null> {
+  async update(amtConfig: AMTConfiguration): Promise<AMTConfiguration | null> {
     let latestItem: AMTConfiguration | null = null
     try {
-      const results = await this.db.query(`
+      const results = await this.db.query(
+        `
       UPDATE profiles 
       SET activation=$2, amt_password=$3, generate_random_password=$4, cira_config_name=$5,
           mebx_password=$6, generate_random_mebx_password=$7,
@@ -265,31 +300,36 @@ export class ProfilesTable implements IProfilesTable {
           tls_signing_authority=$17, ieee8021x_profile_name=$18,
           ip_sync_enabled=$19, local_wifi_sync_enabled=$20
       WHERE profile_name=$1 and tenant_id = $11 and xmin = $12`,
-      [
-        amtConfig.profileName,
-        amtConfig.activation,
-        amtConfig.amtPassword,
-        amtConfig.generateRandomPassword,
-        amtConfig.ciraConfigName,
-        amtConfig.mebxPassword,
-        amtConfig.generateRandomMEBxPassword,
-        amtConfig.tags,
-        amtConfig.dhcpEnabled,
-        amtConfig.tlsMode,
-        amtConfig.tenantId,
-        amtConfig.version,
-        amtConfig.userConsent,
-        amtConfig.iderEnabled,
-        amtConfig.kvmEnabled,
-        amtConfig.solEnabled,
-        amtConfig.tlsSigningAuthority,
-        amtConfig.ieee8021xProfileName,
-        amtConfig.ipSyncEnabled,
-        amtConfig.localWifiSyncEnabled
-      ])
+        [
+          amtConfig.profileName,
+          amtConfig.activation,
+          amtConfig.amtPassword,
+          amtConfig.generateRandomPassword,
+          amtConfig.ciraConfigName,
+          amtConfig.mebxPassword,
+          amtConfig.generateRandomMEBxPassword,
+          amtConfig.tags,
+          amtConfig.dhcpEnabled,
+          amtConfig.tlsMode,
+          amtConfig.tenantId,
+          amtConfig.version,
+          amtConfig.userConsent,
+          amtConfig.iderEnabled,
+          amtConfig.kvmEnabled,
+          amtConfig.solEnabled,
+          amtConfig.tlsSigningAuthority,
+          amtConfig.ieee8021xProfileName,
+          amtConfig.ipSyncEnabled,
+          amtConfig.localWifiSyncEnabled
+        ]
+      )
       if (results.rowCount && results.rowCount > 0) {
         if (amtConfig.wifiConfigs && amtConfig.wifiConfigs?.length > 0) {
-          await this.db.profileWirelessConfigs.createProfileWifiConfigs(amtConfig.wifiConfigs, amtConfig.profileName, amtConfig.tenantId)
+          await this.db.profileWirelessConfigs.createProfileWifiConfigs(
+            amtConfig.wifiConfigs,
+            amtConfig.profileName,
+            amtConfig.tenantId
+          )
         }
         latestItem = await this.getByName(amtConfig.profileName, amtConfig.tenantId)
         return latestItem
@@ -300,7 +340,10 @@ export class ProfilesTable implements IProfilesTable {
       this.log.error(`Failed to update AMT profile: ${amtConfig.profileName}`, error)
       if (error.code === PostgresErr.C23_FOREIGN_KEY_VIOLATION) {
         if (error.message.includes('profiles_cira_config_name_fkey')) {
-          throw new RPSError(PROFILE_INSERTION_CIRA_CONSTRAINT(amtConfig.ciraConfigName ?? ''), 'Foreign key constraint violation')
+          throw new RPSError(
+            PROFILE_INSERTION_CIRA_CONSTRAINT(amtConfig.ciraConfigName ?? ''),
+            'Foreign key constraint violation'
+          )
         }
       }
       throw new RPSError(API_UNEXPECTED_EXCEPTION(amtConfig.profileName))

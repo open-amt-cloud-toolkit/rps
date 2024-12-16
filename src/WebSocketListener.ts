@@ -18,7 +18,7 @@ export class WebSocketListener {
   wsServer: WebSocketServer
   logger: ILogger
 
-  constructor (logger: ILogger, dataProcessor: DataProcessor) {
+  constructor(logger: ILogger, dataProcessor: DataProcessor) {
     this.logger = logger
     this.dataProcessor = dataProcessor
   }
@@ -26,7 +26,7 @@ export class WebSocketListener {
   /**
    * @description Creates a WebSocket server based on config info
    */
-  connect (): boolean {
+  connect(): boolean {
     try {
       this.wsServer = new WebSocketServer({ port: Environment.Config.websocketport })
       this.wsServer.on('connection', this.onClientConnected)
@@ -44,10 +44,23 @@ export class WebSocketListener {
    */
   onClientConnected = (ws: Server): void => {
     const clientId = randomUUID()
-    devices[clientId] = { ClientId: clientId, ClientSocket: ws, ciraconfig: {}, network: { count: 0 }, status: {}, tls: {}, activationStatus: false, unauthCount: 0, messageId: 0, amtPassword: '', connectionParams: { port: 16992, guid: '', username: '', password: '' }, resolve: (value: unknown) => {}, reject: (value: unknown) => {} }
+    devices[clientId] = {
+      ClientId: clientId,
+      ClientSocket: ws,
+      ciraconfig: {},
+      network: { count: 0 },
+      status: {},
+      tls: {},
+      activationStatus: false,
+      unauthCount: 0,
+      messageId: 0,
+      amtPassword: '',
+      connectionParams: { port: 16992, guid: '', username: '', password: '' },
+      resolve: (value: unknown) => {},
+      reject: (value: unknown) => {}
+    }
 
     ws.on('message', async (data: Data, isBinary: boolean) => {
-      // eslint-disable-next-line @typescript-eslint/no-base-to-string
       const message = isBinary ? data : data.toString()
       await this.onMessageReceived(message, clientId)
     })
@@ -62,7 +75,7 @@ export class WebSocketListener {
    * @description Called on close event of WebSocket Server
    * @param {string} clientId Index of the connected client
    */
-  onClientDisconnected (clientId: string): void {
+  onClientDisconnected(clientId: string): void {
     delete devices[clientId]
     this.logger.debug(`Connection ended for client : ${clientId}`)
   }
@@ -72,7 +85,7 @@ export class WebSocketListener {
    * @param {Error} error Websocket error
    * @param {string} clientId
    */
-  onError (error: Error, clientId: string): void {
+  onError(error: Error, clientId: string): void {
     this.logger.error(`${clientId} : ${error.message}`)
   }
 
@@ -81,7 +94,7 @@ export class WebSocketListener {
    * @param {Number} index Index of the connected client
    * @param {WSMessage} message Received from the client
    */
-  async onMessageReceived (message: Data, clientId: string): Promise<void> {
+  async onMessageReceived(message: Data, clientId: string): Promise<void> {
     let messageLength
     if (typeof message === 'string') {
       messageLength = Buffer.from(message).length
@@ -115,7 +128,7 @@ export class WebSocketListener {
    * @param {string} clientId Index of the connected client
    * @param {ClientMsg} message Message to be sent to client
    */
-  sendMessage (message: ClientMsg, clientId: string): void {
+  sendMessage(message: ClientMsg, clientId: string): void {
     try {
       this.logger.debug(`${clientId} : response message sent to device: ${JSON.stringify(message, null, '\t')}`)
       const clientDevice = devices[clientId]

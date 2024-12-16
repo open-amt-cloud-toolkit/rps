@@ -6,7 +6,7 @@
 import { CommandParser } from './CommandParser.js'
 import { ClientMethods, type ClientMsg } from './models/RCS.Config.js'
 
-function getBasicMessage (): ClientMsg {
+function getBasicMessage(): ClientMsg {
   const clientMsg: ClientMsg = {
     method: '--text activate --profile profile1',
     apiKey: 'key',
@@ -174,7 +174,7 @@ test.each<TestInput>([
   const result = CommandParser.parse(clientMsg)
   expect(result.method).toEqual(ti.expect.method)
   const keys = Object.keys(ti.expect.payload)
-  keys.forEach(k => {
+  keys.forEach((k) => {
     expect(result.payload[k]).toBe(ti.expect.payload[k])
   })
 })

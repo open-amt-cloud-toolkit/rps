@@ -13,7 +13,12 @@ describe('Checks editIEEE8021xProfile', () => {
   let req
   let getByNameSpy: SpyInstance<any>
   beforeEach(() => {
-    resSpy = createSpyObj('Response', ['status', 'json', 'end', 'send'])
+    resSpy = createSpyObj('Response', [
+      'status',
+      'json',
+      'end',
+      'send'
+    ])
     req = {
       db: { ieee8021xProfiles: { getByName: jest.fn(), update: jest.fn() } },
       body: { profileName: 'profileName', password: 'password' },

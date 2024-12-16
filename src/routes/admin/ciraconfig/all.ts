@@ -10,7 +10,7 @@ import { MqttProvider } from '../../../utils/MqttProvider.js'
 import { type Request, type Response } from 'express'
 import handleError from '../../../utils/handleError.js'
 
-export async function allCiraConfigs (req: Request, res: Response): Promise<void> {
+export async function allCiraConfigs(req: Request, res: Response): Promise<void> {
   const log = new Logger('allCiraConfigs')
   const top = Number(req.query.$top)
   const skip = Number(req.query.$skip)

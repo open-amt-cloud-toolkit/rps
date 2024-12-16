@@ -1,16 +1,17 @@
 {
-    "compilerOptions": {
-        "outDir": "./dist",
-        "baseUrl": "./src",
-        "moduleResolution": "NodeNext",
-        "module": "NodeNext",
-        "allowJs": true,
-        "target": "ESNext",
-        "sourceMap": true,
-        "esModuleInterop": true,
-        "strictNullChecks": true,
-    },
-    "include": [
-        "./src/**/*"
-    ]
+  "compilerOptions": {
+    "outDir": "./dist",
+    "baseUrl": "./src",
+    "moduleResolution": "NodeNext",
+    "module": "NodeNext",
+    "allowJs": true,
+    "target": "ESNext",
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "strictNullChecks": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "./src/**/*"
+  ]
 }

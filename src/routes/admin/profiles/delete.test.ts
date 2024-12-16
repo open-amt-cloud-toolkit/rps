@@ -14,10 +14,15 @@ describe('Profiles - Delete', () => {
   let deleteSpy: SpyInstance<any>
 
   beforeEach(() => {
-    resSpy = createSpyObj('Response', ['status', 'json', 'end', 'send'])
+    resSpy = createSpyObj('Response', [
+      'status',
+      'json',
+      'end',
+      'send'
+    ])
     req = {
       db: { profiles: { delete: jest.fn(), getByName: jest.fn() } },
-      query: { },
+      query: {},
       tenantId: '',
       params: { profileName: 'profileName' }
     }

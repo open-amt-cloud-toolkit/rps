@@ -3,12 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { interpret } from 'xstate'
+import { type MachineImplementationsSimplified, createActor } from 'xstate'
 import { Error, type ErrorContext } from './error.js'
 import { randomUUID } from 'node:crypto'
 import { devices } from '../devices.js'
 import { jest } from '@jest/globals'
 
+let context: ErrorContext
 const clientId = randomUUID()
 const unauthorizedResponse = {
   statusCode: 401,
@@ -21,23 +22,22 @@ const unauthorizedResponse = {
     { name: 'Transfer-Encoding', value: 'chunked' },
     {
       name: 'Www-Authenticate',
-      value: 'Digest realm="Digest:34BF4B5A0561F95248F58509A406E046", nonce="bQali2IAAAAAAAAAn0xaWCOcxNsRcEHX",stale="false",qop="auth"'
+      value:
+        'Digest realm="Digest:34BF4B5A0561F95248F58509A406E046", nonce="bQali2IAAAAAAAAAn0xaWCOcxNsRcEHX",stale="false",qop="auth"'
     }
   ],
-  body: {
-  }
+  body: {}
 }
 
 describe('Error State Machine', () => {
-  let config
+  let config: MachineImplementationsSimplified<ErrorContext, ErrorEvent>
   let currentStateIndex
   let error: Error
   beforeEach(() => {
     error = new Error()
     currentStateIndex = 0
     config = {
-      services: {
-      },
+      actors: {},
       actions: {
         respondUnknown: () => {},
         respondBadRequest: () => {}
@@ -45,7 +45,8 @@ describe('Error State Machine', () => {
       guards: {
         isBadRequest: () => false,
         isUnauthorized: () => false
-      }
+      },
+      delays: {}
     }
     devices[clientId] = {
       unauthCount: 0,
@@ -66,13 +67,19 @@ describe('Error State Machine', () => {
       uuid: '4c4c4544-004b-4210-8033-b6c04f504633',
       messageId: 1
     } as any
+    context = {
+      clientId,
+      message: unauthorizedResponse as any
+    }
   })
 
-  it('should eventually reach "UNKNOWN"', (done) => {
-    const mockerrorMachine = error.machine.withConfig(config)
+  it('should eventually reach UNKNOWN', (done) => {
+    const mockerrorMachine = error.machine.provide(config)
     const flowStates = ['ERRORED', 'UNKNOWN']
-    const errorService = interpret(mockerrorMachine).onTransition((state) => {
-      expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+    const errorService = createActor(mockerrorMachine, { input: context })
+    errorService.subscribe((state) => {
+      const expectedState: any = flowStates[currentStateIndex++]
+      expect(state.matches(expectedState)).toBe(true)
       if (state.matches('UNKNOWN') && currentStateIndex === flowStates.length) {
         done()
       }
@@ -81,14 +88,21 @@ describe('Error State Machine', () => {
     errorService.send({ type: 'PARSE', clientId })
   })
 
-  it('should eventually reach "BADREQUEST"', (done) => {
+  it('should eventually reach BADREQUEST', (done) => {
     config.guards = {
       isBadRequest: () => true
     }
-    const mockerrorMachine = error.machine.withConfig(config)
+    context = {
+      message: null,
+      clientId
+    }
+
+    const mockerrorMachine = error.machine.provide(config)
     const flowStates = ['ERRORED', 'BADREQUEST']
-    const errorService = interpret(mockerrorMachine).onTransition((state) => {
-      expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+    const errorService = createActor(mockerrorMachine, { input: context })
+    errorService.subscribe((state) => {
+      const expectedState: any = flowStates[currentStateIndex++]
+      expect(state.matches(expectedState)).toBe(true)
       if (state.matches('BADREQUEST') && currentStateIndex === flowStates.length) {
         done()
       }
@@ -99,14 +113,12 @@ describe('Error State Machine', () => {
 
   it('should eventually reach "AUTHORIZED"', (done) => {
     config.guards = {}
-    const context: ErrorContext = {
-      message: unauthorizedResponse as any,
-      clientId
-    }
-    const mockerrorMachine = error.machine.withConfig(config).withContext(context)
+    const mockerrorMachine = error.machine.provide(config)
     const flowStates = ['ERRORED', 'AUTHORIZED']
-    const errorService = interpret(mockerrorMachine).onTransition((state) => {
-      expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+    const errorService = createActor(mockerrorMachine, { input: context })
+    errorService.subscribe((state) => {
+      const expectedState: any = flowStates[currentStateIndex++]
+      expect(state.matches(expectedState)).toBe(true)
       if (state.matches('AUTHORIZED') && currentStateIndex === flowStates.length) {
         done()
       }
@@ -116,18 +128,8 @@ describe('Error State Machine', () => {
   })
 
   it('should add authorization header', () => {
-    const context = {
-      message: unauthorizedResponse,
-      clientId
-    }
     expect(devices[clientId].connectionParams.digestChallenge).toBeNull()
-    error.addAuthorizationHeader(context)
+    error.addAuthorizationHeader({ context })
     expect(devices[clientId].connectionParams.digestChallenge).not.toBeNull()
-  })
-
-  it('should respond for bad request', () => {
-    const context = { message: '', parsedMessage: '', clientId }
-    error.respondBadRequest(context)
-    expect(devices[context.clientId].unauthCount).toBe(0)
   })
 })

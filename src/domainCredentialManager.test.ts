@@ -21,25 +21,25 @@ describe('Domain Credential Manager Tests', () => {
         if (query.indexOf('SELECT') >= 0) {
           return {
             rowCount: 1,
-            rows: [{
-              name: '',
-              domainSuffix: 'd2.com',
-              provisioningCert: ' ',
-              provisioningCertStorageFormat: '',
-              provisioningCertPassword: ''
-            }]
+            rows: [
+              {
+                name: '',
+                domainSuffix: 'd2.com',
+                provisioningCert: ' ',
+                provisioningCertStorageFormat: '',
+                provisioningCertPassword: ''
+              }
+            ]
           }
         }
       }
     } as any
-    domainCredentialManager = new DomainCredentialManager(logger,
-      new DomainsTable(creator), {
-        getSecretAtPath: jest.fn().mockImplementation(() => ({ CERT: 'd2.pfx', CERT_PASSWORD: 'password' }))
-      } as any
-    )
+    domainCredentialManager = new DomainCredentialManager(logger, new DomainsTable(creator), {
+      getSecretAtPath: jest.fn().mockImplementation(() => ({ CERT: 'd2.pfx', CERT_PASSWORD: 'password' }))
+    } as any)
   })
   test('retrieve provisioning cert based on domain', async () => {
-    const expectedProvisioningCert: string = 'd2.pfx'
+    const expectedProvisioningCert = 'd2.pfx'
     const domain: AMTDomain | null = await domainCredentialManager.getProvisioningCert('d2.com', '')
     expect(domain?.provisioningCert).toEqual(expectedProvisioningCert)
     expect(domain?.provisioningCertPassword).toEqual('password')

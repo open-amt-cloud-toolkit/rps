@@ -4,9 +4,8 @@
  **********************************************************************/
 
 import { type AMT } from '@open-amt-cloud-toolkit/wsman-messages'
-import { assign, createMachine, sendTo } from 'xstate'
+import { assign, sendTo, fromPromise, setup } from 'xstate'
 import { CertManager } from '../certManager.js'
-import { HttpHandler } from '../HttpHandler.js'
 import Logger from '../Logger.js'
 import { type AMTConfiguration, type AMTKeyUsage, type CertAttributes } from '../models/index.js'
 import { NodeForge } from '../NodeForge.js'
@@ -17,32 +16,31 @@ import { TlsSigningAuthority } from '../models/RCS.Config.js'
 import { UNEXPECTED_PARSE_ERROR } from '../utils/constants.js'
 import { parseChunkedMessage } from '../utils/parseChunkedMessage.js'
 import { Environment } from '../utils/Environment.js'
-import { getCertFromEnterpriseAssistant, initiateCertRequest, sendEnterpriseAssistantKeyPairResponse } from './enterpriseAssistant.js'
-import { invokeWsmanCall } from './common.js'
+import {
+  getCertFromEnterpriseAssistant,
+  initiateCertRequest,
+  sendEnterpriseAssistantKeyPairResponse
+} from './enterpriseAssistant.js'
+import { type CommonContext, invokeWsmanCall } from './common.js'
 
-export interface TLSContext {
-  message: any
-  xmlMessage: string
-  errorMessage: string
-  statusMessage: string
-  clientId: string
-  httpHandler: HttpHandler
+export interface TLSContext extends CommonContext {
+  amtProfile: AMTConfiguration | null
+  retryCount: number
   status: 'success' | 'error' | ''
   tlsSettingData: any[]
-  tlsCredentialContext: any
-  amtProfile: AMTConfiguration
-  unauthCount: number
+  tlsCredentialContext?: any
+  unauthCount?: number
   amt: AMT.Messages
-  retryCount: number
   keyPairHandle?: string
-  authProtocol: number
+  authProtocol?: number
 }
 
-interface TLSEvent {
+export interface TLSEvent {
   type: 'CONFIGURE_TLS' | 'ONFAILED'
   clientId: string
-  data?: any
-}/*  */
+  output?: any
+  error?: any
+} /*  */
 
 export class TLS {
   nodeForge: NodeForge
@@ -50,485 +48,35 @@ export class TLS {
   certManager: CertManager
   error: Error = new Error()
   timeSync: TimeSync = new TimeSync()
-  machine =
-    createMachine<TLSContext, TLSEvent>({
-      predictableActionArguments: true,
-      preserveActionOrder: true,
-      id: 'tls-configuration-machine',
-      initial: 'PROVISIONED',
-      context: {
-        clientId: '', // provided by parent machine
-        unauthCount: 0,
-        status: 'success',
-        message: null,
-        httpHandler: new HttpHandler(), // provided by parent machine
-        xmlMessage: '',
-        errorMessage: '',
-        statusMessage: '',
-        tlsSettingData: [],
-        tlsCredentialContext: null,
-        authProtocol: 0,
-        retryCount: 0,
-        amtProfile: {} as any, // provided by parent machine
-        amt: {} as any // provided by parent machine
-      },
-      states: {
-        PROVISIONED: {
-          on: {
-            CONFIGURE_TLS: {
-              actions: ['Reset Retry Count', assign({ authProtocol: 0 })],
-              target: 'ENUMERATE_PUBLIC_KEY_CERTIFICATE'
-            }
-          }
-        },
-        ENUMERATE_PUBLIC_KEY_CERTIFICATE: {
-          invoke: {
-            src: this.enumeratePublicKeyCertificate.bind(this),
-            id: 'enumerate-public-key-certificate',
-            onDone: {
-              actions: [
-                assign({ message: (context, event) => event.data })
-              ],
-              target: 'PULL_PUBLIC_KEY_CERTIFICATE'
-            },
-            onError: {
-              actions: assign({
-                errorMessage: 'Failed to enumerate public key certificates'
-              }),
-              target: 'FAILED'
-            }
-          }
-        },
-        PULL_PUBLIC_KEY_CERTIFICATE: {
-          invoke: {
-            src: this.pullPublicKeyCertificate.bind(this),
-            id: 'pull-public-key-certificate',
-            onDone: {
-              actions: [
-                assign({ message: (context, event) => event.data }),
-                'Reset Retry Count'
-              ],
-              target: 'CHECK_CERT_MODE'
-            },
-            onError: [
-              {
-                cond: 'shouldRetry',
-                actions: 'Increment Retry Count',
-                target: 'ENUMERATE_PUBLIC_KEY_CERTIFICATE'
-              },
-              {
-                actions: assign({ errorMessage: 'Failed to pull public key certificates' }),
-                target: 'FAILED'
-              }
-            ]
-          }
-        },
-        CHECK_CERT_MODE: {
-          always: [{
-            cond: 'useTLSEnterpriseAssistantCert',
-            target: 'ENTERPRISE_ASSISTANT_REQUEST'
-          }, 'ADD_TRUSTED_ROOT_CERTIFICATE']
-        },
-        CHECK_CERT_MODE_AFTER_REQUEST: {
-          always: [{
-            cond: 'useTLSEnterpriseAssistantCert',
-            target: 'ENTERPRISE_ASSISTANT_RESPONSE'
-          }, 'ADD_CERTIFICATE']
-        },
-        ENTERPRISE_ASSISTANT_REQUEST: {
-          invoke: {
-            src: async (context, event) => await initiateCertRequest(context, event),
-            id: 'enterprise-assistant-request',
-            onDone: {
-              actions: [
-                assign({ message: (context, event) => event.data })
-              ],
-              target: 'GENERATE_KEY_PAIR'
-            },
-            onError: {
-              actions: assign({
-                errorMessage: 'Failed to initiate cert request with enterprise assistant'
-              }),
-              target: 'FAILED'
-            }
-          }
-        },
-        ENTERPRISE_ASSISTANT_RESPONSE: {
-          invoke: {
-            src: async (context, event) => await sendEnterpriseAssistantKeyPairResponse(context, event),
-            id: 'enterprise-assistant-response',
-            onDone: {
-              actions: [
-                assign({ message: (context, event) => event.data })
-              ],
-              target: 'SIGN_CSR'
-            },
-            onError: {
-              actions: assign({
-                errorMessage: 'Failed to send key pair to enterprise assistant'
-              }),
-              target: 'FAILED'
-            }
-          }
-        },
-        SIGN_CSR: {
-          invoke: {
-            src: this.signCSR.bind(this),
-            id: 'sign-csr',
-            onDone: {
-              actions: [
-                assign({ message: (context, event) => event.data })
-              ],
-              target: 'GET_CERT_FROM_ENTERPRISE_ASSISTANT'
-            },
-            onError: {
-              actions: assign({
-                errorMessage: 'Failed to have AMT sign CSR'
-              }),
-              target: 'FAILED'
-            }
-          }
-        },
-        GET_CERT_FROM_ENTERPRISE_ASSISTANT: {
-          invoke: {
-            src: async (context, event) => await getCertFromEnterpriseAssistant(context, event),
-            id: 'get-cert-from-enterprise-assistant',
-            onDone: {
-              actions: [
-                assign({ message: (context, event) => event.data })
-              ],
-              target: 'ADD_CERTIFICATE'
-            },
-            onError: {
-              actions: assign({
-                errorMessage: 'Failed to get cert from Microsoft CA'
-              }),
-              target: 'FAILED'
-            }
-          }
-        },
-        ADD_TRUSTED_ROOT_CERTIFICATE: {
-          invoke: {
-            src: this.addTrustedRootCertificate.bind(this),
-            id: 'add-trusted-root-certificate',
-            onDone: {
-              actions: [
-                assign({ message: (context, event) => event.data })
-              ],
-              target: 'GENERATE_KEY_PAIR'
-            },
-            onError: {
-              actions: assign({
-                errorMessage: 'Failed to add trusted root certificates'
-              }),
-              target: 'FAILED'
-            }
-          }
-        },
-        GENERATE_KEY_PAIR: {
-          invoke: {
-            src: this.generateKeyPair.bind(this),
-            id: 'generate-key-pair',
-            onDone: {
-              actions: [
-                assign({ message: (context, event) => event.data })
-              ],
-              target: 'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR'
-            },
-            onError: {
-              actions: assign({
-                errorMessage: 'Failed to generate key pair'
-              }),
-              target: 'FAILED'
-            }
-          }
-        },
-        ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR: {
-          invoke: {
-            src: this.enumeratePublicPrivateKeyPair.bind(this),
-            id: 'enumerate-public-private-key-pair',
-            onDone: {
-              actions: [
-                assign({ message: (context, event) => event.data })
-              ],
-              target: 'PULL_PUBLIC_PRIVATE_KEY_PAIR'
-            },
-            onError: {
-              actions: assign({
-                errorMessage: 'Failed to enumerate public private key pair'
-              }),
-              target: 'FAILED'
-            }
-          }
-        },
-        PULL_PUBLIC_PRIVATE_KEY_PAIR: {
-          invoke: {
-            src: this.pullPublicPrivateKeyPair.bind(this),
-            id: 'pull-public-private-key-pair',
-            onDone: {
-              actions: [
-                assign({ message: (context, event) => event.data }),
-                'Reset Retry Count'
-              ],
-              target: 'PULL_PUBLIC_PRIVATE_KEY_PAIR_RESPONSE'
-            },
-            onError: [
-              {
-                cond: 'shouldRetry',
-                actions: 'Increment Retry Count',
-                target: 'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR'
-              },
-              {
-                actions: assign({ errorMessage: 'Failed to pull public private key pair' }),
-                target: 'FAILED'
-              }
-            ]
-          }
-        },
-        PULL_PUBLIC_PRIVATE_KEY_PAIR_RESPONSE: {
-          always: [{
-            cond: 'hasPublicPrivateKeyPairs',
-            target: 'CHECK_CERT_MODE_AFTER_REQUEST'
-          }, 'CREATE_TLS_CREDENTIAL_CONTEXT']
-        },
-        ADD_CERTIFICATE: {
-          invoke: {
-            src: this.addCertificate.bind(this),
-            id: 'add-certificate',
-            onDone: {
-              actions: [
-                assign({ message: (context, event) => event.data })
-              ],
-              target: 'CREATE_TLS_CREDENTIAL_CONTEXT'
-            },
-            onError: {
-              actions: assign({
-                errorMessage: 'Failed to add certificate'
-              }),
-              target: 'FAILED'
-            }
-          }
-        },
-        CREATE_TLS_CREDENTIAL_CONTEXT: {
-          invoke: {
-            src: this.createTLSCredentialContext.bind(this),
-            id: 'create-tls-credential-context',
-            onDone: {
-              actions: [
-                assign({ message: (context, event) => event.data })
-              ],
-              target: 'SYNC_TIME'
-            },
-            onError: [
-              {
-                cond: 'alreadyExists',
-                target: 'SYNC_TIME'
-              },
-              {
-                actions: assign({ errorMessage: 'Failed to create TLS credential context' }),
-                target: 'FAILED'
-              }
-            ]
-          }
-        },
-        SYNC_TIME: {
-          entry: sendTo('time-machine', { type: 'TIMETRAVEL' }),
-          invoke: {
-            src: this.timeSync.machine,
-            id: 'time-machine',
-            data: {
-              // tech-debt: unused parameters
-              clientId: (context, event) => context.clientId,
-              httpHandler: (context, event) => context.httpHandler
-            },
-            onDone: 'ENUMERATE_TLS_DATA'
-          },
-          on: {
-            ONFAILED: 'FAILED'
-          }
-        },
-        ENUMERATE_TLS_DATA: {
-          invoke: {
-            src: this.enumerateTlsData.bind(this),
-            id: 'enumerate-tls-data',
-            onDone: {
-              actions: [
-                assign({ message: (context, event) => event.data })
-              ],
-              target: 'PULL_TLS_DATA'
-            },
-            onError: {
-              actions: assign({
-                errorMessage: 'Failed to enumerate TLS data'
-              }),
-              target: 'FAILED'
-            }
-          }
-        },
-        PULL_TLS_DATA: {
-          invoke: {
-            src: this.pullTLSData.bind(this),
-            id: 'pull-tls-data',
-            onDone: {
-              actions: [
-                assign({ message: (context, event) => event.data, tlsSettingData: (context, event) => event.data.Envelope.Body.PullResponse.Items.AMT_TLSSettingData }),
-                'Reset Retry Count'
-              ],
-              target: 'PUT_REMOTE_TLS_DATA'
-            },
-            onError: [
-              {
-                cond: 'shouldRetry',
-                actions: 'Increment Retry Count',
-                target: 'ENUMERATE_TLS_DATA'
-              },
-              {
-                actions: assign({ errorMessage: 'Failed to pull TLS data' }),
-                target: 'FAILED'
-              }
-            ]
-          }
-        },
-        PUT_REMOTE_TLS_DATA: {
-          invoke: {
-            src: this.putRemoteTLSData.bind(this),
-            id: 'put-remote-tls-data',
-            onDone: {
-              actions: [
-                assign({ message: (context, event) => event.data })
-              ],
-              target: 'WAIT_A_BIT' // should this be commit_changes? and then circle back to setting local tls data
-            },
-            onError: {
-              actions: assign({
-                errorMessage: 'Failed to update remote TLS data'
-              }),
-              target: 'FAILED'
-            }
-          }
-        },
-        WAIT_A_BIT: {
-          after: {
-            DELAY_TIME_TLS_PUT_DATA_SYNC: 'PUT_LOCAL_TLS_DATA'
-          }
-        },
-        PUT_LOCAL_TLS_DATA: {
-          invoke: {
-            src: this.putLocalTLSData.bind(this),
-            id: 'put-local-tls-data',
-            onDone: {
-              actions: [
-                assign({ message: (context, event) => event.data })
-              ],
-              target: 'COMMIT_CHANGES'
-            },
-            onError: {
-              actions: assign({
-                errorMessage: 'Failed to update local TLS data'
-              }),
-              target: 'FAILED'
-            }
-          }
-        },
-        COMMIT_CHANGES: {
-          invoke: {
-            src: this.commitChanges.bind(this),
-            id: 'commit-changes',
-            onDone: {
-              actions: [
-                assign({ message: (context, event) => event.data })
-              ],
-              target: 'SUCCESS'
-            },
-            onError: {
-              actions: assign({
-                errorMessage: 'Failed to commit changes'
-              }),
-              target: 'FAILED'
-            }
-          }
-        },
-        ERROR: {
-          entry: sendTo('error-machine', { type: 'PARSE' }),
-          invoke: {
-            src: 'this.error.machine',
-            id: 'error-machine',
-            data: {
-              unauthCount: (context, event) => 0,
-              message: (context, event) => event.data,
-              clientId: (context, event) => context.clientId
-            },
-            onDone: 'ENUMERATE_PUBLIC_KEY_CERTIFICATE' // To do: Need to test as it might not require anymore.
-          },
-          on: {
-            ONFAILED: 'FAILED'
-          }
-        },
-        FAILED: {
-          entry: [assign({ status: (context, event) => 'error' }), 'Update Configuration Status'],
-          type: 'final'
-        },
-        SUCCESS: {
-          entry: [assign({ statusMessage: (context, event) => 'Configured', status: 'success' }), 'Update Configuration Status'],
-          type: 'final'
-        }
-      }
-    }, {
-      delays: {
-        DELAY_TIME_TLS_PUT_DATA_SYNC: () => Environment.Config.delay_tls_put_data_sync
-      },
-      guards: {
-        hasPublicPrivateKeyPairs: (context, event) => context.message.Envelope.Body.PullResponse.Items !== '',
-        useTLSEnterpriseAssistantCert: (context, event) => context.amtProfile.tlsSigningAuthority === TlsSigningAuthority.MICROSOFT_CA,
-        shouldRetry: (context, event) => context.retryCount < 3 && event.data instanceof UNEXPECTED_PARSE_ERROR,
-        alreadyExists: (context, event) => {
-          let exists = false
-          try {
-            const xmlBody = parseChunkedMessage(event.data.body.text)
-            const parsed = context.httpHandler.parseXML(xmlBody)
-            if (parsed.Envelope?.Body?.Fault?.Code?.Subcode?.Value?.includes('AlreadyExists')) {
-              this.logger.info(parsed.envelope?.Body?.Fault?.Reason?.Text)
-              exists = true
-            }
-          } catch (err) {
-            exists = false
-          }
-          return exists
-        }
-      },
-      actions: {
-        'Update Configuration Status': this.updateConfigurationStatus.bind(this),
-        'Reset Retry Count': assign({ retryCount: (context, event) => 0 }),
-        'Increment Retry Count': assign({ retryCount: (context, event) => context.retryCount + 1 })
 
-      }
-    })
-
-  async signCSR (context: TLSContext, event: TLSEvent): Promise<void> {
-    context.xmlMessage = context.amt.PublicKeyManagementService.GeneratePKCS10RequestEx({
-      KeyPair: '<a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address><a:ReferenceParameters><w:ResourceURI>http://intel.com/wbem/wscim/1/amt-schema/1/AMT_PublicPrivateKeyPair</w:ResourceURI><w:SelectorSet><w:Selector Name="InstanceID">' + (context.message.response.keyInstanceId as string) + '</w:Selector></w:SelectorSet></a:ReferenceParameters>',
+  signCSR = async ({ input }: { input: TLSContext }): Promise<any> => {
+    input.xmlMessage = input.amt.PublicKeyManagementService.GeneratePKCS10RequestEx({
+      KeyPair:
+        '<a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address><a:ReferenceParameters><w:ResourceURI>http://intel.com/wbem/wscim/1/amt-schema/1/AMT_PublicPrivateKeyPair</w:ResourceURI><w:SelectorSet><w:Selector Name="InstanceID">' +
+        (input.message.response.keyInstanceId as string) +
+        '</w:Selector></w:SelectorSet></a:ReferenceParameters>',
       SigningAlgorithm: 1,
-      NullSignedCertificateRequest: context.message.response.csr
+      NullSignedCertificateRequest: input.message.response.csr
     })
-    return await invokeWsmanCall(context, 2)
+    return await invokeWsmanCall(input, 2)
   }
 
-  constructor () {
-    this.nodeForge = new NodeForge()
-    this.certManager = new CertManager(new Logger('CertManager'), this.nodeForge)
-  }
-
-  async addCertificate (context: TLSContext, event: TLSEvent): Promise<void> {
-    const clientObj = devices[context.clientId]
+  addCertificate = async ({ input }: { input: { context: TLSContext; event: TLSEvent } }): Promise<any> => {
+    const clientObj = devices[input.context.clientId]
     let cert = ''
-    if (context.amtProfile.tlsSigningAuthority === TlsSigningAuthority.SELF_SIGNED || context.amtProfile.tlsSigningAuthority == null) {
-      const potentialArray = context.message.Envelope.Body.PullResponse.Items.AMT_PublicPrivateKeyPair
+    if (
+      input.context.amtProfile?.tlsSigningAuthority === TlsSigningAuthority.SELF_SIGNED ||
+      input.context.amtProfile?.tlsSigningAuthority == null
+    ) {
+      const potentialArray = input.context.message.Envelope.Body.PullResponse.Items.AMT_PublicPrivateKeyPair
       if (Array.isArray(potentialArray)) {
         clientObj.tls.PublicPrivateKeyPair = potentialArray
       } else {
         clientObj.tls.PublicPrivateKeyPair = [potentialArray]
       }
-      const PublicPrivateKeyPair = clientObj.tls.PublicPrivateKeyPair.filter(x => x.InstanceID === context.keyPairHandle)[0]
+      const PublicPrivateKeyPair = clientObj.tls.PublicPrivateKeyPair.filter(
+        (x) => x.InstanceID === input.context.keyPairHandle
+      )[0]
       const DERKey = PublicPrivateKeyPair?.DERKey
       const certAttributes: CertAttributes = { CN: 'AMT', O: 'None', ST: 'None', C: 'None' }
       const issuerAttributes: CertAttributes = { CN: clientObj.uuid ?? 'Untrusted Root Certificate' }
@@ -544,67 +92,72 @@ export class TLS {
         codeSigning: false,
         timeStamping: false
       }
-      const certResult = this.certManager.amtCertSignWithCAKey(DERKey, null, certAttributes, issuerAttributes, keyUsages)
+      const certResult = this.certManager.amtCertSignWithCAKey(
+        DERKey,
+        null,
+        certAttributes,
+        issuerAttributes,
+        keyUsages
+      )
       cert = certResult.pem.substring(27, certResult.pem.length - 25)
     } else {
-      cert = event.data.response.certificate
+      cert = input.event.output.response.certificate
     }
 
-    context.xmlMessage = context.amt.PublicKeyManagementService.AddCertificate({ CertificateBlob: cert })
+    input.context.xmlMessage = input.context.amt.PublicKeyManagementService.AddCertificate({ CertificateBlob: cert })
 
-    return await invokeWsmanCall(context, 2)
+    return await invokeWsmanCall(input.context, 2)
   }
 
-  async generateKeyPair (context: TLSContext, event: TLSEvent): Promise<void> {
-    context.xmlMessage = context.amt.PublicKeyManagementService.GenerateKeyPair({ KeyAlgorithm: 0, KeyLength: 2048 })
-    return await invokeWsmanCall(context, 2)
+  generateKeyPair = async ({ input }: { input: TLSContext }): Promise<any> => {
+    input.xmlMessage = input.amt.PublicKeyManagementService.GenerateKeyPair({ KeyAlgorithm: 0, KeyLength: 2048 })
+    return await invokeWsmanCall(input, 2)
   }
 
-  async addTrustedRootCertificate (context: TLSContext, event: TLSEvent): Promise<void> {
-    const tlsCerts = devices[context.clientId].ClientData.payload.profile.tlsCerts
-    context.xmlMessage = context.amt.PublicKeyManagementService.AddTrustedRootCertificate({ CertificateBlob: tlsCerts.ROOT_CERTIFICATE.certbin })
-    return await invokeWsmanCall(context, 2)
+  addTrustedRootCertificate = async ({ input }): Promise<any> => {
+    const tlsCerts = devices[input.clientId].ClientData.payload.profile.tlsCerts
+    input.xmlMessage = input.amt.PublicKeyManagementService.AddTrustedRootCertificate({
+      CertificateBlob: tlsCerts.ROOT_CERTIFICATE.certbin
+    })
+    return await invokeWsmanCall(input, 2)
   }
 
-  async enumerateTLSCredentialContext (context: TLSContext, event: TLSEvent): Promise<void> {
-    context.xmlMessage = context.amt.TLSCredentialContext.Enumerate()
-    return await invokeWsmanCall(context, 2)
-  }
-
-  async pullTLSCredentialContext (context: TLSContext, event: TLSEvent): Promise<void> {
-    context.xmlMessage = context.amt.TLSCredentialContext.Pull(context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
-    return await invokeWsmanCall(context)
-  }
-
-  async createTLSCredentialContext (context: TLSContext, event: TLSEvent): Promise<void> {
+  createTLSCredentialContext = async ({ input }: { input: { context: TLSContext; event: TLSEvent } }): Promise<any> => {
     // TODO: 802.1x shoudl be set here right?
-    const certHandle = event.data.Envelope.Body?.AddCertificate_OUTPUT?.CreatedCertificate?.ReferenceParameters?.SelectorSet?.Selector?._ ?? 'Intel(r) AMT Certificate: Handle: 1'
-    context.xmlMessage = context.amt.TLSCredentialContext.Create(certHandle)
-    return await invokeWsmanCall(context, 2)
+    const certHandle =
+      input.event.output.Envelope.Body?.AddCertificate_OUTPUT?.CreatedCertificate?.ReferenceParameters?.SelectorSet
+        ?.Selector?._ ?? 'Intel(r) AMT Certificate: Handle: 1'
+    input.context.xmlMessage = input.context.amt.TLSCredentialContext.Create(certHandle)
+    return await invokeWsmanCall(input.context, 2)
   }
 
-  async enumeratePublicKeyCertificate (context: TLSContext, event: TLSEvent): Promise<void> {
-    context.xmlMessage = context.amt.PublicKeyCertificate.Enumerate()
-    return await invokeWsmanCall(context, 2)
+  enumeratePublicKeyCertificate = async ({ input }: { input: TLSContext }): Promise<any> => {
+    input.xmlMessage = input.amt.PublicKeyCertificate.Enumerate()
+    return await invokeWsmanCall(input, 2)
   }
 
-  async pullPublicKeyCertificate (context: TLSContext, event: TLSEvent): Promise<void> {
-    context.xmlMessage = context.amt.PublicKeyCertificate.Pull(context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
-    return await invokeWsmanCall(context)
+  pullPublicKeyCertificate = async ({ input }: { input: TLSContext }): Promise<any> => {
+    input.xmlMessage = input.amt.PublicKeyCertificate.Pull(
+      input.message.Envelope.Body?.EnumerateResponse?.EnumerationContext
+    )
+    return await invokeWsmanCall(input)
   }
 
-  async enumeratePublicPrivateKeyPair (context: TLSContext, event: TLSEvent): Promise<void> {
-    context.keyPairHandle = context.message?.Envelope?.Body?.GenerateKeyPair_OUTPUT?.KeyPair?.ReferenceParameters?.SelectorSet?.Selector?._
-    context.xmlMessage = context.amt.PublicPrivateKeyPair.Enumerate()
-    return await invokeWsmanCall(context, 2)
+  enumeratePublicPrivateKeyPair = async ({ input }: { input: TLSContext }): Promise<any> => {
+    input.keyPairHandle =
+      input.message?.Envelope?.Body?.GenerateKeyPair_OUTPUT?.KeyPair?.ReferenceParameters?.SelectorSet?.Selector?._
+    input.xmlMessage = input.amt.PublicPrivateKeyPair.Enumerate()
+    return await invokeWsmanCall(input, 2)
   }
 
-  async pullPublicPrivateKeyPair (context: TLSContext, event: TLSEvent): Promise<void> {
-    context.xmlMessage = context.amt.PublicPrivateKeyPair.Pull(context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
-    return await invokeWsmanCall(context)
+  pullPublicPrivateKeyPair = async ({ input }: { input: TLSContext }): Promise<any> => {
+    input.xmlMessage = input.amt.PublicPrivateKeyPair.Pull(
+      input.message.Envelope.Body?.EnumerateResponse?.EnumerationContext
+    )
+    return await invokeWsmanCall(input)
   }
 
-  updateConfigurationStatus (context: TLSContext): void {
+  updateConfigurationStatus({ context }: { context: TLSContext }): void {
     if (context.status === 'success') {
       devices[context.clientId].status.TLSConfiguration = context.statusMessage
     } else if (context.status === 'error') {
@@ -612,36 +165,551 @@ export class TLS {
     }
   }
 
-  async enumerateTlsData (context: TLSContext, event: TLSEvent): Promise<void> {
-    context.xmlMessage = context.amt.TLSSettingData.Enumerate()
-    return await invokeWsmanCall(context, 2)
+  enumerateTLSData = async ({ input }: { input: TLSContext }): Promise<any> => {
+    input.xmlMessage = input.amt.TLSSettingData.Enumerate()
+    return await invokeWsmanCall(input, 2)
   }
 
-  async pullTLSData (context: TLSContext, event: TLSEvent): Promise<void> {
-    context.xmlMessage = context.amt.TLSSettingData.Pull(context.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
-    return await invokeWsmanCall(context)
+  pullTLSData = async ({ input }: { input: TLSContext }): Promise<any> => {
+    input.xmlMessage = input.amt.TLSSettingData.Pull(input.message.Envelope.Body?.EnumerateResponse?.EnumerationContext)
+    return await invokeWsmanCall(input)
   }
 
-  async putRemoteTLSData (context: TLSContext, event: TLSEvent): Promise<void> {
+  putRemoteTLSData = async ({ input }: { input: TLSContext }): Promise<any> => {
     // Set remote TLS data on AMT
-    context.tlsSettingData[0].Enabled = true
-    if (!('NonSecureConnectionsSupported' in context.tlsSettingData[0]) || context.tlsSettingData[0].NonSecureConnectionsSupported === true) {
-      context.tlsSettingData[0].AcceptNonSecureConnections = (context.amtProfile.tlsMode !== 1 && context.amtProfile.tlsMode !== 3) // TODO: check what these values should explicitly be
+    input.tlsSettingData[0].Enabled = true
+    if (
+      !('NonSecureConnectionsSupported' in input.tlsSettingData[0]) ||
+      input.tlsSettingData[0].NonSecureConnectionsSupported === true
+    ) {
+      input.tlsSettingData[0].AcceptNonSecureConnections =
+        input.amtProfile?.tlsMode !== 1 && input.amtProfile?.tlsMode !== 3 // TODO: check what these values should explicitly be
     }
-    context.tlsSettingData[0].MutualAuthentication = (context.amtProfile.tlsMode === 3 || context.amtProfile.tlsMode === 4)
+    input.tlsSettingData[0].MutualAuthentication = input.amtProfile?.tlsMode === 3 || input.amtProfile?.tlsMode === 4
 
-    context.xmlMessage = context.amt.TLSSettingData.Put(context.tlsSettingData[0])
-    return await invokeWsmanCall(context, 2)
+    input.xmlMessage = input.amt.TLSSettingData.Put(input.tlsSettingData[0])
+    return await invokeWsmanCall(input, 2)
   }
 
-  async putLocalTLSData (context: TLSContext, event: TLSEvent): Promise<void> {
-    context.tlsSettingData[1].Enabled = true
-    context.xmlMessage = context.amt.TLSSettingData.Put(context.tlsSettingData[1])
-    return await invokeWsmanCall(context, 2)
+  putLocalTLSData = async ({ input }: { input: TLSContext }): Promise<any> => {
+    input.tlsSettingData[1].Enabled = true
+    input.xmlMessage = input.amt.TLSSettingData.Put(input.tlsSettingData[1])
+    return await invokeWsmanCall(input, 2)
   }
 
-  async commitChanges (context: TLSContext, event: TLSEvent): Promise<void> {
-    context.xmlMessage = context.amt.SetupAndConfigurationService.CommitChanges()
-    return await invokeWsmanCall(context)
+  commitChanges = async ({ input }: { input: TLSContext }): Promise<any> => {
+    input.xmlMessage = input.amt.SetupAndConfigurationService.CommitChanges()
+    return await invokeWsmanCall(input)
+  }
+
+  machine = setup({
+    types: {} as {
+      context: TLSContext
+      events: TLSEvent
+      actions: any
+      input: TLSContext
+    },
+    actors: {
+      timeSync: this.timeSync.machine,
+      errorMachine: this.error.machine,
+      enumeratePublicKeyCertificate: fromPromise(this.enumeratePublicKeyCertificate),
+      pullPublicKeyCertificate: fromPromise(this.pullPublicKeyCertificate),
+      signCSR: fromPromise(this.signCSR),
+      addTrustedRootCertificate: fromPromise(this.addTrustedRootCertificate),
+      generateKeyPair: fromPromise(this.generateKeyPair),
+      enumeratePublicPrivateKeyPair: fromPromise(this.enumeratePublicPrivateKeyPair),
+      pullPublicPrivateKeyPair: fromPromise(this.pullPublicPrivateKeyPair),
+      addCertificate: fromPromise(this.addCertificate),
+      createTLSCredentialContext: fromPromise(this.createTLSCredentialContext),
+      enumerateTLSData: fromPromise(this.enumerateTLSData),
+      pullTLSData: fromPromise(this.pullTLSData),
+      putRemoteTLSData: fromPromise(this.putRemoteTLSData),
+      putLocalTLSData: fromPromise(this.putLocalTLSData),
+      commitChanges: fromPromise(this.commitChanges),
+      initiateCertRequest: fromPromise(initiateCertRequest),
+      getCertFromEnterpriseAssistant: fromPromise(getCertFromEnterpriseAssistant),
+      sendEnterpriseAssistantKeyPairResponse: fromPromise(sendEnterpriseAssistantKeyPairResponse)
+    },
+    delays: {
+      DELAY_TIME_TLS_PUT_DATA_SYNC: () => Environment.Config.delay_tls_put_data_sync
+    },
+    guards: {
+      hasPublicPrivateKeyPairs: ({ context }) => context.message.Envelope.Body.PullResponse.Items !== '',
+      useTLSEnterpriseAssistantCert: ({ context }) =>
+        context.amtProfile?.tlsSigningAuthority === TlsSigningAuthority.MICROSOFT_CA,
+      shouldRetry: ({ context, event }) => context.retryCount < 3 && event.error instanceof UNEXPECTED_PARSE_ERROR,
+      alreadyExists: ({ context, event }) => {
+        let exists = false
+        try {
+          const xmlBody = parseChunkedMessage(event.output.body.text)
+          const parsed = context.httpHandler.parseXML(xmlBody)
+          if (parsed.Envelope?.Body?.Fault?.Code?.Subcode?.Value?.includes('AlreadyExists')) {
+            this.logger.info(parsed.envelope?.Body?.Fault?.Reason?.Text)
+            exists = true
+          }
+        } catch (err) {
+          exists = false
+        }
+        return exists
+      }
+    },
+    actions: {
+      'Update Configuration Status': this.updateConfigurationStatus,
+      'Reset Retry Count': assign({ retryCount: () => 0 }),
+      'Increment Retry Count': assign({ retryCount: ({ context }) => context.retryCount + 1 })
+    }
+  }).createMachine({
+    id: 'tls-configuration-machine',
+    initial: 'PROVISIONED',
+    context: ({ input }) => ({
+      clientId: input.clientId,
+      amtProfile: input.amtProfile,
+      httpHandler: input.httpHandler,
+      message: input.message,
+      xmlMessage: input.xmlMessage,
+      errorMessage: input.errorMessage,
+      status: input.status,
+      statusMessage: input.statusMessage,
+      retryCount: input.retryCount,
+      amt: input.amt,
+      tlsSettingData: input.tlsSettingData
+    }),
+    states: {
+      PROVISIONED: {
+        on: {
+          CONFIGURE_TLS: {
+            actions: ['Reset Retry Count', assign({ authProtocol: 0 })],
+            target: 'ENUMERATE_PUBLIC_KEY_CERTIFICATE'
+          }
+        }
+      },
+      ENUMERATE_PUBLIC_KEY_CERTIFICATE: {
+        invoke: {
+          src: 'enumeratePublicKeyCertificate',
+          input: ({ context }) => context,
+          id: 'enumerate-public-key-certificate',
+          onDone: {
+            actions: [
+              assign({ message: ({ event }) => event.output })
+            ],
+            target: 'PULL_PUBLIC_KEY_CERTIFICATE'
+          },
+          onError: {
+            actions: assign({
+              errorMessage: 'Failed to enumerate public key certificates'
+            }),
+            target: 'FAILED'
+          }
+        }
+      },
+      PULL_PUBLIC_KEY_CERTIFICATE: {
+        invoke: {
+          src: 'pullPublicKeyCertificate',
+          input: ({ context }) => context,
+          id: 'pull-public-key-certificate',
+          onDone: {
+            actions: [
+              assign({ message: ({ event }) => event.output }),
+              'Reset Retry Count'
+            ],
+            target: 'CHECK_CERT_MODE'
+          },
+          onError: [
+            {
+              guard: 'shouldRetry',
+              actions: 'Increment Retry Count',
+              target: 'ENUMERATE_PUBLIC_KEY_CERTIFICATE'
+            },
+            {
+              actions: assign({ errorMessage: 'Failed to pull public key certificates' }),
+              target: 'FAILED'
+            }
+          ]
+        }
+      },
+      CHECK_CERT_MODE: {
+        always: [
+          {
+            guard: 'useTLSEnterpriseAssistantCert',
+            target: 'ENTERPRISE_ASSISTANT_REQUEST'
+          },
+          'ADD_TRUSTED_ROOT_CERTIFICATE'
+
+        ]
+      },
+      CHECK_CERT_MODE_AFTER_REQUEST: {
+        always: [
+          {
+            guard: 'useTLSEnterpriseAssistantCert',
+            target: 'ENTERPRISE_ASSISTANT_RESPONSE'
+          },
+          'ADD_CERTIFICATE'
+
+        ]
+      },
+      ENTERPRISE_ASSISTANT_REQUEST: {
+        invoke: {
+          src: 'initiateCertRequest',
+          input: ({ context }) => context,
+          id: 'enterprise-assistant-request',
+          onDone: {
+            actions: [
+              assign({ message: ({ event }) => event.output })
+            ],
+            target: 'GENERATE_KEY_PAIR'
+          },
+          onError: {
+            actions: assign({
+              errorMessage: 'Failed to initiate cert request with enterprise assistant'
+            }),
+            target: 'FAILED'
+          }
+        }
+      },
+      ENTERPRISE_ASSISTANT_RESPONSE: {
+        invoke: {
+          src: 'sendEnterpriseAssistantKeyPairResponse',
+          input: ({ context }) => context,
+          id: 'enterprise-assistant-response',
+          onDone: {
+            actions: [
+              assign({ message: ({ event }) => event.output })
+            ],
+            target: 'SIGN_CSR'
+          },
+          onError: {
+            actions: assign({
+              errorMessage: 'Failed to send key pair to enterprise assistant'
+            }),
+            target: 'FAILED'
+          }
+        }
+      },
+      SIGN_CSR: {
+        invoke: {
+          src: 'signCSR',
+          input: ({ context }) => context,
+          id: 'sign-csr',
+          onDone: {
+            actions: [
+              assign({ message: ({ event }) => event.output })
+            ],
+            target: 'GET_CERT_FROM_ENTERPRISE_ASSISTANT'
+          },
+          onError: {
+            actions: assign({
+              errorMessage: 'Failed to have AMT sign CSR'
+            }),
+            target: 'FAILED'
+          }
+        }
+      },
+      GET_CERT_FROM_ENTERPRISE_ASSISTANT: {
+        invoke: {
+          src: 'getCertFromEnterpriseAssistant',
+          input: ({ context }) => context,
+          id: 'get-cert-from-enterprise-assistant',
+          onDone: {
+            actions: [
+              assign({ message: ({ event }) => event.output })
+            ],
+            target: 'ADD_CERTIFICATE'
+          },
+          onError: {
+            actions: assign({
+              errorMessage: 'Failed to get cert from Microsoft CA'
+            }),
+            target: 'FAILED'
+          }
+        }
+      },
+      ADD_TRUSTED_ROOT_CERTIFICATE: {
+        invoke: {
+          src: 'addTrustedRootCertificate',
+          input: ({ context }) => context,
+          id: 'add-trusted-root-certificate',
+          onDone: {
+            actions: [
+              assign({ message: ({ event }) => event.output })
+            ],
+            target: 'GENERATE_KEY_PAIR'
+          },
+          onError: {
+            actions: assign({
+              errorMessage: 'Failed to add trusted root certificates'
+            }),
+            target: 'FAILED'
+          }
+        }
+      },
+      GENERATE_KEY_PAIR: {
+        invoke: {
+          src: 'generateKeyPair',
+          input: ({ context }) => context,
+          id: 'generate-key-pair',
+          onDone: {
+            actions: [
+              assign({ message: ({ event }) => event.output })
+            ],
+            target: 'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR'
+          },
+          onError: {
+            actions: assign({
+              errorMessage: 'Failed to generate key pair'
+            }),
+            target: 'FAILED'
+          }
+        }
+      },
+      ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR: {
+        invoke: {
+          src: 'enumeratePublicPrivateKeyPair',
+          input: ({ context }) => context,
+          id: 'enumerate-public-private-key-pair',
+          onDone: {
+            actions: [
+              assign({ message: ({ event }) => event.output })
+            ],
+            target: 'PULL_PUBLIC_PRIVATE_KEY_PAIR'
+          },
+          onError: {
+            actions: assign({
+              errorMessage: 'Failed to enumerate public private key pair'
+            }),
+            target: 'FAILED'
+          }
+        }
+      },
+      PULL_PUBLIC_PRIVATE_KEY_PAIR: {
+        invoke: {
+          src: 'pullPublicPrivateKeyPair',
+          input: ({ context }) => context,
+          id: 'pull-public-private-key-pair',
+          onDone: {
+            actions: [
+              assign({ message: ({ event }) => event.output }),
+              'Reset Retry Count'
+            ],
+            target: 'PULL_PUBLIC_PRIVATE_KEY_PAIR_RESPONSE'
+          },
+          onError: [
+            {
+              guard: 'shouldRetry',
+              actions: 'Increment Retry Count',
+              target: 'ENUMERATE_PUBLIC_PRIVATE_KEY_PAIR'
+            },
+            {
+              actions: assign({ errorMessage: 'Failed to pull public private key pair' }),
+              target: 'FAILED'
+            }
+          ]
+        }
+      },
+      PULL_PUBLIC_PRIVATE_KEY_PAIR_RESPONSE: {
+        always: [
+          {
+            guard: 'hasPublicPrivateKeyPairs',
+            target: 'CHECK_CERT_MODE_AFTER_REQUEST'
+          },
+          'CREATE_TLS_CREDENTIAL_CONTEXT'
+
+        ]
+      },
+      ADD_CERTIFICATE: {
+        invoke: {
+          src: 'addCertificate',
+          input: ({ context, event }) => ({ context, event }),
+          id: 'add-certificate',
+          onDone: {
+            actions: [
+              assign({ message: ({ event }) => event.output })
+            ],
+            target: 'CREATE_TLS_CREDENTIAL_CONTEXT'
+          },
+          onError: {
+            actions: assign({
+              errorMessage: 'Failed to add certificate'
+            }),
+            target: 'FAILED'
+          }
+        }
+      },
+      CREATE_TLS_CREDENTIAL_CONTEXT: {
+        invoke: {
+          src: 'createTLSCredentialContext',
+          input: ({ context, event }) => ({ context, event }),
+          id: 'create-tls-credential-context',
+          onDone: {
+            actions: [
+              assign({ message: ({ event }) => event.output })
+            ],
+            target: 'SYNC_TIME'
+          },
+          onError: [
+            {
+              guard: 'alreadyExists',
+              target: 'SYNC_TIME'
+            },
+            {
+              actions: assign({ errorMessage: 'Failed to create TLS credential context' }),
+              target: 'FAILED'
+            }
+          ]
+        }
+      },
+      SYNC_TIME: {
+        entry: sendTo('time-machine', { type: 'TIMETRAVEL' }),
+        invoke: {
+          src: 'timeSync',
+          input: ({ context }) => context,
+          id: 'time-machine',
+          onDone: 'ENUMERATE_TLS_DATA'
+        },
+        on: {
+          ONFAILED: 'FAILED'
+        }
+      },
+      ENUMERATE_TLS_DATA: {
+        invoke: {
+          src: 'enumerateTLSData',
+          input: ({ context }) => context,
+          id: 'enumerate-tls-data',
+          onDone: {
+            actions: [
+              assign({ message: ({ event }) => event.output })
+            ],
+            target: 'PULL_TLS_DATA'
+          },
+          onError: {
+            actions: assign({
+              errorMessage: 'Failed to enumerate TLS data'
+            }),
+            target: 'FAILED'
+          }
+        }
+      },
+      PULL_TLS_DATA: {
+        invoke: {
+          src: 'pullTLSData',
+          input: ({ context }) => context,
+          id: 'pull-tls-data',
+          onDone: {
+            actions: [
+              assign({
+                message: ({ event }) => event.output,
+                tlsSettingData: ({ event }) => event.output.Envelope.Body.PullResponse.Items.AMT_TLSSettingData
+              }),
+              'Reset Retry Count'
+
+            ],
+            target: 'PUT_REMOTE_TLS_DATA'
+          },
+          onError: [
+            {
+              guard: 'shouldRetry',
+              actions: 'Increment Retry Count',
+              target: 'ENUMERATE_TLS_DATA'
+            },
+            {
+              actions: assign({ errorMessage: 'Failed to pull TLS data' }),
+              target: 'FAILED'
+            }
+          ]
+        }
+      },
+      PUT_REMOTE_TLS_DATA: {
+        invoke: {
+          src: 'putRemoteTLSData',
+          input: ({ context }) => context,
+          id: 'put-remote-tls-data',
+          onDone: {
+            actions: [
+              assign({
+                message: ({ event }) => event.output
+              })
+
+            ],
+            target: 'WAIT_A_BIT' // should this be commit_changes? and then circle back to setting local tls data
+          },
+          onError: {
+            actions: assign({
+              errorMessage: 'Failed to update remote TLS data'
+            }),
+            target: 'FAILED'
+          }
+        }
+      },
+      WAIT_A_BIT: {
+        after: {
+          DELAY_TIME_TLS_PUT_DATA_SYNC: 'PUT_LOCAL_TLS_DATA'
+        }
+      },
+      PUT_LOCAL_TLS_DATA: {
+        invoke: {
+          src: 'putLocalTLSData',
+          input: ({ context }) => context,
+          id: 'put-local-tls-data',
+          onDone: {
+            actions: [
+              assign({ message: ({ event }) => event.output })
+            ],
+            target: 'COMMIT_CHANGES'
+          },
+          onError: {
+            actions: assign({
+              errorMessage: 'Failed to update local TLS data'
+            }),
+            target: 'FAILED'
+          }
+        }
+      },
+      COMMIT_CHANGES: {
+        invoke: {
+          src: 'commitChanges',
+          input: ({ context }) => context,
+          id: 'commit-changes',
+          onDone: {
+            actions: [
+              assign({ message: ({ event }) => event.output })
+            ],
+            target: 'SUCCESS'
+          },
+          onError: {
+            actions: assign({
+              errorMessage: 'Failed to commit changes'
+            }),
+            target: 'FAILED'
+          }
+        }
+      },
+      ERROR: {
+        entry: sendTo('error-machine', { type: 'PARSE' }),
+        invoke: {
+          src: 'errorMachine',
+          id: 'error-machine',
+          input: ({ context, event }) => ({
+            message: event.output,
+            clientId: context.clientId
+          }),
+          onDone: 'ENUMERATE_PUBLIC_KEY_CERTIFICATE' // To do: Need to test as it might not require anymore.
+        },
+        on: {
+          ONFAILED: 'FAILED'
+        }
+      },
+      FAILED: {
+        entry: [assign({ status: () => 'error' }), 'Update Configuration Status'],
+        type: 'final'
+      },
+      SUCCESS: {
+        entry: [assign({ statusMessage: () => 'Configured', status: 'success' }), 'Update Configuration Status'],
+        type: 'final'
+      }
+    }
+  })
+
+  constructor() {
+    this.nodeForge = new NodeForge()
+    this.certManager = new CertManager(new Logger('CertManager'), this.nodeForge)
   }
 }

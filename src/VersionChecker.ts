@@ -8,16 +8,16 @@ import { ProtocolVersion } from './utils/constants.js'
 import { Version } from './models/index.js'
 const VersionChecker = {
   currentVersion: null as Version | null,
-  setCurrentVersion (currentVersion: string): void {
+  setCurrentVersion(currentVersion: string): void {
     VersionChecker.currentVersion = VersionChecker.parseString(currentVersion)
   },
 
   /**
-     * @description
-     * @param {string} version string
-     * @returns {Version} object containing parsed version
-     */
-  parseString (version: string): Version {
+   * @description
+   * @param {string} version string
+   * @returns {Version} object containing parsed version
+   */
+  parseString(version: string): Version {
     if (version == null || version === '') {
       throw new RPSError('version must be defined')
     }
@@ -55,7 +55,7 @@ const VersionChecker = {
     return parsedVersion
   },
 
-  isCompatible (messageVersion: string): boolean {
+  isCompatible(messageVersion: string): boolean {
     if (VersionChecker.currentVersion == null) {
       VersionChecker.currentVersion = VersionChecker.parseString(ProtocolVersion)
     }

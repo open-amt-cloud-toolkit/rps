@@ -8,11 +8,11 @@ export interface PTStatusType {
   value: number
 }
 
-export function getPTStatus (value: number): PTStatusType | undefined {
-  return Object.values(PTStatus).find(v => v.value === value)
+export function getPTStatus(value: number): PTStatusType | undefined {
+  return Object.values(PTStatus).find((v) => v.value === value)
 }
 
-export function getPTStatusName (value: number): string {
+export function getPTStatusName(value: number): string {
   const status = getPTStatus(value)
   if (status) {
     return status.name

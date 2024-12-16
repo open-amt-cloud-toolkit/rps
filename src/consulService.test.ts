@@ -13,7 +13,7 @@ let serviceName: string
 let consul: ConsulService
 describe('consul', () => {
   beforeEach(() => {
-    consul = new ConsulService('consul', '8500')
+    consul = new ConsulService('localhost', 8500)
 
     jest.clearAllMocks()
     jest.restoreAllMocks()
@@ -41,7 +41,7 @@ describe('consul', () => {
       expect(consul.consul.kv.set).toHaveBeenCalledWith(componentName + '/config', JSON.stringify(config, null, 2))
     })
     it('seed Consul failure', async () => {
-      consul.consul.kv.set = spyOn(consul.consul.kv, 'set').mockResolvedValue(Promise.reject(new Error())) as any
+      consul.consul.kv.set = spyOn(consul.consul.kv, 'set').mockRejectedValue(new Error()) as any
       const result = await consul.seed(componentName, config)
       expect(result).toBe(false)
     })
@@ -52,7 +52,7 @@ describe('consul', () => {
     })
 
     it('process Consul', () => {
-      const consulValues: Array<{ Key: string, Value: string }> = [
+      const consulValues: { Key: string; Value: string }[] = [
         {
           Key: componentName + '/Config.js',
           Value: '{"web_port": 8081, "delay_timer": 12}'

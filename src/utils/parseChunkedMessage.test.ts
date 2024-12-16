@@ -73,8 +73,7 @@ describe('parsing chunked messages', () => {
       msg2.length.toString(16),
       msg2,
       '0',
-      '\r\n' +
-      'thisisbadextradata'
+      '\r\n' + 'thisisbadextradata'
     ].join('\r\n')
     const result = parseChunkedMessage(chunked)
     expect(result).toBeFalsy()

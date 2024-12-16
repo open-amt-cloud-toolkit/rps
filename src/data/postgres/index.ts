@@ -24,7 +24,7 @@ export default class Db implements IDB {
 
   log: Logger = new Logger('PostgresDb')
 
-  constructor (connectionString: string) {
+  constructor(connectionString: string) {
     this.pool = new pg.Pool({
       connectionString
     })

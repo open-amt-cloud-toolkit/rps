@@ -3,13 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { assign, createMachine } from 'xstate'
-import {
-  coalesceMessage,
-  commonContext,
-  type CommonMaintenanceContext,
-  HttpResponseError
-} from './common.js'
+import { assign, fromPromise, setup } from 'xstate'
+import { type CommonMaintenanceContext, coalesceMessage, HttpResponseError } from '../common.js'
 import Logger from '../../Logger.js'
 import { doneFail, doneSuccess } from './doneResponse.js'
 import { devices } from '../../devices.js'
@@ -26,8 +21,12 @@ export interface DeviceInfo {
 }
 
 export const SyncDeviceInfoEventType = 'SYNC_DEVICE_INFO'
-export type SyncDeviceInfoEvent =
-  | { type: typeof SyncDeviceInfoEventType, clientId: string, deviceInfo: DeviceInfo }
+export interface SyncDeviceInfoEvent {
+  type: typeof SyncDeviceInfoEventType | 'ONFAILED'
+  clientId: string
+  deviceInfo: DeviceInfo
+  output?: any
+}
 
 export interface SyncDeviceInfoContext extends CommonMaintenanceContext {
   deviceInfo: DeviceInfo | null
@@ -36,74 +35,99 @@ export interface SyncDeviceInfoContext extends CommonMaintenanceContext {
 const logger = new Logger('syncDeviceInfo')
 
 export class SyncDeviceInfo {
-  machine = createMachine<SyncDeviceInfoContext, SyncDeviceInfoEvent>({
-    id: 'sync-device-info',
-    predictableActionArguments: true,
-    context: {
-      ...commonContext,
-      taskName: 'syncdeviceinfo',
-      deviceInfo: null
-    },
-    initial: 'INITIAL',
-    states: {
-      INITIAL: {
-        on: {
-          SYNC_DEVICE_INFO: {
-            actions: assign({
-              clientId: (context, event) => event.clientId,
-              deviceInfo: (context, event) => event.deviceInfo
-            }),
-            target: 'SAVE_TO_MPS'
-          }
-        }
-      },
-      SAVE_TO_MPS: {
-        invoke: {
-          src: this.saveToMPS.bind(this),
-          id: 'save-to-mps',
-          onDone: {
-            actions: assign({ statusMessage: (context, event) => event.data }),
-            target: 'SUCCESS'
-          },
-          onError: {
-            actions: assign({
-              statusMessage: (_, event) => coalesceMessage('at SAVE_TO_MPS', event.data)
-            }),
-            target: 'FAILED'
-          }
-        }
-      },
-      FAILED: {
-        type: 'final',
-        data: (context) => (doneFail(context.taskName, context.statusMessage))
-      },
-      SUCCESS: {
-        type: 'final',
-        data: (context) => (doneSuccess(context.taskName, context.statusMessage))
-      }
-    }
-  })
-
-  async saveToMPS (context: SyncDeviceInfoContext): Promise<void> {
-    const clientObj = devices[context.clientId]
+  saveToMPS = async ({ input }: { input: SyncDeviceInfoContext }): Promise<void> => {
+    const clientObj = devices[input.clientId]
     const url = `${Environment.Config.mps_server}/api/v1/devices`
     const deviceinfo = {
-      fwVersion: context.deviceInfo?.ver,
-      fwBuild: context.deviceInfo?.build,
-      fwSku: context.deviceInfo?.sku,
-      currentMode: context.deviceInfo?.currentMode?.toString(),
-      features: context.deviceInfo?.features,
-      ipAddress: context.deviceInfo?.ipConfiguration.ipAddress,
+      fwVersion: input.deviceInfo?.ver,
+      fwBuild: input.deviceInfo?.build,
+      fwSku: input.deviceInfo?.sku,
+      currentMode: input.deviceInfo?.currentMode?.toString(),
+      features: input.deviceInfo?.features,
+      ipAddress: input.deviceInfo?.ipConfiguration.ipAddress,
       lastUpdated: new Date()
     }
     const jsonData = {
       guid: clientObj.uuid,
       deviceInfo: deviceinfo
     }
+
     const rsp = await got.patch(url, { json: jsonData })
     if (rsp.statusCode !== 200) {
-      throw new HttpResponseError((rsp.statusMessage ? rsp.statusMessage : ''), rsp.statusCode)
+      throw new HttpResponseError(rsp.statusMessage ? rsp.statusMessage : '', rsp.statusCode)
     }
     logger.debug(`savedToMPS ${JSON.stringify(jsonData)}`)
   }
+
+  machine = setup({
+    types: {} as {
+      context: SyncDeviceInfoContext
+      events: SyncDeviceInfoEvent
+      input: SyncDeviceInfoContext
+      actions: any
+    },
+    actors: {
+      saveToMPS: fromPromise(this.saveToMPS)
+    }
+  }).createMachine({
+    id: 'sync-device-info',
+    context: ({ input }) => ({
+      taskName: input.taskName,
+      clientId: input.clientId,
+      message: input.message,
+      errorMessage: input.errorMessage,
+      httpHandler: input.httpHandler,
+      parseErrorCount: 0,
+      deviceInfo: input.deviceInfo
+    }),
+    initial: 'INITIAL',
+    states: {
+      INITIAL: {
+        on: {
+          SYNC_DEVICE_INFO: {
+            actions: assign({
+              clientId: ({ event }) => event.clientId,
+              deviceInfo: ({ event }) => event.deviceInfo
+            }),
+            target: 'SAVE_TO_MPS'
+          }
+        }
+      },
+      SAVE_TO_MPS: {
+        entry: assign({
+          errorMessage: () => ''
+        }),
+        invoke: {
+          src: 'saveToMPS',
+          input: ({ context }) => context,
+          id: 'save-to-mps',
+          onDone: {
+            // actions: assign({ statusMessage: ({ event }) => event.output as string }),
+            target: 'SUCCESS'
+          },
+          onError: {
+            actions: assign({
+              errorMessage: ({ event }) => coalesceMessage('at SAVE_TO_MPS', event.error)
+            }),
+            target: 'FAILED'
+          }
+        }
+      },
+      FAILED: {
+        entry: assign({ statusMessage: () => 'FAILED' }),
+        type: 'final'
+      },
+      SUCCESS: {
+        entry: assign({ statusMessage: () => 'SUCCESS' }),
+        type: 'final'
+      }
+    },
+    output: ({ context }) => {
+      if (context.statusMessage === 'SUCCESS') {
+        return doneSuccess(context.taskName)
+      } else {
+        return doneFail(context.taskName, context.errorMessage)
+      }
+    }
+  })
 }

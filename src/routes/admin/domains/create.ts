@@ -18,8 +18,10 @@ export class DomainCreate {
     const amtDomain: AMTDomain = req.body
     amtDomain.tenantId = req.tenantId || ''
     const log = new Logger('createDomain')
-    let cert: string = ''
-    let domainPwd: string = ''
+    let cert = ''
+    let domainPwd = ''
+    const nodeForge = new NodeForge()
+    const certManager = new CertManager(new Logger('CertManager'), nodeForge)
     try {
       // store the cert and password key in database
       if (req.secretsManager) {
@@ -29,7 +31,7 @@ export class DomainCreate {
         }
         amtDomain.provisioningCert = 'CERT'
         amtDomain.provisioningCertPassword = 'CERT_PASSWORD'
-        amtDomain.expirationDate = this.getExpirationDate(cert, domainPwd)
+        amtDomain.expirationDate = certManager.getExpirationDate(cert, domainPwd)
       }
       // SQL Query > Insert Data
       const results: AMTDomain | null = await req.db.domains.insert(amtDomain)
@@ -62,20 +64,5 @@ export class DomainCreate {
     } catch (error) {
       handleError(log, amtDomain.profileName, req, res, error)
     }
-  }
-
-  public getExpirationDate (cert: string, password: string): Date {
-    const nodeForge = new NodeForge()
-    const certManager = new CertManager(new Logger('CertManager'), nodeForge)
-    const pfxobj = certManager.convertPfxToObject(cert, password)
-
-    let expiresFirst = pfxobj.certs[0].validity.notAfter
-    for (const cert of pfxobj.certs) {
-      if (cert.validity.notAfter < expiresFirst) {
-        expiresFirst = cert.validity.notAfter
-      }
-    }
-
-    return expiresFirst
   }
 }

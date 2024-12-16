@@ -4,7 +4,13 @@
  **********************************************************************/
 
 import { DomainsTable } from './domains.js'
-import { DUPLICATE_DOMAIN_FAILED, API_UNEXPECTED_EXCEPTION, DEFAULT_SKIP, DEFAULT_TOP, CONCURRENCY_MESSAGE } from '../../../utils/constants.js'
+import {
+  DUPLICATE_DOMAIN_FAILED,
+  API_UNEXPECTED_EXCEPTION,
+  DEFAULT_SKIP,
+  DEFAULT_TOP,
+  CONCURRENCY_MESSAGE
+} from '../../../utils/constants.js'
 import { type AMTDomain } from '../../../models/index.js'
 import PostgresDb from '../index.js'
 import { jest } from '@jest/globals'
@@ -38,13 +44,25 @@ describe('domains tests', () => {
   describe('Get', () => {
     test('should get expected count', async () => {
       const expected = 10
-      querySpy.mockResolvedValueOnce({ rows: [{ total_count: expected }], command: '', fields: null, rowCount: expected, oid: 0 })
+      querySpy.mockResolvedValueOnce({
+        rows: [{ total_count: expected }],
+        command: '',
+        fields: null,
+        rowCount: expected,
+        oid: 0
+      })
       const count: number = await domainsTable.getCount()
       expect(count).toBe(expected)
     })
     test('should get count of 0 on no counts made', async () => {
       const expected = 0
-      querySpy.mockResolvedValueOnce({ rows: [{ total_count: expected }], command: '', fields: null, rowCount: expected, oid: 0 })
+      querySpy.mockResolvedValueOnce({
+        rows: [{ total_count: expected }],
+        command: '',
+        fields: null,
+        rowCount: expected,
+        oid: 0
+      })
       const count: number = await domainsTable.getCount()
       expect(count).toBe(0)
     })
@@ -55,7 +73,7 @@ describe('domains tests', () => {
       expect(count).toBe(expected)
     })
     test('should get count of 0 on no rows returned', async () => {
-      querySpy.mockResolvedValueOnce({ })
+      querySpy.mockResolvedValueOnce({})
       const count: number = await domainsTable.getCount()
       expect(count).toBe(0)
     })
@@ -70,7 +88,8 @@ describe('domains tests', () => {
       const domains: AMTDomain[] = await domainsTable.get()
       expect(domains[0]).toBe(amtDomain)
       expect(querySpy).toBeCalledTimes(1)
-      expect(querySpy).toBeCalledWith(`
+      expect(querySpy).toBeCalledWith(
+        `
     SELECT 
       name as "profileName", 
       domain_suffix as "domainSuffix", 
@@ -83,7 +102,13 @@ describe('domains tests', () => {
     FROM domains 
     WHERE tenant_id = $3
     ORDER BY name 
-    LIMIT $1 OFFSET $2`, [DEFAULT_TOP, DEFAULT_SKIP, ''])
+    LIMIT $1 OFFSET $2`,
+        [
+          DEFAULT_TOP,
+          DEFAULT_SKIP,
+          ''
+        ]
+      )
       expect(domains.length).toBe(1)
       expect(domains[0]).toBe(amtDomain)
     })
@@ -93,7 +118,8 @@ describe('domains tests', () => {
       const result = await domainsTable.getByName(profileName)
       expect(result).toBe(amtDomain)
       expect(querySpy).toBeCalledTimes(1)
-      expect(querySpy).toBeCalledWith(`
+      expect(querySpy).toBeCalledWith(
+        `
     SELECT 
       name as "profileName", 
       domain_suffix as "domainSuffix", 
@@ -104,7 +130,9 @@ describe('domains tests', () => {
       tenant_id as "tenantId",
       xmin as "version"
     FROM domains 
-    WHERE Name = $1 and tenant_id = $2`, [profileName, ''])
+    WHERE Name = $1 and tenant_id = $2`,
+        [profileName, '']
+      )
     })
     test('Should return null if no results for getByName', async () => {
       querySpy.mockResolvedValueOnce({ rows: [], command: '', fields: null, rowCount: 0, oid: 0 })
@@ -128,20 +156,26 @@ describe('domains tests', () => {
       const isDeleted: boolean = await domainsTable.delete(profileName)
       expect(isDeleted).toBe(false)
       expect(querySpy).toBeCalledTimes(1)
-      expect(querySpy).toBeCalledWith(`
+      expect(querySpy).toBeCalledWith(
+        `
     DELETE 
     FROM domains 
-    WHERE Name = $1 and tenant_id = $2`, [profileName, ''])
+    WHERE Name = $1 and tenant_id = $2`,
+        [profileName, '']
+      )
     })
     test('Should get true when domain delete succeeds', async () => {
       querySpy.mockResolvedValueOnce({ rows: [], command: '', fields: null, rowCount: 1, oid: 0 })
       const isDeleted: boolean = await domainsTable.delete(profileName)
       expect(isDeleted).toBe(true)
       expect(querySpy).toBeCalledTimes(1)
-      expect(querySpy).toBeCalledWith(`
+      expect(querySpy).toBeCalledWith(
+        `
     DELETE 
     FROM domains 
-    WHERE Name = $1 and tenant_id = $2`, [profileName, ''])
+    WHERE Name = $1 and tenant_id = $2`,
+        [profileName, '']
+      )
     })
   })
   describe('Insert', () => {
@@ -151,18 +185,20 @@ describe('domains tests', () => {
       getByName.mockResolvedValueOnce(amtDomain)
       const result = await domainsTable.insert(amtDomain)
       expect(querySpy).toBeCalledTimes(1)
-      expect(querySpy).toBeCalledWith(`
+      expect(querySpy).toBeCalledWith(
+        `
       INSERT INTO domains(name, domain_suffix, provisioning_cert, provisioning_cert_storage_format, provisioning_cert_key, expiration_date, tenant_id)
       values($1, $2, $3, $4, $5, $6, $7)`,
-      [
-        amtDomain.profileName,
-        amtDomain.domainSuffix,
-        amtDomain.provisioningCert,
-        amtDomain.provisioningCertStorageFormat,
-        amtDomain.provisioningCertPassword,
-        amtDomain.expirationDate,
-        amtDomain.tenantId
-      ])
+        [
+          amtDomain.profileName,
+          amtDomain.domainSuffix,
+          amtDomain.provisioningCert,
+          amtDomain.provisioningCertStorageFormat,
+          amtDomain.provisioningCertPassword,
+          amtDomain.expirationDate,
+          amtDomain.tenantId
+        ]
+      )
       expect(getByName).toBeCalledTimes(1)
       expect(result).toBe(amtDomain)
     })
@@ -173,18 +209,20 @@ describe('domains tests', () => {
       getByName.mockResolvedValueOnce(amtDomain)
       const result = await domainsTable.insert(amtDomain)
       expect(querySpy).toBeCalledTimes(1)
-      expect(querySpy).toBeCalledWith(`
+      expect(querySpy).toBeCalledWith(
+        `
       INSERT INTO domains(name, domain_suffix, provisioning_cert, provisioning_cert_storage_format, provisioning_cert_key, expiration_date, tenant_id)
       values($1, $2, $3, $4, $5, $6, $7)`,
-      [
-        amtDomain.profileName,
-        amtDomain.domainSuffix,
-        amtDomain.provisioningCert,
-        amtDomain.provisioningCertStorageFormat,
-        amtDomain.provisioningCertPassword,
-        amtDomain.expirationDate,
-        amtDomain.tenantId
-      ])
+        [
+          amtDomain.profileName,
+          amtDomain.domainSuffix,
+          amtDomain.provisioningCert,
+          amtDomain.provisioningCertStorageFormat,
+          amtDomain.provisioningCertPassword,
+          amtDomain.expirationDate,
+          amtDomain.tenantId
+        ]
+      )
       expect(getByName).toBeCalledTimes(0)
       expect(result).toBe(null)
     })
@@ -207,20 +245,22 @@ describe('domains tests', () => {
       getByName.mockResolvedValueOnce(amtDomain)
       const result = await domainsTable.update(amtDomain)
       expect(querySpy).toBeCalledTimes(1)
-      expect(querySpy).toBeCalledWith(`
+      expect(querySpy).toBeCalledWith(
+        `
       UPDATE domains 
       SET domain_suffix=$2, provisioning_cert=$3, provisioning_cert_storage_format=$4, provisioning_cert_key=$5, expiration_date=$6 
       WHERE name=$1 and tenant_id = $7 and xmin = $8`,
-      [
-        amtDomain.profileName,
-        amtDomain.domainSuffix,
-        amtDomain.provisioningCert,
-        amtDomain.provisioningCertStorageFormat,
-        amtDomain.provisioningCertPassword,
-        amtDomain.expirationDate,
-        amtDomain.tenantId,
-        amtDomain.version
-      ])
+        [
+          amtDomain.profileName,
+          amtDomain.domainSuffix,
+          amtDomain.provisioningCert,
+          amtDomain.provisioningCertStorageFormat,
+          amtDomain.provisioningCertPassword,
+          amtDomain.expirationDate,
+          amtDomain.tenantId,
+          amtDomain.version
+        ]
+      )
       expect(getByName).toBeCalledTimes(1)
       expect(result).toBe(amtDomain)
     })

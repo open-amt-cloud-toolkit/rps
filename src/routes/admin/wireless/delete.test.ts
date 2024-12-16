@@ -14,10 +14,15 @@ describe('Wireless - Delete', () => {
   let deleteSpy: SpyInstance<any>
 
   beforeEach(() => {
-    resSpy = createSpyObj('Response', ['status', 'json', 'end', 'send'])
+    resSpy = createSpyObj('Response', [
+      'status',
+      'json',
+      'end',
+      'send'
+    ])
     req = {
       db: { wirelessProfiles: { delete: jest.fn(), getByName: jest.fn() } },
-      query: { },
+      query: {},
       tenantId: '',
       params: { profileName: 'profileName' }
     }

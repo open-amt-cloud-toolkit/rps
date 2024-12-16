@@ -13,10 +13,15 @@ describe('CIRA Config - Get', () => {
   let req
   let getByNameSpy: SpyInstance<any>
   beforeEach(() => {
-    resSpy = createSpyObj('Response', ['status', 'json', 'end', 'send'])
+    resSpy = createSpyObj('Response', [
+      'status',
+      'json',
+      'end',
+      'send'
+    ])
     req = {
       db: { domains: { getByName: jest.fn() } },
-      query: { },
+      query: {},
       params: { domainName: 'domainName' },
       tenantId: ''
     }

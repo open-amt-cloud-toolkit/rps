@@ -14,10 +14,15 @@ describe('Profiles - Get', () => {
   let getByNameSpy: SpyInstance<any>
 
   beforeEach(() => {
-    resSpy = createSpyObj('Response', ['status', 'json', 'end', 'send'])
+    resSpy = createSpyObj('Response', [
+      'status',
+      'json',
+      'end',
+      'send'
+    ])
     req = {
       db: { profiles: { getByName: jest.fn() } },
-      query: { },
+      query: {},
       params: { profileName: 'profileName' },
       tenantId: ''
     }

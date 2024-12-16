@@ -19,7 +19,7 @@ export const waitForServiceManager = async function (service: IServiceManager, s
     }
   })
 }
-export async function processServiceConfigs (consul: IServiceManager, config: RPSConfig): Promise<boolean> {
+export async function processServiceConfigs(consul: IServiceManager, config: RPSConfig): Promise<boolean> {
   const prefix = Environment.Config.consul_key_prefix
   const consulValues = await consul.get(prefix)
   if (consulValues == null) {

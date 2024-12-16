@@ -8,26 +8,34 @@ import { devices } from '../devices.js'
 import { Environment } from '../utils/Environment.js'
 import { config } from '../test/helper/Config.js'
 import { ClientAction } from '../models/RCS.Config.js'
-import { type NetworkConfiguration as NetworkConfigurationType } from './networkConfiguration.js'
-import { interpret } from 'xstate'
+import {
+  type NetworkConfigEvent,
+  type NetworkConfigContext,
+  type NetworkConfiguration as NetworkConfigurationType
+} from './networkConfiguration.js'
+import { type MachineImplementationsSimplified, createActor, fromPromise } from 'xstate'
 import { HttpHandler } from '../HttpHandler.js'
 import { AMT, CIM } from '@open-amt-cloud-toolkit/wsman-messages'
 import { jest } from '@jest/globals'
 import { spyOn } from 'jest-mock'
+import { HttpResponseError, coalesceMessage, isDigestRealmValid } from './common.js'
 
 const invokeWsmanCallSpy = jest.fn<any>()
 const invokeEnterpriseAssistantCallSpy = jest.fn<any>()
 jest.unstable_mockModule('./common.js', () => ({
   invokeWsmanCall: invokeWsmanCallSpy,
-  invokeEnterpriseAssistantCall: invokeEnterpriseAssistantCallSpy
+  invokeEnterpriseAssistantCall: invokeEnterpriseAssistantCallSpy,
+  HttpResponseError,
+  isDigestRealmValid,
+  coalesceMessage
 }))
 
-const { NetworkConfiguration } = await import ('./networkConfiguration.js')
+const { NetworkConfiguration } = await import('./networkConfiguration.js')
 
 const clientId = randomUUID()
 Environment.Config = config
 describe('Network Configuration', () => {
-  let config
+  let config: MachineImplementationsSimplified<NetworkConfigContext, NetworkConfigEvent>
   let currentStateIndex: number
   let networkConfig: NetworkConfigurationType
   let context
@@ -122,47 +130,61 @@ describe('Network Configuration', () => {
     }
     currentStateIndex = 0
     config = {
-      services: {
-        'put-general-settings': async (_, event) => await Promise.resolve({ clientId: event.clientId }),
-        'enumerate-ethernet-port-settings': Promise.resolve({
-          Envelope: {
-            Header: {},
-            Body: { EnumerateResponse: { EnumerationContext: '09000000-0000-0000-0000-000000000000' } }
-          }
-        }),
-        'error-machine': async (_, event) => await Promise.resolve({ clientId: event.clientId }),
-        'pull-ethernet-port-settings': Promise.resolve({
-          Envelope: {
-            Header: {},
-            Body: {
-              PullResponse: {
-                Items: {
-                  AMT_EthernetPortSettings: [
-                    { DHCPEnabled: true, ElementName: 'Intel(r) AMT Ethernet Port Settings', InstanceID: 'Intel(r) AMT Ethernet Port Settings 0', IpSyncEnabled: false },
-                    { ElementName: 'Intel(r) AMT Ethernet Port Settings', InstanceID: 'Intel(r) AMT Ethernet Port Settings 1', MACAddress: '00-00-00-00-00-00' }
-                  ]
+      actors: {
+        putGeneralSettings: fromPromise(async ({ input }) => await Promise.resolve({ clientId: input.clientId })),
+        enumerateEthernetPortSettings: fromPromise(
+          async ({ input }) =>
+            await Promise.resolve({
+              Envelope: {
+                Header: {},
+                Body: { EnumerateResponse: { EnumerationContext: '09000000-0000-0000-0000-000000000000' } }
+              }
+            })
+        ),
+        errorMachine: fromPromise(async ({ input }) => await Promise.resolve({ clientId: input.clientId })),
+        pullEthernetPortSettings: fromPromise(
+          async ({ input }) =>
+            await Promise.resolve({
+              Envelope: {
+                Header: {},
+                Body: {
+                  PullResponse: {
+                    Items: {
+                      AMT_EthernetPortSettings: [
+                        {
+                          DHCPEnabled: true,
+                          ElementName: 'Intel(r) AMT Ethernet Port Settings',
+                          InstanceID: 'Intel(r) AMT Ethernet Port Settings 0',
+                          IpSyncEnabled: false
+                        },
+                        {
+                          ElementName: 'Intel(r) AMT Ethernet Port Settings',
+                          InstanceID: 'Intel(r) AMT Ethernet Port Settings 1',
+                          MACAddress: '00-00-00-00-00-00'
+                        }
+                      ]
+                    }
+                  }
                 }
               }
-            }
-          }
-        }),
-        'wired-network-configuration-machine': Promise.resolve({ clientId }),
-        'wifi-network-configuration-machine': Promise.resolve({ clientId })
+            })
+        ),
+        wiredConfiguration: fromPromise(async ({ input }) => await Promise.resolve({ clientId })),
+        wifiConfiguration: fromPromise(async ({ input }) => await Promise.resolve({ clientId }))
       },
-      guards: {
-      },
+      guards: {},
       actions: {
-        'Reset Unauth Count': () => { },
-        'Read Ethernet Port Settings': () => { },
-        'Read WiFi Endpoint Settings Pull Response': () => { },
+        'Reset Unauth Count': () => {},
+        'Read Ethernet Port Settings': () => {},
         'Increment Retry Count': () => {}
-      }
+      },
+      delays: {}
     }
   })
 
   describe('State machines', () => {
-    it('should eventually reach "SUCCESS" state', (done) => {
-      const mockNetworkConfigurationMachine = networkConfig.machine.withConfig(config).withContext(context)
+    it('should eventually reach SUCCESS state', (done) => {
+      const mockNetworkConfigurationMachine = networkConfig.machine.provide(config)
       const flowStates = [
         'ACTIVATION',
         'PUT_GENERAL_SETTINGS',
@@ -171,8 +193,10 @@ describe('Network Configuration', () => {
         'WIRED_CONFIGURATION',
         'SUCCESS'
       ]
-      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
-        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+      const service = createActor(mockNetworkConfigurationMachine, { input: context })
+      service.subscribe((state) => {
+        const expectedState: any = flowStates[currentStateIndex++]
+        expect(state.matches(expectedState)).toBe(true)
         if (state.matches('SUCCESS') && currentStateIndex === flowStates.length) {
           done()
         }
@@ -180,16 +204,18 @@ describe('Network Configuration', () => {
       service.start()
       service.send({ type: 'NETWORKCONFIGURATION', clientId })
     })
-    it('should eventually reach "FAILED" state for a device', (done) => {
-      config.services['put-general-settings'] = Promise.reject(new Error())
-      const mockNetworkConfigurationMachine = networkConfig.machine.withConfig(config).withContext(context)
+    it('should eventually reach FAILED state for PUT', (done) => {
+      config.actors!.putGeneralSettings = fromPromise(async ({ input }) => await Promise.reject(new Error()))
+      const mockNetworkConfigurationMachine = networkConfig.machine.provide(config)
       const flowStates = [
         'ACTIVATION',
         'PUT_GENERAL_SETTINGS',
         'FAILED'
       ]
-      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
-        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+      const service = createActor(mockNetworkConfigurationMachine, { input: context })
+      service.subscribe((state) => {
+        const expectedState: any = flowStates[currentStateIndex++]
+        expect(state.matches(expectedState)).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           const status = devices[clientId].status.Network
           expect(status).toEqual('Failed to update amt general settings on device')
@@ -199,17 +225,19 @@ describe('Network Configuration', () => {
       service.start()
       service.send({ type: 'NETWORKCONFIGURATION', clientId })
     })
-    it('should eventually reach "FAILED" state for a device', (done) => {
-      config.services['enumerate-ethernet-port-settings'] = Promise.reject(new Error())
-      const mockNetworkConfigurationMachine = networkConfig.machine.withConfig(config).withContext(context)
+    it('should eventually reach FAILED state for ENUM', (done) => {
+      config.actors!.enumerateEthernetPortSettings = fromPromise(async ({ input }) => await Promise.reject(new Error()))
+      const mockNetworkConfigurationMachine = networkConfig.machine.provide(config)
       const flowStates = [
         'ACTIVATION',
         'PUT_GENERAL_SETTINGS',
         'ENUMERATE_ETHERNET_PORT_SETTINGS',
         'FAILED'
       ]
-      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
-        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+      const service = createActor(mockNetworkConfigurationMachine, { input: context })
+      service.subscribe((state) => {
+        const expectedState: any = flowStates[currentStateIndex++]
+        expect(state.matches(expectedState)).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           const status = devices[clientId].status.Network
           expect(status).toEqual('Failed to get enumeration number to ethernet port settings')
@@ -219,9 +247,9 @@ describe('Network Configuration', () => {
       service.start()
       service.send({ type: 'NETWORKCONFIGURATION', clientId })
     })
-    it('should eventually reach "FAILED" state for a device', (done) => {
-      config.services['pull-ethernet-port-settings'] = Promise.reject(new Error())
-      const mockNetworkConfigurationMachine = networkConfig.machine.withConfig(config).withContext(context)
+    it('should eventually reach FAILED state for PULL', (done) => {
+      config.actors!.pullEthernetPortSettings = fromPromise(async ({ input }) => await Promise.reject(new Error()))
+      const mockNetworkConfigurationMachine = networkConfig.machine.provide(config)
       const flowStates = [
         'ACTIVATION',
         'PUT_GENERAL_SETTINGS',
@@ -229,8 +257,10 @@ describe('Network Configuration', () => {
         'PULL_ETHERNET_PORT_SETTINGS',
         'FAILED'
       ]
-      const service = interpret(mockNetworkConfigurationMachine).onTransition((state) => {
-        expect(state.matches(flowStates[currentStateIndex++])).toBe(true)
+      const service = createActor(mockNetworkConfigurationMachine, { input: context })
+      service.subscribe((state) => {
+        const expectedState: any = flowStates[currentStateIndex++]
+        expect(state.matches(expectedState)).toBe(true)
         if (state.matches('FAILED') && currentStateIndex === flowStates.length) {
           const status = devices[clientId].status.Network
           expect(status).toEqual('Failed to pull ethernet port settings')
@@ -244,8 +274,10 @@ describe('Network Configuration', () => {
 
   describe('Ethernet Port Settings', () => {
     test('should enumerate ethernet port settings', async () => {
-      const ethernetPortSettingsSpy = spyOn(context.amt.EthernetPortSettings, 'Enumerate').mockImplementation(() => 'abcdef')
-      await networkConfig.enumerateEthernetPortSettings(context)
+      const ethernetPortSettingsSpy = spyOn(context.amt.EthernetPortSettings, 'Enumerate').mockImplementation(
+        () => 'abcdef'
+      )
+      await networkConfig.enumerateEthernetPortSettings({ input: context })
       expect(ethernetPortSettingsSpy).toHaveBeenCalled()
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
@@ -261,7 +293,7 @@ describe('Network Configuration', () => {
         }
       }
       const ethernetPortSettingsSpy = spyOn(context.amt.EthernetPortSettings, 'Pull').mockImplementation(() => 'abcdef')
-      await networkConfig.pullEthernetPortSettings(context)
+      await networkConfig.pullEthernetPortSettings({ input: context })
       expect(ethernetPortSettingsSpy).toHaveBeenCalled()
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
@@ -291,7 +323,7 @@ describe('Network Configuration', () => {
           }
         }
       }
-      networkConfig.readEthernetPortSettings(context, null as any)
+      networkConfig.readEthernetPortSettings({ context })
       expect(context.wiredSettings).toBeDefined()
       expect(context.wifiSettings).toBeDefined()
     })
@@ -319,7 +351,7 @@ describe('Network Configuration', () => {
           }
         }
       }
-      networkConfig.readEthernetPortSettings(context, null as any)
+      networkConfig.readEthernetPortSettings({ context })
       expect(context.wiredSettings).toBeDefined()
       expect(context.wifiSettings).toBeDefined()
     })
@@ -340,7 +372,7 @@ describe('Network Configuration', () => {
           }
         }
       }
-      networkConfig.readEthernetPortSettings(context, null as any)
+      networkConfig.readEthernetPortSettings({ context })
       expect(context.wiredSettings).toBeNull()
       expect(context.wifiSettings).toBeDefined()
     })
@@ -361,7 +393,7 @@ describe('Network Configuration', () => {
           }
         }
       }
-      networkConfig.readEthernetPortSettings(context, null as any)
+      networkConfig.readEthernetPortSettings({ context })
       expect(context.wifiSettings).toBeUndefined()
       expect(context.wiredSettings).toBeDefined()
     })
@@ -387,19 +419,19 @@ describe('Network Configuration', () => {
         SharedFQDN: true
       }
       const generalSettingsSpy = spyOn(context.amt.GeneralSettings, 'Put').mockReturnValue('done')
-      await networkConfig.putGeneralSettings(context)
+      await networkConfig.putGeneralSettings({ input: context })
       expect(generalSettingsSpy).toHaveBeenCalled()
       expect(invokeWsmanCallSpy).toHaveBeenCalled()
     })
     test('Should return false if AMT network is Enabled', async () => {
       context.generalSettings = generalSettingsResponse
-      const result = networkConfig.isNotAMTNetworkEnabled(context, null as any)
+      const result = networkConfig.isNotAMTNetworkEnabled({ context })
       expect(result).toBeFalsy()
     })
     test('Should return true if AMT network is Enabled', async () => {
       context.generalSettings = generalSettingsResponse
       context.generalSettings.SharedFQDN = false
-      const result = networkConfig.isNotAMTNetworkEnabled(context, null as any)
+      const result = networkConfig.isNotAMTNetworkEnabled({ context })
       expect(result).toBeTruthy()
     })
   })

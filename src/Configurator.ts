@@ -22,7 +22,7 @@ export class Configurator {
   secretsManager: ISecretManagerService
   dataProcessor: DataProcessor
   ready: Promise<void>
-  constructor () {
+  constructor() {
     this.ready = new Promise((resolve, reject) => {
       const log = new Logger('Configurator')
 
@@ -33,22 +33,37 @@ export class Configurator {
       const dbf = new DbCreatorFactory()
       const smcf = new SecretManagerCreatorFactory()
 
-      dbf.getDb().then((db) => {
-        smcf.getSecretManager(new Logger('SecretManagerService')).then((secretManager) => {
-          this.secretsManager = secretManager
-          this.domainCredentialManager = new DomainCredentialManager(new Logger('DomainCredentialManager'), db.domains, this.secretsManager)
-          this.profileManager = new ProfileManager(new Logger('ProfileManager'), this.secretsManager, db.profiles, Environment.Config)
-          resolve()
-        }).catch((err) => {
+      dbf
+        .getDb()
+        .then((db) => {
+          smcf
+            .getSecretManager(new Logger('SecretManagerService'))
+            .then((secretManager) => {
+              this.secretsManager = secretManager
+              this.domainCredentialManager = new DomainCredentialManager(
+                new Logger('DomainCredentialManager'),
+                db.domains,
+                this.secretsManager
+              )
+              this.profileManager = new ProfileManager(
+                new Logger('ProfileManager'),
+                this.secretsManager,
+                db.profiles,
+                Environment.Config
+              )
+              resolve()
+            })
+            .catch((err) => {
+              log.error(err)
+              reject(err)
+              throw new Error('Unable to get secret manager configuration')
+            })
+        })
+        .catch((err) => {
           log.error(err)
           reject(err)
-          throw new Error('Unable to get secret manager configuration')
+          throw new Error('Unable to get db configuration')
         })
-      }).catch((err) => {
-        log.error(err)
-        reject(err)
-        throw new Error('Unable to get db configuration')
-      })
     })
   }
 }

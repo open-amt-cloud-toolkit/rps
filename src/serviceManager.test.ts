@@ -3,15 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  **********************************************************************/
 
-import { } from './serviceManager.js'
+import {} from './serviceManager.js'
 import { type IServiceManager } from './interfaces/IServiceManager.js'
 import { ConsulService } from './consulService.js'
 import { Environment } from './utils/Environment.js'
 import { jest } from '@jest/globals'
 
-const { processServiceConfigs, waitForServiceManager } = await import ('./serviceManager.js')
+const { processServiceConfigs, waitForServiceManager } = await import('./serviceManager.js')
 
-const consul: IServiceManager = new ConsulService('consul', '8500')
+const consul: IServiceManager = new ConsulService('consul', 8500)
 let componentName: string
 let config: any
 
@@ -58,7 +58,7 @@ describe('Index', () => {
     expect(consul.seed).toHaveBeenCalledWith(config.consul_key_prefix, config)
   })
   it('should pass processServiceConfigs seeded Consul', async () => {
-    const consulValues: Array<{ Key: string, Value: string }> = [
+    const consulValues: { Key: string; Value: string }[] = [
       {
         Key: componentName + '/Config.js',
         Value: '{"web_port": 8081, "delay_timer": 12}'

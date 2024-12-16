@@ -12,7 +12,12 @@ describe('IEEE8021xConfigs - All', () => {
   let resSpy
   let req
   beforeEach(() => {
-    resSpy = createSpyObj('Response', ['status', 'json', 'end', 'send'])
+    resSpy = createSpyObj('Response', [
+      'status',
+      'json',
+      'end',
+      'send'
+    ])
     req = {
       db: {
         ieee8021xProfiles: {
