@@ -1,3 +1,10 @@
+## [2.22.15](https://github.com/open-amt-cloud-toolkit/rps/compare/v2.22.14...v2.22.15) (2025-01-09)
+
+
+### Bug Fixes
+
+* cira disconnect ([#1910](https://github.com/open-amt-cloud-toolkit/rps/issues/1910)) ([fe86a7a](https://github.com/open-amt-cloud-toolkit/rps/commit/fe86a7a58720e3453939919a19556fa552e1b9d6))
+
 ## [2.22.14](https://github.com/open-amt-cloud-toolkit/rps/compare/v2.22.13...v2.22.14) (2024-11-14)
 
 ## [2.22.13](https://github.com/open-amt-cloud-toolkit/rps/compare/v2.22.12...v2.22.13) (2024-11-08)
