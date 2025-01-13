@@ -38,7 +38,8 @@ export const domainInsertValidator = (): any => [
     .isEmpty()
     .withMessage('Provisioning Cert Storage Format is required')
     .isIn(['raw', 'string'])
-    .withMessage("Provisioning Cert Storage Format should be either 'raw' or 'string'")]
+    .withMessage("Provisioning Cert Storage Format should be either 'raw' or 'string'")
+]
 
 export const domainUpdateValidator = (): any => [
   check('profileName')
@@ -54,7 +55,8 @@ export const domainUpdateValidator = (): any => [
     .withMessage('Provisioning Cert Storage Format is either "raw" or "string"'),
   check('provisioningCertPassword')
     .isLength({ max: 64 })
-    .withMessage('Password should not exceed 64 characters in length')]
+    .withMessage('Password should not exceed 64 characters in length')
+]
 
 function passwordValidator(): CustomValidator {
   return (value, { req }) => {

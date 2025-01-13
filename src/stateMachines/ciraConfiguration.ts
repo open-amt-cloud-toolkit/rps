@@ -665,7 +665,6 @@ export class CIRAConfiguration {
                   event.output.Envelope.Body.PullResponse.Items.AMT_RemoteAccessPolicyAppliesToMPS
               }),
               'Reset Retry Count'
-
             ],
             target: 'PUT_REMOTE_ACCESS_POLICY_APPLIESTOMPS'
           },

@@ -78,7 +78,8 @@ export class ClientMsgJsonParser {
       this.zeroLeftPad(bufUuid.readUInt16LE(4).toString(16), 4),
       this.zeroLeftPad(bufUuid.readUInt16LE(6).toString(16), 4),
       this.zeroLeftPad(bufUuid.readUInt16BE(8).toString(16), 4),
-      this.zeroLeftPad(bufUuid.slice(10).toString('hex').toLowerCase(), 12)].join('-')
+      this.zeroLeftPad(bufUuid.slice(10).toString('hex').toLowerCase(), 12)
+    ].join('-')
 
     return guid
   }

@@ -125,7 +125,6 @@ export class Deactivation {
                 tenantId: ({ event }) => event.tenantId
               }),
               'Reset Unauth Count'
-
             ],
             target: 'UNPROVISIONING'
           }

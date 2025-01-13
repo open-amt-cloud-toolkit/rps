@@ -334,7 +334,6 @@ export class TLS {
             target: 'ENTERPRISE_ASSISTANT_REQUEST'
           },
           'ADD_TRUSTED_ROOT_CERTIFICATE'
-
         ]
       },
       CHECK_CERT_MODE_AFTER_REQUEST: {
@@ -344,7 +343,6 @@ export class TLS {
             target: 'ENTERPRISE_ASSISTANT_RESPONSE'
           },
           'ADD_CERTIFICATE'
-
         ]
       },
       ENTERPRISE_ASSISTANT_REQUEST: {
@@ -512,7 +510,6 @@ export class TLS {
             target: 'CHECK_CERT_MODE_AFTER_REQUEST'
           },
           'CREATE_TLS_CREDENTIAL_CONTEXT'
-
         ]
       },
       ADD_CERTIFICATE: {
@@ -600,7 +597,6 @@ export class TLS {
                 tlsSettingData: ({ event }) => event.output.Envelope.Body.PullResponse.Items.AMT_TLSSettingData
               }),
               'Reset Retry Count'
-
             ],
             target: 'PUT_REMOTE_TLS_DATA'
           },
@@ -627,7 +623,6 @@ export class TLS {
               assign({
                 message: ({ event }) => event.output
               })
-
             ],
             target: 'WAIT_A_BIT' // should this be commit_changes? and then circle back to setting local tls data
           },

@@ -77,7 +77,8 @@ export class Maintenance {
       CHANGE_PASSWORD: {
         entry: [
           assign({ clientId: ({ event }) => event.clientId }),
-          sendTo('change-password', ({ event }) => event)],
+          sendTo('change-password', ({ event }) => event)
+        ],
         invoke: {
           id: 'change-password',
           src: 'changePassword',
@@ -97,7 +98,8 @@ export class Maintenance {
       SYNC_HOST_NAME: {
         entry: [
           assign({ clientId: ({ event }) => event.clientId }),
-          sendTo('sync-host-name', ({ event }) => event)],
+          sendTo('sync-host-name', ({ event }) => event)
+        ],
         invoke: {
           id: 'sync-host-name',
           src: 'syncHostName',
@@ -131,7 +133,8 @@ export class Maintenance {
       SYNC_IP: {
         entry: [
           assign({ clientId: ({ event }) => event.clientId }),
-          sendTo('sync-ip', ({ event }) => event)],
+          sendTo('sync-ip', ({ event }) => event)
+        ],
         invoke: {
           id: 'sync-ip',
           src: 'syncIP',
@@ -162,7 +165,8 @@ export class Maintenance {
       SYNC_TIME: {
         entry: [
           assign({ clientId: ({ event }) => event.clientId }),
-          sendTo('sync-time', ({ event }) => event)],
+          sendTo('sync-time', ({ event }) => event)
+        ],
         invoke: {
           id: 'sync-time',
           src: 'syncTime',
@@ -186,7 +190,8 @@ export class Maintenance {
       SYNC_DEVICE_INFO: {
         entry: [
           assign({ clientId: ({ event }) => event.clientId }),
-          sendTo('sync-device-info', ({ event }) => event)],
+          sendTo('sync-device-info', ({ event }) => event)
+        ],
         invoke: {
           id: 'sync-device-info',
           src: 'syncDeviceInfo',

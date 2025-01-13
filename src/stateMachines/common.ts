@@ -68,7 +68,8 @@ const invokeWsmanCall = async <T>(context: any, maxRetries = 0): Promise<T> => {
     try {
       const result = await Promise.race([
         invokeWsmanCallInternal<T>(context),
-        timeout(Environment.Config.delay_timer * 1000)])
+        timeout(Environment.Config.delay_timer * 1000)
+      ])
       return result as any
     } catch (error) {
       if (error instanceof UNEXPECTED_PARSE_ERROR && retries < maxRetries) {
@@ -104,7 +105,8 @@ const eaTimeout = (ms): any =>
 const invokeEnterpriseAssistantCall = async (context: any): Promise<EnterpriseAssistantMessage> => {
   const result = await Promise.race([
     invokeEnterpriseAssistantCallInternal(context),
-    eaTimeout(Environment.Config.delay_timer * 1000)])
+    eaTimeout(Environment.Config.delay_timer * 1000)
+  ])
   return result
 }
 
