@@ -12,7 +12,7 @@ const PasswordHelper = {
    * @returns {buffer} Returns console nonce used to verify RCS server to AMT
    */
   generateNonce: (): Buffer => {
-    const nonce = Buffer.from(crypto.randomBytes(20), 0, 20)
+    const nonce = crypto.randomBytes(20)
     return nonce
   },
 
