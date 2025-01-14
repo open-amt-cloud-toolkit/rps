@@ -90,7 +90,8 @@ export const wirelessValidator = (): any => [
 
 export const wirelessEditValidator = (): any => [
   ...wirelessValidator(),
-  check('version').not().isEmpty().withMessage('Version is required to patch/update a record.')]
+  check('version').not().isEmpty().withMessage('Version is required to patch/update a record.')
+]
 
 const validateIEEE8021xConfigs = async (value: any, req: Request): Promise<boolean> => {
   const isProfileExist = await req.db.ieee8021xProfiles.checkProfileExits(value, req.tenantId)

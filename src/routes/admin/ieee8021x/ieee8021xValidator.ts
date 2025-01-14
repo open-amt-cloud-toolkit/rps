@@ -31,7 +31,8 @@ export const ieee8021xValidator = (): any => [
 
 export const ieee8021xEditValidator = (): any => [
   ...ieee8021xValidator(),
-  check('version').not().isEmpty().withMessage('Version is required to patch/update a record.')]
+  check('version').not().isEmpty().withMessage('Version is required to patch/update a record.')
+]
 
 export const validatePxeTimeout: CustomValidator = (value) => {
   if (typeof value !== 'number') {

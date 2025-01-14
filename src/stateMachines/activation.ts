@@ -773,7 +773,6 @@ export class Activation {
                 devices[context.clientId].status.Status = 'Admin control mode.'
               },
               'Set activation status'
-
             ],
             target: 'UPDATE_CREDENTIALS'
           },
@@ -784,7 +783,6 @@ export class Activation {
                 devices[context.clientId].status.Status = 'Admin control mode.'
               },
               'Set activation status'
-
             ],
             target: 'DELAYED_TRANSITION'
           },
@@ -825,7 +823,6 @@ export class Activation {
                 devices[context.clientId].status.Status = 'Upgraded to admin control mode.'
               },
               'Set activation status'
-
             ],
             target: 'CHANGE_AMT_PASSWORD'
           },
@@ -836,7 +833,6 @@ export class Activation {
                 devices[context.clientId].status.Status = 'Upgraded to admin control mode.'
               },
               'Set activation status'
-
             ],
             target: 'CHANGE_AMT_PASSWORD'
           },
@@ -875,7 +871,6 @@ export class Activation {
                 devices[context.clientId].status.Status = 'Client control mode.'
               },
               'Set activation status'
-
             ],
             target: 'DELAYED_TRANSITION'
           },
@@ -886,7 +881,6 @@ export class Activation {
                 devices[context.clientId].status.Status = 'Client control mode.'
               },
               'Set activation status'
-
             ],
             target: 'DELAYED_TRANSITION'
           },

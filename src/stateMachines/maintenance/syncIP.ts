@@ -272,7 +272,6 @@ export class SyncIP {
                 assign({
                   errorMessage: ({ event }) => coalesceMessage('at PULL_ETHERNET_PORT_SETTINGS', event.error)
                 })
-
               ],
               target: 'FAILED'
             }

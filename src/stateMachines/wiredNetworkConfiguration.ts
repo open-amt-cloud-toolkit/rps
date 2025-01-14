@@ -279,7 +279,6 @@ export class WiredConfiguration {
               }),
               'Reset Unauth Count',
               'Reset Retry Count'
-
             ],
             target: 'PUT_ETHERNET_PORT_SETTINGS'
           }
