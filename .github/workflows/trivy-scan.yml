@@ -28,7 +28,7 @@ jobs:
         with:
           image-ref: 'vprodemo.azurecr.io/rps:${{ github.sha }}'
           format: 'sarif'
-          output: 'trivy-results.sarif'
+          output: 'rps-trivy-results.sarif'
           exit-code: '1'
           ignore-unfixed: true
           vuln-type: 'os,library'
@@ -37,10 +37,10 @@ jobs:
         uses: github/codeql-action/upload-sarif@17a820bf2e43b47be2c72b39cc905417bc1ab6d0 # v3.28.6
         if: always()
         with:
-          sarif_file: 'trivy-results.sarif'
+          sarif_file: 'rps-trivy-results.sarif'
       - name: Upload Trivy Artifacts
         uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
         if: always()
         with:
-          name: trivy-results.sarif
-          path: trivy-results.sarif
+          name: rps-trivy-results.sarif
+          path: rps-trivy-results.sarif
