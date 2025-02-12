@@ -10,11 +10,11 @@
 
 > Disclaimer: Production viable releases are tagged and listed under 'Releases'. All other check-ins should be considered 'in-development' and should not be used in production
 
-The Remote Provisioning Server (RPS) enables the configuration and activation of Intel® AMT devices based on a defined profile. RPS utilizes the [Remote Provision Client (RPC)](https://github.com/open-amt-cloud-toolkit/rps) deployed onto edge devices to connect the devices to the [Management Presence Server (MPS)](https://github.com/open-amt-cloud-toolkit/mps) and enable remote manageability features.
+The Remote Provisioning Server (RPS) enables the configuration and activation of Intel® AMT devices based on a defined profile. RPS utilizes the [Remote Provision Client (RPC)](https://github.com/device-management-toolkit/rpc-go) deployed onto edge devices to connect the devices to the [Management Presence Server (MPS)](https://github.com/device-management-toolkit/mps) and enable remote manageability features.
 
 <br><br>
 
-**For detailed documentation** about Getting Started or other features of the Open AMT Cloud Toolkit, see the [docs](https://open-amt-cloud-toolkit.github.io/docs/).
+**For detailed documentation** about Getting Started or other features of the Device Management Toolkit, see the [docs](https://device-management-toolkit.github.io/docs/).
 
 <br>
 
@@ -32,7 +32,7 @@ To deploy the RPS on a local development system:
 1. Clone the repo and switch to the `rps` directory.
 
    ```
-   git clone https://github.com/open-amt-cloud-toolkit/rps.git && cd rps
+   git clone https://github.com/device-management-toolkit/rps.git && cd rps
    ```
 
 2. Install the dependencies from the working `rps` directory.
@@ -53,7 +53,7 @@ To deploy the RPS on a local development system:
    RPS Microservice Rest APIs listening on https://:8081.
    ```
 
-For detailed documentation about RPS, see the [docs](https://open-amt-cloud-toolkit.github.io/docs/)
+For detailed documentation about RPS, see the [docs](https://device-management-toolkit.github.io/docs/)
 
 <br>
 
@@ -64,7 +64,7 @@ We leverage [Postman](https://www.postman.com/) and Docker for executing RESTful
 1. Clone the repo and switch to the `rps` directory.
 
    ```
-   git clone https://github.com/open-amt-cloud-toolkit/rps.git && cd rps
+   git clone https://github.com/device-management-toolkit/rps.git && cd rps
    ```
 
 2. Build the docker image.
@@ -81,17 +81,17 @@ We leverage [Postman](https://www.postman.com/) and Docker for executing RESTful
 
 4. Import the test collection located at `./src/test/collections/rps.postman_collection.json`.
 
-5. Run the tests using the Collection Runner in postman. If any of the tests fail, file a github issue here: https://github.com/open-amt-cloud-toolkit/rps/pull/34
+5. Run the tests using the Collection Runner in postman. If any of the tests fail, file a github issue here: https://github.com/device-management-toolkit/rps/pull/34
 
 <br>
 
 ## Additional Resources
 
-- For detailed documentation and Getting Started, [visit the docs site](https://open-amt-cloud-toolkit.github.io/docs).
+- For detailed documentation and Getting Started, [visit the docs site](https://device-management-toolkit.github.io/docs).
 
 - Looking to contribute? [Find more information here about contribution guidelines and practices](.\CONTRIBUTING.md).
 
-- Find a bug? Or have ideas for new features? [Open a new Issue](https://github.com/open-amt-cloud-toolkit/rps/issues).
+- Find a bug? Or have ideas for new features? [Open a new Issue](https://github.com/device-management-toolkit/rps/issues).
 
 - Need additional support or want to get the latest news and events about Open AMT? Connect with the team directly through Discord.
 
